@@ -1,0 +1,67 @@
+# English display text, keyed by id. Kinds, components and rules never carry display
+# text themselves. Every id in kinds/, components/ and rules/ must have an entry here.
+categories:
+  messaging: { name: "Messaging" }
+  compute: { name: "Compute" }
+  data: { name: "Data" }
+  edge: { name: "Edge" }
+  client: { name: "Client" }
+  ops: { name: "Operations" }
+  security: { name: "Security" }
+
+kinds:
+  queue:
+    name: "Queue"
+    description: "Point-to-point message queue. Each message is processed by one consumer."
+  pubsub-topic:
+    name: "Pub/Sub topic"
+    description: "Fan-out topic. Every subscriber receives every message."
+  cache:
+    name: "Cache"
+    description: "In-memory key-value store placed in front of a slower datastore."
+  sql-database:
+    name: "SQL database"
+    description: "Relational datastore, usually the system of record."
+  app-server:
+    name: "Application server"
+    description: "A request-serving process owned by the team."
+  api-gateway:
+    name: "API gateway"
+    description: "Managed entry point that routes, authenticates and throttles inbound calls."
+
+components:
+  kafka:
+    name: "Apache Kafka"
+    description: "Partitioned, replayable log with consumer groups."
+  sqs:
+    name: "Amazon SQS"
+    description: "Managed queue with visibility timeouts and optional FIFO ordering."
+  sns:
+    name: "Amazon SNS"
+    description: "Managed fan-out topic with no message replay."
+  redis:
+    name: "Redis"
+    description: "In-memory data structure store used as a cache."
+  postgres:
+    name: "PostgreSQL"
+    description: "Open-source relational database."
+  container-service:
+    name: "Container service"
+    description: "Generic containerised service owned by the team."
+  aws-api-gateway:
+    name: "Amazon API Gateway"
+    description: "Managed REST, HTTP and WebSocket API front door."
+
+rules:
+  queue-missing-dlq:
+    name: "Queue without dead-letter queue"
+  datastore-single-region:
+    name: "Single-region datastore behind a multi-region SLA"
+  cache-missing-eviction-policy:
+    name: "Cache without eviction policy"
+  pubsub-replay-required:
+    name: "Pub/Sub topic where replay is required"
+  sync-chain-too-deep:
+    name: "Synchronous call chain too deep"
+  datastore-missing-backup:
+    name: "Datastore without backup or retention"

@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../schema/rule.schema.json
+# syncChainDepth is the longest path of consecutive sync edges starting at this node.
+# With a stated p95 latency target, every extra synchronous hop eats into that budget.
+# Tripped by designs/order-processing.broken.yaml.
+schemaVersion: "1"
+type: "rule"
+id: "sync-chain-too-deep"
+severity: "warning"
+select:
+  node:
+    kind: "api-gateway"
+when:
+  all:
+    - requirement: "latency.p95Ms"
+      exists: true
+    - syncChainDepth:
+        gt: 3
+message: "Entry point '{{node.id}}' starts a synchronous call chain deeper than 3 hops while the design states a p95 latency target."

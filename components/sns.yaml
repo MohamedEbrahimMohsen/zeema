@@ -1,0 +1,13 @@
+# yaml-language-server: $schema=../schema/component.schema.json
+schemaVersion: "1"
+type: "component"
+id: "sns"
+kind: "pubsub-topic"
+defaults:
+  delivery: "at-least-once"
+  ordering: "none"
+  replay: false
+properties:
+  fifo:
+    type: "boolean"
+    default: false

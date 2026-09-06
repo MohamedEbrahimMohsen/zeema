@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Abstract kind: a request-serving process you own (API, service, backend-for-frontend).
+# Stateless by default because that is the assumption most scaling rules depend on.
+schemaVersion: "1"
+type: "kind"
+id: "app-server"
+category: "compute"
+properties:
+  stateless:
+    type: "boolean"
+    default: true
+  instances:
+    type: "integer"
+  runtime:
+    type: "string"

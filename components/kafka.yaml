@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../schema/component.schema.json
+schemaVersion: "1"
+type: "component"
+id: "kafka"
+kind: "queue"
+defaults:
+  delivery: "at-least-once"
+  ordering: "per-key"
+  replay: true
+  retentionDays: 7
+properties:
+  partitions:
+    type: "integer"
+  consumerGroups:
+    type: "boolean"
+    default: true

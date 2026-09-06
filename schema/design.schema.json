@@ -1,0 +1,98 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://arkore.dev/schema/v1/design.schema.json",
+  "title": "Arkore Design",
+  "description": "One system: requirements, groups, nodes (component instances) and edges.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "type", "id", "nodes", "edges"],
+  "properties": {
+    "schemaVersion": { "const": "1" },
+    "type": { "const": "design" },
+    "id": { "$ref": "#/definitions/id" },
+    "requirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "availability": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "multiRegion": { "type": "boolean" },
+            "sla": { "type": "string", "pattern": "^[0-9]{2}(\\.[0-9]+)?$" }
+          }
+        },
+        "messaging": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": { "replay": { "type": "boolean" } }
+        },
+        "latency": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": { "p95Ms": { "type": "integer", "minimum": 1 } }
+        }
+      }
+    },
+    "groups": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "kind"],
+        "properties": {
+          "id": { "$ref": "#/definitions/id" },
+          "kind": { "enum": ["region", "availability-zone", "vpc", "trust-zone", "system"] },
+          "parent": { "$ref": "#/definitions/id" }
+        }
+      }
+    },
+    "nodes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "component"],
+        "properties": {
+          "id": { "$ref": "#/definitions/id" },
+          "component": { "$ref": "#/definitions/id" },
+          "group": { "$ref": "#/definitions/id" },
+          "props": {
+            "type": "object",
+            "propertyNames": { "pattern": "^[a-z][a-zA-Z0-9]*$" },
+            "additionalProperties": { "type": ["boolean", "integer", "string"] }
+          },
+          "nfr": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "rps": { "type": "integer", "minimum": 0 },
+              "latencyP95Ms": { "type": "integer", "minimum": 1 },
+              "consistency": { "enum": ["strong", "eventual"] }
+            }
+          }
+        }
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["from", "to", "protocol", "mode"],
+        "properties": {
+          "from": { "$ref": "#/definitions/id" },
+          "to": { "$ref": "#/definitions/id" },
+          "protocol": { "type": "string", "minLength": 1 },
+          "mode": { "enum": ["sync", "async"] },
+          "delivery": { "enum": ["at-most-once", "at-least-once", "exactly-once"] },
+          "label": { "type": "string" }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" }
+  }
+}

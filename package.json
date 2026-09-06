@@ -1,0 +1,13 @@
+{
+  "name": "arkore",
+  "version": "0.0.1",
+  "description": "Architecture as typed, queryable data: schema, curated components, and lint rules",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "type": "commonjs"
+}

@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../schema/rule.schema.json
+# No declared eviction policy means the vendor default decides, and the vendor default is
+# usually noeviction. Tripped by designs/multi-region-web.broken.yaml.
+schemaVersion: "1"
+type: "rule"
+id: "cache-missing-eviction-policy"
+severity: "warning"
+select:
+  node:
+    kind: "cache"
+when:
+  any:
+    - prop: "evictionPolicy"
+      exists: false
+    - prop: "evictionPolicy"
+      equals: "none"
+message: "Cache '{{node.id}}' has no eviction policy. Declare lru, lfu or ttl, or justify none explicitly."

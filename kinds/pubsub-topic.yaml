@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Abstract kind: a fan-out topic. Every subscriber receives every message.
+# Most implementations cannot replay history; replay defaults to false for that reason.
+schemaVersion: "1"
+type: "kind"
+id: "pubsub-topic"
+category: "messaging"
+properties:
+  delivery:
+    type: "enum"
+    values: ["at-most-once", "at-least-once", "exactly-once"]
+    required: true
+  ordering:
+    type: "enum"
+    values: ["none", "per-key", "global"]
+    default: "none"
+  replay:
+    type: "boolean"
+    default: false
+  deadLetterQueue:
+    type: "boolean"
+    default: false

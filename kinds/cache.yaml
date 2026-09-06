@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Abstract kind: an in-memory key-value cache in front of a slower store.
+# evictionPolicy is deliberately optional with no default: a cache with no stated policy is
+# an unbounded memory leak or a silent stale-data source, and the linter rule
+# cache-missing-eviction-policy exists to surface that absence. Making it required would
+# move the failure from a lint finding to a schema error.
+schemaVersion: "1"
+type: "kind"
+id: "cache"
+category: "data"
+properties:
+  evictionPolicy:
+    type: "enum"
+    values: ["lru", "lfu", "ttl", "none"]
+  ttlSeconds:
+    type: "integer"
+  persistence:
+    type: "boolean"
+    default: false

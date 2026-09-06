@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Abstract kind: a relational datastore. The system of record in most designs.
+schemaVersion: "1"
+type: "kind"
+id: "sql-database"
+category: "data"
+properties:
+  backupEnabled:
+    type: "boolean"
+    default: false
+  backupRetentionDays:
+    type: "integer"
+  replication:
+    type: "enum"
+    values: ["none", "async", "sync"]
+    default: "none"
+  replicaOf:
+    type: "ref"
+    refKind: "sql-database"
+  encryptionAtRest:
+    type: "boolean"
+    default: false

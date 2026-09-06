@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../schema/rule.schema.json
+# A queue that receives asynchronous traffic and has no dead-letter queue drops or
+# infinitely retries poison messages. Tripped by designs/order-processing.broken.yaml.
+schemaVersion: "1"
+type: "rule"
+id: "queue-missing-dlq"
+severity: "error"
+select:
+  node:
+    kind: "queue"
+when:
+  all:
+    - prop: "deadLetterQueue"
+      equals: false
+    - hasEdge:
+        direction: "in"
+        mode: "async"
+message: "Queue '{{node.id}}' receives async traffic but has no dead-letter queue."

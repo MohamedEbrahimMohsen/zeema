@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://arkore.dev/schema/v1/component.schema.json",
+  "title": "Arkore Component",
+  "description": "A concrete implementation of exactly one kind (for example kafka is a queue).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "type", "id", "kind"],
+  "properties": {
+    "schemaVersion": { "const": "1" },
+    "type": { "const": "component" },
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+    "kind": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+    "defaults": {
+      "description": "Overrides of the kind property defaults. Keys must exist on the kind.",
+      "type": "object",
+      "propertyNames": { "pattern": "^[a-z][a-zA-Z0-9]*$" },
+      "additionalProperties": { "type": ["boolean", "integer", "string"] }
+    },
+    "properties": {
+      "description": "Component-specific properties added on top of the kind properties.",
+      "type": "object",
+      "propertyNames": { "pattern": "^[a-z][a-zA-Z0-9]*$" },
+      "additionalProperties": { "$ref": "kind.schema.json#/definitions/propertyDefinition" }
+    }
+  }
+}
