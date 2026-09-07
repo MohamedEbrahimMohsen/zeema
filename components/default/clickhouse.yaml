@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# ClickHouse: columnar OLAP database with real-time inserts; MergeTree by default, replicated
+# and replacing engines are opt-in.
+schemaVersion: "1"
+type: "component"
+id: "clickhouse"
+kind: "data-warehouse"
+provider: "default"
+defaults:
+  realtime: true
+  upsert: false
+  format: "columnar"
+  managed: false
+properties:
+  engine:
+    type: "enum"
+    values: ["merge-tree", "replicated-merge-tree", "replacing-merge-tree"]
+    default: "merge-tree"
+  replicated:
+    type: "boolean"
+    default: false

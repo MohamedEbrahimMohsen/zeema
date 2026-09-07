@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Derived index for text, prefix, vector or geospatial queries (Elasticsearch, Solr, in-house tries, S2/H3 cell indexes).
+# Absorbs the geospatial-index candidate: structure geo-cell plus geoScheme.
+schemaVersion: "1"
+type: "kind"
+id: "search-index"
+category: "data"
+properties:
+  structure:
+    type: "enum"
+    values: ["inverted", "trie", "vector", "geo-cell"]
+    default: "inverted"
+  shardingStrategy:
+    type: "enum"
+    values: ["none", "hash", "geo", "time", "prefix-range"]
+    default: "none"
+  indexing:
+    type: "enum"
+    values: ["sync", "async", "batch"]
+    default: "async"
+  rebuildCadenceHours:
+    type: "integer"
+  replicas:
+    type: "integer"
+  geoScheme:
+    type: "enum"
+    values: ["none", "s2", "h3", "geohash", "quadtree"]
+    default: "none"
+  managed:
+    type: "boolean"
+    default: false

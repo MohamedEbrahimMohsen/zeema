@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=../schema/kind.schema.json
-# Abstract kind: a request-serving process you own (API, service, backend-for-frontend).
-# Stateless by default because that is the assumption most scaling rules depend on.
+# A request-serving process you own (API, service, backend-for-frontend, chat server).
+# stateless defaults true because most scaling rules assume it; set false for per-entity or hash-ring services.
 schemaVersion: "1"
 type: "kind"
 id: "app-server"
@@ -13,3 +13,26 @@ properties:
     type: "integer"
   runtime:
     type: "string"
+  autoscaling:
+    type: "boolean"
+    default: false
+  criticality:
+    type: "enum"
+    values: ["low", "medium", "high"]
+    default: "medium"
+  shardingStrategy:
+    type: "enum"
+    values: ["none", "consistent-hash", "range", "lookup"]
+    default: "none"
+  instancePerEntity:
+    type: "boolean"
+    default: false
+  singleWriter:
+    type: "boolean"
+    default: false
+  ownsData:
+    type: "boolean"
+    default: true
+  managed:
+    type: "boolean"
+    default: false

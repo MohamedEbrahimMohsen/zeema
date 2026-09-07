@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Fastly: managed CDN with VCL configuration and instant purge. Compute is a separate opt-in product.
+schemaVersion: "1"
+type: "component"
+id: "fastly"
+kind: "cdn"
+provider: "default"
+defaults:
+  managed: true
+  edgeCompute: false
+properties:
+  instantPurge:
+    type: "boolean"
+    default: true

@@ -1,0 +1,47 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Non-relational datastore: key-value, wide-column or document (Cassandra, DynamoDB, MongoDB, Bigtable).
+# conflictResolution is optional so multi-leader-store-without-conflict-policy can catch its absence.
+schemaVersion: "1"
+type: "kind"
+id: "nosql-database"
+category: "data"
+properties:
+  model:
+    type: "enum"
+    values: ["key-value", "wide-column", "document"]
+    required: true
+  consistency:
+    type: "enum"
+    values: ["eventual", "tunable", "strong"]
+    default: "eventual"
+  replication:
+    type: "enum"
+    values: ["single-region", "multi-region-single-leader", "multi-region-multi-leader"]
+    default: "single-region"
+  replicationFactor:
+    type: "integer"
+  conflictResolution:
+    type: "enum"
+    values: ["none", "last-writer-wins", "vector-clock", "app-merge"]
+  quorumReads:
+    type: "integer"
+  quorumWrites:
+    type: "integer"
+  partitionKey:
+    type: "string"
+  bucketing:
+    type: "boolean"
+    default: false
+  tombstoneTtlDays:
+    type: "integer"
+  backupEnabled:
+    type: "boolean"
+    default: false
+  backupRetentionDays:
+    type: "integer"
+  encryptionAtRest:
+    type: "boolean"
+    default: false
+  managed:
+    type: "boolean"
+    default: false

@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Jaeger: self-managed distributed tracing; in-memory storage by default.
+schemaVersion: "1"
+type: "component"
+id: "jaeger"
+kind: "monitoring"
+provider: "default"
+defaults:
+  signal: "traces"
+  collectorMode: "push"
+  managed: false
+properties:
+  storageBackend:
+    type: "enum"
+    values: ["memory", "cassandra", "elasticsearch", "badger"]
+    default: "memory"

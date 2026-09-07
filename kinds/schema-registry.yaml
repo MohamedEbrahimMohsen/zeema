@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Abstract kind: Stores and enforces message schemas for producers and consumers (Confluent, Glue, in-house Avro registries).
+schemaVersion: "1"
+type: "kind"
+id: "schema-registry"
+category: "data"
+properties:
+  compatibility:
+    type: "enum"
+    values: ["none", "backward", "forward", "full"]
+    default: "backward"
+  enforced:
+    type: "boolean"
+    default: false
+  managed:
+    type: "boolean"
+    default: false

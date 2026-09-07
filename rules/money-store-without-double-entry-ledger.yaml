@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../schema/rule.schema.json
+# The design promises the books balance to zero, but no ledger kind exists to enforce
+# double entry. Balances kept in an ordinary table drift and cannot be audited.
+# Tripped by: designs/payment-system.broken.yaml
+schemaVersion: "1"
+type: "rule"
+id: "money-store-without-double-entry-ledger"
+severity: "error"
+select:
+  design: true
+when:
+  all:
+    - requirement: "money.zeroSum"
+      equals: true
+    - not:
+        hasNode:
+          kind: "ledger"
+message: "Design '{{design.id}}' requires zero-sum money movement but has no ledger node. Record money in an append-only double-entry ledger."

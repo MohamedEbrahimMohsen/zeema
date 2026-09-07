@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Abstract kind: Fans out messages to external delivery channels (APNs, FCM, SMS, email) with templates and dedup.
+schemaVersion: "1"
+type: "kind"
+id: "notification-service"
+category: "messaging"
+properties:
+  channelPush:
+    type: "boolean"
+    default: true
+  channelEmail:
+    type: "boolean"
+    default: false
+  channelSms:
+    type: "boolean"
+    default: false
+  dedupKey:
+    type: "boolean"
+    default: false
+  templateStore:
+    type: "boolean"
+    default: false
+  queuePerChannel:
+    type: "boolean"
+    default: false
+  managed:
+    type: "boolean"
+    default: false

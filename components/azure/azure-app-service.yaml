@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure App Service: managed web app hosting. Manual scale and Always On off unless configured.
+schemaVersion: "1"
+type: "component"
+id: "azure-app-service"
+kind: "app-server"
+provider: "azure"
+defaults:
+  managed: true
+  stateless: true
+  autoscaling: false
+properties:
+  alwaysOn:
+    type: "boolean"
+    default: false

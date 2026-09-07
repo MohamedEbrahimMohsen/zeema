@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Temporal: durable workflow-as-code. Activities retry with exponential backoff forever by default;
+# saga compensation must be written in the workflow. Self-hosted unless Temporal Cloud.
+schemaVersion: "1"
+type: "component"
+id: "temporal"
+kind: "workflow-engine"
+provider: "default"
+defaults:
+  durable: true
+  pattern: "saga"
+  compensation: false
+  managed: false
+properties:
+  activityRetry:
+    type: "boolean"
+    default: true

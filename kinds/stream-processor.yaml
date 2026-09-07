@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Continuous computation over one or more streams (Flink, Samza, Kafka Streams, Dataflow).
+# watermarkSeconds is optional with no default so windowed-aggregation-without-watermark can fire.
+schemaVersion: "1"
+type: "kind"
+id: "stream-processor"
+category: "messaging"
+properties:
+  windowing:
+    type: "enum"
+    values: ["none", "event-time", "processing-time"]
+    default: "none"
+  watermarkSeconds:
+    type: "integer"
+  checkpointIntervalSeconds:
+    type: "integer"
+  exactlyOnce:
+    type: "boolean"
+    default: false
+  stateBackend:
+    type: "enum"
+    values: ["memory", "rocksdb", "external"]
+    default: "memory"
+  lateDataPolicy:
+    type: "enum"
+    values: ["drop", "shift", "sideline"]
+  instances:
+    type: "integer"
+  managed:
+    type: "boolean"
+    default: false

@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# SpiceDB: Zanzibar-style relationship-based authorization over gRPC, in-memory datastore by default.
+schemaVersion: "1"
+type: "component"
+id: "spicedb"
+kind: "identity-provider"
+provider: "default"
+defaults:
+  protocol: "custom"
+  authorizationModel: "rebac"
+  managed: false
+  mfa: false
+properties:
+  datastore:
+    type: "enum"
+    values: ["memory", "postgres", "cockroachdb", "spanner", "mysql"]
+    default: "memory"

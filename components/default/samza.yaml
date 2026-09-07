@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apache Samza: YARN or standalone stream jobs with RocksDB local state and changelog topics;
+# checkpoints every 60 seconds, at-least-once.
+schemaVersion: "1"
+type: "component"
+id: "samza"
+kind: "stream-processor"
+provider: "default"
+defaults:
+  windowing: "none"
+  checkpointIntervalSeconds: 60
+  exactlyOnce: false
+  stateBackend: "rocksdb"
+properties:
+  changelogTopics:
+    type: "boolean"
+    default: true

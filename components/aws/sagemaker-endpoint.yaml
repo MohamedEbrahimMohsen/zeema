@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon SageMaker real-time endpoint: managed model hosting on provisioned instances; autoscaling and
+# serverless inference are opt-in.
+schemaVersion: "1"
+type: "component"
+id: "sagemaker-endpoint"
+kind: "ml-inference"
+provider: "aws"
+defaults:
+  managed: true
+  training: "batch"
+  inputs: "live"
+properties:
+  serverless:
+    type: "boolean"
+    default: false
+  autoscaling:
+    type: "boolean"
+    default: false

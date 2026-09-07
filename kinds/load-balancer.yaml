@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Abstract kind: Spreads connections or requests across backends at layer 4 or 7 (ELB, NGINX, HAProxy, Envoy, Unimog).
+schemaVersion: "1"
+type: "kind"
+id: "load-balancer"
+category: "edge"
+properties:
+  layer:
+    type: "enum"
+    values: ["l4", "l7"]
+    default: "l7"
+  hashing:
+    type: "enum"
+    values: ["round-robin", "least-connections", "ecmp", "maglev", "consistent"]
+    default: "round-robin"
+  connectionPreserving:
+    type: "boolean"
+    default: false
+  healthChecks:
+    type: "boolean"
+    default: true
+  global:
+    type: "boolean"
+    default: false
+  managed:
+    type: "boolean"
+    default: false

@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Event Hubs: managed Kafka-compatible log. New hubs get 4 partitions and 1 day of retention;
+# data is replicated within the namespace region before acknowledgement.
+schemaVersion: "1"
+type: "component"
+id: "azure-event-hubs"
+kind: "stream"
+provider: "azure"
+defaults:
+  delivery: "at-least-once"
+  ordering: "per-key"
+  partitions: 4
+  replicationFactor: 3
+  acks: "all"
+  retentionHours: 24
+  storage: "persistent"
+  managed: true
+properties:
+  capture:
+    type: "boolean"
+    default: false

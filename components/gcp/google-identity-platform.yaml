@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Identity Platform: managed OIDC auth with custom claims only; multi-tenancy opt-in.
+schemaVersion: "1"
+type: "component"
+id: "google-identity-platform"
+kind: "identity-provider"
+provider: "gcp"
+defaults:
+  protocol: "oidc"
+  authorizationModel: "none"
+  managed: true
+  mfa: false
+properties:
+  multiTenancy:
+    type: "boolean"
+    default: false

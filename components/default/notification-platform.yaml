@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Generic in-house notification platform: consumes events, resolves user preferences and pushes to
+# APNs/FCM; email, SMS, dedup and templates are things a design turns on explicitly.
+schemaVersion: "1"
+type: "component"
+id: "notification-platform"
+kind: "notification-service"
+provider: "default"
+defaults:
+  channelPush: true
+  channelEmail: false
+  channelSms: false
+properties:
+  preferenceStore:
+    type: "boolean"
+    default: false

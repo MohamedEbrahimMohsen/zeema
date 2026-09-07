@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Abstract kind: Runtime configuration and kill switches evaluated by services (LaunchDarkly, Flipr).
+schemaVersion: "1"
+type: "kind"
+id: "feature-flag-service"
+category: "ops"
+properties:
+  stagedRollout:
+    type: "boolean"
+    default: false
+  killSwitches:
+    type: "boolean"
+    default: true
+  managed:
+    type: "boolean"
+    default: false

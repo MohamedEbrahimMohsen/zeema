@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Keycloak: self-managed OIDC/SAML server with realm roles; user federation opt-in.
+schemaVersion: "1"
+type: "component"
+id: "keycloak"
+kind: "identity-provider"
+provider: "default"
+defaults:
+  protocol: "oidc"
+  authorizationModel: "rbac"
+  managed: false
+  mfa: false
+properties:
+  userFederation:
+    type: "boolean"
+    default: false

@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../schema/rule.schema.json
+# Multi-leader replication accepts concurrent writes in several regions. Without a declared
+# conflict resolution policy, divergent replicas are reconciled by accident.
+# Tripped by: designs/object-storage.broken.yaml
+schemaVersion: "1"
+type: "rule"
+id: "multi-leader-store-without-conflict-policy"
+severity: "warning"
+select:
+  node:
+    kind: "nosql-database"
+when:
+  all:
+    - prop: "replication"
+      equals: "multi-region-multi-leader"
+    - any:
+        - prop: "conflictResolution"
+          exists: false
+        - prop: "conflictResolution"
+          equals: "none"
+message: "Store '{{node.id}}' is multi-leader across regions with no conflict resolution policy. Declare last-writer-wins, vector-clock or app-merge."

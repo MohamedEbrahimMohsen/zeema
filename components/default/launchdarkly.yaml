@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# LaunchDarkly: SaaS flags with percentage rollouts, SDKs stream updates by default.
+schemaVersion: "1"
+type: "component"
+id: "launchdarkly"
+kind: "feature-flag-service"
+provider: "default"
+defaults:
+  stagedRollout: true
+  managed: true
+properties:
+  streaming:
+    type: "boolean"
+    default: true

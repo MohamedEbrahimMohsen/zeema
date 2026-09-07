@@ -1,0 +1,140 @@
+# yaml-language-server: $schema=../schema/design.schema.json
+# Reference architecture: payment system (Xu vol 2 ch 10, Uber payments platform, Airbnb
+# idempotency), clean variant. Pay-in through a PSP hosted page, immutable payment events,
+# a workflow of idempotent steps, a double-entry ledger, a retry queue with backoff and
+# DLQ, nightly reconciliation against bank settlement files.
+#
+# Fixes relative to payment-system.broken.yaml:
+#   - every edge into the PSP, the bank and the ledger declares idempotent (idempotency key)
+#   - money lives in a double-entry ledger node, not a plain table
+#   - the retry queue has a DLQ and exponential-jitter backoff
+#   - the PSP webhook verifies signatures and deduplicates by event id
+#   - executor dispatch is at-least-once plus idempotent, not a claimed exactly-once
+#   - a KMS node exists and credential rotation is declared
+# This file MUST trip no rule.
+schemaVersion: "1"
+type: "design"
+id: "payment-system"
+
+requirements:
+  availability:
+    multiRegion: false
+    sla: "99.99"
+  latency:
+    p95Ms: 2000
+  correctness:
+    exactlyOnceEffect: true
+    billingGrade: true
+  money:
+    zeroSum: true
+    pci: true
+  data:
+    reconciliation: true
+    immutableAudit: true
+  isolation:
+    tenancy: "shared"
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "eu-west-1", kind: "region" }
+  - { id: "payments-vpc", kind: "vpc", parent: "eu-west-1" }
+  - { id: "pci-scope", kind: "trust-zone", parent: "eu-west-1" }
+
+nodes:
+  - id: "checkout-client"
+    component: "web-browser"
+    props: { platform: "web", resendPolicy: "retry" }
+
+  - id: "api"
+    component: "aws-api-gateway"
+    group: "payments-vpc"
+    props: { auth: "jwt", apiType: "http", idempotencyKeys: true, keyTtlHours: 24 }
+    nfr: { rps: 50 }
+
+  - id: "payment-service"
+    component: "container-service"
+    group: "payments-vpc"
+    props: { orchestrator: "kubernetes", instances: 3, runtime: "java-21", criticality: "high" }
+
+  - id: "payments-db"
+    component: "postgres"
+    group: "payments-vpc"
+    props: { version: "16", backupEnabled: true, backupRetentionDays: 35, replication: "sync", encryptionAtRest: true, concurrencyControl: "constraint" }
+    nfr: { rps: 50, consistency: "strong" }
+
+  - id: "payment-workflow"
+    component: "temporal"
+    group: "payments-vpc"
+    props: { durable: true, pattern: "dag", stepsIdempotent: true, compensation: true }
+
+  - id: "payment-executor"
+    component: "container-service"
+    group: "payments-vpc"
+    props: { orchestrator: "kubernetes", instances: 3, runtime: "java-21", criticality: "high" }
+
+  - id: "psp"
+    component: "stripe"
+    group: "pci-scope"
+    props: { handlesMoney: true, idempotent: true, hostedPage: true, callbackStyle: "webhook", slaPercent: "99.99" }
+
+  - id: "psp-webhook"
+    component: "webhook-receiver"
+    group: "payments-vpc"
+    props: { signatureVerified: true, idempotent: true, retriedByCaller: true }
+
+  - id: "wallet-db"
+    component: "dynamodb"
+    group: "payments-vpc"
+    props: { model: "key-value", consistency: "strong", partitionKey: "account_id", backupEnabled: true, backupRetentionDays: 35, encryptionAtRest: true }
+    nfr: { rps: 100, consistency: "strong" }
+
+  - id: "ledger"
+    component: "double-entry-ledger"
+    group: "payments-vpc"
+    props: { doubleEntry: true, appendOnly: true, tamperEvident: true, indexConsistency: "strong" }
+    nfr: { rps: 100, consistency: "strong" }
+
+  - id: "payment-events"
+    component: "kafka"
+    group: "payments-vpc"
+    props: { partitions: 12, replicationFactor: 3, minInsyncReplicas: 2, acks: "all", retentionHours: 168, idempotentProducer: true }
+
+  - id: "retry-queue"
+    component: "sqs"
+    group: "payments-vpc"
+    props: { delivery: "at-least-once", role: "retry", deadLetterQueue: true, backoff: "exponential-jitter", maxAttempts: 5, fifo: true }
+
+  - id: "reconciliation-job"
+    component: "cron-job"
+    group: "payments-vpc"
+    props: { trigger: "schedule", schedule: "0 2 * * *", idempotent: true }
+
+  - id: "settlement-bank"
+    component: "bank-api"
+    props: { handlesMoney: true, idempotent: true, callbackStyle: "poll" }
+
+  - id: "kms"
+    component: "aws-kms"
+    group: "payments-vpc"
+    props: { rotationAutomated: true, rotationDays: 365, envelopeEncryption: true }
+
+edges:
+  - { from: "checkout-client", to: "api", protocol: "https", mode: "sync", timeoutMs: 5000, idempotent: true, label: "Idempotency-Key header" }
+  - { from: "checkout-client", to: "psp", protocol: "https", mode: "sync", idempotent: true, label: "hosted page, card data never touches the platform" }
+  - { from: "api", to: "payment-service", protocol: "http", mode: "sync", timeoutMs: 3000 }
+  - { from: "payment-service", to: "payments-db", protocol: "postgres", mode: "sync", label: "payment_event, payment_order, unique idempotency key" }
+  - { from: "payment-service", to: "payment-workflow", protocol: "grpc", mode: "async", delivery: "at-least-once", idempotent: true, label: "start payment workflow" }
+  - { from: "payment-workflow", to: "payment-executor", protocol: "grpc", mode: "async", delivery: "at-least-once", idempotent: true, label: "pre-rpc, rpc, post-rpc activities" }
+  - { from: "payment-executor", to: "psp", protocol: "https", mode: "sync", timeoutMs: 10000, idempotent: true, circuitBreaker: true, label: "charge with nonce and token" }
+  - { from: "payment-executor", to: "payments-db", protocol: "postgres", mode: "sync", label: "order status" }
+  - { from: "payment-executor", to: "wallet-db", protocol: "dynamodb", mode: "sync", idempotent: true, label: "seller balance" }
+  - { from: "payment-executor", to: "ledger", protocol: "grpc", mode: "sync", idempotent: true, label: "double-entry posting" }
+  - { from: "payment-executor", to: "payment-events", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "immutable payment events" }
+  - { from: "payment-executor", to: "retry-queue", protocol: "sqs", mode: "async", delivery: "at-least-once", label: "transient PSP failure" }
+  - { from: "retry-queue", to: "payment-executor", protocol: "sqs", mode: "async", delivery: "at-least-once", label: "re-execute after backoff" }
+  - { from: "psp", to: "psp-webhook", protocol: "https", mode: "async", delivery: "at-least-once", label: "signed status callback, retried by PSP" }
+  - { from: "psp-webhook", to: "payments-db", protocol: "postgres", mode: "sync", label: "update order status" }
+  - { from: "reconciliation-job", to: "settlement-bank", protocol: "sftp", mode: "sync", idempotent: true, label: "nightly settlement files" }
+  - { from: "reconciliation-job", to: "ledger", protocol: "grpc", mode: "sync", idempotent: true, label: "compare settlement to ledger" }
+  - { from: "payment-executor", to: "kms", protocol: "https", mode: "sync", label: "decrypt PSP credentials" }

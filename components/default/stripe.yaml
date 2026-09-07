@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Stripe: idempotency keys on all POSTs, signed webhooks, live-mode limit of 100 requests/s.
+schemaVersion: "1"
+type: "component"
+id: "stripe"
+kind: "third-party-api"
+provider: "default"
+defaults:
+  idempotent: true
+  handlesMoney: true
+  callbackStyle: "webhook"
+  hostedPage: false
+  qpsQuota: 100
+properties:
+  signedCallbacks:
+    type: "boolean"
+    default: true

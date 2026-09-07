@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# ULID generation: 48-bit millisecond timestamp plus randomness, lexicographically sortable;
+# monotonic only within the same millisecond, no guard against clock rollback.
+schemaVersion: "1"
+type: "component"
+id: "ulid-service"
+kind: "id-generator"
+provider: "default"
+defaults:
+  strategy: "ulid"
+  central: false
+  replicated: false
+  timeSortable: true
+  clockRollbackGuard: false
+properties:
+  monotonic:
+    type: "boolean"
+    default: true

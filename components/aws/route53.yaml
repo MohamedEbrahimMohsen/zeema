@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Route 53: managed anycast authoritative DNS. Health checks and routing policies are opt-in; simple routing is the default.
+schemaVersion: "1"
+type: "component"
+id: "route53"
+kind: "dns"
+provider: "aws"
+defaults:
+  managed: true
+  anycast: true
+  healthChecked: false
+properties:
+  routingPolicy:
+    type: "enum"
+    values: ["simple", "weighted", "latency", "failover", "geolocation", "multivalue"]
+    default: "simple"

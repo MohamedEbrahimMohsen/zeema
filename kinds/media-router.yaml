@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Abstract kind: Routes live audio and video between participants or from ingest to origins (SFU, MCU, ingest proxies).
+schemaVersion: "1"
+type: "kind"
+id: "media-router"
+category: "edge"
+properties:
+  mode:
+    type: "enum"
+    values: ["sfu", "mcu", "p2p", "ingest"]
+    default: "sfu"
+  transport:
+    type: "enum"
+    values: ["udp", "tcp", "both"]
+    default: "both"
+  cascading:
+    type: "boolean"
+    default: false
+  rerouteOnFailure:
+    type: "boolean"
+    default: false
+  managed:
+    type: "boolean"
+    default: false

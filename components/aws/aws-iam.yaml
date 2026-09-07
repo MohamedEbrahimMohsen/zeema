@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS IAM: policy-based access for AWS principals; MFA optional, Identity Center opt-in.
+schemaVersion: "1"
+type: "component"
+id: "aws-iam"
+kind: "identity-provider"
+provider: "aws"
+defaults:
+  protocol: "iam"
+  authorizationModel: "rbac"
+  managed: true
+  mfa: false
+properties:
+  identityCenter:
+    type: "boolean"
+    default: false

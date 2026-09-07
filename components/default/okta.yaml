@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Okta: OIDC/SAML workforce identity with groups; end-user MFA is a policy choice.
+schemaVersion: "1"
+type: "component"
+id: "okta"
+kind: "identity-provider"
+provider: "default"
+defaults:
+  protocol: "oidc"
+  authorizationModel: "rbac"
+  managed: true
+  mfa: false
+properties:
+  edition:
+    type: "enum"
+    values: ["workforce", "customer"]
+    default: "workforce"

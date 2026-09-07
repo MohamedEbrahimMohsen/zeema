@@ -25,7 +25,7 @@ Format for an entry:
 - Workaround: omit clients and CDN; model workers as `container-service`.
 - Proposed change: the remaining kinds from the MVP document, in the order real designs
   need them.
-- Status: open, expected
+- Status: accepted. 41 kinds after the 50-card intake pass; see docs/catalogue-v1.md.
 
 ## Protocol is a free string
 - Design: all
@@ -33,4 +33,51 @@ Format for an entry:
   message protocol is suspicious".
 - Workaround: none needed yet; no rule reads protocol.
 - Proposed change: promote to enum once the user's designs show the real set.
+- Status: open
+
+## Edges needed properties
+- Design: docs/intake/doordash-delivery.md, docs/intake/payment-system.md, docs/intake/netflix-streaming.md
+- Missing: retry policy, timeout, idempotency, circuit breaker and fallback on a call.
+  Rules such as retry-without-adaptive-shedding and money-mutation-without-idempotency-key
+  cannot be written without them.
+- Workaround: none possible; the information lives on the edge.
+- Proposed change: six optional edge fields (timeoutMs, retryPolicy, idempotent,
+  circuitBreaker, fallback, batched) plus the `field`, `from`, `to` predicates.
+- Status: accepted in v1
+
+## Rules need the design as a whole
+- Design: docs/intake/payment-system.md (money-store-without-double-entry-ledger),
+  docs/intake/twitter-timeline.md (read-heavy-path-without-cache)
+- Missing: "this design contains no node of kind X".
+- Workaround: none.
+- Proposed change: `hasNode` predicate usable from any subject.
+- Status: accepted in v1
+
+## Cells and points of presence
+- Design: docs/intake/slack-messaging.md, docs/intake/amazon-order.md, docs/intake/cloudflare-edge.md
+- Missing: a group kind for a failure-isolated cell and for an edge site, so a rule can
+  say "sync call crosses a cell".
+- Workaround: none.
+- Proposed change: group kinds `cell`, `point-of-presence`; predicate `crossesGroup`.
+- Status: accepted in v1
+
+## Thresholds in rules
+- Design: docs/intake/doordash-delivery.md (single-writer-primary-at-peak-qps)
+- Missing: comparing a node's stated rps, or a requirement, to a number.
+- Workaround: none.
+- Proposed change: `nfr` predicate; `gt`/`lt` on `prop` and `requirement`.
+- Status: accepted in v1
+
+## Component-level defaults for hosting variants
+- Design: components/ (postgres on RDS vs Cloud SQL vs self-hosted)
+- Missing: the managed variant of a product often changes defaults (backups on, multi-AZ).
+- Workaround: `managed` boolean on the kind; the design sets the managed defaults itself.
+- Proposed change: none for v1; revisit if designs keep repeating the same overrides.
+- Status: open
+
+## Lists of values
+- Design: docs/intake/notification-system.md (channels), docs/intake/figma-multiplayer.md (shardKeys)
+- Missing: list-typed properties.
+- Workaround: one boolean per channel; single shardKey string.
+- Proposed change: list type in v2 if more than three kinds need it.
 - Status: open

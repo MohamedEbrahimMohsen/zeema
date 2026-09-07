@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Ably: managed realtime platform with message serials, ordering and 2 minutes of default history.
+schemaVersion: "1"
+type: "component"
+id: "ably"
+kind: "realtime-gateway"
+provider: "default"
+defaults:
+  managed: true
+  protocol: "websocket"
+  stateful: false
+  autoscaling: true
+  drainOnScaleIn: true
+  sequenceNumbers: true
+properties:
+  historyMinutes:
+    type: "integer"
+    default: 2

@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Plain cron or Kubernetes CronJob: fixed schedule, overlapping runs allowed and missed runs skipped by default.
+schemaVersion: "1"
+type: "component"
+id: "cron-job"
+kind: "worker"
+provider: "default"
+defaults:
+  trigger: "schedule"
+properties:
+  overlapAllowed:
+    type: "boolean"
+    default: true
+  missedRunPolicy:
+    type: "enum"
+    values: ["skip", "catch-up"]
+    default: "skip"

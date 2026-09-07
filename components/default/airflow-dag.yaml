@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apache Airflow DAG: scheduled task graph. Airflow 3 defaults to LocalExecutor and catchup off;
+# tasks are not retried unless retries is set on the task.
+schemaVersion: "1"
+type: "component"
+id: "airflow-dag"
+kind: "worker"
+provider: "default"
+defaults:
+  managed: false
+  trigger: "schedule"
+properties:
+  executor:
+    type: "enum"
+    values: ["local", "celery", "kubernetes"]
+    default: "local"
+  catchup:
+    type: "boolean"
+    default: false

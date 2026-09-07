@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon QLDB: managed append-only journal with a cryptographically verifiable history; it is
+# not double-entry by itself.
+schemaVersion: "1"
+type: "component"
+id: "qldb"
+kind: "ledger"
+provider: "aws"
+defaults:
+  managed: true
+  doubleEntry: false
+  appendOnly: true
+  tamperEvident: true
+  sealed: false
+  indexConsistency: "strong"
+properties:
+  journalExport:
+    type: "boolean"
+    default: false

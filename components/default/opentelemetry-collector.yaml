@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenTelemetry Collector: self-managed pipeline receiving metrics, logs and traces, run as agent by default.
+schemaVersion: "1"
+type: "component"
+id: "opentelemetry-collector"
+kind: "monitoring"
+provider: "default"
+defaults:
+  signal: "all"
+  collectorMode: "push"
+  managed: false
+properties:
+  deployment:
+    type: "enum"
+    values: ["agent", "gateway"]
+    default: "agent"

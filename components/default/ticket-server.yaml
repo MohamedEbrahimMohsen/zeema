@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Flickr-style ticket server: a central auto-increment row handing out ids; pairing two servers
+# on odd/even sequences is how it is replicated.
+schemaVersion: "1"
+type: "component"
+id: "ticket-server"
+kind: "id-generator"
+provider: "default"
+defaults:
+  strategy: "counter"
+  central: true
+  replicated: false
+  timeSortable: true
+  clockRollbackGuard: false
+properties:
+  backingStore:
+    type: "ref"
+    refKind: "sql-database"
+  interleaveStep:
+    type: "integer"
+    default: 1

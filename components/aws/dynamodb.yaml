@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon DynamoDB: managed key-value store; reads are eventually consistent unless requested strong,
+# point-in-time recovery and global tables are opt-in, global tables resolve conflicts last-writer-wins.
+schemaVersion: "1"
+type: "component"
+id: "dynamodb"
+kind: "nosql-database"
+provider: "aws"
+defaults:
+  model: "key-value"
+  consistency: "eventual"
+  replication: "single-region"
+  conflictResolution: "last-writer-wins"
+  backupEnabled: false
+  encryptionAtRest: true
+  managed: true
+properties:
+  onDemandCapacity:
+    type: "boolean"
+    default: false
+  globalTables:
+    type: "boolean"
+    default: false
+  streams:
+    type: "boolean"
+    default: false

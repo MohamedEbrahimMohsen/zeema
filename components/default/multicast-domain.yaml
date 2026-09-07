@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Multicast network domain (exchange or market-data plant): PIM sparse mode with IGMP snooping.
+schemaVersion: "1"
+type: "component"
+id: "multicast-domain"
+kind: "network-fabric"
+provider: "default"
+defaults:
+  multicast: true
+  interconnect: "private"
+properties:
+  pimMode:
+    type: "enum"
+    values: ["sparse", "dense", "bidir", "ssm"]
+    default: "sparse"
+  igmpSnooping:
+    type: "boolean"
+    default: true

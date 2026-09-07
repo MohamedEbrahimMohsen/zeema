@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# ProxySQL: MySQL proxy with connection multiplexing; read/write splitting and query caching
+# are configured by rule.
+schemaVersion: "1"
+type: "component"
+id: "proxysql"
+kind: "database-proxy"
+provider: "default"
+defaults:
+  pooling: true
+  routing: "none"
+properties:
+  readWriteSplit:
+    type: "boolean"
+    default: false
+  queryCache:
+    type: "boolean"
+    default: false

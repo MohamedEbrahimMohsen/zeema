@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Kong Gateway: OSS/enterprise gateway built on NGINX. Everything beyond routing is a plugin, so rate limiting and auth are off by default.
+schemaVersion: "1"
+type: "component"
+id: "kong"
+kind: "api-gateway"
+provider: "default"
+defaults:
+  managed: false
+  rateLimiting: false
+properties:
+  dbLess:
+    type: "boolean"
+    default: false

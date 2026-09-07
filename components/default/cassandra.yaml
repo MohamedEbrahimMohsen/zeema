@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apache Cassandra: leaderless wide-column store with tunable consistency and last-writer-wins
+# cell resolution; gc_grace_seconds defaults to ten days.
+schemaVersion: "1"
+type: "component"
+id: "cassandra"
+kind: "nosql-database"
+provider: "default"
+defaults:
+  model: "wide-column"
+  consistency: "tunable"
+  replication: "single-region"
+  conflictResolution: "last-writer-wins"
+  tombstoneTtlDays: 10
+properties:
+  compactionStrategy:
+    type: "enum"
+    values: ["size-tiered", "leveled", "time-window"]
+    default: "size-tiered"

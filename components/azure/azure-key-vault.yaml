@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Key Vault: Standard SKU uses software-protected keys; Premium and Managed HSM add HSM backing; rotation policy opt-in.
+schemaVersion: "1"
+type: "component"
+id: "azure-key-vault"
+kind: "key-management"
+provider: "azure"
+defaults:
+  managed: true
+  hsm: false
+  rotationAutomated: false
+properties:
+  sku:
+    type: "enum"
+    values: ["standard", "premium", "managed-hsm"]
+    default: "standard"

@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apache Pulsar: BookKeeper-backed log with a write quorum of 2 by default. Acknowledged messages
+# are deleted immediately unless a retention policy is set, so retentionHours defaults to 0.
+schemaVersion: "1"
+type: "component"
+id: "pulsar"
+kind: "stream"
+provider: "default"
+defaults:
+  delivery: "at-least-once"
+  ordering: "per-key"
+  replicationFactor: 2
+  acks: "quorum"
+  retentionHours: 0
+  storage: "persistent"
+  managed: false
+properties:
+  geoReplication:
+    type: "boolean"
+    default: false

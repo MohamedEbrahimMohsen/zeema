@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../schema/rule.schema.json
+# Eleven nines of durability is a designed target that assumes redundancy spread over at
+# least three failure domains. An object store confined to one or two zones cannot meet it.
+# Tripped by: designs/object-storage.broken.yaml
+schemaVersion: "1"
+type: "rule"
+id: "object-store-single-zone-with-durability-target"
+severity: "error"
+select:
+  node:
+    kind: "object-store"
+when:
+  all:
+    - requirement: "durability.annualNines"
+      gt: 10
+    - any:
+        - prop: "zones"
+          exists: false
+        - prop: "zones"
+          lt: 3
+message: "Object store '{{node.id}}' spans fewer than 3 zones (or declares none) while the design targets more than 10 nines of durability."

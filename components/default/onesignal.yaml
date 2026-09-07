@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OneSignal: SaaS push, email, SMS and in-app messaging with hosted templates.
+schemaVersion: "1"
+type: "component"
+id: "onesignal"
+kind: "notification-service"
+provider: "default"
+defaults:
+  managed: true
+  channelPush: true
+  channelEmail: true
+  channelSms: true
+  templateStore: true
+properties:
+  inAppMessaging:
+    type: "boolean"
+    default: true

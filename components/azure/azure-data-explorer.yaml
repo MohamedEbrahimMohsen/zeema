@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Data Explorer (Kusto): managed analytics store with a hot cache in front of cold
+# blob storage; streaming ingestion is opt-in.
+schemaVersion: "1"
+type: "component"
+id: "azure-data-explorer"
+kind: "timeseries-database"
+provider: "azure"
+defaults:
+  downsampling: false
+  tiers: "hot-cold"
+  labelIndex: true
+  compression: "other"
+  managed: true
+properties:
+  hotCacheDays:
+    type: "integer"
+    default: 31
+  streamingIngestion:
+    type: "boolean"
+    default: false

@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# ScyllaDB: Cassandra-compatible wide-column store with a shard-per-core architecture.
+schemaVersion: "1"
+type: "component"
+id: "scylladb"
+kind: "nosql-database"
+provider: "default"
+defaults:
+  model: "wide-column"
+  consistency: "tunable"
+  replication: "single-region"
+  conflictResolution: "last-writer-wins"
+  tombstoneTtlDays: 10
+properties:
+  compactionStrategy:
+    type: "enum"
+    values: ["size-tiered", "leveled", "time-window", "incremental"]
+    default: "size-tiered"

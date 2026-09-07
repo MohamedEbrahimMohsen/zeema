@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../schema/rule.schema.json
+# A cache holding materialised views (timelines, feeds, precomputed lists) must be rebuildable
+# from a durable source or a worker. With no such in-edge, a cold cache is a permanent gap.
+# Tripped by: designs/twitter-timeline.broken.yaml
+schemaVersion: "1"
+type: "rule"
+id: "materialised-cache-without-rebuild-path"
+severity: "error"
+select:
+  node:
+    kind: "cache"
+when:
+  all:
+    - prop: "materialised"
+      equals: true
+    - not:
+        hasEdge:
+          direction: "in"
+          peerKind: ["sql-database", "nosql-database", "worker", "stream"]
+message: "Cache '{{node.id}}' holds materialised data but nothing durable or no worker feeds it. It cannot be rebuilt after loss."

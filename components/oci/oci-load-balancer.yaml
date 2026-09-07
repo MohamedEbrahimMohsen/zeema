@@ -1,0 +1,12 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Cloud Load Balancer: managed layer-7 balancer with health checks; a separate network load balancer covers layer 4.
+schemaVersion: "1"
+type: "component"
+id: "oci-load-balancer"
+kind: "load-balancer"
+provider: "oci"
+defaults:
+  managed: true
+  layer: "l7"
+  hashing: "round-robin"
+  healthChecks: true

@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud Monitoring (Cloud Operations): managed metrics, logs, traces and alerts pushed from GCP services and Ops Agent.
+schemaVersion: "1"
+type: "component"
+id: "google-cloud-monitoring"
+kind: "monitoring"
+provider: "gcp"
+defaults:
+  signal: "all"
+  collectorMode: "push"
+  managed: true
+properties:
+  opsAgent:
+    type: "boolean"
+    default: false

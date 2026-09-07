@@ -1,0 +1,13 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Notification Hubs: managed push fan-out to APNs, FCM, WNS with server-side templates. Push only.
+schemaVersion: "1"
+type: "component"
+id: "azure-notification-hubs"
+kind: "notification-service"
+provider: "azure"
+defaults:
+  managed: true
+  channelPush: true
+  channelEmail: false
+  channelSms: false
+  templateStore: true

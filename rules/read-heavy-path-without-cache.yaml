@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../schema/rule.schema.json
+# The design states a read-heavy workload and application servers read this datastore
+# directly, yet no cache exists anywhere in the design. Every read pays a database round trip.
+# Tripped by: designs/object-storage.broken.yaml
+schemaVersion: "1"
+type: "rule"
+id: "read-heavy-path-without-cache"
+severity: "warning"
+select:
+  node:
+    kind: ["sql-database", "nosql-database"]
+when:
+  all:
+    - requirement: "traffic.readWriteRatio"
+      gt: 10
+    - hasEdge:
+        direction: "in"
+        mode: "sync"
+        peerKind: "app-server"
+    - not:
+        hasNode:
+          kind: "cache"
+message: "Datastore '{{node.id}}' serves a read-heavy workload directly from application servers and the design has no cache."

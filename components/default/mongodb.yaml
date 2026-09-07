@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# MongoDB: document store with single-primary replica sets; reads go to the primary and writes
+# default to majority acknowledgement.
+schemaVersion: "1"
+type: "component"
+id: "mongodb"
+kind: "nosql-database"
+provider: "default"
+defaults:
+  model: "document"
+  consistency: "strong"
+  replication: "single-region"
+  conflictResolution: "none"
+properties:
+  version:
+    type: "string"
+  shardedCluster:
+    type: "boolean"
+    default: false
+  writeConcernMajority:
+    type: "boolean"
+    default: true

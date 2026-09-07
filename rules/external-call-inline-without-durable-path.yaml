@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../schema/rule.schema.json
+# A service that calls a third party synchronously and has no queue or workflow engine
+# attached has nowhere to park the request when the third party is slow or down. The
+# failure becomes the user's problem instead of a retried job.
+# Tripped by: designs/doordash-delivery.broken.yaml
+schemaVersion: "1"
+type: "rule"
+id: "external-call-inline-without-durable-path"
+severity: "warning"
+select:
+  node:
+    kind: "app-server"
+when:
+  all:
+    - hasEdge:
+        direction: "out"
+        mode: "sync"
+        peerKind: "third-party-api"
+    - not:
+        hasEdge:
+          direction: "any"
+          peerKind: ["workflow-engine", "queue"]
+message: "Service '{{node.id}}' calls a third party inline with no queue or workflow engine to fall back to when that call fails."

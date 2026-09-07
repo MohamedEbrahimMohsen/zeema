@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Vertex AI endpoint: managed model deployment with a fixed replica count unless a max is set.
+schemaVersion: "1"
+type: "component"
+id: "vertex-ai-endpoint"
+kind: "ml-inference"
+provider: "gcp"
+defaults:
+  managed: true
+  training: "batch"
+  inputs: "live"
+properties:
+  autoscaling:
+    type: "boolean"
+    default: false

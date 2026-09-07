@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Netflix Zuul: JVM edge gateway. Zuul 2 is non-blocking; TLS termination and throttling are filter code, not defaults.
+schemaVersion: "1"
+type: "component"
+id: "zuul"
+kind: "api-gateway"
+provider: "default"
+defaults:
+  managed: false
+  rateLimiting: false
+properties:
+  generation:
+    type: "enum"
+    values: ["zuul1", "zuul2"]
+    default: "zuul2"

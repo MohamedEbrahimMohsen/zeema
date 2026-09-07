@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Redshift: managed columnar warehouse on provisioned clusters; serverless is opt-in.
+schemaVersion: "1"
+type: "component"
+id: "redshift"
+kind: "data-warehouse"
+provider: "aws"
+defaults:
+  realtime: false
+  upsert: false
+  format: "columnar"
+  managed: true
+properties:
+  serverless:
+    type: "boolean"
+    default: false
+  nodes:
+    type: "integer"

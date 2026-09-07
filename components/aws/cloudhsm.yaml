@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS CloudHSM: single-tenant FIPS HSM cluster; one HSM unless more are added, all key lifecycle is customer-run.
+schemaVersion: "1"
+type: "component"
+id: "cloudhsm"
+kind: "key-management"
+provider: "aws"
+defaults:
+  managed: true
+  hsm: true
+  rotationAutomated: false
+  envelopeEncryption: false
+properties:
+  clusterHsmCount:
+    type: "integer"
+    default: 1

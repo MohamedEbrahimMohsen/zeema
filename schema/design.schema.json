@@ -5,11 +5,23 @@
   "description": "One system: requirements, groups, nodes (component instances) and edges.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schemaVersion", "type", "id", "nodes", "edges"],
+  "required": [
+    "schemaVersion",
+    "type",
+    "id",
+    "nodes",
+    "edges"
+  ],
   "properties": {
-    "schemaVersion": { "const": "1" },
-    "type": { "const": "design" },
-    "id": { "$ref": "#/definitions/id" },
+    "schemaVersion": {
+      "const": "1"
+    },
+    "type": {
+      "const": "design"
+    },
+    "id": {
+      "$ref": "#/definitions/id"
+    },
     "requirements": {
       "type": "object",
       "additionalProperties": false,
@@ -18,19 +30,217 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "multiRegion": { "type": "boolean" },
-            "sla": { "type": "string", "pattern": "^[0-9]{2}(\\.[0-9]+)?$" }
+            "multiRegion": {
+              "type": "boolean"
+            },
+            "sla": {
+              "type": "string",
+              "pattern": "^[0-9]{2}(\\.[0-9]+)?$"
+            },
+            "zones": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "regions": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "discoveryRedundant": {
+              "type": "boolean"
+            },
+            "degradedModeAllowed": {
+              "type": "boolean"
+            }
           }
         },
         "messaging": {
           "type": "object",
           "additionalProperties": false,
-          "properties": { "replay": { "type": "boolean" } }
+          "properties": {
+            "replay": {
+              "type": "boolean"
+            },
+            "exactlyOnce": {
+              "type": "boolean"
+            },
+            "orderingScope": {
+              "enum": [
+                "partition",
+                "global"
+              ]
+            }
+          }
         },
         "latency": {
           "type": "object",
           "additionalProperties": false,
-          "properties": { "p95Ms": { "type": "integer", "minimum": 1 } }
+          "properties": {
+            "p95Ms": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "p99Us": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "geoDistributed": {
+              "type": "boolean"
+            }
+          }
+        },
+        "durability": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "annualNines": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "minReplicasAcked": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "consistency": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "model": {
+              "enum": [
+                "ap",
+                "cp"
+              ]
+            },
+            "readAfterWrite": {
+              "type": "boolean"
+            },
+            "quorumScope": {
+              "enum": [
+                "region",
+                "global"
+              ]
+            }
+          }
+        },
+        "correctness": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "exactlyOnceEffect": {
+              "type": "boolean"
+            },
+            "reproducible": {
+              "type": "boolean"
+            },
+            "tamperEvident": {
+              "type": "boolean"
+            },
+            "billingGrade": {
+              "type": "boolean"
+            }
+          }
+        },
+        "money": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "zeroSum": {
+              "type": "boolean"
+            },
+            "pci": {
+              "type": "boolean"
+            }
+          }
+        },
+        "data": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "reconciliation": {
+              "type": "boolean"
+            },
+            "lossDetection": {
+              "type": "boolean"
+            },
+            "ownershipExclusive": {
+              "type": "boolean"
+            },
+            "immutableAudit": {
+              "type": "boolean"
+            }
+          }
+        },
+        "traffic": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "readWriteRatio": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "skew": {
+              "enum": [
+                "uniform",
+                "heavy-tail"
+              ]
+            },
+            "peakMultiplier": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "isolation": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "perQueue": {
+              "type": "boolean"
+            },
+            "perEventType": {
+              "type": "boolean"
+            },
+            "tenancy": {
+              "enum": [
+                "shared",
+                "cell",
+                "dedicated"
+              ]
+            }
+          }
+        },
+        "freshness": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "maxSeconds": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "security": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "certificateRotationAutomated": {
+              "type": "boolean"
+            },
+            "credentialRotationDays": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "observability": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "alertingIndependent": {
+              "type": "boolean"
+            }
+          }
         }
       }
     },
@@ -39,11 +249,28 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "kind"],
+        "required": [
+          "id",
+          "kind"
+        ],
         "properties": {
-          "id": { "$ref": "#/definitions/id" },
-          "kind": { "enum": ["region", "availability-zone", "vpc", "trust-zone", "system"] },
-          "parent": { "$ref": "#/definitions/id" }
+          "id": {
+            "$ref": "#/definitions/id"
+          },
+          "kind": {
+            "enum": [
+              "region",
+              "availability-zone",
+              "vpc",
+              "trust-zone",
+              "system",
+              "cell",
+              "point-of-presence"
+            ]
+          },
+          "parent": {
+            "$ref": "#/definitions/id"
+          }
         }
       }
     },
@@ -53,23 +280,51 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "component"],
+        "required": [
+          "id",
+          "component"
+        ],
         "properties": {
-          "id": { "$ref": "#/definitions/id" },
-          "component": { "$ref": "#/definitions/id" },
-          "group": { "$ref": "#/definitions/id" },
+          "id": {
+            "$ref": "#/definitions/id"
+          },
+          "component": {
+            "$ref": "#/definitions/id"
+          },
+          "group": {
+            "$ref": "#/definitions/id"
+          },
           "props": {
             "type": "object",
-            "propertyNames": { "pattern": "^[a-z][a-zA-Z0-9]*$" },
-            "additionalProperties": { "type": ["boolean", "integer", "string"] }
+            "propertyNames": {
+              "pattern": "^[a-z][a-zA-Z0-9]*$"
+            },
+            "additionalProperties": {
+              "type": [
+                "boolean",
+                "integer",
+                "string"
+              ]
+            }
           },
           "nfr": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
-              "rps": { "type": "integer", "minimum": 0 },
-              "latencyP95Ms": { "type": "integer", "minimum": 1 },
-              "consistency": { "enum": ["strong", "eventual"] }
+              "rps": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "latencyP95Ms": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "consistency": {
+                "enum": [
+                  "strong",
+                  "eventual"
+                ]
+              }
             }
           }
         }
@@ -80,19 +335,76 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["from", "to", "protocol", "mode"],
+        "required": [
+          "from",
+          "to",
+          "protocol",
+          "mode"
+        ],
         "properties": {
-          "from": { "$ref": "#/definitions/id" },
-          "to": { "$ref": "#/definitions/id" },
-          "protocol": { "type": "string", "minLength": 1 },
-          "mode": { "enum": ["sync", "async"] },
-          "delivery": { "enum": ["at-most-once", "at-least-once", "exactly-once"] },
-          "label": { "type": "string" }
+          "from": {
+            "$ref": "#/definitions/id"
+          },
+          "to": {
+            "$ref": "#/definitions/id"
+          },
+          "protocol": {
+            "type": "string",
+            "minLength": 1
+          },
+          "mode": {
+            "enum": [
+              "sync",
+              "async"
+            ]
+          },
+          "delivery": {
+            "enum": [
+              "at-most-once",
+              "at-least-once",
+              "exactly-once"
+            ]
+          },
+          "label": {
+            "type": "string"
+          },
+          "timeoutMs": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "retryPolicy": {
+            "enum": [
+              "none",
+              "fixed",
+              "exponential",
+              "exponential-jitter"
+            ]
+          },
+          "idempotent": {
+            "type": "boolean"
+          },
+          "circuitBreaker": {
+            "type": "boolean"
+          },
+          "fallback": {
+            "enum": [
+              "none",
+              "static",
+              "cached",
+              "degraded"
+            ]
+          },
+          "batched": {
+            "type": "boolean"
+          }
         }
       }
     }
   },
   "definitions": {
-    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" }
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$"
+    }
   }
 }

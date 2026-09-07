@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud CDN: enabled per backend service; default cache mode caches static content.
+schemaVersion: "1"
+type: "component"
+id: "google-cloud-cdn"
+kind: "cdn"
+provider: "gcp"
+defaults:
+  managed: true
+  caching: true
+properties:
+  cacheMode:
+    type: "enum"
+    values: ["cache-all-static", "use-origin-headers", "force-cache-all"]
+    default: "cache-all-static"

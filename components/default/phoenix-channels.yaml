@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Phoenix Channels: Elixir/BEAM WebSocket gateway with long-poll fallback, clustered via pg2 PubSub by default.
+schemaVersion: "1"
+type: "component"
+id: "phoenix-channels"
+kind: "realtime-gateway"
+provider: "default"
+defaults:
+  protocol: "websocket"
+  stateful: true
+properties:
+  transportFallback:
+    type: "boolean"
+    default: true
+  pubsubAdapter:
+    type: "enum"
+    values: ["pg2", "redis"]
+    default: "pg2"

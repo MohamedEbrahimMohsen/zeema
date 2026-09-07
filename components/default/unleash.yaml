@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Unleash: open-source flags with gradual rollout strategy, self-hosted by default.
+schemaVersion: "1"
+type: "component"
+id: "unleash"
+kind: "feature-flag-service"
+provider: "default"
+defaults:
+  stagedRollout: true
+  managed: false
+properties:
+  edgeProxy:
+    type: "boolean"
+    default: false

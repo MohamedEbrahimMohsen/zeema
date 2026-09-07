@@ -1,5 +1,6 @@
 # yaml-language-server: $schema=../schema/kind.schema.json
-# Abstract kind: a relational datastore. The system of record in most designs.
+# Relational datastore, usually the system of record.
+# multiWriter and sharded default false so single-writer-primary-at-peak-qps can fire on the common case.
 schemaVersion: "1"
 type: "kind"
 id: "sql-database"
@@ -18,5 +19,34 @@ properties:
     type: "ref"
     refKind: "sql-database"
   encryptionAtRest:
+    type: "boolean"
+    default: false
+  sharded:
+    type: "boolean"
+    default: false
+  shardKey:
+    type: "string"
+  multiWriter:
+    type: "boolean"
+    default: false
+  distributed:
+    type: "boolean"
+    default: false
+  replicaFanout:
+    type: "integer"
+  idEncodesShard:
+    type: "boolean"
+    default: false
+  concurrencyControl:
+    type: "enum"
+    values: ["pessimistic", "optimistic", "constraint"]
+  commitProtocol:
+    type: "enum"
+    values: ["single", "two-phase"]
+    default: "single"
+  appendOnly:
+    type: "boolean"
+    default: false
+  managed:
     type: "boolean"
     default: false

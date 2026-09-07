@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon API Gateway: managed REST/HTTP/WebSocket API front door. Rate limiting via usage plans is on by account throttling; idempotency keys are not built in.
+schemaVersion: "1"
+type: "component"
+id: "aws-api-gateway"
+kind: "api-gateway"
+provider: "aws"
+defaults:
+  tls: true
+  rateLimiting: true
+  idempotencyKeys: false
+properties:
+  apiType:
+    type: "enum"
+    values: ["rest", "http", "websocket"]
+    default: "http"

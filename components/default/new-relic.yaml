@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# New Relic: SaaS APM and telemetry pushed by agents, 30 days default retention.
+schemaVersion: "1"
+type: "component"
+id: "new-relic"
+kind: "monitoring"
+provider: "default"
+defaults:
+  signal: "all"
+  collectorMode: "push"
+  managed: true
+  independentOfMonitored: true
+  retentionDays: 30
+properties:
+  apmAgent:
+    type: "boolean"
+    default: true

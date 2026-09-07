@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../schema/rule.schema.json
+# A retry queue is where poison messages end up. Without a dead-letter queue they are
+# retried forever or silently dropped, and nobody investigates the failed payment.
+# Tripped by: designs/payment-system.broken.yaml
+schemaVersion: "1"
+type: "rule"
+id: "retry-queue-without-dlq"
+severity: "error"
+select:
+  node:
+    kind: "queue"
+when:
+  all:
+    - prop: "role"
+      equals: "retry"
+    - prop: "deadLetterQueue"
+      equals: false
+message: "Retry queue '{{node.id}}' has no dead-letter queue. Messages that keep failing must be parked for manual investigation."

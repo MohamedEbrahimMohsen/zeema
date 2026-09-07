@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# MQTT broker (Mosquitto, EMQX, HiveMQ, IoT Core): topic fan-out for devices. QoS 0 is the wire default,
+# so delivery is at-most-once until the client asks for QoS 1 or 2.
+schemaVersion: "1"
+type: "component"
+id: "mqtt-broker"
+kind: "pubsub-topic"
+provider: "default"
+defaults:
+  delivery: "at-most-once"
+  ordering: "per-key"
+  replay: false
+properties:
+  qos:
+    type: "integer"
+    default: 0
+  persistentSessions:
+    type: "boolean"
+    default: false

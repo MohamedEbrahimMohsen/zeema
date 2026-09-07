@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Linkerd: lightweight Rust-proxy mesh, mTLS on by default, injection per namespace annotation.
+schemaVersion: "1"
+type: "component"
+id: "linkerd"
+kind: "service-mesh"
+provider: "default"
+defaults:
+  managed: false
+  sidecar: true
+  mtls: true
+  retries: false
+properties:
+  autoInject:
+    type: "boolean"
+    default: false

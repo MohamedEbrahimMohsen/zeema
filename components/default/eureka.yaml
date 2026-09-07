@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Netflix Eureka: AP service registry with peer replication and self-preservation on by default.
+schemaVersion: "1"
+type: "component"
+id: "eureka"
+kind: "coordination-service"
+provider: "default"
+defaults:
+  role: "discovery"
+  consensus: "none"
+  managed: false
+properties:
+  selfPreservation:
+    type: "boolean"
+    default: true

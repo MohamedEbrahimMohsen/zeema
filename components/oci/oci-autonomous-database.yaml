@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Autonomous Database: managed Oracle with automatic backups and RAC-style scaling.
+schemaVersion: "1"
+type: "component"
+id: "oci-autonomous-database"
+kind: "sql-database"
+provider: "oci"
+defaults:
+  managed: true
+  backupEnabled: true
+  backupRetentionDays: 60
+  replication: "none"
+  encryptionAtRest: true
+  concurrencyControl: "pessimistic"

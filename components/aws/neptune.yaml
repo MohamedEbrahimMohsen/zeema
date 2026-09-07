@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Neptune: managed graph database (Gremlin, openCypher, SPARQL); global database opt-in.
+schemaVersion: "1"
+type: "component"
+id: "neptune"
+kind: "graph-database"
+provider: "aws"
+defaults:
+  inMemory: false
+  crossRegionConsistency: "none"
+  managed: true
+properties:
+  globalDatabase:
+    type: "boolean"
+    default: false
+  serverless:
+    type: "boolean"
+    default: false

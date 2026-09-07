@@ -1,0 +1,38 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Blob storage addressed by key (S3, GCS, Azure Blob, Magic Pocket).
+# zones is optional so object-store-single-zone-with-durability-target can compare it to the durability requirement.
+schemaVersion: "1"
+type: "kind"
+id: "object-store"
+category: "data"
+properties:
+  zones:
+    type: "integer"
+  replication:
+    type: "enum"
+    values: ["none", "primary-secondary", "quorum", "erasure-coded"]
+    default: "none"
+  tier:
+    type: "enum"
+    values: ["hot", "warm", "cold"]
+    default: "hot"
+  versioning:
+    type: "boolean"
+    default: false
+  objectLock:
+    type: "boolean"
+    default: false
+  strongReadAfterWrite:
+    type: "boolean"
+    default: false
+  checksumOnWrite:
+    type: "boolean"
+    default: false
+  encryptionAtRest:
+    type: "boolean"
+    default: false
+  durabilityNines:
+    type: "integer"
+  managed:
+    type: "boolean"
+    default: false

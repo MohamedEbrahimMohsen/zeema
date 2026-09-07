@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apache HBase: wide-column store on HDFS with a single region server owning each row range.
+schemaVersion: "1"
+type: "component"
+id: "hbase"
+kind: "nosql-database"
+provider: "default"
+defaults:
+  model: "wide-column"
+  consistency: "strong"
+  replication: "single-region"
+  conflictResolution: "none"
+properties:
+  version:
+    type: "string"
+  regionServers:
+    type: "integer"

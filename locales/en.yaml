@@ -1,67 +1,995 @@
 # English display text, keyed by id. Kinds, components and rules never carry display
 # text themselves. Every id in kinds/, components/ and rules/ must have an entry here.
+# Regenerated from the catalogue; keep entries sorted by id.
 categories:
-  messaging: { name: "Messaging" }
-  compute: { name: "Compute" }
-  data: { name: "Data" }
-  edge: { name: "Edge" }
-  client: { name: "Client" }
-  ops: { name: "Operations" }
-  security: { name: "Security" }
+  client:
+    name: "Client"
+  compute:
+    name: "Compute"
+  data:
+    name: "Data"
+  edge:
+    name: "Edge"
+  external:
+    name: "External"
+  messaging:
+    name: "Messaging"
+  ops:
+    name: "Operations"
+  security:
+    name: "Security"
 
 kinds:
-  queue:
-    name: "Queue"
-    description: "Point-to-point message queue. Each message is processed by one consumer."
-  pubsub-topic:
-    name: "Pub/Sub topic"
-    description: "Fan-out topic. Every subscriber receives every message."
-  cache:
-    name: "Cache"
-    description: "In-memory key-value store placed in front of a slower datastore."
-  sql-database:
-    name: "SQL database"
-    description: "Relational datastore, usually the system of record."
-  app-server:
-    name: "Application server"
-    description: "A request-serving process owned by the team."
   api-gateway:
     name: "API gateway"
     description: "Managed entry point that routes, authenticates and throttles inbound calls."
+  app-server:
+    name: "Application server"
+    description: "A request-serving process owned by the team."
+  cache:
+    name: "Cache"
+    description: "In-memory key-value store placed in front of a slower datastore."
+  cdn:
+    name: "CDN"
+    description: "Edge cache and delivery network for static and streamed content."
+  change-data-capture:
+    name: "Change data capture"
+    description: "Reads a datastore change log and publishes row-level events."
+  client:
+    name: "Client"
+    description: "Software that talks to the system from outside the trust boundary."
+  coordination-service:
+    name: "Coordination service"
+    description: "Strongly consistent service for metadata, locks, discovery and placement."
+  data-warehouse:
+    name: "Data warehouse"
+    description: "Analytical store for batch or real-time OLAP."
+  database-proxy:
+    name: "Database proxy"
+    description: "Routing, pooling and shedding layer in front of a datastore."
+  dns:
+    name: "DNS"
+    description: "Name resolution and traffic steering."
+  event-store:
+    name: "Event store"
+    description: "Append-only replicated event log that is the system of record."
+  feature-flag-service:
+    name: "Feature flag service"
+    description: "Runtime configuration and kill switches."
+  graph-database:
+    name: "Graph database"
+    description: "Stores nodes and edges for adjacency queries."
+  id-generator:
+    name: "ID generator"
+    description: "Issues unique identifiers."
+  identity-provider:
+    name: "Identity provider"
+    description: "Authenticates principals and decides authorization."
+  key-management:
+    name: "Key management"
+    description: "Holds keys and secrets and rotates them."
+  ledger:
+    name: "Ledger"
+    description: "Append-only double-entry money store."
+  load-balancer:
+    name: "Load balancer"
+    description: "Spreads connections or requests across backends."
+  matching-engine:
+    name: "Matching engine"
+    description: "Deterministic single-threaded order-book matcher."
+  media-router:
+    name: "Media router"
+    description: "Routes live audio and video between participants or ingest and origins."
+  ml-inference:
+    name: "ML inference"
+    description: "Serves model predictions online."
+  monitoring:
+    name: "Monitoring"
+    description: "Collects metrics, logs or traces and raises alerts."
+  network-fabric:
+    name: "Network fabric"
+    description: "Physical or overlay network the system depends on."
+  nosql-database:
+    name: "NoSQL database"
+    description: "Key-value, wide-column or document datastore."
+  notification-service:
+    name: "Notification service"
+    description: "Fans out messages to push, email and SMS channels."
+  object-store:
+    name: "Object store"
+    description: "Blob storage addressed by key."
+  pubsub-topic:
+    name: "Pub/Sub topic"
+    description: "Fan-out topic. Every subscriber receives every message."
+  queue:
+    name: "Queue"
+    description: "Point-to-point message queue. Each message is processed by one consumer."
+  rate-limiter:
+    name: "Rate limiter"
+    description: "Bounds request or concurrency rate per key."
+  realtime-gateway:
+    name: "Real-time gateway"
+    description: "Holds long-lived client connections and pushes events."
+  schema-registry:
+    name: "Schema registry"
+    description: "Stores and enforces message schemas."
+  search-index:
+    name: "Search index"
+    description: "Derived index for text, prefix, vector or geospatial queries."
+  service-mesh:
+    name: "Service mesh"
+    description: "Sidecar or library layer for service-to-service traffic."
+  sql-database:
+    name: "SQL database"
+    description: "Relational datastore, usually the system of record."
+  stream:
+    name: "Stream"
+    description: "Partitioned, replayable, durable log read by offset."
+  stream-processor:
+    name: "Stream processor"
+    description: "Continuous computation over streams with windows and state."
+  third-party-api:
+    name: "Third-party API"
+    description: "A service outside your control that you call."
+  timeseries-database:
+    name: "Time-series database"
+    description: "Metrics store with downsampling and tiered retention."
+  webhook-endpoint:
+    name: "Webhook endpoint"
+    description: "HTTP endpoint that receives callbacks from a third party."
+  worker:
+    name: "Worker"
+    description: "Background process triggered by a queue, schedule, stream or batch."
+  workflow-engine:
+    name: "Workflow engine"
+    description: "Durable orchestration of multi-step processes with retries and compensation."
 
 components:
-  kafka:
-    name: "Apache Kafka"
-    description: "Partitioned, replayable log with consumer groups."
-  sqs:
-    name: "Amazon SQS"
-    description: "Managed queue with visibility timeouts and optional FIFO ordering."
-  sns:
-    name: "Amazon SNS"
-    description: "Managed fan-out topic with no message replay."
-  redis:
-    name: "Redis"
-    description: "In-memory data structure store used as a cache."
-  postgres:
-    name: "PostgreSQL"
-    description: "Open-source relational database."
-  container-service:
-    name: "Container service"
-    description: "Generic containerised service owned by the team."
+  ably:
+    name: "Ably"
+    description: "Hosted realtime messaging with ordering guarantees and history."
+  activemq:
+    name: "Apache ActiveMQ"
+    description: "JMS broker (Classic or Artemis) with persistent journal and automatic dead-letter queue."
+  adyen:
+    name: "Adyen"
+    description: "Global payments platform with webhook notifications and hosted Drop-in."
+  airflow-dag:
+    name: "Airflow DAG"
+    description: "Scheduled task graph run by Apache Airflow."
+  akamai:
+    name: "Akamai"
+    description: "Akamai's global content delivery platform."
+  alb:
+    name: "AWS Application Load Balancer"
+    description: "Managed layer-7 HTTP load balancer with path and host routing."
+  algolia:
+    name: "Algolia"
+    description: "Hosted search API with three-server index clusters and asynchronous updates."
+  apache-helix:
+    name: "Apache Helix"
+    description: "Cluster partition placement and state-machine management."
+  apicurio:
+    name: "Apicurio Registry"
+    description: "Open-source schema and API registry with no compatibility rule by default."
+  apigee:
+    name: "Apigee"
+    description: "Google's managed API management platform with proxy policies and analytics."
+  apns:
+    name: "Apple Push Notification service"
+    description: "Apple's push delivery service for iOS and macOS."
+  aurora:
+    name: "Amazon Aurora"
+    description: "Managed MySQL/PostgreSQL-compatible database on a shared multi-zone storage layer."
+  auth0:
+    name: "Auth0"
+    description: "Hosted authentication platform with Universal Login."
   aws-api-gateway:
     name: "Amazon API Gateway"
     description: "Managed REST, HTTP and WebSocket API front door."
+  aws-api-gateway-websocket:
+    name: "API Gateway WebSocket API"
+    description: "Managed WebSocket API with connection ids and Lambda/HTTP integrations."
+  aws-app-mesh:
+    name: "AWS App Mesh"
+    description: "AWS managed service mesh control plane for Envoy sidecars."
+  aws-appconfig:
+    name: "AWS AppConfig"
+    description: "Managed configuration and feature flag deployment."
+  aws-batch:
+    name: "AWS Batch"
+    description: "Managed batch job scheduling on EC2, Fargate or Spot compute environments."
+  aws-cognito:
+    name: "Amazon Cognito"
+    description: "AWS managed user pools and federated identities."
+  aws-direct-connect:
+    name: "AWS Direct Connect"
+    description: "Dedicated private connection into AWS."
+  aws-dms:
+    name: "AWS DMS"
+    description: "Managed database migration and ongoing log-based replication service."
+  aws-iam:
+    name: "AWS IAM"
+    description: "AWS identity and access management."
+  aws-ivs:
+    name: "Amazon IVS"
+    description: "Managed live video ingest and low-latency HLS delivery."
+  aws-kms:
+    name: "AWS KMS"
+    description: "AWS managed key service with HSM-backed keys."
+  aws-pinpoint:
+    name: "Amazon Pinpoint"
+    description: "Managed multichannel engagement service for push, email, SMS and campaigns."
+  aws-secrets-manager:
+    name: "AWS Secrets Manager"
+    description: "AWS managed secret storage with optional rotation."
+  aws-step-functions:
+    name: "AWS Step Functions"
+    description: "Managed state-machine orchestration with standard and express workflows."
+  aws-transit-gateway:
+    name: "AWS Transit Gateway"
+    description: "Managed hub connecting VPCs and on-premises networks."
+  axon-server:
+    name: "Axon Server"
+    description: "Event store and message router for Axon Framework applications."
+  azure-ai-search:
+    name: "Azure AI Search"
+    description: "Managed full-text and vector search service with partitions and replicas."
+  azure-api-management:
+    name: "Azure API Management"
+    description: "Managed API gateway with policy-based throttling, auth and transformation."
+  azure-app-configuration:
+    name: "Azure App Configuration"
+    description: "Managed configuration store with feature flag filters."
+  azure-app-service:
+    name: "Azure App Service"
+    description: "Managed web application hosting with deployment slots and optional autoscale."
+  azure-application-gateway:
+    name: "Azure Application Gateway"
+    description: "Managed layer-7 web traffic load balancer with optional WAF."
+  azure-blob-storage:
+    name: "Azure Blob Storage"
+    description: "Managed object store; locally redundant by default with opt-in zone and geo redundancy."
+  azure-cosmos-db:
+    name: "Azure Cosmos DB"
+    description: "Managed multi-model store with five consistency levels and opt-in multi-region writes."
+  azure-data-explorer:
+    name: "Azure Data Explorer"
+    description: "Managed Kusto analytics store with a hot cache over cold blob storage."
+  azure-data-factory:
+    name: "Azure Data Factory"
+    description: "Managed data movement and pipeline orchestration service."
+  azure-dns:
+    name: "Azure DNS"
+    description: "Azure managed anycast DNS hosting."
+  azure-durable-functions:
+    name: "Azure Durable Functions"
+    description: "Orchestrator functions on Azure Functions with checkpointed state."
+  azure-entra-id:
+    name: "Microsoft Entra ID"
+    description: "Microsoft's cloud identity and access service."
+  azure-event-grid:
+    name: "Azure Event Grid"
+    description: "Managed push-based event router with 24-hour retry and optional dead-lettering."
+  azure-event-hubs:
+    name: "Azure Event Hubs"
+    description: "Managed Kafka-compatible event ingestion log with partitions and consumer groups."
+  azure-expressroute:
+    name: "Azure ExpressRoute"
+    description: "Dedicated private connection into Azure."
+  azure-front-door:
+    name: "Azure Front Door"
+    description: "Managed global HTTP entry point with optional caching and WAF."
+  azure-functions:
+    name: "Azure Functions"
+    description: "Managed function-as-a-service on consumption, premium or dedicated plans."
+  azure-key-vault:
+    name: "Azure Key Vault"
+    description: "Azure managed secrets, keys and certificates."
+  azure-load-balancer:
+    name: "Azure Load Balancer"
+    description: "Managed layer-4 load balancer for Azure virtual networks."
+  azure-ml-endpoint:
+    name: "Azure ML endpoint"
+    description: "Managed online inference endpoint on Azure Machine Learning."
+  azure-monitor:
+    name: "Azure Monitor"
+    description: "Azure's managed metrics, logs, traces and alerting service."
+  azure-notification-hubs:
+    name: "Azure Notification Hubs"
+    description: "Managed push notification fan-out to APNs, FCM and WNS with templates."
+  azure-schema-registry:
+    name: "Azure Schema Registry"
+    description: "Managed schema registry hosted in Event Hubs namespaces."
+  azure-service-bus:
+    name: "Azure Service Bus"
+    description: "Managed enterprise queue with peek-lock delivery, built-in dead-letter sub-queue and optional sessions."
+  azure-signalr:
+    name: "Azure SignalR Service"
+    description: "Managed SignalR connection service for real-time web apps."
+  azure-sql:
+    name: "Azure SQL Database"
+    description: "Managed SQL Server with automated backups and transparent data encryption on by default."
+  azure-stream-analytics:
+    name: "Azure Stream Analytics"
+    description: "Managed SQL-based streaming jobs over Event Hubs and IoT Hub inputs."
+  azure-synapse:
+    name: "Azure Synapse Analytics"
+    description: "Managed warehouse with serverless and dedicated SQL pools."
+  azure-virtual-wan:
+    name: "Azure Virtual WAN"
+    description: "Managed global transit network on the Azure backbone."
+  bank-api:
+    name: "Bank API"
+    description: "External bank integration for transfers and settlement."
+  bigquery:
+    name: "Google BigQuery"
+    description: "Serverless columnar data warehouse."
+  bigtable:
+    name: "Google Cloud Bigtable"
+    description: "Managed wide-column store; strongly consistent per cluster, eventually across clusters."
+  brooklin:
+    name: "Brooklin"
+    description: "LinkedIn streaming pipeline service for change capture and Kafka mirroring."
+  cadence:
+    name: "Cadence"
+    description: "Uber's durable workflow orchestration engine, predecessor of Temporal."
+  card-network:
+    name: "Card network"
+    description: "Card scheme connection for authorisation and clearing."
+  cassandra:
+    name: "Apache Cassandra"
+    description: "Leaderless wide-column store with tunable consistency and last-writer-wins resolution."
+  ceph-rgw:
+    name: "Ceph RADOS Gateway"
+    description: "S3- and Swift-compatible object gateway over a Ceph cluster."
+  clickhouse:
+    name: "ClickHouse"
+    description: "Columnar OLAP database with real-time inserts and MergeTree storage."
+  cloudflare-cdn:
+    name: "Cloudflare CDN"
+    description: "Cloudflare's anycast edge caching network."
+  cloudflare-dns:
+    name: "Cloudflare DNS"
+    description: "Cloudflare's anycast authoritative DNS."
+  cloudflare-rate-limiting:
+    name: "Cloudflare Rate Limiting"
+    description: "Edge rate limiting rules on the Cloudflare network."
+  cloudfront:
+    name: "Amazon CloudFront"
+    description: "AWS global content delivery network."
+  cloudhsm:
+    name: "AWS CloudHSM"
+    description: "Dedicated single-tenant hardware security module cluster."
+  cloudwatch:
+    name: "Amazon CloudWatch"
+    description: "AWS managed metrics, logs and alarms."
+  cockroachdb:
+    name: "CockroachDB"
+    description: "Distributed SQL database with Raft-replicated ranges and serializable transactions."
+  conductor:
+    name: "Conductor"
+    description: "Netflix JSON-defined workflow orchestrator executed by polling workers."
+  confluent-schema-registry:
+    name: "Confluent Schema Registry"
+    description: "Avro, Protobuf and JSON schema registry for Kafka with backward compatibility by default."
+  consul:
+    name: "Consul"
+    description: "Service discovery, health checking and KV store."
+  consul-connect:
+    name: "Consul Connect"
+    description: "Consul's built-in service mesh with mTLS and intentions."
+  container-service:
+    name: "Container service"
+    description: "Generic containerised service you own, on any orchestrator."
+  container-worker:
+    name: "Container worker"
+    description: "Generic containerised background worker consuming a queue, stream or schedule."
+  coredns:
+    name: "CoreDNS"
+    description: "Self-managed plugin-based DNS server used as Kubernetes cluster DNS."
+  couchbase:
+    name: "Couchbase"
+    description: "Document store with memory-first vBuckets and opt-in cross-datacenter replication."
+  cron-job:
+    name: "Cron job"
+    description: "Fixed-schedule job run by cron or a Kubernetes CronJob."
+  databricks-sql:
+    name: "Databricks SQL"
+    description: "Managed lakehouse warehouse over Delta tables."
+  datadog:
+    name: "Datadog"
+    description: "SaaS observability platform for metrics, logs, traces and alerts."
+  dataproc-job:
+    name: "Dataproc job"
+    description: "Spark or Hadoop job on Google Cloud Dataproc clusters or serverless."
+  debezium:
+    name: "Debezium"
+    description: "Open-source log-based change data capture connectors, usually deployed on Kafka Connect."
+  desktop-app:
+    name: "Desktop app"
+    description: "Installed desktop application client."
+  double-entry-ledger:
+    name: "Double-entry ledger"
+    description: "In-house append-only double-entry ledger over a relational store."
+  dragonfly:
+    name: "Dragonfly"
+    description: "Multi-threaded Redis-compatible in-memory store."
+  dynamodb:
+    name: "Amazon DynamoDB"
+    description: "Managed key-value store with eventually consistent reads by default and opt-in global tables."
+  elasticsearch:
+    name: "Elasticsearch"
+    description: "Distributed inverted index with hash-routed shards and near-real-time refresh."
+  envoy:
+    name: "Envoy"
+    description: "Self-managed L7 proxy and load balancer with xDS dynamic configuration."
+  envoy-gateway:
+    name: "Envoy Gateway"
+    description: "Kubernetes Gateway API implementation built on Envoy proxy."
+  envoy-ratelimit:
+    name: "Envoy rate limit service"
+    description: "Envoy's global rate limit service backed by Redis."
+  envoy-sidecar:
+    name: "Envoy sidecar"
+    description: "Hand-rolled mesh of Envoy sidecars with a custom control plane."
+  erlang-node:
+    name: "Erlang/BEAM node"
+    description: "Stateful BEAM server with one lightweight process per entity, clustered with distributed Erlang."
+  etcd:
+    name: "etcd"
+    description: "Raft-based distributed key-value store for coordination."
+  eureka:
+    name: "Eureka"
+    description: "Netflix's AP service registry."
+  evcache:
+    name: "EVCache"
+    description: "Netflix's memcached-based cache replicating every write to all zones."
+  eventstoredb:
+    name: "EventStoreDB"
+    description: "Purpose-built event-sourcing database with streams, subscriptions and projections."
+  fanout-daemon:
+    name: "Fan-out daemon"
+    description: "Worker that pushes each new write into per-recipient timelines or mailboxes."
+  fastly:
+    name: "Fastly"
+    description: "Managed edge cloud with VCL configuration and instant purge."
+  fcm:
+    name: "Firebase Cloud Messaging"
+    description: "Google's push delivery service for Android, iOS and web."
+  firestore:
+    name: "Google Cloud Firestore"
+    description: "Managed strongly consistent document store for mobile and web backends."
+  flagsmith:
+    name: "Flagsmith"
+    description: "Feature flag and remote config service."
+  flink:
+    name: "Apache Flink"
+    description: "Stateful stream processor with event-time windows, watermarks and checkpointed exactly-once."
+  gcs:
+    name: "Google Cloud Storage"
+    description: "Managed object store with regional, dual-region and multi-region buckets."
+  gearman:
+    name: "Gearman"
+    description: "Lightweight job server that farms work out to workers from an in-memory queue."
+  geo-cell-index:
+    name: "Geo cell index"
+    description: "In-house S2, H3 or geohash cell index for nearby-entity lookups."
+  glue-job:
+    name: "AWS Glue job"
+    description: "Serverless Spark or Python ETL job with optional job bookmarks."
+  glue-schema-registry:
+    name: "AWS Glue Schema Registry"
+    description: "Managed schema registry enforced in client serializers."
+  google-cloud-cdn:
+    name: "Google Cloud CDN"
+    description: "Cloud CDN attached to Google Cloud load balancer backends."
+  google-cloud-dns:
+    name: "Google Cloud DNS"
+    description: "Google managed anycast DNS hosting."
+  google-cloud-kms:
+    name: "Google Cloud KMS"
+    description: "Google managed cryptographic key service."
+  google-cloud-load-balancing:
+    name: "Google Cloud Load Balancing"
+    description: "Managed global anycast load balancing with Maglev hashing."
+  google-cloud-monitoring:
+    name: "Google Cloud Monitoring"
+    description: "Google Cloud's managed operations suite."
+  google-cloud-run:
+    name: "Google Cloud Run"
+    description: "Managed container serving that scales to zero with per-instance concurrency."
+  google-cloud-tasks:
+    name: "Google Cloud Tasks"
+    description: "Managed push queue that dispatches HTTP tasks with rate limiting and exponential retry."
+  google-dataflow:
+    name: "Google Cloud Dataflow"
+    description: "Managed Apache Beam runner for exactly-once batch and streaming pipelines."
+  google-identity-platform:
+    name: "Google Identity Platform"
+    description: "Google's managed customer identity service."
+  google-pubsub:
+    name: "Google Cloud Pub/Sub"
+    description: "Managed global topic with per-subscription retention and seek, so consumers can replay."
+  haproxy:
+    name: "HAProxy"
+    description: "Self-managed high-performance TCP and HTTP load balancer."
+  hashicorp-vault:
+    name: "HashiCorp Vault"
+    description: "Self-managed secrets management and encryption as a service."
+  hazelcast:
+    name: "Hazelcast"
+    description: "In-memory data grid with partitioned maps and synchronous backups."
+  hbase:
+    name: "Apache HBase"
+    description: "Wide-column store on HDFS with a single region server per row range."
+  hive:
+    name: "Apache Hive"
+    description: "Batch SQL over files in HDFS or object storage."
+  in-process-limiter:
+    name: "In-process rate limiter"
+    description: "Library rate limiter holding state inside the application process."
+  influxdb:
+    name: "InfluxDB"
+    description: "Time series database with infinite retention by default and scheduled downsampling tasks."
+  iot-device:
+    name: "IoT device"
+    description: "Embedded or IoT device client with intermittent connectivity."
+  istio:
+    name: "Istio"
+    description: "Envoy-based service mesh with mTLS, traffic management and telemetry."
+  jaeger:
+    name: "Jaeger"
+    description: "Self-managed distributed tracing backend."
+  janus:
+    name: "Janus"
+    description: "Self-managed general-purpose WebRTC server with plugins."
+  janusgraph:
+    name: "JanusGraph"
+    description: "Graph layer over a pluggable wide-column backend and optional search index."
+  kafka:
+    name: "Apache Kafka"
+    description: "Partitioned, replicated, replayable commit log read by consumer groups."
+  kafka-streams:
+    name: "Kafka Streams"
+    description: "Client library for stream processing over Kafka topics with RocksDB local state."
+  keycloak:
+    name: "Keycloak"
+    description: "Open-source identity and access management server."
+  kinesis:
+    name: "Amazon Kinesis Data Streams"
+    description: "Managed shard-based streaming log replicated across three availability zones."
+  kong:
+    name: "Kong Gateway"
+    description: "Plugin-based API gateway built on NGINX and OpenResty."
+  lambda:
+    name: "AWS Lambda"
+    description: "Managed function-as-a-service that scales per request with a per-invocation timeout."
+  launchdarkly:
+    name: "LaunchDarkly"
+    description: "SaaS feature management with streaming SDKs."
+  linkerd:
+    name: "Linkerd"
+    description: "Lightweight service mesh with default mTLS."
+  m3:
+    name: "M3"
+    description: "Uber's distributed Prometheus-compatible metrics platform."
+  m3db:
+    name: "M3DB"
+    description: "Uber's distributed time series store with M3TSZ compression and three-way replication."
+  maps-api:
+    name: "Maps API"
+    description: "External geocoding, routing and tiles API."
+  maxwell:
+    name: "Maxwell"
+    description: "Daemon that reads the MySQL binlog and emits row changes as JSON."
+  mediasoup:
+    name: "mediasoup"
+    description: "Self-managed Node.js and C++ SFU library."
+  memcached:
+    name: "Memcached"
+    description: "Volatile in-memory LRU cache with client-side key distribution."
+  minio:
+    name: "MinIO"
+    description: "Self-hosted S3-compatible object store with erasure coding."
+  mobile-app:
+    name: "Mobile app"
+    description: "iOS and Android mobile application client."
+  mongodb:
+    name: "MongoDB"
+    description: "Document store with single-primary replica sets and optional sharding."
+  mongos:
+    name: "mongos"
+    description: "MongoDB sharded-cluster query router."
+  mqtt-broker:
+    name: "MQTT broker"
+    description: "Topic-based publish/subscribe broker for devices (Mosquitto, EMQX, HiveMQ, cloud IoT cores)."
+  multicast-domain:
+    name: "Multicast domain"
+    description: "Private multicast-enabled network segment."
+  multicast-feed:
+    name: "Multicast market-data feed"
+    description: "Exchange UDP multicast market-data feed with sequence numbers."
+  mysql:
+    name: "MySQL"
+    description: "Open-source single-primary relational database with asynchronous replication."
+  nats-jetstream:
+    name: "NATS JetStream"
+    description: "Persistence layer for NATS providing globally ordered, Raft-replicated streams."
+  neo4j:
+    name: "Neo4j"
+    description: "Native property-graph database with optional causal clustering."
+  neptune:
+    name: "Amazon Neptune"
+    description: "Managed graph database supporting Gremlin, openCypher and SPARQL."
+  new-relic:
+    name: "New Relic"
+    description: "SaaS observability with APM agents."
+  nginx:
+    name: "NGINX"
+    description: "Self-managed HTTP reverse proxy and load balancer."
+  nginx-limit-req:
+    name: "NGINX limit_req"
+    description: "NGINX leaky-bucket request rate limiting module."
+  nlb:
+    name: "AWS Network Load Balancer"
+    description: "Managed layer-4 TCP/UDP load balancer with static IPs."
+  notification-platform:
+    name: "Notification platform"
+    description: "Generic in-house service that fans events out to push, email and SMS with user preferences."
+  oci-api-gateway:
+    name: "OCI API Gateway"
+    description: "Managed REST front door on Oracle Cloud."
+  oci-autonomous-database:
+    name: "OCI Autonomous Database"
+    description: "Managed Oracle database with automatic backups and scaling."
+  oci-functions:
+    name: "OCI Functions"
+    description: "Fn-based serverless functions on Oracle Cloud."
+  oci-load-balancer:
+    name: "OCI Load Balancer"
+    description: "Oracle Cloud managed layer-7 load balancer."
+  oci-object-storage:
+    name: "OCI Object Storage"
+    description: "Oracle Cloud regional object storage with 11 nines designed durability."
+  oci-queue:
+    name: "OCI Queue"
+    description: "Managed at-least-once queue with visibility timeouts and dead-lettering."
+  oci-streaming:
+    name: "OCI Streaming"
+    description: "Kafka-compatible managed partitioned log on Oracle Cloud."
+  oci-vault:
+    name: "OCI Vault"
+    description: "Managed keys and secrets with HSM-backed master keys."
+  okta:
+    name: "Okta"
+    description: "Hosted workforce and customer identity."
+  onesignal:
+    name: "OneSignal"
+    description: "SaaS push, email, SMS and in-app messaging platform."
+  opensearch:
+    name: "OpenSearch"
+    description: "Open-source Elasticsearch fork with the same sharding and refresh model."
+  opentelemetry-collector:
+    name: "OpenTelemetry Collector"
+    description: "Vendor-neutral telemetry pipeline for metrics, logs and traces."
+  oracle-db:
+    name: "Oracle Database"
+    description: "Commercial relational database with optional RAC and Data Guard."
+  order-book-matcher:
+    name: "Order-book matcher"
+    description: "Generic single-threaded, deterministic price-time order matching engine."
+  payment-service-provider:
+    name: "Payment service provider"
+    description: "Generic external PSP with webhook confirmation and hosted checkout."
+  pgbouncer:
+    name: "PgBouncer"
+    description: "Lightweight PostgreSQL connection pooler."
+  phoenix-channels:
+    name: "Phoenix Channels"
+    description: "Elixir Phoenix real-time channels over WebSocket."
+  pinot:
+    name: "Apache Pinot"
+    description: "Real-time OLAP store ingesting directly from streams."
+  postgres:
+    name: "PostgreSQL"
+    description: "Open-source relational database."
+  prometheus:
+    name: "Prometheus"
+    description: "Pull-based metrics store and alerting toolkit."
+  prometheus-tsdb:
+    name: "Prometheus TSDB"
+    description: "Single-node Gorilla-compressed time series store with fifteen days of retention."
+  proxysql:
+    name: "ProxySQL"
+    description: "MySQL proxy with connection multiplexing and rule-based routing."
+  pulsar:
+    name: "Apache Pulsar"
+    description: "Multi-tenant streaming platform with BookKeeper storage, tiered offload and geo-replication."
+  pusher:
+    name: "Pusher Channels"
+    description: "Hosted pub/sub WebSocket service."
+  qldb:
+    name: "Amazon QLDB"
+    description: "Managed append-only journal with cryptographically verifiable history."
+  rabbitmq:
+    name: "RabbitMQ"
+    description: "AMQP message broker with exchanges and queues; transient unless queues and messages are declared durable."
+  raft-event-log:
+    name: "Raft event log"
+    description: "Generic in-house Raft-replicated append-only log used as journal or sequencer."
+  rds-proxy:
+    name: "Amazon RDS Proxy"
+    description: "Managed connection pool in front of RDS and Aurora."
+  redis:
+    name: "Redis"
+    description: "In-memory data structure store used as a cache."
+  redis-pubsub:
+    name: "Redis Pub/Sub"
+    description: "Fire-and-forget channel fan-out inside Redis; disconnected subscribers miss messages."
+  redis-queue:
+    name: "Redis queue"
+    description: "Redis list or stream used as a job queue by Sidekiq, Bull, RQ or Celery; loses popped jobs on worker crash."
+  redis-rate-limiter:
+    name: "Redis rate limiter"
+    description: "Application rate limiter using Redis counters and Lua scripts."
+  redpanda:
+    name: "Redpanda"
+    description: "Kafka-API-compatible streaming broker written in C++ with no ZooKeeper or JVM."
+  redshift:
+    name: "Amazon Redshift"
+    description: "Managed columnar data warehouse on provisioned or serverless compute."
+  riak:
+    name: "Riak KV"
+    description: "Leaderless key-value store with n/r/w quorums and version-vector conflict tracking."
+  route53:
+    name: "Amazon Route 53"
+    description: "AWS managed anycast DNS with routing policies and health checks."
+  s3:
+    name: "Amazon S3"
+    description: "Managed multi-zone object store with eleven nines of durability and strong read-after-write."
+  sagemaker-endpoint:
+    name: "SageMaker endpoint"
+    description: "Managed real-time model hosting on Amazon SageMaker."
+  samza:
+    name: "Apache Samza"
+    description: "Stream processing framework from LinkedIn with local RocksDB state and changelog topics."
+  scylladb:
+    name: "ScyllaDB"
+    description: "Cassandra-compatible wide-column store with a shard-per-core architecture."
+  sdk-client:
+    name: "SDK client"
+    description: "Client library embedded in a customer's own service."
+  sendgrid:
+    name: "SendGrid"
+    description: "Transactional email API with an event webhook."
+  sentry:
+    name: "Sentry"
+    description: "Error tracking and performance monitoring pushed by application SDKs."
+  smart-tv-app:
+    name: "Smart TV app"
+    description: "Application running on a smart TV platform."
+  smtp-relay:
+    name: "SMTP relay"
+    description: "External SMTP relay such as SES SMTP or a corporate mail relay."
+  snowflake:
+    name: "Snowflake"
+    description: "Managed columnar warehouse with separated storage and compute."
+  snowflake-id:
+    name: "Snowflake ID"
+    description: "Twitter-style 64-bit ids from timestamp, worker id and sequence."
+  sns:
+    name: "Amazon SNS"
+    description: "Managed fan-out topic delivering to SQS, Lambda, HTTP and mobile push subscribers."
+  socket-io-server:
+    name: "Socket.IO server"
+    description: "Node.js real-time server with WebSocket and long-polling transports."
+  solr:
+    name: "Apache Solr"
+    description: "Lucene-based search server; standalone by default, SolrCloud for sharding."
+  spanner:
+    name: "Google Cloud Spanner"
+    description: "Globally distributed, synchronously replicated SQL database with external consistency."
+  spark-job:
+    name: "Spark job"
+    description: "Apache Spark batch job for ETL, feature building or backfills."
+  spark-streaming:
+    name: "Spark Structured Streaming"
+    description: "Micro-batch stream processing on Apache Spark with checkpointed state."
+  spicedb:
+    name: "SpiceDB"
+    description: "Zanzibar-inspired relationship-based authorization database."
+  spine-leaf-fabric:
+    name: "Spine-leaf fabric"
+    description: "On-premises Clos data-centre network fabric."
+  sql-server:
+    name: "Microsoft SQL Server"
+    description: "Commercial relational database with optional Always On availability groups."
+  sqs:
+    name: "Amazon SQS"
+    description: "Managed point-to-point queue with at-least-once delivery, 4-day retention and optional FIFO."
+  stripe:
+    name: "Stripe"
+    description: "Payments API with idempotency keys and signed webhooks."
+  supplier-api:
+    name: "Supplier API"
+    description: "Generic partner or supplier API with a contractual QPS quota."
+  tao:
+    name: "TAO"
+    description: "Facebook-style in-house graph cache tiered in front of a sharded relational store."
+  temporal:
+    name: "Temporal"
+    description: "Durable workflow-as-code engine with automatic activity retry and event-sourced history."
+  tensorflow-serving:
+    name: "TensorFlow Serving"
+    description: "Self-hosted gRPC/REST server for TensorFlow and other saved models."
+  ticket-server:
+    name: "Ticket server"
+    description: "Flickr-style central auto-increment id server."
+  tidb:
+    name: "TiDB"
+    description: "MySQL-compatible distributed SQL database built on TiKV."
+  timescaledb:
+    name: "TimescaleDB"
+    description: "PostgreSQL extension with hypertables, opt-in compression and continuous aggregates."
+  traefik:
+    name: "Traefik"
+    description: "Self-managed cloud-native edge router with automatic service discovery."
+  trie-index:
+    name: "Trie index"
+    description: "In-house prefix trie for typeahead, rebuilt offline and served from memory."
+  triton:
+    name: "NVIDIA Triton"
+    description: "GPU inference server supporting multiple frameworks with dynamic batching."
+  twilio-sms:
+    name: "Twilio SMS"
+    description: "Programmable SMS API with status webhooks."
+  twilio-video:
+    name: "Twilio Video"
+    description: "Hosted WebRTC video rooms."
+  typesense:
+    name: "Typesense"
+    description: "In-memory typo-tolerant search engine with synchronous indexing."
+  ulid-service:
+    name: "ULID service"
+    description: "Lexicographically sortable ids from a millisecond timestamp plus randomness."
+  unleash:
+    name: "Unleash"
+    description: "Open-source feature toggle service."
+  uuid-generator:
+    name: "UUID generator"
+    description: "Library UUID generation on each node; random v4 by default."
+  valkey:
+    name: "Valkey"
+    description: "Open-source Redis fork maintained under the Linux Foundation."
+  vertex-ai-endpoint:
+    name: "Vertex AI endpoint"
+    description: "Managed model deployment endpoint on Google Vertex AI."
+  victoriametrics:
+    name: "VictoriaMetrics"
+    description: "Prometheus-compatible time series database with one month of default retention."
+  vitess:
+    name: "Vitess"
+    description: "Sharding middleware for MySQL routing queries by keyspace shard key."
+  vm-service:
+    name: "VM-hosted service"
+    description: "Generic service running directly on virtual machines or bare metal."
+  web-browser:
+    name: "Web browser"
+    description: "Browser-based web client."
+  webhook-receiver:
+    name: "Webhook receiver"
+    description: "Generic HTTP endpoint exposed to receive callbacks from third parties."
+  websocket-gateway:
+    name: "WebSocket gateway"
+    description: "In-house WebSocket connection gateway."
+  zookeeper:
+    name: "Apache ZooKeeper"
+    description: "Consensus-based coordination and metadata store."
+  zuul:
+    name: "Zuul"
+    description: "Netflix's JVM edge gateway with filter-based routing."
 
 rules:
-  queue-missing-dlq:
-    name: "Queue without dead-letter queue"
-  datastore-single-region:
-    name: "Single-region datastore behind a multi-region SLA"
+  business-updates-without-index-propagation:
+    name: "Database updates not propagated to the search index"
+    description: "Application servers write a database and the design keeps a search index, but no change data capture leaves the database; index writes rely on dual writes."
+  cache-as-primary-store-without-persistence:
+    name: "Cache used as primary store without persistence"
+    description: "A cache is the only copy of its data and has persistence disabled, so the data is lost on restart."
   cache-missing-eviction-policy:
     name: "Cache without eviction policy"
-  pubsub-replay-required:
-    name: "Pub/Sub topic where replay is required"
-  sync-chain-too-deep:
-    name: "Synchronous call chain too deep"
+  credentials-without-rotation:
+    name: "Credentials without rotation"
+    description: "The design holds data but declares no credential rotation period and has no key-management node."
+  cross-cell-call:
+    name: "Synchronous call across cells"
+    description: "A synchronous edge crosses a cell boundary while the design requires cell isolation."
   datastore-missing-backup:
     name: "Datastore without backup or retention"
+  datastore-single-region:
+    name: "Single-region datastore behind a multi-region SLA"
+  derived-store-without-cdc-or-rebuild:
+    name: "Search index without an asynchronous feed"
+    description: "A search index has no asynchronous in-edge from a stream, change data capture or worker, so it cannot be rebuilt or kept in sync off the write path."
+  exactly-once-with-external-side-effects:
+    name: "Exactly-once delivery in front of an external side effect"
+    description: "An edge claims exactly-once delivery to a node that then calls a third party synchronously, which exactly-once cannot cover."
+  external-call-inline-without-durable-path:
+    name: "Inline external call without durable fallback"
+    description: "A service calls a third party synchronously and has no queue or workflow engine to hand the request to on failure."
+  fanout-inline-in-request-path:
+    name: "Fan-out inline in the request path"
+    description: "An application server calls a worker synchronously, so the request waits for background work such as fan-out."
+  materialised-cache-without-rebuild-path:
+    name: "Materialised cache without a rebuild path"
+    description: "A cache holds materialised data but has no in-edge from a durable store, worker or stream that could rebuild it."
+  money-mutation-without-idempotency-key:
+    name: "Money mutation without idempotency key"
+    description: "An edge into a money-handling third party or a double-entry ledger declares no idempotency while the design requires exactly-once effect."
+  money-store-without-double-entry-ledger:
+    name: "Money store without double-entry ledger"
+    description: "The design requires zero-sum money movement but contains no ledger node."
+  multi-leader-store-without-conflict-policy:
+    name: "Multi-leader store without a conflict policy"
+    description: "A NoSQL store replicates multi-region multi-leader but declares no conflict resolution policy."
+  object-store-single-zone-with-durability-target:
+    name: "Object store in fewer than three zones with a durability target"
+    description: "An object store spans fewer than three zones, or declares none, while the design targets more than ten nines of annual durability."
+  pubsub-replay-required:
+    name: "Pub/Sub topic where replay is required"
+  push-fanout-without-celebrity-path:
+    name: "Push fan-out without a celebrity threshold"
+    description: "A worker pushes fan-out over a social graph with no follower threshold above which timelines are merged at read time."
+  queue-missing-dlq:
+    name: "Queue without dead-letter queue"
+  read-heavy-path-without-cache:
+    name: "Read-heavy datastore without a cache"
+    description: "The design states a read-heavy workload and application servers read a datastore directly, but no cache exists."
+  read-replica-as-sole-scaling:
+    name: "Read replicas as the only scaling"
+    description: "An SQL database above 5000 rps relies on async replicas alone; it is neither sharded nor distributed, so writes still hit one primary."
+  reconnect-stampede-without-guard:
+    name: "Reconnect stampede without guard"
+    description: "A realtime gateway calls a coordination service synchronously on connect and has no guard against a mass reconnect."
+  retry-queue-without-dlq:
+    name: "Retry queue without dead-letter queue"
+    description: "A queue in the retry role has no dead-letter queue, so poison messages are retried forever or dropped."
+  retry-without-adaptive-shedding:
+    name: "Retry without circuit breaker or load shedding"
+    description: "An edge retries into a service with no circuit breaker on the caller and no rate limiter in front of the callee."
+  retry-without-backoff:
+    name: "Retry queue without backoff"
+    description: "A queue in the retry role declares no backoff, so retries hammer the failing dependency."
+  shared-dependency-without-redundancy:
+    name: "Shared dependency without redundancy"
+    description: "The design requires redundant discovery, but a DNS or coordination service has a single provider or is not replicated."
+  shared-host-per-channel-without-isolation:
+    name: "Random channel placement under heavy-tail traffic"
+    description: "A realtime gateway assigns channels to hosts at random while the design declares heavy-tail traffic, so hot channels degrade unrelated tenants."
+  shared-worker-pool-across-queues:
+    name: "Shared worker pool across queues"
+    description: "One worker consumes more than one queue while the design requires per-queue isolation."
+  single-writer-primary-at-peak-qps:
+    name: "Single-writer primary at peak QPS"
+    description: "An unsharded single-writer SQL database is declared at more than 5000 requests per second."
+  stateful-engine-pinned-to-single-zone:
+    name: "Stateful engine pinned to a single zone"
+    description: "A matching engine, coordination service or event store sits in exactly one availability zone with no failover or replication."
+  stateful-hash-ring-without-ring-manager:
+    name: "Stateful hash ring without ring manager"
+    description: "A service on a consistent hash ring is not connected to a coordination service that owns the ring."
+  stateful-node-without-zone-redundancy:
+    name: "Stateful node without zone redundancy"
+    description: "A stateful compute node lives in exactly one availability zone and is not part of a cell."
+  stateful-websocket-scale-in-without-drain:
+    name: "Stateful WebSocket scale-in without drain"
+    description: "An autoscaling realtime gateway does not drain connections when scaling in, so every scale-down is a reconnect storm."
+  sync-chain-too-deep:
+    name: "Synchronous call chain too deep"
+  webhook-without-signature-or-idempotency:
+    name: "Webhook without signature verification or idempotency"
+    description: "A webhook endpoint accepts callbacks without verifying the caller's signature or without deduplicating retried events."
+  windowed-aggregation-without-watermark:
+    name: "Event-time windows without watermark"
+    description: "A stream processor windows by event time but declares no watermark, so window completion and late data are undefined."

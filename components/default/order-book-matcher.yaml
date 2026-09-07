@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Generic in-house order-book matching engine: single-threaded, deterministic price-time matcher fed
+# by a sequencer; replaying the journal to rebuild state is opt-in.
+schemaVersion: "1"
+type: "component"
+id: "order-book-matcher"
+kind: "matching-engine"
+provider: "default"
+defaults:
+  singleThreaded: true
+  deterministic: true
+  algorithm: "price-time"
+  role: "primary"
+  failover: "none"
+properties:
+  replayFromJournal:
+    type: "boolean"
+    default: false

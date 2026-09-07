@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apache Spark batch job (ETL, feature build, backfill) submitted to a standalone, YARN or Kubernetes cluster.
+schemaVersion: "1"
+type: "component"
+id: "spark-job"
+kind: "worker"
+provider: "default"
+defaults:
+  trigger: "batch"
+properties:
+  resourceManager:
+    type: "enum"
+    values: ["standalone", "yarn", "kubernetes"]
+    default: "standalone"

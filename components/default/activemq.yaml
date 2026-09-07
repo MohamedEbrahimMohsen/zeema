@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apache ActiveMQ (Classic or Artemis): JMS broker, persistent store (KahaDB / journal) on by default,
+# expired and poison messages land in ActiveMQ.DLQ automatically.
+schemaVersion: "1"
+type: "component"
+id: "activemq"
+kind: "queue"
+provider: "default"
+defaults:
+  delivery: "at-least-once"
+  ordering: "none"
+  deadLetterQueue: true
+  replay: false
+  persistence: true
+properties:
+  variant:
+    type: "enum"
+    values: ["classic", "artemis"]
+    default: "classic"

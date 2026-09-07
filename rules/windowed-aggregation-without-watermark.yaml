@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../schema/rule.schema.json
+# Event-time windows need a watermark to know when a window is complete. Without one
+# the processor either waits forever or closes windows early and drops late events.
+# Tripped by: designs/doordash-delivery.broken.yaml
+schemaVersion: "1"
+type: "rule"
+id: "windowed-aggregation-without-watermark"
+severity: "warning"
+select:
+  node:
+    kind: "stream-processor"
+when:
+  all:
+    - prop: "windowing"
+      equals: "event-time"
+    - prop: "watermarkSeconds"
+      exists: false
+message: "Stream processor '{{node.id}}' windows by event time but declares no watermark. Late data handling is undefined."

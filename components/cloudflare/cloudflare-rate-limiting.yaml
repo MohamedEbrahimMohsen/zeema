@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare Rate Limiting: managed at the edge, fixed counting periods keyed by IP by default, blocks when exceeded.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-rate-limiting"
+kind: "rate-limiter"
+provider: "cloudflare"
+defaults:
+  managed: true
+  algorithm: "fixed-window"
+  scope: "ip"
+  placement: "edge"
+  distributed: true
+properties:
+  action:
+    type: "enum"
+    values: ["block", "challenge", "log"]
+    default: "block"

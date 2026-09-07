@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Redis PUBLISH/SUBSCRIBE: fire-and-forget fan-out. Messages sent while a subscriber is disconnected are lost.
+schemaVersion: "1"
+type: "component"
+id: "redis-pubsub"
+kind: "pubsub-topic"
+provider: "default"
+defaults:
+  delivery: "at-most-once"
+  ordering: "per-key"
+  replay: false
+properties:
+  cluster:
+    type: "boolean"
+    default: false

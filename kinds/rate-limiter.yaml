@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Abstract kind: Bounds request or concurrency rate per key (token bucket at the edge, Envoy ratelimit, in-process semaphores, adaptive limiters).
+schemaVersion: "1"
+type: "kind"
+id: "rate-limiter"
+category: "edge"
+properties:
+  algorithm:
+    type: "enum"
+    values: ["token-bucket", "leaky-bucket", "sliding-window", "fixed-window", "adaptive"]
+    default: "token-bucket"
+  scope:
+    type: "enum"
+    values: ["global", "user", "ip", "api-key", "concurrency"]
+    default: "user"
+  failMode:
+    type: "enum"
+    values: ["open", "closed"]
+    default: "open"
+  placement:
+    type: "enum"
+    values: ["edge", "gateway", "sidecar", "in-process"]
+    default: "gateway"
+  distributed:
+    type: "boolean"
+    default: false
+  atomicOps:
+    type: "boolean"
+    default: true
+  managed:
+    type: "boolean"
+    default: false

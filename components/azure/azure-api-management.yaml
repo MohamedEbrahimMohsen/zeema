@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure API Management: managed API gateway with policy pipeline. Rate limiting and auth are opt-in policies.
+schemaVersion: "1"
+type: "component"
+id: "azure-api-management"
+kind: "api-gateway"
+provider: "azure"
+defaults:
+  managed: true
+  tls: true
+  rateLimiting: false
+properties:
+  tier:
+    type: "enum"
+    values: ["consumption", "developer", "basic", "standard", "premium"]
+    default: "developer"

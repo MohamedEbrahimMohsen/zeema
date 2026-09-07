@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Abstract kind: Authenticates principals and decides authorization (IAM, OIDC providers, Zanzibar-style authorization services).
+schemaVersion: "1"
+type: "kind"
+id: "identity-provider"
+category: "security"
+properties:
+  protocol:
+    type: "enum"
+    values: ["oidc", "saml", "oauth2", "iam", "custom"]
+    default: "oidc"
+  authorizationModel:
+    type: "enum"
+    values: ["none", "rbac", "abac", "rebac"]
+    default: "rbac"
+  centralised:
+    type: "boolean"
+    default: true
+  mfa:
+    type: "boolean"
+    default: false
+  managed:
+    type: "boolean"
+    default: true

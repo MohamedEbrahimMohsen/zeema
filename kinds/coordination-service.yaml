@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Small strongly consistent service for cluster metadata, locks, discovery, placement and leader election (ZooKeeper, etcd, Consul, Helix).
+# Absorbs control-plane-coordinator, sharding-coordinator and service-registry via role.
+schemaVersion: "1"
+type: "kind"
+id: "coordination-service"
+category: "ops"
+properties:
+  role:
+    type: "enum"
+    values: ["metadata", "lock", "discovery", "placement", "sharding", "leader-election", "config"]
+    required: true
+  consensus:
+    type: "enum"
+    values: ["none", "raft", "paxos", "zab"]
+    default: "none"
+  replicated:
+    type: "boolean"
+    default: false
+  nodes:
+    type: "integer"
+  managed:
+    type: "boolean"
+    default: false

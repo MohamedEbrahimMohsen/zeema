@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Database: single-primary relational database; Data Guard and RAC are opt-in.
+schemaVersion: "1"
+type: "component"
+id: "oracle-db"
+kind: "sql-database"
+provider: "default"
+defaults:
+  replication: "none"
+  concurrencyControl: "pessimistic"
+properties:
+  version:
+    type: "string"
+  rac:
+    type: "boolean"
+    default: false

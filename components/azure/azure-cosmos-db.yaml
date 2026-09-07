@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Cosmos DB: managed multi-model store with five consistency levels (session by default),
+# periodic backups on by default and last-writer-wins for multi-region writes.
+schemaVersion: "1"
+type: "component"
+id: "azure-cosmos-db"
+kind: "nosql-database"
+provider: "azure"
+defaults:
+  model: "document"
+  consistency: "tunable"
+  replication: "single-region"
+  conflictResolution: "last-writer-wins"
+  backupEnabled: true
+  encryptionAtRest: true
+  managed: true
+properties:
+  api:
+    type: "enum"
+    values: ["nosql", "mongodb", "cassandra", "gremlin", "table"]
+    default: "nosql"
+  multiRegionWrites:
+    type: "boolean"
+    default: false

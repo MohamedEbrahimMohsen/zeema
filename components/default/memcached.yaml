@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Memcached: volatile in-memory LRU cache; key distribution is the client's job, the server
+# does no hashing or replication.
+schemaVersion: "1"
+type: "component"
+id: "memcached"
+kind: "cache"
+provider: "default"
+defaults:
+  persistence: false
+  hashing: "none"
+  replication: "none"
+  evictionPolicy: "lru"
+properties:
+  version:
+    type: "string"
+  maxItemSizeKb:
+    type: "integer"
+    default: 1024

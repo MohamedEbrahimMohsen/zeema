@@ -28,6 +28,7 @@
         "compute",
         "data",
         "edge",
+        "external",
         "client",
         "ops",
         "security"

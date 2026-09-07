@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Gearman job server: in-memory queue with no persistence unless a persistent backend is configured,
+# so a server restart drops queued jobs.
+schemaVersion: "1"
+type: "component"
+id: "gearman"
+kind: "queue"
+provider: "default"
+defaults:
+  delivery: "at-most-once"
+  ordering: "none"
+  deadLetterQueue: false
+  replay: false
+  persistence: false

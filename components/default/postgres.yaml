@@ -1,0 +1,12 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+schemaVersion: "1"
+type: "component"
+id: "postgres"
+kind: "sql-database"
+provider: "default"
+defaults:
+  managed: true
+  replication: "none"
+properties:
+  version:
+    type: "string"

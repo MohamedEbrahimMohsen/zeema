@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Append-only, replicated event log that is the system of record (event sourcing, exchange journals, sequencers).
+# Differs from stream: state is derived from it and it is snapshotted; role sequencer marks the single writer that orders events.
+schemaVersion: "1"
+type: "kind"
+id: "event-store"
+category: "messaging"
+properties:
+  replication:
+    type: "enum"
+    values: ["none", "raft", "primary-replica"]
+    default: "none"
+  journaled:
+    type: "boolean"
+    default: true
+  snapshotIntervalEvents:
+    type: "integer"
+  storage:
+    type: "enum"
+    values: ["mmap", "rocksdb", "database"]
+    default: "database"
+  role:
+    type: "enum"
+    values: ["journal", "sequencer"]
+    default: "journal"
+  managed:
+    type: "boolean"
+    default: false

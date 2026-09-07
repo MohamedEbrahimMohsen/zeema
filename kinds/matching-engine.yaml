@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Abstract kind: Deterministic, single-threaded order-book matcher fed by a sequenced event stream (exchanges, marketplaces).
+schemaVersion: "1"
+type: "kind"
+id: "matching-engine"
+category: "compute"
+properties:
+  singleThreaded:
+    type: "boolean"
+    default: true
+  deterministic:
+    type: "boolean"
+    default: true
+  algorithm:
+    type: "enum"
+    values: ["price-time", "pro-rata"]
+    default: "price-time"
+  role:
+    type: "enum"
+    values: ["primary", "standby"]
+    default: "primary"
+  failover:
+    type: "enum"
+    values: ["none", "manual", "automatic"]
+    default: "none"
+  managed:
+    type: "boolean"
+    default: false

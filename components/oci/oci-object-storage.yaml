@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Cloud Object Storage: regional buckets, 11 nines designed durability, versioning opt-in.
+schemaVersion: "1"
+type: "component"
+id: "oci-object-storage"
+kind: "object-store"
+provider: "oci"
+defaults:
+  managed: true
+  zones: 3
+  replication: "quorum"
+  durabilityNines: 11
+  strongReadAfterWrite: true
+  encryptionAtRest: true

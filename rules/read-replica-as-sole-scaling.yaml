@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../schema/rule.schema.json
+# Async read replicas scale reads only. If the store is neither sharded nor distributed,
+# the writes still land on one primary and the replicas add nothing at write peak.
+# Tripped by: designs/doordash-delivery.broken.yaml
+schemaVersion: "1"
+type: "rule"
+id: "read-replica-as-sole-scaling"
+severity: "warning"
+select:
+  node:
+    kind: "sql-database"
+when:
+  all:
+    - prop: "replication"
+      equals: "async"
+    - prop: "sharded"
+      equals: false
+    - prop: "distributed"
+      equals: false
+    - nfr:
+        rps:
+          gt: 5000
+message: "Database '{{node.id}}' relies on async read replicas as its only scaling above 5000 rps. Replicas do not scale writes."

@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Fan-out daemon: reads a stream of writes (posts, events) and pushes them into per-recipient
+# timelines or mailboxes. Push strategy by default; celebrity handling is set via fanoutThreshold.
+schemaVersion: "1"
+type: "component"
+id: "fanout-daemon"
+kind: "worker"
+provider: "default"
+defaults:
+  trigger: "stream"
+  fanoutStrategy: "push"
+properties:
+  batchSize:
+    type: "integer"

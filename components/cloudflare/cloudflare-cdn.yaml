@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare CDN: caches static assets by default on the anycast edge. Workers and Argo are opt-in.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-cdn"
+kind: "cdn"
+provider: "cloudflare"
+defaults:
+  managed: true
+  caching: true
+  edgeCompute: false
+properties:
+  argoSmartRouting:
+    type: "boolean"
+    default: false

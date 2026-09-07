@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon CloudWatch: managed metrics (15 months), logs and alarms pushed from AWS services and agents.
+schemaVersion: "1"
+type: "component"
+id: "cloudwatch"
+kind: "monitoring"
+provider: "aws"
+defaults:
+  signal: "all"
+  collectorMode: "push"
+  managed: true
+  retentionDays: 455
+properties:
+  crossAccount:
+    type: "boolean"
+    default: false

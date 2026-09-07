@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Glue Schema Registry: managed registry with backward compatibility by default; enforcement
+# happens in client serializers.
+schemaVersion: "1"
+type: "component"
+id: "glue-schema-registry"
+kind: "schema-registry"
+provider: "aws"
+defaults:
+  compatibility: "backward"
+  enforced: false
+  managed: true
+properties:
+  schemaFormat:
+    type: "enum"
+    values: ["avro", "json-schema", "protobuf"]
+    default: "avro"

@@ -1,6 +1,7 @@
 # yaml-language-server: $schema=../schema/kind.schema.json
-# Abstract kind: a point-to-point message queue.
-# Each message is consumed by one consumer. Contrast with pubsub-topic (fan-out).
+# Point-to-point message queue. Each message is consumed by one consumer.
+# role distinguishes work queues from dead-letter, retry, offline-mailbox and crawl-frontier uses.
+# deadLetterQueue and backoff are deliberately optional so rules can catch their absence.
 schemaVersion: "1"
 type: "kind"
 id: "queue"
@@ -22,3 +23,18 @@ properties:
     default: false
   retentionDays:
     type: "integer"
+  role:
+    type: "enum"
+    values: ["work", "dlq", "retry", "offline-mailbox", "frontier"]
+    default: "work"
+  persistence:
+    type: "boolean"
+    default: true
+  backoff:
+    type: "enum"
+    values: ["none", "fixed", "exponential", "exponential-jitter"]
+  maxAttempts:
+    type: "integer"
+  managed:
+    type: "boolean"
+    default: false

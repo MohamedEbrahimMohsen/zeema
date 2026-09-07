@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apache ZooKeeper: ZAB consensus, metadata and locks; standalone by default, ensemble when configured.
+schemaVersion: "1"
+type: "component"
+id: "zookeeper"
+kind: "coordination-service"
+provider: "default"
+defaults:
+  role: "metadata"
+  consensus: "zab"
+  managed: false
+properties:
+  observers:
+    type: "boolean"
+    default: false

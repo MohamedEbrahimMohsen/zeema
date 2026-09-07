@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Abstract kind: Stores nodes and edges for adjacency queries (TAO, FlockDB, Neo4j, Neptune, in-memory graphs).
+schemaVersion: "1"
+type: "kind"
+id: "graph-database"
+category: "data"
+properties:
+  inMemory:
+    type: "boolean"
+    default: false
+  masterPerShard:
+    type: "boolean"
+    default: false
+  rebuildCadenceHours:
+    type: "integer"
+  crossRegionConsistency:
+    type: "enum"
+    values: ["none", "single-leader", "last-writer-wins-hlc"]
+    default: "none"
+  managed:
+    type: "boolean"
+    default: false

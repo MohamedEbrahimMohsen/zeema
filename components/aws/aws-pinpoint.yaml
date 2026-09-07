@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Pinpoint: managed multichannel engagement (push, email, SMS, voice) with message templates
+# and campaign scheduling.
+schemaVersion: "1"
+type: "component"
+id: "aws-pinpoint"
+kind: "notification-service"
+provider: "aws"
+defaults:
+  managed: true
+  channelPush: true
+  channelEmail: true
+  channelSms: true
+  templateStore: true
+properties:
+  campaigns:
+    type: "boolean"
+    default: true

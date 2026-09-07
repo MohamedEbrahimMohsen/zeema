@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Auth0: OIDC with Universal Login; core RBAC must be enabled per API, MFA off by default.
+schemaVersion: "1"
+type: "component"
+id: "auth0"
+kind: "identity-provider"
+provider: "default"
+defaults:
+  protocol: "oidc"
+  authorizationModel: "none"
+  managed: true
+  mfa: false
+properties:
+  universalLogin:
+    type: "boolean"
+    default: true

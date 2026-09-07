@@ -12,6 +12,8 @@ type: "design"
 id: "multi-region-web"
 
 requirements:
+  security:
+    credentialRotationDays: 90
   availability:
     multiRegion: true
     sla: "99.95"

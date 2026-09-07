@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Aurora: managed MySQL/PostgreSQL-compatible database with a shared storage layer replicated
+# across three zones; automated backups are on by default with one day of retention.
+schemaVersion: "1"
+type: "component"
+id: "aurora"
+kind: "sql-database"
+provider: "aws"
+defaults:
+  managed: true
+  replication: "async"
+  backupEnabled: true
+  backupRetentionDays: 1
+  encryptionAtRest: true
+properties:
+  engine:
+    type: "enum"
+    values: ["mysql", "postgresql"]
+    default: "postgresql"
+  globalDatabase:
+    type: "boolean"
+    default: false
+  serverless:
+    type: "boolean"
+    default: false

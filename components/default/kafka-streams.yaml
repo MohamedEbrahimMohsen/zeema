@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Kafka Streams: client library, event-time by record timestamp, RocksDB state with changelog topics,
+# processing.guarantee defaults to at_least_once and commits every 30 seconds.
+schemaVersion: "1"
+type: "component"
+id: "kafka-streams"
+kind: "stream-processor"
+provider: "default"
+defaults:
+  windowing: "event-time"
+  checkpointIntervalSeconds: 30
+  exactlyOnce: false
+  stateBackend: "rocksdb"
+properties:
+  standbyReplicas:
+    type: "integer"
+    default: 0

@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apache Hive: batch SQL over files in HDFS or object storage; tables are row-oriented text
+# unless ORC or Parquet is chosen, ACID tables are opt-in.
+schemaVersion: "1"
+type: "component"
+id: "hive"
+kind: "data-warehouse"
+provider: "default"
+defaults:
+  realtime: false
+  upsert: false
+  format: "row"
+  managed: false
+properties:
+  fileFormat:
+    type: "enum"
+    values: ["text", "orc", "parquet"]
+    default: "text"
+  acid:
+    type: "boolean"
+    default: false

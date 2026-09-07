@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Couchbase: document store; in-cluster reads hit the active vBucket, cross-datacenter
+# replication (XDCR) is opt-in.
+schemaVersion: "1"
+type: "component"
+id: "couchbase"
+kind: "nosql-database"
+provider: "default"
+defaults:
+  model: "document"
+  consistency: "strong"
+  replication: "single-region"
+properties:
+  version:
+    type: "string"
+  xdcr:
+    type: "boolean"
+    default: false

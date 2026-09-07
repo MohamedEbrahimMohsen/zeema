@@ -5,12 +5,33 @@
   "description": "A deterministic lint rule expressed with the fixed v1 predicate set.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schemaVersion", "type", "id", "severity", "select", "when", "message"],
+  "required": [
+    "schemaVersion",
+    "type",
+    "id",
+    "severity",
+    "select",
+    "when",
+    "message"
+  ],
   "properties": {
-    "schemaVersion": { "const": "1" },
-    "type": { "const": "rule" },
-    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
-    "severity": { "enum": ["error", "warning", "info"] },
+    "schemaVersion": {
+      "const": "1"
+    },
+    "type": {
+      "const": "rule"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "severity": {
+      "enum": [
+        "error",
+        "warning",
+        "info"
+      ]
+    },
     "select": {
       "type": "object",
       "additionalProperties": false,
@@ -22,37 +43,84 @@
           "additionalProperties": false,
           "minProperties": 1,
           "properties": {
-            "kind": { "$ref": "#/definitions/idOrList" },
-            "category": { "$ref": "#/definitions/idOrList" }
+            "kind": {
+              "$ref": "#/definitions/idOrList"
+            },
+            "category": {
+              "$ref": "#/definitions/idOrList"
+            }
           }
         },
         "edge": {
           "type": "object",
           "additionalProperties": false,
-          "properties": { "mode": { "enum": ["sync", "async"] } }
+          "properties": {
+            "mode": {
+              "enum": [
+                "sync",
+                "async"
+              ]
+            },
+            "delivery": {
+              "enum": [
+                "at-most-once",
+                "at-least-once",
+                "exactly-once"
+              ]
+            }
+          }
         },
-        "design": { "const": true }
+        "design": {
+          "const": true
+        }
       }
     },
-    "when": { "$ref": "#/definitions/predicate" },
-    "message": { "type": "string", "minLength": 1 }
+    "when": {
+      "$ref": "#/definitions/predicate"
+    },
+    "message": {
+      "type": "string",
+      "minLength": 1
+    }
   },
   "definitions": {
     "idOrList": {
       "oneOf": [
-        { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
-        { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" } }
+        {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$"
+          }
+        }
       ]
     },
-    "scalar": { "type": ["boolean", "integer", "string"] },
+    "scalar": {
+      "type": [
+        "boolean",
+        "integer",
+        "string"
+      ]
+    },
     "comparison": {
       "type": "object",
       "additionalProperties": false,
       "minProperties": 1,
       "properties": {
-        "eq": { "type": "integer" },
-        "gt": { "type": "integer" },
-        "lt": { "type": "integer" }
+        "eq": {
+          "type": "integer"
+        },
+        "gt": {
+          "type": "integer"
+        },
+        "lt": {
+          "type": "integer"
+        }
       }
     },
     "predicate": {
@@ -60,34 +128,164 @@
       "additionalProperties": false,
       "minProperties": 1,
       "properties": {
-        "all": { "type": "array", "minItems": 1, "items": { "$ref": "#/definitions/predicate" } },
-        "any": { "type": "array", "minItems": 1, "items": { "$ref": "#/definitions/predicate" } },
-        "not": { "$ref": "#/definitions/predicate" },
-        "prop": { "type": "string", "pattern": "^[a-z][a-zA-Z0-9]*$" },
-        "requirement": { "type": "string", "pattern": "^[a-z][a-zA-Z0-9]*(\\.[a-z][a-zA-Z0-9]*)*$" },
-        "equals": { "$ref": "#/definitions/scalar" },
-        "in": { "type": "array", "minItems": 1, "items": { "$ref": "#/definitions/scalar" } },
-        "exists": { "type": "boolean" },
+        "all": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/predicate"
+          }
+        },
+        "any": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/predicate"
+          }
+        },
+        "not": {
+          "$ref": "#/definitions/predicate"
+        },
+        "prop": {
+          "type": "string",
+          "pattern": "^[a-z][a-zA-Z0-9]*$"
+        },
+        "requirement": {
+          "type": "string",
+          "pattern": "^[a-z][a-zA-Z0-9]*(\\.[a-z][a-zA-Z0-9]*)*$"
+        },
+        "equals": {
+          "$ref": "#/definitions/scalar"
+        },
+        "in": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/scalar"
+          }
+        },
+        "exists": {
+          "type": "boolean"
+        },
         "hasEdge": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["direction"],
+          "required": [
+            "direction"
+          ],
           "properties": {
-            "direction": { "enum": ["in", "out", "any"] },
-            "mode": { "enum": ["sync", "async"] },
-            "peerKind": { "$ref": "#/definitions/idOrList" }
+            "direction": {
+              "enum": [
+                "in",
+                "out",
+                "any"
+              ]
+            },
+            "mode": {
+              "enum": [
+                "sync",
+                "async"
+              ]
+            },
+            "peerKind": {
+              "$ref": "#/definitions/idOrList"
+            },
+            "peerCategory": {
+              "$ref": "#/definitions/idOrList"
+            },
+            "count": {
+              "$ref": "#/definitions/comparison"
+            }
           }
         },
         "inGroup": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["kind"],
+          "required": [
+            "kind"
+          ],
           "properties": {
-            "kind": { "enum": ["region", "availability-zone", "vpc", "trust-zone", "system"] },
-            "count": { "$ref": "#/definitions/comparison" }
+            "kind": {
+              "enum": [
+                "region",
+                "availability-zone",
+                "vpc",
+                "trust-zone",
+                "system",
+                "cell",
+                "point-of-presence"
+              ]
+            },
+            "count": {
+              "$ref": "#/definitions/comparison"
+            }
           }
         },
-        "syncChainDepth": { "$ref": "#/definitions/comparison" }
+        "syncChainDepth": {
+          "$ref": "#/definitions/comparison"
+        },
+        "gt": {
+          "type": "integer"
+        },
+        "lt": {
+          "type": "integer"
+        },
+        "field": {
+          "type": "string",
+          "pattern": "^[a-z][a-zA-Z0-9]*$"
+        },
+        "nfr": {
+          "type": "object",
+          "additionalProperties": false,
+          "minProperties": 1,
+          "maxProperties": 1,
+          "properties": {
+            "rps": {
+              "$ref": "#/definitions/comparison"
+            },
+            "latencyP95Ms": {
+              "$ref": "#/definitions/comparison"
+            }
+          }
+        },
+        "hasNode": {
+          "type": "object",
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "kind": {
+              "$ref": "#/definitions/idOrList"
+            },
+            "category": {
+              "$ref": "#/definitions/idOrList"
+            }
+          }
+        },
+        "from": {
+          "$ref": "#/definitions/predicate"
+        },
+        "to": {
+          "$ref": "#/definitions/predicate"
+        },
+        "crossesGroup": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "enum": [
+                "region",
+                "availability-zone",
+                "vpc",
+                "trust-zone",
+                "system",
+                "cell",
+                "point-of-presence"
+              ]
+            }
+          }
+        }
       }
     }
   }

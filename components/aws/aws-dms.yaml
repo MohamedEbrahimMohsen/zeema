@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Database Migration Service in ongoing-replication mode: reads source logs, applies DDL changes
+# to the target by default, managed replication instance or serverless.
+schemaVersion: "1"
+type: "component"
+id: "aws-dms"
+kind: "change-data-capture"
+provider: "aws"
+defaults:
+  managed: true
+  mode: "log-based"
+  ordered: true
+  schemaEvolution: true
+properties:
+  serverless:
+    type: "boolean"
+    default: false

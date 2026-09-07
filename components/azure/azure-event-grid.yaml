@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Event Grid: push-based event routing, at-least-once with 24 hours of retries; no replay,
+# dead-lettering to a storage account is opt-in.
+schemaVersion: "1"
+type: "component"
+id: "azure-event-grid"
+kind: "pubsub-topic"
+provider: "azure"
+defaults:
+  managed: true
+  delivery: "at-least-once"
+  ordering: "none"
+  replay: false
+properties:
+  deadLettering:
+    type: "boolean"
+    default: false

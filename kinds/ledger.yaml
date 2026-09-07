@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Abstract kind: Append-only double-entry money store (Stripe Ledger, Uber LedgerStore). Distinct from sql-database because rules test its invariants.
+schemaVersion: "1"
+type: "kind"
+id: "ledger"
+category: "data"
+properties:
+  doubleEntry:
+    type: "boolean"
+    default: true
+  appendOnly:
+    type: "boolean"
+    default: true
+  tamperEvident:
+    type: "boolean"
+    default: false
+  sealed:
+    type: "boolean"
+    default: false
+  indexConsistency:
+    type: "enum"
+    values: ["strong", "eventual"]
+    default: "strong"
+  tiering:
+    type: "boolean"
+    default: false
+  managed:
+    type: "boolean"
+    default: false

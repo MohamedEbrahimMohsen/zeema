@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Cognito: managed user pools with groups; MFA and hosted UI opt-in.
+schemaVersion: "1"
+type: "component"
+id: "aws-cognito"
+kind: "identity-provider"
+provider: "aws"
+defaults:
+  protocol: "oidc"
+  authorizationModel: "rbac"
+  managed: true
+  mfa: false
+properties:
+  hostedUi:
+    type: "boolean"
+    default: false

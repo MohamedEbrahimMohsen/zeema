@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Virtual WAN: managed hub-and-spoke on the Microsoft backbone; secured hub opt-in.
+schemaVersion: "1"
+type: "component"
+id: "azure-virtual-wan"
+kind: "network-fabric"
+provider: "azure"
+defaults:
+  managed: true
+  interconnect: "cloud-backbone"
+properties:
+  secureHub:
+    type: "boolean"
+    default: false

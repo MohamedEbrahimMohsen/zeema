@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# In-house geospatial cell index (S2, H3 or geohash) for nearby-entity lookups; geoScheme is
+# left undefaulted because the scheme is a per-design choice.
+schemaVersion: "1"
+type: "component"
+id: "geo-cell-index"
+kind: "search-index"
+provider: "default"
+defaults:
+  structure: "geo-cell"
+  shardingStrategy: "geo"
+  indexing: "sync"
+properties:
+  inMemory:
+    type: "boolean"
+    default: true
+  cellLevel:
+    type: "integer"

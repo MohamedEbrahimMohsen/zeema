@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Cloud Queue: managed at-least-once queue with visibility timeouts and a dead-letter queue option.
+schemaVersion: "1"
+type: "component"
+id: "oci-queue"
+kind: "queue"
+provider: "oci"
+defaults:
+  managed: true
+  delivery: "at-least-once"
+  ordering: "none"
+  persistence: true
+  retentionDays: 1
+properties:
+  visibilityTimeoutSeconds:
+    type: "integer"
+    default: 30

@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apache Kafka: partitioned replayable log. Broker defaults are one partition, replication factor 1,
+# leader-only acks and 7-day retention, which is why the durability rules exist.
+schemaVersion: "1"
+type: "component"
+id: "kafka"
+kind: "stream"
+provider: "default"
+defaults:
+  delivery: "at-least-once"
+  ordering: "per-key"
+  partitions: 1
+  replicationFactor: 1
+  acks: "leader"
+  retentionHours: 168
+  storage: "persistent"
+  managed: false
+properties:
+  consumerGroups:
+    type: "boolean"
+    default: true

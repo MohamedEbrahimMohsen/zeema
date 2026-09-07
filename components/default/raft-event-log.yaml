@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Generic in-house Raft-replicated append-only log (exchange journals, sequencers, custom event stores).
+# Three voting nodes and memory-mapped segments are the usual shape.
+schemaVersion: "1"
+type: "component"
+id: "raft-event-log"
+kind: "event-store"
+provider: "default"
+defaults:
+  replication: "raft"
+  journaled: true
+  storage: "mmap"
+  role: "journal"
+properties:
+  nodes:
+    type: "integer"
+    default: 3

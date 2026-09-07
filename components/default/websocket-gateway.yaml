@@ -1,0 +1,13 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Generic in-house WebSocket gateway: stateful, no autoscaling or drain semantics unless the design says so.
+schemaVersion: "1"
+type: "component"
+id: "websocket-gateway"
+kind: "realtime-gateway"
+provider: "default"
+defaults:
+  protocol: "websocket"
+  stateful: true
+properties:
+  maxConnectionsPerNode:
+    type: "integer"

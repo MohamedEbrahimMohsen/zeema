@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Glue job: serverless Spark or Python shell ETL run on demand or by trigger; job bookmarks off by default.
+schemaVersion: "1"
+type: "component"
+id: "glue-job"
+kind: "worker"
+provider: "aws"
+defaults:
+  managed: true
+  trigger: "batch"
+properties:
+  jobBookmark:
+    type: "boolean"
+    default: false

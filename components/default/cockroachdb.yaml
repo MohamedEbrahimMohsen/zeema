@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# CockroachDB: distributed SQL database with Raft-replicated ranges and serializable transactions.
+schemaVersion: "1"
+type: "component"
+id: "cockroachdb"
+kind: "sql-database"
+provider: "default"
+defaults:
+  distributed: true
+  multiWriter: true
+  sharded: true
+  replication: "sync"
+  commitProtocol: "two-phase"
+  replicaFanout: 3
+properties:
+  version:
+    type: "string"
+  survivalGoal:
+    type: "enum"
+    values: ["zone", "region"]
+    default: "zone"

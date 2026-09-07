@@ -1,0 +1,12 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Cloud API Gateway: managed REST front door with rate limiting and TLS.
+schemaVersion: "1"
+type: "component"
+id: "oci-api-gateway"
+kind: "api-gateway"
+provider: "oci"
+defaults:
+  managed: true
+  tls: true
+  rateLimiting: true
+  protocol: "http"

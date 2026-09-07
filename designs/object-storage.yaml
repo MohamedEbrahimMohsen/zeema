@@ -1,0 +1,128 @@
+# yaml-language-server: $schema=../schema/design.schema.json
+# Reference architecture 4, clean variant: S3-like object storage with the hot tier spread
+# over three zones, a Raft-replicated placement service, two DNS providers, last-writer-wins
+# metadata and a witness-checked metadata cache.
+#
+# Fixes relative to object-storage.broken.yaml:
+#   - data-nodes-hot spans 3 zones (placed at region level rather than inside one AZ)
+#   - placement is a 5-node Raft etcd cluster at region level, not pinned to us-east-1a
+#   - edge-dns declares redundantProviders true (secondary provider behind the same zone)
+#   - metadata-db declares conflictResolution last-writer-wins
+#   - metadata-cache (readBarrier true) fronts metadata-db for the read-heavy path
+# This file MUST trip no rule.
+schemaVersion: "1"
+type: "design"
+id: "object-storage"
+
+requirements:
+  availability:
+    multiRegion: false
+    sla: "99.99"
+    zones: 3
+    discoveryRedundant: true
+  durability:
+    annualNines: 11
+    minReplicasAcked: 2
+  consistency:
+    model: "cp"
+    readAfterWrite: true
+  latency:
+    p95Ms: 100
+  traffic:
+    readWriteRatio: 20
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "us-east-1", kind: "region" }
+  - { id: "us-east-1a", kind: "availability-zone", parent: "us-east-1" }
+  - { id: "us-east-1b", kind: "availability-zone", parent: "us-east-1" }
+  - { id: "us-east-1c", kind: "availability-zone", parent: "us-east-1" }
+
+nodes:
+  - id: "sdk-client"
+    component: "sdk-client"
+    props: { platform: "sdk", resendPolicy: "retry" }
+
+  - id: "edge-dns"
+    component: "route53"
+    props: { anycast: true, healthChecked: true, ttlSeconds: 60, redundantProviders: true }
+
+  - id: "api-gateway"
+    component: "kong"
+    group: "us-east-1"
+    props: { auth: "api-key", rateLimiting: true, tls: true }
+    nfr: { rps: 200000 }
+
+  - id: "api-service"
+    component: "container-service"
+    group: "us-east-1"
+    props: { orchestrator: "kubernetes", instances: 60, autoscaling: true, criticality: "high" }
+    nfr: { rps: 200000 }
+
+  - id: "iam"
+    component: "aws-iam"
+    props: { protocol: "iam", authorizationModel: "abac", centralised: true }
+
+  - id: "metadata-cache"
+    component: "redis"
+    group: "us-east-1"
+    props: { cluster: true, evictionPolicy: "ttl", ttlSeconds: 60, invalidation: "event", readBarrier: true, replication: "multi-az" }
+    nfr: { rps: 200000 }
+
+  - id: "metadata-db"
+    component: "cassandra"
+    group: "us-east-1"
+    props: { model: "wide-column", consistency: "tunable", replication: "multi-region-multi-leader", conflictResolution: "last-writer-wins", replicationFactor: 3, quorumReads: 2, quorumWrites: 2, partitionKey: "bucket_name,object_name", backupEnabled: true, backupRetentionDays: 30, encryptionAtRest: true }
+    nfr: { rps: 40000, consistency: "strong" }
+
+  - id: "placement"
+    component: "etcd"
+    group: "us-east-1"
+    props: { role: "placement", consensus: "raft", replicated: true, nodes: 5 }
+
+  - id: "data-router"
+    component: "container-service"
+    group: "us-east-1"
+    props: { orchestrator: "kubernetes", instances: 40, autoscaling: true }
+    nfr: { rps: 200000 }
+
+  - id: "data-nodes-hot"
+    component: "minio"
+    group: "us-east-1"
+    props: { zones: 3, replication: "primary-secondary", tier: "hot", checksumOnWrite: true, versioning: true, objectLock: true, strongReadAfterWrite: true, encryptionAtRest: true, durabilityNines: 11 }
+    nfr: { rps: 150000 }
+
+  - id: "warm-tier"
+    component: "ceph-rgw"
+    group: "us-east-1"
+    props: { zones: 3, replication: "erasure-coded", tier: "warm", checksumOnWrite: true, versioning: true, objectLock: true, encryptionAtRest: true, durabilityNines: 11 }
+    nfr: { rps: 20000 }
+
+  - id: "repair-worker"
+    component: "container-worker"
+    group: "us-east-1c"
+    props: { trigger: "queue", instances: 8, idempotent: true, rateControl: "aimd" }
+
+  - id: "auditor"
+    component: "cron-job"
+    group: "us-east-1b"
+    props: { trigger: "schedule", schedule: "0 */6 * * *", idempotent: true }
+
+edges:
+  - { from: "sdk-client", to: "edge-dns", protocol: "dns", mode: "sync", label: "resolve bucket endpoint" }
+  - { from: "sdk-client", to: "api-gateway", protocol: "https", mode: "sync", retryPolicy: "exponential-jitter", circuitBreaker: true, label: "REST, multipart, range, checksum trailers" }
+  - { from: "api-gateway", to: "api-service", protocol: "http", mode: "sync" }
+  - { from: "api-service", to: "iam", protocol: "https", mode: "sync", timeoutMs: 100, label: "authorise" }
+  - { from: "api-service", to: "metadata-cache", protocol: "redis", mode: "sync", timeoutMs: 10, label: "metadata read, witness-checked" }
+  - { from: "api-service", to: "metadata-db", protocol: "cql", mode: "sync", timeoutMs: 50, label: "metadata write, cache miss" }
+  - { from: "api-service", to: "data-router", protocol: "grpc", mode: "sync", label: "stream payload" }
+  - { from: "data-router", to: "placement", protocol: "grpc", mode: "sync", timeoutMs: 20, label: "node set for object" }
+  - { from: "data-router", to: "data-nodes-hot", protocol: "grpc", mode: "sync", label: "write, ack after quorum" }
+  - { from: "data-nodes-hot", to: "warm-tier", protocol: "s3", mode: "async", delivery: "at-least-once", label: "tier after 90 days" }
+  - { from: "auditor", to: "data-nodes-hot", protocol: "grpc", mode: "async", delivery: "at-least-once", label: "checksum scan" }
+  - { from: "auditor", to: "warm-tier", protocol: "grpc", mode: "async", delivery: "at-least-once", label: "checksum scan" }
+  - { from: "auditor", to: "repair-worker", protocol: "grpc", mode: "async", delivery: "at-least-once", label: "corrupt block found" }
+  - { from: "placement", to: "repair-worker", protocol: "grpc", mode: "async", delivery: "at-least-once", label: "heartbeat lost, rebuild" }
+  - { from: "repair-worker", to: "data-nodes-hot", protocol: "grpc", mode: "sync", label: "re-replicate" }
+  - { from: "repair-worker", to: "warm-tier", protocol: "grpc", mode: "sync", label: "reconstruct stripe" }

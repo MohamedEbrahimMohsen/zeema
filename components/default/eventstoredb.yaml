@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# EventStoreDB (Kurrent): purpose-built event-sourcing store with memory-mapped chunk files.
+# Runs single-node by default; clustering and system projections are opt-in.
+schemaVersion: "1"
+type: "component"
+id: "eventstoredb"
+kind: "event-store"
+provider: "default"
+defaults:
+  managed: false
+  replication: "none"
+  journaled: true
+  storage: "mmap"
+  role: "journal"
+properties:
+  projections:
+    type: "boolean"
+    default: false

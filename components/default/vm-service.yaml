@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Generic service hosted directly on virtual machines (EC2, Azure VM, GCE, bare metal).
+# No autoscaling unless an instance group is configured.
+schemaVersion: "1"
+type: "component"
+id: "vm-service"
+kind: "app-server"
+provider: "default"
+defaults:
+  stateless: true
+  autoscaling: false
+properties:
+  provider:
+    type: "enum"
+    values: ["aws", "azure", "gcp", "on-prem"]
+    default: "on-prem"

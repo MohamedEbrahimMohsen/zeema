@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../schema/rule.schema.json
+# A stateful service on a consistent hash ring needs something to own the ring: detect a
+# dead host, pick a replacement and tell everyone. Without a ring manager (a
+# coordination service) the ring is edited by hand during the outage.
+# Tests "this node has no edge to a coordination service" rather than "the design has no
+# coordination service" so it can co-fire with reconnect-stampede-without-guard, which
+# requires one to exist.
+# Tripped by: designs/slack-messaging.broken.yaml
+schemaVersion: "1"
+type: "rule"
+id: "stateful-hash-ring-without-ring-manager"
+severity: "warning"
+select:
+  node:
+    kind: "app-server"
+when:
+  all:
+    - prop: "shardingStrategy"
+      equals: "consistent-hash"
+    - not:
+        hasEdge:
+          direction: "any"
+          peerKind: "coordination-service"
+message: "Service '{{node.id}}' is on a consistent hash ring but is not connected to a coordination service that manages the ring."

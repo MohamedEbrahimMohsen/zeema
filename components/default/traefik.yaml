@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Traefik: self-managed L7 edge router that auto-discovers backends from Docker/Kubernetes. Health checks are opt-in.
+schemaVersion: "1"
+type: "component"
+id: "traefik"
+kind: "load-balancer"
+provider: "default"
+defaults:
+  layer: "l7"
+  managed: false
+  healthChecks: false
+properties:
+  autoDiscovery:
+    type: "boolean"
+    default: true

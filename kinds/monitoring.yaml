@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Abstract kind: Collects metrics, logs or traces and raises alerts (Prometheus, Datadog, M3, Atlas, Jaeger). Absorbs the tracing candidate via signal.
+schemaVersion: "1"
+type: "kind"
+id: "monitoring"
+category: "ops"
+properties:
+  signal:
+    type: "enum"
+    values: ["metrics", "logs", "traces", "alerts", "all"]
+    default: "metrics"
+  independentOfMonitored:
+    type: "boolean"
+    default: false
+  collectorMode:
+    type: "enum"
+    values: ["pull", "push"]
+    default: "pull"
+  alertGrouping:
+    type: "boolean"
+    default: false
+  retentionDays:
+    type: "integer"
+  managed:
+    type: "boolean"
+    default: false

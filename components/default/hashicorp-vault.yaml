@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# HashiCorp Vault: self-managed secrets and transit encryption; manual unseal and rotation unless configured.
+schemaVersion: "1"
+type: "component"
+id: "hashicorp-vault"
+kind: "key-management"
+provider: "default"
+defaults:
+  managed: false
+  hsm: false
+  rotationAutomated: false
+properties:
+  autoUnseal:
+    type: "boolean"
+    default: false

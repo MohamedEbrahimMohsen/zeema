@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Maps API (Google Maps, Mapbox): read-only so idempotent, billed per request, results cacheable only within TOS limits.
+schemaVersion: "1"
+type: "component"
+id: "maps-api"
+kind: "third-party-api"
+provider: "default"
+defaults:
+  idempotent: true
+  callbackStyle: "none"
+properties:
+  billingPerRequest:
+    type: "boolean"
+    default: true

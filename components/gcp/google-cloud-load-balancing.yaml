@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud Load Balancing: managed, anycast global L7 by default, Maglev consistent hashing in the data plane.
+schemaVersion: "1"
+type: "component"
+id: "google-cloud-load-balancing"
+kind: "load-balancer"
+provider: "gcp"
+defaults:
+  layer: "l7"
+  managed: true
+  global: true
+  hashing: "maglev"
+properties:
+  scheme:
+    type: "enum"
+    values: ["external", "internal"]
+    default: "external"

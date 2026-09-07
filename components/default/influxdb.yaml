@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# InfluxDB: time series database with infinite retention by default; downsampling is a task
+# the user schedules.
+schemaVersion: "1"
+type: "component"
+id: "influxdb"
+kind: "timeseries-database"
+provider: "default"
+defaults:
+  downsampling: false
+  tiers: "single"
+  labelIndex: true
+  compression: "gorilla"
+  managed: false
+properties:
+  majorVersion:
+    type: "integer"
+    default: 2

@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Confluent Schema Registry: Avro/Protobuf/JSON schemas per subject, backward compatibility by
+# default; broker-side validation is opt-in.
+schemaVersion: "1"
+type: "component"
+id: "confluent-schema-registry"
+kind: "schema-registry"
+provider: "default"
+defaults:
+  compatibility: "backward"
+  enforced: false
+  managed: false
+properties:
+  schemaFormat:
+    type: "enum"
+    values: ["avro", "protobuf", "json-schema"]
+    default: "avro"
+  subjectNameStrategy:
+    type: "enum"
+    values: ["topic-name", "record-name", "topic-record-name"]
+    default: "topic-name"

@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Envoy global rate limit service: fixed-window counters in Redis, called from the gateway; failure mode allows traffic.
+schemaVersion: "1"
+type: "component"
+id: "envoy-ratelimit"
+kind: "rate-limiter"
+provider: "default"
+defaults:
+  algorithm: "fixed-window"
+  placement: "gateway"
+  distributed: true
+  failMode: "open"
+properties:
+  backend:
+    type: "enum"
+    values: ["redis", "memcached"]
+    default: "redis"

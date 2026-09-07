@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Lambda: managed function-as-a-service, scales per request, 3-second timeout and 128 MB by default.
+schemaVersion: "1"
+type: "component"
+id: "lambda"
+kind: "app-server"
+provider: "aws"
+defaults:
+  managed: true
+  stateless: true
+  autoscaling: true
+properties:
+  timeoutSeconds:
+    type: "integer"
+    default: 3
+  memoryMb:
+    type: "integer"
+    default: 128

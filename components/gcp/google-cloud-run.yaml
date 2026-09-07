@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud Run: managed container serving, scales to zero, 300-second request timeout, 512 MiB
+# and 80 concurrent requests per instance by default.
+schemaVersion: "1"
+type: "component"
+id: "google-cloud-run"
+kind: "app-server"
+provider: "gcp"
+defaults:
+  managed: true
+  stateless: true
+  autoscaling: true
+properties:
+  timeoutSeconds:
+    type: "integer"
+    default: 300
+  memoryMb:
+    type: "integer"
+    default: 512
+  minInstances:
+    type: "integer"
+    default: 0

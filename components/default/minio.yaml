@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# MinIO: self-hosted S3-compatible object store; distributed mode erasure-codes every object.
+schemaVersion: "1"
+type: "component"
+id: "minio"
+kind: "object-store"
+provider: "default"
+defaults:
+  replication: "erasure-coded"
+  strongReadAfterWrite: true
+  versioning: false
+  managed: false
+properties:
+  erasureParity:
+    type: "integer"
+  siteReplication:
+    type: "boolean"
+    default: false

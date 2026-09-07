@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Step Functions: managed state-machine DAGs. Standard workflows are durable for up to a year;
+# steps retry only when a Retry block is declared.
+schemaVersion: "1"
+type: "component"
+id: "aws-step-functions"
+kind: "workflow-engine"
+provider: "aws"
+defaults:
+  durable: true
+  pattern: "dag"
+  compensation: false
+  managed: true
+properties:
+  workflowType:
+    type: "enum"
+    values: ["standard", "express"]
+    default: "standard"
+  activityRetry:
+    type: "boolean"
+    default: false

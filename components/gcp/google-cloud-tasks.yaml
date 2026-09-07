@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud Tasks: managed push queue that dispatches HTTP tasks with built-in exponential backoff
+# and retries until the 31-day maximum task age unless a queue-level limit is set.
+schemaVersion: "1"
+type: "component"
+id: "google-cloud-tasks"
+kind: "queue"
+provider: "gcp"
+defaults:
+  managed: true
+  delivery: "at-least-once"
+  ordering: "none"
+  deadLetterQueue: false
+  replay: false
+  retentionDays: 31
+  persistence: true
+  backoff: "exponential"
+properties:
+  maxDispatchesPerSecond:
+    type: "integer"
+    default: 500

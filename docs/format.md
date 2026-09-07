@@ -30,7 +30,7 @@ Conventions that apply everywhere:
 | Layer | Folder | Answers |
 |---|---|---|
 | Kind | `kinds/` | What is a queue, abstractly? Which properties does any queue have? |
-| Component | `components/` | What is Kafka, concretely? Which kind is it, what does it add, what does it default? |
+| Component | `components/<provider>/` | What is Kafka, concretely? Which kind is it, what does it add, what does it default? |
 | Design | `designs/` | Which components does this system use, how are they connected, what does it promise? |
 
 Rules (`rules/`) sit beside the layers and read from all three.
@@ -53,7 +53,7 @@ properties:
 
 | Field | Required | Meaning |
 |---|---|---|
-| `category` | yes | One of `messaging`, `compute`, `data`, `edge`, `client`, `ops`, `security`. Rules may select by category. |
+| `category` | yes | One of `messaging`, `compute`, `data`, `edge`, `external`, `client`, `ops`, `security`. Rules may select by category. `external` is for services outside your control (`third-party-api`). |
 | `properties` | yes | Map of property name to property definition. May be empty. |
 
 ### Property definition
@@ -84,6 +84,7 @@ properties:
 | Field | Required | Meaning |
 |---|---|---|
 | `kind` | yes | Id of exactly one kind. |
+| `provider` | yes | Vendor that owns the product: `aws`, `azure`, `gcp`, `oci`, `cloudflare` or `default`. The file lives in `components/<provider>/`. `default` is open source, in-house generic, or SaaS (Stripe, Datadog). Hosting is not ownership: `postgres` is `default` even on RDS, `aurora` is `aws`. |
 | `defaults` | no | Values for kind properties that this implementation changes. Every key must exist on the kind. |
 | `properties` | no | Additional properties specific to this implementation. Same definition shape as a kind property. Must not redefine a kind property. |
 
@@ -124,21 +125,58 @@ edges:
 
 ### requirements
 
-Promises the whole design makes. Rules compare nodes against them.
+Promises the whole design makes. Rules compare nodes against them. Every path below is
+optional; an absent requirement never equals anything.
 
 | Path | Type | Meaning |
 |---|---|---|
-| `availability.multiRegion` | boolean | The system must survive the loss of one region |
+| `availability.multiRegion` | boolean | Must survive the loss of one region |
 | `availability.sla` | string | Availability target, e.g. `"99.95"`. Quoted. |
+| `availability.zones` | integer | Zones every stateful node is expected to span |
+| `availability.regions` | integer | Regions the system runs in |
+| `availability.discoveryRedundant` | boolean | DNS and coordination must have no single instance |
+| `availability.degradedModeAllowed` | boolean | Fallback paths are acceptable |
 | `messaging.replay` | boolean | Consumers must be able to re-read past messages |
-| `latency.p95Ms` | integer | End-to-end p95 latency target for the primary request path |
+| `messaging.exactlyOnce` | boolean | Message delivery must be exactly-once |
+| `messaging.orderingScope` | `partition`, `global` | Ordering guarantee consumers rely on |
+| `latency.p95Ms` | integer | p95 target for the primary request path |
+| `latency.p99Us` | integer | p99 target in microseconds (exchanges, matching) |
+| `latency.geoDistributed` | boolean | Users on several continents with a latency target |
+| `durability.annualNines` | integer | Designed durability of stored objects, e.g. 11 |
+| `durability.minReplicasAcked` | integer | Replicas that must acknowledge a write |
+| `consistency.model` | `ap`, `cp` | Which side of the partition trade the design takes |
+| `consistency.readAfterWrite` | boolean | A write must be visible to the next read |
+| `consistency.quorumScope` | `region`, `global` | Where quorums are formed |
+| `correctness.exactlyOnceEffect` | boolean | Side effects (charges, sends) must happen once |
+| `correctness.reproducible` | boolean | Any past state must be rebuildable from a log |
+| `correctness.tamperEvident` | boolean | Unauthorised change must be detectable |
+| `correctness.billingGrade` | boolean | Counts are billed on |
+| `money.zeroSum` | boolean | Every debit has a matching credit |
+| `money.pci` | boolean | Card data is in scope |
+| `data.reconciliation` | boolean | A batch job compares derived data to the source |
+| `data.lossDetection` | boolean | Pipelines must detect dropped records |
+| `data.ownershipExclusive` | boolean | One service owns each datastore |
+| `data.immutableAudit` | boolean | An append-only audit log is required |
+| `traffic.readWriteRatio` | integer | Reads per write on the main path |
+| `traffic.skew` | `uniform`, `heavy-tail` | Whether a few keys carry most traffic |
+| `traffic.peakMultiplier` | integer | Peak over average |
+| `isolation.perQueue` | boolean | Each queue needs its own worker pool |
+| `isolation.perEventType` | boolean | Event types must not share a pipeline |
+| `isolation.tenancy` | `shared`, `cell`, `dedicated` | Blast-radius model |
+| `freshness.maxSeconds` | integer | Oldest acceptable derived data |
+| `security.certificateRotationAutomated` | boolean | Internal certificates rotate without humans |
+| `security.credentialRotationDays` | integer | Datastore credentials rotate at least this often |
+| `observability.alertingIndependent` | boolean | Alerting must not depend on the systems it watches |
 
-New requirement paths are added through governance, not ad hoc.
+New requirement paths are added through governance, not ad hoc. Each path above is
+backed by at least one intake card in `docs/intake/`.
 
 ### groups
 
 Nested boundaries. A node belongs to at most one group; a group may have one `parent`.
-Group kinds in v1: `region`, `availability-zone`, `vpc`, `trust-zone`, `system`.
+Group kinds in v1: `region`, `availability-zone`, `vpc`, `trust-zone`, `system`, `cell` (a
+failure-isolated slice of the system serving a subset of tenants) and `point-of-presence`
+(an edge site).
 
 A node's **ancestry** is its group, that group's parent, and so on. Rules ask questions
 like "how many `region` groups are in this node's ancestry".
@@ -166,6 +204,16 @@ Directed. `from` and `to` are node ids in this design.
 | `mode` | yes | `sync` (caller waits) or `async` (caller continues) |
 | `delivery` | no | `at-most-once`, `at-least-once`, `exactly-once`. Meaningful for async edges. |
 | `label` | no | Free text for renderers. Never read by rules. |
+| `timeoutMs` | no | Caller timeout. Rules read it on sync edges. |
+| `retryPolicy` | no | `none`, `fixed`, `exponential`, `exponential-jitter` |
+| `idempotent` | no | The call can be safely repeated (idempotency key or natural idempotency) |
+| `circuitBreaker` | no | Caller stops calling after repeated failures |
+| `fallback` | no | `none`, `static`, `cached`, `degraded`: what the caller does when the callee fails |
+| `batched` | no | Calls are coalesced |
+
+These six optional fields are the only edge properties in v1. They exist because the
+intake cards showed rules that read them (retries without shedding, money calls without
+idempotency, fan-out without timeouts). Anything else on an edge goes in `label`.
 
 Layout, coordinates and colours are **not** part of the design. A renderer derives a
 diagram from groups, nodes and edges alone.
@@ -193,7 +241,7 @@ Chooses the subject the rule is evaluated against, once per match.
 |---|---|
 | `node: { kind: "queue" }` | Every node whose component's kind is `queue`. `kind` may be a list. |
 | `node: { category: "data" }` | Every node whose kind's category matches. May be a list. |
-| `edge: { mode: "sync" }` | Every edge, optionally filtered by mode. |
+| `edge: { mode: "sync" }` | Every edge, optionally filtered by `mode` and `delivery`. |
 | `design: true` | The design itself, once. |
 
 ### when
@@ -207,11 +255,18 @@ be written with them is a request to extend this list, not to add an expression 
 | `prop: p, equals: v` | node | Effective value of `p` equals `v` |
 | `prop: p, in: [v1, v2]` | node | Effective value is one of the list |
 | `prop: p, exists: bool` | node | Whether `p` resolves to any value |
+| `prop: p, gt: n` / `lt: n` | node | Integer comparison on the effective value; absent is never greater or less |
+| `field: f, equals / in / exists` | edge | Reads an edge field (`mode`, `delivery`, `protocol`, `timeoutMs`, `retryPolicy`, `idempotent`, `circuitBreaker`, `fallback`, `batched`) |
+| `nfr: { rps: {gt/lt/eq} }` | node | Compares a node `nfr` value; `latencyP95Ms` also allowed |
 | `requirement: path, equals: v` | any | The design requirement at `path` equals `v`. Absent requirements never equal anything. |
 | `requirement: path, exists: bool` | any | Whether the requirement is set |
-| `hasEdge: { direction, mode?, peerKind? }` | node | At least one edge in that direction (`in`, `out`, `any`), optionally with that mode and a peer node of that kind |
+| `requirement: path, gt / lt: n` | any | Integer comparison on a requirement |
+| `hasEdge: { direction, mode?, delivery?, peerKind?, peerCategory?, count? }` | node | At least one edge in that direction (`in`, `out`, `any`), optionally filtered; `count` compares the number of matching edges |
+| `hasNode: { kind?, category? }` | any | The design contains at least one node of that kind or category |
 | `inGroup: { kind, count? }` | node | Number of groups of that kind in the node's ancestry. Without `count`, means at least one. |
 | `syncChainDepth: { gt / lt / eq }` | node | Longest path of consecutive `sync` edges starting at this node. Cycles are cut at first revisit. |
+| `from: <predicate>` / `to: <predicate>` | edge | Evaluates a node predicate on the edge's source or target node |
+| `crossesGroup: { kind }` | edge | Source and target are in different groups of that kind, or one of them is in none |
 
 Comparison objects accept exactly one of `eq`, `gt`, `lt`.
 
@@ -226,11 +281,37 @@ message may interpolate `{{node.id}}`, `{{edge.from}}`, `{{edge.to}}` and `{{des
 `components` and `rules`. `en.yaml` is mandatory and complete. Other languages are
 optional and may be partial; consumers fall back to `en`.
 
-## 8. What v1 deliberately does not have
+## 8. Icons
+
+`icons/` holds the visual vocabulary. It is a lookup table, not part of any document: no
+kind, component or design refers to an icon, and a renderer that ignores the folder is
+still correct.
+
+**Naming.** The file name is the id. `icons/kinds/<kind-id>.svg` and
+`icons/components/<provider>/<component-id>.svg`, mirroring `components/<provider>/`.
+`icons/providers/<slug>.svg` holds the brand marks that component icons badge themselves with.
+
+**Fallback chain.** A renderer resolves an icon in this order and stops at the first hit:
+
+1. `icons/components/<provider>/<component-id>.svg`, provider read from the component file
+2. `icons/kinds/<kind-id>.svg`, using the kind the component declares
+3. the renderer's own glyph for the kind's `category`
+
+So a component may ship without an icon and still draw correctly, but a kind may not.
+
+**SVG constraints.** Every file is `viewBox="0 0 24 24"` and draws its glyph in
+`stroke="currentColor"` with `fill="none"`, so it takes the surrounding text colour in
+both themes. No text, no raster, no script, no external reference; under 4 KB. The one
+exception to `currentColor` is the provider badge in the bottom-right corner, which may
+carry the brand colour as a fixed fill.
+
+`icons/README.md` documents the badge geometry and the licence position on the marks.
+
+## 9. What v1 deliberately does not have
 
 - Kind-to-kind inheritance
 - Object or list property types
-- Properties on groups or edges beyond the fixed fields
+- Properties on groups; properties on edges beyond the six optional fields in section 5
 - Expressions in rules
 - Layout hints
 - Any reference to files outside the repository

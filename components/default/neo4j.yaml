@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Neo4j: native property-graph database; single instance by default, causal clustering opt-in.
+schemaVersion: "1"
+type: "component"
+id: "neo4j"
+kind: "graph-database"
+provider: "default"
+defaults:
+  inMemory: false
+  crossRegionConsistency: "none"
+  managed: false
+properties:
+  version:
+    type: "string"
+  causalCluster:
+    type: "boolean"
+    default: false

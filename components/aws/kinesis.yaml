@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Kinesis Data Streams: managed shard-based log, synchronously replicated across three AZs,
+# 24-hour default retention, on-demand capacity by default.
+schemaVersion: "1"
+type: "component"
+id: "kinesis"
+kind: "stream"
+provider: "aws"
+defaults:
+  delivery: "at-least-once"
+  ordering: "per-key"
+  replicationFactor: 3
+  acks: "all"
+  retentionHours: 24
+  storage: "persistent"
+  managed: true
+properties:
+  capacityMode:
+    type: "enum"
+    values: ["on-demand", "provisioned"]
+    default: "on-demand"

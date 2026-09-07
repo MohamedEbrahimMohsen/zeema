@@ -12,6 +12,8 @@ type: "design"
 id: "order-processing"
 
 requirements:
+  security:
+    credentialRotationDays: 90
   availability:
     multiRegion: false
     sla: "99.9"
@@ -52,9 +54,9 @@ nodes:
     props: { orchestrator: "kubernetes", instances: 2, runtime: "dotnet-10" }
 
   - id: "orders-queue"
-    component: "kafka"
+    component: "sqs"
     group: "core-vpc"
-    props: { partitions: 12, deadLetterQueue: true }
+    props: { deadLetterQueue: true }
 
   - id: "fulfilment-worker"
     component: "container-service"
@@ -70,7 +72,7 @@ nodes:
   - id: "order-events"
     component: "kafka"
     group: "core-vpc"
-    props: { partitions: 6, deadLetterQueue: true, retentionDays: 30 }
+    props: { partitions: 6, replicationFactor: 3, acks: "all", retentionHours: 720 }
 
 edges:
   - { from: "api", to: "order-service", protocol: "http", mode: "sync" }
@@ -79,7 +81,7 @@ edges:
   - { from: "payment-service", to: "reservation-queue", protocol: "sqs", mode: "async", delivery: "at-least-once" }
   - { from: "reservation-queue", to: "inventory-service", protocol: "sqs", mode: "async", delivery: "at-least-once" }
   - { from: "inventory-service", to: "orders-db", protocol: "postgres", mode: "sync" }
-  - { from: "order-service", to: "orders-queue", protocol: "kafka", mode: "async", delivery: "at-least-once" }
-  - { from: "orders-queue", to: "fulfilment-worker", protocol: "kafka", mode: "async", delivery: "at-least-once" }
+  - { from: "order-service", to: "orders-queue", protocol: "sqs", mode: "async", delivery: "at-least-once" }
+  - { from: "orders-queue", to: "fulfilment-worker", protocol: "sqs", mode: "async", delivery: "at-least-once" }
   - { from: "fulfilment-worker", to: "orders-db", protocol: "postgres", mode: "sync" }
   - { from: "fulfilment-worker", to: "order-events", protocol: "kafka", mode: "async", delivery: "at-least-once" }

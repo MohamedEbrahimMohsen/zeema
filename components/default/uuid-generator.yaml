@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Library UUID generation on each node; random v4 by default, v7 adds time ordering.
+schemaVersion: "1"
+type: "component"
+id: "uuid-generator"
+kind: "id-generator"
+provider: "default"
+defaults:
+  strategy: "uuid"
+  central: false
+  replicated: false
+  timeSortable: false
+  clockRollbackGuard: false
+properties:
+  uuidVersion:
+    type: "enum"
+    values: ["v1", "v4", "v7"]
+    default: "v4"

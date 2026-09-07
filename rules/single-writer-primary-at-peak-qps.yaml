@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../schema/rule.schema.json
+# A single-writer, unsharded relational primary has a ceiling. Declaring more than
+# 5000 requests per second against it means the peak will find that ceiling in
+# production, as the 1.6M QPS Aurora crash at DoorDash did.
+# Tripped by: designs/doordash-delivery.broken.yaml
+schemaVersion: "1"
+type: "rule"
+id: "single-writer-primary-at-peak-qps"
+severity: "error"
+select:
+  node:
+    kind: "sql-database"
+when:
+  all:
+    - prop: "multiWriter"
+      equals: false
+    - prop: "sharded"
+      equals: false
+    - nfr:
+        rps:
+          gt: 5000
+message: "Database '{{node.id}}' is a single unsharded writer declared at more than 5000 rps. Shard it or move to a multi-writer distributed store."

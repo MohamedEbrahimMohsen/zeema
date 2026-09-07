@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenSearch: Elasticsearch fork with the same shard, replica and refresh defaults.
+schemaVersion: "1"
+type: "component"
+id: "opensearch"
+kind: "search-index"
+provider: "default"
+defaults:
+  structure: "inverted"
+  shardingStrategy: "hash"
+  indexing: "async"
+  replicas: 1
+properties:
+  shards:
+    type: "integer"
+    default: 1
+  refreshIntervalSeconds:
+    type: "integer"
+    default: 1

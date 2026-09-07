@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../schema/rule.schema.json
+# When a gateway holding millions of sockets restarts, every client reconnects at once
+# and the gateway hits the coordination service (discovery, ring lookup) for each of them.
+# Without a stampede guard (jittered reconnect, connection admission) that lookup storm
+# takes the coordination service down with it.
+# Tripped by: designs/slack-messaging.broken.yaml
+schemaVersion: "1"
+type: "rule"
+id: "reconnect-stampede-without-guard"
+severity: "error"
+select:
+  node:
+    kind: "realtime-gateway"
+when:
+  all:
+    - hasEdge:
+        direction: "out"
+        mode: "sync"
+        peerKind: "coordination-service"
+    - prop: "stampedeGuard"
+      equals: false
+message: "Realtime gateway '{{node.id}}' calls a coordination service synchronously on connect but has no reconnect stampede guard."

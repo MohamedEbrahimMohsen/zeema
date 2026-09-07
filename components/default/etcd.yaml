@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# etcd: Raft key-value store for metadata and config; single member by default, auth off.
+schemaVersion: "1"
+type: "component"
+id: "etcd"
+kind: "coordination-service"
+provider: "default"
+defaults:
+  role: "metadata"
+  consensus: "raft"
+  managed: false
+properties:
+  authEnabled:
+    type: "boolean"
+    default: false

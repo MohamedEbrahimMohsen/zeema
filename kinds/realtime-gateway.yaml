@@ -1,0 +1,41 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Holds long-lived client connections and pushes events (WebSocket gateways, chat servers, long-poll and multicast feeds).
+# stampedeGuard and drainOnScaleIn default false so reconnect and scale-in rules can fire.
+schemaVersion: "1"
+type: "kind"
+id: "realtime-gateway"
+category: "edge"
+properties:
+  protocol:
+    type: "enum"
+    values: ["websocket", "sse", "long-poll", "grpc-stream", "udp-multicast"]
+    default: "websocket"
+  stateful:
+    type: "boolean"
+    default: true
+  autoscaling:
+    type: "boolean"
+    default: false
+  channelAssignment:
+    type: "enum"
+    values: ["random", "hash", "sticky"]
+    default: "random"
+  drainOnScaleIn:
+    type: "boolean"
+    default: false
+  stampedeGuard:
+    type: "boolean"
+    default: false
+  sequenceNumbers:
+    type: "boolean"
+    default: false
+  ackIntervalSeconds:
+    type: "integer"
+  subscriptionsPerUser:
+    type: "integer"
+  pushFallback:
+    type: "boolean"
+    default: false
+  managed:
+    type: "boolean"
+    default: false

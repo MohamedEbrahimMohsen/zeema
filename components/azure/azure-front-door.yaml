@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Front Door: managed global entry point. Caching is off per route until enabled; WAF is a separate policy.
+schemaVersion: "1"
+type: "component"
+id: "azure-front-door"
+kind: "cdn"
+provider: "azure"
+defaults:
+  managed: true
+  caching: false
+properties:
+  waf:
+    type: "boolean"
+    default: false

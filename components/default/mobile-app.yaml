@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Native or cross-platform mobile app: local cache, no offline mode or resend unless built.
+schemaVersion: "1"
+type: "component"
+id: "mobile-app"
+kind: "client"
+provider: "default"
+defaults:
+  platform: "mobile"
+  localCache: true
+properties:
+  os:
+    type: "enum"
+    values: ["ios", "android", "both"]
+    default: "both"

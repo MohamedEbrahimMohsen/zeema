@@ -25,7 +25,7 @@ Add a kind only when **all** of these hold:
    they are components of one kind, not two kinds. Kafka and SQS share delivery,
    ordering and dead-lettering, so both are `queue`. SNS cannot be consumed
    point-to-point, so `pubsub-topic` is a separate kind.
-4. It fits one of the seven categories. Adding a category is a schema change.
+4. It fits one of the eight categories. Adding a category is a schema change (`external` was added from the intake cards for services outside your control).
 
 The pull request must include the kind file, at least one component, the `en` locale
 entries, and an update to at least one reference design that uses it.
@@ -37,6 +37,9 @@ A component is a concrete product implementing exactly one kind.
 Acceptance criteria:
 
 - Maps to exactly one existing kind. If none fits, propose the kind first.
+- Declares `provider` and lives in `components/<provider>/`. The provider is the vendor that
+  owns the product, never where it happens to be hosted. Adding a provider folder is a
+  schema change (the enum in `component.schema.json`) and needs at least three components.
 - Not a duplicate. One file per product, not per hosting variant. `postgres` covers RDS
   PostgreSQL, Cloud SQL and self-hosted; a managed flag is a property, not a component.
 - Every `defaults` key exists on the kind and reflects the product's actual default
@@ -46,6 +49,10 @@ Acceptance criteria:
   that will read it or a renderer that will show it. "Might be useful later" is not a
   justification.
 - `locales/en.yaml` has `name` and `description` entries for it.
+- The pull request either ships `icons/components/<provider>/<id>.svg` or relies deliberately on the
+  component's kind glyph, which is the right picture for a generic component. A component
+  that is a cloud service or a branded product should carry the provider badge; see
+  `icons/README.md`.
 
 ## 4. Adding or changing a property
 

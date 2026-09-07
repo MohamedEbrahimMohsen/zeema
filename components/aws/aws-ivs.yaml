@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon IVS: managed live-stream ingest (RTMPS/WebRTC) and HLS delivery, low-latency by default.
+schemaVersion: "1"
+type: "component"
+id: "aws-ivs"
+kind: "media-router"
+provider: "aws"
+defaults:
+  managed: true
+  mode: "ingest"
+  transport: "tcp"
+  rerouteOnFailure: true
+properties:
+  latencyMode:
+    type: "enum"
+    values: ["low", "normal"]
+    default: "low"
