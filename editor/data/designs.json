@@ -1,0 +1,184 @@
+[
+  {
+    "path": "designs/imported/chat-system/design.yaml",
+    "tier": "imported",
+    "id": "chat-system",
+    "editable": true,
+    "layout": "designs/imported/chat-system/design.layout.json"
+  },
+  {
+    "path": "designs/imported/google-drive/design.yaml",
+    "tier": "imported",
+    "id": "google-drive",
+    "editable": true,
+    "layout": "designs/imported/google-drive/design.layout.json"
+  },
+  {
+    "path": "designs/imported/key-value-store/design.yaml",
+    "tier": "imported",
+    "id": "key-value-store",
+    "editable": true,
+    "layout": "designs/imported/key-value-store/design.layout.json"
+  },
+  {
+    "path": "designs/imported/news-feed/design.yaml",
+    "tier": "imported",
+    "id": "news-feed",
+    "editable": true,
+    "layout": "designs/imported/news-feed/design.layout.json"
+  },
+  {
+    "path": "designs/imported/notification-system/design.yaml",
+    "tier": "imported",
+    "id": "notification-system",
+    "editable": true,
+    "layout": "designs/imported/notification-system/design.layout.json"
+  },
+  {
+    "path": "designs/imported/notification-system-design/design.yaml",
+    "tier": "imported",
+    "id": "notification-system-design",
+    "editable": true,
+    "layout": "designs/imported/notification-system-design/design.layout.json"
+  },
+  {
+    "path": "designs/imported/rate-limiter/design.yaml",
+    "tier": "imported",
+    "id": "rate-limiter",
+    "editable": true,
+    "layout": "designs/imported/rate-limiter/design.layout.json"
+  },
+  {
+    "path": "designs/imported/scale-to-millions/design.yaml",
+    "tier": "imported",
+    "id": "scale-to-millions",
+    "editable": true,
+    "layout": "designs/imported/scale-to-millions/design.layout.json"
+  },
+  {
+    "path": "designs/imported/search-autocomplete/design.yaml",
+    "tier": "imported",
+    "id": "search-autocomplete",
+    "editable": true,
+    "layout": "designs/imported/search-autocomplete/design.layout.json"
+  },
+  {
+    "path": "designs/imported/url-shortener/design.yaml",
+    "tier": "imported",
+    "id": "url-shortener",
+    "editable": true,
+    "layout": "designs/imported/url-shortener/design.layout.json"
+  },
+  {
+    "path": "designs/imported/web-crawler/design.yaml",
+    "tier": "imported",
+    "id": "web-crawler",
+    "editable": true,
+    "layout": "designs/imported/web-crawler/design.layout.json"
+  },
+  {
+    "path": "designs/imported/youtube/design.yaml",
+    "tier": "imported",
+    "id": "youtube",
+    "editable": true,
+    "layout": "designs/imported/youtube/design.layout.json"
+  },
+  {
+    "path": "designs/reference/doordash-delivery/design.yaml",
+    "tier": "reference",
+    "id": "doordash-delivery",
+    "editable": true,
+    "layout": "designs/reference/doordash-delivery/design.layout.json"
+  },
+  {
+    "path": "designs/reference/doordash-delivery/design.broken.yaml",
+    "tier": "reference",
+    "id": "doordash-delivery",
+    "editable": false,
+    "layout": "designs/reference/doordash-delivery/design.broken.layout.json"
+  },
+  {
+    "path": "designs/reference/multi-region-web/design.yaml",
+    "tier": "reference",
+    "id": "multi-region-web",
+    "editable": true,
+    "layout": "designs/reference/multi-region-web/design.layout.json"
+  },
+  {
+    "path": "designs/reference/multi-region-web/design.broken.yaml",
+    "tier": "reference",
+    "id": "multi-region-web",
+    "editable": false,
+    "layout": "designs/reference/multi-region-web/design.broken.layout.json"
+  },
+  {
+    "path": "designs/reference/object-storage/design.yaml",
+    "tier": "reference",
+    "id": "object-storage",
+    "editable": true,
+    "layout": "designs/reference/object-storage/design.layout.json"
+  },
+  {
+    "path": "designs/reference/object-storage/design.broken.yaml",
+    "tier": "reference",
+    "id": "object-storage",
+    "editable": false,
+    "layout": "designs/reference/object-storage/design.broken.layout.json"
+  },
+  {
+    "path": "designs/reference/order-processing/design.yaml",
+    "tier": "reference",
+    "id": "order-processing",
+    "editable": true,
+    "layout": "designs/reference/order-processing/design.layout.json"
+  },
+  {
+    "path": "designs/reference/order-processing/design.broken.yaml",
+    "tier": "reference",
+    "id": "order-processing",
+    "editable": false,
+    "layout": "designs/reference/order-processing/design.broken.layout.json"
+  },
+  {
+    "path": "designs/reference/payment-system/design.yaml",
+    "tier": "reference",
+    "id": "payment-system",
+    "editable": true,
+    "layout": "designs/reference/payment-system/design.layout.json"
+  },
+  {
+    "path": "designs/reference/payment-system/design.broken.yaml",
+    "tier": "reference",
+    "id": "payment-system",
+    "editable": false,
+    "layout": "designs/reference/payment-system/design.broken.layout.json"
+  },
+  {
+    "path": "designs/reference/slack-messaging/design.yaml",
+    "tier": "reference",
+    "id": "slack-messaging",
+    "editable": true,
+    "layout": "designs/reference/slack-messaging/design.layout.json"
+  },
+  {
+    "path": "designs/reference/slack-messaging/design.broken.yaml",
+    "tier": "reference",
+    "id": "slack-messaging",
+    "editable": false,
+    "layout": "designs/reference/slack-messaging/design.broken.layout.json"
+  },
+  {
+    "path": "designs/reference/twitter-timeline/design.yaml",
+    "tier": "reference",
+    "id": "twitter-timeline",
+    "editable": true,
+    "layout": "designs/reference/twitter-timeline/design.layout.json"
+  },
+  {
+    "path": "designs/reference/twitter-timeline/design.broken.yaml",
+    "tier": "reference",
+    "id": "twitter-timeline",
+    "editable": false,
+    "layout": "designs/reference/twitter-timeline/design.broken.layout.json"
+  }
+]

@@ -1,0 +1,111 @@
+/* Arkore canvas. Calm surfaces, one accent, the drawing does the talking. */
+:root {
+  --bg: #fbfbfa; --panel: #ffffff; --ink: #1b1b19; --muted: #6b6b66; --line: #8a8a85;
+  --frame: #b4b4ae; --border: #e3e3df; --accent: #3f6698; --accent-soft: #eaf1fd;
+  --danger: #b3261e; --warn: #9a6700; --shadow: 0 1px 2px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.05);
+  --f-blue-fill:#eaf1fd; --f-blue-line:#9cc0f0; --f-teal-fill:#e6f5f2; --f-teal-line:#8fcfc2;
+  --f-amber-fill:#fbf1e0; --f-amber-line:#dcb473; --f-violet-fill:#f0edfc; --f-violet-line:#b6a8ee;
+  --f-purple-fill:#f6ecf9; --f-purple-line:#cda3dc; --f-green-fill:#e9f5ea; --f-green-line:#96c99b;
+  --f-rose-fill:#fceceb; --f-rose-line:#e5a7a1; --f-red-fill:#fbe9e9; --f-red-line:#e09b98;
+  --f-grey-fill:#f0f0ef; --f-grey-line:#c2c2bf;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:#141416; --panel:#1b1b1e; --ink:#ececea; --muted:#a1a19c; --line:#7e7e88;
+    --frame:#55555c; --border:#2c2c31; --accent:#7aa2dd; --accent-soft:#1b2a3f;
+    --danger:#f2b8b5; --warn:#e6c065; --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+    --f-blue-fill:#1b2a3f; --f-blue-line:#3f6698; --f-teal-fill:#152e2b; --f-teal-line:#3c7d72;
+    --f-amber-fill:#33280f; --f-amber-line:#8a6a2b; --f-violet-fill:#241f3d; --f-violet-line:#5b4f9c;
+    --f-purple-fill:#2d1c34; --f-purple-line:#7a4d8c; --f-green-fill:#162b18; --f-green-line:#417a47;
+    --f-rose-fill:#33191a; --f-rose-line:#8f4c48; --f-red-fill:#341a1a; --f-red-line:#8d4340;
+    --f-grey-fill:#26262a; --f-grey-line:#5a5a60;
+  }
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink); overflow: hidden;
+  font: 13px/1.45 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  display: grid; grid-template-rows: 46px 1fr;
+}
+button, select, input { font: inherit; color: inherit; }
+button {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 7px;
+  padding: 5px 10px; cursor: pointer;
+}
+button:hover { border-color: var(--line); }
+button:disabled { opacity: .45; cursor: default; }
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+select, input[type="search"], input[type="text"], input[type="number"] {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 7px; padding: 5px 8px;
+}
+.muted { color: var(--muted); }
+code { font: 11px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--bg); padding: 1px 4px; border-radius: 4px; }
+
+#toolbar {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 0 12px; border-bottom: 1px solid var(--border); background: var(--panel);
+}
+#toolbar .group { display: flex; align-items: center; gap: 8px; }
+.brand { letter-spacing: .01em; }
+.sep { width: 1px; height: 20px; background: var(--border); }
+
+main { display: grid; grid-template-columns: 264px 1fr 300px; min-height: 0; }
+aside { background: var(--panel); min-height: 0; display: flex; flex-direction: column; }
+#palette { border-right: 1px solid var(--border); padding: 10px; gap: 8px; }
+#right { border-left: 1px solid var(--border); }
+#palette-search { width: 100%; }
+#palette-hint { font-size: 11px; }
+#palette-results { overflow: auto; flex: 1; margin-top: 6px; }
+.pal-group { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 10px 2px 4px; }
+.pal-row {
+  display: flex; align-items: center; gap: 8px; padding: 5px 6px; border-radius: 7px; cursor: grab;
+}
+.pal-row:hover { background: var(--accent-soft); }
+.pal-row svg { width: 18px; height: 18px; flex: none; color: var(--ink); }
+.pal-row .name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pal-row .kind { font-size: 11px; color: var(--muted); }
+
+#canvas-wrap { position: relative; min-width: 0; overflow: hidden; background: var(--bg); }
+#scene { width: 100%; height: 100%; display: block; touch-action: none; }
+#scene.panning { cursor: grabbing; }
+#empty-state { position: absolute; inset: 0; display: grid; place-content: center; pointer-events: none; }
+#empty-state[hidden] { display: none; }
+
+.node-box { cursor: grab; }
+.node-box rect.body { stroke-width: 1; }
+.node-box.selected rect.body { stroke: var(--accent); stroke-width: 2; }
+.node-box text.name { font-size: 14px; font-weight: 500; fill: var(--ink); }
+.node-box text.comp { font-size: 12px; fill: var(--muted); }
+.node-box .glyph { color: var(--ink); }
+.frame { fill: none; stroke: var(--frame); stroke-width: 1; stroke-dasharray: 5 4; }
+.frame-label { font-size: 12px; fill: var(--muted); }
+.edge { stroke: var(--line); stroke-width: 1.2; fill: none; }
+.edge.async { stroke-dasharray: 6 4; }
+.edge.selected { stroke: var(--accent); stroke-width: 2; }
+.edge-hit { stroke: transparent; stroke-width: 12; fill: none; cursor: pointer; }
+.edge-label { font-size: 12px; fill: var(--muted); paint-order: stroke; stroke: var(--bg); stroke-width: 3px; }
+.handle { fill: var(--panel); stroke: var(--accent); stroke-width: 1.5; cursor: crosshair; }
+.badge-error { fill: var(--danger); }
+.badge-warn { fill: var(--warn); }
+
+#inspector, #findings { overflow: auto; padding: 10px 12px; }
+#inspector { flex: 1; border-bottom: 1px solid var(--border); }
+#findings { height: 38%; }
+h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 8px; font-weight: 500; }
+.field { display: grid; grid-template-columns: 1fr; gap: 3px; margin-bottom: 9px; }
+.field label { font-size: 11px; color: var(--muted); }
+.field input, .field select { width: 100%; }
+.field .resolved { font-size: 11px; color: var(--muted); }
+.field.set label::after { content: " •"; color: var(--accent); }
+.row { display: flex; gap: 6px; align-items: center; }
+.row > * { min-width: 0; }
+.finding { display: grid; grid-template-columns: 8px 1fr; gap: 8px; padding: 6px 4px; border-radius: 6px; cursor: pointer; }
+.finding:hover { background: var(--accent-soft); }
+.finding .dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; }
+.finding.error .dot { background: var(--danger); }
+.finding.warning .dot { background: var(--warn); }
+.finding.info .dot { background: var(--accent); }
+.finding .rule { font-size: 11px; color: var(--muted); }
+.blocking { color: var(--danger); }
+.pill { font-size: 11px; border: 1px solid var(--border); border-radius: 999px; padding: 1px 8px; color: var(--muted); }

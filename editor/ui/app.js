@@ -1,0 +1,344 @@
+// Arkore canvas: the wiring. State is one document plus one position map; every change goes
+// through a command that pushes a snapshot, re-derives findings and re-renders. There is no
+// framework here on purpose, and no reactive graph to reason about: change the document, call
+// commit, and the picture follows.
+
+import { parse, serialize } from "../core/yaml.js";
+import { layout } from "../core/layout.js";
+import { check } from "../core/structure.js";
+import { runRules } from "../core/rules.js";
+import * as D from "../core/document.js";
+import { Scene, installArrowhead } from "./scene.js";
+import { Palette } from "./palette.js";
+import { Inspector } from "./inspector.js";
+import { Findings } from "./findings.js";
+import * as files from "./files.js";
+
+const $ = (sel) => document.querySelector(sel);
+const clone = (x) => JSON.parse(JSON.stringify(x));
+
+const state = {
+  catalogue: null, search: null, icons: {}, index: [],
+  path: null, layoutPath: null, editable: true,
+  doc: null, cst: null, positions: {}, sizes: {},
+  undo: [], redo: [], dirty: false, lastDragAt: 0,
+};
+
+// ---------------------------------------------------------------- deriving
+
+function relayout() {
+  const result = layout(state.doc, state.catalogue);
+  state.sizes = result.sizes;
+  for (const n of state.doc.nodes) {
+    if (!state.positions[n.id]) state.positions[n.id] = result.positions[n.id] || [40, 40];
+  }
+  for (const id of Object.keys(state.positions)) {
+    if (!state.doc.nodes.some((n) => n.id === id)) delete state.positions[id];
+  }
+}
+
+function autoLayout() {
+  const result = layout(state.doc, state.catalogue);
+  state.positions = result.positions;
+  state.sizes = result.sizes;
+}
+
+function derive() {
+  let structural = [], rules = [];
+  try { structural = check(state.doc, state.catalogue, { file: state.doc.id }); }
+  catch (e) { structural = [{ message: "structural check failed: " + e.message, subject: { type: "design", ref: null }, blocking: true }]; }
+  try { rules = structural.length ? [] : runRules(state.doc, state.catalogue); }
+  catch (e) { rules = []; }
+  return { structural, rules };
+}
+
+let findingsCache = { structural: [], rules: [] };
+
+function render() {
+  relayout();
+  findingsCache = derive();
+  scene.render({
+    doc: state.doc, catalogue: state.catalogue, icons: state.icons,
+    positions: state.positions, sizes: state.sizes,
+    findings: [...findingsCache.structural, ...findingsCache.rules],
+  });
+  inspector.render(scene.selection, state);
+  findings.render(findingsCache.structural, findingsCache.rules, state.catalogue);
+  $("#save").disabled = !state.editable || findingsCache.structural.length > 0;
+  $("#save-state").textContent = !state.editable ? "read only" : state.dirty ? "unsaved" : "saved";
+  $("#empty-state").hidden = state.doc.nodes.length > 0;
+  $("#undo").disabled = !state.undo.length;
+  $("#redo").disabled = !state.redo.length;
+}
+
+// ---------------------------------------------------------------- commands
+
+function commit(next, opts = {}) {
+  const snapshot = { doc: clone(state.doc), positions: clone(state.positions) };
+  const coalesce = opts.coalesce && Date.now() - state.lastDragAt < 400;
+  if (!coalesce) state.undo.push(snapshot);
+  if (state.undo.length > 100) state.undo.shift();
+  state.redo.length = 0;
+  if (next) state.doc = next;
+  state.dirty = true;
+  if (opts.coalesce) state.lastDragAt = Date.now();
+  scheduleDraft();
+  render();
+}
+
+function undo() {
+  if (!state.undo.length) return;
+  state.redo.push({ doc: clone(state.doc), positions: clone(state.positions) });
+  const prev = state.undo.pop();
+  state.doc = prev.doc; state.positions = prev.positions;
+  state.dirty = true;
+  render();
+}
+
+function redo() {
+  if (!state.redo.length) return;
+  state.undo.push({ doc: clone(state.doc), positions: clone(state.positions) });
+  const next = state.redo.pop();
+  state.doc = next.doc; state.positions = next.positions;
+  state.dirty = true;
+  render();
+}
+
+
+// ---------------------------------------------------------------- autosave
+// Unsaved work survives a reload, but only on top of the same file: the base text is hashed at
+// open, and a restore happens only when the file on disk still hashes the same. A design that
+// changed underneath is never silently overwritten by stale edits.
+
+const hash = (text) => { let h = 2166136261; for (let i = 0; i < text.length; i++) { h ^= text.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36); };
+const draftKey = (path) => "arkore-canvas:" + path;
+
+function saveDraft() {
+  if (!state.path || !state.dirty) return;
+  try {
+    localStorage.setItem(draftKey(state.path), JSON.stringify({
+      base: state.baseHash, doc: state.doc, positions: state.positions, at: Date.now(),
+    }));
+  } catch { /* a full or blocked store is not a reason to stop editing */ }
+}
+
+function restoreDraft() {
+  try {
+    const raw = localStorage.getItem(draftKey(state.path));
+    if (!raw) return false;
+    const draft = JSON.parse(raw);
+    if (draft.base !== state.baseHash) { localStorage.removeItem(draftKey(state.path)); return false; }
+    state.doc = draft.doc;
+    state.positions = draft.positions || state.positions;
+    state.dirty = true;
+    return true;
+  } catch { return false; }
+}
+
+function clearDraft() { try { localStorage.removeItem(draftKey(state.path)); } catch {} }
+
+let draftTimer = null;
+function scheduleDraft() { clearTimeout(draftTimer); draftTimer = setTimeout(saveDraft, 500); }
+
+// ---------------------------------------------------------------- files
+
+async function openDesign(entry) {
+  const text = await files.loadDesign(entry.path);
+  const { doc, cst } = parse(text);
+  state.baseHash = hash(text);
+  state.path = entry.path;
+  state.layoutPath = entry.layout;
+  state.editable = entry.editable !== false;
+  state.doc = doc; state.cst = cst;
+  state.undo = []; state.redo = []; state.dirty = false;
+  state.positions = {};
+  const saved = await files.loadLayout(entry.layout);
+  autoLayout();
+  if (saved && saved.nodes) {
+    for (const [id, xy] of Object.entries(saved.nodes)) {
+      if (state.doc.nodes.some((n) => n.id === id)) state.positions[id] = xy;
+    }
+  }
+  const restored = restoreDraft();
+  scene.selection = { type: null, ref: null };
+  render();
+  scene.fit();
+  if (restored) $("#save-state").textContent = "unsaved work restored";
+  document.title = `${doc.id} — Arkore canvas`;
+}
+
+async function save() {
+  if (!state.editable) return;
+  const text = serialize(state.cst, state.doc);
+  await files.put(state.path, text);
+  await files.put(state.layoutPath, JSON.stringify({ version: 1, nodes: state.positions }, null, 2) + "\n");
+  const fresh = parse(text);                 // the file on disk is now the source of truth
+  state.cst = fresh.cst; state.doc = fresh.doc;
+  state.baseHash = hash(text);
+  state.dirty = false;
+  clearDraft();
+  render();
+  $("#save-state").textContent = "saved";
+}
+
+// ---------------------------------------------------------------- boot
+
+const scene = new Scene($("#scene"), {
+  onSelect: () => inspector.render(scene.selection, state),
+  onMove: (id, x, y, group) => {
+    state.positions[id] = [x, y];
+    const node = state.doc.nodes.find((n) => n.id === id);
+    const next = (node.group || null) !== (group || null) ? D.setNodeGroup(state.doc, id, group) : null;
+    commit(next, { coalesce: true });
+  },
+  onConnect: (from, to) => commit(D.addEdge(state.doc, from, to)),
+  onRename: (id) => {
+    const node = state.doc.nodes.find((n) => n.id === id);
+    const value = prompt("Label", node.label || node.id);
+    if (value !== null) commit(D.setNodeField(state.doc, id, "label", value.trim()));
+  },
+});
+
+const inspector = new Inspector($("#inspector"), {
+  setField: (id, f, v) => commit(D.setNodeField(state.doc, id, f, v)),
+  setProp: (id, p, v) => commit(D.setNodeProp(state.doc, id, p, v)),
+  setNfr: (id, f, v) => commit(D.setNfr(state.doc, id, f, v)),
+  setGroup: (id, g) => commit(D.setNodeGroup(state.doc, id, g)),
+  rename: (oldId, newId) => {
+    if (!newId || !/^[a-z][a-z0-9-]*$/.test(newId) || state.doc.nodes.some((n) => n.id === newId)) return render();
+    const p = state.positions[oldId];
+    delete state.positions[oldId];
+    state.positions[newId] = p;
+    scene.selection = { type: "node", ref: newId };
+    commit(D.renameNode(state.doc, oldId, newId, state.catalogue));
+  },
+  swap: (id, componentId) => {
+    const { doc, dropped } = D.swapComponent(state.doc, id, componentId, state.catalogue);
+    if (dropped.length) alert(`Dropped on swap: ${dropped.join(", ")}`);
+    commit(doc);
+  },
+  setEdge: (i, f, v) => commit(D.setEdgeField(state.doc, i, f, v)),
+  setGroupField: (id, f, v) => commit(D.setGroupField(state.doc, id, f, v)),
+  renameGroup: (oldId, newId) => {
+    if (!newId || !/^[a-z][a-z0-9-]*$/.test(newId)) return render();
+    scene.selection = { type: "group", ref: newId };
+    commit(D.renameGroup(state.doc, oldId, newId));
+  },
+  setParent: (id, p) => commit(D.setGroupParent(state.doc, id, p)),
+  setDesignId: (v) => { const d = clone(state.doc); d.id = v; commit(d); },
+  setRequirement: (path, v) => commit(D.setRequirement(state.doc, path, v)),
+  remove: (type, ref) => {
+    scene.selection = { type: null, ref: null };
+    if (type === "node") commit(D.deleteNodes(state.doc, [ref]));
+    if (type === "edge") commit(D.deleteEdge(state.doc, ref));
+    if (type === "group") commit(D.deleteGroup(state.doc, ref));
+  },
+});
+
+const findings = new Findings($("#findings"), {
+  summary: $("#lint-summary"),
+  onSelect: (subject) => {
+    if (!subject || subject.ref === null) return;
+    scene.select(subject.type, subject.ref);
+    const box = scene.boxes[subject.ref];
+    if (box) {
+      const r = $("#scene").getBoundingClientRect();
+      scene.view.x = r.width / 2 - (box[0] + box[2] / 2) * scene.view.k;
+      scene.view.y = r.height / 2 - (box[1] + box[3] / 2) * scene.view.k;
+      scene.applyView();
+    }
+  },
+});
+
+let palette = null;
+
+function createNode(componentId, at) {
+  const { doc, id, needsDecision } = D.addNode(state.doc, componentId, state.catalogue);
+  if (at) state.positions[id] = [Math.round(at[0]), Math.round(at[1])];
+  scene.selection = { type: "node", ref: id };
+  commit(doc);
+  if (needsDecision.length) $("#save-state").textContent = `${id}: choose ${needsDecision.join(", ")}`;
+}
+
+async function boot() {
+  installArrowhead($("#scene"));
+  const [{ catalogue, search }, index] = await Promise.all([files.loadCatalogue(), files.loadIndex()]);
+  state.catalogue = catalogue; state.search = search; state.index = index;
+
+  const picker = $("#design-picker");
+  for (const entry of index) {
+    const o = document.createElement("option");
+    o.value = entry.path;
+    o.textContent = `${entry.id}${entry.editable === false ? " (broken, read only)" : ""} · ${entry.tier}`;
+    picker.append(o);
+  }
+  picker.addEventListener("change", () => openDesign(index.find((e) => e.path === picker.value)));
+
+  palette = new Palette($("#palette"), {
+    search, catalogue, icons: state.icons,
+    onCreate: (id) => createNode(id, null),
+  });
+
+  const first = index.find((e) => e.path.includes("chat-system")) || index[0];
+  picker.value = first.path;
+  await openDesign(first);
+
+  files.loadIcons().then((icons) => {
+    state.icons = icons;
+    palette.setIcons(icons);
+    render();
+  });
+}
+
+// ---------------------------------------------------------------- events
+
+$("#save").addEventListener("click", () => save().catch((e) => alert("Save failed: " + e.message)));
+$("#undo").addEventListener("click", undo);
+$("#redo").addEventListener("click", redo);
+$("#zoom-fit").addEventListener("click", () => scene.fit());
+$("#zoom-100").addEventListener("click", () => { scene.view.k = 1; scene.applyView(); });
+$("#tidy").addEventListener("click", () => { autoLayout(); commit(null); scene.fit(); });
+$("#export-svg").addEventListener("click", () => files.download(`${state.doc.id}.svg`, scene.toSVG(), "image/svg+xml"));
+
+const canvas = $("#canvas-wrap");
+canvas.addEventListener("dragover", (ev) => ev.preventDefault());
+canvas.addEventListener("drop", (ev) => {
+  const id = ev.dataTransfer.getData("text/arkore-component");
+  if (!id) return;
+  ev.preventDefault();
+  createNode(id, scene.toWorld(ev.clientX, ev.clientY));
+});
+
+window.addEventListener("keydown", (ev) => {
+  const typing = /input|select|textarea/i.test(ev.target.tagName);
+  const mod = ev.metaKey || ev.ctrlKey;
+  if (mod && ev.key.toLowerCase() === "s") { ev.preventDefault(); save().catch((e) => alert("Save failed: " + e.message)); return; }
+  if (mod && ev.key.toLowerCase() === "z") { ev.preventDefault(); ev.shiftKey ? redo() : undo(); return; }
+  if (typing) return;
+  if (mod && ev.key === "0") { ev.preventDefault(); scene.fit(); return; }
+  if (mod && ev.key === "1") { ev.preventDefault(); scene.view.k = 1; scene.applyView(); return; }
+  if (ev.key === "Escape") { scene.select(null, null); return; }
+  if (ev.key === "Backspace" || ev.key === "Delete") {
+    const s = scene.selection;
+    if (!s.type) return;
+    ev.preventDefault();
+    scene.selection = { type: null, ref: null };
+    if (s.type === "node") commit(D.deleteNodes(state.doc, [s.ref]));
+    if (s.type === "edge") commit(D.deleteEdge(state.doc, s.ref));
+    if (s.type === "group") commit(D.deleteGroup(state.doc, s.ref));
+    return;
+  }
+  if (ev.key === "g" || ev.key === "G") {
+    const s = scene.selection;
+    if (s.type !== "node") return;
+    const { doc, id } = D.addGroup(state.doc, [s.ref], "system");
+    scene.selection = { type: "group", ref: id };
+    commit(doc);
+  }
+});
+
+window.addEventListener("beforeunload", (ev) => { if (state.dirty) { ev.preventDefault(); ev.returnValue = ""; } });
+
+boot().catch((e) => {
+  document.body.innerHTML = `<pre style="padding:24px;white-space:pre-wrap">Arkore canvas could not start.\n\n${e.stack || e.message}\n\nRun: node .claude/tools/build_editor_data.mjs, then node editor/serve.mjs</pre>`;
+});

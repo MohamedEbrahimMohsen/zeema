@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arkore canvas</title>
+<link rel="stylesheet" href="ui/style.css">
+</head>
+<body>
+<header id="toolbar">
+  <div class="group">
+    <strong class="brand">Arkore</strong>
+    <select id="design-picker" title="Designs in this repository"></select>
+    <button id="save" title="Save (Ctrl S)">Save</button>
+    <span id="save-state" class="muted"></span>
+  </div>
+  <div class="group">
+    <button id="undo" title="Undo (Ctrl Z)">Undo</button>
+    <button id="redo" title="Redo (Ctrl Shift Z)">Redo</button>
+    <span class="sep"></span>
+    <button id="zoom-fit" title="Fit (Ctrl 0)">Fit</button>
+    <button id="zoom-100" title="Actual size (Ctrl 1)">100%</button>
+    <button id="tidy" title="Re-run the automatic layout">Tidy</button>
+    <button id="export-svg" title="Export the scene as SVG">SVG</button>
+  </div>
+  <div class="group">
+    <span id="lint-summary" class="muted"></span>
+  </div>
+</header>
+
+<main>
+  <aside id="palette">
+    <input id="palette-search" type="search" placeholder="Search 1,623 components" autocomplete="off" spellcheck="false">
+    <div id="palette-hint" class="muted">Type to search. <code>provider:aws</code> and <code>kind:queue</code> filter. Drag a result onto the canvas.</div>
+    <div id="palette-results"></div>
+  </aside>
+
+  <section id="canvas-wrap">
+    <svg id="scene" xmlns="http://www.w3.org/2000/svg"><defs id="symbols"></defs>
+      <g id="viewport">
+        <g id="layer-frames"></g>
+        <g id="layer-edges"></g>
+        <g id="layer-nodes"></g>
+        <g id="layer-overlay"></g>
+      </g>
+    </svg>
+    <div id="empty-state" class="muted" hidden>Open a design, or drag a component from the palette.</div>
+  </section>
+
+  <aside id="right">
+    <div id="inspector"></div>
+    <div id="findings"></div>
+  </aside>
+</main>
+
+<script type="module" src="ui/app.js"></script>
+</body>
+</html>
