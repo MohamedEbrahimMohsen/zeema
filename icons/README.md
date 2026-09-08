@@ -8,7 +8,7 @@ icon, so the set can grow or be replaced without touching the model.
 |---|---|---|
 | `kinds/` | 71 | One generic line glyph per kind. A queue, a cache, a cylinder, a gear. |
 | `providers/` | 219 | Brand marks, used as the badge in the corner of a component icon. |
-| `components/<provider>/` | 1610 | One per component, in the same provider subfolder as the component file: the kind glyph, plus a provider badge where the component is a cloud service or a branded product. |
+| `components/<provider>/` | 1623 | One per component, in the same provider subfolder as the component file: the kind glyph, plus a provider badge where the component is a cloud service or a branded product. |
 
 ## Naming
 
@@ -28,7 +28,7 @@ A renderer resolves an icon in this order and stops at the first hit:
 3. the category glyph the renderer uses for `messaging`, `compute`, `data`, `edge`,
    `external`, `client`, `ops` or `security`
 
-Step 1 covers every component today: 1182 icons carry a provider or product badge, 428 generic or
+Step 1 covers every component today: 1182 icons carry a provider or product badge, 441 generic or
 unbranded ones are the bare kind glyph. Step 2 is what makes step 1 optional: a component
 added without an icon still draws correctly as its kind. Step 3 is the renderer's own
 last resort and is not a file in this folder.
