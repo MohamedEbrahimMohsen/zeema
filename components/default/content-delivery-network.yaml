@@ -1,0 +1,8 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Generic CDN whose vendor the design does not name. Caching and TLS at the edge are what
+# every CDN does; edge compute and origin shield are not assumed.
+schemaVersion: "1"
+type: "component"
+id: "content-delivery-network"
+kind: "cdn"
+provider: "default"

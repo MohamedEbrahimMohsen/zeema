@@ -1,0 +1,8 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Generic DNS the design does not attribute to a provider: the name lookup a client or a
+# crawler performs before connecting. Anycast and health checking are not assumed.
+schemaVersion: "1"
+type: "component"
+id: "dns-resolver"
+kind: "dns"
+provider: "default"

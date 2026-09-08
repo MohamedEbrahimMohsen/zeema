@@ -1,0 +1,12 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Generic message queue: a broker-backed work queue whose product the design does not name.
+# Only the guarantee every broker offers is assumed (at-least-once); dead-letter queue,
+# replay and retention stay unset so a design has to state them.
+schemaVersion: "1"
+type: "component"
+id: "message-queue"
+kind: "queue"
+provider: "default"
+defaults:
+  delivery: "at-least-once"
+  managed: false

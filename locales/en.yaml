@@ -349,6 +349,9 @@ components:
   authentik:
     name: "authentik"
     description: "Self-hosted identity provider and SSO platform with OAuth2, SAML, LDAP and SCIM providers."
+  automation-pipeline:
+    name: "Automation pipeline"
+    description: "Build, test and deploy automation drawn as one box."
   automq:
     name: "AutoMQ"
     description: "Kafka-compatible broker with an S3-first diskless storage layer and stateless brokers."
@@ -1720,6 +1723,9 @@ components:
   bitbucket:
     name: "Bitbucket"
     description: "Atlassian's hosted Git repositories with pull requests and Pipelines, private by default."
+  blob-store:
+    name: "Blob store"
+    description: "Object storage drawn without naming a product."
   bookkeeper:
     name: "Apache BookKeeper"
     description: "Replicated append-only ledger storage service for write-ahead logs and message journals."
@@ -1750,6 +1756,9 @@ components:
   bytewax:
     name: "Bytewax"
     description: "Python stream processing framework built on Timely Dataflow."
+  cache-cluster:
+    name: "Cache cluster"
+    description: "In-memory cache tier drawn without naming a product."
   caddy:
     name: "Caddy"
     description: "Go web server and reverse proxy with automatic HTTPS certificate management."
@@ -2173,6 +2182,9 @@ components:
   container-worker:
     name: "Container worker"
     description: "Generic containerised background worker consuming a queue, stream or schedule."
+  content-delivery-network:
+    name: "Content delivery network"
+    description: "Content delivery network drawn without naming a vendor."
   contour:
     name: "Contour"
     description: "Kubernetes ingress controller that configures Envoy through HTTPProxy and Gateway API."
@@ -2260,6 +2272,9 @@ components:
   ditto:
     name: "Eclipse Ditto"
     description: "Digital twin backend holding last-known device state behind policy-based access control."
+  dns-resolver:
+    name: "DNS"
+    description: "Domain name resolution drawn without naming a provider."
   dnsmasq:
     name: "dnsmasq"
     description: "Lightweight DNS forwarder and cache that also serves DHCP and TFTP."
@@ -2389,6 +2404,9 @@ components:
   ffmpeg:
     name: "FFmpeg"
     description: "Command line transcoder and stream converter for audio and video."
+  file-store:
+    name: "File store"
+    description: "Files or configuration on a filesystem, drawn without naming a product."
   firebird:
     name: "Firebird"
     description: "Multi-generational relational database with opt-in logical replication."
@@ -3175,6 +3193,9 @@ components:
   grafana-cloud:
     name: "Grafana Cloud"
     description: "Managed observability platform for metrics, logs, traces and profiles."
+  graph-store:
+    name: "Graph store"
+    description: "Graph database drawn without naming an engine."
   graphite:
     name: "Graphite"
     description: "Metrics stack of carbon ingestion and the fixed-size Whisper database."
@@ -3469,6 +3490,9 @@ components:
   livekit:
     name: "LiveKit"
     description: "Open source WebRTC SFU for realtime audio, video and agent sessions."
+  load-balancer-tier:
+    name: "Load balancer"
+    description: "Load balancer drawn without naming a product."
   localai:
     name: "LocalAI"
     description: "Self-hosted drop-in replacement for the OpenAI API running models locally."
@@ -3550,6 +3574,9 @@ components:
   mercure:
     name: "Mercure"
     description: "Pub/sub hub pushing updates over Server-Sent Events with Last-Event-ID replay."
+  message-queue:
+    name: "Message queue"
+    description: "Broker-backed work queue drawn without naming a product."
   metabase:
     name: "Metabase"
     description: "Open-source BI tool for questions, dashboards and SQL over connected databases."
@@ -3700,6 +3727,9 @@ components:
   nominatim:
     name: "Nominatim"
     description: "Open-source geocoder and reverse geocoder over OpenStreetMap data."
+  nosql-store:
+    name: "NoSQL store"
+    description: "NoSQL store drawn without naming a product."
   notification-platform:
     name: "Notification platform"
     description: "Generic in-house service that fans events out to push, email and SMS with user preferences."
@@ -3715,6 +3745,9 @@ components:
   nutanix-ahv:
     name: "Nutanix AHV"
     description: "KVM-derived hypervisor bundled with Nutanix Cloud Infrastructure, with optional licensed data-at-rest encryption."
+  observability-stack:
+    name: "Observability stack"
+    description: "Logging, metrics and alerting drawn as one box."
   oceanbase:
     name: "OceanBase Database"
     description: "Distributed relational database with per-partition Multi-Paxos replicas."
@@ -4507,6 +4540,9 @@ components:
   redshift:
     name: "Amazon Redshift"
     description: "Managed columnar data warehouse on provisioned or serverless compute."
+  relational-database:
+    name: "Relational database"
+    description: "Relational database drawn without naming an engine."
   replicate:
     name: "Replicate"
     description: "API that runs packaged open-source models by name, with predictions deleted after an hour."
@@ -4906,6 +4942,9 @@ components:
   uptime-kuma:
     name: "Uptime Kuma"
     description: "Self-hosted uptime monitor with status pages and notifications."
+  user-device:
+    name: "User device"
+    description: "One client box drawn as several device types at once."
   uuid-generator:
     name: "UUID generator"
     description: "Library UUID generation on each node; random v4 by default."

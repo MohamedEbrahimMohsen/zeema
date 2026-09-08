@@ -1,0 +1,10 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Generic build, test and deploy automation drawn as one box, with no tool named.
+# Nothing is assumed about triggers, approvals, runners or artifact signing.
+schemaVersion: "1"
+type: "component"
+id: "automation-pipeline"
+kind: "ci-pipeline"
+provider: "default"
+defaults:
+  managed: false

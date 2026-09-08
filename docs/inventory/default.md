@@ -847,6 +847,10 @@ covered by a cloud provider folder.
 
 ## Event stores and generic runtime nodes
 
+Generic nodes carry no vendor. They exist so a design that draws an unlabelled box ("Cache",
+"Database", "Message queue") can be encoded without inventing a product; they assert nothing
+beyond what the role itself implies, so the lint rules still fire on them.
+
 | resource | id | kind | status | source |
 |---|---|---|---|---|
 | EventStoreDB (KurrentDB) | eventstoredb | event-store | done | https://docs.kurrent.io/ |
@@ -856,6 +860,19 @@ covered by a cloud provider folder.
 | Container worker | container-worker | worker | done | https://kubernetes.io/docs/concepts/workloads/controllers/job/ |
 | Cron job | cron-job | worker | done | https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/ |
 | Fanout daemon | fanout-daemon | worker | done | https://en.wikipedia.org/wiki/Fan-out_(software) |
+| Message queue | message-queue | queue | done | generic node drawn without a vendor; no product documentation |
+| Cache cluster | cache-cluster | cache | done | generic node drawn without a vendor; no product documentation |
+| Relational database | relational-database | sql-database | done | generic node drawn without a vendor; no product documentation |
+| NoSQL store | nosql-store | nosql-database | done | generic node drawn without a vendor; no product documentation |
+| Blob store | blob-store | object-store | done | generic node drawn without a vendor; no product documentation |
+| Content delivery network | content-delivery-network | cdn | done | generic node drawn without a vendor; no product documentation |
+| Load balancer | load-balancer-tier | load-balancer | done | generic node drawn without a vendor; no product documentation |
+| DNS | dns-resolver | dns | done | generic node drawn without a vendor; no product documentation |
+| Observability stack | observability-stack | monitoring | done | generic node drawn without a vendor; no product documentation |
+| Automation pipeline | automation-pipeline | ci-pipeline | done | generic node drawn without a vendor; no product documentation |
+| File store | file-store | file-storage | done | generic node drawn without a vendor; no product documentation |
+| Graph store | graph-store | graph-database | done | generic node drawn without a vendor; no product documentation |
+| User device | user-device | client | done | generic node drawn without a vendor; no product documentation |
 | Chronicle Queue / Marten | â€” | â€” | skip: embedded event-log libraries, not deployable nodes | https://chronicle.software/queue/ |
 
 ## Media transcoding and realtime communications
@@ -1019,4 +1036,4 @@ Two mapping decisions worth recording:
 
 ## Counts
 
-total 747, todo 0, done 658, skip 89.
+total 760, todo 0, done 671, skip 89.

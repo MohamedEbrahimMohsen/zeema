@@ -1,0 +1,10 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Generic relational database whose engine the design does not name. Nothing about backups,
+# replication, sharding or encryption is assumed.
+schemaVersion: "1"
+type: "component"
+id: "relational-database"
+kind: "sql-database"
+provider: "default"
+defaults:
+  managed: false
