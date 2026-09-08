@@ -1,0 +1,72 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Imported 2026-09-08 from source/google-drive.md, a transcription of Figure 15-10
+# ("the proposed high-level design") in Alex Xu, System Design Interview vol. 1,
+# chapter 15 "Design Google Drive", page 253. The book itself is not in this repository.
+# Assumptions, all recorded in mapping.yaml and notes.md:
+#   - "User" is one box drawn with a laptop and a phone; the chapter says browser or mobile
+#     app. A client node carries one platform, so it is web-browser and the gap is recorded.
+#   - "Cloud storage" is generic on the box but the chapter names Amazon S3 as the storage
+#     system, so the node is s3; "Cold storage" follows it to aws-s3-glacier (assumed).
+#   - "Notification Service" is the long-poll connection tier the clients hold open, so a
+#     realtime gateway with protocol long-poll, not a push notification platform.
+#   - Metadata DB replication is stated but not its mode; async is assumed.
+schemaVersion: "1"
+type: "design"
+id: "google-drive"
+
+requirements:
+  consistency: { model: "cp", readAfterWrite: true }
+  traffic:     { readWriteRatio: 1, peakMultiplier: 2 }
+
+nodes:
+  - id: "user"
+    component: "user-device"
+    label: "User"
+    props: { persistentConnection: true }
+  - id: "block-servers"
+    component: "container-service"
+    label: "Block servers"
+  - id: "cloud-storage"
+    component: "s3"
+    label: "Cloud storage"
+    props: { crossRegionReplication: true }
+  - id: "cold-storage"
+    component: "blob-store"
+    label: "Cold storage"
+    props: { tier: "cold" }
+  - id: "load-balancer"
+    component: "load-balancer-tier"
+    label: "Load balancer"
+  - id: "api-servers"
+    component: "container-service"
+    label: "API servers"
+    props: { stateless: true }
+  - id: "metadata-cache"
+    component: "cache-cluster"
+    label: "Metadata Cache"
+    props: { invalidation: "event" }
+  - id: "metadata-db"
+    component: "relational-database"
+    label: "Metadata DB"
+    props: { replication: "async", sharded: true }
+  - id: "notification-service"
+    component: "websocket-gateway"
+    label: "Notification Service"
+    props: { protocol: "long-poll", stateful: true }
+  - id: "offline-backup-queue"
+    component: "message-queue"
+    label: "Offline backup Queue"
+    props: { role: "offline-mailbox" }
+
+edges:
+  - { from: "user", to: "block-servers", protocol: "https", mode: "sync" }
+  - { from: "user", to: "load-balancer", protocol: "https", mode: "sync" }
+  - { from: "user", to: "notification-service", protocol: "http", mode: "sync", label: "long polling" }
+  - { from: "block-servers", to: "cloud-storage", protocol: "s3", mode: "sync" }
+  - { from: "cloud-storage", to: "load-balancer", protocol: "https", mode: "sync" }
+  - { from: "cloud-storage", to: "cold-storage", protocol: "s3", mode: "sync" }
+  - { from: "load-balancer", to: "api-servers", protocol: "https", mode: "sync" }
+  - { from: "api-servers", to: "metadata-cache", protocol: "cache", mode: "sync" }
+  - { from: "api-servers", to: "metadata-db", protocol: "sql", mode: "sync" }
+  - { from: "api-servers", to: "notification-service", protocol: "https", mode: "async" }
+  - { from: "notification-service", to: "offline-backup-queue", protocol: "queue", mode: "async", delivery: "at-least-once" }

@@ -1,0 +1,51 @@
+source:
+  file: "source/scale-to-millions.md"
+  format: "book-figure"
+  figures: ["1-23"]
+  counts: { nodes: 15, edges: 11, groups: 3 }
+nodes:
+  - { source: "DNS", node: "dns", component: "dns-resolver", confidence: "close", note: "unbranded DNS globe; the chapter says DNS is a third-party paid service" }
+  - { source: "Web browser", node: "web-browser", component: "web-browser", confidence: "close", note: "laptop glyph inside the User boundary" }
+  - { source: "Mobile app", node: "mobile-app", component: "mobile-app", confidence: "close", note: "phone glyph inside the User boundary; no OS named, os left at its default" }
+  - { source: "CDN", node: "cdn", component: "content-delivery-network", confidence: "close", note: "unbranded CDN cloud; no vendor named in the figure" }
+  - { source: "Load balancer", node: "load-balancer", component: "load-balancer-tier", confidence: "close", note: "unbranded load balancer" }
+  - { source: "Web servers", node: "web-servers", component: "container-service", confidence: "close", note: "the web tier drawn as a dashed box around a stack of server glyphs" }
+  - { source: "Message Queue", node: "message-queue", component: "message-queue", confidence: "close", note: "unbranded queue glyph; no broker named" }
+  - { source: "Databases", node: "databases", component: "relational-database", confidence: "close", note: "the data tier box; the cylinders inside it carry the shard labels, kept as props.sharded rather than as separate nodes (see ignored)" }
+  - { source: "Caches", node: "caches", component: "cache-cluster", confidence: "close", note: "box holding three stacked CACHE tiles, the drawing device for a cache tier; no product named" }
+  - { source: "Workers", node: "workers", component: "container-worker", confidence: "close", note: "the queue consumers, drawn as a dashed box around a stack of server glyphs" }
+  - { source: "NoSQL", node: "nosql", component: "nosql-store", confidence: "close", note: "drawn outside the DC1 boundary; the figure names no product and no data model, so model stays at the component default" }
+  - { source: "Logging", node: "logging", component: "observability-stack", confidence: "close", note: "one of the four boxes inside Tools; signal set to logs, which the label states" }
+  - { source: "Metrics", node: "metrics", component: "observability-stack", confidence: "close", note: "one of the four boxes inside Tools; signal set to metrics, which the label states" }
+  - { source: "Monitoring", node: "monitoring", component: "observability-stack", confidence: "close", note: "one of the four boxes inside Tools; the label names no single signal, so signal stays at the component default" }
+  - { source: "Automation", node: "automation", component: "automation-pipeline", confidence: "close", note: "build, test and deploy automation. The catalogue has no generic automation or CI component in the default provider (every ci-pipeline component is a named vendor), so the box is mapped with the rest of the Tools group to observability-stack" }
+groups:
+  - { source: "User", group: "user", kind: "trust-zone", note: "the clients' side of the picture; not a region, VPC or account, so the closest kind is trust-zone" }
+  - { source: "DC1", group: "dc1", kind: "region", note: "a data centre boundary" }
+  - { source: "Tools", group: "tools", kind: "system", note: "the tooling boundary holding Logging, Metrics, Monitoring and Automation" }
+edges:
+  - { source: "User -> DNS", from: "web-browser", to: "dns", note: "the arrow leaves the User boundary, not a box; modelled from Web browser, the first client in the boundary. No group-level edge exists in the format" }
+  - { source: "User -> CDN", from: "web-browser", to: "cdn", note: "the arrow leaves the User boundary, not a box; modelled from Web browser, the client that fetches the static assets" }
+  - { source: "Web browser -> Load balancer (www.mysite.com)", from: "web-browser", to: "load-balancer" }
+  - { source: "Mobile app -> Load balancer (api.mysite.com)", from: "mobile-app", to: "load-balancer" }
+  - { source: "Load balancer -> DC1", from: "load-balancer", to: "web-servers", note: "the arrowhead stops on the DC1 boundary; modelled to Web servers, the tier the load balancer fans out to" }
+  - { source: "Web servers -> Message Queue", from: "web-servers", to: "message-queue" }
+  - { source: "Web servers -> Databases", from: "web-servers", to: "databases" }
+  - { source: "Web servers -> Caches", from: "web-servers", to: "caches" }
+  - { source: "Web servers -> NoSQL", from: "web-servers", to: "nosql" }
+  - { source: "Message Queue -> Workers", from: "message-queue", to: "workers" }
+  - { source: "Tools -> DC1", from: "monitoring", to: "web-servers", note: "a boundary-to-boundary arrow; modelled from Monitoring, the tooling box that reaches into the running system, to Web servers, the tier it watches" }
+ignored:
+  - { source: "Shard 1", reason: "shard label drawn on a cylinder inside the Databases box, not a box of its own" }
+  - { source: "Shard 2", reason: "shard label drawn on a cylinder inside the Databases box, not a box of its own" }
+  - { source: "Shard ...", reason: "an ellipsis standing for the remaining shards inside the Databases box" }
+  - { source: "CACHE (x3)", reason: "identical stacked tiles inside the Caches box, the drawing device for several cache servers in one tier" }
+  - { source: "www.mysite.com / api.mysite.com", reason: "arrow labels, carried on the edges" }
+  - { source: "1 / 2 (circled)", reason: "footnote markers keyed to the numbered notes in the running text" }
+  - { source: "Figure 1-23", reason: "figure caption" }
+unmapped: []
+gaps:
+  - "Edges can only join nodes. Four of the eleven arrows in Figure 1-23 start or end on a boundary (User -> DNS, User -> CDN, Load balancer -> DC1, Tools -> DC1) and had to be re-pointed at a representative node inside that boundary."
+  - "A tier drawn as one box that contains several instances (three shard cylinders in Databases, three CACHE tiles in Caches, the server stacks in Web servers and Workers) has no expression: the design has one node per tier and the multiplicity survives only as props.sharded on the databases node."
+  - "There is no generic automation / CI component in the default provider, so the Automation box in the Tools group had to be mapped to observability-stack."
+  - "A group has no kind for a client-side boundary such as User; trust-zone is the closest of the seven."

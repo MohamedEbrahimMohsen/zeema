@@ -1,0 +1,84 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Imported 2026-09-08 from source/notification-system.md, a transcription of Figures 10-10 and
+# 10-14 in chapter 10 ("Design a notification system", pages 151-165) of "System Design Interview
+# - An Insider's Guide" by Alex Xu. The book is not copied into this repository.
+# The chapter's final architecture is the union of two complementary drawings of one system:
+# Figure 10-10 draws all four channels end to end, Figure 10-14 is "the updated notification
+# system design" after the deep dive, drawn for the iOS lane only. Boxes and arrows the two
+# figures share are counted once.
+# Assumptions, all recorded in mapping.yaml and notes.md:
+#   - The book draws unbranded boxes, so every box except APNs and FCM is a `default` generic
+#     component; no vendor is inferred anywhere, including for SMS Service and Email Service.
+#   - Authentication and Rate limit are boxes inside the notification server tier and are kept
+#     as nodes (container-service, in-process-limiter).
+#   - The five dashed boundaries carry no text; they are `system` groups without a label.
+#   - The analytics arrows (send pending, sent, click tracking) are modelled async.
+#   - The deep-dive additions hang off the iOS workers because that is the lane Figure 10-14
+#     draws; the figure does not repeat them on the other three lanes.
+#   - No requirements block: the chapter states no SLA, latency target, region count or replay
+#     promise. Its daily volumes have no requirement path; see notes.md.
+schemaVersion: "1"
+type: "design"
+id: "notification-system"
+
+groups:
+  - { id: "notification-server-tier", kind: "system" }
+  - { id: "third-party-services", kind: "trust-zone", label: "Third Party Services" }
+
+nodes:
+  - { id: "service-1", component: "container-service", label: "Service 1" }
+  - { id: "service-2", component: "container-service", label: "Service 2" }
+  - { id: "service-n", component: "container-service", label: "Service N" }
+  - { id: "notification-servers", component: "container-service", label: "Notification servers", group: "notification-server-tier" }
+  - { id: "authentication", component: "container-service", label: "Authentication", group: "notification-server-tier" }
+  - { id: "rate-limit", component: "in-process-limiter", label: "Rate limit", group: "notification-server-tier" }
+  - { id: "analytics-service", component: "container-service", label: "Analytics service" }
+  - { id: "cache", component: "cache-cluster", label: "CACHE" }
+  - { id: "db", component: "relational-database", label: "DB" }
+  - { id: "ios-pn", component: "message-queue", label: "iOS PN" }
+  - { id: "android-pn", component: "message-queue", label: "Android PN" }
+  - { id: "sms-queue", component: "message-queue", label: "SMS queue" }
+  - { id: "email-queue", component: "message-queue", label: "Email queue" }
+  - { id: "ios-workers", component: "container-worker", label: "Workers" }
+  - { id: "android-workers", component: "container-worker", label: "Workers" }
+  - { id: "sms-workers", component: "container-worker", label: "Workers" }
+  - { id: "email-workers", component: "container-worker", label: "Workers" }
+  - { id: "apns", component: "apns", label: "APNs", group: "third-party-services" }
+  - { id: "fcm", component: "fcm", label: "FCM", group: "third-party-services" }
+  - { id: "sms-service", component: "supplier-api", label: "SMS Service", group: "third-party-services" }
+  - { id: "email-service", component: "supplier-api", label: "Email Service", group: "third-party-services" }
+  - { id: "ios", component: "mobile-app", label: "iOS", props: { os: "ios" } }
+  - { id: "android", component: "mobile-app", label: "Android", props: { os: "android" } }
+  - { id: "sms", component: "mobile-app", label: "SMS" }
+  - { id: "email", component: "desktop-app", label: "Email" }
+  - { id: "notification-template", component: "relational-database", label: "Notification template" }
+  - { id: "notification-log", component: "relational-database", label: "Notification log" }
+
+edges:
+  - { from: "service-1", to: "notification-servers", protocol: "https", mode: "sync" }
+  - { from: "service-2", to: "notification-servers", protocol: "https", mode: "sync" }
+  - { from: "service-n", to: "notification-servers", protocol: "https", mode: "sync" }
+  - { from: "notification-servers", to: "analytics-service", protocol: "https", mode: "async", label: "send pending" }
+  - { from: "notification-servers", to: "cache", protocol: "tcp", mode: "sync" }
+  - { from: "cache", to: "db", protocol: "sql", mode: "sync" }
+  - { from: "notification-servers", to: "ios-pn", protocol: "amqp", mode: "async", delivery: "at-least-once" }
+  - { from: "notification-servers", to: "android-pn", protocol: "amqp", mode: "async", delivery: "at-least-once" }
+  - { from: "notification-servers", to: "sms-queue", protocol: "amqp", mode: "async", delivery: "at-least-once" }
+  - { from: "notification-servers", to: "email-queue", protocol: "amqp", mode: "async", delivery: "at-least-once" }
+  - { from: "ios-pn", to: "ios-workers", protocol: "amqp", mode: "async", delivery: "at-least-once" }
+  - { from: "android-pn", to: "android-workers", protocol: "amqp", mode: "async", delivery: "at-least-once" }
+  - { from: "sms-queue", to: "sms-workers", protocol: "amqp", mode: "async", delivery: "at-least-once" }
+  - { from: "email-queue", to: "email-workers", protocol: "amqp", mode: "async", delivery: "at-least-once" }
+  - { from: "ios-workers", to: "ios-pn", protocol: "amqp", mode: "async", delivery: "at-least-once", label: "retry on error" }
+  - { from: "ios-workers", to: "apns", protocol: "https", mode: "sync" }
+  - { from: "android-workers", to: "fcm", protocol: "https", mode: "sync" }
+  - { from: "sms-workers", to: "sms-service", protocol: "https", mode: "sync" }
+  - { from: "email-workers", to: "email-service", protocol: "https", mode: "sync" }
+  - { from: "ios-workers", to: "analytics-service", protocol: "https", mode: "async", label: "sent" }
+  - { from: "ios-workers", to: "notification-template", protocol: "sql", mode: "sync" }
+  - { from: "ios-workers", to: "notification-log", protocol: "sql", mode: "sync" }
+  - { from: "apns", to: "ios", protocol: "apns", mode: "async", delivery: "at-most-once" }
+  - { from: "fcm", to: "android", protocol: "fcm", mode: "async", delivery: "at-most-once" }
+  - { from: "sms-service", to: "sms", protocol: "sms", mode: "async", delivery: "at-most-once" }
+  - { from: "email-service", to: "email", protocol: "smtp", mode: "async", delivery: "at-most-once" }
+  - { from: "ios", to: "analytics-service", protocol: "https", mode: "async", label: "click tracking" }

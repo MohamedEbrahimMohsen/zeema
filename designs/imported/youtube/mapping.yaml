@@ -1,0 +1,70 @@
+source:
+  file: "source/youtube.md"
+  format: "book-figure"
+  figures: ["14-3", "14-4", "14-5", "14-6", "14-7", "14-10"]
+  counts: { nodes: 17, edges: 21, groups: 0 }
+nodes:
+  - { source: "User", node: "user", component: "user-device", confidence: "close", note: "Figure 14-4; rounded box holding a TV, a laptop and a phone icon. Figures 14-3 and 14-7 label the same box \"Client\". The chapter supports mobile apps, web browsers and smart TV in one box; the catalogue has no multi-platform client, so the web client stands for it. No product named." }
+  - { source: "Load balancer", node: "load-balancer", component: "load-balancer-tier", confidence: "close", note: "Figures 14-4, 14-5 and 14-6; unbranded load balancer icon, \"distributes requests among API servers\". No product named." }
+  - { source: "API servers", node: "api-servers", component: "container-service", confidence: "close", note: "Figures 14-3, 14-4, 14-5 and 14-6; stateless server cluster that carries everything except video streaming. No product named." }
+  - { source: "Metadata Cache", node: "metadata-cache", component: "cache-cluster", confidence: "close", note: "Figures 14-4, 14-5 and 14-6; caches video metadata and user objects. No product named." }
+  - { source: "Metadata DB", node: "metadata-db", component: "relational-database", confidence: "close", note: "Figures 14-4, 14-5 and 14-6; \"sharded and replicated\" per the text under Figure 14-4, master/slave in the error-handling playbook, so relational. No engine named." }
+  - { source: "Original storage", node: "original-storage", component: "blob-store", confidence: "close", note: "Figures 14-4 and 14-5; \"a blob storage system is used to store original videos\". No product named." }
+  - { source: "Transcoding servers", node: "transcoding-servers", component: "container-service", confidence: "close", note: "Figures 14-4 and 14-5; the server cluster that transcodes. Figure 14-10 is its inside. No product named; the catalogue's media-transcoder components are all named products (ffmpeg, MediaConvert...), so the generic service box is used." }
+  - { source: "Transcoded storage", node: "transcoded-storage", component: "blob-store", confidence: "close", note: "Figures 14-4 and 14-5; \"a blob storage that stores transcoded video files\". No product named." }
+  - { source: "CDN", node: "cdn", component: "content-delivery-network", confidence: "close", note: "Figures 14-3, 14-4, 14-5 and 14-7; videos are cached in and streamed from the CDN. CloudFront appears only in the cost estimation, not as a box label, so the generic CDN." }
+  - { source: "Completion queue", node: "completion-queue", component: "message-queue", confidence: "close", note: "Figures 14-4 and 14-5; \"a message queue that stores information about video transcoding completion events\". No broker named." }
+  - { source: "Completion handler", node: "completion-handler", component: "container-worker", confidence: "close", note: "Figures 14-4 and 14-5; \"a list of workers that pull event data from the completion queue\". No product named." }
+  - { source: "Preprocessor", node: "preprocessor", component: "container-service", confidence: "close", note: "Figure 14-10; splits video by GOP, generates the DAG and caches segments. No product named." }
+  - { source: "DAG scheduler", node: "dag-scheduler", component: "container-service", confidence: "close", note: "Figure 14-10; splits the DAG into stages of tasks. No product named; the catalogue's workflow-engine components are all named products, so the generic service box." }
+  - { source: "Resource manager", node: "resource-manager", component: "container-service", confidence: "close", note: "Figure 14-10; holds the task, worker and running queues and the task scheduler (Figure 14-17 zooms into it). Its internals are inside this one box, so one node. No product named." }
+  - { source: "Task workers", node: "task-workers", component: "container-worker", confidence: "close", note: "Figure 14-10; run the tasks defined in the DAG (Figure 14-19 zooms into the watermark, encoder, thumbnail and merger workers). No product named." }
+  - { source: "Temporary storage", node: "temporary-storage", component: "blob-store", confidence: "close", note: "Figure 14-10; \"multiple storage systems\" - metadata cached in memory, video and audio in blob storage. One box, mapped to the storage the chapter names for the video and audio data." }
+  - { source: "Encoded video", node: "encoded-video", component: "blob-store", confidence: "assumed", note: "Figure 14-10; the final output of the encoding pipeline (example: funny_720p.mp4). The box is the output artefact rather than a server; an object store is the closest runtime element the catalogue has." }
+groups: []
+edges:
+  - { source: "User -> Original storage", from: "user", to: "original-storage", note: "Figure 14-4; step 1 of Figure 14-5, videos are uploaded to the original storage." }
+  - { source: "Original storage -> Transcoding servers", from: "original-storage", to: "transcoding-servers", note: "Figure 14-4; step 2 of Figure 14-5, the transcoding servers fetch videos from the original storage. Direction as drawn (data flow)." }
+  - { source: "Transcoding servers -> Transcoded storage", from: "transcoding-servers", to: "transcoded-storage", note: "Figure 14-4; step 3a of Figure 14-5." }
+  - { source: "Transcoding servers -> Completion queue (transcoding complete)", from: "transcoding-servers", to: "completion-queue", note: "Figure 14-4; step 3b of Figure 14-5." }
+  - { source: "Transcoded storage -> CDN", from: "transcoded-storage", to: "cdn", note: "Figure 14-4; step 3a.1 of Figure 14-5, transcoded videos are distributed to the CDN." }
+  - { source: "Completion queue -> Completion handler", from: "completion-queue", to: "completion-handler", note: "Figure 14-4; step 3b.1 of Figure 14-5, the workers pull event data from the queue." }
+  - { source: "Completion handler -> Metadata DB", from: "completion-handler", to: "metadata-db", note: "Figure 14-4; step 3b.1.a of Figure 14-5." }
+  - { source: "Completion handler -> Metadata Cache", from: "completion-handler", to: "metadata-cache", note: "Figure 14-4; step 3b.1.b of Figure 14-5." }
+  - { source: "API servers -> Metadata Cache", from: "api-servers", to: "metadata-cache", note: "Figures 14-4 and 14-6; one arrow between the same pair in the same direction, so one edge." }
+  - { source: "API servers -> Metadata DB", from: "api-servers", to: "metadata-db", note: "Figures 14-4 and 14-6; one arrow between the same pair in the same direction, so one edge." }
+  - { source: "API servers -> Load balancer", from: "api-servers", to: "load-balancer", note: "Figure 14-4; step 4 of Figure 14-5, the response leg that tells the client the upload is ready." }
+  - { source: "Load balancer -> User", from: "load-balancer", to: "user", note: "Figure 14-4; step 4 of Figure 14-5, second half of the response leg." }
+  - { source: "User -> Load balancer (Update metadata)", from: "user", to: "load-balancer", note: "Figure 14-6; the request leg of flow b, drawn only in Figure 14-6. Also carries the \"everything else\" arrow of Figure 14-3." }
+  - { source: "Load balancer -> API servers", from: "load-balancer", to: "api-servers", note: "Figure 14-6; the request leg of flow b, drawn only in Figure 14-6." }
+  - { source: "Client -> CDN (streaming video)", from: "user", to: "cdn", note: "Figures 14-7 and 14-3; the same arrow in both figures, counted once. Drawn from the client to the CDN (the playback request); the video streams back over it." }
+  - { source: "Preprocessor -> DAG scheduler", from: "preprocessor", to: "dag-scheduler", note: "Figure 14-10." }
+  - { source: "Preprocessor -> Temporary storage", from: "preprocessor", to: "temporary-storage", note: "Figure 14-10; the preprocessor stores GOPs and metadata in temporary storage for retries." }
+  - { source: "DAG scheduler -> Resource manager", from: "dag-scheduler", to: "resource-manager", note: "Figure 14-10; the scheduler puts stages of tasks in the resource manager's task queue." }
+  - { source: "Resource manager -> Task workers", from: "resource-manager", to: "task-workers", note: "Figure 14-10; \"run task\" in the Figure 14-17 zoom." }
+  - { source: "Task workers -> Temporary storage", from: "task-workers", to: "temporary-storage", note: "Figure 14-10." }
+  - { source: "Task workers -> Encoded video", from: "task-workers", to: "encoded-video", note: "Figure 14-10; the pipeline output." }
+ignored:
+  - { source: "Client -> API servers (everything else)", reason: "Figure 14-3 arrow; the same request path Figures 14-4 and 14-6 draw in detail through the Load balancer, counted there" }
+  - { source: "1, 2, 3a, 3b, 3a.1, 3b.1, 3b.1.a, 3b.1.b, 4", reason: "step markers on the Figure 14-5 arrows, not arrow labels" }
+  - { source: "(dashed borders around API servers, Transcoding servers, Completion handler, CDN)", reason: "each holds one box and its own caption, so it is that box's border and not a boundary" }
+  - { source: "(TV, laptop and phone icons inside the User box)", reason: "the devices drawn inside one client box, not boxes" }
+  - { source: "Figure 14-3 / 14-4 / 14-5 / 14-6 / 14-7 / 14-10", reason: "figure captions" }
+  - { source: "Task queue, Worker queue, Running queue, Task scheduler", reason: "Figure 14-17 zooms into the inside of the Resource manager box, which is one box of Figure 14-10" }
+  - { source: "Watermark, Encoder, Thumbnail, Merger", reason: "Figure 14-19 zooms into the inside of the Task workers box, which is one box of Figure 14-10" }
+  - { source: "Inspection, Video encodings, Thumbnail, Watermark, video, audio, metadata", reason: "Figures 14-8 and 14-15 are the DAG of transcoding tasks, a job graph and not runtime elements" }
+  - { source: "Download module, Encoding module, Upload module, Message queue x4, Encoded storage", reason: "Figures 14-25 and 14-26 are the parallelism optimisation of the transcoding pipeline, an alternative drawing of Transcoding servers and not part of the final system the chapter assembles" }
+  - { source: "North America / Europe / Asia / South America upload center", reason: "Figure 14-24 is a world map of upload centres, a speed optimisation with no boxes wired into the system; it is why requirements.latency.geoDistributed is set" }
+  - { source: "Video servers", reason: "Figure 14-28 is the cost-saving option of serving unpopular videos from high capacity storage video servers, an alternative not part of the final system" }
+  - { source: "1. POST /upload, 2. <pre-signed URL>, 3. upload video", reason: "Figure 14-27 is the pre-signed URL safety optimisation; its boxes (User, API servers, Original storage) are already nodes and its arrows refine the upload arrow already counted" }
+unmapped: []
+gaps:
+  - "The client box covers a web browser, a mobile app and a smart TV in one drawing; the client kind has a single `platform` enum, and the catalogue has no multi-platform client component, so the box is mapped to web-browser alone."
+  - "The Temporary storage box is described as several storage systems at once (metadata cached in memory, video and audio in blob storage). One box has to become one node, so the in-memory half of it is lost."
+  - "The Encoded video box is an output artefact (funny_720p.mp4), not a runtime element; the format has no artefact node, so it is an object store with confidence assumed."
+  - "The chapter states 5 million DAU, 5 videos watched per user per day, 150 TB of new video per day and about $150,000 per day of CDN cost. requirements has no throughput, capacity or cost path, so none of those numbers could be expressed."
+  - "The interviewer states that encryption is required. There is no requirement path for encryption (only security.certificateRotationAutomated and security.credentialRotationDays), and no figure states which store is encrypted, so it is recorded here only."
+  - "The Metadata DB is stated to be replicated but the flavour is not; replication is an enum with no `unspecified` value, so async was chosen from the master/slave promotion in the error-handling playbook."
+  - "No protocol string exists for an unnamed cache tier (the catalogue's cache protocols are product names such as redis and memcached); those edges use \"cache\"."
+  - "Figure 14-10 is the inside of the Transcoding servers box, but a node cannot contain other nodes and the book draws no arrow between the two pictures, so the transcoding pipeline stands beside the upload flow with no edge joining them."
+  - "The design is the union of six figures. mapping.yaml can list source.figures but each node, edge and ignored entry has to say in its note which figure it came from; there is no per-item figure field."

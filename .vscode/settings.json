@@ -2,7 +2,7 @@
   "yaml.schemas": {
     "./schema/kind.schema.json": ["kinds/*.yaml"],
     "./schema/component.schema.json": ["components/**/*.yaml"],
-    "./schema/design.schema.json": ["designs/*.yaml"],
+    "./schema/design.schema.json": ["designs/**/*.yaml"],
     "./schema/rule.schema.json": ["rules/*.yaml"]
   },
   "yaml.validate": true

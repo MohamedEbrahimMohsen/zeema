@@ -1,0 +1,60 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Imported 2026-09-08 from source/scale-to-millions.md, a transcription of Figure 1-23 in
+# chapter 1 ("Scale from zero to millions of users", pages 5-33) of "System Design Interview -
+# An Insider's Guide" by Alex Xu. Figure 1-23 is the chapter's final architecture: the design of
+# Figure 1-19 (message queue plus the logging / metrics / monitoring / automation tooling) with
+# the data tier sharded and a NoSQL store added. The book is not copied into this repository.
+# Assumptions, all recorded in mapping.yaml and notes.md:
+#   - The book draws unbranded boxes, so every node is a `default` generic component; no vendor
+#     is inferred anywhere.
+#   - "Databases" is one node: the box is the data tier and "Shard 1 / Shard 2 / Shard ..." are
+#     the shard labels drawn on the cylinders inside it, the same drawing device as the stacked
+#     CACHE tiles inside "Caches". The sharding fact is kept as props.sharded.
+#   - Three arrows start or end on a boundary rather than on a box (User -> DNS, User -> CDN,
+#     Load balancer -> DC1, Tools -> DC1). The format has no group-level edge, so each is
+#     modelled between the representative nodes named in mapping.yaml.
+#   - "Automation" has no automation or CI generic in the catalogue; it is mapped to
+#     observability-stack with the rest of the Tools box, confidence assumed.
+#   - requirements.availability.multiRegion comes from the chapter's own statement that only one
+#     data centre is drawn for space and that the design supports multiple data centres.
+schemaVersion: "1"
+type: "design"
+id: "scale-to-millions"
+
+requirements:
+  availability: { multiRegion: true }
+
+groups:
+  - { id: "user", kind: "trust-zone", label: "User" }
+  - { id: "dc1", kind: "region", label: "DC1" }
+  - { id: "tools", kind: "system", label: "Tools" }
+
+nodes:
+  - { id: "dns", component: "dns-resolver", label: "DNS" }
+  - { id: "web-browser", component: "web-browser", label: "Web browser", group: "user" }
+  - { id: "mobile-app", component: "mobile-app", label: "Mobile app", group: "user" }
+  - { id: "cdn", component: "content-delivery-network", label: "CDN" }
+  - { id: "load-balancer", component: "load-balancer-tier", label: "Load balancer" }
+  - { id: "web-servers", component: "container-service", label: "Web servers", group: "dc1" }
+  - { id: "message-queue", component: "message-queue", label: "Message Queue", group: "dc1" }
+  - { id: "databases", component: "relational-database", label: "Databases", group: "dc1", props: { sharded: true } }
+  - { id: "caches", component: "cache-cluster", label: "Caches", group: "dc1" }
+  - { id: "workers", component: "container-worker", label: "Workers", group: "dc1" }
+  - { id: "nosql", component: "nosql-store", label: "NoSQL" }
+  - { id: "logging", component: "observability-stack", label: "Logging", group: "tools", props: { signal: "logs" } }
+  - { id: "metrics", component: "observability-stack", label: "Metrics", group: "tools", props: { signal: "metrics" } }
+  - { id: "monitoring", component: "observability-stack", label: "Monitoring", group: "tools" }
+  - { id: "automation", component: "automation-pipeline", label: "Automation", group: "tools" }
+
+edges:
+  - { from: "web-browser", to: "dns", protocol: "dns", mode: "sync" }
+  - { from: "web-browser", to: "cdn", protocol: "https", mode: "sync" }
+  - { from: "web-browser", to: "load-balancer", protocol: "https", mode: "sync", label: "www.mysite.com" }
+  - { from: "mobile-app", to: "load-balancer", protocol: "https", mode: "sync", label: "api.mysite.com" }
+  - { from: "load-balancer", to: "web-servers", protocol: "http", mode: "sync" }
+  - { from: "web-servers", to: "message-queue", protocol: "amqp", mode: "async", delivery: "at-least-once" }
+  - { from: "web-servers", to: "databases", protocol: "sql", mode: "sync" }
+  - { from: "web-servers", to: "caches", protocol: "tcp", mode: "sync" }
+  - { from: "web-servers", to: "nosql", protocol: "tcp", mode: "sync" }
+  - { from: "message-queue", to: "workers", protocol: "amqp", mode: "async", delivery: "at-least-once" }
+  - { from: "monitoring", to: "web-servers", protocol: "https", mode: "sync" }

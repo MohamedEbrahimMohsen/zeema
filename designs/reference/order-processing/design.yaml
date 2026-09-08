@@ -1,0 +1,87 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture 1, clean variant: event-driven order processing.
+#
+# Fixes relative to order-processing.broken.yaml:
+#   - orders-queue declares a dead-letter queue
+#   - order-events moved from SNS to Kafka, which can replay
+#   - inventory reservation became async through reservation-queue, so the longest
+#     synchronous chain from the gateway is api -> order-service -> payment-service (2 hops)
+# This file MUST trip no rule.
+schemaVersion: "1"
+type: "design"
+id: "order-processing"
+
+requirements:
+  security:
+    credentialRotationDays: 90
+  availability:
+    multiRegion: false
+    sla: "99.9"
+  messaging:
+    replay: true
+  latency:
+    p95Ms: 300
+
+groups:
+  - { id: "eu-west-1", kind: "region" }
+  - { id: "core-vpc", kind: "vpc", parent: "eu-west-1" }
+
+nodes:
+  - id: "api"
+    component: "aws-api-gateway"
+    group: "core-vpc"
+    props: { auth: "jwt", apiType: "http" }
+    nfr: { rps: 800 }
+
+  - id: "order-service"
+    component: "container-service"
+    group: "core-vpc"
+    props: { orchestrator: "kubernetes", instances: 3, runtime: "dotnet-10" }
+
+  - id: "payment-service"
+    component: "container-service"
+    group: "core-vpc"
+    props: { orchestrator: "kubernetes", instances: 2, runtime: "dotnet-10" }
+
+  - id: "reservation-queue"
+    component: "sqs"
+    group: "core-vpc"
+    props: { fifo: true, deadLetterQueue: true }
+
+  - id: "inventory-service"
+    component: "container-service"
+    group: "core-vpc"
+    props: { orchestrator: "kubernetes", instances: 2, runtime: "dotnet-10" }
+
+  - id: "orders-queue"
+    component: "sqs"
+    group: "core-vpc"
+    props: { deadLetterQueue: true }
+
+  - id: "fulfilment-worker"
+    component: "container-service"
+    group: "core-vpc"
+    props: { orchestrator: "kubernetes", instances: 4, runtime: "dotnet-10" }
+
+  - id: "orders-db"
+    component: "postgres"
+    group: "core-vpc"
+    props: { version: "16", backupEnabled: true, backupRetentionDays: 30, encryptionAtRest: true }
+    nfr: { consistency: "strong" }
+
+  - id: "order-events"
+    component: "kafka"
+    group: "core-vpc"
+    props: { partitions: 6, replicationFactor: 3, acks: "all", retentionHours: 720 }
+
+edges:
+  - { from: "api", to: "order-service", protocol: "http", mode: "sync" }
+  - { from: "order-service", to: "payment-service", protocol: "grpc", mode: "sync" }
+  - { from: "order-service", to: "orders-db", protocol: "postgres", mode: "sync" }
+  - { from: "payment-service", to: "reservation-queue", protocol: "sqs", mode: "async", delivery: "at-least-once" }
+  - { from: "reservation-queue", to: "inventory-service", protocol: "sqs", mode: "async", delivery: "at-least-once" }
+  - { from: "inventory-service", to: "orders-db", protocol: "postgres", mode: "sync" }
+  - { from: "order-service", to: "orders-queue", protocol: "sqs", mode: "async", delivery: "at-least-once" }
+  - { from: "orders-queue", to: "fulfilment-worker", protocol: "sqs", mode: "async", delivery: "at-least-once" }
+  - { from: "fulfilment-worker", to: "orders-db", protocol: "postgres", mode: "sync" }
+  - { from: "fulfilment-worker", to: "order-events", protocol: "kafka", mode: "async", delivery: "at-least-once" }

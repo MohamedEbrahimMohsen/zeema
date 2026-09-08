@@ -129,18 +129,22 @@ change freely, and this file records that freedom expires at public ship.
 - Translators only touch `locales/`. A translation pull request never changes a kind,
   component or rule file.
 
-## 8. Reference designs
+## 8. Designs
 
-`designs/` holds architectures encoded in the format. Each has a clean file and a
-`.broken.yaml` file. Together they are the format's evidence and, later, the linter's test
-fixtures. A reference design may be anonymised from a real system but must be realistic:
-real products, real edge modes, real requirements.
+`designs/` has two tiers, one folder per design, and the folder name is the design id.
 
-`references/designs/` holds designs imported from real sources (pictures, models,
-infrastructure code) by the `arkore-design-import` skill. Each keeps the original next to its
-encoding and a mapping between the two. Fidelity to the source is the acceptance criterion
-there: same nodes, edges and groups, labels verbatim. An imported design becomes a reference
-design in `designs/` only through a separate decision that adds the `.broken.yaml` variant.
+`designs/reference/<id>/` holds architectures curated by Arkore: `design.yaml` (must trip no
+rule), `design.broken.yaml` (must trip exactly the rules named in its header), the intake
+card or origin note under `source/`, `diagram.md` and `notes.md`. Together they are the
+format's evidence and, later, the linter's test fixtures. A reference design may be anonymised
+from a real system but must be realistic: real products, real edge modes, real requirements.
+
+`designs/imported/<id>/` holds designs brought in from real sources (pictures, models,
+infrastructure code) by the `arkore-design-import` skill: the original under `source/`,
+`design.yaml`, `mapping.yaml` (where every box, boundary and arrow went, machine checked),
+`diagram.md` and `notes.md`. Fidelity to the source is the acceptance criterion: same nodes,
+edges and groups, labels verbatim. An imported design becomes a reference design only through
+a separate decision that adds the `design.broken.yaml` variant.
 
 ## 9. Recording gaps
 

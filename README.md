@@ -39,13 +39,13 @@ This repository is the **format**, not yet the tool.
 |---|---|
 | `schema/` | JSON Schema for each document type; drives editor validation and autocomplete |
 | `kinds/` | Abstract vocabulary: 71 kinds across messaging, compute, data, edge, external, client, ops and security (see `docs/catalogue-v1.md`) |
-| `components/<provider>/` | Concrete products implementing a kind, 1610 in total, grouped by owning vendor: `aws/` (285), `azure/` (174), `gcp/` (227), `oci/` (168), `cloudflare/` (98), `default/` (658); coverage checklists per provider in `docs/inventory/` |
+| `components/<provider>/` | Concrete products implementing a kind, 1623 in total, grouped by owning vendor: `aws/` (285), `azure/` (174), `gcp/` (227), `oci/` (168), `cloudflare/` (98), `default/` (671); coverage checklists per provider in `docs/inventory/` |
 | `rules/` | Deterministic lint rules written as declarative YAML predicates |
 | `designs/` | Reference architectures, each in a clean and a deliberately broken variant |
 | `locales/` | Display names and descriptions, keyed by id |
 | `icons/` | One 24x24 SVG glyph per kind and per component, plus the provider marks used as badges |
 | `docs/` | The specification, governance, usage guide, and the gap log |
-| `references/designs/` | Designs imported from real sources, each with its original, its Arkore encoding and the mapping between them |
+| `designs/imported/` | Designs imported from real sources, each with its original, its Arkore encoding and the mapping between them |
 | `.claude/` | Skills and helper scripts for maintaining the catalogue and importing designs; tooling, not the format |
 
 Start with [docs/format.md](docs/format.md) for the specification and

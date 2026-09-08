@@ -1,0 +1,40 @@
+source:
+  file: "source/search-autocomplete.md"
+  format: "book-figure"
+  figures: ["13-9", "13-11"]
+  counts: { nodes: 10, edges: 10, groups: 1 }
+nodes:
+  - { source: "Web browser", node: "web-browser", component: "web-browser", confidence: "close", note: "laptop icon inside the User box; the generic browser client" }
+  - { source: "Mobile app", node: "mobile-app", component: "mobile-app", confidence: "close", note: "phone icon inside the User box; no OS named, os left at both" }
+  - { source: "Load balancer", node: "load-balancer", component: "load-balancer-tier", confidence: "close", note: "unbranded load balancer box; nfr from the chapter's estimation (~24,000 QPS, 100 ms)" }
+  - { source: "API servers", node: "api-servers", component: "container-service", confidence: "close", note: "server farm icon labelled API servers; no product named" }
+  - { source: "Trie Cache", node: "trie-cache", component: "cache-cluster", confidence: "close", note: "the chapter calls it a distributed cache system that keeps the trie in memory; no product named" }
+  - { source: "Trie DB", node: "trie-db", component: "nosql-store", confidence: "close", note: "the figure labels the box Trie DB; the prose offers a document store (MongoDB) or a key-value store, so a NoSQL store, but the picture names no product. model left at the key-value default" }
+  - { source: "Analytics Logs", node: "analytics-logs", component: "observability-stack", confidence: "close", note: "log document icon; the chapter says it stores raw append-only, non-indexed search query logs, so signal: logs" }
+  - { source: "Aggregators", node: "aggregators", component: "container-worker", confidence: "close", note: "server farm icon; servers that aggregate the logs at intervals, so a worker with a batch trigger" }
+  - { source: "Aggregated Data", node: "aggregated-data", component: "relational-database", confidence: "close", note: "cylinders holding the weekly aggregate table (query, time, frequency); no engine named" }
+  - { source: "Workers", node: "workers", component: "container-worker", confidence: "close", note: "the chapter calls them servers performing asynchronous jobs at regular intervals that build the trie; arrow says Update weekly" }
+groups:
+  - { source: "User", group: "user", kind: "trust-zone", note: "solid rounded box around Web browser and Mobile app; the client side of the system, closest group kind is trust-zone" }
+edges:
+  - { source: "Web browser -> Load balancer (13-11, step 1)", from: "web-browser", to: "load-balancer" }
+  - { source: "Mobile app -> Load balancer (13-11, step 1)", from: "mobile-app", to: "load-balancer" }
+  - { source: "Load balancer -> API servers (13-11, step 2)", from: "load-balancer", to: "api-servers" }
+  - { source: "API servers -> Trie Cache (13-11, step 3)", from: "api-servers", to: "trie-cache" }
+  - { source: "Trie Cache -> Trie DB (13-11, step 4)", from: "trie-cache", to: "trie-db", note: "cache miss: data is replenished back into the cache from the DB" }
+  - { source: "Analytics Logs -> Aggregators (13-9)", from: "analytics-logs", to: "aggregators" }
+  - { source: "Aggregators -> Aggregated Data (13-9)", from: "aggregators", to: "aggregated-data" }
+  - { source: "Aggregated Data -> Workers (13-9)", from: "aggregated-data", to: "workers" }
+  - { source: "Workers -> Trie DB (13-9, Update weekly)", from: "workers", to: "trie-db" }
+  - { source: "Trie DB -> Trie Cache (13-9, Weekly snapshot of DB)", from: "trie-db", to: "trie-cache" }
+ignored:
+  - { source: "Figure 13-9 / Figure 13-11 captions", reason: "figure captions, not system elements" }
+  - { source: "circled step numbers 1, 2, 3, 4 in figure 13-11", reason: "step numbers keyed to the numbered walkthrough after the figure, not arrow labels" }
+  - { source: "dashed outlines around Aggregators, Workers and API servers", reason: "the book's server-farm icon, part of those boxes, not boundaries around other boxes" }
+unmapped: []
+gaps:
+  - "Trie DB and Trie Cache are the same two boxes in figures 13-9 and 13-11; mapping.yaml has no way to record that a node comes from two figures, so the union is recorded in source/search-autocomplete.md and the figures are listed in source.figures."
+  - "The User boundary is a client-side grouping of devices, not a network or trust boundary; trust-zone is the closest group kind in v1."
+  - "Trie DB is described as either a document store or a key-value store; a design cannot express 'either model', so the nosql-store default (key-value) stands."
+  - "The offline pipeline arrows carry no sync/async marking in the figure; all five are modelled async because they are weekly batch flows, and mode is required."
+  - "The chapter's 100 ms promise is an absolute response-time budget, not a percentile; it is recorded as latency.p95Ms because v1 has no absolute latency path."

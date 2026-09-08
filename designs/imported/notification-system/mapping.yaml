@@ -1,0 +1,78 @@
+source:
+  file: "source/notification-system.md"
+  format: "book-figure"
+  figures: ["10-10", "10-14"]
+  counts: { nodes: 27, edges: 27, groups: 2 }
+nodes:
+  - { source: "Service 1", node: "service-1", component: "container-service", confidence: "close", note: "generic calling service, no product named" }
+  - { source: "Service 2", node: "service-2", component: "container-service", confidence: "close", note: "generic calling service, no product named" }
+  - { source: "Service N", node: "service-n", component: "container-service", confidence: "close", note: "generic calling service, no product named; the only service box Figure 10-14 keeps" }
+  - { source: "Notification servers", node: "notification-servers", component: "container-service", confidence: "close", note: "generic service tier, horizontally scaled" }
+  - { source: "Authentication", node: "authentication", component: "container-service", confidence: "close", note: "a box drawn inside the notification server tier in Figure 10-14; no identity product named" }
+  - { source: "Rate limit", node: "rate-limit", component: "in-process-limiter", confidence: "close", note: "drawn inside the notification server tier, so an in-process limiter; no product named" }
+  - { source: "Analytics service", node: "analytics-service", component: "container-service", confidence: "close", note: "generic service box, black border like the Service boxes" }
+  - { source: "CACHE", node: "cache", component: "cache-cluster", confidence: "close", note: "stacked CACHE tiles, no product named" }
+  - { source: "DB", node: "db", component: "relational-database", confidence: "close", note: "cylinders labelled DB holding device settings and user info; no engine named" }
+  - { source: "iOS PN", node: "ios-pn", component: "message-queue", confidence: "close", note: "queue glyph, no broker named" }
+  - { source: "Android PN", node: "android-pn", component: "message-queue", confidence: "close", note: "queue glyph, no broker named" }
+  - { source: "SMS queue", node: "sms-queue", component: "message-queue", confidence: "close", note: "queue glyph, no broker named" }
+  - { source: "Email queue", node: "email-queue", component: "message-queue", confidence: "close", note: "queue glyph, no broker named" }
+  - { source: "Workers", node: "ios-workers", component: "container-worker", confidence: "close", note: "generic worker pool, iOS lane; the lane Figure 10-14 draws" }
+  - { source: "Workers", node: "android-workers", component: "container-worker", confidence: "close", note: "generic worker pool, Android lane" }
+  - { source: "Workers", node: "sms-workers", component: "container-worker", confidence: "close", note: "generic worker pool, SMS lane" }
+  - { source: "Workers", node: "email-workers", component: "container-worker", confidence: "close", note: "generic worker pool, email lane" }
+  - { source: "APNs", node: "apns", component: "apns", confidence: "exact" }
+  - { source: "FCM", node: "fcm", component: "fcm", confidence: "exact", note: "Firebase Cloud Messaging, the gcp provider component" }
+  - { source: "SMS Service", node: "sms-service", component: "supplier-api", confidence: "close", note: "unbranded third-party service box; the generic external API component, because the figure names no vendor" }
+  - { source: "Email Service", node: "email-service", component: "supplier-api", confidence: "close", note: "unbranded third-party service box; the generic external API component, because the figure names no vendor" }
+  - { source: "iOS", node: "ios", component: "mobile-app", confidence: "close", note: "phone glyph labelled iOS; os set to ios" }
+  - { source: "Android", node: "android", component: "mobile-app", confidence: "close", note: "phone glyph labelled Android; os set to android" }
+  - { source: "SMS", node: "sms", component: "mobile-app", confidence: "close", note: "phone glyph labelled SMS, the handset that receives the text message; os left at the default" }
+  - { source: "Email", node: "email", component: "desktop-app", confidence: "close", note: "laptop glyph labelled Email; the chapter's supported devices are iOS, Android and laptop/desktop" }
+  - { source: "Notification template", node: "notification-template", component: "relational-database", confidence: "close", note: "drawn as a cyan store container like DB and Notification log, read by the workers; no engine named" }
+  - { source: "Notification log", node: "notification-log", component: "relational-database", confidence: "close", note: "cylinders; the chapter calls it the notification log database, no engine named" }
+groups:
+  - { source: "(none, dashed box around Notification servers, Authentication, Rate limit)", group: "notification-server-tier", kind: "system", note: "no text on the boundary; it holds only the servers in Figure 10-10 and gains Authentication and Rate limit in Figure 10-14" }
+  - { source: "Third Party Services", group: "third-party-services", kind: "trust-zone", note: "dotted boundary holding APNs, FCM, SMS Service and Email Service; services outside our control" }
+edges:
+  - { source: "Service 1 -> Notification servers", from: "service-1", to: "notification-servers" }
+  - { source: "Service 2 -> Notification servers", from: "service-2", to: "notification-servers" }
+  - { source: "Service N -> Notification servers", from: "service-n", to: "notification-servers" }
+  - { source: "Notification servers -> Analytics service (send pending)", from: "notification-servers", to: "analytics-service" }
+  - { source: "Notification servers -> CACHE", from: "notification-servers", to: "cache" }
+  - { source: "CACHE -> DB", from: "cache", to: "db" }
+  - { source: "Notification servers -> iOS PN", from: "notification-servers", to: "ios-pn" }
+  - { source: "Notification servers -> Android PN", from: "notification-servers", to: "android-pn" }
+  - { source: "Notification servers -> SMS queue", from: "notification-servers", to: "sms-queue" }
+  - { source: "Notification servers -> Email queue", from: "notification-servers", to: "email-queue" }
+  - { source: "iOS PN -> Workers (iOS lane)", from: "ios-pn", to: "ios-workers" }
+  - { source: "Android PN -> Workers (Android lane)", from: "android-pn", to: "android-workers" }
+  - { source: "SMS queue -> Workers (SMS lane)", from: "sms-queue", to: "sms-workers" }
+  - { source: "Email queue -> Workers (email lane)", from: "email-queue", to: "email-workers" }
+  - { source: "Workers (iOS lane) -> iOS PN (retry on error)", from: "ios-workers", to: "ios-pn" }
+  - { source: "Workers (iOS lane) -> APNs", from: "ios-workers", to: "apns" }
+  - { source: "Workers (Android lane) -> FCM", from: "android-workers", to: "fcm" }
+  - { source: "Workers (SMS lane) -> SMS Service", from: "sms-workers", to: "sms-service" }
+  - { source: "Workers (email lane) -> Email Service", from: "email-workers", to: "email-service" }
+  - { source: "Workers (iOS lane) -> Analytics service (sent)", from: "ios-workers", to: "analytics-service" }
+  - { source: "Workers (iOS lane) -> Notification template", from: "ios-workers", to: "notification-template" }
+  - { source: "Workers (iOS lane) -> Notification log", from: "ios-workers", to: "notification-log" }
+  - { source: "APNs -> iOS", from: "apns", to: "ios" }
+  - { source: "FCM -> Android", from: "fcm", to: "android" }
+  - { source: "SMS Service -> SMS", from: "sms-service", to: "sms" }
+  - { source: "Email Service -> Email", from: "email-service", to: "email" }
+  - { source: "iOS -> Analytics service (click tracking)", from: "ios", to: "analytics-service" }
+ignored:
+  - { source: "(dashed borders around each lane's Workers box)", reason: "a border enclosing one box is that box's cluster styling (several instances), not a boundary" }
+
+  - { source: "(vertical ellipsis between Service 2 and Service N)", reason: "ellipsis standing for services 3..N-1, not a box" }
+  - { source: "circled step numbers 1 to 6", reason: "keys to the numbered walk-through in the running text, not system elements" }
+  - { source: "device setting user info", reason: "note drawn inside the DB container saying what it holds, not a box and not an arrow label" }
+  - { source: "Figure 10-10 / Figure 10-14", reason: "figure captions" }
+unmapped: []
+gaps:
+  - "The chapter states volumes (10 million push notifications, 1 million SMS and 5 million emails per day) but requirements has no throughput or daily-volume path, so the numbers are recorded in notes.md only."
+  - "The chapter promises notifications are never lost but may be delayed or re-ordered; requirements has no 'no message loss' path (durability.* is about stored objects, messaging.replay is a different promise), so the promise is not encoded."
+  - "The chapter states delivery is explicitly not exactly-once and a dedupe check on the event ID reduces duplicates; a requirement can say exactlyOnce is required but not that it is deliberately not required, and dedupe by event id has no place on a node or an edge."
+  - "Figure 10-14 draws the deep-dive additions (analytics, notification template, notification log) on the iOS lane only. The format has no way to say 'this also applies to the other three lanes', so they hang off the iOS workers exactly as drawn."
+  - "The two figures share eight boxes and eight arrows; nothing in mapping.yaml records which figure an item came from, so that is carried in the source transcription instead."

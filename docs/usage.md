@@ -126,7 +126,7 @@ When no generic component exists for a kind, that is a gap; record it in
 
 A design that already exists as a picture, a draw.io or Mermaid file, or infrastructure code
 does not have to be retyped. The `arkore-design-import` skill in `.claude/skills/` converts
-it into `references/designs/<name>/`: the original file, the Arkore design with every box,
+it into `designs/imported/<name>/`: the original under `source/`, `design.yaml` with every box,
 arrow and boundary preserved (`label` keeps the source text), a `mapping.yaml` that records
 where each item went, a Mermaid rendering and notes. A box with no matching component is
 added to the catalogue first, through the `arkore-catalogue-add` skill, in every provider

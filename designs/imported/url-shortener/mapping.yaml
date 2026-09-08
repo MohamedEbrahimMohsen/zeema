@@ -1,0 +1,36 @@
+source:
+  file: "source/url-shortener.md"
+  format: "book-figure"
+  figures: ["8-7", "8-8"]
+  counts: { nodes: 5, edges: 5, groups: 0 }
+nodes:
+  - { source: "User", node: "user", component: "web-browser", confidence: "close", note: "Figure 8-8; rounded box labelled User holding a laptop icon and a phone icon. The chapter describes entering a tinyurl in the browser, so the web client; no product named." }
+  - { source: "Load balancer", node: "load-balancer", component: "load-balancer-tier", confidence: "close", note: "Figure 8-8; unbranded load balancer icon, no product named." }
+  - { source: "Web servers", node: "web-servers", component: "container-service", confidence: "close", note: "Figure 8-8; server cluster that runs both the shortening flow of Figure 8-7 and the redirecting flow, no product named." }
+  - { source: "Cache", node: "cache", component: "cache-cluster", confidence: "close", note: "Figure 8-8; holds the <shortURL, longURL> mapping, no product named." }
+  - { source: "Database", node: "database", component: "relational-database", confidence: "close", note: "Figure 8-8; the same store Figure 8-7 writes as DB in steps 2 and 6, counted once. The data model section stores <shortURL, longURL> in a relational database (Figure 8-4: id, shortURL, longURL)." }
+groups: []
+edges:
+  - { source: "User -> Load balancer (GET https://tinyurl.com/zn9edcu)", from: "user", to: "load-balancer", note: "Figure 8-8 arrow 1. Also carries the POST api/v1/data/shorten write of Figure 8-7 step 1." }
+  - { source: "Load balancer -> Web servers", from: "load-balancer", to: "web-servers", note: "Figure 8-8 arrow 2." }
+  - { source: "Web servers -> Cache", from: "web-servers", to: "cache", note: "Figure 8-8 arrow 3; read path lookup of the shortURL." }
+  - { source: "Web servers -> Database", from: "web-servers", to: "database", note: "Figure 8-8 arrow 4 (read on cache miss) and Figure 8-7 steps 2 and 6 (the longURL lookup and the row insert). One arrow between the same pair in the same direction, so one edge." }
+  - { source: "Load balancer -> User (Return long URL: https://en.wikipedia.org/wiki/Systems_design)", from: "load-balancer", to: "user", note: "Figure 8-8 arrow 5; the response arrow leaves the load balancer's left side and points at the User box." }
+ignored:
+  - { source: "1. input: longURL", reason: "Figure 8-7 flow chart step, not a runtime element" }
+  - { source: "2. longURL in DB?", reason: "Figure 8-7 flow chart decision; the store it names is the Database node" }
+  - { source: "3. return shortURL", reason: "Figure 8-7 flow chart step, not a runtime element" }
+  - { source: "4. Generate a new ID", reason: "Figure 8-7 flow chart step; the chapter's prose attributes it to a distributed unique ID generator but no such box is drawn" }
+  - { source: "5. Convert ID to shortURL", reason: "Figure 8-7 flow chart step, not a runtime element" }
+  - { source: "6. Save ID, shortURL, longURL in DB", reason: "Figure 8-7 flow chart step; the store it names is the Database node" }
+  - { source: "yes / no", reason: "branch labels on the Figure 8-7 decision, not arrows of the system" }
+  - { source: "(1) (2) (3) (4) (5)", reason: "circled step markers on the Figure 8-8 arrows, not arrow labels" }
+  - { source: "(dashed border around Web servers)", reason: "holds only the Web servers box and its own caption, so it is that box's border and not a boundary" }
+  - { source: "Figure 8-7 / Figure 8-8", reason: "figure captions" }
+unmapped: []
+gaps:
+  - "The estimation section states 1160 writes per second and 11,600 reads per second for the whole design, but requirements has no throughput path; only the 10:1 ratio (traffic.readWriteRatio) could be expressed."
+  - "The chapter states 365 billion records and 365 TB over 10 years; the format has no capacity or retention requirement path."
+  - "Figure 8-7 is a flow chart: an ordered procedure with a branch. The design format has no way to express a sequence of steps or a conditional path, so the write path survives only as the Web servers -> Database edge, with the ordering recorded in notes.md."
+  - "No protocol string exists for an unnamed cache tier (the catalogue's cache protocols are product names such as redis and memcached); the edge uses \"cache\"."
+  - "The design is the union of two figures. mapping.yaml can list source.figures but each node, edge and ignored entry has to say in its note which figure it came from; there is no per-item figure field."

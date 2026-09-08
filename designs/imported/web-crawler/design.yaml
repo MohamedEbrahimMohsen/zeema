@@ -1,0 +1,52 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Imported 2026-09-08 from source/web-crawler.md (transcription of Figures 9-2 and 9-4 of
+# "System Design Interview - An Insider's Guide", chapter 9; the book itself is not in the
+# repository). Figure 9-4 is Figure 9-2 with the workflow sequence numbers 1-11 on the arrows,
+# so the two figures are imported as one design and the sequence number is the edge label.
+# Assumptions, all recorded in mapping.yaml and notes.md:
+#   - the book draws unbranded boxes, so every node is a `default` generic component;
+#   - seed URLs is drawn as a plain box with no store icon; modelled as blob-store because the
+#     seed list is the crawl's input data set (assumed);
+#   - Content Storage -> blob-store (HTML pages), URL Storage -> nosql-store (visited URLs);
+#   - the URL frontier stays ONE node: its front/back queues are a separate figure (9-8);
+#   - the double-headed arrows 6 and 10 are two directed edges each.
+schemaVersion: "1"
+type: "design"
+id: "web-crawler"
+
+requirements:
+  traffic: { peakMultiplier: 2 }
+
+nodes:
+  - { id: "seed-urls", component: "blob-store", label: "seed URLs" }
+  - id: "url-frontier"
+    component: "message-queue"
+    label: "URL Frontier"
+    props: { role: "frontier", ordering: "per-key" }
+  - id: "html-downloader"
+    component: "container-worker"
+    label: "HTML Downloader"
+    nfr: { rps: 400 }
+  - { id: "dns-resolver", component: "dns-resolver", label: "DNS Resolver" }
+  - { id: "content-parser", component: "container-service", label: "Content Parser" }
+  - { id: "content-seen", component: "container-service", label: "Content Seen?" }
+  - { id: "content-storage", component: "blob-store", label: "Content Storage" }
+  - { id: "link-extractor", component: "container-service", label: "Link Extractor" }
+  - { id: "url-filter", component: "container-service", label: "URL Filter" }
+  - { id: "url-seen", component: "container-service", label: "URL Seen?" }
+  - { id: "url-storage", component: "nosql-store", label: "URL Storage" }
+
+edges:
+  - { from: "seed-urls", to: "url-frontier", protocol: "queue", mode: "async", delivery: "at-least-once", label: "1" }
+  - { from: "url-frontier", to: "html-downloader", protocol: "queue", mode: "async", delivery: "at-least-once", label: "2" }
+  - { from: "html-downloader", to: "dns-resolver", protocol: "dns", mode: "sync", label: "3" }
+  - { from: "html-downloader", to: "content-parser", protocol: "http", mode: "sync", label: "4" }
+  - { from: "content-parser", to: "content-seen", protocol: "http", mode: "sync", label: "5" }
+  - { from: "content-seen", to: "content-storage", protocol: "https", mode: "sync", label: "6" }
+  - { from: "content-storage", to: "content-seen", protocol: "https", mode: "sync", label: "6" }
+  - { from: "content-seen", to: "link-extractor", protocol: "http", mode: "sync", label: "7" }
+  - { from: "link-extractor", to: "url-filter", protocol: "http", mode: "sync", label: "8" }
+  - { from: "url-filter", to: "url-seen", protocol: "http", mode: "sync", label: "9" }
+  - { from: "url-seen", to: "url-storage", protocol: "https", mode: "sync", label: "10" }
+  - { from: "url-storage", to: "url-seen", protocol: "https", mode: "sync", label: "10" }
+  - { from: "url-seen", to: "url-frontier", protocol: "queue", mode: "async", delivery: "at-least-once", label: "11" }
