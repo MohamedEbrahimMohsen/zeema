@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Database for PostgreSQL flexible server: managed community PostgreSQL.
+# "What Is Azure Database for PostgreSQL flexible server?": backups are automatic with a 7-day
+# default retention (up to 35), storage encryption uses service-managed AES-256 keys, and
+# TLS is enforced by default; high availability is configured, not on out of the box.
+schemaVersion: "1"
+type: "component"
+id: "azure-database-for-postgresql"
+kind: "sql-database"
+provider: "azure"
+defaults:
+  managed: true
+  replication: "none"
+  backupEnabled: true
+  backupRetentionDays: 7
+  encryptionAtRest: true
+properties:
+  computeTier:
+    type: "enum"
+    values: ["burstable", "general-purpose", "memory-optimized"]
+  highAvailability:
+    type: "enum"
+    values: ["disabled", "same-zone", "zone-redundant"]
+    default: "disabled"
+  geoRedundantBackup:
+    type: "boolean"
+    default: false
+  tlsEnforced:
+    type: "boolean"
+    default: true
+  connectionPooling:
+    type: "boolean"
+    default: false

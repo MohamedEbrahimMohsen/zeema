@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Bedrock Knowledge Bases: managed RAG index that chunks and embeds source documents into a
+# vector store and serves retrieval queries. Per "How content chunking works for knowledge bases" the
+# default chunking strategy splits content into chunks of approximately 300 tokens on sentence
+# boundaries; data sources are loaded by ingestion jobs.
+schemaVersion: "1"
+type: "component"
+id: "aws-bedrock-knowledge-base"
+kind: "search-index"
+provider: "aws"
+defaults:
+  managed: true
+  structure: "vector"
+  indexing: "batch"
+properties:
+  knowledgeBaseType:
+    type: "enum"
+    values: ["managed", "customer-managed"]
+  vectorStore:
+    type: "enum"
+    values: ["opensearch-serverless", "aurora", "neptune-analytics", "s3-vectors", "kendra-genai-index"]
+  chunkingStrategy:
+    type: "enum"
+    values: ["default", "fixed-size", "hierarchical", "semantic", "none"]
+    default: "default"
+  chunkSizeTokens:
+    type: "integer"
+    default: 300
+  documentLevelPermissions:
+    type: "boolean"
+    default: false

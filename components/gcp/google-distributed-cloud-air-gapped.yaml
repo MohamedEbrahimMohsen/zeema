@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Distributed Cloud air-gapped ("Google Distributed Cloud air-gapped overview"): racks
+# delivered to your data centre that do not require connectivity to Google Cloud. Everything is
+# operated from the local GDC console with self-contained identity and key management; Kubernetes
+# and virtual machine workloads run beside local block and object storage.
+schemaVersion: "1"
+type: "component"
+id: "google-distributed-cloud-air-gapped"
+kind: "edge-appliance"
+provider: "gcp"
+defaults:
+  connectivity: "disconnected"
+  offlineMode: true
+  formFactor: "rack"
+  cloudManaged: false
+  managed: true
+properties:
+  localIdentityProvider:
+    type: "boolean"
+    default: true
+  localKeyManagement:
+    type: "boolean"
+    default: true
+  virtualMachineWorkloads:
+    type: "boolean"
+    default: true
+  multiZone:
+    type: "boolean"
+    default: false

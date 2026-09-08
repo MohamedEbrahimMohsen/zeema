@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS HealthOmics storage: managed genomics stores (sequence, reference, variant, annotation) holding
+# FASTQ, uBAM, BAM and CRAM read sets. Per "HealthOmics storage" data is ACTIVE and immediately
+# retrievable, and data not accessed for 30 days moves to ARCHIVE; ingestion computes a HealthOmics
+# ETag for content integrity, and per "Creating a HealthOmics sequence store" encryption at rest is
+# owned and managed by AWS unless a customer managed CMK is chosen. S3 access logging is opt-in.
+schemaVersion: "1"
+type: "component"
+id: "aws-healthomics"
+kind: "object-store"
+provider: "aws"
+defaults:
+  managed: true
+  tier: "hot"
+  encryptionAtRest: true
+  checksumOnWrite: true
+  versioning: false
+properties:
+  storeType:
+    type: "enum"
+    values: ["sequence", "reference", "variant", "annotation"]
+  archiveAfterDaysInactive:
+    type: "integer"
+    default: 30
+  customerManagedKey:
+    type: "boolean"
+    default: false
+  s3AccessLogging:
+    type: "boolean"
+    default: false

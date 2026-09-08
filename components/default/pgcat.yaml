@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# PgCat: PostgreSQL pooler and proxy with load balancing, failover, mirroring and sharding.
+# README "Features": transaction pooling is the default mode; sharding and mirroring are
+# experimental and off until configured, so routing stays "none" out of the box.
+schemaVersion: "1"
+type: "component"
+id: "pgcat"
+kind: "database-proxy"
+provider: "default"
+defaults:
+  pooling: true
+  routing: "none"
+properties:
+  poolMode:
+    type: "enum"
+    values: ["session", "transaction"]
+    default: "transaction"
+  queryParser:
+    type: "boolean"
+    default: false
+  sharding:
+    type: "boolean"
+    default: false
+  mirroring:
+    type: "boolean"
+    default: false

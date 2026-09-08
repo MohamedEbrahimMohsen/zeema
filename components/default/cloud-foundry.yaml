@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloud Foundry, the open source application PaaS whose Diego scheduler places app instances on host VMs.
+# Per "App Manifest Attribute Reference" a pushed app defaults to 1 instance, a 1 G memory limit and a
+# health-check-type of port.
+schemaVersion: "1"
+type: "component"
+id: "cloud-foundry"
+kind: "app-server"
+provider: "default"
+defaults:
+  managed: false
+  stateless: true
+  autoscaling: false
+  instances: 1
+  ownsData: false
+properties:
+  memoryLimitMb:
+    type: "integer"
+    default: 1024
+  healthCheckType:
+    type: "enum"
+    values: ["port", "process", "http"]
+    default: "port"
+  buildpackDetection:
+    type: "boolean"
+    default: true

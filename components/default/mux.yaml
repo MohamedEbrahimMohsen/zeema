@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Mux Video: hosted encoding and delivery API. Per the Mux guides, assets are delivered as
+# adaptive HLS (.m3u8) by default, static MP4 renditions are off until requested, and
+# max_resolution_tier defaults to 1080p; DRM is only offered on the plus and premium tiers.
+schemaVersion: "1"
+type: "component"
+id: "mux"
+kind: "media-transcoder"
+provider: "default"
+defaults:
+  managed: true
+  mode: "file"
+  packaging: "hls"
+  drm: false
+properties:
+  videoQuality:
+    type: "enum"
+    values: ["basic", "plus", "premium"]
+  maxResolutionTier:
+    type: "enum"
+    values: ["1080p", "1440p", "2160p"]
+    default: "1080p"
+  staticRenditions:
+    type: "boolean"
+    default: false
+  playbackPolicy:
+    type: "enum"
+    values: ["public", "signed"]

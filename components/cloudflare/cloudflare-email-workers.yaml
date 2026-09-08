@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Email Workers: a Worker whose email() handler runs per inbound message and may forward it
+# to a verified destination, reply preserving the Message-ID chain, or reject it with a
+# permanent SMTP error ("Workers API: email handler"). Each message is an independent
+# invocation counting against normal Workers CPU limits ("Limits").
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-email-workers"
+kind: "app-server"
+provider: "cloudflare"
+defaults:
+  managed: true
+  stateless: true
+  autoscaling: true
+  ownsData: false
+  runtime: "workers"
+properties:
+  forwardToVerifiedOnly:
+    type: "boolean"
+    default: true
+  maxReplyReferences:
+    type: "integer"
+    default: 100
+  maxInboundMessageSizeMib:
+    type: "integer"
+    default: 25

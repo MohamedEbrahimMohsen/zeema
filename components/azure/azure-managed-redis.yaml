@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Managed Redis: managed Redis Enterprise, the successor to Azure Cache for Redis.
+# "What is Azure Managed Redis?": high availability is on by default with primary and replica shards
+# on at least two nodes, and in regions with availability zones nodes are spread across zones by
+# default; data persistence and active geo-replication are opt-in features.
+schemaVersion: "1"
+type: "component"
+id: "azure-managed-redis"
+kind: "cache"
+provider: "azure"
+defaults:
+  managed: true
+  persistence: false
+  replication: "multi-az"
+properties:
+  sku:
+    type: "enum"
+    values: ["memory-optimized", "balanced", "compute-optimized", "flash-optimized"]
+  highAvailability:
+    type: "boolean"
+    default: true
+  activeGeoReplication:
+    type: "boolean"
+    default: false

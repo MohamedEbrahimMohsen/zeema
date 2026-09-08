@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Workers Analytics Engine: unlimited-cardinality time series written with writeDataPoint from a
+# Worker and read with the SQL API. "Limits" gives three months of retention, 250 data points per
+# invocation and up to 20 blobs, 20 doubles and 1 index per data point.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-analytics-engine"
+kind: "timeseries-database"
+provider: "cloudflare"
+defaults:
+  managed: true
+  retentionRawDays: 90
+  tiers: "single"
+properties:
+  maxDataPointsPerInvocation:
+    type: "integer"
+    default: 250
+  maxBlobsPerDataPoint:
+    type: "integer"
+    default: 20
+  maxDoublesPerDataPoint:
+    type: "integer"
+    default: 20
+  maxIndexesPerDataPoint:
+    type: "integer"
+    default: 1

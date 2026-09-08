@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Speech: speech to text, text to speech, translation and speaker features on a Foundry Tools resource.
+# "Quotas and Limits for Azure Speech" gives the Standard (S0) defaults: 100 concurrent real-time speech-to-text requests, 30 text-to-speech transactions per second and 50 custom model deployments; "Configure Virtual Networks for Foundry Tools" states the resource accepts connections from any network by default.
+schemaVersion: "1"
+type: "component"
+id: "azure-ai-speech"
+kind: "ai-service"
+provider: "azure"
+defaults:
+  managed: true
+  modality: "speech"
+  publicEndpoint: true
+  customerManagedKeys: false
+properties:
+  tier:
+    type: "enum"
+    values: ["f0", "s0"]
+  concurrentSpeechToTextRequests:
+    type: "integer"
+    default: 100
+  textToSpeechTransactionsPerSecond:
+    type: "integer"
+    default: 30
+  customModelDeployments:
+    type: "integer"
+    default: 50

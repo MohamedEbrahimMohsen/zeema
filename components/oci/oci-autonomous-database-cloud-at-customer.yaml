@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Autonomous AI Database on Exadata Cloud@Customer: the dedicated deployment running on Exadata
+# infrastructure in the customer data centre. Same backup docs as the dedicated service: automatic
+# backups on, and the Object Storage / NFS destinations used at Cloud@Customer retain 30 days.
+schemaVersion: "1"
+type: "component"
+id: "oci-autonomous-database-cloud-at-customer"
+kind: "sql-database"
+provider: "oci"
+defaults:
+  managed: true
+  backupEnabled: true
+  backupRetentionDays: 30
+  replication: "none"
+  encryptionAtRest: true
+  concurrencyControl: "pessimistic"
+properties:
+  backupDestination:
+    type: "enum"
+    values: ["object-storage", "nfs", "recovery-appliance", "local"]
+  autonomousDataGuard:
+    type: "boolean"
+    default: false
+  retentionLock:
+    type: "boolean"
+    default: false
+  hostedOnPremises:
+    type: "boolean"
+    default: true

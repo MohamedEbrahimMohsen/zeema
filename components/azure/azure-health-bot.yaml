@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Health Bot (healthcare agent service): a multitenant instance that runs healthcare copilots with a built-in triage and symptom checker and healthcare safeguards.
+# "Overview - Healthcare agent service" states each instance is a multitenant cloud platform that scales with resilience, is HIPAA-ready, stores customer data in Azure Storage and Cosmos DB that are always encrypted at rest with Microsoft-managed keys, and only accepts data connections over HTTPS.
+schemaVersion: "1"
+type: "component"
+id: "azure-health-bot"
+kind: "app-server"
+provider: "azure"
+defaults:
+  managed: true
+  autoscaling: true
+  ownsData: true
+properties:
+  encryptionAtRest:
+    type: "boolean"
+    default: true
+  hipaaReady:
+    type: "boolean"
+    default: true
+  healthcareSafeguards:
+    type: "boolean"
+    default: true
+  channel:
+    type: "enum"
+    values: ["web-chat", "teams", "management-api"]

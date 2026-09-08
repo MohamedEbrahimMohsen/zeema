@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Document AI processor: a deployed parser that turns documents into structured
+# fields. "Document AI overview": processors are grouped into digitize, extract and
+# classify. "Quotas and limits": 120 online processing requests per minute per processor
+# type in the US and EU multi-regions, 6 per minute in a single region.
+schemaVersion: "1"
+type: "component"
+id: "google-document-ai"
+kind: "ai-service"
+provider: "gcp"
+defaults:
+  modality: "structured"
+  publicEndpoint: true
+  quotaUnitsPerMinute: 120
+  managed: true
+properties:
+  processorCategory:
+    type: "enum"
+    values: ["digitize", "extract", "classify"]
+    default: "digitize"
+  processingMode:
+    type: "enum"
+    values: ["online", "batch"]
+    default: "online"
+  serviceTier:
+    type: "enum"
+    values: ["best-effort", "provisioned"]
+    default: "best-effort"
+  concurrentBatchOperations:
+    type: "integer"
+    default: 5

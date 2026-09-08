@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Distributed Cloud (software only) for VMware ("Google Distributed Cloud (software only) for
+# VMware overview"): GKE clusters on your own VMware vSphere hardware. An admin cluster manages the
+# user clusters, all control plane nodes run in your vSphere environment, every cluster is a fleet
+# member through the Connect Agent, and node pool autoscaling is enabled as a separate step.
+schemaVersion: "1"
+type: "component"
+id: "google-distributed-cloud-vmware"
+kind: "container-orchestrator"
+provider: "gcp"
+defaults:
+  privateControlPlane: true
+  autoscaling: false
+  managed: false
+properties:
+  hypervisor:
+    type: "string"
+    default: "vmware-vsphere"
+  adminClusterRequired:
+    type: "boolean"
+    default: true
+  fleetRegistration:
+    type: "boolean"
+    default: true
+  customerSuppliedHardware:
+    type: "boolean"
+    default: true

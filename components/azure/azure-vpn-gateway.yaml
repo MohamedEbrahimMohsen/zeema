@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure VPN Gateway: encrypted site-to-site, VNet-to-VNet and point-to-site tunnels ("About Azure VPN
+# Gateway"). Site-to-site and VNet-to-VNet use IPsec/IKE; connection resiliency is active-passive unless
+# active-active is configured, and BGP is a per-SKU opt-in that the Basic SKU does not support at all.
+schemaVersion: "1"
+type: "component"
+id: "azure-vpn-gateway"
+kind: "vpn-gateway"
+provider: "azure"
+defaults:
+  managed: true
+  tunnelType: "ipsec"
+  bgp: false
+  activeActive: false
+properties:
+  sku:
+    type: "enum"
+    values: ["basic", "vpn-gw1-az", "vpn-gw2-az", "vpn-gw3-az", "vpn-gw4-az", "vpn-gw5-az"]
+  generation:
+    type: "enum"
+    values: ["generation1", "generation2"]
+  routingType:
+    type: "enum"
+    values: ["route-based", "policy-based"]

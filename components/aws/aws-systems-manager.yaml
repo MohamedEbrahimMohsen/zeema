@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Systems Manager: operates managed nodes across AWS, on-premises and multicloud environments through
+# Automation, Run Command, State Manager and Patch Manager. Per "What is AWS Systems Manager?" a node is
+# managed only once SSM Agent is installed and reachable, and tasks are run on demand unless scheduled.
+schemaVersion: "1"
+type: "component"
+id: "aws-systems-manager"
+kind: "worker"
+provider: "aws"
+defaults:
+  trigger: "manual"
+  managed: true
+properties:
+  tool:
+    type: "enum"
+    values: ["automation", "run-command", "state-manager", "patch-manager", "maintenance-window", "inventory"]
+  agentRequired:
+    type: "boolean"
+    default: true
+  hybridNodes:
+    type: "boolean"
+    default: true

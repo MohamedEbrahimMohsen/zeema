@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Compute Engine Spot VM: a VM on the spot provisioning model that Compute Engine may preempt at
+# any time ("Spot VMs"). Spot VMs are excluded from the Compute Engine SLA, cannot live migrate and
+# have no automatic restart; the default termination action is stop and the default preemption
+# notice is 0 seconds.
+schemaVersion: "1"
+type: "component"
+id: "google-spot-vm"
+kind: "virtual-machine"
+provider: "gcp"
+defaults:
+  managed: false
+  diskEncryption: true
+  zoneRedundant: false
+properties:
+  terminationAction:
+    type: "enum"
+    values: ["stop", "delete"]
+    default: "stop"
+  preemptionNoticeSeconds:
+    type: "integer"
+    default: 0
+  liveMigration:
+    type: "boolean"
+    default: false
+  coveredBySla:
+    type: "boolean"
+    default: false

@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Route 53 Resolver endpoint: elastic network interfaces in a VPC that forward DNS queries
+# between the VPC Resolver and an on-premises resolver, inbound or outbound ("What is Route 53 VPC Resolver?").
+# An endpoint takes at least two IP addresses in VPC subnets and, with no protocol set, answers Do53;
+# the endpoint type in the reference example is IPv4 ("CreateResolverEndpoint").
+schemaVersion: "1"
+type: "component"
+id: "aws-route53-resolver"
+kind: "dns"
+provider: "aws"
+defaults:
+  managed: true
+  anycast: false
+  geoRouting: false
+  healthChecked: false
+  redundantProviders: false
+properties:
+  direction:
+    type: "enum"
+    values: ["inbound", "outbound", "inbound-delegation"]
+    default: "inbound"
+  protocol:
+    type: "enum"
+    values: ["do53", "doh", "doh-fips"]
+    default: "do53"
+  endpointType:
+    type: "enum"
+    values: ["ipv4", "ipv6", "dual-stack"]
+    default: "ipv4"
+  ipAddressCount:
+    type: "integer"
+    default: 2
+  dnssecValidation:
+    type: "boolean"
+    default: false

@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon EMR cluster on EC2: managed Hadoop/Spark cluster platform ("What is Amazon EMR?"). A cluster
+# "can reside only in one Availability Zone or subnet" and launches with one primary node unless three are
+# chosen ("Plan and configure primary nodes"); managed scaling is enabled explicitly ("Using managed scaling")
+# and encryption at rest or in transit needs a security configuration ("Encryption options for Amazon EMR").
+schemaVersion: "1"
+type: "component"
+id: "aws-emr"
+kind: "big-data-cluster"
+provider: "aws"
+defaults:
+  managed: true
+  autoscaling: false
+  spotInstances: false
+  zoneRedundant: false
+properties:
+  primaryNodeHighAvailability:
+    type: "boolean"
+    default: false
+  instanceProvisioning:
+    type: "enum"
+    values: ["instance-groups", "instance-fleets"]
+    default: "instance-groups"
+  securityConfiguration:
+    type: "boolean"
+    default: false

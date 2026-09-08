@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Knative Serving, request-driven serverless workloads on Kubernetes. Per "Autoscaling" the Knative Pod
+# Autoscaler is on by default, and per "Configuring scale to zero" enable-scale-to-zero defaults to true with
+# a 30s scale-to-zero-grace-period and a 0s pod retention period, so an idle service runs zero instances.
+schemaVersion: "1"
+type: "component"
+id: "knative"
+kind: "app-server"
+provider: "default"
+defaults:
+  managed: false
+  stateless: true
+  autoscaling: true
+  instances: 0
+  ownsData: false
+properties:
+  autoscaler:
+    type: "enum"
+    values: ["kpa", "hpa"]
+    default: "kpa"
+  scaleToZero:
+    type: "boolean"
+    default: true
+  scaleToZeroGracePeriodSeconds:
+    type: "integer"
+    default: 30
+  containerConcurrency:
+    type: "integer"
+    default: 0

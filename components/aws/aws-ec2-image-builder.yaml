@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# EC2 Image Builder: a managed pipeline that builds, tests and distributes AMIs and container images
+# ("What is Image Builder?"). Build and test instances run on EC2 in your own VPC, the build instance
+# is terminated on failure by default, and an image is distributed only if every test succeeded.
+schemaVersion: "1"
+type: "component"
+id: "aws-ec2-image-builder"
+kind: "ci-pipeline"
+provider: "aws"
+defaults:
+  managed: true
+  selfHostedRunners: true
+properties:
+  outputType:
+    type: "enum"
+    values: ["ami", "container-image"]
+    default: "ami"
+  terminateInstanceOnFailure:
+    type: "boolean"
+    default: true
+  distributeOnlyIfTestsPass:
+    type: "boolean"
+    default: true
+  crossAccountSharing:
+    type: "boolean"
+    default: false

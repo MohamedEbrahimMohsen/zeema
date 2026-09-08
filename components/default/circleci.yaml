@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# CircleCI: hosted pipelines configured in .circleci/config.yml. "Configuration reference" lists the
+# job types "release, approval, no-op, build (default)", so a manual approval job is opt-in, and
+# says "One executor type should be specified per job"; self-hosted runners are an added option.
+schemaVersion: "1"
+type: "component"
+id: "circleci"
+kind: "ci-pipeline"
+provider: "default"
+defaults:
+  trigger: "commit"
+  approvalRequired: false
+  selfHostedRunners: false
+  managed: true
+properties:
+  executorType:
+    type: "enum"
+    values: ["docker", "machine", "macos", "windows", "self-hosted-runner"]
+    default: "docker"
+  jobType:
+    type: "enum"
+    values: ["build", "approval", "release", "no-op"]
+    default: "build"
+  contexts:
+    type: "boolean"
+    default: false

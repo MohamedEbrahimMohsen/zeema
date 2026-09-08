@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Cloud DNS public zone: authoritative zone answered by the Oracle Cloud Infrastructure edge
+# network, primary or secondary, available in the OC1 commercial realm ("DNS Zone Management").
+# Limits: 1,000 zones per tenancy, 25,000 records per zone, 1 MB zone file.
+schemaVersion: "1"
+type: "component"
+id: "oci-dns-zone"
+kind: "dns"
+provider: "oci"
+defaults:
+  managed: true
+  anycast: true
+  geoRouting: false
+  healthChecked: false
+  redundantProviders: false
+properties:
+  zoneType:
+    type: "enum"
+    values: ["primary", "secondary"]
+    default: "primary"
+  visibility:
+    type: "enum"
+    values: ["public"]
+    default: "public"
+  maxRecordsPerZone:
+    type: "integer"
+    default: 25000
+  maxZonesPerTenancy:
+    type: "integer"
+    default: 1000

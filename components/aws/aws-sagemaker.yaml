@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon SageMaker AI domain: the managed ML workspace (Studio, spaces, model registry, experiments).
+# CreateDomain defaults per the SageMaker API Reference: AppNetworkAccessType "PublicInternetOnly",
+# a home EFS volume created and encrypted with an AWS managed KMS key, custom tag propagation DISABLED.
+schemaVersion: "1"
+type: "component"
+id: "aws-sagemaker"
+kind: "ml-platform"
+provider: "aws"
+defaults:
+  managed: true
+  publicAccess: true
+  modelRegistry: true
+  experimentTracking: true
+properties:
+  authMode:
+    type: "enum"
+    values: ["iam", "sso"]
+  networkAccess:
+    type: "enum"
+    values: ["public-internet-only", "vpc-only"]
+    default: "public-internet-only"
+  homeEfsFileSystem:
+    type: "boolean"
+    default: true
+  customerManagedKey:
+    type: "boolean"
+    default: false

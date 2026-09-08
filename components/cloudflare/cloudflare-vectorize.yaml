@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Vectorize index: Cloudflare's managed vector database for Workers. "Create indexes" states the
+# dimensions and the distance metric must be chosen at creation and cannot change afterwards, so
+# neither is defaulted here; "Vectorize - Limits" gives 1,536 dimensions, 20M vectors and namespaces.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-vectorize"
+kind: "vector-database"
+provider: "cloudflare"
+defaults:
+  managed: true
+  metadataFiltering: true
+  namespaces: true
+  quantization: "none"
+properties:
+  maxDimensions:
+    type: "integer"
+    default: 1536
+  maxVectorsPerIndex:
+    type: "integer"
+    default: 20000000
+  maxNamespacesPerIndex:
+    type: "integer"
+    default: 50000
+  maxMetadataIndexes:
+    type: "integer"
+    default: 10
+  maxTopK:
+    type: "integer"
+    default: 100

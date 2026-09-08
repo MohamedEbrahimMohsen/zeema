@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Storage Gateway: on-premises appliance that presents AWS storage over file, tape or block protocols.
+# "What is Amazon S3 File Gateway": deployed as a VM on VMware ESXi, Hyper-V or KVM, as a hardware appliance,
+# or as an EC2 AMI, serving NFS v3/v4.1 and SMB v2/v3 with a transparent local cache;
+# "Data encryption using AWS KMS": SSL/TLS between appliance and AWS, SSE-S3 by default for stored data.
+schemaVersion: "1"
+type: "component"
+id: "aws-storage-gateway"
+kind: "edge-appliance"
+provider: "aws"
+defaults:
+  connectivity: "connected"
+  offlineMode: false
+  formFactor: "virtual"
+  cloudManaged: true
+  managed: true
+properties:
+  gatewayType:
+    type: "enum"
+    values: ["s3-file", "fsx-file", "tape", "volume-cached", "volume-stored"]
+  fileProtocol:
+    type: "enum"
+    values: ["nfs", "smb"]
+  encryptionInTransit:
+    type: "boolean"
+    default: true
+  cloudEncryptionType:
+    type: "enum"
+    values: ["sse-s3", "sse-kms", "dsse-kms"]
+    default: "sse-s3"
+  localCache:
+    type: "boolean"
+    default: true

@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# NebulaGraph: distributed graph database that hashes vertices into partitions, each a
+# Multi Group Raft replica set over RocksDB. Per "CREATE SPACE" partition_num defaults to
+# 100 and replica_factor to 1.
+schemaVersion: "1"
+type: "component"
+id: "nebulagraph"
+kind: "graph-database"
+provider: "default"
+defaults:
+  inMemory: false
+  masterPerShard: true
+  crossRegionConsistency: "single-leader"
+  managed: false
+properties:
+  partitionNum:
+    type: "integer"
+    default: 100
+  replicaFactor:
+    type: "integer"
+    default: 1
+  storageEngine:
+    type: "enum"
+    values: ["rocksdb"]
+    default: "rocksdb"

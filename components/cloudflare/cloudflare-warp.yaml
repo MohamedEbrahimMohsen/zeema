@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# WARP / Cloudflare One Client: device agent that tunnels traffic to Cloudflare over WireGuard or
+# MASQUE. "Cloudflare One Client" gives Traffic and DNS mode (all ports and protocols) as the
+# default operating mode and describes a persistent daemon-held encrypted connection.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-warp"
+kind: "client"
+provider: "cloudflare"
+defaults:
+  managed: true
+  platform: "desktop"
+  persistentConnection: true
+  offlineCapable: false
+properties:
+  operatingMode:
+    type: "enum"
+    values: ["traffic-and-dns", "dns-only", "proxy-mode", "device-information-only"]
+    default: "traffic-and-dns"
+  tunnelProtocol:
+    type: "enum"
+    values: ["wireguard", "masque"]
+    default: "wireguard"

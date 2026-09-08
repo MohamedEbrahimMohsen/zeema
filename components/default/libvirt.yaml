@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# KVM managed through libvirt: the virtualization API, daemons and CLI (virsh) that drive hypervisor drivers.
+# Per the "libvirt Documentation" index the toolkit is a set of daemons plus an API with per-hypervisor
+# drivers selected by connection URI, so the driver in use is a property of the host, not a fixed default.
+schemaVersion: "1"
+type: "component"
+id: "libvirt"
+kind: "virtual-machine"
+provider: "default"
+defaults:
+  managed: false
+properties:
+  driver:
+    type: "enum"
+    values: ["qemu-kvm", "xen", "lxc", "bhyve", "test"]
+    default: "qemu-kvm"
+  daemonMode:
+    type: "enum"
+    values: ["monolithic", "modular"]
+    default: "modular"
+  clusterAware:
+    type: "boolean"
+    default: false

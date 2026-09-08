@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Reports, refresh schedules and row-level security that data-warehouse (which only stores the data they read) has no properties for. rowLevelSecurity and publicSharing have no default so data-exposure rules can catch their absence.
+schemaVersion: "1"
+type: "kind"
+id: "bi-service"
+category: "data"
+properties:
+  capacityMode:
+    type: "enum"
+    values: ["shared", "dedicated"]
+  refreshesPerDay:
+    type: "integer"
+  rowLevelSecurity:
+    type: "boolean"
+  publicSharing:
+    type: "boolean"
+  embeddedReports:
+    type: "boolean"
+    default: false
+  managed:
+    type: "boolean"
+    default: false

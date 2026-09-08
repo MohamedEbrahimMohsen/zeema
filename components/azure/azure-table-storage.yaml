@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Table Storage: schemaless key/attribute store in a storage account, addressed by a
+# partition key and a row key ("Introduction to Table storage"). Storage accounts are LRS and
+# encrypted at rest by default ("Data redundancy - Azure Storage").
+schemaVersion: "1"
+type: "component"
+id: "azure-table-storage"
+kind: "nosql-database"
+provider: "azure"
+defaults:
+  model: "key-value"
+  consistency: "strong"
+  replication: "single-region"
+  partitionKey: "PartitionKey"
+  encryptionAtRest: true
+  managed: true
+properties:
+  redundancy:
+    type: "enum"
+    values: ["lrs", "zrs", "grs", "gzrs", "ra-grs", "ra-gzrs"]
+    default: "lrs"
+  maxEntitySizeMib:
+    type: "integer"
+    default: 1
+  maxPropertiesPerEntity:
+    type: "integer"
+    default: 252

@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS IoT SiteWise: managed industrial data hub that ingests equipment data over OPC UA gateways,
+# AWS IoT Core rules or its API and models it as assets. "What is AWS IoT SiteWise?" states up to
+# 100 OPC UA servers per gateway and that SiteWise Edge is a separate deployment; "Manage data
+# storage in AWS IoT SiteWise" states ingested data lands in the hot tier and stays there
+# indefinitely unless a retention period is set, and that the cold tier is opt-in.
+schemaVersion: "1"
+type: "component"
+id: "aws-iot-sitewise"
+kind: "iot-hub"
+provider: "aws"
+defaults:
+  protocol: "multi"
+  perDeviceIdentity: false
+  deviceTwin: true
+  deviceProvisioning: false
+  managed: true
+properties:
+  storageTier:
+    type: "enum"
+    values: ["hot", "warm", "cold"]
+    default: "hot"
+  coldTierEnabled:
+    type: "boolean"
+    default: false
+  sitewiseEdge:
+    type: "boolean"
+    default: false
+  maxOpcUaServersPerGateway:
+    type: "integer"
+    default: 100

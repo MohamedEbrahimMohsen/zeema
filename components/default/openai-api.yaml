@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenAI API: hosted multimodal model endpoints (text, image, audio, embeddings) over a public HTTPS endpoint.
+# Per "Data controls in the OpenAI platform", API inputs and outputs are retained 30 days for abuse monitoring
+# and are not used to train models unless the organization opts in; Zero Data Retention needs prior approval.
+# Per "Rate limits", limits are per model in RPM/TPM and a new paying organization starts on Tier 1.
+schemaVersion: "1"
+type: "component"
+id: "openai-api"
+kind: "ai-service"
+provider: "default"
+defaults:
+  managed: true
+  modality: "multimodal"
+  publicEndpoint: true
+  dataRetentionDays: 30
+  contentFiltering: false
+properties:
+  usageTier:
+    type: "enum"
+    values: ["free", "tier-1", "tier-2", "tier-3", "tier-4", "tier-5"]
+    default: "tier-1"
+  zeroDataRetention:
+    type: "boolean"
+    default: false
+  trainingOptIn:
+    type: "boolean"
+    default: false
+  batchApi:
+    type: "boolean"
+    default: false

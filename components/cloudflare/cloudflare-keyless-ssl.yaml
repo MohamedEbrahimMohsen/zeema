@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Keyless SSL: Cloudflare terminates TLS while the private key stays on a customer-run key server.
+# "Keyless SSL": the gokeyless key server is deployed and operated by the customer, and TLS 1.3 is
+# not supported. Enterprise-only paid add-on.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-keyless-ssl"
+kind: "key-management"
+provider: "cloudflare"
+defaults:
+  managed: false
+properties:
+  privateKeyLocation:
+    type: "enum"
+    values: ["customer-infrastructure", "cloudflare"]
+    default: "customer-infrastructure"
+  tls13Supported:
+    type: "boolean"
+    default: false

@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# KubeVirt, virtual machines as Kubernetes workloads. Per "Architecture" each VirtualMachineInstance runs in
+# its own virt-launcher pod containing libvirtd and QEMU, virt-controller and virt-handler drive the
+# lifecycle, and scheduling, networking and storage are delegated entirely to Kubernetes.
+schemaVersion: "1"
+type: "component"
+id: "kubevirt"
+kind: "virtual-machine"
+provider: "default"
+defaults:
+  managed: false
+properties:
+  vmResource:
+    type: "enum"
+    values: ["virtual-machine", "virtual-machine-instance", "replica-set"]
+    default: "virtual-machine"
+  podPerVm:
+    type: "boolean"
+    default: true
+  liveMigration:
+    type: "boolean"
+    default: false

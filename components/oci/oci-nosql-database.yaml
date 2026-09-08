@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle NoSQL Database Cloud Service table: a managed key-value store with a table and SQL layer.
+# "Cloud Concepts" states data is stored across multiple availability domains (fault domains in single-AD
+# regions), is encrypted at rest with AES-256 and in motion with HTTPS, and offers EVENTUAL and ABSOLUTE
+# read consistency with EVENTUAL as the default; cross-region replicas are opt-in Global Active Tables.
+schemaVersion: "1"
+type: "component"
+id: "oci-nosql-database"
+kind: "nosql-database"
+provider: "oci"
+defaults:
+  managed: true
+  model: "key-value"
+  consistency: "eventual"
+  replication: "single-region"
+  encryptionAtRest: true
+properties:
+  capacityMode:
+    type: "enum"
+    values: ["provisioned", "on-demand"]
+    default: "provisioned"
+  globalActiveTable:
+    type: "boolean"
+    default: false

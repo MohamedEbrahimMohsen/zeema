@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Databricks: managed Apache Spark lakehouse platform. "Compute configuration reference" states
+# autoscaling and spot instances are opt-in checkboxes, Photon is enabled by default on Databricks
+# Runtime 9.1 LTS and above, access mode defaults to Auto, and autoscaling local storage is always on.
+schemaVersion: "1"
+type: "component"
+id: "azure-databricks"
+kind: "big-data-cluster"
+provider: "azure"
+defaults:
+  engine: "spark"
+  autoscaling: false
+  spotInstances: false
+  managed: true
+properties:
+  photonAcceleration:
+    type: "boolean"
+    default: true
+  accessMode:
+    type: "enum"
+    values: ["auto", "standard", "dedicated"]
+    default: "auto"
+  autoscalingLocalStorage:
+    type: "boolean"
+    default: true
+  localDiskEncryption:
+    type: "boolean"
+    default: false

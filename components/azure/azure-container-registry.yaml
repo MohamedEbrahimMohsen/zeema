@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Container Registry: managed private registry for OCI images and artifacts
+# ("Introduction to Azure Container Registry"). The admin account is disabled by default, all SKUs
+# are zone redundant by default in supported regions, and geo-replication, private endpoints,
+# untagged-manifest retention and content trust are Premium-only opt-ins.
+schemaVersion: "1"
+type: "component"
+id: "azure-container-registry"
+kind: "container-registry"
+provider: "azure"
+defaults:
+  managed: true
+  visibility: "private"
+  staticCredentials: false
+  geoReplicated: false
+  imageScanning: false
+properties:
+  sku:
+    type: "enum"
+    values: ["basic", "standard", "premium"]
+  zoneRedundancy:
+    type: "boolean"
+    default: true
+  anonymousPull:
+    type: "boolean"
+    default: false
+  publicNetworkAccess:
+    type: "boolean"
+    default: true

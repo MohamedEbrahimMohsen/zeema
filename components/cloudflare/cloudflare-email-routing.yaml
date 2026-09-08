@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Email Routing: inbound-only forwarding of a zone's addresses to verified destinations or
+# to an Email Worker, free on all plans. A domain holds 200 routing rules, an account 200
+# verified destination addresses, and inbound messages over 25 MiB are rejected ("Limits").
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-email-routing"
+kind: "notification-service"
+provider: "cloudflare"
+defaults:
+  managed: true
+  channelEmail: true
+  channelPush: false
+  channelSms: false
+properties:
+  maxRoutingRules:
+    type: "integer"
+    default: 200
+  maxDestinationAddresses:
+    type: "integer"
+    default: 200
+  maxMessageSizeMib:
+    type: "integer"
+    default: 25
+  destinationVerificationRequired:
+    type: "boolean"
+    default: true
+  catchAll:
+    type: "boolean"
+    default: false

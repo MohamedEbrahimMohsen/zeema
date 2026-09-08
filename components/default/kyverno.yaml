@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Kyverno: Kubernetes-native policy engine with validate, mutate and generate rules.
+# "Validate Rules": the failure action defaults to Audit, so a violation is reported in a
+# PolicyReport rather than blocked. "Policy Settings": background scanning defaults to true.
+schemaVersion: "1"
+type: "component"
+id: "kyverno"
+kind: "policy-engine"
+provider: "default"
+defaults:
+  effect: "audit"
+  enforcementMode: "enforced"
+  scope: "resource"
+  remediation: false
+  managed: false
+properties:
+  failureAction:
+    type: "enum"
+    values: ["audit", "enforce"]
+    default: "audit"
+  backgroundScan:
+    type: "boolean"
+    default: true
+  ruleType:
+    type: "enum"
+    values: ["validate", "mutate", "generate", "verify-images"]
+    default: "validate"

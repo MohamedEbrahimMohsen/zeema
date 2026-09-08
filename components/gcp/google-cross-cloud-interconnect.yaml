@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cross-Cloud Interconnect: Google-provisioned dedicated physical connectivity between a VPC network and another cloud provider.
+# Defaults from "Cross-Cloud Interconnect overview": 10 and 100 Gbps ports (400 Gbps for AWS and OCI), Cloud Interconnect SLA, MACsec available but not applied by default.
+schemaVersion: "1"
+type: "component"
+id: "google-cross-cloud-interconnect"
+kind: "network-fabric"
+provider: "gcp"
+defaults:
+  managed: true
+  interconnect: "private"
+properties:
+  remoteCloud:
+    type: "enum"
+    values: ["aws", "azure", "oci", "alibaba"]
+  portSpeed:
+    type: "enum"
+    values: ["10-gbps", "100-gbps", "400-gbps"]
+  macsec:
+    type: "boolean"
+    default: false
+  slaPercent:
+    type: "enum"
+    values: ["none", "99.9", "99.99"]

@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Bitbucket Cloud: Atlassian's hosted Git repositories with pull requests and Pipelines. In the
+# "Create a Git repository" tutorial the "This is a private repository" box is left checked, the state the
+# creation form starts in, so a new repository is private; branch permissions are added afterwards.
+schemaVersion: "1"
+type: "component"
+id: "bitbucket"
+kind: "artifact-repository"
+provider: "default"
+defaults:
+  artifactType: "source"
+  managed: true
+  visibility: "private"
+  upstreamProxy: false
+properties:
+  hostingModel:
+    type: "enum"
+    values: ["cloud", "data-center"]
+    default: "cloud"
+  branchPermissions:
+    type: "boolean"
+    default: false

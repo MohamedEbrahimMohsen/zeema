@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Metabase: open-source BI tool for questions, dashboards and SQL over connected databases.
+# "Public links": public sharing is enabled by default and admins turn it off in Settings.
+# "Row and column security" (formerly data sandboxing) is a Pro/Enterprise feature that is not
+# in the open-source edition and must be configured; the application database defaults to H2.
+schemaVersion: "1"
+type: "component"
+id: "metabase"
+kind: "bi-service"
+provider: "default"
+defaults:
+  managed: false
+  publicSharing: true
+  rowLevelSecurity: false
+  embeddedReports: false
+properties:
+  edition:
+    type: "enum"
+    values: ["oss", "pro", "enterprise"]
+    default: "oss"
+  applicationDatabase:
+    type: "enum"
+    values: ["h2", "postgres", "mysql"]
+    default: "h2"
+  queryCaching:
+    type: "boolean"
+    default: false

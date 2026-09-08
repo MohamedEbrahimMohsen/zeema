@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle OCI Data Science: a fully managed, serverless workspace — a project holding JupyterLab
+# notebook sessions, the model catalog and jobs. "Data Science Overview": one notebook session
+# is one compute instance, networking defaults to service-managed default networking with
+# private endpoints optional, and GPU shapes need tenancy shape limits before they can be used.
+# "Managing Notebook Sessions": the inactivity shutdown default is 1 hour.
+schemaVersion: "1"
+type: "component"
+id: "oci-data-science"
+kind: "ml-platform"
+provider: "oci"
+defaults:
+  computeInstances: 1
+  gpuEnabled: false
+  modelRegistry: true
+  publicAccess: true
+  managed: true
+properties:
+  networking:
+    type: "enum"
+    values: ["default-networking", "custom-vcn"]
+    default: "default-networking"
+  notebookIdleShutdownHours:
+    type: "integer"
+    default: 1
+  privateEndpoint:
+    type: "boolean"
+    default: false

@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Quantum: quantum hardware and simulators from IonQ, Pasqal, Quantinuum and Rigetti, reached
+# by submitting jobs to a workspace and then monitoring them ("What is Azure Quantum?"). The
+# hardware belongs to a third party, so the design owns neither its availability nor its queue.
+schemaVersion: "1"
+type: "component"
+id: "azure-quantum"
+kind: "third-party-api"
+provider: "azure"
+defaults:
+  managed: true
+  callbackStyle: "poll"
+  hostedPage: false
+  handlesMoney: false
+properties:
+  computeProvider:
+    type: "enum"
+    values: ["ionq", "pasqal", "quantinuum", "rigetti", "microsoft"]
+  targetType:
+    type: "enum"
+    values: ["quantum-hardware", "simulator", "resource-estimator"]
+  workspaceRequired:
+    type: "boolean"
+    default: true

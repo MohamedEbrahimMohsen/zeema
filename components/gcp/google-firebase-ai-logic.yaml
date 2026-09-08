@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Firebase AI Logic ("Firebase AI Logic" overview): client SDKs call Gemini models through a Google
+# proxy service, so requests leave the mobile or web app directly and no API key is embedded in the
+# app. Text, image, PDF, video and audio inputs are supported, and App Check is recommended but not
+# required, so the endpoint is unattested until you turn App Check on.
+schemaVersion: "1"
+type: "component"
+id: "google-firebase-ai-logic"
+kind: "ai-service"
+provider: "gcp"
+defaults:
+  modality: "multimodal"
+  publicEndpoint: true
+  managed: true
+properties:
+  backend:
+    type: "enum"
+    values: ["gemini-developer-api", "vertex-ai-gemini-api"]
+  clientDirectAccess:
+    type: "boolean"
+    default: true
+  appCheckEnforced:
+    type: "boolean"
+    default: false

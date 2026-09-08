@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Fusion Data Intelligence: prebuilt analytics over Fusion Applications data. "Before you begin"
+# states it is built on Oracle Analytics Cloud and powered by Oracle Autonomous Data Warehouse, and that
+# ordering it provisions the Autonomous AI Lakehouse that stores the warehouse plus an Analytics Cloud
+# subscription. "Configure data" loads only incremental changes on the refresh schedule you set, for the
+# functional areas, data applications and augmentations that have been activated.
+schemaVersion: "1"
+type: "component"
+id: "oci-fusion-data-intelligence"
+kind: "bi-service"
+provider: "oci"
+defaults:
+  managed: true
+  capacityMode: "dedicated"
+properties:
+  warehouse:
+    type: "enum"
+    values: ["autonomous-data-warehouse"]
+    default: "autonomous-data-warehouse"
+  refreshMode:
+    type: "enum"
+    values: ["incremental", "reset"]
+    default: "incremental"
+  prebuiltContent:
+    type: "boolean"
+    default: true

@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Vertex AI custom training job: a batch training workload submitted through the API or console,
+# so its trigger is manual ("Training overview"). Google provisions and tears down the workers, and
+# accelerators are only attached when the worker pool spec asks for them.
+schemaVersion: "1"
+type: "component"
+id: "google-vertex-ai-training"
+kind: "worker"
+provider: "gcp"
+defaults:
+  managed: true
+  trigger: "manual"
+  accelerator: "none"
+  rateControl: "none"
+  fanoutStrategy: "none"
+properties:
+  jobType:
+    type: "enum"
+    values: ["custom", "hyperparameter-tuning", "automl"]
+    default: "custom"
+  distributed:
+    type: "boolean"
+    default: false
+  persistentResource:
+    type: "boolean"
+    default: false

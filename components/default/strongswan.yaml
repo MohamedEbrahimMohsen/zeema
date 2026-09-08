@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# strongSwan: IPsec IKE daemon implementing IKEv2 and legacy IKEv1, configured through
+# vici/swanctl. Documented scenarios cover both site-to-site tunnels and remote access
+# with virtual IPs, MOBIKE and NAT traversal; routing is static unless a plugin adds BGP.
+schemaVersion: "1"
+type: "component"
+id: "strongswan"
+kind: "vpn-gateway"
+provider: "default"
+defaults:
+  managed: false
+  tunnelType: "ipsec"
+  peerType: "site-to-site"
+  bgp: false
+  activeActive: false
+properties:
+  ikeVersion:
+    type: "enum"
+    values: ["ikev1", "ikev2"]
+    default: "ikev2"
+  authMethod:
+    type: "enum"
+    values: ["psk", "certificate", "eap"]
+    default: "certificate"
+  natTraversal:
+    type: "boolean"
+    default: true
+  mobike:
+    type: "boolean"
+    default: true

@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle OCI Generative AI dedicated AI cluster: single-tenant GPU capacity that hosts model
+# endpoints or runs fine-tuning. "Creating a Dedicated AI Cluster for Hosting Models": one unit
+# is created by default, each extra model replica needs another unit, unit shapes are named
+# instance type plus card count (H100_X1), and hosting a pretrained model commits 744 unit-hours.
+schemaVersion: "1"
+type: "component"
+id: "oci-generative-ai-cluster"
+kind: "ml-inference"
+provider: "oci"
+defaults:
+  accelerator: "gpu"
+  instances: 1
+  training: "batch"
+  inputs: "live"
+  managed: true
+properties:
+  clusterType:
+    type: "enum"
+    values: ["hosting", "fine-tuning"]
+  unitShape:
+    type: "string"
+    default: "H100_X1"
+  unitCount:
+    type: "integer"
+    default: 1
+  minimumCommitmentUnitHours:
+    type: "integer"
+    default: 744
+  singleTenant:
+    type: "boolean"
+    default: true

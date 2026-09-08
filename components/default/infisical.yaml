@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Infisical: open-source secrets, PKI, KMS and PAM platform, used as Infisical Cloud or self-hosted.
+# "Infisical KMS": keys are AES-256-GCM/AES-128-GCM and rotation is a manual or API-driven
+# action, not scheduled; an HSM-backed root key is an on-premise option.
+schemaVersion: "1"
+type: "component"
+id: "infisical"
+kind: "key-management"
+provider: "default"
+defaults:
+  managed: true
+  hsm: false
+  rotationAutomated: false
+properties:
+  deployment:
+    type: "enum"
+    values: ["cloud", "self-hosted"]
+    default: "cloud"
+  hsmRootKey:
+    type: "boolean"
+    default: false
+  pki:
+    type: "boolean"
+    default: false

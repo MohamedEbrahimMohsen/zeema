@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Centrifugo: self-hosted realtime messaging server with WebSocket, SSE, HTTP-streaming, WebTransport
+# and GRPC transports. "Engines and scalability" states the default engine is `memory`, which runs a
+# single node only and does not persist channel history between restarts; Redis or Nats are needed to
+# run several nodes.
+schemaVersion: "1"
+type: "component"
+id: "centrifugo"
+kind: "realtime-gateway"
+provider: "default"
+defaults:
+  protocol: "websocket"
+  stateful: true
+  autoscaling: false
+  managed: false
+properties:
+  engine:
+    type: "enum"
+    values: ["memory", "redis", "nats"]
+    default: "memory"
+  historyPersisted:
+    type: "boolean"
+    default: false
+  presence:
+    type: "boolean"
+    default: false

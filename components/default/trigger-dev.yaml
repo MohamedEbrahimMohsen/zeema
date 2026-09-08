@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Trigger.dev: open-source background jobs framework — reliable workflows in plain async code with
+# queueing, automatic retries and no timeouts ("Introduction"). Runs on Trigger.dev Cloud or self-hosted;
+# the CLI init disables retrying in the DEV environment only.
+schemaVersion: "1"
+type: "component"
+id: "trigger-dev"
+kind: "workflow-engine"
+provider: "default"
+defaults:
+  durable: true
+  pattern: "dag"
+  compensation: false
+  managed: true
+properties:
+  deployment:
+    type: "enum"
+    values: ["cloud", "self-hosted"]
+    default: "cloud"
+  taskRetry:
+    type: "boolean"
+    default: true

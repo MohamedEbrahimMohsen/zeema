@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# FFmpeg: command line transcoder. Per "ffmpeg Documentation", every stream is re-encoded
+# unless `-c copy` is given, and the codec is the default encoder of the output muxer, so no
+# codec or packaging is fixed out of the box; hardware acceleration is off (`-hwaccel none`).
+schemaVersion: "1"
+type: "component"
+id: "ffmpeg"
+kind: "media-transcoder"
+provider: "default"
+defaults:
+  managed: false
+  mode: "file"
+  packaging: "none"
+  drm: false
+  redundantPipeline: false
+properties:
+  streamCopy:
+    type: "boolean"
+    default: false
+  hardwareAcceleration:
+    type: "boolean"
+    default: false

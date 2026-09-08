@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud Profiler: continuous CPU and heap profiling. Per "Cloud Profiler overview" an in-process
+# agent collects roughly 10 seconds of profile data every minute per instance and profiles are kept 30 days.
+schemaVersion: "1"
+type: "component"
+id: "google-cloud-profiler"
+kind: "monitoring"
+provider: "gcp"
+defaults:
+  managed: true
+  signal: "metrics"
+  collectorMode: "push"
+  retentionDays: 30
+properties:
+  collectionIntervalSeconds:
+    type: "integer"
+    default: 60
+  profileDurationSeconds:
+    type: "integer"
+    default: 10
+  agentRequired:
+    type: "boolean"
+    default: true

@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon GameLift Servers fleet: dedicated session-based game servers with target-based auto scaling
+# for managed fleets ("What is Amazon GameLift Servers?"). The CreateFleet API reference gives the
+# out-of-the-box fleet: ComputeType EC2, FleetType ON_DEMAND, NewGameSessionProtectionPolicy
+# NoProtection, CertificateConfiguration DISABLED and PlayerGatewayMode DISABLED.
+schemaVersion: "1"
+type: "component"
+id: "aws-gamelift"
+kind: "app-server"
+provider: "aws"
+defaults:
+  managed: true
+  stateless: false
+properties:
+  computeType:
+    type: "enum"
+    values: ["ec2", "anywhere"]
+    default: "ec2"
+  fleetType:
+    type: "enum"
+    values: ["on-demand", "spot"]
+    default: "on-demand"
+  gameSessionProtection:
+    type: "enum"
+    values: ["no-protection", "full-protection"]
+    default: "no-protection"
+  tlsCertificate:
+    type: "boolean"
+    default: false
+  playerGatewayMode:
+    type: "enum"
+    values: ["disabled", "enabled", "required"]
+    default: "disabled"

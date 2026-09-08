@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Wickr: managed end-to-end encrypted messaging, voice and video calling and file sharing;
+# every message, call and file uses 256-bit AES with a new random key, rooms hold up to 500 members,
+# calls up to 70 people, transfers up to 5 GB ("What is AWS Wickr?"). Data retention is opt-in and
+# archives to a customer-controlled store once an administrator activates it ("Data retention
+# modules for AWS Wickr").
+schemaVersion: "1"
+type: "component"
+id: "aws-wickr"
+kind: "notification-service"
+provider: "aws"
+defaults:
+  managed: true
+properties:
+  endToEndEncrypted:
+    type: "boolean"
+    default: true
+  dataRetention:
+    type: "boolean"
+    default: false
+  maxRoomMembers:
+    type: "integer"
+    default: 500
+  maxCallParticipants:
+    type: "integer"
+    default: 70
+  maxFileSizeGb:
+    type: "integer"
+    default: 5

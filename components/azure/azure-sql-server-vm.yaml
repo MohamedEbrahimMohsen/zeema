@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# SQL Server on Azure Virtual Machines: full SQL Server on IaaS, licensed pay-as-you-go from the
+# marketplace images ("Overview of SQL Server on Azure Windows Virtual Machines"). Automated backup
+# and automatic patching are features the SQL IaaS Agent extension unlocks, not defaults.
+schemaVersion: "1"
+type: "component"
+id: "azure-sql-server-vm"
+kind: "sql-database"
+provider: "azure"
+defaults:
+  managed: false
+  backupEnabled: false
+  replication: "none"
+  concurrencyControl: "pessimistic"
+properties:
+  edition:
+    type: "enum"
+    values: ["developer", "express", "web", "standard", "enterprise"]
+  licenseModel:
+    type: "enum"
+    values: ["pay-as-you-go", "azure-hybrid-benefit"]
+    default: "pay-as-you-go"
+  automaticPatching:
+    type: "boolean"
+    default: false
+  availabilityGroup:
+    type: "boolean"
+    default: false

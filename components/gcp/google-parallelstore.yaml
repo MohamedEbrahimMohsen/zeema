@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Parallelstore: managed POSIX parallel file system built on DAOS, deployed into a single
+# zone next to its client VMs, with capacity from 12 TiB to 100 TiB. Announced for
+# deprecation on 31 October 2026 in favour of Google Cloud Managed Lustre.
+schemaVersion: "1"
+type: "component"
+id: "google-parallelstore"
+kind: "file-storage"
+provider: "gcp"
+defaults:
+  protocol: "native"
+  redundancy: "zonal"
+  backupEnabled: false
+  managed: true
+properties:
+  fileSystem:
+    type: "enum"
+    values: ["daos"]
+    default: "daos"
+  posixCompatible:
+    type: "boolean"
+    default: true

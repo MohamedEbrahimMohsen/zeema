@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Omnissa Horizon (formerly VMware Horizon): customer-deployed virtual desktop and published
+# application platform brokered by Connection Servers. Pools are automated, manual or RDS, with
+# floating or dedicated assignment; non-persistent pools are automated instant-clone pools with
+# floating assignment ("Desktop Pools", "Desktop Types"). Two-factor authentication such as RSA
+# SecurID or RADIUS "must be enabled on Horizon Connection Server" ("Using Two-Factor Authentication").
+schemaVersion: "1"
+type: "component"
+id: "omnissa-horizon"
+kind: "virtual-desktop"
+provider: "default"
+defaults:
+  managed: false
+  mfaRequired: false
+properties:
+  poolType:
+    type: "enum"
+    values: ["automated", "manual", "rds"]
+  assignment:
+    type: "enum"
+    values: ["floating", "dedicated"]
+  cloneType:
+    type: "enum"
+    values: ["instant-clone", "full-clone"]
+  displayProtocol:
+    type: "enum"
+    values: ["blast-extreme", "pcoip", "rdp"]

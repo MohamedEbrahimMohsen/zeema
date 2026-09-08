@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amundsen: open-source data discovery and metadata engine from Lyft.
+# README: five services (frontend, search on Elasticsearch, metadata on Neo4j or Apache Atlas,
+# databuilder, common); metadata arrives from databuilder ETL jobs a team schedules itself,
+# usually as Airflow DAGs, so there is no built-in scan schedule.
+schemaVersion: "1"
+type: "component"
+id: "amundsen"
+kind: "data-catalog"
+provider: "default"
+defaults:
+  managed: false
+  scanSchedule: "manual"
+  classification: false
+  accessPolicyEnforcement: false
+properties:
+  metadataBackend:
+    type: "enum"
+    values: ["neo4j", "atlas"]
+    default: "neo4j"
+  searchBackend:
+    type: "enum"
+    values: ["elasticsearch", "atlas"]
+    default: "elasticsearch"
+  ingestionOrchestrator:
+    type: "enum"
+    values: ["airflow", "script"]
+    default: "airflow"

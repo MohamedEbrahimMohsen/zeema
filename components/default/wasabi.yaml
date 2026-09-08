@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Wasabi Hot Cloud Storage: S3-compatible SaaS object store with a single hot tier and no egress fees.
+# Per "Wasabi hot cloud storage system architecture", data is stored with data-centre redundancy for eleven
+# nines of durability and checksums are re-verified every 90 days by Active Integrity Checking; per
+# "Minimum Storage Duration Policy", Pay-as-You-Go objects are billed for a minimum of 90 days.
+schemaVersion: "1"
+type: "component"
+id: "wasabi"
+kind: "object-store"
+provider: "default"
+defaults:
+  managed: true
+  tier: "hot"
+  durabilityNines: 11
+  checksumOnWrite: true
+  versioning: false
+  objectLock: false
+properties:
+  minimumStorageDurationDays:
+    type: "integer"
+    default: 90
+  pricingModel:
+    type: "enum"
+    values: ["pay-as-you-go", "reserved-capacity"]
+    default: "pay-as-you-go"
+  bucketReplication:
+    type: "boolean"
+    default: false
+  compliance:
+    type: "boolean"
+    default: false

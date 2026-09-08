@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Exasol: in-memory MPP analytics database. "Architecture overview": column-based storage and
+# compression with identical images in main memory and on disk, and every cluster node equal with no
+# master. "Exasol redundancy": the redundancy level is the number of data copies across active nodes.
+schemaVersion: "1"
+type: "component"
+id: "exasol"
+kind: "data-warehouse"
+provider: "default"
+defaults:
+  realtime: false
+  format: "columnar"
+  managed: false
+properties:
+  deployment:
+    type: "enum"
+    values: ["on-premises", "cloud", "saas"]
+    default: "on-premises"
+  inMemoryProcessing:
+    type: "boolean"
+    default: true
+  masterless:
+    type: "boolean"
+    default: true

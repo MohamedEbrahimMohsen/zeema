@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle OCI AI Language: fully managed, serverless, multi-tenant text endpoint for language
+# detection, sentiment, NER, key phrases, classification, PII detection and translation.
+# "Limitations Common to all Models": 1,000 characters per single record, batches of up to
+# 100 records at 5,000 characters each and 20,000 characters per request.
+schemaVersion: "1"
+type: "component"
+id: "oci-ai-language"
+kind: "ai-service"
+provider: "oci"
+defaults:
+  modality: "text"
+  publicEndpoint: true
+  managed: true
+properties:
+  modelType:
+    type: "enum"
+    values: ["pretrained", "custom"]
+    default: "pretrained"
+  maxCharactersPerRecord:
+    type: "integer"
+    default: 5000
+  maxRecordsPerBatch:
+    type: "integer"
+    default: 100
+  maxCharactersPerRequest:
+    type: "integer"
+    default: 20000

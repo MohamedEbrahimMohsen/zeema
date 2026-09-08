@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare Artifacts: versioned file trees behind a Git-compatible interface, reachable from Git
+# clients, the REST API and Workers. "Artifacts - Limits" gives 10 GB per repository and 1 TB per
+# account with an unlimited number of repositories. Currently closed beta.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-artifacts"
+kind: "artifact-repository"
+provider: "cloudflare"
+defaults:
+  managed: true
+  artifactType: "source"
+  upstreamProxy: false
+properties:
+  gitCompatible:
+    type: "boolean"
+    default: true
+  maxRepositorySizeGb:
+    type: "integer"
+    default: 10
+  maxAccountStorageTb:
+    type: "integer"
+    default: 1

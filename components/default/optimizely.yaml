@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Optimizely Feature Experimentation: hosted flags and experiments, evaluated in the SDK.
+# "Initialize the JavaScript SDK": the SDK decides locally from a downloaded datafile;
+# automatic datafile updates default to false and the poll interval defaults to 300 seconds.
+schemaVersion: "1"
+type: "component"
+id: "optimizely"
+kind: "feature-flag-service"
+provider: "default"
+defaults:
+  stagedRollout: true
+  managed: true
+properties:
+  localEvaluation:
+    type: "boolean"
+    default: true
+  autoDatafileUpdates:
+    type: "boolean"
+    default: false
+  datafilePollSeconds:
+    type: "integer"
+    default: 300

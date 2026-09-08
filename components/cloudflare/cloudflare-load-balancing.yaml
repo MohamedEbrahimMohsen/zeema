@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare Load Balancing: global layer 7 load balancing across pools on the anycast edge.
+# "Load Balancing" and "Session affinity": monitors probe endpoints from multiple data centers and
+# traffic fails over automatically; session affinity is off by default, cookie sessions last 23 hours.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-load-balancing"
+kind: "load-balancer"
+provider: "cloudflare"
+defaults:
+  managed: true
+  layer: "l7"
+  global: true
+  healthChecks: true
+properties:
+  steeringPolicy:
+    type: "enum"
+    values: ["standard", "geo", "dynamic", "proximity", "least-outstanding-requests"]
+  sessionAffinity:
+    type: "enum"
+    values: ["none", "cookie", "ip-cookie", "header"]
+    default: "none"
+  sessionAffinityTtlSeconds:
+    type: "integer"
+    default: 82800

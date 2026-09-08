@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Matomo On-Premise: open-source web analytics you host yourself on PHP and MySQL, "free to
+# download" and keeping the data on your own servers ("Matomo On-Premise" guide). The install
+# needs a MySQL database; Matomo Cloud is the separately hosted alternative to the same product.
+schemaVersion: "1"
+type: "component"
+id: "matomo"
+kind: "bi-service"
+provider: "default"
+defaults:
+  managed: false
+properties:
+  deployment:
+    type: "enum"
+    values: ["on-premise", "cloud"]
+    default: "on-premise"
+  database:
+    type: "enum"
+    values: ["mysql", "mariadb"]
+    default: "mysql"

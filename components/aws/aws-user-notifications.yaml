@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS User Notifications: account-level notification configurations that match AWS service events
+# through EventBridge and deliver them to the Console Notification Center. "What is AWS User
+# Notifications?" makes the Console Notification Center the default channel and email, chat and
+# Console Mobile App push optional; "Creating your first notification configuration" says
+# aggregation is on by default at "Receive within 5 minutes" and hubs are limited to three Regions.
+schemaVersion: "1"
+type: "component"
+id: "aws-user-notifications"
+kind: "notification-service"
+provider: "aws"
+defaults:
+  managed: true
+  channelPush: false
+  channelEmail: false
+  channelSms: false
+  templateStore: false
+properties:
+  aggregationDuration:
+    type: "enum"
+    values: ["five-minutes", "twelve-hours", "none"]
+    default: "five-minutes"
+  consoleNotificationCenter:
+    type: "boolean"
+    default: true
+  chatDeliveryChannel:
+    type: "boolean"
+    default: false
+  maxNotificationHubs:
+    type: "integer"
+    default: 3
+  configurationStorageRegion:
+    type: "string"
+    default: "us-east-1"

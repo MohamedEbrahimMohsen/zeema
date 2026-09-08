@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Cloud Network Path Analyzer: on-demand reachability analysis over the virtual network
+# configuration; no traffic is sent, routing and security rules are evaluated instead ("Network Path
+# Analyzer"). Tests can be saved and rerun; the tenancy must have fewer than 100 compartments.
+schemaVersion: "1"
+type: "component"
+id: "oci-network-path-analyzer"
+kind: "monitoring"
+provider: "oci"
+defaults:
+  managed: true
+  collectorMode: "pull"
+  independentOfMonitored: true
+  alertGrouping: false
+properties:
+  analysisMode:
+    type: "enum"
+    values: ["configuration-analysis", "live-traffic"]
+    default: "configuration-analysis"
+  onDemand:
+    type: "boolean"
+    default: true
+  savedTests:
+    type: "boolean"
+    default: true
+  maxCompartments:
+    type: "integer"
+    default: 100

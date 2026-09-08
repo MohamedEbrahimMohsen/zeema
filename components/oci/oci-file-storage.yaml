@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI File Storage file system: an elastic NFSv3 share with copy-on-write snapshots ("File Storage
+# Overview"). The same page keeps data five-way replicated across fault domains inside one
+# availability domain, always encrypts it at rest with Oracle-managed keys, and leaves encryption
+# in transit off until a client uses oci-fss-utils or stunnel over TLS 1.3.
+schemaVersion: "1"
+type: "component"
+id: "oci-file-storage"
+kind: "file-storage"
+provider: "oci"
+defaults:
+  managed: true
+  protocol: "nfs"
+  redundancy: "zonal"
+  encryptionInTransit: false
+  publicAccess: false
+  backupEnabled: false
+properties:
+  encryptionAtRest:
+    type: "boolean"
+    default: true
+  replicaCount:
+    type: "integer"
+    default: 5
+  snapshotsSupported:
+    type: "boolean"
+    default: true
+  maxExportOptions:
+    type: "integer"
+    default: 100

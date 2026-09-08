@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare mTLS client certificates: account-level client certificates enforced per hostname.
+# "Client certificates": the Cloudflare-managed CA is the default issuer, Enterprise accounts may
+# bring their own CA, and mTLS must be enabled on a hostname before certificates are required.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-mtls"
+kind: "key-management"
+provider: "cloudflare"
+defaults:
+  managed: true
+properties:
+  certificateAuthority:
+    type: "enum"
+    values: ["cloudflare-managed", "bring-your-own"]
+    default: "cloudflare-managed"
+  enforcedOnHostname:
+    type: "boolean"
+    default: false

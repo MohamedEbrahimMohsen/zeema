@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# GeoServer: self-hosted Java server publishing geospatial data through the OGC WMS, WFS, WCS, WMTS
+# and WPS standards ("GeoServer User Manual, Introduction"). Read requests over HTTP are safe to
+# retry. The web admin runs at http://localhost:8080/geoserver and the quickstart logs in with the
+# built-in "admin" / "geoserver" account, which must be changed in Security ("Web Admin Quickstart").
+schemaVersion: "1"
+type: "component"
+id: "geoserver"
+kind: "third-party-api"
+provider: "default"
+defaults:
+  managed: false
+  idempotent: true
+  callbackStyle: "none"
+  hostedPage: false
+  handlesMoney: false
+properties:
+  httpPort:
+    type: "integer"
+    default: 8080
+  webAdminPath:
+    type: "string"
+    default: "/geoserver"
+  defaultAdminCredentials:
+    type: "boolean"
+    default: true

@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Ray: head node plus worker nodes running distributed Python tasks and actors.
+# Defaults from "Ray Clusters Overview", "Configuring Autoscaling" and "Configuring Ray":
+# enableInTreeAutoscaling false, idleTimeoutSeconds 60, RAY_USE_TLS 0.
+schemaVersion: "1"
+type: "component"
+id: "ray"
+kind: "big-data-cluster"
+provider: "default"
+defaults:
+  engine: "ray"
+  autoscaling: false
+  spotInstances: false
+  managed: false
+properties:
+  deploymentTarget:
+    type: "enum"
+    values: ["kubernetes", "vm", "local"]
+  tlsEnabled:
+    type: "boolean"
+    default: false
+  idleTimeoutSeconds:
+    type: "integer"
+    default: 60
+  dashboardPort:
+    type: "integer"
+    default: 8265

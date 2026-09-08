@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare Randomness Beacon: the League of Entropy drand node Cloudflare operates.
+# "Randomness Beacon" describes drand producing collective, publicly verifiable, unbiased and
+# unpredictable random values at fixed intervals, chained together by threshold BLS signatures.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-randomness-beacon"
+kind: "third-party-api"
+provider: "cloudflare"
+defaults:
+  managed: true
+  callbackStyle: "none"
+  hostedPage: false
+  handlesMoney: false
+properties:
+  chainMode:
+    type: "enum"
+    values: ["chained", "unchained"]
+    default: "chained"
+  publiclyVerifiable:
+    type: "boolean"
+    default: true

@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS IoT Device Management: registry, thing groups, jobs (OTA), fleet indexing and secure tunneling
+# over the AWS IoT Core device fleet. "Managing thing indexing" shows fleet indexing off until
+# UpdateIndexingConfiguration is called (thingIndexingMode/thingGroupIndexingMode "OFF"); "AWS IoT
+# Device Management endpoints and quotas" gives 730 days job data retention and 180 days command
+# execution retention.
+schemaVersion: "1"
+type: "component"
+id: "aws-iot-device-management"
+kind: "iot-hub"
+provider: "aws"
+defaults:
+  protocol: "multi"
+  perDeviceIdentity: true
+  deviceTwin: true
+  deviceProvisioning: true
+  managed: true
+properties:
+  fleetIndexing:
+    type: "boolean"
+    default: false
+  secureTunneling:
+    type: "boolean"
+    default: false
+  jobDataRetentionDays:
+    type: "integer"
+    default: 730
+  commandExecutionRetentionDays:
+    type: "integer"
+    default: 180

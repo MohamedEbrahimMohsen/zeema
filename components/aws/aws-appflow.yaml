@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon AppFlow flow: fully managed transfer of records between a SaaS application and an AWS
+# service. "What is Amazon AppFlow?" states flows run on demand or on a schedule, data is
+# encrypted at rest and in transit, and private transfer over AWS PrivateLink is an option you
+# turn on rather than the default path.
+schemaVersion: "1"
+type: "component"
+id: "aws-appflow"
+kind: "worker"
+provider: "aws"
+defaults:
+  managed: true
+  trigger: "manual"
+  idempotent: false
+  rateControl: "none"
+  accelerator: "none"
+properties:
+  triggerType:
+    type: "enum"
+    values: ["on-demand", "event", "scheduled"]
+    default: "on-demand"
+  privateTransfer:
+    type: "boolean"
+    default: false
+  customerManagedKey:
+    type: "boolean"
+    default: false
+  glueCatalogRegistration:
+    type: "boolean"
+    default: false

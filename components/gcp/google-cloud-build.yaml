@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud Build trigger: managed build service. Per "Build configuration file schema" a build with no
+# options set runs on the Google-managed default pool with an e2-standard-2 machine, times out after 60
+# minutes and gives up queueing after 3600 seconds; private pools and Secret Manager access are opt-in.
+schemaVersion: "1"
+type: "component"
+id: "google-cloud-build"
+kind: "ci-pipeline"
+provider: "gcp"
+defaults:
+  managed: true
+  selfHostedRunners: false
+  secretsFromVault: false
+properties:
+  timeoutMinutes:
+    type: "integer"
+    default: 60
+  machineType:
+    type: "enum"
+    values: ["e2-standard-2", "e2-highcpu-8", "e2-highcpu-32"]
+    default: "e2-standard-2"
+  queueTtlSeconds:
+    type: "integer"
+    default: 3600

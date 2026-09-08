@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS VPC subnet: an IP range inside a VPC that resides entirely within one Availability Zone.
+# "Subnets for your VPC" + "Enable internet access for a VPC using an internet gateway": a nondefault
+# subnet is IPv4-only, auto-assigns no public IPv4 address and has no route to an internet gateway.
+schemaVersion: "1"
+type: "component"
+id: "aws-subnet"
+kind: "network-fabric"
+provider: "aws"
+defaults:
+  managed: true
+  multicast: false
+  kernelBypass: false
+properties:
+  ipAddressing:
+    type: "enum"
+    values: ["ipv4-only", "dual-stack", "ipv6-only"]
+    default: "ipv4-only"
+  autoAssignPublicIpv4:
+    type: "boolean"
+    default: false
+  routeToInternetGateway:
+    type: "boolean"
+    default: false
+  availabilityZones:
+    type: "integer"
+    default: 1
+  subnetsPerVpcQuota:
+    type: "integer"
+    default: 200

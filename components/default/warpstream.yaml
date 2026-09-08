@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# WarpStream: Kafka-compatible cluster whose stateless agents keep no local disks and stream records
+# straight into object storage, so durability and replication come from the object store while the
+# metadata lives in a hosted control plane ("WarpStream Architecture").
+schemaVersion: "1"
+type: "component"
+id: "warpstream"
+kind: "stream"
+provider: "default"
+defaults:
+  delivery: "at-least-once"
+  ordering: "per-key"
+  storage: "persistent"
+  managed: true
+properties:
+  objectStore:
+    type: "enum"
+    values: ["s3", "gcs", "azure-blob", "s3-compatible"]
+    default: "s3"
+  statelessAgents:
+    type: "boolean"
+    default: true
+  zoneAlignedRouting:
+    type: "boolean"
+    default: true

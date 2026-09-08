@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon ElastiCache: managed in-memory cache running Valkey, Memcached or Redis OSS, created either as
+# a serverless cache or as a node-based cluster ("What is Amazon ElastiCache?"). "At-Rest Encryption in
+# ElastiCache" states that at-rest encryption is always enabled on a serverless cache and on clusters
+# with durability enabled, and is opt-in at creation for other node-based clusters.
+schemaVersion: "1"
+type: "component"
+id: "aws-elasticache"
+kind: "cache"
+provider: "aws"
+defaults:
+  managed: true
+  persistence: false
+  usedAsPrimaryStore: false
+  structure: "key-value"
+  tier: "core"
+properties:
+  engine:
+    type: "enum"
+    values: ["valkey", "redis-oss", "memcached"]
+  deployment:
+    type: "enum"
+    values: ["serverless", "node-based"]
+    default: "serverless"
+  encryptionAtRest:
+    type: "boolean"
+    default: true
+  durability:
+    type: "boolean"
+    default: false
+  clusterMode:
+    type: "boolean"
+    default: false

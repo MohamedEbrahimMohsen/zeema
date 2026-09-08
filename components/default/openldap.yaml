@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenLDAP slapd: standalone LDAPv3 directory server.
+# "OpenLDAP Software 2.6 Administrator's Guide - Introduction": MDB is the primary backend,
+# access is controlled by ACLs, and replication (LDAP Sync) is configured, not on by default.
+schemaVersion: "1"
+type: "component"
+id: "openldap"
+kind: "identity-provider"
+provider: "default"
+defaults:
+  protocol: "custom"
+  authorizationModel: "rbac"
+  centralised: true
+  managed: false
+  mfa: false
+properties:
+  backend:
+    type: "enum"
+    values: ["mdb", "ldif", "sql", "meta"]
+    default: "mdb"
+  replication:
+    type: "enum"
+    values: ["none", "single-provider", "multi-provider"]
+    default: "none"
+  saslAuthentication:
+    type: "boolean"
+    default: false

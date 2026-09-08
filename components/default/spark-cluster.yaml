@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apache Spark cluster: driver plus executors on standalone, YARN or Kubernetes.
+# Defaults from "Cluster Mode Overview", "Configuration" and "Security": deploy mode client,
+# dynamic allocation off, spark.authenticate and spark.ssl.enabled false.
+schemaVersion: "1"
+type: "component"
+id: "spark-cluster"
+kind: "big-data-cluster"
+provider: "default"
+defaults:
+  engine: "spark"
+  autoscaling: false
+  spotInstances: false
+  managed: false
+properties:
+  clusterManager:
+    type: "enum"
+    values: ["standalone", "yarn", "kubernetes"]
+  deployMode:
+    type: "enum"
+    values: ["client", "cluster"]
+    default: "client"
+  authentication:
+    type: "boolean"
+    default: false
+  sslEnabled:
+    type: "boolean"
+    default: false
+  ioEncryption:
+    type: "boolean"
+    default: false

@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI Cloud Advisor: scans tenancy resources and raises cost, performance and high-availability recommendations.
+# Defaults from "Cloud Advisor Overview": the service scans all resources once per day and some recommendations need seven days of data first;
+# it reads the resources it advises on rather than receiving pushed telemetry.
+schemaVersion: "1"
+type: "component"
+id: "oci-cloud-advisor"
+kind: "monitoring"
+provider: "oci"
+defaults:
+  managed: true
+  signal: "alerts"
+  collectorMode: "pull"
+properties:
+  scanIntervalHours:
+    type: "integer"
+    default: 24
+  recommendationCategory:
+    type: "enum"
+    values: ["cost-management", "performance", "high-availability"]
+    default: "cost-management"
+  minimumDataDays:
+    type: "integer"
+    default: 7

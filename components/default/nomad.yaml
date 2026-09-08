@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# HashiCorp Nomad, a scheduler for containers, binaries and VMs. Per the "acl" agent configuration block the
+# ACL system is disabled by default (bool: false), and per "Architecture" a region is expected to run three
+# or five servers with any number of clients.
+schemaVersion: "1"
+type: "component"
+id: "nomad"
+kind: "container-orchestrator"
+provider: "default"
+defaults:
+  managed: false
+  autoscaling: false
+  rbac: false
+properties:
+  taskDriver:
+    type: "enum"
+    values: ["docker", "exec", "java", "qemu", "raw-exec"]
+    default: "docker"
+  serverCount:
+    type: "integer"
+    default: 3
+  federated:
+    type: "boolean"
+    default: false
+  mutualTls:
+    type: "boolean"
+    default: false

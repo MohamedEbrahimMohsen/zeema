@@ -6,9 +6,9 @@ icon, so the set can grow or be replaced without touching the model.
 
 | Folder | Files | Contents |
 |---|---|---|
-| `kinds/` | 41 | One generic line glyph per kind. A queue, a cache, a cylinder, a gear. |
-| `providers/` | 76 | Brand marks, used as the badge in the corner of a component icon. |
-| `components/<provider>/` | 248 | One per component, in the same provider subfolder as the component file: the kind glyph, plus a provider badge where the component is a cloud service or a branded product. |
+| `kinds/` | 71 | One generic line glyph per kind. A queue, a cache, a cylinder, a gear. |
+| `providers/` | 219 | Brand marks, used as the badge in the corner of a component icon. |
+| `components/<provider>/` | 1610 | One per component, in the same provider subfolder as the component file: the kind glyph, plus a provider badge where the component is a cloud service or a branded product. |
 
 ## Naming
 
@@ -28,7 +28,8 @@ A renderer resolves an icon in this order and stops at the first hit:
 3. the category glyph the renderer uses for `messaging`, `compute`, `data`, `edge`,
    `external`, `client`, `ops` or `security`
 
-Step 1 covers every component today. Step 2 is what makes step 1 optional: a component
+Step 1 covers every component today: 1182 icons carry a provider or product badge, 428 generic or
+unbranded ones are the bare kind glyph. Step 2 is what makes step 1 optional: a component
 added without an icon still draws correctly as its kind. Step 3 is the renderer's own
 last resort and is not a file in this folder.
 
@@ -75,9 +76,9 @@ come from [Simple Icons](https://github.com/simple-icons/simple-icons), which is
 under CC0 1.0 Universal. Path precision has been reduced so each file fits the 4 KB
 budget; the artwork is otherwise unchanged.
 
-`aws.svg` and `azure.svg` are **not** brand marks. Simple Icons no longer carries the
-Amazon Web Services or Microsoft Azure logos, so these two are original neutral cloud
-glyphs distinguished only by colour, and they are MIT with the repository like the kind
+`aws.svg`, `azure.svg` and `oci.svg` are **not** brand marks. Simple Icons carries no
+Amazon Web Services, Microsoft Azure or Oracle Cloud logo, so these three are original
+neutral glyphs distinguished only by colour, and they are MIT with the repository like the kind
 glyphs.
 
 All trademarks and logos are the property of their respective owners. The marks are used

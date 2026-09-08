@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Elastic IP address: a static, internet-routable public IPv4 address allocated to an account.
+# "Elastic IP addresses": IPv4 only, tied to one Region, 5 per Region by default, and billed whether
+# associated or idle; a disassociated address stays allocated until it is explicitly released.
+schemaVersion: "1"
+type: "component"
+id: "aws-elastic-ip"
+kind: "network-fabric"
+provider: "aws"
+defaults:
+  managed: true
+  interconnect: "public"
+  multicast: false
+  kernelBypass: false
+properties:
+  static:
+    type: "boolean"
+    default: true
+  ipv6Supported:
+    type: "boolean"
+    default: false
+  addressesPerRegionQuota:
+    type: "integer"
+    default: 5
+  chargedWhenIdle:
+    type: "boolean"
+    default: true

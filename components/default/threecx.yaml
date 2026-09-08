@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# 3CX: SIP-based phone system with call queues and ring groups, offered as "3CX Hosted, self-host
+# or on-prem" across the FREE, SMB, PRO and ENT editions, whose PRO and ENT licences are sized in
+# simultaneous calls ("3CX Admin Manual"). Queue polling strategies include Ring All, Prioritized
+# Hunt, Hunt Random Start and Longest Waiting ("Call Queues & Ring Groups"), and Live Chat is a
+# built-in channel beside voice ("3CX Live Chat").
+schemaVersion: "1"
+type: "component"
+id: "threecx"
+kind: "contact-center"
+provider: "default"
+defaults:
+  managed: false
+  channelVoice: true
+  channelChat: true
+  routing: "fifo"
+properties:
+  hosting:
+    type: "enum"
+    values: ["self-hosted", "3cx-hosted"]
+    default: "self-hosted"
+  edition:
+    type: "enum"
+    values: ["free", "smb", "pro", "enterprise"]
+  pollingStrategy:
+    type: "enum"
+    values: ["ring-all", "prioritized-hunt", "hunt-random-start", "round-robin", "longest-waiting", "hunt-by-threes-random", "hunt-by-threes-prioritized"]
+  simultaneousCalls:
+    type: "integer"

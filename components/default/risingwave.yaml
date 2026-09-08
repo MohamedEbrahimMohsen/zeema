@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# RisingWave: streaming database. A barrier is injected every second (barrier_interval_ms = 1000) and
+# every barrier produces a checkpoint, a Chandy-Lamport global snapshot of the whole system; internal
+# state, tables and materialized views are persisted by the Hummock engine on object storage
+# ("RisingWave, Data persistence" and "Key concepts"). streaming_parallelism resolves to bounded(64).
+schemaVersion: "1"
+type: "component"
+id: "risingwave"
+kind: "stream-processor"
+provider: "default"
+defaults:
+  managed: false
+  windowing: "event-time"
+  checkpointIntervalSeconds: 1
+  stateBackend: "external"
+properties:
+  objectStore:
+    type: "enum"
+    values: ["s3", "gcs", "azblob", "hdfs", "minio"]
+    default: "s3"
+  streamingParallelism:
+    type: "integer"
+    default: 64

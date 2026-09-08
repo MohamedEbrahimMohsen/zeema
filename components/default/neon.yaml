@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Neon: managed serverless Postgres that separates compute from storage; a commit needs a quorum of
+# safekeepers, and branch history defaults to 6 hours on Free and 1 day on paid plans (Neon "Architecture overview", "Instant restore").
+schemaVersion: "1"
+type: "component"
+id: "neon"
+kind: "sql-database"
+provider: "default"
+defaults:
+  managed: true
+  replication: "sync"
+properties:
+  historyRetentionHours:
+    type: "integer"
+    default: 6
+  version:
+    type: "string"

@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS CodeBuild: fully managed build service that compiles source, runs tests and produces artifacts.
+# Per "What is AWS CodeBuild?" it "eliminates the need to provision, manage, and scale your own build
+# servers" and runs on demand; per the CreateProject API reference the build timeout default is 60
+# minutes (5 to 2160 allowed) and the queued timeout accepts 5 to 480 minutes.
+schemaVersion: "1"
+type: "component"
+id: "aws-codebuild"
+kind: "ci-pipeline"
+provider: "aws"
+defaults:
+  trigger: "manual"
+  selfHostedRunners: false
+  managed: true
+properties:
+  computeType:
+    type: "enum"
+    values: ["build-general1-small", "build-general1-medium", "build-general1-large", "build-general1-xlarge", "build-general1-2xlarge", "build-lambda"]
+  environmentType:
+    type: "enum"
+    values: ["linux-container", "linux-gpu-container", "arm-container", "windows-server-2022-container", "linux-lambda-container", "arm-lambda-container", "mac-arm"]
+  buildTimeoutMinutes:
+    type: "integer"
+    default: 60
+  vpcAttached:
+    type: "boolean"
+    default: false
+  privilegedMode:
+    type: "boolean"
+    default: false

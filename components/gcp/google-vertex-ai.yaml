@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Vertex AI, renamed Gemini Enterprise Agent Platform: Google's managed ML platform with serverless
+# training, Model Registry and Experiments/TensorBoard built in ("Introduction to Vertex AI").
+# Private Service Connect, VPC Service Controls and CMEK are opt-in configurations, so they default off.
+schemaVersion: "1"
+type: "component"
+id: "google-vertex-ai"
+kind: "ml-platform"
+provider: "gcp"
+defaults:
+  managed: true
+  modelRegistry: true
+  experimentTracking: true
+properties:
+  privateServiceConnect:
+    type: "boolean"
+    default: false
+  vpcServiceControls:
+    type: "boolean"
+    default: false
+  customerManagedKeys:
+    type: "boolean"
+    default: false

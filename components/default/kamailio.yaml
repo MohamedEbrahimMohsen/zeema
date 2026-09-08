@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Kamailio: self-hosted "Open Source SIP Server released under GPLv2+, able to handle thousands of
+# call setups per second", acting as registrar, location service, proxy and presence server with
+# "asynchronous TCP, UDP and SCTP, secure communication via TLS", WebSocket for WebRTC and dual
+# IPv4/IPv6 ("Kamailio SIP Server"). It routes SIP signalling only; media goes through a separate
+# RTP relay, and it ships no agent queues or call recording.
+schemaVersion: "1"
+type: "component"
+id: "kamailio"
+kind: "contact-center"
+provider: "default"
+defaults:
+  managed: false
+  channelVoice: true
+  channelChat: false
+  routing: "fifo"
+  callRecording: false
+  outboundDialing: false
+properties:
+  signallingOnly:
+    type: "boolean"
+    default: true
+  transport:
+    type: "enum"
+    values: ["udp", "tcp", "tls", "sctp", "websocket"]
+    default: "udp"
+  instantMessaging:
+    type: "boolean"
+    default: false
+  dispatcherLoadBalancing:
+    type: "boolean"
+    default: false

@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI boot volume: the detachable system disk an instance boots from ("Boot Volumes"). The same
+# page encrypts boot volumes by default like any block volume, sets the floor at 50 GB or the
+# image's own default size, whichever is higher (256 GB for older Windows platform images), caps
+# them at 32 TB, and lets you preserve the volume when the instance is terminated.
+schemaVersion: "1"
+type: "component"
+id: "oci-boot-volume"
+kind: "block-storage"
+provider: "oci"
+defaults:
+  managed: true
+  sizeGib: 50
+  encryptionAtRest: true
+  redundancy: "zonal"
+  snapshots: false
+properties:
+  performanceLevel:
+    type: "enum"
+    values: ["balanced", "higher-performance", "ultra-high-performance"]
+    default: "balanced"
+  inTransitEncryption:
+    type: "boolean"
+    default: false
+  maxSizeTib:
+    type: "integer"
+    default: 32

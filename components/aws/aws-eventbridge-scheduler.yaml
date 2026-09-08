@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon EventBridge Scheduler: serverless one-time and recurring invocation of an API target.
+# "What is Amazon EventBridge Scheduler?" states at-least-once delivery to targets; the
+# CreateSchedule API reference makes FlexibleTimeWindow mandatory and leaves DeadLetterConfig,
+# RetryPolicy and KmsKeyArn unset unless supplied.
+schemaVersion: "1"
+type: "component"
+id: "aws-eventbridge-scheduler"
+kind: "worker"
+provider: "aws"
+defaults:
+  managed: true
+  trigger: "schedule"
+  idempotent: false
+  rateControl: "none"
+  accelerator: "none"
+properties:
+  scheduleExpressionType:
+    type: "enum"
+    values: ["rate", "cron", "at"]
+  flexibleTimeWindow:
+    type: "enum"
+    values: ["off", "flexible"]
+  deadLetterQueue:
+    type: "boolean"
+    default: false
+  customerManagedKey:
+    type: "boolean"
+    default: false
+  actionAfterCompletion:
+    type: "enum"
+    values: ["none", "delete"]
+    default: "none"

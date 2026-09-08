@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Netlify: managed platform that serves deployed sites from its worldwide network edge. Per "HTTPS
+# (SSL)" a Let's Encrypt certificate is provisioned and renewed automatically for every site and custom
+# domain; Edge Functions (Deno at the edge) are added per site, so edge compute is not on by default.
+schemaVersion: "1"
+type: "component"
+id: "netlify"
+kind: "cdn"
+provider: "default"
+defaults:
+  managed: true
+  caching: true
+  tls: true
+  edgeCompute: false
+properties:
+  certificateSource:
+    type: "enum"
+    values: ["netlify-managed", "custom"]
+    default: "netlify-managed"
+  managedDns:
+    type: "boolean"
+    default: false

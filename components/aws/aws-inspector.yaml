@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Inspector: continuous vulnerability and network-exposure scanning of EC2 instances, ECR
+# images and Lambda functions. "Automated scan types in Amazon Inspector": activating Inspector for
+# the first time enrols the account in EC2, ECR and Lambda standard scanning, EC2 scanning defaults
+# to hybrid (SSM agent plus agentless snapshot) mode, ECR images stay monitored for 90 days, and
+# Lambda code scanning is an optional layer. Findings are scored on a modified CVSS base score.
+schemaVersion: "1"
+type: "component"
+id: "aws-inspector"
+kind: "monitoring"
+provider: "aws"
+defaults:
+  signal: "alerts"
+  collectorMode: "pull"
+  independentOfMonitored: false
+  managed: true
+properties:
+  ec2Scanning:
+    type: "boolean"
+    default: true
+  ecrScanning:
+    type: "boolean"
+    default: true
+  lambdaStandardScanning:
+    type: "boolean"
+    default: true
+  lambdaCodeScanning:
+    type: "boolean"
+    default: false
+  ec2ScanMode:
+    type: "enum"
+    values: ["hybrid", "agent-based", "agentless"]
+    default: "hybrid"
+  ecrRescanDurationDays:
+    type: "integer"
+    default: 90

@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon OpenSearch Service domain: managed OpenSearch cluster that provisions, monitors and replaces its own
+# nodes ("What is Amazon OpenSearch Service?"). Easy create builds a Multi-AZ with Standby domain across three
+# Availability Zones with three dedicated master nodes, three data nodes and Auto-Tune on, and "the default
+# configuration for any index is a replica count of 1" ("Configuring a multi-AZ domain"). Encryption of data at
+# rest is selected explicitly ("Encryption of data at rest for Amazon OpenSearch Service").
+schemaVersion: "1"
+type: "component"
+id: "aws-opensearch"
+kind: "search-index"
+provider: "aws"
+defaults:
+  managed: true
+  structure: "inverted"
+  shardingStrategy: "hash"
+  replicas: 1
+properties:
+  deploymentOption:
+    type: "enum"
+    values: ["multi-az-with-standby", "multi-az-without-standby", "single-az"]
+    default: "multi-az-with-standby"
+  dedicatedMasterNodes:
+    type: "integer"
+    default: 3
+  encryptionAtRest:
+    type: "boolean"
+    default: false
+  autoTune:
+    type: "boolean"
+    default: true

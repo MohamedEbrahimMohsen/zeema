@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Compute Engine sole-tenant node group: a homogeneous set of physical Compute Engine servers in one
+# zone dedicated to a single project's VMs ("Sole-tenant nodes"). The default host maintenance policy
+# is the same live-migration behaviour as non-sole-tenant VMs; node group autoscaling and vCPU
+# overcommit are both opt-in.
+schemaVersion: "1"
+type: "component"
+id: "google-sole-tenant-node"
+kind: "virtual-machine"
+provider: "gcp"
+defaults:
+  managed: false
+  diskEncryption: true
+  zoneRedundant: false
+properties:
+  dedicatedHardware:
+    type: "boolean"
+    default: true
+  maintenancePolicy:
+    type: "enum"
+    values: ["default", "restart-in-place", "migrate-within-node-group"]
+    default: "default"
+  autoscaling:
+    type: "boolean"
+    default: false
+  cpuOvercommit:
+    type: "boolean"
+    default: false

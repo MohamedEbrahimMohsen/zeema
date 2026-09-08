@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Worldpay Access: card acquiring API with an optional Hosted Payment Page and a "Receive events"
+# webhook service. "API principles" documents WP-Api-Version dated versioning and no idempotency key.
+schemaVersion: "1"
+type: "component"
+id: "worldpay"
+kind: "third-party-api"
+provider: "default"
+defaults:
+  managed: true
+  handlesMoney: true
+  callbackStyle: "webhook"
+  hostedPage: false
+properties:
+  integrationMode:
+    type: "enum"
+    values: ["api", "hosted-payment-page"]
+    default: "api"
+  versionedApiHeader:
+    type: "boolean"
+    default: true

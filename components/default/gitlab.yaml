@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# GitLab: Git source repositories with issues, CI/CD and registries around them, run self-managed or on
+# GitLab.com. "Project and group visibility" defines private (members only), internal (any authenticated
+# user, not available on GitLab.com) and public (including unauthenticated users); protected branches are
+# configured per project.
+schemaVersion: "1"
+type: "component"
+id: "gitlab"
+kind: "artifact-repository"
+provider: "default"
+defaults:
+  artifactType: "source"
+  managed: false
+  upstreamProxy: false
+properties:
+  visibilityLevel:
+    type: "enum"
+    values: ["private", "internal", "public"]
+  deploymentModel:
+    type: "enum"
+    values: ["self-managed", "gitlab-com", "dedicated"]
+  protectedBranches:
+    type: "boolean"
+    default: false

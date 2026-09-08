@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI Search with OpenSearch cluster: managed OpenSearch that Oracle patches, upgrades, resizes and backs up
+# on a schedule ("About Search with OpenSearch"). The cluster is reached only through private endpoints in
+# its own VCN. "Creating a Search with OpenSearch Cluster" allows 1-10 data nodes, 1-3 leader nodes and
+# 1-3 OpenSearch Dashboards nodes, with sizing defaults taken from the selected node optimization profile.
+schemaVersion: "1"
+type: "component"
+id: "oci-opensearch"
+kind: "search-index"
+provider: "oci"
+defaults:
+  managed: true
+  structure: "inverted"
+  shardingStrategy: "hash"
+properties:
+  dataNodes:
+    type: "integer"
+  leaderNodes:
+    type: "integer"
+  nodeProfile:
+    type: "enum"
+    values: ["development", "application-search", "log-analytics"]
+  privateEndpointOnly:
+    type: "boolean"
+    default: true
+  searchableSnapshots:
+    type: "boolean"
+    default: false

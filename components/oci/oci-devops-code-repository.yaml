@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI DevOps code repository: service-hosted private Git repository inside a DevOps project, with
+# pull requests and optional mirroring from GitHub, GitLab or Bitbucket. Limits (1,024 MB per
+# repository, 1,000 per region, 2,000 pull requests a month) from "What is DevOps".
+schemaVersion: "1"
+type: "component"
+id: "oci-devops-code-repository"
+kind: "artifact-repository"
+provider: "oci"
+defaults:
+  managed: true
+  artifactType: "source"
+  visibility: "private"
+properties:
+  maxRepositorySizeMb:
+    type: "integer"
+    default: 1024
+  maxPullRequestsPerMonth:
+    type: "integer"
+    default: 2000
+  mirrored:
+    type: "boolean"
+    default: false
+  externalConnection:
+    type: "enum"
+    values: ["github", "gitlab", "gitlab-server", "bitbucket-cloud", "bitbucket-server", "visual-builder-studio"]

@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS CloudTrail trail: records account API activity as events and delivers them to S3, optionally to CloudWatch
+# Logs and EventBridge. "What Is AWS CloudTrail?" and "Creating a trail with the CloudTrail console": every trail
+# created in the console is multi-Region, log file SSE-KMS encryption defaults to Enabled, data events and
+# Insights events are opt-in, and the free Event history covers the past 90 days of management events.
+schemaVersion: "1"
+type: "component"
+id: "aws-cloudtrail"
+kind: "monitoring"
+provider: "aws"
+defaults:
+  signal: "logs"
+  collectorMode: "push"
+  managed: true
+properties:
+  multiRegion:
+    type: "boolean"
+    default: true
+  logFileSseKmsEncryption:
+    type: "boolean"
+    default: true
+  dataEvents:
+    type: "boolean"
+    default: false
+  insightsEvents:
+    type: "boolean"
+    default: false

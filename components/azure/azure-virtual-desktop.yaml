@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Virtual Desktop: Microsoft runs the broker, gateway and diagnostics, you own only the
+# session hosts ("What is Azure Virtual Desktop?"). Pooled host pools load balance breadth-first,
+# whose max session limit starts at 999999, and pooled user profiles need FSLogix to persist.
+schemaVersion: "1"
+type: "component"
+id: "azure-virtual-desktop"
+kind: "virtual-desktop"
+provider: "azure"
+defaults:
+  managed: true
+  loadBalancing: "breadth-first"
+  maxSessionsPerHost: 999999
+  persistentProfiles: false
+properties:
+  managementApproach:
+    type: "enum"
+    values: ["standard", "session-host-configuration"]
+  autoscale:
+    type: "boolean"
+    default: false
+  validationEnvironment:
+    type: "boolean"
+    default: false
+  inboundPortsRequired:
+    type: "boolean"
+    default: false

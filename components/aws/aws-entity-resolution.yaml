@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Entity Resolution matching workflow: managed job that reads data inputs from AWS Glue and writes matched
+# records with a match ID to Amazon S3 ("What is AWS Entity Resolution?"). "By default, AWS Entity Resolution
+# also normalizes data inputs before matching"; workflows are run as manual bulk processing on demand unless
+# automatic incremental processing is turned on, and matching runs in the Region the service is used from.
+schemaVersion: "1"
+type: "component"
+id: "aws-entity-resolution"
+kind: "worker"
+provider: "aws"
+defaults:
+  managed: true
+  trigger: "manual"
+  accelerator: "none"
+  rateControl: "none"
+  fanoutStrategy: "none"
+properties:
+  matchingTechnique:
+    type: "enum"
+    values: ["rule-based", "machine-learning", "provider-service"]
+  normalization:
+    type: "boolean"
+    default: true
+  incrementalProcessing:
+    type: "boolean"
+    default: false

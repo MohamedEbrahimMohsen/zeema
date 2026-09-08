@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# ModSecurity (libmodsecurity v3): SecLang WAF engine embedded in a web server. The
+# Reference Manual gives SecRuleEngine a default of Off, and the OWASP Core Rule Set is
+# distributed separately and pulled in with Include, so no rules are active out of the box.
+schemaVersion: "1"
+type: "component"
+id: "modsecurity"
+kind: "waf"
+provider: "default"
+defaults:
+  mode: "off"
+  managed: false
+  botProtection: false
+  rateLimiting: false
+properties:
+  ruleEngine:
+    type: "enum"
+    values: ["off", "detection-only", "on"]
+    default: "off"
+  connector:
+    type: "enum"
+    values: ["nginx", "apache", "iis"]
+    default: "nginx"
+  coreRuleSetInstalled:
+    type: "boolean"
+    default: false
+  auditLog:
+    type: "boolean"
+    default: false

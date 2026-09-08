@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Keepalived: self-hosted L4 load balancing on the Linux IPVS kernel module plus a VRRPv2 stack for
+# failover. Per "Introduction" its two functions are health checking of LVS real servers and VRRP
+# failover; lb_algo and lb_kind have no documented default and must be set per virtual_server.
+schemaVersion: "1"
+type: "component"
+id: "keepalived"
+kind: "load-balancer"
+provider: "default"
+defaults:
+  layer: "l4"
+  managed: false
+  healthChecks: true
+properties:
+  vrrp:
+    type: "boolean"
+    default: true
+  forwardingMethod:
+    type: "enum"
+    values: ["nat", "dr", "tun"]

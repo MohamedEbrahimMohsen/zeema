@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Quickwit: search engine for logs and traces that queries splits directly on object storage.
+# Per "Index configuration" commit_timeout_secs defaults to 60 and no retention policy is set,
+# so data is stored forever until a period is configured.
+schemaVersion: "1"
+type: "component"
+id: "quickwit"
+kind: "search-index"
+provider: "default"
+defaults:
+  structure: "inverted"
+  shardingStrategy: "time"
+  indexing: "batch"
+  managed: false
+properties:
+  commitTimeoutSeconds:
+    type: "integer"
+    default: 60
+  storageBackend:
+    type: "enum"
+    values: ["s3", "azure", "gcs", "filesystem"]
+    default: "s3"
+  retentionPolicy:
+    type: "boolean"
+    default: false

@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenBao: open-source, self-hosted identity-based secrets and encryption management.
+# "Seal/Unseal": the default seal is Shamir, so a restarted node stays sealed until
+# operators supply key shares; auto-unseal against a KMS or HSM is opt-in.
+schemaVersion: "1"
+type: "component"
+id: "openbao"
+kind: "key-management"
+provider: "default"
+defaults:
+  managed: false
+  hsm: false
+  rotationAutomated: false
+properties:
+  sealType:
+    type: "enum"
+    values: ["shamir", "kms", "pkcs11"]
+    default: "shamir"
+  dynamicSecrets:
+    type: "boolean"
+    default: false

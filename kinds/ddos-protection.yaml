@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# A policy attachment covering resources rather than a device on a traffic path, so firewall cannot express it. alwaysOn and scope have no default because a plan that never states what it covers is the finding.
+schemaVersion: "1"
+type: "kind"
+id: "ddos-protection"
+category: "security"
+properties:
+  scope:
+    type: "enum"
+    values: ["network", "application", "both"]
+  alwaysOn:
+    type: "boolean"
+  adaptiveThresholds:
+    type: "boolean"
+  telemetry:
+    type: "boolean"
+  protectedResourceCount:
+    type: "integer"
+  managed:
+    type: "boolean"
+    default: false

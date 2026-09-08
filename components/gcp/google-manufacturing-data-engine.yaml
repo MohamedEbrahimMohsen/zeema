@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Manufacturing Data Engine: the cloud-side pipeline that normalises factory telemetry.
+# "Manufacturing Data Engine overview": "Pub/Sub is the message broker of MDE that is used
+# to route messages between the different components", a Dataflow message mapper applies
+# configuration-driven transforms, and records land in Bigtable, BigQuery and Cloud
+# Storage; real-time analytics are computed from user configuration.
+schemaVersion: "1"
+type: "component"
+id: "google-manufacturing-data-engine"
+kind: "stream-processor"
+provider: "gcp"
+defaults:
+  stateBackend: "external"
+  managed: true
+properties:
+  runtime:
+    type: "enum"
+    values: ["dataflow"]
+    default: "dataflow"
+  timeSeriesStore:
+    type: "enum"
+    values: ["bigtable", "bigquery", "both"]
+    default: "both"
+  archiveToCloudStorage:
+    type: "boolean"
+    default: true
+  configurationDrivenMapping:
+    type: "boolean"
+    default: true

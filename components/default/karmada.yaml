@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Karmada, a CNCF control plane that propagates workloads across member Kubernetes clusters. Per
+# "Architecture" it runs its own Karmada API server, controller manager and scheduler, and member clusters
+# keep their own API servers; per the overview it needs no change to the applications it propagates.
+schemaVersion: "1"
+type: "component"
+id: "karmada"
+kind: "container-orchestrator"
+provider: "default"
+defaults:
+  managed: false
+  autoscaling: false
+properties:
+  memberClusterMode:
+    type: "enum"
+    values: ["push", "pull"]
+    default: "push"
+  ownApiServer:
+    type: "boolean"
+    default: true
+  crossClusterFailover:
+    type: "boolean"
+    default: false

@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Access Context Manager: access levels of attributes (IP range, device policy, user identity, region)
+# held in an organization-wide access policy. Per "Access Context Manager overview" it defines
+# attribute-based rules but does not enforce them; VPC Service Controls and Identity-Aware Proxy do.
+# Device-type conditions need an enterprise subscription and Endpoint Verification.
+schemaVersion: "1"
+type: "component"
+id: "google-access-context-manager"
+kind: "policy-engine"
+provider: "gcp"
+defaults:
+  scope: "organization"
+  remediation: false
+  managed: true
+properties:
+  accessLevelType:
+    type: "enum"
+    values: ["basic", "custom"]
+    default: "basic"
+  combiningFunction:
+    type: "enum"
+    values: ["and", "or"]
+  devicePolicy:
+    type: "boolean"
+    default: false
+  enforcedBy:
+    type: "enum"
+    values: ["vpc-service-controls", "identity-aware-proxy", "context-aware-access"]

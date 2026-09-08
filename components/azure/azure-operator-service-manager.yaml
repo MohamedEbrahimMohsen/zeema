@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Operator Service Manager: managed orchestration of network service lifecycles on Azure
+# Operator Nexus, driven by operator-triggered Azure Resource Manager workflows
+# ("What Is Azure Operator Service Manager?"): artifact versioning, configuration prechecks,
+# an edge registry that survives a disconnected event.
+schemaVersion: "1"
+type: "component"
+id: "azure-operator-service-manager"
+kind: "ci-pipeline"
+provider: "azure"
+defaults:
+  managed: true
+  trigger: "manual"
+  selfHostedRunners: false
+properties:
+  failureRecovery:
+    type: "enum"
+    values: ["pause-on-failure", "rollback-on-failure"]
+  artifactVersioning:
+    type: "boolean"
+    default: true
+  configurationValidation:
+    type: "boolean"
+    default: true
+  edgeRegistry:
+    type: "boolean"
+    default: true

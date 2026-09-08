@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloud TPU: Google's ML accelerator ASICs, reached as TPU VMs built on Compute Engine
+# ("Introduction to Cloud TPU"). Chips are grouped into slices; on v6e a slice of up to 8 chips
+# attaches to a single host and 4x4 and larger topologies need multiple hosts, up to a 256-chip pod
+# ("TPU v6e"). Code must be compiled by XLA.
+schemaVersion: "1"
+type: "component"
+id: "google-cloud-tpu"
+kind: "virtual-machine"
+provider: "gcp"
+defaults:
+  managed: false
+  os: "linux"
+  diskEncryption: true
+  zoneRedundant: false
+properties:
+  tpuVersion:
+    type: "enum"
+    values: ["v4", "v5e", "v5p", "v6e", "tpu7x"]
+  sliceScope:
+    type: "enum"
+    values: ["single-host", "multi-host"]
+    default: "single-host"
+  chipsPerHost:
+    type: "integer"
+    default: 8

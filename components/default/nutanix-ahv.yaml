@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Nutanix AHV, the hypervisor bundled with Nutanix Cloud Infrastructure. Per "AHV: Virtualization Solution
+# for Enterprise" it is built on the CentOS KVM foundation and is not sold or licensed standalone, and per
+# the AOS Security guide data-at-rest encryption is a separately licensed add-on applied at cluster, VM or
+# volume-group level.
+schemaVersion: "1"
+type: "component"
+id: "nutanix-ahv"
+kind: "virtual-machine"
+provider: "default"
+defaults:
+  managed: false
+  diskEncryption: false
+properties:
+  hypervisorBase:
+    type: "enum"
+    values: ["kvm"]
+    default: "kvm"
+  encryptionScope:
+    type: "enum"
+    values: ["none", "cluster", "vm", "volume-group"]
+    default: "none"
+  microsegmentation:
+    type: "boolean"
+    default: false
+  bundledWithNci:
+    type: "boolean"
+    default: true

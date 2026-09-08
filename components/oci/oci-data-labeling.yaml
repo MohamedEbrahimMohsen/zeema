@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI Data Labeling: managed annotation of documents, text and images to produce labelled training data
+# ("Data Labeling overview"). A dataset points at records held in an Object Storage bucket that must exist
+# before content is uploaded; the service labels data and does not train or serve models itself.
+schemaVersion: "1"
+type: "component"
+id: "oci-data-labeling"
+kind: "ml-platform"
+provider: "oci"
+defaults:
+  managed: true
+  modelRegistry: false
+  experimentTracking: false
+  gpuEnabled: false
+properties:
+  datasetFormat:
+    type: "enum"
+    values: ["image", "text", "document"]
+  recordStore:
+    type: "enum"
+    values: ["object-storage"]
+    default: "object-storage"
+  assistedLabeling:
+    type: "boolean"
+    default: false

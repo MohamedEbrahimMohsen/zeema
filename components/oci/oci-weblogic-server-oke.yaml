@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle WebLogic Server for OKE: a marketplace stack that provisions an OKE cluster, node pools, an
+# administration instance, a shared file system and private load balancers, and deploys the WebLogic
+# Kubernetes Operator to run domains in containers. Editions are Enterprise Edition and WebLogic Suite,
+# BYOL or UCM; the customer chooses shapes and node counts and administers the domains.
+# Facts from "Using Oracle WebLogic Server for OKE".
+schemaVersion: "1"
+type: "component"
+id: "oci-weblogic-server-oke"
+kind: "app-server"
+provider: "oci"
+defaults:
+  managed: false
+  runtime: "weblogic"
+properties:
+  edition:
+    type: "enum"
+    values: ["enterprise", "suite"]
+  licensing:
+    type: "enum"
+    values: ["byol", "ucm"]
+  kubernetesOperator:
+    type: "boolean"
+    default: true
+  loadBalancerVisibility:
+    type: "enum"
+    values: ["private", "public"]
+    default: "private"

@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# A relationship node: it binds a service to a subnet with a DNS zone and an approval state, which no existing kind models. publicAccessDisabled and privateDnsIntegration carry no default so exposure rules can flag an endpoint that left the public path open.
+schemaVersion: "1"
+type: "kind"
+id: "private-link"
+category: "edge"
+properties:
+  approvalRequired:
+    type: "boolean"
+  privateDnsIntegration:
+    type: "boolean"
+  publicAccessDisabled:
+    type: "boolean"
+  crossRegion:
+    type: "boolean"
+    default: false
+  endpointCount:
+    type: "integer"
+  managed:
+    type: "boolean"
+    default: false

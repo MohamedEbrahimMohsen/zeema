@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Cloud Health Checks: outside-in probing of public endpoints from dozens of Oracle vantage
+# points worldwide, over HTTP or ping ("Health Checks Overview"). Premium monitors probe every 10
+# seconds; basic monitors probe less often.
+schemaVersion: "1"
+type: "component"
+id: "oci-health-checks"
+kind: "monitoring"
+provider: "oci"
+defaults:
+  managed: true
+  signal: "metrics"
+  collectorMode: "pull"
+  independentOfMonitored: true
+properties:
+  protocol:
+    type: "enum"
+    values: ["http", "ping"]
+    default: "http"
+  monitorTier:
+    type: "enum"
+    values: ["basic", "premium"]
+    default: "basic"
+  minIntervalSeconds:
+    type: "integer"
+    default: 10
+  globalVantagePoints:
+    type: "boolean"
+    default: true

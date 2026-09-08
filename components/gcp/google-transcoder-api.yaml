@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Transcoder API job: managed asynchronous file transcoding. The preset/web-hd job template produces
+# H.264 HD and SD renditions with both an HLS and an MPEG-DASH manifest ("Transcoder API overview").
+# DRM encryption and captions are only produced when the job config asks for them.
+schemaVersion: "1"
+type: "component"
+id: "google-transcoder-api"
+kind: "media-transcoder"
+provider: "gcp"
+defaults:
+  managed: true
+  mode: "file"
+  videoCodec: "h264"
+  renditions: 2
+  packaging: "hls"
+  drm: false
+  captions: false
+  redundantPipeline: false
+properties:
+  jobTemplate:
+    type: "enum"
+    values: ["preset-web-hd", "preset-web-sd", "preset-web-main-sd"]
+    default: "preset-web-hd"
+  dashManifest:
+    type: "boolean"
+    default: true
+  generatedSubtitles:
+    type: "boolean"
+    default: false

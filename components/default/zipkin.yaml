@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Zipkin: self-hosted distributed tracing; reporters push completed spans out of band to the collector
+# and the server stores them in memory unless STORAGE_TYPE is set ("zipkin-server README", "Architecture").
+schemaVersion: "1"
+type: "component"
+id: "zipkin"
+kind: "monitoring"
+provider: "default"
+defaults:
+  signal: "traces"
+  collectorMode: "push"
+  managed: false
+properties:
+  storageType:
+    type: "enum"
+    values: ["mem", "mysql", "cassandra3", "elasticsearch"]
+    default: "mem"
+  queryPort:
+    type: "integer"
+    default: 9411

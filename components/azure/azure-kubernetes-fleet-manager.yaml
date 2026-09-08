@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Kubernetes Fleet Manager: at-scale management of many AKS and Arc-enabled clusters
+# ("Overview of Azure Kubernetes Fleet Manager"). Update runs work without a hub cluster; workload
+# placement, managed namespaces and DNS load balancing need a hub, which is a single-node
+# Standard-tier AKS cluster created public or private and never changed afterwards.
+schemaVersion: "1"
+type: "component"
+id: "azure-kubernetes-fleet-manager"
+kind: "container-orchestrator"
+provider: "azure"
+defaults:
+  managed: true
+  autoscaling: false
+properties:
+  hubCluster:
+    type: "enum"
+    values: ["none", "public", "private"]
+  workloadPlacement:
+    type: "boolean"
+    default: false
+  updateOrchestration:
+    type: "boolean"
+    default: true

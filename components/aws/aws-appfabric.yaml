@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS AppFabric: managed connector layer to third-party SaaS applications; AppFabric for security
+# ingests their audit logs and writes them to an S3 bucket or a Firehose stream. "What is AWS
+# AppFabric for security?" lists OCSF-normalized JSON or Parquet and raw JSON outputs, and says an
+# app bundle encrypts data with an AWS owned key unless you supply a customer managed KMS key.
+schemaVersion: "1"
+type: "component"
+id: "aws-appfabric"
+kind: "third-party-api"
+provider: "aws"
+defaults:
+  managed: true
+  hostedPage: false
+  handlesMoney: false
+properties:
+  product:
+    type: "enum"
+    values: ["security", "productivity"]
+    default: "security"
+  outputDestination:
+    type: "enum"
+    values: ["s3", "firehose"]
+    default: "s3"
+  logFormat:
+    type: "enum"
+    values: ["ocsf-json", "ocsf-parquet", "raw-json"]
+    default: "ocsf-json"
+  customerManagedKey:
+    type: "boolean"
+    default: false

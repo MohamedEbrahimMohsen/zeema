@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Statsig: hosted feature gates, experiments and product analytics.
+# "Server SDKs introduction": the SDK loads the whole ruleset and evaluates locally,
+# polling every 10 seconds and flushing exposure events every 60 seconds by default.
+schemaVersion: "1"
+type: "component"
+id: "statsig"
+kind: "feature-flag-service"
+provider: "default"
+defaults:
+  stagedRollout: true
+  managed: true
+properties:
+  localEvaluation:
+    type: "boolean"
+    default: true
+  rulesetPollSeconds:
+    type: "integer"
+    default: 10
+  warehouseNative:
+    type: "boolean"
+    default: false

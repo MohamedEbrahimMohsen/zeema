@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Compute Optimizer: analyses resource configuration and CloudWatch utilisation metrics to produce
+# rightsizing and idle-resource recommendations. "What is AWS Compute Optimizer?": you must opt in, analysis uses
+# the last 14 days of CloudWatch metrics, and enhanced infrastructure metrics (a paid preference) extends the
+# lookback to 93 days.
+schemaVersion: "1"
+type: "component"
+id: "aws-compute-optimizer"
+kind: "monitoring"
+provider: "aws"
+defaults:
+  signal: "metrics"
+  collectorMode: "pull"
+  independentOfMonitored: true
+  managed: true
+properties:
+  metricsLookbackDays:
+    type: "integer"
+    default: 14
+  enhancedInfrastructureMetrics:
+    type: "boolean"
+    default: false
+  externalMetricsIngestion:
+    type: "boolean"
+    default: false
+  scope:
+    type: "enum"
+    values: ["standalone-account", "member-account", "organization"]
+    default: "standalone-account"

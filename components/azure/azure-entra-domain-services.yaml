@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Microsoft Entra Domain Services: managed AD DS domain (LDAP, Kerberos/NTLM, Group Policy, domain join),
+# one-way synchronised from Microsoft Entra ID. "Overview of Microsoft Entra Domain Services": one replica set
+# of two Microsoft-managed domain controllers, encryption at rest and backups run by the platform.
+# "Tutorial - Configure LDAPS": secure LDAP, and internet access to it, are disabled by default.
+schemaVersion: "1"
+type: "component"
+id: "azure-entra-domain-services"
+kind: "identity-provider"
+provider: "azure"
+defaults:
+  protocol: "custom"
+  authorizationModel: "rbac"
+  centralised: true
+  managed: true
+  mfa: false
+properties:
+  sku:
+    type: "enum"
+    values: ["standard", "enterprise", "premium"]
+  secureLdap:
+    type: "boolean"
+    default: false
+  secureLdapInternetAccess:
+    type: "boolean"
+    default: false
+  forestTrust:
+    type: "boolean"
+    default: false
+  replicaSets:
+    type: "integer"
+    default: 1

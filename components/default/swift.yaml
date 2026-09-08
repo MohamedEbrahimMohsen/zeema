@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenStack Swift: self-hosted eventually consistent object store fronted by proxy servers.
+# Per "Swift Architectural Overview", each partition in the ring is replicated three times across the
+# cluster by default, storage policies can define an erasure-coded tier instead, and container listings
+# are updated asynchronously, so a write is not immediately visible in listings.
+schemaVersion: "1"
+type: "component"
+id: "swift"
+kind: "object-store"
+provider: "default"
+defaults:
+  managed: false
+  replication: "quorum"
+  strongReadAfterWrite: false
+  versioning: false
+  encryptionAtRest: false
+properties:
+  storagePolicy:
+    type: "enum"
+    values: ["replication", "erasure-coding"]
+    default: "replication"
+  replicaCount:
+    type: "integer"
+    default: 3
+  s3Api:
+    type: "boolean"
+    default: false
+  containerSync:
+    type: "boolean"
+    default: false

@@ -1,8 +1,8 @@
 # Catalogue v1
 
 How the 64 kind candidates from the intake pass (`docs/kind-candidates.md`,
-`docs/intake/SUMMARY.md`) became the 41 kinds in `kinds/`. This page records the
-decisions; `kinds/` is the truth.
+`docs/intake/SUMMARY.md`) became the first 41 kinds in `kinds/`, and how the provider coverage pass
+(`docs/coverage-loop.md`) grew them to 71. This page records the decisions; `kinds/` is the truth.
 
 ## Merges
 
@@ -90,3 +90,33 @@ Recorded in `docs/format.md` and `docs/schema-gaps.md`:
 - Six optional edge fields: `timeoutMs`, `retryPolicy`, `idempotent`, `circuitBreaker`, `fallback`, `batched`.
 - Thirty-one new requirement paths.
 - Predicates `field`, `nfr`, `hasNode`, `from`, `to`, `crossesGroup`; `gt`/`lt` on `prop` and `requirement`; `peerKind`, `peerCategory`, `delivery`, `count` on `hasEdge`.
+| virtual-machine | compute | os, sizeVcpu, memoryGib, publicIp, zoneRedundant, diskEncryption, managed |
+| container-orchestrator | compute | nodeCount, version, autoscaling, privateControlPlane, rbac, networkPolicy, managed |
+| container-registry | data | visibility, imageScanning, geoReplicated, immutableTags, retentionDays, staticCredentials, managed |
+| block-storage | data | sizeGib, mediaType, iops, encryptionAtRest, redundancy, snapshots, managed |
+| file-storage | data | protocol (nfs, smb, multi, lustre), quotaGib, encryptionInTransit, publicAccess, redundancy, backupEnabled, managed |
+| firewall | security | defaultAction, stateful, ruleCount, logging, intrusionPrevention, managed |
+| waf | security | mode, managedRuleSet, customRuleCount, botProtection, rateLimiting, managed |
+| vpn-gateway | edge | peerType, tunnelType, bgp, activeActive, throughputMbps, managed |
+| nat-gateway | edge | staticIpCount, idleTimeoutMinutes, zoneRedundant, logging, managed |
+| private-link | edge | approvalRequired, privateDnsIntegration, publicAccessDisabled, crossRegion, endpointCount, managed |
+| bastion-host | security | protocols, sessionRecording, mfaRequired, publicIp, justInTimeAccess, managed |
+| ddos-protection | security | scope, alwaysOn, adaptiveThresholds, telemetry, protectedResourceCount, managed |
+| backup-service | ops | frequency, retentionDays, redundancy, immutable, softDeleteDays, crossRegionRestore, managed |
+| ci-pipeline | ops | trigger, approvalRequired, selfHostedRunners, artifactSigning, secretsFromVault, concurrency, managed |
+| artifact-repository | data | artifactType, visibility, upstreamProxy, immutableVersions, vulnerabilityScanning, retentionDays, managed |
+| policy-engine | ops | effect, enforcementMode, scope, remediation, policyCount, managed |
+| ai-service | compute | modality, contentFiltering, publicEndpoint, dataRetentionDays, customerManagedKeys, quotaUnitsPerMinute, managed |
+| ml-platform | compute | computeInstances, gpuEnabled, modelRegistry, experimentTracking, publicAccess, managed |
+| big-data-cluster | compute | engine, workerNodes, runtimeVersion, autoscaling, spotInstances, zoneRedundant, managed |
+| data-catalog | data | scanSchedule, sourceCount, classification, lineage, accessPolicyEnforcement, managed |
+| iot-hub | messaging | protocol, deviceCount, perDeviceIdentity, deviceTwin, deviceProvisioning, messagesPerDayLimit, managed |
+| edge-appliance | compute | connectivity, offlineMode, localStorageGib, formFactor, cloudManaged, managed |
+| virtual-desktop | compute | sessionMode, hostCount, maxSessionsPerHost, loadBalancing, persistentProfiles, mfaRequired, managed |
+| bi-service | data | capacityMode, refreshesPerDay, rowLevelSecurity, publicSharing, embeddedReports, managed |
+| vector-database | data | dimensions, distanceMetric, indexType, quantization, metadataFiltering, hybridSearch, namespaces, replicas, managed |
+| media-transcoder | compute | mode, videoCodec, renditions, maxBitrateKbps, packaging, drm, captions, redundantPipeline, managed |
+| contact-center | messaging | channelVoice, channelChat, outboundDialing, routing, maxConcurrentContacts, callRecording, recordingRetentionDays, emergencyCalling, managed |
+| bot-management | security | scoreThreshold, challengeAction, jsDetections, machineLearning, verifiedBotsAllowed, scoreHeader, sessionTokenLifetimeMinutes, managed |
+| email-security-gateway | security | deliveryMode, phishingAction, spamAction, linkRewriting, attachmentDetonation, dmarcEnforcement, quarantineRetentionDays, managed |
+| content-repository | data | deliveryMode, previewEnvironment, deliveryCacheTtlSeconds, localization, assetQuotaGb, publishingWorkflow, versioning, managed |

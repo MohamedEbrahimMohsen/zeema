@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Timestream for LiveAnalytics: serverless time series database with a memory store for recent
+# data and a magnetic store for historical data, moved between tiers by a table retention policy.
+# "What is Amazon Timestream for LiveAnalytics?" states data is always encrypted at rest and in transit
+# and is replicated across at least three Availability Zones in the Region.
+# Id and kind assigned 2026-09-07: the service is in maintenance mode since 20 June 2025 but still
+# placeable until end of support.
+schemaVersion: "1"
+type: "component"
+id: "aws-timestream-liveanalytics"
+kind: "timeseries-database"
+provider: "aws"
+defaults:
+  managed: true
+  tiers: "hot-cold"
+properties:
+  encryptionAtRest:
+    type: "boolean"
+    default: true
+  memoryStoreRetentionHours:
+    type: "integer"
+  magneticStoreRetentionDays:
+    type: "integer"
+  magneticStoreWrites:
+    type: "boolean"
+    default: false

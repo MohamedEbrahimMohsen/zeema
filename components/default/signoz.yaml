@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# SigNoz: open-source OpenTelemetry-native platform for traces, metrics and logs pushed to its collector;
+# logs and traces are retained 15 days and metrics 30 days by default ("Retention Period").
+schemaVersion: "1"
+type: "component"
+id: "signoz"
+kind: "monitoring"
+provider: "default"
+defaults:
+  signal: "all"
+  collectorMode: "push"
+  managed: false
+  retentionDays: 15
+properties:
+  metricsRetentionDays:
+    type: "integer"
+    default: 30
+  storageBackend:
+    type: "enum"
+    values: ["clickhouse"]
+    default: "clickhouse"

@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Cloud NAT gateway: highly available egress-only translation for private subnets, one per
+# VCN, allocated a single ephemeral public IP unless a reserved one is supplied ("NAT Gateway").
+# Inbound connections from the internet are never accepted; 20,000 concurrent connections are
+# supported to a single destination address and port.
+schemaVersion: "1"
+type: "component"
+id: "oci-nat-gateway"
+kind: "nat-gateway"
+provider: "oci"
+defaults:
+  managed: true
+  staticIpCount: 1
+  zoneRedundant: true
+  logging: false
+properties:
+  publicIpType:
+    type: "enum"
+    values: ["ephemeral", "reserved"]
+    default: "ephemeral"
+  blockTraffic:
+    type: "boolean"
+    default: false
+  maxConnectionsPerDestination:
+    type: "integer"
+    default: 20000

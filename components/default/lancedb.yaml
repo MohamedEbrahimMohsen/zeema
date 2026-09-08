@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# LanceDB: embedded vector database storing tables in the columnar Lance format. "Vector indexes":
+# the default distance is l2, open-source LanceDB leaves index creation manual so an unindexed table
+# is scanned exhaustively, and the index built for vectors is IVF_PQ.
+schemaVersion: "1"
+type: "component"
+id: "lancedb"
+kind: "vector-database"
+provider: "default"
+defaults:
+  indexType: "flat"
+  distanceMetric: "euclidean"
+  metadataFiltering: true
+  managed: false
+properties:
+  deployment:
+    type: "enum"
+    values: ["embedded", "enterprise"]
+    default: "embedded"
+  vectorIndexAlgorithm:
+    type: "enum"
+    values: ["ivf-pq", "ivf-flat", "hnsw-pq", "hnsw-sq"]
+    default: "ivf-pq"
+  automaticIndexing:
+    type: "boolean"
+    default: false

@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# MarkLogic Server: multi-model document database (XML, JSON, RDF) with ACID transactions over
+# forests held by D-nodes. Encryption at rest is off until configured, and database replication to
+# a second cluster is asynchronous ("MarkLogic Server overview", "Understanding encryption at rest").
+schemaVersion: "1"
+type: "component"
+id: "marklogic"
+kind: "nosql-database"
+provider: "default"
+defaults:
+  model: "document"
+  consistency: "strong"
+  replication: "single-region"
+  conflictResolution: "none"
+  encryptionAtRest: false
+properties:
+  nodeType:
+    type: "enum"
+    values: ["evaluator", "data", "combined"]
+    default: "combined"
+  databaseReplication:
+    type: "boolean"
+    default: false

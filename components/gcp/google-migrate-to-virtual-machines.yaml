@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Migrate to Virtual Machines: managed lift-and-shift of VM instances and disks from vSphere, AWS,
+# Azure and Google Cloud VMware Engine. "VM migration process": incremental replication of the source
+# disks runs on a schedule, every two hours by default, until a cutover is performed.
+schemaVersion: "1"
+type: "component"
+id: "google-migrate-to-virtual-machines"
+kind: "worker"
+provider: "gcp"
+defaults:
+  managed: true
+  trigger: "schedule"
+  schedule: "every 2 hours"
+properties:
+  source:
+    type: "enum"
+    values: ["vmware", "aws", "azure", "vmware-engine"]
+  replicationIntervalHours:
+    type: "integer"
+    default: 2

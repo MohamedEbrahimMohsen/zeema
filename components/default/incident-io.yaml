@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# incident.io: SaaS incident management and on-call; alert sources push over HTTP, alerts route to
+# schedules and escalate, and responders are reached in Slack or the mobile app ("On-call").
+schemaVersion: "1"
+type: "component"
+id: "incident-io"
+kind: "notification-service"
+provider: "default"
+defaults:
+  managed: true
+  channelPush: true
+  channelEmail: true
+properties:
+  chatPlatform:
+    type: "enum"
+    values: ["slack", "microsoft-teams"]
+    default: "slack"
+  onCallEscalations:
+    type: "boolean"
+    default: true

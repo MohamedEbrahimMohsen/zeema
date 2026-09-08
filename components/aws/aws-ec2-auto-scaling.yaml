@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon EC2 Auto Scaling group: a set of EC2 instances kept between a minimum and maximum size
+# ("What is Amazon EC2 Auto Scaling?"). EC2 status checks are the default health check type and
+# Elastic Load Balancing checks are ignored until turned on ("About the health checks").
+schemaVersion: "1"
+type: "component"
+id: "aws-ec2-auto-scaling"
+kind: "virtual-machine"
+provider: "aws"
+defaults:
+  managed: false
+  diskEncryption: false
+properties:
+  healthCheckType:
+    type: "enum"
+    values: ["ec2", "elb", "vpc-lattice", "ebs"]
+    default: "ec2"
+  capacityRebalancing:
+    type: "boolean"
+    default: false
+  scalingPolicies:
+    type: "boolean"
+    default: false
+  unhealthyReplacementPercent:
+    type: "integer"
+    default: 10

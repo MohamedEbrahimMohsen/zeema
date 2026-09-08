@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Spinnaker: "open-source, multi-cloud continuous delivery platform", self-hosted as a set of
+# microservices. "Concepts" describes pipelines as sequences of stages that can start manually or
+# from triggers such as a completed Jenkins job, a new Docker image, a CRON schedule or another
+# pipeline; Manual Judgment and blue/green, rolling and canary strategies are stages you add.
+schemaVersion: "1"
+type: "component"
+id: "spinnaker"
+kind: "ci-pipeline"
+provider: "default"
+defaults:
+  trigger: "manual"
+  approvalRequired: false
+  selfHostedRunners: true
+  managed: false
+properties:
+  triggerSource:
+    type: "enum"
+    values: ["manual", "jenkins", "docker", "cron", "pipeline", "webhook"]
+    default: "manual"
+  deploymentStrategy:
+    type: "enum"
+    values: ["none", "red-black", "rolling-red-black", "canary", "highlander"]
+    default: "none"
+  manualJudgmentStage:
+    type: "boolean"
+    default: false

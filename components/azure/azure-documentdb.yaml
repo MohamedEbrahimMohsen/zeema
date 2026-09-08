@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure DocumentDB: managed MongoDB-compatible document database built on open-source DocumentDB.
+# "Restore a cluster backup": backups run automatically, are AES-256 encrypted and retained 35 days.
+# "High availability in Azure DocumentDB": HA is opt-in; when enabled the standby shard replicates
+# synchronously, and without it each shard still keeps three synchronous local storage replicas.
+schemaVersion: "1"
+type: "component"
+id: "azure-documentdb"
+kind: "nosql-database"
+provider: "azure"
+defaults:
+  model: "document"
+  consistency: "strong"
+  replication: "single-region"
+  backupEnabled: true
+  backupRetentionDays: 35
+  encryptionAtRest: true
+  managed: true
+properties:
+  highAvailability:
+    type: "boolean"
+    default: false
+  shardCount:
+    type: "integer"
+    default: 1
+  vectorSearch:
+    type: "boolean"
+    default: true

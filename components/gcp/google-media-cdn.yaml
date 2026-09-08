@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Media CDN service: Google's media delivery product on the same global edge-caching infrastructure as YouTube.
+# Defaults from "Media CDN overview": built-in TLS serving with Google-managed certificates at no extra charge, Service Extensions plugins for edge code, signed URLs and cookies opt-in.
+schemaVersion: "1"
+type: "component"
+id: "google-media-cdn"
+kind: "cdn"
+provider: "gcp"
+defaults:
+  managed: true
+  caching: true
+  tls: true
+  edgeCompute: true
+properties:
+  originType:
+    type: "enum"
+    values: ["cloud-storage", "custom-origin", "load-balancer"]
+  signedRequests:
+    type: "boolean"
+    default: false
+  originAuthentication:
+    type: "boolean"
+    default: false

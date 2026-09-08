@@ -81,3 +81,13 @@ Format for an entry:
 - Workaround: one boolean per channel; single shardKey string.
 - Proposed change: list type in v2 if more than three kinds need it.
 - Status: open
+
+## Source names on nodes and groups
+- Design: references/designs/ (every imported design)
+- Missing: a place to keep the text of a box or boundary exactly as the source draws it.
+  Ids are kebab-case and unique, so "Orders DB (primary)" cannot survive as an id, and an
+  import that loses the name is no longer the same design.
+- Workaround: none.
+- Proposed change: optional `label` string on nodes and groups, mirroring the existing edge
+  `label`. Renderers show it; rules never read it.
+- Status: accepted in v1

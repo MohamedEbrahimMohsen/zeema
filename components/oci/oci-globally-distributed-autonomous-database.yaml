@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Globally Distributed Autonomous AI Database: sharded Oracle built on Autonomous AI Database on
+# Dedicated Exadata Infrastructure. "Overview of Oracle Globally Distributed Autonomous Database":
+# every shard is an independent database holding a subset of the data, replicated by Raft (factor
+# limited to three) or Data Guard; the underlying container database keeps 15-day backups.
+schemaVersion: "1"
+type: "component"
+id: "oci-globally-distributed-autonomous-database"
+kind: "sql-database"
+provider: "oci"
+defaults:
+  managed: true
+  sharded: true
+  distributed: true
+  multiWriter: true
+  commitProtocol: "two-phase"
+  backupEnabled: true
+  backupRetentionDays: 15
+  encryptionAtRest: true
+  concurrencyControl: "pessimistic"
+properties:
+  distributionMethod:
+    type: "enum"
+    values: ["automated", "user-managed", "multi-level"]
+  replicationMethod:
+    type: "enum"
+    values: ["raft", "data-guard"]
+  replicationFactor:
+    type: "integer"
+    default: 3
+  deploymentType:
+    type: "enum"
+    values: ["dedicated"]
+    default: "dedicated"

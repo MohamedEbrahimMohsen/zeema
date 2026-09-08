@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud Config Controller: hosted GKE instance that ships Config Sync, Policy Controller and Config
+# Connector pre-installed. Per "Set up Config Controller" an instance is regional, can be an Autopilot or a
+# Standard cluster, and its control plane is exposed on the internal endpoint only.
+schemaVersion: "1"
+type: "component"
+id: "google-config-controller"
+kind: "ci-pipeline"
+provider: "gcp"
+defaults:
+  managed: true
+  trigger: "commit"
+  selfHostedRunners: false
+properties:
+  clusterType:
+    type: "enum"
+    values: ["autopilot", "standard"]
+  privateControlPlane:
+    type: "boolean"
+    default: true
+  configSync:
+    type: "boolean"
+    default: true
+  policyController:
+    type: "boolean"
+    default: true
+  configConnector:
+    type: "boolean"
+    default: true

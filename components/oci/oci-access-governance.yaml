@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Access Governance: a service instance that runs access review and policy review campaigns over identities.
+# Defaults from "Access Governance Overview": campaigns are one-time or periodic and certify identity accesses or
+# policies, and event-based micro certifications may auto-approve low-risk items; nothing is certified until a
+# campaign is defined.
+schemaVersion: "1"
+type: "component"
+id: "oci-access-governance"
+kind: "policy-engine"
+provider: "oci"
+defaults:
+  managed: true
+  effect: "audit"
+  scope: "organization"
+properties:
+  campaignType:
+    type: "enum"
+    values: ["identity-access-review", "policy-review", "event-based"]
+    default: "identity-access-review"
+  campaignSchedule:
+    type: "enum"
+    values: ["one-time", "periodic"]
+    default: "one-time"
+  identityOrchestration:
+    type: "boolean"
+    default: false
+  coversOnPremises:
+    type: "boolean"
+    default: false

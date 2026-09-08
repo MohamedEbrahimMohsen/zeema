@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Security Command Center: the risk and threat findings plane for a Google Cloud organization or a
+# single project. Per "Security Command Center overview" and "Service tier comparison" the Standard
+# tier is offered at no additional charge, Enterprise is deprecated and moves to Premium by
+# 21 May 2027, Event Threat Detection is present in every tier, and export to BigQuery and Pub/Sub
+# is configured, not automatic.
+schemaVersion: "1"
+type: "component"
+id: "google-security-command-center"
+kind: "monitoring"
+provider: "gcp"
+defaults:
+  signal: "alerts"
+  collectorMode: "pull"
+  managed: true
+properties:
+  tier:
+    type: "enum"
+    values: ["standard", "premium", "enterprise"]
+    default: "standard"
+  activationScope:
+    type: "enum"
+    values: ["organization", "project"]
+  findingsExport:
+    type: "enum"
+    values: ["none", "bigquery", "pubsub"]
+    default: "none"

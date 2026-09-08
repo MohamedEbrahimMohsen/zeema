@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Firebolt: analytical database scaling from a single binary to petabytes on object storage.
+# "Overview": a managed service and BYOC are offered beside self-managed binary, Docker and
+# Kubernetes deployments; one engine serves real-time and batch with ACID snapshot isolation.
+schemaVersion: "1"
+type: "component"
+id: "firebolt"
+kind: "data-warehouse"
+provider: "default"
+defaults:
+  realtime: true
+  upsert: true
+  format: "columnar"
+  managed: true
+properties:
+  deployment:
+    type: "enum"
+    values: ["managed", "byoc", "self-managed"]
+    default: "managed"
+  storageBackend:
+    type: "enum"
+    values: ["object-storage"]
+    default: "object-storage"
+  tableFormat:
+    type: "enum"
+    values: ["native", "parquet", "iceberg"]
+    default: "native"

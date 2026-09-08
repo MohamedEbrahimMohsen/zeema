@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Dedicated Host: a physical server reserved for one subscription, so no other customer VMs
+# land on it ("Overview of Azure Dedicated Hosts for virtual machines"). A host group lives in one
+# availability zone, its fault domain count must be stated, and failed hosts are service healed.
+schemaVersion: "1"
+type: "component"
+id: "azure-dedicated-host"
+kind: "virtual-machine"
+provider: "azure"
+defaults:
+  managed: false
+  zoneRedundant: false
+properties:
+  singleTenant:
+    type: "boolean"
+    default: true
+  autoReplaceOnFailure:
+    type: "boolean"
+    default: true
+  automaticPlacement:
+    type: "boolean"
+    default: false
+  faultDomainCount:
+    type: "integer"

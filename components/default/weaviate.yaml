@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Weaviate: open-source vector database with built-in hybrid (BM25 plus vector) search.
+# "Vector index" and "Distance metrics": HNSW is the default index and cosine the default distance.
+# "Collection definition": multi-tenancy is off unless enabled, quantization is not applied unless
+# configured, and the replication factor of a new collection is 1.
+schemaVersion: "1"
+type: "component"
+id: "weaviate"
+kind: "vector-database"
+provider: "default"
+defaults:
+  indexType: "hnsw"
+  distanceMetric: "cosine"
+  quantization: "none"
+  metadataFiltering: true
+  hybridSearch: true
+  namespaces: false
+  replicas: 1
+  managed: false
+properties:
+  multiTenancy:
+    type: "boolean"
+    default: false
+  vectorIndexAlgorithm:
+    type: "enum"
+    values: ["hnsw", "flat", "dynamic"]
+    default: "hnsw"
+  distanceFunction:
+    type: "enum"
+    values: ["cosine", "dot", "l2-squared", "manhattan", "hamming"]
+    default: "cosine"

@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Genesys Cloud CX: vendor-run all-in-one contact center providing "omnichannel routing, workforce
+# engagement, and analytics tools", covering voice, chat, video, email, SMS and web messaging, with
+# ACD, Architect skills-based routing and predictive routing ("About Genesys Cloud"). Recordings
+# "have no set retention limits by default" and are kept per quality-management policy; screen
+# recording policies cap at one year ("Interaction Recording Retention Policies Best Practices").
+schemaVersion: "1"
+type: "component"
+id: "genesys-cloud"
+kind: "contact-center"
+provider: "default"
+defaults:
+  managed: true
+  channelVoice: true
+  channelChat: true
+  routing: "skills-based"
+properties:
+  subscriptionTier:
+    type: "enum"
+    values: ["cx-1", "cx-2", "cx-3", "cx-4"]
+  predictiveRouting:
+    type: "boolean"
+    default: false
+  screenRecording:
+    type: "boolean"
+    default: false
+  screenRecordingMaxRetentionDays:
+    type: "integer"
+    default: 365

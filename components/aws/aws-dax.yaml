@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# DynamoDB Accelerator (DAX): write-through in-memory cache in front of DynamoDB tables.
+# "DAX: How it works" gives the item cache a Time to Live of 5 minutes by default, an always-on LRU
+# eviction list, and states that DAX serves eventually consistent reads only; encryption at rest and
+# in transit are chosen when the cluster is created ("In-memory acceleration with DAX").
+schemaVersion: "1"
+type: "component"
+id: "aws-dax"
+kind: "cache"
+provider: "aws"
+defaults:
+  managed: true
+  evictionPolicy: "lru"
+  ttlSeconds: 300
+  invalidation: "ttl"
+  structure: "key-value"
+  tier: "core"
+  usedAsPrimaryStore: false
+properties:
+  queryCacheTtlSeconds:
+    type: "integer"
+  writeThrough:
+    type: "boolean"
+    default: true
+  encryptionAtRest:
+    type: "boolean"
+    default: false

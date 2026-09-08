@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Cloud security list: subnet-level virtual firewall. The default security list created with
+# a VCN holds stateful ingress for TCP 22 and two ICMP type 3 rules plus an allow-all egress rule,
+# and a packet no rule allows is dropped ("Security Lists"). At most five lists apply to a subnet.
+schemaVersion: "1"
+type: "component"
+id: "oci-security-list"
+kind: "firewall"
+provider: "oci"
+defaults:
+  managed: true
+  defaultAction: "deny"
+  stateful: true
+  logging: false
+  intrusionPrevention: false
+properties:
+  scope:
+    type: "enum"
+    values: ["subnet"]
+    default: "subnet"
+  defaultListSshIngress:
+    type: "boolean"
+    default: true
+  defaultListEgressAllowAll:
+    type: "boolean"
+    default: true
+  maxListsPerSubnet:
+    type: "integer"
+    default: 5

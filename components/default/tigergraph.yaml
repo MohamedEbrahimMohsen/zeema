@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# TigerGraph: distributed native parallel graph database with the GSQL language.
+# Per "High Availability Cluster Configuration" the replication factor defaults to 1,
+# meaning HA is not set up and the partitioning factor equals the machine count.
+schemaVersion: "1"
+type: "component"
+id: "tigergraph"
+kind: "graph-database"
+provider: "default"
+defaults:
+  inMemory: false
+  masterPerShard: true
+  crossRegionConsistency: "none"
+  managed: false
+properties:
+  replicationFactor:
+    type: "integer"
+    default: 1
+  partitioningFactor:
+    type: "integer"
+    default: 1
+  crossRegionReplication:
+    type: "boolean"
+    default: false

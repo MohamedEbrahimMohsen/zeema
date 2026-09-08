@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Conversational Insights (Customer Experience Insights): post-call analysis of contact
+# centre conversations from audio or transcripts, producing sentiment, entities and
+# topics. "Set a TTL on conversation data": with no TTL configured a conversation remains
+# in the service indefinitely; an expiring one is deleted 24 hours after its expire time.
+schemaVersion: "1"
+type: "component"
+id: "google-customer-experience-insights"
+kind: "ai-service"
+provider: "gcp"
+defaults:
+  modality: "multimodal"
+  publicEndpoint: true
+  managed: true
+properties:
+  input:
+    type: "enum"
+    values: ["audio", "transcript"]
+    default: "transcript"
+  conversationTtlConfigured:
+    type: "boolean"
+    default: false
+  redaction:
+    type: "boolean"
+    default: false
+  bigqueryExport:
+    type: "boolean"
+    default: false

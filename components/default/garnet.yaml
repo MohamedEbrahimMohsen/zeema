@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Microsoft Garnet: RESP-compatible remote cache-store. The append-only file, cluster mode and TLS
+# are all disabled unless switched on, so a stock server is a volatile single node
+# ("Garnet configuration", "Welcome to Garnet").
+schemaVersion: "1"
+type: "component"
+id: "garnet"
+kind: "cache"
+provider: "default"
+defaults:
+  persistence: false
+properties:
+  appendOnlyFile:
+    type: "boolean"
+    default: false
+  cluster:
+    type: "boolean"
+    default: false
+  tls:
+    type: "boolean"
+    default: false

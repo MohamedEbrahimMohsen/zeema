@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Splunk Enterprise: self-hosted index of machine data; forwarders push events to indexers and buckets roll
+# to frozen after frozenTimePeriodInSecs = 188697600 (6 years), deleted unless archived ("indexes.conf").
+schemaVersion: "1"
+type: "component"
+id: "splunk"
+kind: "monitoring"
+provider: "default"
+defaults:
+  signal: "logs"
+  collectorMode: "push"
+  managed: false
+  retentionDays: 2184
+properties:
+  frozenAction:
+    type: "enum"
+    values: ["delete", "archive"]
+    default: "delete"
+  forwarderBased:
+    type: "boolean"
+    default: true

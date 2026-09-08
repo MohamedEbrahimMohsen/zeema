@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloud Asset Inventory: a global metadata inventory of Google Cloud resources, IAM policies,
+# organization policies and access policies. Per "Cloud Asset Inventory overview" it keeps a
+# five-week (35 day) history of create, update and delete events, is searched, exported to BigQuery
+# or Cloud Storage and watched through Pub/Sub feeds, and its API must be enabled explicitly.
+schemaVersion: "1"
+type: "component"
+id: "google-cloud-asset-inventory"
+kind: "data-catalog"
+provider: "gcp"
+defaults:
+  classification: false
+  lineage: false
+  accessPolicyEnforcement: false
+  managed: true
+properties:
+  historyRetentionDays:
+    type: "integer"
+    default: 35
+  scope:
+    type: "enum"
+    values: ["organization", "folder", "project"]
+  changeFeed:
+    type: "boolean"
+    default: false
+  exportTarget:
+    type: "enum"
+    values: ["none", "bigquery", "cloud-storage"]
+    default: "none"

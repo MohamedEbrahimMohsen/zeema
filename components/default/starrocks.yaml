@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# StarRocks: Apache-2.0 columnar analytical warehouse supporting real-time updates. "CREATE TABLE":
+# DUPLICATE KEY is the default table type and replication_num defaults to 3. "Table types": Primary
+# Key tables replace a previously loaded record with the newly loaded one, which is a real upsert.
+schemaVersion: "1"
+type: "component"
+id: "starrocks"
+kind: "data-warehouse"
+provider: "default"
+defaults:
+  realtime: true
+  upsert: false
+  format: "columnar"
+  managed: false
+properties:
+  tableType:
+    type: "enum"
+    values: ["duplicate-key", "aggregate", "unique-key", "primary-key"]
+    default: "duplicate-key"
+  replicationNum:
+    type: "integer"
+    default: 3
+  deployment:
+    type: "enum"
+    values: ["shared-nothing", "shared-data"]
+    default: "shared-nothing"

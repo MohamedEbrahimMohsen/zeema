@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Salesforce API: the REST, SOAP and Bulk interfaces of the Salesforce CRM. "API Request Limits and
+# Allocations": an Enterprise Edition org starts at 100,000 API requests per 24 hours, scaled by the
+# licences it holds, and every org is allowed 10 concurrent long-running requests. Writes carry no
+# idempotency key, so a retried create makes a second record; change notifications are pushed out
+# through outbound messages, platform events and Change Data Capture.
+schemaVersion: "1"
+type: "component"
+id: "salesforce"
+kind: "third-party-api"
+provider: "default"
+defaults:
+  managed: true
+  idempotent: false
+  callbackStyle: "webhook"
+  hostedPage: false
+  handlesMoney: false
+properties:
+  apiStyle:
+    type: "enum"
+    values: ["rest", "soap", "bulk"]
+    default: "rest"
+  dailyRequestQuota:
+    type: "integer"
+    default: 100000
+  concurrentLongRunningRequests:
+    type: "integer"
+    default: 10

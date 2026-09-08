@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Managed Service for Apache Spark serverless (Dataproc Serverless) batch: Spark workloads with no
+# cluster to provision. "Serverless Spark overview" and "Spark properties": the service autoscales
+# the workload, the standard tier is the default, and driver and executor default to four cores each
+# with 2 to 2,000 executors.
+schemaVersion: "1"
+type: "component"
+id: "google-dataproc-serverless"
+kind: "big-data-cluster"
+provider: "gcp"
+defaults:
+  managed: true
+  engine: "spark"
+  autoscaling: true
+  spotInstances: false
+properties:
+  tier:
+    type: "enum"
+    values: ["standard", "premium"]
+    default: "standard"
+  driverCores:
+    type: "integer"
+    default: 4
+  executorCores:
+    type: "integer"
+    default: 4
+  minExecutors:
+    type: "integer"
+    default: 2
+  maxExecutors:
+    type: "integer"
+    default: 2000

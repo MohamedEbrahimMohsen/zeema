@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Shopify API: the Admin API of the Shopify commerce platform, GraphQL first. "API rate limits":
+# calls are metered by calculated query cost through a leaky bucket that refills every second,
+# at 100 points per second on the standard plan, 200 on Advanced, 1000 on Plus and 2000 on
+# enterprise. Mutations carry no idempotency key; order and fulfilment changes arrive as webhooks.
+schemaVersion: "1"
+type: "component"
+id: "shopify"
+kind: "third-party-api"
+provider: "default"
+defaults:
+  managed: true
+  idempotent: false
+  callbackStyle: "webhook"
+  handlesMoney: true
+properties:
+  apiStyle:
+    type: "enum"
+    values: ["graphql", "rest"]
+    default: "graphql"
+  plan:
+    type: "enum"
+    values: ["standard", "advanced", "plus", "enterprise"]
+    default: "standard"
+  costPointsPerSecond:
+    type: "integer"
+    default: 100

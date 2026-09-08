@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# SeaweedFS: self-hosted object store with an S3 gateway over a volume server cluster.
+# Per "Replication", the replication code xyz counts extra copies in other data centres, racks and servers,
+# 000 means a single copy, and erasure coding exists as an asynchronous warm-storage conversion rather than
+# the default write path.
+schemaVersion: "1"
+type: "component"
+id: "seaweedfs"
+kind: "object-store"
+provider: "default"
+defaults:
+  managed: false
+  replication: "none"
+  versioning: false
+  encryptionAtRest: false
+properties:
+  replicationCode:
+    type: "string"
+    default: "000"
+  erasureCoding:
+    type: "boolean"
+    default: false
+  s3Gateway:
+    type: "boolean"
+    default: false
+  filer:
+    type: "boolean"
+    default: false

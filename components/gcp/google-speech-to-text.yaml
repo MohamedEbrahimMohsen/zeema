@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud Speech-to-Text: metered transcription endpoint. "Quotas and limits":
+# 900 recognition requests per 60 seconds, ~1 minute of audio for synchronous requests,
+# ~480 minutes asynchronous, ~5 minutes streaming. Data logging is opt-in.
+schemaVersion: "1"
+type: "component"
+id: "google-speech-to-text"
+kind: "ai-service"
+provider: "gcp"
+defaults:
+  modality: "speech"
+  publicEndpoint: true
+  quotaUnitsPerMinute: 900
+  managed: true
+properties:
+  recognitionMode:
+    type: "enum"
+    values: ["sync", "async", "streaming"]
+    default: "sync"
+  dataLoggingOptIn:
+    type: "boolean"
+    default: false
+  modelAdaptation:
+    type: "boolean"
+    default: false
+  maxAudioMinutes:
+    type: "integer"
+    default: 1

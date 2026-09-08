@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# CloudWatch Internet Monitor: measures internet availability and performance between AWS-hosted applications
+# and their client city-networks, using AWS's own global network measurements. "Getting started with Internet
+# Monitor": the traffic percentage to monitor defaults to 100%; measurements go to CloudWatch metrics and logs,
+# health events go to EventBridge, and publishing to S3 is optional.
+schemaVersion: "1"
+type: "component"
+id: "aws-cloudwatch-internet-monitor"
+kind: "monitoring"
+provider: "aws"
+defaults:
+  signal: "metrics"
+  collectorMode: "push"
+  independentOfMonitored: true
+  managed: true
+properties:
+  trafficPercentToMonitor:
+    type: "integer"
+    default: 100
+  publishToS3:
+    type: "boolean"
+    default: false
+  healthEventsToEventBridge:
+    type: "boolean"
+    default: true

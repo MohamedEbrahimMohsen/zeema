@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure DDoS Protection: layer 3 and 4 protection plan attached to virtual networks or public IPs.
+# "Azure DDoS Protection Overview": always-on traffic monitoring 24x7, adaptive real-time tuning,
+# three auto-tuned mitigation policies (TCP SYN, TCP, UDP) per protected public IP, plus telemetry.
+schemaVersion: "1"
+type: "component"
+id: "azure-ddos-protection"
+kind: "ddos-protection"
+provider: "azure"
+defaults:
+  managed: true
+  scope: "network"
+  alwaysOn: true
+  adaptiveThresholds: true
+  telemetry: true
+properties:
+  tier:
+    type: "enum"
+    values: ["network-protection", "ip-protection"]
+  mitigationPolicies:
+    type: "integer"
+    default: 3
+  infrastructureProtection:
+    type: "boolean"
+    default: true
+  rapidResponseSupport:
+    type: "boolean"
+    default: false
+  costProtection:
+    type: "boolean"
+    default: false

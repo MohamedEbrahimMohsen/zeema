@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Street View Static API: returns a static Street View panorama image for a location or panorama id.
+# "Street View Static API Usage and Billing": usage limit of 30,000 queries per minute, maximum image size 640x640 pixels,
+# quotas limited unless requests are signed. Covered by the Google Maps Platform SLA (99.9% Monthly Uptime Percentage).
+schemaVersion: "1"
+type: "component"
+id: "google-street-view-static-api"
+kind: "third-party-api"
+provider: "gcp"
+defaults:
+  managed: true
+  idempotent: true
+  callbackStyle: "none"
+  hostedPage: false
+  handlesMoney: false
+  slaPercent: "99.9"
+properties:
+  queriesPerMinute:
+    type: "integer"
+    default: 30000
+  maxImagePixels:
+    type: "integer"
+    default: 640
+  digitallySigned:
+    type: "boolean"
+    default: false

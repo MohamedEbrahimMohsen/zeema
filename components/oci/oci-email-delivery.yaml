@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Cloud Email Delivery: outbound-only transactional and marketing email over SMTP or HTTPS,
+# with TLS required on SMTP submission and SPF and DKIM on the sending domain ("Email Delivery
+# Overview"). Messages are capped at 2 MB; free trial tenancies send 10 messages a minute.
+schemaVersion: "1"
+type: "component"
+id: "oci-email-delivery"
+kind: "notification-service"
+provider: "oci"
+defaults:
+  managed: true
+  channelEmail: true
+  channelPush: false
+  channelSms: false
+properties:
+  submissionProtocol:
+    type: "enum"
+    values: ["smtp", "https"]
+    default: "smtp"
+  tlsRequired:
+    type: "boolean"
+    default: true
+  maxMessageSizeMb:
+    type: "integer"
+    default: 2
+  inboundEmail:
+    type: "boolean"
+    default: false

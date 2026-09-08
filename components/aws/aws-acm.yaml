@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Certificate Manager: issues, stores and renews public and private TLS certificates for
+# integrated AWS services. "AWS Certificate Manager concepts": each ACM certificate is valid for
+# 198 days, the default root of trust is Amazon Root CA 1 (2048-bit RSA), transparency logging is
+# mandatory, and ACM encrypts the private key with a KMS key. "Managed certificate renewal":
+# DNS-validated Amazon-issued certificates renew automatically; imported certificates never do.
+schemaVersion: "1"
+type: "component"
+id: "aws-acm"
+kind: "key-management"
+provider: "aws"
+defaults:
+  managed: true
+  hsm: false
+  rotationAutomated: true
+  rotationDays: 198
+  envelopeEncryption: true
+properties:
+  certificateSource:
+    type: "enum"
+    values: ["amazon-issued", "private-ca", "imported"]
+    default: "amazon-issued"
+  validationMethod:
+    type: "enum"
+    values: ["dns", "email", "http"]
+  keyAlgorithm:
+    type: "enum"
+    values: ["rsa-2048", "rsa-4096", "ec-prime256v1", "ec-secp384r1"]
+    default: "rsa-2048"
+  transparencyLogging:
+    type: "boolean"
+    default: true
+  exportable:
+    type: "boolean"
+    default: false

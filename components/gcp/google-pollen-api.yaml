@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Pollen API: pollen index forecasts, plant descriptions and heatmap tiles for a location.
+# "Pollen API Usage and Billing": maximum Queries per Minute (QPM) limit of 6,000 for each API method.
+# Covered by the Google Maps Platform SLA (99.9% Monthly Uptime Percentage per Covered Service).
+schemaVersion: "1"
+type: "component"
+id: "google-pollen-api"
+kind: "third-party-api"
+provider: "gcp"
+defaults:
+  managed: true
+  idempotent: true
+  callbackStyle: "none"
+  hostedPage: false
+  handlesMoney: false
+  slaPercent: "99.9"
+properties:
+  queriesPerMinutePerMethod:
+    type: "integer"
+    default: 6000
+  heatmapTiles:
+    type: "boolean"
+    default: true

@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Cache for Redis: managed OSS Redis and Redis Enterprise cache (retirement announced).
+# "How to configure Azure Cache for Redis": the default maxmemory-policy is volatile-lru and the
+# non-TLS port is disabled on new caches. "What is Azure Cache for Redis?": data persistence,
+# clustering and geo-replication are Premium and Enterprise features that are off unless configured.
+schemaVersion: "1"
+type: "component"
+id: "azure-cache-for-redis"
+kind: "cache"
+provider: "azure"
+defaults:
+  managed: true
+  evictionPolicy: "lru"
+  persistence: false
+properties:
+  sku:
+    type: "enum"
+    values: ["basic", "standard", "premium", "enterprise", "enterprise-flash"]
+  clustering:
+    type: "boolean"
+    default: false
+  geoReplication:
+    type: "enum"
+    values: ["none", "passive", "active"]
+    default: "none"
+  nonTlsPort:
+    type: "boolean"
+    default: false
+  zoneRedundancy:
+    type: "boolean"
+    default: false

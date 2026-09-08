@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# VPC Service Controls service perimeter: an organization-level boundary around Google-managed services that blocks data exfiltration.
+# Defaults from "VPC Service Controls overview": a perimeter allows free communication inside and blocks communication across it, services are protected only once explicitly added, and dry-run mode monitors without blocking.
+schemaVersion: "1"
+type: "component"
+id: "google-vpc-service-controls"
+kind: "policy-engine"
+provider: "gcp"
+defaults:
+  managed: true
+  effect: "deny"
+  scope: "organization"
+properties:
+  perimeterType:
+    type: "enum"
+    values: ["regular", "bridge"]
+    default: "regular"
+  dryRun:
+    type: "boolean"
+  accessLevels:
+    type: "boolean"
+    default: false

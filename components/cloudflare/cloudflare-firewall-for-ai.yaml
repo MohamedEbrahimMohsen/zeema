@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Firewall for AI (AI Security for Apps): WAF detection that scans prompts on endpoints
+# labelled cf-llm for PII, prompt injection and unsafe topics. It only populates detection
+# fields; blocking needs a custom or rate limiting rule ("Firewall for AI"), so it ships
+# in detection mode.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-firewall-for-ai"
+kind: "waf"
+provider: "cloudflare"
+defaults:
+  managed: true
+  mode: "detection"
+  rateLimiting: false
+  botProtection: false
+properties:
+  promptInjectionDetection:
+    type: "boolean"
+    default: true
+  piiDetection:
+    type: "boolean"
+    default: true
+  unsafeTopicDetection:
+    type: "boolean"
+    default: true
+  endpointLabel:
+    type: "string"
+    default: "cf-llm"

@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Digital Assistant: an Oracle-managed, region-bound conversational AI instance that
+# fronts skills over channels (Web, Slack, Microsoft Teams, Twilio, webhook).
+# "Order the Service and Provision an Instance": the shape sets the rate limit and insights
+# storage — Development 50 requests per minute and 40 GB, Production 500 and 100 GB; over the
+# limit the instance answers HTTP 429. No shape is documented as the default, so none is set.
+schemaVersion: "1"
+type: "component"
+id: "oci-digital-assistant"
+kind: "ai-service"
+provider: "oci"
+defaults:
+  modality: "text"
+  publicEndpoint: true
+  managed: true
+properties:
+  instanceShape:
+    type: "enum"
+    values: ["development", "production"]
+  requestRateLimitPerMinute:
+    type: "integer"
+  insightsStorageGb:
+    type: "integer"
+  privateEndpoint:
+    type: "boolean"
+    default: false

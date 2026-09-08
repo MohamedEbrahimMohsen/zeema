@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Verified Permissions: an external authorization decision point that evaluates Cedar
+# policies per request. "What is Amazon Verified Permissions?": the application asks the service
+# whether a request is authorized and denies it unless a policy permits it. "Amazon Verified
+# Permissions policy stores": an empty policy store is created without a schema, so its policies
+# are not validated, and deletion protection is on for console-created stores but off for stores
+# created through the API or SDK. "Quotas": one identity source per policy store, 200 IsAuthorized
+# requests per second, and a 100,000 byte schema.
+schemaVersion: "1"
+type: "component"
+id: "aws-verified-permissions"
+kind: "policy-engine"
+provider: "aws"
+defaults:
+  effect: "deny"
+  enforcementMode: "enforced"
+  scope: "resource"
+  remediation: false
+  managed: true
+properties:
+  validationMode:
+    type: "enum"
+    values: ["off", "strict"]
+    default: "off"
+  deletionProtection:
+    type: "boolean"
+    default: false
+  maxIdentitySources:
+    type: "integer"
+    default: 1
+  authorizationRequestsPerSecond:
+    type: "integer"
+    default: 200
+  maxSchemaSizeBytes:
+    type: "integer"
+    default: 100000

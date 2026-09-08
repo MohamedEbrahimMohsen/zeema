@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare Access: managed ZTNA reverse proxy that authenticates every request to an application.
+# "Session management" gives 24 hours as the default global and application session duration; MFA is
+# an opt-in policy requirement ("Enforce MFA"), so it is not a default.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-access"
+kind: "bastion-host"
+provider: "cloudflare"
+defaults:
+  managed: true
+  mfaRequired: false
+  sessionRecording: false
+  justInTimeAccess: false
+properties:
+  sessionDurationHours:
+    type: "integer"
+    default: 24
+  applicationType:
+    type: "enum"
+    values: ["self-hosted", "saas", "private-network", "infrastructure", "rdp", "browser-ssh", "browser-vnc"]
+    default: "self-hosted"

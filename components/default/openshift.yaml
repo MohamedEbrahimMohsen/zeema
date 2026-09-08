@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Red Hat OpenShift Container Platform. Per "Using RBAC to define and apply permissions" RBAC with default
+# cluster and local roles governs every action, and per the networking guide OVN-Kubernetes is the default
+# network plugin, so NetworkPolicy is enforced as soon as a policy is written.
+schemaVersion: "1"
+type: "component"
+id: "openshift"
+kind: "container-orchestrator"
+provider: "default"
+defaults:
+  managed: false
+  autoscaling: false
+  rbac: true
+  networkPolicy: true
+properties:
+  networkPlugin:
+    type: "enum"
+    values: ["ovn-kubernetes", "openshift-sdn"]
+    default: "ovn-kubernetes"
+  securityContextConstraints:
+    type: "boolean"
+    default: true
+  integratedRegistry:
+    type: "boolean"
+    default: true
+  machineAutoscaler:
+    type: "boolean"
+    default: false

@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Arc: projects non-Azure servers, Kubernetes clusters, SQL Server and data services into
+# Azure Resource Manager so they carry Azure RBAC, tags and Azure Policy. "Azure Arc overview": the
+# control plane (management groups and tags, Resource Graph, RBAC, templates and extensions) is
+# offered at no extra cost, and indirectly connected mode was retired in September 2025.
+schemaVersion: "1"
+type: "component"
+id: "azure-arc"
+kind: "coordination-service"
+provider: "azure"
+defaults:
+  managed: true
+  role: "metadata"
+properties:
+  resourceType:
+    type: "enum"
+    values: ["servers", "kubernetes", "data-services", "sql-server", "vmware-vsphere", "scvmm"]
+  controlPlaneFree:
+    type: "boolean"
+    default: true
+  policyGovernance:
+    type: "boolean"
+    default: true
+  extensions:
+    type: "boolean"
+    default: true

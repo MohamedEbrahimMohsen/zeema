@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Maps JavaScript API: client-side web API that draws interactive maps in the browser ("Overview | Maps JavaScript API").
+# "Maps JavaScript API Usage and Billing": 30,000 map loads per minute per project and 300 map loads per minute per IP.
+# Covered by the Google Maps Platform SLA, which commits to a 99.9% Monthly Uptime Percentage per Covered Service.
+schemaVersion: "1"
+type: "component"
+id: "google-maps-javascript-api"
+kind: "third-party-api"
+provider: "gcp"
+defaults:
+  managed: true
+  idempotent: true
+  callbackStyle: "none"
+  hostedPage: false
+  handlesMoney: false
+  slaPercent: "99.9"
+properties:
+  clientSide:
+    type: "boolean"
+    default: true
+  mapLoadsPerMinutePerProject:
+    type: "integer"
+    default: 30000
+  mapLoadsPerMinutePerIp:
+    type: "integer"
+    default: 300
+  billingPerRequest:
+    type: "boolean"
+    default: true

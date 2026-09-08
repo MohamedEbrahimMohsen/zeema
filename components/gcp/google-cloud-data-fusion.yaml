@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloud Data Fusion instance: managed CDAP-based data integration service. "Cloud Data Fusion
+# overview": instances come in Developer, Basic and Enterprise editions, run batch and real-time
+# pipelines, and provision an ephemeral Spark cluster per pipeline run that is deleted afterwards.
+schemaVersion: "1"
+type: "component"
+id: "google-cloud-data-fusion"
+kind: "worker"
+provider: "gcp"
+defaults:
+  managed: true
+  trigger: "batch"
+properties:
+  edition:
+    type: "enum"
+    values: ["developer", "basic", "enterprise"]
+  pipelineType:
+    type: "enum"
+    values: ["batch", "realtime"]
+    default: "batch"
+  ephemeralCluster:
+    type: "boolean"
+    default: true
+  privateInstance:
+    type: "boolean"
+    default: false

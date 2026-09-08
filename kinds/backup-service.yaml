@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Carries the schedule, retention and redundancy a recovery-point objective rule reads; no existing kind does. retentionDays, redundancy and immutable have no default so a vault with no stated recovery posture is catchable.
+schemaVersion: "1"
+type: "kind"
+id: "backup-service"
+category: "ops"
+properties:
+  frequency:
+    type: "enum"
+    values: ["hourly", "daily", "weekly"]
+  retentionDays:
+    type: "integer"
+  redundancy:
+    type: "enum"
+    values: ["local", "zonal", "regional", "geo"]
+  immutable:
+    type: "boolean"
+  softDeleteDays:
+    type: "integer"
+  crossRegionRestore:
+    type: "boolean"
+    default: false
+  managed:
+    type: "boolean"
+    default: false

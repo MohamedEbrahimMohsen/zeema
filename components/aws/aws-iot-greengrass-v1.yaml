@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS IoT Greengrass Version 1 core: the V1 Core software on customer edge hardware. End of support
+# 7 October 2026 (V1 developer guide end of support notice); still placeable until then. "What is
+# AWS IoT Greengrass?" (V1) states the core runs a local MQTT server and Lambda runtime, buffers
+# inbound and outbound cloud messages when connectivity is lost, keeps local shadows that can be
+# configured to sync with the cloud, and supports up to 2,500 client devices per Greengrass group.
+schemaVersion: "1"
+type: "component"
+id: "aws-iot-greengrass-v1"
+kind: "edge-appliance"
+provider: "aws"
+defaults:
+  connectivity: "intermittent"
+  offlineMode: true
+  cloudManaged: true
+  managed: false
+properties:
+  localMqttBroker:
+    type: "boolean"
+    default: true
+  localShadowSync:
+    type: "boolean"
+    default: false
+  lambdaRuntime:
+    type: "boolean"
+    default: true
+  maxClientDevices:
+    type: "integer"
+    default: 2500

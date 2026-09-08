@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Agent Gateway: the managed entry point of the Agent Platform, giving deployed agents secure,
+# governed connectivity with access control and traffic monitoring ("Agent Engine overview").
+# Calls reach it over TLS and are authenticated with Google Cloud IAM credentials.
+schemaVersion: "1"
+type: "component"
+id: "google-agent-gateway"
+kind: "api-gateway"
+provider: "gcp"
+defaults:
+  managed: true
+  tls: true
+  auth: "oauth2"
+  protocol: "http"
+properties:
+  trafficMonitoring:
+    type: "boolean"
+    default: true
+  vpcConnectivity:
+    type: "boolean"
+    default: false

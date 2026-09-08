@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# oVirt, the open source management platform for KVM hosts. Per the "oVirt Administration Guide" the Engine
+# manages hosts, clusters and data centers, and virtual machine disks and templates live on storage domains
+# backed by NFS, iSCSI, Fibre Channel, Gluster or POSIX storage.
+schemaVersion: "1"
+type: "component"
+id: "ovirt"
+kind: "virtual-machine"
+provider: "default"
+defaults:
+  managed: false
+properties:
+  engineDeployment:
+    type: "enum"
+    values: ["self-hosted-engine", "standalone-manager"]
+    default: "self-hosted-engine"
+  storageDomainType:
+    type: "enum"
+    values: ["nfs", "iscsi", "fibre-channel", "gluster", "posix"]
+    default: "nfs"
+  liveMigration:
+    type: "boolean"
+    default: true

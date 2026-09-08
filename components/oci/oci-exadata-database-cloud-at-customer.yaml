@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Exadata Database Service on Cloud@Customer: Exadata infrastructure in the customer data
+# centre, driven from an OCI region through control plane servers. "Oracle Exadata Database Service
+# on Cloud@Customer Overview": databases run on VM clusters over shared Exadata storage, and backup
+# destinations are a local filesystem, Object Storage, an NFS mount or a Recovery Appliance.
+schemaVersion: "1"
+type: "component"
+id: "oci-exadata-database-cloud-at-customer"
+kind: "sql-database"
+provider: "oci"
+defaults:
+  managed: true
+  multiWriter: true
+  replication: "none"
+  encryptionAtRest: true
+  concurrencyControl: "pessimistic"
+properties:
+  hostedOnPremises:
+    type: "boolean"
+    default: true
+  databaseServers:
+    type: "integer"
+    default: 2
+  backupDestination:
+    type: "enum"
+    values: ["local", "object-storage", "nfs", "recovery-appliance"]
+  dataGuard:
+    type: "boolean"
+    default: false

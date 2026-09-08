@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Woodpecker CI: self-hosted server and agents, "lightweight, simple to use and fast". The agent
+# configuration reference defaults WOODPECKER_MAX_WORKFLOWS to 1 and auto-detects WOODPECKER_BACKEND
+# (docker, local or kubernetes); "Workflow syntax" adds a clone step automatically and restricts
+# privileged steps to trusted repositories.
+schemaVersion: "1"
+type: "component"
+id: "woodpecker"
+kind: "ci-pipeline"
+provider: "default"
+defaults:
+  trigger: "commit"
+  selfHostedRunners: true
+  approvalRequired: false
+  concurrency: 1
+  managed: false
+properties:
+  backend:
+    type: "enum"
+    values: ["auto-detect", "docker", "local", "kubernetes"]
+    default: "auto-detect"
+  privilegedSteps:
+    type: "boolean"
+    default: false
+  automaticCloneStep:
+    type: "boolean"
+    default: true

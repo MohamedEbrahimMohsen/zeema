@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Hugging Face Text Generation Inference: LLM serving toolkit with continuous batching.
+# Defaults from the "Text-generation-launcher arguments" page: hostname 0.0.0.0, port 3000,
+# max-concurrent-requests 128, quantization off unless --quantize is passed.
+schemaVersion: "1"
+type: "component"
+id: "text-generation-inference"
+kind: "ml-inference"
+provider: "default"
+defaults:
+  training: "batch"
+  inputs: "live"
+  accelerator: "gpu"
+  managed: false
+properties:
+  port:
+    type: "integer"
+    default: 3000
+  bindAddress:
+    type: "string"
+    default: "0.0.0.0"
+  maxConcurrentRequests:
+    type: "integer"
+    default: 128
+  quantization:
+    type: "enum"
+    values: ["none", "awq", "gptq", "marlin", "bitsandbytes", "fp8"]
+    default: "none"

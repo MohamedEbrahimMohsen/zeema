@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Cloud service gateway: private egress from a VCN to the Oracle Services Network over the
+# Oracle network fabric, one per VCN, same region only, and one-way, since services cannot open
+# connections back into the VCN ("Access to Oracle Services: Service Gateway").
+schemaVersion: "1"
+type: "component"
+id: "oci-service-gateway"
+kind: "private-link"
+provider: "oci"
+defaults:
+  managed: true
+  approvalRequired: false
+  crossRegion: false
+  endpointCount: 1
+properties:
+  serviceCidrLabel:
+    type: "enum"
+    values: ["object-storage", "all-oracle-services"]
+  inboundConnections:
+    type: "boolean"
+    default: false
+  routeRuleRequired:
+    type: "boolean"
+    default: true

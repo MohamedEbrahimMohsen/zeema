@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure IoT Hub Device Provisioning Service: zero-touch enrollment that attests a device
+# (X.509, TPM or symmetric key) and assigns it to an IoT hub ("Overview of Azure IoT Hub
+# Device Provisioning Service"): evenly weighted allocation by default, DR replication on.
+schemaVersion: "1"
+type: "component"
+id: "azure-iot-dps"
+kind: "identity-provider"
+provider: "azure"
+defaults:
+  managed: true
+  protocol: "custom"
+  authorizationModel: "none"
+  centralised: true
+properties:
+  attestation:
+    type: "enum"
+    values: ["x509", "tpm", "symmetric-key"]
+  allocationPolicy:
+    type: "enum"
+    values: ["evenly-weighted-distribution", "lowest-latency", "static", "custom"]
+    default: "evenly-weighted-distribution"
+  enrollmentGroups:
+    type: "boolean"
+    default: true
+  crossRegionReplication:
+    type: "boolean"
+    default: true
+  maxRegistrations:
+    type: "integer"
+    default: 1000000

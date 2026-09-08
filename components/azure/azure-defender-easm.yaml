@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Defender External Attack Surface Management: scans the internet from the outside in, starting from
+# seed domains, IP blocks, hosts, contacts, ASNs and Whois organisations, and keeps a continuously
+# refreshed inventory of externally exposed assets. Recurrent discovery runs and data connections to
+# other systems are configured by the customer ("What Is Discovery?").
+schemaVersion: "1"
+type: "component"
+id: "azure-defender-easm"
+kind: "monitoring"
+provider: "azure"
+defaults:
+  managed: true
+  signal: "alerts"
+  independentOfMonitored: true
+properties:
+  seedBasedDiscovery:
+    type: "boolean"
+    default: true
+  continuousScanning:
+    type: "boolean"
+    default: true
+  agentless:
+    type: "boolean"
+    default: true
+  recurrentDiscoverySchedule:
+    type: "boolean"
+    default: false
+  dataConnections:
+    type: "boolean"
+    default: false

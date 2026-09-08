@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Cloud Directory: a managed, schema-driven graph-based directory store whose objects can
+# sit in several hierarchies at once. "What Is Amazon Cloud Directory?": highly available
+# multi-tenant store that scales automatically to hundreds of millions of objects; reads take
+# either SERIALIZABLE or EVENTUAL consistency per call.
+# Maintenance since 7 October 2025; end of support 24 July 2027.
+schemaVersion: "1"
+type: "component"
+id: "aws-cloud-directory"
+kind: "graph-database"
+provider: "aws"
+defaults:
+  managed: true
+  inMemory: false
+  crossRegionConsistency: "none"
+properties:
+  consistencyLevel:
+    type: "enum"
+    values: ["eventual", "serializable"]
+  schemaEnforced:
+    type: "boolean"
+    default: true
+  multipleHierarchies:
+    type: "boolean"
+    default: true

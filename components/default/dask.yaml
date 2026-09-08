@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Dask: scheduler plus workers running parallel Python and dataframe workloads.
+# Defaults from "Deploy Dask Clusters" and "Python API": local threads when no cluster is
+# created, LocalCluster processes=True, adaptive scaling opt-in.
+schemaVersion: "1"
+type: "component"
+id: "dask"
+kind: "big-data-cluster"
+provider: "default"
+defaults:
+  engine: "dask"
+  autoscaling: false
+  spotInstances: false
+  managed: false
+properties:
+  deploymentTarget:
+    type: "enum"
+    values: ["local", "kubernetes", "hpc-jobqueue", "cloud"]
+    default: "local"
+  processes:
+    type: "boolean"
+    default: true
+  adaptiveScaling:
+    type: "boolean"
+    default: false

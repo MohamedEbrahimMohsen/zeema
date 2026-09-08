@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Cloud Web Application Acceleration: caching and GZIP compression bound to a layer-7 load
+# balancer ("Overview of Web Application Acceleration"). Only 200 responses to GET and HEAD are
+# cached, for 10 minutes unless the origin says otherwise, in a 100 MB cache.
+schemaVersion: "1"
+type: "component"
+id: "oci-web-application-acceleration"
+kind: "cdn"
+provider: "oci"
+defaults:
+  managed: true
+  edgeCompute: false
+  originShield: false
+properties:
+  compressionAlgorithm:
+    type: "enum"
+    values: ["gzip"]
+    default: "gzip"
+  maxCacheSizeMb:
+    type: "integer"
+    default: 100
+  defaultCacheTtlMinutes:
+    type: "integer"
+    default: 10
+  attachedTo:
+    type: "enum"
+    values: ["load-balancer"]
+    default: "load-balancer"

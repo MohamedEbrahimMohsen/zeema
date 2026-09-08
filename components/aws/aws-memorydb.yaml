@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon MemoryDB: durable in-memory database compatible with Valkey and Redis OSS. "What is MemoryDB"
+# describes data stored durably across multiple Availability Zones in a Multi-AZ transactional log and
+# usable as a primary database; "At-Rest Encryption in MemoryDB" says at-rest encryption is always
+# enabled; "CreateCluster" defaults a cluster to 1 shard with 1 replica per shard.
+schemaVersion: "1"
+type: "component"
+id: "aws-memorydb"
+kind: "cache"
+provider: "aws"
+defaults:
+  managed: true
+  persistence: true
+  usedAsPrimaryStore: true
+  replication: "multi-az"
+  structure: "key-value"
+  tier: "core"
+properties:
+  engine:
+    type: "enum"
+    values: ["valkey", "redis-oss"]
+  numShards:
+    type: "integer"
+    default: 1
+  numReplicasPerShard:
+    type: "integer"
+    default: 1
+  multiRegion:
+    type: "boolean"
+    default: false
+  dataTiering:
+    type: "boolean"
+    default: false

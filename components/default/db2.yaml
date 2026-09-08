@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Db2: single-primary relational database. HADR is configured explicitly, and when it is
+# configured hadr_syncmode defaults to NEARSYNC (Db2 "hadr_syncmode - HADR synchronization mode for log writes in peer state").
+schemaVersion: "1"
+type: "component"
+id: "db2"
+kind: "sql-database"
+provider: "default"
+defaults:
+  replication: "none"
+  concurrencyControl: "pessimistic"
+properties:
+  version:
+    type: "string"
+  hadrEnabled:
+    type: "boolean"
+    default: false
+  hadrSyncMode:
+    type: "enum"
+    values: ["sync", "nearsync", "async", "superasync"]
+    default: "nearsync"

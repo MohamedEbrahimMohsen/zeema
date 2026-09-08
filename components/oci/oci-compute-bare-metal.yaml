@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI Compute bare metal instance: a whole physical server leased to one tenant, no hypervisor
+# ("Compute Shapes" lists BM.Standard3.64 through BM.Standard.E6.256). "Creating an Instance":
+# boot volumes are encrypted by default, and on bare metal shapes that support it in-transit
+# encryption is on and not configurable.
+schemaVersion: "1"
+type: "component"
+id: "oci-compute-bare-metal"
+kind: "virtual-machine"
+provider: "oci"
+defaults:
+  managed: false
+  os: "linux"
+  diskEncryption: true
+  zoneRedundant: false
+properties:
+  shape:
+    type: "enum"
+    values:
+      - "bm-standard3-64"
+      - "bm-standard4-ax-120"
+      - "bm-standard-e4-128"
+      - "bm-standard-e5-192"
+      - "bm-standard-e6-256"
+      - "bm-standard-a1-160"
+      - "bm-standard-a4-48"
+  singleTenant:
+    type: "boolean"
+    default: true
+  inTransitEncryption:
+    type: "boolean"
+    default: true

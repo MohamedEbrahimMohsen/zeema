@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Xata: managed Postgres platform built around copy-on-write branches, controlled schema migrations
+# and anonymized production clones, deployable on AWS, GCP or Azure (Xata "Documentation").
+schemaVersion: "1"
+type: "component"
+id: "xata"
+kind: "sql-database"
+provider: "default"
+defaults:
+  managed: true
+properties:
+  cloudProvider:
+    type: "enum"
+    values: ["aws", "gcp", "azure"]
+  anonymization:
+    type: "boolean"
+    default: false

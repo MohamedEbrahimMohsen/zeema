@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Service Directory namespace: a managed service registry resolvable over HTTP, gRPC and DNS.
+# Defaults from "Service Directory overview": fully managed, Google handles availability, redundancy and scaling; DNS resolution comes from a Cloud DNS private zone bound to the namespace.
+schemaVersion: "1"
+type: "component"
+id: "google-service-directory"
+kind: "coordination-service"
+provider: "gcp"
+defaults:
+  managed: true
+  role: "discovery"
+  replicated: true
+properties:
+  resolution:
+    type: "enum"
+    values: ["http", "grpc", "dns"]
+    default: "http"
+  dnsZoneBinding:
+    type: "boolean"
+    default: false

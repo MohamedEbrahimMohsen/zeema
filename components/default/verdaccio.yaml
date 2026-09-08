@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Verdaccio: "a lightweight private npm proxy registry built in Node.js" ("What is Verdaccio?"). It runs as
+# a local network proxy that caches dependencies on demand and is used at localhost:4873; packages you
+# publish to it "are private and only accessible based in your configuration".
+schemaVersion: "1"
+type: "component"
+id: "verdaccio"
+kind: "artifact-repository"
+provider: "default"
+defaults:
+  artifactType: "package"
+  managed: false
+  visibility: "private"
+  upstreamProxy: true
+  vulnerabilityScanning: false
+properties:
+  httpPort:
+    type: "integer"
+    default: 4873
+  uplinkToPublicRegistry:
+    type: "boolean"
+    default: true

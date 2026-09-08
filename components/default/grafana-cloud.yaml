@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Grafana Cloud: fully managed observability platform for metrics, logs, traces and profiles pushed
+# through Alloy or OTLP; the Free plan retains all four signals for 14 days ("Grafana Cloud overview", pricing).
+schemaVersion: "1"
+type: "component"
+id: "grafana-cloud"
+kind: "monitoring"
+provider: "default"
+defaults:
+  signal: "all"
+  collectorMode: "push"
+  managed: true
+  independentOfMonitored: true
+  retentionDays: 14
+properties:
+  plan:
+    type: "enum"
+    values: ["free", "pro", "advanced"]
+    default: "free"

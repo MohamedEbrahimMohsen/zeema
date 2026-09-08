@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare Registrar: at-cost domain registration tied to a Cloudflare zone.
+# "Cloudflare Registrar": WHOIS contact details are redacted and domains auto-renew by default;
+# DNSSEC is a one-click opt-in.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-registrar"
+kind: "dns"
+provider: "cloudflare"
+defaults:
+  managed: true
+properties:
+  whoisRedaction:
+    type: "boolean"
+    default: true
+  autoRenew:
+    type: "boolean"
+    default: true
+  dnssec:
+    type: "boolean"
+    default: false

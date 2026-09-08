@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Organizations: the account hierarchy and the policies applied to it. Per "What is AWS Organizations?"
+# and its terminology page, "all features" is the default feature set, and SCPs and RCPs set the maximum
+# permissions available to member accounts, so the effect is a deny guardrail at organization scope.
+schemaVersion: "1"
+type: "component"
+id: "aws-organizations"
+kind: "policy-engine"
+provider: "aws"
+defaults:
+  effect: "deny"
+  scope: "organization"
+  remediation: false
+  managed: true
+properties:
+  featureSet:
+    type: "enum"
+    values: ["all-features", "consolidated-billing"]
+    default: "all-features"
+  serviceControlPolicies:
+    type: "boolean"
+  resourceControlPolicies:
+    type: "boolean"
+  delegatedAdministrator:
+    type: "boolean"
+    default: false

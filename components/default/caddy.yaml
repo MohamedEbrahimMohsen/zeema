@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Caddy: self-hosted L7 reverse proxy. Per "reverse_proxy (Caddyfile directive)" the default
+# load balancing policy is random and both active and passive health checks are off until configured.
+# Per "Automatic HTTPS" Caddy obtains and renews certificates and redirects HTTP to HTTPS by default.
+schemaVersion: "1"
+type: "component"
+id: "caddy"
+kind: "load-balancer"
+provider: "default"
+defaults:
+  hashing: "random"
+  layer: "l7"
+  managed: false
+  healthChecks: false
+properties:
+  loadBalancingPolicy:
+    type: "enum"
+    values: ["random", "round-robin", "least-conn", "first", "ip-hash"]
+    default: "random"
+  automaticHttps:
+    type: "boolean"
+    default: true

@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apache Jena Fuseki: SPARQL 1.1 server over a Jena dataset. Per "Fuseki: Configuring Fuseki"
+# a dataset is either in-memory or a TDB2 store on disk, and the server runs as a single
+# instance with no built-in replication.
+schemaVersion: "1"
+type: "component"
+id: "fuseki"
+kind: "graph-database"
+provider: "default"
+defaults:
+  inMemory: false
+  masterPerShard: false
+  crossRegionConsistency: "none"
+  managed: false
+properties:
+  datasetBackend:
+    type: "enum"
+    values: ["in-memory", "tdb2", "tdb1"]
+    default: "tdb2"
+  readOnly:
+    type: "boolean"
+    default: false
+  inference:
+    type: "boolean"
+    default: false

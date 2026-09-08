@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS CodeCommit: managed Git repositories hosted by AWS. Per "What is AWS CodeCommit?" the service
+# "hosts private Git repositories", repositories "are encrypted at rest as well as in transit", and
+# pull requests with review comments are part of the standard repository feature set.
+schemaVersion: "1"
+type: "component"
+id: "aws-codecommit"
+kind: "artifact-repository"
+provider: "aws"
+defaults:
+  artifactType: "source"
+  visibility: "private"
+  upstreamProxy: false
+  managed: true
+properties:
+  encryptionAtRest:
+    type: "boolean"
+    default: true
+  pullRequests:
+    type: "boolean"
+    default: true
+  approvalRuleTemplates:
+    type: "boolean"
+  accessProtocol:
+    type: "enum"
+    values: ["https", "ssh", "https-grc"]

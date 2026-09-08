@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Database@AWS: Oracle Exadata Database Service, ExaDB-XS and Autonomous Database Serverless
+# managed by OCI inside AWS data centres ("What is Oracle Database@AWS?"). The databases sit in an ODB
+# network that you peer to your VPCs; backups can be sent to Amazon S3 and zero-ETL to Amazon Redshift
+# is an opt-in integration.
+schemaVersion: "1"
+type: "component"
+id: "aws-oracle-database"
+kind: "sql-database"
+provider: "aws"
+defaults:
+  managed: true
+  replication: "none"
+properties:
+  offering:
+    type: "enum"
+    values: ["exadata-dedicated", "exadata-exascale", "autonomous-serverless", "autonomous-dedicated"]
+  odbNetworkPeering:
+    type: "boolean"
+    default: true
+  zeroEtlToRedshift:
+    type: "boolean"
+    default: false

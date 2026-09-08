@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Contour: self-hosted Kubernetes ingress controller that programs Envoy. Per "Request Routing"
+# RoundRobin is the strategy used when none is selected; per "Upstream Health Checks" active checks
+# require an explicit healthCheckPolicy.
+schemaVersion: "1"
+type: "component"
+id: "contour"
+kind: "load-balancer"
+provider: "default"
+defaults:
+  layer: "l7"
+  managed: false
+  hashing: "round-robin"
+  healthChecks: false
+properties:
+  configApi:
+    type: "enum"
+    values: ["httpproxy", "ingress", "gateway-api"]
+    default: "httpproxy"

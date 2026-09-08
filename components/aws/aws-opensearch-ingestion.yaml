@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon OpenSearch Ingestion pipeline: "a fully managed, serverless data collector" running Data Prepper that
+# streams logs, metrics and traces into an OpenSearch Service sink and "automatically scales your pipelines based
+# on capacity limits that you define" ("Overview of Amazon OpenSearch Ingestion"). A pipeline buffers in memory
+# unless persistent buffering is enabled, and the dead-letter queue and CloudWatch log publishing are configured
+# explicitly ("Creating Amazon OpenSearch Ingestion pipelines").
+schemaVersion: "1"
+type: "component"
+id: "aws-opensearch-ingestion"
+kind: "stream-processor"
+provider: "aws"
+defaults:
+  managed: true
+  windowing: "none"
+  stateBackend: "memory"
+  exactlyOnce: false
+properties:
+  persistentBuffering:
+    type: "boolean"
+    default: false
+  deadLetterQueue:
+    type: "boolean"
+    default: false
+  logPublishing:
+    type: "boolean"
+    default: false

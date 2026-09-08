@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud Blockchain Node Engine node: fully managed, dedicated blockchain node that Google monitors
+# and restarts. Per "Blockchain Node Engine overview" and the Ethereum node guides, Ethereum is the first
+# supported chain, a FULL node runs the Geth execution client with Lighthouse consensus, and archive nodes
+# run Erigon.
+schemaVersion: "1"
+type: "component"
+id: "google-blockchain-node-engine"
+kind: "ledger"
+provider: "gcp"
+defaults:
+  managed: true
+  doubleEntry: false
+  appendOnly: true
+  tamperEvident: true
+properties:
+  nodeType:
+    type: "enum"
+    values: ["full", "archive"]
+    default: "full"
+  executionClient:
+    type: "enum"
+    values: ["geth", "erigon"]
+    default: "geth"
+  consensusClient:
+    type: "string"
+    default: "lighthouse"

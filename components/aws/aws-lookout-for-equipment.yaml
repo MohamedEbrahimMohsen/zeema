@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Lookout for Equipment: managed anomaly detection for industrial equipment that trains on historical sensor data in Amazon S3 and runs an inference scheduler over new readings. Sunset, end of support 7 October 2026; placeable until end of support.
+# "What is Amazon Lookout for Equipment?" states a single model covers up to 300 sensors, that training data is uploaded to an Amazon S3 bucket and that the trained model is deployed to process new sensor data; "CreateInferenceScheduler" gives the data upload frequency choices of 5, 10, 15, 30 and 60 minutes, which is also how often inference runs, and leaves the choice required rather than defaulted.
+schemaVersion: "1"
+type: "component"
+id: "aws-lookout-for-equipment"
+kind: "ai-service"
+provider: "aws"
+defaults:
+  modality: "structured"
+  managed: true
+  publicEndpoint: true
+  customerManagedKeys: false
+properties:
+  inferenceFrequencyMinutes:
+    type: "integer"
+  maxSensorsPerModel:
+    type: "integer"
+    default: 300
+  labelledFailureData:
+    type: "boolean"
+    default: false
+  offConditionSensor:
+    type: "boolean"
+    default: false

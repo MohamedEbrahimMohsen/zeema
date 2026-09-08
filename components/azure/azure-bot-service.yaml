@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure AI Bot Service: the Azure Bot resource that registers a bot, relays messages through the Bot Connector and connects it to channels such as Teams.
+# "Choose the right chatbot solution for your use case" states Bot Service provides the Bot Connector, channel configuration and deployment, while the bot itself is code built with the SDK and hosted separately, and uses Azure Storage for state.
+schemaVersion: "1"
+type: "component"
+id: "azure-bot-service"
+kind: "app-server"
+provider: "azure"
+defaults:
+  managed: true
+  stateless: true
+  ownsData: false
+properties:
+  hosting:
+    type: "enum"
+    values: ["app-service", "functions", "external-https-endpoint"]
+  sdk:
+    type: "enum"
+    values: ["bot-framework-sdk", "agents-sdk"]
+  skillBot:
+    type: "boolean"
+    default: false

@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Forecast: managed time-series forecasting that trains a predictor from imported datasets and answers QueryForecast calls. In maintenance since 29 July 2024, superseded by Amazon SageMaker Canvas and closed to new customers; placeable until end of support.
+# "Guidelines and Quotas" gives the defaults: 3 datasets per dataset group, 500 predictors and 100 forecasts per account, 5,000,000 time series per predictor, a forecast horizon capped at 500 data points, a forecast queryable for 30 days and 10 parallel QueryForecast tasks.
+schemaVersion: "1"
+type: "component"
+id: "aws-forecast"
+kind: "ai-service"
+provider: "aws"
+defaults:
+  modality: "structured"
+  managed: true
+  publicEndpoint: true
+  customerManagedKeys: false
+properties:
+  servingMode:
+    type: "enum"
+    values: ["query", "export"]
+    default: "query"
+  maxForecastHorizonPoints:
+    type: "integer"
+    default: 500
+  forecastQueryableDays:
+    type: "integer"
+    default: 30
+  parallelQueryTasks:
+    type: "integer"
+    default: 10
+  autoPredictor:
+    type: "boolean"
+    default: false

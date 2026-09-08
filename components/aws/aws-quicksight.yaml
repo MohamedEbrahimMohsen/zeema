@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Quick Sight (formerly Amazon QuickSight): the fully managed BI feature of Amazon Quick, with dashboards
+# over SPICE datasets or direct queries ("What is Amazon Quick?"). SPICE capacity "is shared by all the people
+# using Quick Sight in a single AWS Region" and is allocated per Region; a dataset has no refresh schedule until
+# one is added and the refresh type defaults to full ("Importing data into SPICE", "Refreshing SPICE data").
+schemaVersion: "1"
+type: "component"
+id: "aws-quicksight"
+kind: "bi-service"
+provider: "aws"
+defaults:
+  managed: true
+  capacityMode: "shared"
+  embeddedReports: false
+properties:
+  storageEngine:
+    type: "enum"
+    values: ["spice", "direct-query"]
+    default: "spice"
+  refreshType:
+    type: "enum"
+    values: ["full", "incremental"]
+    default: "full"
+  vpcConnection:
+    type: "boolean"
+    default: false

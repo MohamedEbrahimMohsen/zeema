@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure OpenAI in Microsoft Foundry Models: metered OpenAI model endpoints (text, vision, image, audio) in the customer's Azure tenant.
+# "Default Guardrail policies for Azure OpenAI" states default content filters apply to all models at severity threshold Medium; "Configure Virtual Networks for Foundry Tools" states resources accept connections from any network by default; "Customer-Managed Keys for Foundry Tools" states Microsoft-managed keys are the default.
+schemaVersion: "1"
+type: "component"
+id: "azure-openai"
+kind: "ai-service"
+provider: "azure"
+defaults:
+  managed: true
+  modality: "multimodal"
+  contentFiltering: true
+  publicEndpoint: true
+  customerManagedKeys: false
+properties:
+  deploymentType:
+    type: "enum"
+    values: ["standard", "global-standard", "data-zone-standard", "provisioned-managed", "global-batch"]
+  abuseMonitoring:
+    type: "boolean"
+    default: true
+  maxStandardDeployments:
+    type: "integer"
+    default: 32
+  fineTuned:
+    type: "boolean"
+    default: false

@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud API Gateway: managed gateway in front of Cloud Run, Cloud Run functions, App Engine and
+# other backends. Per "About API Gateway" an API config is an OpenAPI or gRPC description, API keys and
+# Google ID tokens are the supported authentication mechanisms, and per the quickstart a gateway is
+# deployed to a region and served on a Google-managed hostname.
+schemaVersion: "1"
+type: "component"
+id: "google-api-gateway"
+kind: "api-gateway"
+provider: "gcp"
+defaults:
+  managed: true
+  tls: true
+  rateLimiting: false
+properties:
+  regional:
+    type: "boolean"
+    default: true
+  apiKeys:
+    type: "boolean"
+    default: true
+  configFormat:
+    type: "enum"
+    values: ["openapi", "grpc"]
+    default: "openapi"

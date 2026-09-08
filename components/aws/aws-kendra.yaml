@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Kendra index: managed enterprise search over connected repositories, queried through the Query and Retrieve APIs. In maintenance since 30 June 2026 and closed to new customers; placeable until end of support.
+# "Quotas for Amazon Kendra" gives the Enterprise Edition defaults: 30 GB of extracted text per storage capacity unit, 50 data source connectors per index, 50 MB per connector-ingested document and 100 search results per query; "CreateIndex" states the Edition parameter defaults to ENTERPRISE_EDITION and that a customer managed KMS key is optional.
+schemaVersion: "1"
+type: "component"
+id: "aws-kendra"
+kind: "search-index"
+provider: "aws"
+defaults:
+  structure: "inverted"
+  indexing: "async"
+  shardingStrategy: "none"
+  managed: true
+properties:
+  edition:
+    type: "enum"
+    values: ["developer", "enterprise", "gen-ai-enterprise"]
+    default: "enterprise"
+  extractedTextGbPerUnit:
+    type: "integer"
+    default: 30
+  dataSourceConnectorsPerIndex:
+    type: "integer"
+    default: 50
+  maxDocumentSizeMb:
+    type: "integer"
+    default: 50
+  customerManagedKey:
+    type: "boolean"
+    default: false

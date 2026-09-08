@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Network Intelligence Center: the single console for Google Cloud network visibility, monitoring and troubleshooting.
+# Defaults from "Network Intelligence Center overview": seven modules (Network Topology, Connectivity Tests, Performance Dashboard, Firewall Insights, Network Analyzer, Flow Analyzer, Cloud Network Insights); Network Analyzer runs continuously off near real-time configuration updates.
+schemaVersion: "1"
+type: "component"
+id: "google-network-intelligence-center"
+kind: "monitoring"
+provider: "gcp"
+defaults:
+  managed: true
+  collectorMode: "push"
+properties:
+  module:
+    type: "enum"
+    values: ["network-topology", "connectivity-tests", "performance-dashboard", "firewall-insights", "network-analyzer", "flow-analyzer", "network-insights"]
+  continuousAnalysis:
+    type: "boolean"
+    default: true

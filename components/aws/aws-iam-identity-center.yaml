@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS IAM Identity Center: central workforce federation into AWS accounts and AWS managed
+# applications. "What is IAM Identity Center?" and "MFA for Identity Center directory users":
+# it ships preconfigured with MFA turned on for all users; organization instance is the default shape.
+schemaVersion: "1"
+type: "component"
+id: "aws-iam-identity-center"
+kind: "identity-provider"
+provider: "aws"
+defaults:
+  protocol: "saml"
+  authorizationModel: "rbac"
+  centralised: true
+  mfa: true
+  managed: true
+properties:
+  identitySource:
+    type: "enum"
+    values: ["identity-center-directory", "active-directory", "external-idp"]
+    default: "identity-center-directory"
+  instanceType:
+    type: "enum"
+    values: ["organization", "account"]
+    default: "organization"
+  trustedIdentityPropagation:
+    type: "boolean"
+    default: false
+  multiRegionReplication:
+    type: "boolean"
+    default: false

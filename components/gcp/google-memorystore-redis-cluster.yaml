@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Memorystore for Redis Cluster: a sharded OSS Redis Cluster whose shards Memorystore spreads
+# across zones. "Redis Cluster overview" states a shard may carry 0 to 5 replicas; the gcloud
+# reference defaults --automated-backup-mode to disabled and, when RDB is turned on,
+# --rdb-snapshot-period to 24h.
+schemaVersion: "1"
+type: "component"
+id: "google-memorystore-redis-cluster"
+kind: "cache"
+provider: "gcp"
+defaults:
+  replication: "none"
+  persistence: false
+  hashing: "consistent"
+  structure: "key-value"
+  managed: true
+properties:
+  shardCount:
+    type: "integer"
+  replicaCount:
+    type: "integer"
+    default: 0
+  persistenceMode:
+    type: "enum"
+    values: ["disabled", "rdb", "aof"]
+    default: "disabled"

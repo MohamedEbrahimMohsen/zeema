@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare CASB: makes routine out-of-band API calls into connected SaaS and cloud tenants and
+# raises posture findings. "Troubleshoot CASB" states integration permissions are read-only and
+# least-privileged and that scans are periodic, not real time.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-casb"
+kind: "monitoring"
+provider: "cloudflare"
+defaults:
+  managed: true
+  signal: "alerts"
+  collectorMode: "pull"
+properties:
+  apiPermissions:
+    type: "enum"
+    values: ["read-only", "read-write"]
+    default: "read-only"
+  scanMode:
+    type: "enum"
+    values: ["scheduled", "real-time"]
+    default: "scheduled"
+  inlineTraffic:
+    type: "boolean"
+    default: false

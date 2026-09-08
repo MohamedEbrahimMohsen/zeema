@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Dataform repository: version-controlled SQL transformation workflows executed in BigQuery.
+# "Dataform overview": each repository is bound to a custom service account, code compiles in a
+# sandbox with no internet access, and runs are started manually unless a workflow configuration
+# schedules a compiled release.
+schemaVersion: "1"
+type: "component"
+id: "google-dataform"
+kind: "ci-pipeline"
+provider: "gcp"
+defaults:
+  managed: true
+  trigger: "manual"
+  selfHostedRunners: false
+properties:
+  gitProvider:
+    type: "enum"
+    values: ["github", "gitlab", "azure-devops", "bitbucket"]
+  sandboxedCompilation:
+    type: "boolean"
+    default: true
+  customServiceAccount:
+    type: "boolean"
+    default: true

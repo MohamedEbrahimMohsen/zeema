@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Kasm Workspaces: self-hosted platform giving "browser-based access to on-demand containerized
+# desktops and applications", installed on your own servers as a single-server or multi-server
+# deployment ("Kasm Workspaces documentation"). "By default, Kasm Workspaces spins up containerized
+# sessions that are ephemeral in nature"; persistent profiles are opt-in ("Persistent Data") and
+# session recording "is not enabled by default", requiring per-group configuration ("Session Recording").
+schemaVersion: "1"
+type: "component"
+id: "kasm"
+kind: "virtual-desktop"
+provider: "default"
+defaults:
+  managed: false
+  persistentProfiles: false
+properties:
+  sessionRecording:
+    type: "boolean"
+    default: false
+  persistentProfileStorage:
+    type: "enum"
+    values: ["volume-mount", "s3"]
+  deploymentTopology:
+    type: "enum"
+    values: ["single-server", "multi-server"]
+    default: "single-server"

@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Shaka Packager: DASH and HLS packaging and encryption SDK. Per the "Shaka Packager
+# Documentation", it does not transcode - content must be pre-encoded - and encryption is off
+# until a key provider flag (raw key, Widevine, PlayReady) is passed; MP4 is the segment format.
+schemaVersion: "1"
+type: "component"
+id: "shaka-packager"
+kind: "media-transcoder"
+provider: "default"
+defaults:
+  managed: false
+  mode: "file"
+  drm: false
+  redundantPipeline: false
+properties:
+  outputFormat:
+    type: "enum"
+    values: ["dash", "hls", "both"]
+  segmentFormat:
+    type: "enum"
+    values: ["mp4", "webm", "ts"]
+    default: "mp4"
+  keyProvider:
+    type: "enum"
+    values: ["raw-key", "widevine", "playready"]

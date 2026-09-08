@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Health Data Services: workspace of managed PaaS health-data APIs (FHIR, DICOM,
+# de-identification). FHIR data is stored as documents in a database unique to each service instance,
+# reachable only through the API, with Microsoft Entra RBAC. Facts from "What is Azure Health Data
+# Services?" and "What is the FHIR service in Azure Health Data Services?".
+schemaVersion: "1"
+type: "component"
+id: "azure-health-data-services"
+kind: "nosql-database"
+provider: "azure"
+defaults:
+  managed: true
+  model: "document"
+properties:
+  service:
+    type: "enum"
+    values: ["fhir", "dicom", "de-identification"]
+    default: "fhir"
+  rbacEntraId:
+    type: "boolean"
+    default: true
+  privateLink:
+    type: "boolean"
+    default: false
+  customerManagedKeys:
+    type: "boolean"
+    default: false
+  auditLogging:
+    type: "boolean"
+    default: true

@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Garage: self-hosted S3-compatible object store designed for geo-distributed, heterogeneous nodes.
+# Per "Configuration file format", replication_factor is a required cluster-wide setting that stores that
+# many full copies (there is no erasure coding), and consistency_mode defaults to "consistent", which uses
+# quorum reads and writes and gives read-after-write consistency.
+schemaVersion: "1"
+type: "component"
+id: "garage"
+kind: "object-store"
+provider: "default"
+defaults:
+  managed: false
+  replication: "quorum"
+  strongReadAfterWrite: true
+  versioning: false
+  encryptionAtRest: false
+properties:
+  consistencyMode:
+    type: "enum"
+    values: ["consistent", "degraded", "dangerous"]
+    default: "consistent"
+  replicationFactor:
+    type: "integer"
+  multiSite:
+    type: "boolean"
+    default: false

@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Stream Live input: ingests RTMPS or SRT and transcodes to an adaptive ladder automatically.
+# A new live input accepts broadcasts but records nothing and uses normal latency
+# ("Start a live stream": recording "mode": "off", preferLowLatency false, timeoutSeconds 0).
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-stream-live"
+kind: "media-transcoder"
+provider: "cloudflare"
+defaults:
+  managed: true
+  mode: "live"
+  videoCodec: "h264"
+  packaging: "hls"
+  redundantPipeline: false
+properties:
+  ingestProtocol:
+    type: "enum"
+    values: ["rtmps", "srt"]
+    default: "rtmps"
+  recordingMode:
+    type: "enum"
+    values: ["off", "automatic"]
+    default: "off"
+  preferLowLatency:
+    type: "boolean"
+    default: false
+  disconnectTimeoutSeconds:
+    type: "integer"
+    default: 0

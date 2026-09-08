@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Icecast: streaming media server that relays a source client's mountpoint to HTTP listeners.
+# Per the "Icecast Config File" reference, the shipped configuration listens on port 8000 over
+# plain HTTP (SSL must be enabled per listen socket) and caps clients at 100 and sources at 2.
+schemaVersion: "1"
+type: "component"
+id: "icecast"
+kind: "media-router"
+provider: "default"
+defaults:
+  managed: false
+  mode: "ingest"
+  transport: "tcp"
+  cascading: false
+properties:
+  maxClients:
+    type: "integer"
+    default: 100
+  maxSources:
+    type: "integer"
+    default: 2
+  tlsEnabled:
+    type: "boolean"
+    default: false
+  masterRelay:
+    type: "boolean"
+    default: false

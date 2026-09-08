@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# MooseFS: fault-tolerant distributed file system with a FUSE POSIX mount, chunks copied according to a per-object goal ("MooseFS Documentation").
+# Trash retention is inherited from the parent directory on creation ("mfstrashretention"); erasure coding is a PRO feature.
+schemaVersion: "1"
+type: "component"
+id: "moosefs"
+kind: "file-storage"
+provider: "default"
+defaults:
+  protocol: "native"
+  managed: false
+  publicAccess: false
+  backupEnabled: false
+  redundancy: "local"
+properties:
+  goal:
+    type: "integer"
+  trashRetentionSeconds:
+    type: "integer"
+  edition:
+    type: "enum"
+    values: ["community", "pro"]
+    default: "community"

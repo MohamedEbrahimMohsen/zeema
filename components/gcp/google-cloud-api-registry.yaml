@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud API Registry (Apigee API hub): managed catalogue of an organisation's APIs, versions,
+# specifications, deployments and dependencies. Per "What is API hub" APIs are registered explicitly or
+# auto-registered from Apigee proxies, and access to entries is controlled with IAM.
+schemaVersion: "1"
+type: "component"
+id: "google-cloud-api-registry"
+kind: "data-catalog"
+provider: "gcp"
+defaults:
+  managed: true
+  scanSchedule: "manual"
+properties:
+  autoRegisterFromApigee:
+    type: "boolean"
+    default: false
+  apiObservations:
+    type: "boolean"
+    default: false
+  dependencyTracking:
+    type: "boolean"
+    default: true

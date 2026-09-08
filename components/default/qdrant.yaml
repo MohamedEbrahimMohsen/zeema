@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Qdrant: open-source vector search engine. "Indexing": HNSW is the only dense vector index, with
+# m 16 and ef_construct 100, and payload indexes make filtered search first class. "Collections":
+# a new collection gets one shard, replication_factor 1, write_consistency_factor 1 and payload in RAM.
+schemaVersion: "1"
+type: "component"
+id: "qdrant"
+kind: "vector-database"
+provider: "default"
+defaults:
+  indexType: "hnsw"
+  quantization: "none"
+  metadataFiltering: true
+  hybridSearch: true
+  replicas: 1
+  managed: false
+properties:
+  shardNumber:
+    type: "integer"
+    default: 1
+  writeConsistencyFactor:
+    type: "integer"
+    default: 1
+  onDiskPayload:
+    type: "boolean"
+    default: false
+  hnswM:
+    type: "integer"
+    default: 16
+  hnswEfConstruct:
+    type: "integer"
+    default: 100

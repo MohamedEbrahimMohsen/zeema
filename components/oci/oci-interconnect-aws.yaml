@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Interconnect for AWS: a FastConnect interconnect virtual circuit paired with an AWS Direct Connect gateway.
+# Defaults from "Oracle Interconnect for AWS": traffic never traverses the internet or a third-party network, every
+# virtual circuit is encrypted with MACsec and load balanced with ECMP across redundant devices in two FastConnect
+# locations, and provisioned bandwidth is chosen from 500M through 100G.
+schemaVersion: "1"
+type: "component"
+id: "oci-interconnect-aws"
+kind: "network-fabric"
+provider: "oci"
+defaults:
+  managed: true
+  interconnect: "private"
+  multicast: false
+  kernelBypass: false
+  overlay: false
+properties:
+  peerCloud:
+    type: "enum"
+    values: ["aws"]
+    default: "aws"
+  builtInRedundancy:
+    type: "boolean"
+    default: true
+  linkEncryption:
+    type: "enum"
+    values: ["macsec", "none"]
+    default: "macsec"
+  provisionedBandwidth:
+    type: "enum"
+    values: ["500m", "1g", "2g", "5g", "10g", "20g", "50g", "100g"]
+    default: "1g"

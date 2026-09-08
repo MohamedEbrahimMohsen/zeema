@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud Trace: managed distributed tracing. Per "Cloud Trace quotas and limits" spans in the
+# _Trace bucket are retained 30 days; per "Set up Cloud Trace" applications push spans through the
+# Telemetry (OTLP) API, and no default sampling rate is published.
+schemaVersion: "1"
+type: "component"
+id: "google-cloud-trace"
+kind: "monitoring"
+provider: "gcp"
+defaults:
+  managed: true
+  signal: "traces"
+  collectorMode: "push"
+  retentionDays: 30
+properties:
+  otlpIngest:
+    type: "boolean"
+    default: true

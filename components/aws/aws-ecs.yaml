@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon ECS cluster: fully managed container orchestration ("What is Amazon Elastic Container Service?").
+# Capacity is Fargate, EC2, ECS Managed Instances or external ECS Anywhere instances; Service Auto Scaling
+# is an opt-in feature, and access to the control plane is authorised by IAM.
+schemaVersion: "1"
+type: "component"
+id: "aws-ecs"
+kind: "container-orchestrator"
+provider: "aws"
+defaults:
+  managed: true
+  autoscaling: false
+  rbac: true
+properties:
+  capacityProvider:
+    type: "enum"
+    values: ["fargate", "fargate-spot", "ec2", "ecs-managed-instances", "external"]
+  externalInstances:
+    type: "boolean"
+    default: false

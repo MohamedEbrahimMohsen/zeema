@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# GrowthBook: open-source feature flags and A/B testing on top of your own data warehouse.
+# "GrowthBook docs": the SDKs "evaluate everything locally with no network requests", and
+# the same code runs on GrowthBook Cloud or entirely on your own infrastructure.
+schemaVersion: "1"
+type: "component"
+id: "growthbook"
+kind: "feature-flag-service"
+provider: "default"
+defaults:
+  stagedRollout: true
+  managed: true
+properties:
+  localEvaluation:
+    type: "boolean"
+    default: true
+  deployment:
+    type: "enum"
+    values: ["cloud", "self-hosted"]
+    default: "cloud"
+  warehouseNative:
+    type: "boolean"
+    default: true

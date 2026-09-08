@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Flux: "Open and extensible continuous delivery solution for Kubernetes", a set of GitOps Toolkit
+# controllers reconciling the cluster against Git. The Kustomization API requires an explicit
+# interval with a 60 second minimum and an explicit prune value, so neither has a default; timeout,
+# wait and force are optional, and secrets are decrypted with SOPS or Sealed Secrets.
+schemaVersion: "1"
+type: "component"
+id: "flux"
+kind: "ci-pipeline"
+provider: "default"
+defaults:
+  trigger: "schedule"
+  approvalRequired: false
+  selfHostedRunners: true
+  managed: false
+properties:
+  minimumIntervalSeconds:
+    type: "integer"
+    default: 60
+  prune:
+    type: "boolean"
+  healthCheckWait:
+    type: "boolean"
+  secretsDecryption:
+    type: "enum"
+    values: ["none", "sops", "sealed-secrets"]
+    default: "none"
+  imageAutomation:
+    type: "boolean"
+    default: false

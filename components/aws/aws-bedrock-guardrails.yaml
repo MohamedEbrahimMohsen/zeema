@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Bedrock Guardrails: a configurable content-safety policy applied to prompts and model
+# responses. Per the CreateGuardrail API Reference only the name and the two blocked messages are
+# required — every policy (content filters, denied topics, word filters, sensitive information,
+# contextual grounding) is optional — and a new guardrail is created as version DRAFT.
+schemaVersion: "1"
+type: "component"
+id: "aws-bedrock-guardrails"
+kind: "ai-service"
+provider: "aws"
+defaults:
+  managed: true
+  modality: "multimodal"
+  contentFiltering: true
+properties:
+  tier:
+    type: "enum"
+    values: ["classic", "standard"]
+  contentFilters:
+    type: "boolean"
+    default: false
+  deniedTopics:
+    type: "boolean"
+    default: false
+  sensitiveInformationFilters:
+    type: "boolean"
+    default: false
+  contextualGroundingCheck:
+    type: "boolean"
+    default: false
+  customerManagedKey:
+    type: "boolean"
+    default: false

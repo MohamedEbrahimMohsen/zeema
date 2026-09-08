@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI Cache with Valkey: the same managed cache service running the open source Valkey engine.
+# "About OCI Cache" lists Valkey 8.1 (the recommended version) and Valkey 7.2, and states a non-sharded
+# cluster carries one primary and up to four replicas while a sharded cluster has three or more shards.
+# TLS-only connections over a private endpoint apply to Valkey clusters as they do to Redis ones.
+schemaVersion: "1"
+type: "component"
+id: "oci-cache-valkey"
+kind: "cache"
+provider: "oci"
+defaults:
+  managed: true
+  structure: "key-value"
+  persistence: false
+properties:
+  engineVersion:
+    type: "enum"
+    values: ["valkey-7-2", "valkey-8-1"]
+    default: "valkey-8-1"
+  clusterMode:
+    type: "enum"
+    values: ["non-sharded", "sharded"]
+    default: "non-sharded"
+  nodeCount:
+    type: "integer"
+  tlsOnly:
+    type: "boolean"
+    default: true
+  privateEndpointOnly:
+    type: "boolean"
+    default: true

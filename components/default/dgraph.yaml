@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Dgraph: distributed graph database that shards by predicate into Raft groups over Badger.
+# Per "dgraph zero" the --replicas flag defaults to 1, so a fresh cluster runs one Alpha per
+# shard group with a single Raft leader.
+schemaVersion: "1"
+type: "component"
+id: "dgraph"
+kind: "graph-database"
+provider: "default"
+defaults:
+  inMemory: false
+  masterPerShard: true
+  crossRegionConsistency: "single-leader"
+  managed: false
+properties:
+  replicas:
+    type: "integer"
+    default: 1
+  shardingKey:
+    type: "enum"
+    values: ["predicate"]
+    default: "predicate"
+  queryLanguage:
+    type: "enum"
+    values: ["dql", "graphql"]
+    default: "dql"

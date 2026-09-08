@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI instance pool: a group of identical instances created from one instance configuration and
+# managed as a unit ("Creating an Instance Pool"). That page makes fault domain placement
+# best-effort when no fault domain is named, leaves load balancer attachment optional, and
+# requires an instance configuration whose image source is not a boot volume.
+schemaVersion: "1"
+type: "component"
+id: "oci-instance-pool"
+kind: "virtual-machine"
+provider: "oci"
+defaults:
+  managed: false
+  diskEncryption: true
+properties:
+  faultDomainDistribution:
+    type: "enum"
+    values: ["best-effort", "specified"]
+    default: "best-effort"
+  loadBalancerAttached:
+    type: "boolean"
+    default: false
+  autoscalingConfigured:
+    type: "boolean"
+    default: false
+  instanceConfigurationRequired:
+    type: "boolean"
+    default: true

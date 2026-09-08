@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# ASP.NET Core SignalR, self-hosted in your own app. "Overview of ASP.NET Core SignalR" gives the
+# transport fallback order WebSockets, Server-Sent Events, long polling with JSON as the default hub
+# protocol; "Production hosting and scaling" states the same server must handle every request of a
+# connection, so sticky sessions are required on a farm unless a backplane service is used.
+schemaVersion: "1"
+type: "component"
+id: "signalr"
+kind: "realtime-gateway"
+provider: "default"
+defaults:
+  protocol: "websocket"
+  stateful: true
+  autoscaling: false
+  channelAssignment: "sticky"
+  managed: false
+properties:
+  transportFallback:
+    type: "boolean"
+    default: true
+  stickySessionsRequired:
+    type: "boolean"
+    default: true
+  hubProtocol:
+    type: "enum"
+    values: ["json", "messagepack"]
+    default: "json"
+  backplane:
+    type: "enum"
+    values: ["none", "redis", "azure-signalr-service"]
+    default: "none"

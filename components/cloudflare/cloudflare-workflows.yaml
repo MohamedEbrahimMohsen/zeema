@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare Workflows: durable multi-step execution on Workers, each step persisted and retried.
+# "Workflows - Sleeping and retrying" gives the per-step default of 5 retries, 10 s delay and
+# exponential backoff; "Workflows - Limits" gives 30 days of instance state and 10,000 steps on paid.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-workflows"
+kind: "workflow-engine"
+provider: "cloudflare"
+defaults:
+  managed: true
+  durable: true
+  pattern: "dag"
+properties:
+  defaultStepRetries:
+    type: "integer"
+    default: 5
+  retryDelaySeconds:
+    type: "integer"
+    default: 10
+  retryBackoff:
+    type: "enum"
+    values: ["constant", "linear", "exponential"]
+    default: "exponential"
+  stateRetentionDays:
+    type: "integer"
+    default: 30
+  maxStepsPerInstance:
+    type: "integer"
+    default: 10000

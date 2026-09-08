@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Checkmk: self-hosted monitoring whose server queries agents on the hosts; the check interval is preset
+# to one minute and metrics stay in RRD for four years across four resolutions ("Graphing").
+schemaVersion: "1"
+type: "component"
+id: "checkmk"
+kind: "monitoring"
+provider: "default"
+defaults:
+  signal: "metrics"
+  collectorMode: "pull"
+  managed: false
+  retentionDays: 1460
+properties:
+  checkIntervalSeconds:
+    type: "integer"
+    default: 60
+  edition:
+    type: "enum"
+    values: ["community", "pro", "ultimate"]
+    default: "community"

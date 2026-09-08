@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Data Lifecycle Manager: policy engine that creates, retains and deletes EBS snapshots and
+# EBS-backed AMIs on a schedule. "Automate backups with Amazon Data Lifecycle Manager": 100 custom
+# policies per Region; "Create Amazon Data Lifecycle Manager custom policy for EBS snapshots": up to
+# 4 schedules per policy, daily/weekly/monthly/yearly or cron, cross-Region copy and archiving are opt-in,
+# snapshots are created in the same Region as the source resource.
+schemaVersion: "1"
+type: "component"
+id: "aws-data-lifecycle-manager"
+kind: "backup-service"
+provider: "aws"
+defaults:
+  redundancy: "regional"
+  crossRegionRestore: false
+  managed: true
+properties:
+  policyType:
+    type: "enum"
+    values: ["ebs-snapshot", "ebs-backed-ami", "cross-account-copy"]
+    default: "ebs-snapshot"
+  retentionType:
+    type: "enum"
+    values: ["count-based", "age-based"]
+  maxSchedulesPerPolicy:
+    type: "integer"
+    default: 4
+  snapshotArchiving:
+    type: "boolean"
+    default: false
+  fastSnapshotRestore:
+    type: "boolean"
+    default: false

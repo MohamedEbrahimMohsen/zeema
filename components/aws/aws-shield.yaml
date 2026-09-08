@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Shield: DDoS protection for AWS resources. Shield Standard applies automatically at no extra
+# cost against common volumetric layer 3 and 4 attack vectors such as UDP reflection and TCP SYN
+# floods ("AWS Shield"). Shield Advanced is a paid subscription that adds layer 7 protection through
+# AWS WAF, health-based detection, protection groups, real-time event metrics, Shield Response Team
+# access and cost protection; automatic application layer mitigation is configured, not on by
+# default, and adds a 150-WCU rule group ("AWS Shield Advanced capabilities and options").
+schemaVersion: "1"
+type: "component"
+id: "aws-shield"
+kind: "ddos-protection"
+provider: "aws"
+defaults:
+  managed: true
+  scope: "network"
+  alwaysOn: true
+  telemetry: false
+properties:
+  tier:
+    type: "enum"
+    values: ["standard", "advanced"]
+    default: "standard"
+  automaticApplicationLayerMitigation:
+    type: "boolean"
+    default: false
+  automaticMitigationAction:
+    type: "enum"
+    values: ["count", "block"]
+  healthBasedDetection:
+    type: "boolean"
+    default: false
+  proactiveEngagement:
+    type: "boolean"
+    default: false

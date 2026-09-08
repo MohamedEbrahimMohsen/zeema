@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI Cache with Redis: managed Redis 7.0 clusters. "About OCI Cache" states a non-sharded cluster has one
+# to five nodes, one primary and the rest replicas, all in one region and spread across fault and
+# availability domains where possible; "Connecting to an OCI Cache Cluster" states the service only supports
+# TLS connections by default and exposes the cluster over a private endpoint reachable from the VCN only.
+schemaVersion: "1"
+type: "component"
+id: "oci-cache-redis"
+kind: "cache"
+provider: "oci"
+defaults:
+  managed: true
+  structure: "key-value"
+  persistence: false
+properties:
+  engineVersion:
+    type: "enum"
+    values: ["redis-7-0"]
+    default: "redis-7-0"
+  clusterMode:
+    type: "enum"
+    values: ["non-sharded", "sharded"]
+    default: "non-sharded"
+  nodeCount:
+    type: "integer"
+  tlsOnly:
+    type: "boolean"
+    default: true
+  privateEndpointOnly:
+    type: "boolean"
+    default: true

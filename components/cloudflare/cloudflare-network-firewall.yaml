@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare Network Firewall (formerly Magic Firewall): firewall-as-a-service sold with Magic
+# Transit or Cloudflare WAN. It is not stateful — each packet is evaluated on its own — and all
+# traffic is permitted until a rule blocks it ("Cloudflare Network Firewall ruleset logic").
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-network-firewall"
+kind: "firewall"
+provider: "cloudflare"
+defaults:
+  managed: true
+  defaultAction: "allow"
+  stateful: false
+properties:
+  requiredOnRamp:
+    type: "enum"
+    values: ["magic-transit", "cloudflare-wan"]
+  packetFiltering:
+    type: "boolean"
+    default: true
+  intrusionDetection:
+    type: "boolean"
+    default: false

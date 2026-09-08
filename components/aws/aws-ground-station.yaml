@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Ground Station: fully managed service to control satellite communications and downlink satellite
+# data without owning ground station infrastructure ("AWS Ground Station API Reference: Welcome").
+# Antenna time is booked as contacts against a mission profile, with a maximum contact duration of
+# 20 minutes, a maximum scheduling lead time of 7 days, 100 scheduled contacts and 1,000 scheduled
+# minutes per Region ("AWS Ground Station endpoints and quotas").
+schemaVersion: "1"
+type: "component"
+id: "aws-ground-station"
+kind: "third-party-api"
+provider: "aws"
+defaults:
+  managed: true
+  callbackStyle: "poll"
+  hostedPage: false
+  handlesMoney: false
+properties:
+  maxContactDurationMinutes:
+    type: "integer"
+    default: 20
+  contactLeadTimeMaxDays:
+    type: "integer"
+    default: 7
+  scheduledContactsLimit:
+    type: "integer"
+    default: 100
+  scheduledMinutesLimit:
+    type: "integer"
+    default: 1000
+  dataflowEndpointsPerGroup:
+    type: "integer"
+    default: 20

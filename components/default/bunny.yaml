@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# bunny.net CDN: managed pull-zone CDN with over 100 edge locations on six continents. Per the CDN
+# documentation the network is chosen per zone between the Standard tier (global low latency) and the
+# Volume tier (cheap high bandwidth); Origin Shield, Perma-Cache and Edge Scripting are separate opt-ins.
+schemaVersion: "1"
+type: "component"
+id: "bunny"
+kind: "cdn"
+provider: "default"
+defaults:
+  managed: true
+  originShield: false
+  edgeCompute: false
+properties:
+  tier:
+    type: "enum"
+    values: ["standard", "volume"]
+    default: "standard"
+  permaCache:
+    type: "boolean"
+    default: false

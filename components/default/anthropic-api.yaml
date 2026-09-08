@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Anthropic API: hosted Claude model endpoints (text and vision) reached over a public HTTPS endpoint.
+# Per "How long do you store personal data?", API inputs and outputs are deleted within 30 days unless a
+# zero data retention agreement applies. Per "Rate limits", organizations are placed on a usage tier
+# (Start, Build, Scale, Custom) and the Start tier allows 1,000 requests per minute per model.
+schemaVersion: "1"
+type: "component"
+id: "anthropic-api"
+kind: "ai-service"
+provider: "default"
+defaults:
+  managed: true
+  modality: "multimodal"
+  publicEndpoint: true
+  dataRetentionDays: 30
+  quotaUnitsPerMinute: 1000
+properties:
+  usageTier:
+    type: "enum"
+    values: ["start", "build", "scale", "custom"]
+    default: "start"
+  zeroDataRetention:
+    type: "boolean"
+    default: false
+  promptCaching:
+    type: "boolean"
+    default: false
+  batchApi:
+    type: "boolean"
+    default: false

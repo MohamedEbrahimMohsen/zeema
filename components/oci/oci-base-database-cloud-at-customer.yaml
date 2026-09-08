@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Base Database Cloud@Customer: Base Database VM clusters on Oracle-owned Data Infrastructure
+# inside the customer data centre, driven from the OCI console over a control-plane tunnel.
+# Oracle-managed infrastructure; new tablespaces are TDE-encrypted as on the public-cloud service.
+schemaVersion: "1"
+type: "component"
+id: "oci-base-database-cloud-at-customer"
+kind: "sql-database"
+provider: "oci"
+defaults:
+  managed: true
+  replication: "none"
+  encryptionAtRest: true
+  concurrencyControl: "pessimistic"
+properties:
+  hostedOnPremises:
+    type: "boolean"
+    default: true
+  nodeCount:
+    type: "integer"
+    default: 1
+  edition:
+    type: "enum"
+    values: ["standard-edition", "enterprise-edition", "enterprise-edition-high-performance", "enterprise-edition-extreme-performance"]
+  controlPlaneProxy:
+    type: "boolean"
+    default: true

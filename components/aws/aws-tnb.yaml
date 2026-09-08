@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Telco Network Builder (TNB): deploys and manages 5G network services from network service
+# descriptors - it provisions the AWS infrastructure, deploys containerized network functions and
+# configures networking and access through ETSI-compliant interfaces ("What is AWS Telco Network Builder?").
+# Deployments are driven by network and function packages: 200 function packages, 40 network packages,
+# 800 network service instances and 40 concurrent operations per Region
+# ("AWS Telco Network Builder endpoints and quotas").
+schemaVersion: "1"
+type: "component"
+id: "aws-tnb"
+kind: "ci-pipeline"
+provider: "aws"
+defaults:
+  managed: true
+  trigger: "manual"
+properties:
+  workloadType:
+    type: "enum"
+    values: ["ran", "core", "ims"]
+  etsiCompliant:
+    type: "boolean"
+    default: true
+  concurrentOperations:
+    type: "integer"
+    default: 40
+  functionPackageLimit:
+    type: "integer"
+    default: 200
+  networkServiceInstanceLimit:
+    type: "integer"
+    default: 800

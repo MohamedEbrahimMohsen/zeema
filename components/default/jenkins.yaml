@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Jenkins: self-hosted automation server. "Pipeline" states pipelines are "Pausable" — they
+# "optionally stop and wait for human input or approval", so approval is opt-in; "Managing nodes"
+# says work runs on agents and that running tasks on the built-in node is "discouraged".
+schemaVersion: "1"
+type: "component"
+id: "jenkins"
+kind: "ci-pipeline"
+provider: "default"
+defaults:
+  approvalRequired: false
+  selfHostedRunners: true
+  managed: false
+properties:
+  pipelineSyntax:
+    type: "enum"
+    values: ["declarative", "scripted"]
+  agentType:
+    type: "enum"
+    values: ["built-in", "permanent", "cloud"]
+  builtInNodeExecutors:
+    type: "integer"
+  credentialsStore:
+    type: "enum"
+    values: ["jenkins-internal", "external"]
+    default: "jenkins-internal"

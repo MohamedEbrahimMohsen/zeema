@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Direct Connect gateway: globally available route reflector joining Direct Connect to VPCs.
+# "Direct Connect gateways": it sits outside the data path so it has no single point of failure, it does
+# not pass traffic between two associations on the same gateway, and cross-account associations are proposed.
+schemaVersion: "1"
+type: "component"
+id: "aws-direct-connect-gateway"
+kind: "network-fabric"
+provider: "aws"
+defaults:
+  managed: true
+  interconnect: "private"
+  multicast: false
+  kernelBypass: false
+properties:
+  globallyAvailable:
+    type: "boolean"
+    default: true
+  singlePointOfFailure:
+    type: "boolean"
+    default: false
+  transitiveRouting:
+    type: "boolean"
+    default: false
+  associationApprovalRequired:
+    type: "boolean"
+    default: true

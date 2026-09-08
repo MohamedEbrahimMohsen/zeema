@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenObserve: open-source logs, metrics and traces platform ingesting over OTLP and HTTP; local mode with
+# disk storage is on by default and data is kept 3650 days (ZO_COMPACT_DATA_RETENTION_DAYS).
+schemaVersion: "1"
+type: "component"
+id: "openobserve"
+kind: "monitoring"
+provider: "default"
+defaults:
+  signal: "all"
+  collectorMode: "push"
+  managed: false
+  retentionDays: 3650
+properties:
+  storageBackend:
+    type: "enum"
+    values: ["disk", "s3"]
+    default: "disk"
+  localMode:
+    type: "boolean"
+    default: true

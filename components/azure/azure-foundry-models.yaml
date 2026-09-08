@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Foundry Models: the catalog inference endpoint that serves models sold by Azure and models from partners and community from one Foundry resource.
+# "Foundry Models from partners and community" lists Global Standard, Data Zone Standard and hub-based deployment types and the Azure Marketplace subscription that partner models need; "Content filtering for Microsoft Foundry Models" states default safety settings are applied to all models.
+schemaVersion: "1"
+type: "component"
+id: "azure-foundry-models"
+kind: "ai-service"
+provider: "azure"
+defaults:
+  managed: true
+  modality: "multimodal"
+  contentFiltering: true
+  publicEndpoint: true
+  customerManagedKeys: false
+properties:
+  deploymentType:
+    type: "enum"
+    values: ["standard", "global-standard", "data-zone-standard", "provisioned-managed"]
+  modelSource:
+    type: "enum"
+    values: ["sold-by-azure", "partners-and-community"]
+    default: "sold-by-azure"
+  marketplaceSubscription:
+    type: "boolean"
+    default: false
+  hubBasedProject:
+    type: "boolean"
+    default: false

@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cluster Services for OpenShift: OpenShift clusters with self-managed control planes running on
+# Google Cloud, jointly engineered and supported by Google Cloud and Red Hat ("Overview of Cluster
+# Services for OpenShift"). Google supplies opt-in integrations for identity, compute, storage
+# (Hyperdisk, Persistent Disk, Filestore), networking, Secret Manager and monitoring; the customer
+# keeps the control plane and cluster operations.
+schemaVersion: "1"
+type: "component"
+id: "google-openshift-cluster-services"
+kind: "container-orchestrator"
+provider: "gcp"
+defaults:
+  managed: false
+properties:
+  controlPlaneManagement:
+    type: "enum"
+    values: ["self-managed"]
+    default: "self-managed"
+  jointlySupported:
+    type: "boolean"
+    default: true
+  googleServiceIntegrations:
+    type: "boolean"
+    default: false

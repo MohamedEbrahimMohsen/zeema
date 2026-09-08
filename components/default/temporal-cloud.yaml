@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Temporal Cloud: the vendor-hosted Temporal service ("Overview of Temporal Cloud"): fully managed
+# durable execution, three-zone synchronous replication on a Standard Namespace, mTLS in transit.
+# Retention is chosen per namespace between 1 and 90 days ("Namespaces"); no default is published.
+schemaVersion: "1"
+type: "component"
+id: "temporal-cloud"
+kind: "workflow-engine"
+provider: "default"
+defaults:
+  durable: true
+  pattern: "saga"
+  compensation: false
+  managed: true
+properties:
+  activityRetry:
+    type: "boolean"
+    default: true
+  replication:
+    type: "enum"
+    values: ["three-zone", "same-region", "multi-region", "multi-cloud"]
+    default: "three-zone"
+  retentionDays:
+    type: "integer"

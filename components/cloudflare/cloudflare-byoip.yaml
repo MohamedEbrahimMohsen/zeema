@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Bring Your Own IP: an Enterprise option that announces your own prefixes from Cloudflare's network
+# for Magic Transit, Spectrum, CDN or Gateway DNS. A Letter of Agency and IRR/RPKI records back the
+# announcement, and prefixes can be advertised or withdrawn on demand ("BYOIP overview").
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-byoip"
+kind: "network-fabric"
+provider: "cloudflare"
+defaults:
+  managed: true
+properties:
+  service:
+    type: "enum"
+    values: ["magic-transit", "spectrum", "cdn", "gateway-dns"]
+  dynamicAdvertisement:
+    type: "boolean"
+    default: true
+  letterOfAgencyRequired:
+    type: "boolean"
+    default: true

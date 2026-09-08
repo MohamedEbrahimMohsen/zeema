@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Application Migration Service (AWS Transform MGN): agent-based continuous block-level replication of
+# physical, virtual and cloud source servers into AWS, converted for launch on EC2 ("What Is AWS Transform
+# MGN?"). Replication, launch and post-launch templates are applied to each newly added source server.
+schemaVersion: "1"
+type: "component"
+id: "aws-mgn"
+kind: "worker"
+provider: "aws"
+defaults:
+  managed: true
+  trigger: "stream"
+properties:
+  sourceServerType:
+    type: "enum"
+    values: ["physical", "virtual", "cloud"]
+  targetPlacement:
+    type: "enum"
+    values: ["availability-zone", "local-zone"]
+    default: "availability-zone"

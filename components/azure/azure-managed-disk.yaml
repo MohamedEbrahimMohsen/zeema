@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Disk Storage: block volumes attached to a VM, kept as three replicas in one datacenter
+# (LRS, 11 nines) unless zone redundancy is chosen, which only Premium SSD and Standard SSD
+# support. Server-side encryption with platform-managed keys is on for every disk ("Overview of
+# Azure Disk Storage", "Redundancy options for Azure managed disks").
+schemaVersion: "1"
+type: "component"
+id: "azure-managed-disk"
+kind: "block-storage"
+provider: "azure"
+defaults:
+  redundancy: "local"
+  encryptionAtRest: true
+  managed: true
+properties:
+  diskType:
+    type: "enum"
+    values: ["ultra", "premium-ssd-v2", "premium-ssd", "standard-ssd", "standard-hdd"]
+  maxOsDiskGib:
+    type: "integer"
+    default: 4095
+  sharedDisk:
+    type: "boolean"
+    default: false
+  durabilityNines:
+    type: "integer"
+    default: 11

@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# PostGIS: spatial extension enabled inside a PostgreSQL database with CREATE EXTENSION postgis.
+# Raster and topology ship as separate extensions that are not installed with it (PostGIS "Getting Started").
+schemaVersion: "1"
+type: "component"
+id: "postgis"
+kind: "sql-database"
+provider: "default"
+defaults:
+  replication: "none"
+properties:
+  version:
+    type: "string"
+  rasterEnabled:
+    type: "boolean"
+    default: false
+  topologyEnabled:
+    type: "boolean"
+    default: false

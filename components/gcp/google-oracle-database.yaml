@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Database@Google Cloud: Oracle-operated OCI database services running on Exadata
+# hardware inside Google Cloud data centres. Google's Exadata architecture guidance states
+# databases use Transparent Data Encryption by default and that backups are stored in OCI
+# Object Storage by default.
+schemaVersion: "1"
+type: "component"
+id: "google-oracle-database"
+kind: "sql-database"
+provider: "gcp"
+defaults:
+  encryptionAtRest: true
+  backupEnabled: true
+  managed: true
+properties:
+  serviceType:
+    type: "enum"
+    values: ["exadata-database-service", "exadata-exascale", "autonomous-database", "base-database-service"]
+  backupDestination:
+    type: "enum"
+    values: ["oci-object-storage", "backup-and-dr"]
+    default: "oci-object-storage"

@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Proton: managed delivery pipelines that provision infrastructure from platform-owned environment and
+# service templates ("AWS Proton Service Deprecation and Migration Guide": "AWS Proton is primarily a CI/CD
+# tool for deploying infrastructure"). Closed to new customers 7 October 2025; end of support 7 October 2026.
+schemaVersion: "1"
+type: "component"
+id: "aws-proton"
+kind: "ci-pipeline"
+provider: "aws"
+defaults:
+  managed: true
+properties:
+  templateType:
+    type: "enum"
+    values: ["environment", "service", "component"]
+  provisioningEngine:
+    type: "enum"
+    values: ["cloudformation", "terraform"]
+  openToNewCustomers:
+    type: "boolean"
+    default: false

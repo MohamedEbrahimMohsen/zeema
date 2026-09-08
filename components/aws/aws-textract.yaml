@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Textract: managed document OCR and structured extraction (text, forms, tables, queries, identity documents) with synchronous and asynchronous operations.
+# "Set Quotas in Amazon Textract" gives the fixed limits: JPEG, PNG, PDF and TIFF input, 10 MB and one page for synchronous operations, 500 MB and 3,000 pages for asynchronous PDF or TIFF, and 15 queries per page synchronously against 30 asynchronously; "AI services opt-out policies" states content may be stored for service improvement unless an Organizations opt-out policy is set.
+schemaVersion: "1"
+type: "component"
+id: "aws-textract"
+kind: "ai-service"
+provider: "aws"
+defaults:
+  managed: true
+  modality: "vision"
+  publicEndpoint: true
+  customerManagedKeys: false
+properties:
+  analysisMode:
+    type: "enum"
+    values: ["synchronous", "asynchronous"]
+    default: "synchronous"
+  maxDocumentSizeMb:
+    type: "integer"
+    default: 10
+  maxPagesPerDocument:
+    type: "integer"
+    default: 1
+  maxQueriesPerPage:
+    type: "integer"
+    default: 15
+  customAdapters:
+    type: "boolean"
+    default: false

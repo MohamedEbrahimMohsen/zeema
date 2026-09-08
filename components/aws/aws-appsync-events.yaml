@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS AppSync Events API: serverless WebSocket pub/sub over channel namespaces. "What is AWS
+# AppSync Events?" states AWS manages the WebSocket connections and scaling, clients publish over
+# HTTP or WebSocket and subscribe over WebSocket, and OnPublish/OnSubscribe handlers are optional.
+schemaVersion: "1"
+type: "component"
+id: "aws-appsync-events"
+kind: "realtime-gateway"
+provider: "aws"
+defaults:
+  managed: true
+  protocol: "websocket"
+  stateful: false
+  autoscaling: true
+  pushFallback: false
+properties:
+  authorizationMode:
+    type: "enum"
+    values: ["api-key", "aws-iam", "amazon-cognito-user-pools", "openid-connect", "aws-lambda"]
+  publishTransport:
+    type: "enum"
+    values: ["http", "websocket"]
+    default: "http"
+  wildcardSubscriptions:
+    type: "boolean"
+    default: true
+  namespaceHandlers:
+    type: "boolean"
+    default: false

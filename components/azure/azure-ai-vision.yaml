@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Vision: pretrained image analysis (captions, tags, objects, OCR, people detection, multimodal embeddings) over a Foundry Tools endpoint.
+# "What is Image Analysis?" states version 4.0 accepts images up to 20 MB and that multimodal embeddings are a separate opt-in API; "Configure Virtual Networks for Foundry Tools" states the resource accepts connections from any network by default.
+schemaVersion: "1"
+type: "component"
+id: "azure-ai-vision"
+kind: "ai-service"
+provider: "azure"
+defaults:
+  managed: true
+  modality: "vision"
+  publicEndpoint: true
+  customerManagedKeys: false
+properties:
+  imageAnalysisVersion:
+    type: "enum"
+    values: ["v3-2", "v4-0"]
+  maxImageSizeMb:
+    type: "integer"
+    default: 20
+  multimodalEmbeddings:
+    type: "boolean"
+    default: false

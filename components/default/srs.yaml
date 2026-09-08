@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# SRS (Simple Realtime Server): MIT-licensed realtime video server. Per the SRS "Introduction",
+# it ingests RTMP, WebRTC/WHIP, SRT and GB28181 and delivers HLS, HTTP-FLV, WebRTC/WHEP, DASH
+# and SRT; it converts protocols rather than transcoding, and clustering is opt-in configuration.
+schemaVersion: "1"
+type: "component"
+id: "srs"
+kind: "media-router"
+provider: "default"
+defaults:
+  managed: false
+  mode: "ingest"
+  transport: "both"
+  cascading: false
+properties:
+  ingestProtocol:
+    type: "enum"
+    values: ["rtmp", "webrtc", "srt", "gb28181"]
+    default: "rtmp"
+  playbackProtocol:
+    type: "enum"
+    values: ["hls", "http-flv", "webrtc", "dash", "rtmp", "srt"]
+    default: "hls"
+  clusterRole:
+    type: "enum"
+    values: ["standalone", "origin", "edge"]
+    default: "standalone"

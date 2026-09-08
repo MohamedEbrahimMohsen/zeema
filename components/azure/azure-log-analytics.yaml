@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Log Analytics workspace: the Azure Monitor Logs data store. "Manage Data Retention in a Log
+# Analytics Workspace": all tables retain data for 30 days by default, Analytics retention can be
+# raised to 730 days and total retention to 12 years (4,383 days), and Analytics tables carry no
+# long-term retention until it is configured.
+schemaVersion: "1"
+type: "component"
+id: "azure-log-analytics"
+kind: "monitoring"
+provider: "azure"
+defaults:
+  managed: true
+  signal: "logs"
+  collectorMode: "push"
+  retentionDays: 30
+properties:
+  tablePlan:
+    type: "enum"
+    values: ["analytics", "basic", "auxiliary"]
+    default: "analytics"
+  longTermRetention:
+    type: "boolean"
+    default: false
+  maxAnalyticsRetentionDays:
+    type: "integer"
+    default: 730
+  maxTotalRetentionDays:
+    type: "integer"
+    default: 4383

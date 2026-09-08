@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Dataplex Universal Catalog, renamed Knowledge Catalog in April 2026: the metadata catalogue for the
+# Google Cloud data estate. "Knowledge Catalog overview" and "About data lineage": technical metadata
+# is ingested automatically, lineage requires the Data Lineage API and is retained for 30 days.
+schemaVersion: "1"
+type: "component"
+id: "google-dataplex"
+kind: "data-catalog"
+provider: "gcp"
+defaults:
+  managed: true
+  lineage: false
+properties:
+  autoMetadataIngestion:
+    type: "boolean"
+    default: true
+  lineageRetentionDays:
+    type: "integer"
+    default: 30

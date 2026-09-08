@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloud Run job: a container that runs its tasks and exits rather than serving requests
+# ("Create jobs"). Unset fields default to 1 task (10,000 maximum), a 10-minute task timeout and
+# 3 retries, and tasks start in parallel as quickly as possible. Cloud Run is regional and replicated
+# across the zones of its region ("Cloud Run resource model").
+schemaVersion: "1"
+type: "component"
+id: "google-cloud-run-job"
+kind: "worker"
+provider: "gcp"
+defaults:
+  managed: true
+  trigger: "batch"
+  accelerator: "none"
+  rateControl: "none"
+properties:
+  taskCount:
+    type: "integer"
+    default: 1
+  maxTaskCount:
+    type: "integer"
+    default: 10000
+  taskTimeoutSeconds:
+    type: "integer"
+    default: 600
+  maxRetries:
+    type: "integer"
+    default: 3

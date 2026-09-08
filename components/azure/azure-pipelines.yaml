@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Pipelines: hosted CI/CD that builds on commits to a connected repository. "What is Azure
+# Pipelines" states Azure DevOps Services runs jobs on Microsoft-hosted agents and grants private
+# projects one free parallel job of up to 60 minutes and 1,800 minutes per month.
+schemaVersion: "1"
+type: "component"
+id: "azure-pipelines"
+kind: "ci-pipeline"
+provider: "azure"
+defaults:
+  trigger: "commit"
+  selfHostedRunners: false
+  concurrency: 1
+  managed: true
+properties:
+  maxJobMinutes:
+    type: "integer"
+    default: 60
+  freeMinutesPerMonth:
+    type: "integer"
+    default: 1800
+  agentOs:
+    type: "enum"
+    values: ["windows", "linux", "macos"]

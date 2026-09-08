@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI Logging Analytics: managed log ingestion, parsing and analysis over log groups.
+# Defaults from "Using Logging Analytics - Manage Storage": archiving is disabled until enabled, active storage duration is at least 30 days
+# and archived data is kept indefinitely, so no fixed retention applies out of the box.
+schemaVersion: "1"
+type: "component"
+id: "oci-logging-analytics"
+kind: "monitoring"
+provider: "oci"
+defaults:
+  managed: true
+  signal: "logs"
+  collectorMode: "push"
+properties:
+  archivingEnabled:
+    type: "boolean"
+    default: false
+  archivalRetentionIndefinite:
+    type: "boolean"
+    default: true
+  minActiveStorageDays:
+    type: "integer"
+    default: 30

@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenRouter: single OpenAI-compatible endpoint that routes a request to one of many upstream model providers.
+# Per "Rate limits", free model variants allow 20 requests per minute (50 per day under $10 lifetime credits,
+# 1,000 above) and credit limits return 402; per "Privacy and logging", the account chooses whether requests
+# may be routed to providers that train on prompts, with separate settings for free and paid models.
+schemaVersion: "1"
+type: "component"
+id: "openrouter"
+kind: "ai-service"
+provider: "default"
+defaults:
+  managed: true
+  modality: "multimodal"
+  publicEndpoint: true
+  quotaUnitsPerMinute: 20
+properties:
+  allowTrainingProviders:
+    type: "boolean"
+  providerFallback:
+    type: "boolean"
+    default: true
+  modelVariant:
+    type: "enum"
+    values: ["free", "paid"]
+    default: "paid"

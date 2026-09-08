@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Service Fabric: Microsoft's container and microservice orchestrator for stateless and
+# stateful services ("Overview of Azure Service Fabric"). Every node type maps to a virtual machine
+# scale set you own, so the cluster is not a managed control plane; a node type with no durability
+# level set runs Bronze, and the reliability tier is derived from the primary node count.
+schemaVersion: "1"
+type: "component"
+id: "azure-service-fabric"
+kind: "container-orchestrator"
+provider: "azure"
+defaults:
+  managed: false
+  autoscaling: false
+properties:
+  durabilityLevel:
+    type: "enum"
+    values: ["bronze", "silver", "gold"]
+    default: "bronze"
+  reliabilityTier:
+    type: "enum"
+    values: ["bronze", "silver", "gold", "platinum"]
+  nodeTypeCount:
+    type: "integer"
+    default: 1
+  osType:
+    type: "enum"
+    values: ["windows", "linux"]

@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS DataSync task: managed transfer job that copies file and object data between on-premises storage,
+# AWS storage services and other clouds. "What is AWS DataSync?": transfers include automatic encryption
+# and data integrity validation; "Configuring how AWS DataSync verifies data integrity": checksum
+# verification runs during every transfer and VerifyMode selects the end-of-transfer check.
+schemaVersion: "1"
+type: "component"
+id: "aws-datasync"
+kind: "worker"
+provider: "aws"
+defaults:
+  trigger: "manual"
+  rateControl: "none"
+  managed: true
+properties:
+  verifyMode:
+    type: "enum"
+    values: ["point-in-time-consistent", "only-files-transferred", "none"]
+    default: "point-in-time-consistent"
+  encryptionInTransit:
+    type: "boolean"
+    default: true
+  agentRequired:
+    type: "boolean"
+    default: false
+  taskMode:
+    type: "enum"
+    values: ["basic", "enhanced"]
+  bandwidthThrottling:
+    type: "boolean"
+    default: false

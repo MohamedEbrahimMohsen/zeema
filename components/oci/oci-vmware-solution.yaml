@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Cloud VMware Solution SDDC: a customer-managed VMware stack on OCI bare metal, where you
+# keep vCenter and ESXi root access ("Overview of Oracle Cloud VMware Solution"). That page sets a
+# production SDDC at a minimum of three ESXi hosts in a single availability domain with at least
+# three fault domains, stores data on vSAN Advanced with Encryption, and includes HCX Advanced.
+schemaVersion: "1"
+type: "component"
+id: "oci-vmware-solution"
+kind: "virtual-machine"
+provider: "oci"
+defaults:
+  managed: false
+  zoneRedundant: false
+properties:
+  deploymentType:
+    type: "enum"
+    values: ["multi-host", "single-host"]
+    default: "multi-host"
+  esxiHostCount:
+    type: "integer"
+    default: 3
+  vsanEncryption:
+    type: "boolean"
+    default: true
+  hcxEdition:
+    type: "enum"
+    values: ["advanced", "enterprise"]
+    default: "advanced"
+  multiAvailabilityDomain:
+    type: "boolean"
+    default: false

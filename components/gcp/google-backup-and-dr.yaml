@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Backup and DR Service backup vault: Google-managed isolated storage for immutable backups.
+# "Backup vault" states backups cannot be deleted by anyone until the enforced retention
+# (1 day to 99 years) expires, that a vault is placed regionally by default, and that access
+# is restricted to the current project unless widened.
+schemaVersion: "1"
+type: "component"
+id: "google-backup-and-dr"
+kind: "backup-service"
+provider: "gcp"
+defaults:
+  immutable: true
+  redundancy: "regional"
+  crossRegionRestore: false
+  managed: true
+properties:
+  accessRestriction:
+    type: "enum"
+    values: ["within-project", "within-organization", "within-organization-plus-appliances", "unrestricted"]
+    default: "within-project"
+  vaultLocationType:
+    type: "enum"
+    values: ["regional", "cross-regional", "multi-regional"]
+    default: "regional"

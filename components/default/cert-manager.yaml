@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# cert-manager: Kubernetes controller that issues X.509 certificates and renews them before expiry.
+# "Certificate resource": spec.duration defaults to 90 days and renewal fires at 2/3 of the
+# duration, so a default certificate is reissued after 60 days without operator action.
+schemaVersion: "1"
+type: "component"
+id: "cert-manager"
+kind: "key-management"
+provider: "default"
+defaults:
+  managed: false
+  hsm: false
+  rotationAutomated: true
+  rotationDays: 60
+properties:
+  certificateDurationDays:
+    type: "integer"
+    default: 90
+  issuerScope:
+    type: "enum"
+    values: ["namespace", "cluster"]
+    default: "namespace"

@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Maps Static API: returns a map image for a URL request, embedded as an <img> with no JavaScript.
+# "Maps Static API Usage and Billing": maximum 30,000 queries per minute; quotas are limited unless requests are digitally signed.
+# Covered by the Google Maps Platform SLA (99.9% Monthly Uptime Percentage per Covered Service).
+schemaVersion: "1"
+type: "component"
+id: "google-maps-static-api"
+kind: "third-party-api"
+provider: "gcp"
+defaults:
+  managed: true
+  idempotent: true
+  callbackStyle: "none"
+  hostedPage: false
+  handlesMoney: false
+  slaPercent: "99.9"
+properties:
+  queriesPerMinute:
+    type: "integer"
+    default: 30000
+  digitallySigned:
+    type: "boolean"
+    default: false
+  billingPerRequest:
+    type: "boolean"
+    default: true

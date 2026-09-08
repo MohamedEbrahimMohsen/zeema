@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Glue Data Catalog: the managed metadata repository for the account's data estate; it keeps schema versions
+# and "maintains a record of the transformations and operations performed on your data, providing data lineage"
+# ("Data discovery and cataloging in AWS Glue"). It is populated on demand by crawlers or by hand, fine-grained
+# access control comes from Lake Formation, and metadata encryption is opt-in ("Encrypting your Data Catalog").
+schemaVersion: "1"
+type: "component"
+id: "aws-glue-data-catalog"
+kind: "data-catalog"
+provider: "aws"
+defaults:
+  managed: true
+  scanSchedule: "manual"
+  lineage: true
+  accessPolicyEnforcement: false
+properties:
+  metadataEncryption:
+    type: "boolean"
+    default: false
+  columnStatistics:
+    type: "boolean"
+    default: false
+  icebergCompaction:
+    type: "boolean"
+    default: false

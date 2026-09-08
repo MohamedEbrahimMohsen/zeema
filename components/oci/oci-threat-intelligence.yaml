@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Cloud Threat Intelligence: a queried database of threat indicators such as suspicious IPs and domains.
+# Defaults from "Threat Intelligence Overview": indicators are aggregated from Oracle telemetry, Oracle security
+# researchers, open source feeds and third-party partners, and are read by searching the service through its API.
+schemaVersion: "1"
+type: "component"
+id: "oci-threat-intelligence"
+kind: "third-party-api"
+provider: "oci"
+defaults:
+  managed: true
+  callbackStyle: "poll"
+  hostedPage: false
+  handlesMoney: false
+properties:
+  indicatorTypes:
+    type: "enum"
+    values: ["ip-address", "domain-name", "file-hash", "url"]
+    default: "ip-address"
+  confidenceScored:
+    type: "boolean"
+    default: true
+  aggregatesThirdPartyFeeds:
+    type: "boolean"
+    default: true

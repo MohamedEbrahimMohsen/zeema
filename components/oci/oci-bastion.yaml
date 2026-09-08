@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Cloud Bastion: Oracle-managed jump service; you cannot log into the bastion itself, only
+# create time-limited sessions to private targets ("Bastion Overview"). Access is restricted by a
+# client CIDR allowlist and every session needs an SSH key pair and IAM authorization.
+schemaVersion: "1"
+type: "component"
+id: "oci-bastion"
+kind: "bastion-host"
+provider: "oci"
+defaults:
+  managed: true
+  protocols: "ssh"
+  justInTimeAccess: true
+properties:
+  sessionType:
+    type: "enum"
+    values: ["managed-ssh", "port-forwarding", "dynamic-port-forwarding"]
+    default: "managed-ssh"
+  clientCidrAllowlist:
+    type: "boolean"
+    default: true
+  sshKeyRequired:
+    type: "boolean"
+    default: true

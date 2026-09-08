@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Pub/Sub schema: Avro or Protocol Buffer contract attached to a topic. "Schema overview": when a
+# schema is associated with a topic a message that does not conform is not published; a schema keeps
+# at most 20 revisions, a definition is at most 300 KB, and a project holds at most 10,000 schemas.
+schemaVersion: "1"
+type: "component"
+id: "google-pubsub-schema"
+kind: "schema-registry"
+provider: "gcp"
+defaults:
+  managed: true
+  enforced: true
+properties:
+  schemaType:
+    type: "enum"
+    values: ["avro", "protocol-buffer"]
+  maxRevisions:
+    type: "integer"
+    default: 20
+  maxDefinitionSizeKb:
+    type: "integer"
+    default: 300
+  maxSchemasPerProject:
+    type: "integer"
+    default: 10000

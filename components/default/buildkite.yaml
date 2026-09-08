@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Buildkite: hybrid CI — the control plane is hosted, the agents are not. "Buildkite Agent v3"
+# contrasts self-hosted agents, where "You provision, scale, and maintain your own servers", with
+# Buildkite hosted agents; "Managing pipeline secrets" states secrets "stay safely within your
+# infrastructure and are never stored in, or sent to Buildkite".
+schemaVersion: "1"
+type: "component"
+id: "buildkite"
+kind: "ci-pipeline"
+provider: "default"
+defaults:
+  trigger: "commit"
+  approvalRequired: false
+  selfHostedRunners: true
+  managed: true
+properties:
+  agentHosting:
+    type: "enum"
+    values: ["self-hosted", "buildkite-hosted"]
+    default: "self-hosted"
+  blockStep:
+    type: "boolean"
+    default: false
+  secretsStoredByProvider:
+    type: "boolean"
+    default: false

@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS CodePipeline: managed release workflow of stages, actions and transitions over an S3 artifact
+# store. Per "CodePipeline concepts", "SUPERSEDED is the default execution mode" (PARALLEL and QUEUED
+# are the alternatives), approval is one optional action type among source, build, test, deploy and
+# invoke, and a stage rolls back automatically only when rollback is configured on that stage.
+schemaVersion: "1"
+type: "component"
+id: "aws-codepipeline"
+kind: "ci-pipeline"
+provider: "aws"
+defaults:
+  approvalRequired: false
+  selfHostedRunners: false
+  managed: true
+properties:
+  pipelineType:
+    type: "enum"
+    values: ["v1", "v2"]
+  executionMode:
+    type: "enum"
+    values: ["superseded", "parallel", "queued"]
+    default: "superseded"
+  stageRollbackOnFailure:
+    type: "boolean"
+    default: false
+  stageConditions:
+    type: "boolean"
+    default: false
+  crossRegionActions:
+    type: "boolean"
+    default: false

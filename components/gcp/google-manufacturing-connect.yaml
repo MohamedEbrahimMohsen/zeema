@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Manufacturing Connect (Manufacturing Connect Edge): the factory-floor gateway in front of
+# Manufacturing Data Engine. "Manufacturing Data Engine overview": an "Edge to cloud gateway
+# capable of translating more than 270 industrial communication protocols into standardized
+# Pub/Sub messages", with edge processing and storage, and instances interconnected over
+# the built-in NATS integration.
+schemaVersion: "1"
+type: "component"
+id: "google-manufacturing-connect"
+kind: "iot-hub"
+provider: "gcp"
+defaults:
+  protocol: "multi"
+  managed: false
+properties:
+  industrialProtocolCount:
+    type: "integer"
+    default: 270
+  edgeProcessing:
+    type: "boolean"
+    default: true
+  edgeStorage:
+    type: "boolean"
+    default: true
+  natsInterconnect:
+    type: "boolean"
+    default: false
+  uplink:
+    type: "enum"
+    values: ["pubsub", "mqtt"]
+    default: "pubsub"

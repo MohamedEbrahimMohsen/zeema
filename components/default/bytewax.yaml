@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Bytewax: Python dataflow engine on Timely Dataflow. Recovery is opt-in - recovery partitions are
+# sharded SQLite databases that must be created before the dataflow first runs - and when enabled it
+# reloads the last snapshot before resuming input, giving at-least-once processing
+# ("Bytewax Documentation, Recovery"). Without recovery, operator state lives only in worker memory.
+schemaVersion: "1"
+type: "component"
+id: "bytewax"
+kind: "stream-processor"
+provider: "default"
+defaults:
+  managed: false
+  windowing: "none"
+  exactlyOnce: false
+  stateBackend: "memory"
+properties:
+  recovery:
+    type: "boolean"
+    default: false
+  recoveryPartitions:
+    type: "integer"

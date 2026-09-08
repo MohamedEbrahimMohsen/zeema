@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Earth Engine: geospatial analysis API called through a registered Cloud project.
+# "Earth Engine usage quotas and limits": 40 concurrent interactive requests, 100 requests/s and
+# roughly 2 concurrent batch tasks per project; noncommercial projects sit in the Community tier.
+schemaVersion: "1"
+type: "component"
+id: "google-earth-engine"
+kind: "third-party-api"
+provider: "gcp"
+defaults:
+  managed: true
+  qpsQuota: 100
+  callbackStyle: "none"
+  hostedPage: false
+  handlesMoney: false
+properties:
+  tier:
+    type: "enum"
+    values: ["community", "commercial"]
+    default: "community"
+  concurrentRequests:
+    type: "integer"
+    default: 40
+  batchTaskConcurrency:
+    type: "integer"
+    default: 2
+  assetStorageGb:
+    type: "integer"
+    default: 250

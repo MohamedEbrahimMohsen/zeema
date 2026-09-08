@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# ThingsBoard: open-source IoT platform. "What is ThingsBoard?" lists native MQTT, CoAP, HTTP, LwM2M
+# and SNMP transports, device provisioning with access tokens or X.509 credentials, a digital twin
+# built from device attributes, telemetry persistence, and both self-hosted and cloud editions.
+schemaVersion: "1"
+type: "component"
+id: "thingsboard"
+kind: "iot-hub"
+provider: "default"
+defaults:
+  protocol: "multi"
+  perDeviceIdentity: true
+  deviceTwin: true
+  deviceProvisioning: true
+  managed: false
+properties:
+  edition:
+    type: "enum"
+    values: ["community", "professional", "cloud"]
+    default: "community"
+  deviceCredential:
+    type: "enum"
+    values: ["access-token", "x509-certificate", "mqtt-basic"]
+    default: "access-token"
+  gateway:
+    type: "boolean"
+    default: false
+  ruleEngine:
+    type: "boolean"
+    default: true

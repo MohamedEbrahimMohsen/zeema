@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS HealthImaging data store: managed, HIPAA-eligible medical image archive that keeps one authoritative copy of each DICOM study as image sets and serves them over DICOMweb and native APIs.
+# "What is AWS HealthImaging?" states the service stores encrypted customer content, uses HTTPS over TLS for all connections by default, verifies pixel data losslessly on every import, and stores image frames as High Throughput JPEG 2000; "Data encryption" states data stores are encrypted with an AWS owned AWS KMS key unless a customer managed key is supplied at creation.
+schemaVersion: "1"
+type: "component"
+id: "aws-healthimaging"
+kind: "object-store"
+provider: "aws"
+defaults:
+  encryptionAtRest: true
+  checksumOnWrite: true
+  versioning: false
+  managed: true
+properties:
+  imageFrameEncoding:
+    type: "enum"
+    values: ["htj2k"]
+    default: "htj2k"
+  dicomWebApi:
+    type: "boolean"
+    default: true
+  customerManagedKey:
+    type: "boolean"
+    default: false
+  intelligentTiering:
+    type: "boolean"
+    default: true

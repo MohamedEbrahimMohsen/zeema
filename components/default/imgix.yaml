@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# imgix: SaaS image rendering CDN; a Source points at an origin bucket or web folder and derivatives are
+# generated from URL parameters and cached at the edge. Per "Creating sources", the master assets stay in
+# the customer's storage (S3, GCS, Azure, S3-compatible) or behind a web folder; per "Securing assets",
+# signed URLs are off until the Secure URL option is enabled on the Source, except on Web Proxy sources.
+schemaVersion: "1"
+type: "component"
+id: "imgix"
+kind: "cdn"
+provider: "default"
+defaults:
+  managed: true
+  caching: true
+  edgeCompute: false
+  tls: true
+properties:
+  sourceType:
+    type: "enum"
+    values: ["s3", "gcs", "azure", "s3-compatible", "web-folder", "web-proxy"]
+    default: "s3"
+  secureUrls:
+    type: "boolean"
+    default: false
+  onTheFlyRendering:
+    type: "boolean"
+    default: true

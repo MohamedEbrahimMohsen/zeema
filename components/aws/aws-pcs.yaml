@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Parallel Computing Service: a managed Slurm HPC cluster whose controller runs in an AWS-owned
+# account while the compute nodes run on EC2 in your VPC ("AWS PCS clusters"). Cluster size is fixed
+# at creation and caps managed instances and tracked jobs: Small 32/256, Medium 512/8192,
+# Large 2048/16384 ("Cluster size in AWS PCS").
+schemaVersion: "1"
+type: "component"
+id: "aws-pcs"
+kind: "big-data-cluster"
+provider: "aws"
+defaults:
+  managed: true
+  engine: "hpc"
+properties:
+  scheduler:
+    type: "enum"
+    values: ["slurm"]
+    default: "slurm"
+  clusterSize:
+    type: "enum"
+    values: ["small", "medium", "large"]
+  maxManagedInstances:
+    type: "integer"
+    default: 32
+  sizeFixedAtCreation:
+    type: "boolean"
+    default: true

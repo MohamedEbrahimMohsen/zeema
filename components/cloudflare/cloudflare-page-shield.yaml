@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare Page Shield (client-side security): reports the scripts, connections and cookies that
+# visitors' browsers load and alerts on changes; script monitoring is available on every plan,
+# connection and cookie monitoring from Business up ("Client-side security overview").
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-page-shield"
+kind: "monitoring"
+provider: "cloudflare"
+defaults:
+  managed: true
+  signal: "alerts"
+  collectorMode: "push"
+  independentOfMonitored: true
+properties:
+  scriptMonitoring:
+    type: "boolean"
+    default: true
+  connectionMonitoring:
+    type: "boolean"
+    default: false
+  cookieMonitoring:
+    type: "boolean"
+    default: false
+  contentSecurityRules:
+    type: "boolean"
+    default: false

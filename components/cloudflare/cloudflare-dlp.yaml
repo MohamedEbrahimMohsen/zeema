@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare DLP: profiles and detection entries scanned inside Gateway HTTP policies.
+# "Data loss prevention" states DLP requires Gateway HTTP filtering with TLS decryption to read
+# HTTPS payloads, and that payload logging is configured separately to retain matched content.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-dlp"
+kind: "policy-engine"
+provider: "cloudflare"
+defaults:
+  managed: true
+  scope: "account"
+  remediation: false
+properties:
+  profileType:
+    type: "enum"
+    values: ["predefined", "custom"]
+    default: "predefined"
+  requiresTlsDecryption:
+    type: "boolean"
+    default: true
+  payloadLogging:
+    type: "boolean"
+    default: false

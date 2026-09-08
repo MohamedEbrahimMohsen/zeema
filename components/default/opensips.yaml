@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenSIPS: self-hosted "mature Open Source implementation of a SIP server" that "unifies voice,
+# video, IM and presence" and is deployed as a SIP proxy, registrar, SBC or "SIP load-balancer or
+# dispatcher" ("About OpenSIPS"). Its own routing is SIP signalling; media relaying, call queues
+# and recording are separate modules, so none of them is active out of the box.
+schemaVersion: "1"
+type: "component"
+id: "opensips"
+kind: "contact-center"
+provider: "default"
+defaults:
+  managed: false
+  channelVoice: true
+  channelChat: false
+  routing: "fifo"
+  callRecording: false
+  outboundDialing: false
+properties:
+  deploymentRole:
+    type: "enum"
+    values: ["proxy", "registrar", "session-border-controller", "load-balancer", "presence-server"]
+    default: "proxy"
+  signallingOnly:
+    type: "boolean"
+    default: true
+  dynamicRouting:
+    type: "boolean"
+    default: false

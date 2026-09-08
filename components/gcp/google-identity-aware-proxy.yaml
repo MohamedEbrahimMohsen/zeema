@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Identity-Aware Proxy: a global Google Cloud service that authorises requests to applications and forwards SSH and RDP to VMs without a VPN.
+# Defaults from "IAP overview": IAP is a managed global service that creates OAuth 2.0 credentials automatically and applies authentication and authorisation before a request reaches the application.
+schemaVersion: "1"
+type: "component"
+id: "google-identity-aware-proxy"
+kind: "bastion-host"
+provider: "gcp"
+defaults:
+  managed: true
+  protocols: "both"
+properties:
+  accessType:
+    type: "enum"
+    values: ["web-app", "tcp-forwarding"]
+  contextAwareAccess:
+    type: "boolean"
+    default: false
+  oauthCredentialsAutoCreated:
+    type: "boolean"
+    default: true

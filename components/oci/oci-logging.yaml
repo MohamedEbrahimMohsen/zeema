@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI Logging: managed log groups and logs for audit, service and custom logs, searchable and encrypted at rest.
+# Defaults from "Enabling Logging for a Resource": retention is set in 30-day increments up to 180 days, 1 month (30 days) is the default.
+schemaVersion: "1"
+type: "component"
+id: "oci-logging"
+kind: "monitoring"
+provider: "oci"
+defaults:
+  managed: true
+  signal: "logs"
+  collectorMode: "push"
+  retentionDays: 30
+properties:
+  logType:
+    type: "enum"
+    values: ["audit", "service", "custom"]
+    default: "service"
+  maxRetentionDays:
+    type: "integer"
+    default: 180
+  agentIngestion:
+    type: "boolean"
+    default: false

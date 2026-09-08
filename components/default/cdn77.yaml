@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# CDN77: managed CDN delivering from edge locations and ISP-embedded caches worldwide. Per the SSL
+# documentation an InstantSSL (Let's Encrypt) certificate is assigned to every CDN resource and its
+# configured CNAME by default; Origin Protection shielding and the Compute product are separate opt-ins.
+schemaVersion: "1"
+type: "component"
+id: "cdn77"
+kind: "cdn"
+provider: "default"
+defaults:
+  managed: true
+  tls: true
+  originShield: false
+  edgeCompute: false
+properties:
+  certificateType:
+    type: "enum"
+    values: ["instant-ssl", "san", "custom"]
+    default: "instant-ssl"
+  originProtection:
+    type: "boolean"
+    default: false

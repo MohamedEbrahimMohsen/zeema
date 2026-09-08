@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# VMware vSphere with ESXi, the type-1 hypervisor plus vCenter Server. Per "vSphere Native Key Provider
+# Overview" vCenter Server ships with no key provider configured, so virtual machine and vSAN encryption are
+# off until an administrator sets one up.
+schemaVersion: "1"
+type: "component"
+id: "vsphere"
+kind: "virtual-machine"
+provider: "default"
+defaults:
+  managed: false
+  diskEncryption: false
+properties:
+  keyProvider:
+    type: "enum"
+    values: ["none", "native", "standard-kms"]
+    default: "none"
+  clusterServices:
+    type: "enum"
+    values: ["none", "ha", "drs", "ha-drs"]
+    default: "none"
+  vsanStorage:
+    type: "boolean"
+    default: false
+  vmotion:
+    type: "boolean"
+    default: false

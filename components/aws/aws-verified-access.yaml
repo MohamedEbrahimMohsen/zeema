@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Verified Access: VPN-less application access gated by identity and device trust providers.
+# "What is AWS Verified Access?": every application request is evaluated in real time against the security
+# requirements, and all access attempts are logged for centralized visibility.
+schemaVersion: "1"
+type: "component"
+id: "aws-verified-access"
+kind: "bastion-host"
+provider: "aws"
+defaults:
+  managed: true
+  justInTimeAccess: true
+properties:
+  requiresVpn:
+    type: "boolean"
+    default: false
+  perRequestEvaluation:
+    type: "boolean"
+    default: true
+  accessLogging:
+    type: "boolean"
+    default: true
+  deviceTrustIntegration:
+    type: "boolean"
+    default: false

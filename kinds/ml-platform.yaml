@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# The workspace that produces models, where ml-inference is only the endpoint that serves one. publicAccess and gpuEnabled have no default so exposure and capacity rules can catch a workspace that never stated them.
+schemaVersion: "1"
+type: "kind"
+id: "ml-platform"
+category: "compute"
+properties:
+  computeInstances:
+    type: "integer"
+  gpuEnabled:
+    type: "boolean"
+  modelRegistry:
+    type: "boolean"
+    default: true
+  experimentTracking:
+    type: "boolean"
+    default: true
+  publicAccess:
+    type: "boolean"
+  managed:
+    type: "boolean"
+    default: false

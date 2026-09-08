@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Workers AI: serverless inference on Cloudflare-operated GPUs across the global network
+# ("Workers AI overview": "Run machine learning models, powered by serverless GPUs").
+# Pre-trained catalogue models served online; 10,000 Neurons per day are free ("Pricing").
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-workers-ai"
+kind: "ml-inference"
+provider: "cloudflare"
+defaults:
+  managed: true
+  accelerator: "gpu"
+  inputs: "live"
+  snapshotToObjectStore: false
+properties:
+  freeNeuronsPerDay:
+    type: "integer"
+    default: 10000
+  textGenerationRequestsPerMinute:
+    type: "integer"
+    default: 300

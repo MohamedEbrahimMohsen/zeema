@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloud NAT: distributed, software-defined managed egress NAT; no proxy VMs or appliances.
+# Defaults from "Cloud NAT overview", "IP addresses and ports" (64 ports per VM, static allocation) and "Tune NAT configuration" (TCP established idle 1200 s, UDP and ICMP idle 30 s).
+schemaVersion: "1"
+type: "component"
+id: "google-cloud-nat"
+kind: "nat-gateway"
+provider: "gcp"
+defaults:
+  managed: true
+  logging: false
+  idleTimeoutMinutes: 20
+properties:
+  natType:
+    type: "enum"
+    values: ["public", "private"]
+    default: "public"
+  portAllocation:
+    type: "enum"
+    values: ["static", "dynamic"]
+    default: "static"
+  minPortsPerVm:
+    type: "integer"
+    default: 64
+  udpIdleTimeoutSeconds:
+    type: "integer"
+    default: 30

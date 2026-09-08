@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon SES: managed email sending and receiving from your own domains, with templates and
+# event publishing to CloudWatch or Firehose. "Request production access" states every new account
+# starts in the sandbox: verified recipients only, 200 messages per 24 hours and 1 message per
+# second, and identities used as From, Source, Sender or Return-Path must always be verified.
+schemaVersion: "1"
+type: "component"
+id: "aws-ses"
+kind: "notification-service"
+provider: "aws"
+defaults:
+  managed: true
+  channelEmail: true
+  channelPush: false
+  channelSms: false
+  templateStore: true
+  dedupKey: false
+  queuePerChannel: false
+properties:
+  sandbox:
+    type: "boolean"
+    default: true
+  dailySendQuota:
+    type: "integer"
+    default: 200
+  maxSendRatePerSecond:
+    type: "integer"
+    default: 1
+  identityVerificationRequired:
+    type: "boolean"
+    default: true

@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Microsoft Azure Attestation: remotely verifies TEEs and TPMs (SGX, VBS enclaves, SEV-SNP
+# confidential VMs, trusted launch) against a configurable policy and issues a signed token.
+# Its own critical operations run inside SEV-SNP confidential containers, and it fails over to
+# the paired region without customer action ("Azure Attestation overview").
+schemaVersion: "1"
+type: "component"
+id: "azure-attestation"
+kind: "identity-provider"
+provider: "azure"
+defaults:
+  managed: true
+  protocol: "custom"
+  authorizationModel: "none"
+  centralised: true
+properties:
+  signedTokenIssued:
+    type: "boolean"
+    default: true
+  runsInConfidentialEnclave:
+    type: "boolean"
+    default: true
+  customPolicySupported:
+    type: "boolean"
+    default: true
+  automaticRegionalFailover:
+    type: "boolean"
+    default: true

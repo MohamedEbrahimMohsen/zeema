@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OPA Gatekeeper: Kubernetes admission controller enforcing OPA constraints.
+# "Handling Constraint Violations": enforcementAction is deny by default; supported values are
+# deny, dryrun and warn. Mutation is a separate opt-in feature, so remediation is false.
+schemaVersion: "1"
+type: "component"
+id: "gatekeeper"
+kind: "policy-engine"
+provider: "default"
+defaults:
+  effect: "deny"
+  enforcementMode: "enforced"
+  scope: "resource"
+  remediation: false
+  managed: false
+properties:
+  enforcementAction:
+    type: "enum"
+    values: ["deny", "dryrun", "warn"]
+    default: "deny"
+  mutationEnabled:
+    type: "boolean"
+    default: false

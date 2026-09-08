@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon EventBridge Pipes: managed point-to-point pipe from one polled source, through optional
+# filtering and enrichment, to one target. "Amazon EventBridge Pipes batching and concurrency"
+# caps a pipe execution at 5 minutes and gives partial batch failure retries for SQS and stream
+# sources; "Data protection in Amazon EventBridge" says events flowing through a pipe are never
+# stored at rest, so a pipe holds no processing state.
+schemaVersion: "1"
+type: "component"
+id: "aws-eventbridge-pipes"
+kind: "stream-processor"
+provider: "aws"
+defaults:
+  managed: true
+  windowing: "none"
+  exactlyOnce: false
+properties:
+  sourceType:
+    type: "enum"
+    values: ["sqs", "kinesis", "dynamodb-stream", "kafka", "amazon-mq"]
+    default: "sqs"
+  filtering:
+    type: "boolean"
+    default: false
+  enrichment:
+    type: "boolean"
+    default: false
+  partialBatchFailure:
+    type: "boolean"
+    default: true
+  maxExecutionMinutes:
+    type: "integer"
+    default: 5

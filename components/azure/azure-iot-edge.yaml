@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure IoT Edge: device-focused runtime that runs containerised modules on-premises for
+# offline decision making, managed from IoT Hub ("What is Azure IoT Edge"). Runs natively on
+# Linux (Windows through EFLOW); an automatic deployment carries at most 50 modules.
+schemaVersion: "1"
+type: "component"
+id: "azure-iot-edge"
+kind: "edge-appliance"
+provider: "azure"
+defaults:
+  connectivity: "intermittent"
+  offlineMode: true
+  formFactor: "virtual"
+  cloudManaged: true
+properties:
+  containerOs:
+    type: "enum"
+    values: ["linux", "windows"]
+    default: "linux"
+  gatewayMode:
+    type: "boolean"
+    default: false
+  modulesPerDeploymentLimit:
+    type: "integer"
+    default: 50

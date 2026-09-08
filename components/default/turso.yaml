@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Turso: managed libSQL/SQLite platform. Writes go to the remote primary database and embedded
+# replicas pull changes asynchronously on sync (Turso "Embedded Replicas").
+schemaVersion: "1"
+type: "component"
+id: "turso"
+kind: "sql-database"
+provider: "default"
+defaults:
+  managed: true
+  replication: "async"
+properties:
+  embeddedReplicas:
+    type: "boolean"
+    default: false
+  syncIntervalSeconds:
+    type: "integer"

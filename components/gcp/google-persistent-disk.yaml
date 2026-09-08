@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Compute Engine Persistent Disk: network block storage attached to a VM. "Persistent Disk
+# overview" states a disk is zonal unless regional replication is chosen, snapshots are
+# opt-in, and "Protect data on disks" states data is encrypted with Google-managed keys.
+schemaVersion: "1"
+type: "component"
+id: "google-persistent-disk"
+kind: "block-storage"
+provider: "gcp"
+defaults:
+  redundancy: "zonal"
+  encryptionAtRest: true
+  snapshots: false
+  managed: true
+properties:
+  diskType:
+    type: "enum"
+    values: ["pd-standard", "pd-balanced", "pd-ssd", "pd-extreme"]
+    default: "pd-balanced"
+  regionalReplication:
+    type: "boolean"
+    default: false

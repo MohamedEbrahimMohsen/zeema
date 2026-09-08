@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Database Migration Service migration job: managed initial dump followed by ongoing
+# replication into Cloud SQL or AlloyDB. The MySQL FAQ states DML and DDL changes are applied
+# during a continuous migration and that, over an IP allowlist, the source connection is not
+# encrypted unless SSL is enabled on the source database.
+schemaVersion: "1"
+type: "component"
+id: "google-database-migration-service"
+kind: "change-data-capture"
+provider: "gcp"
+defaults:
+  schemaEvolution: true
+  managed: true
+properties:
+  migrationType:
+    type: "enum"
+    values: ["one-time", "continuous"]
+    default: "continuous"
+  connectivityMethod:
+    type: "enum"
+    values: ["ip-allowlist", "reverse-ssh-tunnel", "private-connectivity"]
+  sourceConnectionEncrypted:
+    type: "boolean"
+    default: false

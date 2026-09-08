@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# n8n: node-based automation flows. Self-hosted n8n saves credentials, past executions and workflows
+# in SQLite by default, with PostgreSQL as the alternative ("Choose n8n's database").
+schemaVersion: "1"
+type: "component"
+id: "n8n"
+kind: "workflow-engine"
+provider: "default"
+defaults:
+  durable: true
+  pattern: "dag"
+  compensation: false
+  managed: false
+properties:
+  database:
+    type: "enum"
+    values: ["sqlite", "postgres"]
+    default: "sqlite"
+  deployment:
+    type: "enum"
+    values: ["self-hosted", "cloud"]
+    default: "self-hosted"

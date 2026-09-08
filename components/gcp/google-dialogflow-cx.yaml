@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Conversational Agents (Dialogflow CX) agent: a state-machine virtual agent over text
+# and audio. "Quotas and limits": 1,200 text detect-intent requests per minute, 600 with
+# audio input or output, 50 flows per agent, 250 pages per flow, 10,000 intents per agent,
+# 1,000 agents per project, 600,000 generative tokens per minute.
+schemaVersion: "1"
+type: "component"
+id: "google-dialogflow-cx"
+kind: "ai-service"
+provider: "gcp"
+defaults:
+  modality: "multimodal"
+  publicEndpoint: true
+  quotaUnitsPerMinute: 1200
+  managed: true
+properties:
+  audioRequestsPerMinute:
+    type: "integer"
+    default: 600
+  maxFlowsPerAgent:
+    type: "integer"
+    default: 50
+  maxPagesPerFlow:
+    type: "integer"
+    default: 250
+  maxIntentsPerAgent:
+    type: "integer"
+    default: 10000
+  generativeTokensPerMinute:
+    type: "integer"
+    default: 600000

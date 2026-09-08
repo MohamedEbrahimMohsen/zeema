@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Dataproc Metastore: fully managed Apache Hive metastore for Spark, Hive and Presto workloads.
+# "Dataproc Metastore service tiers" and "Database types": new services are created with the
+# Developer tier and a MySQL backing database; the Thrift endpoint is the default protocol.
+schemaVersion: "1"
+type: "component"
+id: "google-dataproc-metastore"
+kind: "data-catalog"
+provider: "gcp"
+defaults:
+  managed: true
+properties:
+  tier:
+    type: "enum"
+    values: ["developer", "enterprise"]
+    default: "developer"
+  databaseType:
+    type: "enum"
+    values: ["mysql", "spanner"]
+    default: "mysql"
+  endpointProtocol:
+    type: "enum"
+    values: ["thrift", "grpc"]
+    default: "thrift"

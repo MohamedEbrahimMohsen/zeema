@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# balena, a fleet platform for containerized workloads on connected devices. Per "Core Concepts: a balena
+# primer" balenaCloud builds and delivers container releases to devices running balenaOS, the on-device
+# supervisor keeps pulling code even if the application crashes, traffic runs over HTTPS or a managed VPN,
+# and updates ship as binary deltas.
+schemaVersion: "1"
+type: "component"
+id: "balena"
+kind: "edge-appliance"
+provider: "default"
+defaults:
+  managed: true
+  cloudManaged: true
+  connectivity: "intermittent"
+  offlineMode: true
+properties:
+  containerEngine:
+    type: "enum"
+    values: ["balena-engine"]
+    default: "balena-engine"
+  deltaUpdates:
+    type: "boolean"
+    default: true
+  managedVpn:
+    type: "boolean"
+    default: true
+  supervisorAgent:
+    type: "boolean"
+    default: true

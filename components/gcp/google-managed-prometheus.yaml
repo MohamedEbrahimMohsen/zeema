@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud Managed Service for Prometheus: Prometheus-compatible metrics stored in Monarch. Per
+# "Managed Service for Prometheus" all data is kept for 24 months and managed collection by a Kubernetes
+# operator is the documented default mode; self-deployed, OpenTelemetry and Ops Agent collection are alternatives.
+schemaVersion: "1"
+type: "component"
+id: "google-managed-prometheus"
+kind: "timeseries-database"
+provider: "gcp"
+defaults:
+  managed: true
+  retentionRawDays: 730
+properties:
+  collection:
+    type: "enum"
+    values: ["managed", "self-deployed", "opentelemetry", "ops-agent"]
+    default: "managed"
+  promqlCompatible:
+    type: "boolean"
+    default: true

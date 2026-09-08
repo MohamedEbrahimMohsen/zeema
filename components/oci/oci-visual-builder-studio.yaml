@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Visual Builder Studio: managed project service with Git repositories, issue tracking and
+# CI/CD pipelines. Build jobs run on VM build executors, which are OCI compute instances in your own
+# tenancy; some regions include one free VM executor on the "System Default OL7 for Visual Builder"
+# template. Facts from "Administering Visual Builder Studio" and "VB Studio's Free VM Build Executor".
+schemaVersion: "1"
+type: "component"
+id: "oci-visual-builder-studio"
+kind: "ci-pipeline"
+provider: "oci"
+defaults:
+  managed: true
+properties:
+  buildExecutor:
+    type: "enum"
+    values: ["free-vm", "customer-vm", "docker"]
+  freeVmExecutors:
+    type: "integer"
+    default: 1
+  executorTemplate:
+    type: "string"
+  issueTracking:
+    type: "boolean"
+    default: true

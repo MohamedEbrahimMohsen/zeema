@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Vertex AI Workbench instance: a single JupyterLab development VM managed by Google
+# ("Introduction to Vertex AI Workbench"). Idle shutdown is on and set to 180 inactive minutes by
+# default ("Manage idle shutdown"); accelerators are only attached when asked for.
+schemaVersion: "1"
+type: "component"
+id: "google-vertex-ai-workbench"
+kind: "ml-platform"
+provider: "gcp"
+defaults:
+  managed: true
+  computeInstances: 1
+  gpuEnabled: false
+  modelRegistry: false
+  experimentTracking: false
+properties:
+  idleShutdown:
+    type: "boolean"
+    default: true
+  idleShutdownMinutes:
+    type: "integer"
+    default: 180
+  upgradeable:
+    type: "boolean"
+    default: true

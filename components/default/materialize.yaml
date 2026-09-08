@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Materialize: incremental view maintenance engine offered as a managed cloud service, with a
+# self-managed deployment as an alternative. Indexes and materialized views are held by in-memory
+# arrangements, and the default isolation level is strict serializable, providing serializability and
+# linearizability ("Materialize, Isolation level" and "Key concepts").
+schemaVersion: "1"
+type: "component"
+id: "materialize"
+kind: "stream-processor"
+provider: "default"
+defaults:
+  managed: true
+  windowing: "none"
+  stateBackend: "memory"
+properties:
+  deployment:
+    type: "enum"
+    values: ["cloud", "self-managed"]
+    default: "cloud"
+  isolationLevel:
+    type: "enum"
+    values: ["strict-serializable", "serializable", "bounded-staleness"]
+    default: "strict-serializable"

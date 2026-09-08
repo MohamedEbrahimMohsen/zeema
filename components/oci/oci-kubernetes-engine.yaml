@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI Kubernetes Engine (OKE) cluster: Oracle runs the control plane ("Overview of Kubernetes
+# Engine"), which also caps a managed node at 256 pods. "Comparing Enhanced Clusters with Basic
+# Clusters": the Console creates an enhanced cluster unless you choose basic, and only enhanced
+# clusters carry a financially backed SLA and support virtual nodes and workload identity.
+schemaVersion: "1"
+type: "component"
+id: "oci-kubernetes-engine"
+kind: "container-orchestrator"
+provider: "oci"
+defaults:
+  managed: true
+  autoscaling: false
+properties:
+  clusterType:
+    type: "enum"
+    values: ["basic", "enhanced"]
+    default: "enhanced"
+  nodeType:
+    type: "enum"
+    values: ["managed", "virtual", "self-managed"]
+  cniPlugin:
+    type: "enum"
+    values: ["flannel", "vcn-native-pod-networking"]
+  maxPodsPerManagedNode:
+    type: "integer"
+    default: 256
+  financiallyBackedSla:
+    type: "boolean"
+    default: true

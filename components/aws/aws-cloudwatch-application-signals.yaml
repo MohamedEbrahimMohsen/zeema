@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# CloudWatch Application Signals: auto-instrumented application monitoring that collects standard metrics and
+# traces, discovers the service topology and tracks SLOs. "Application Signals": it supports Java, Python,
+# Node.js and .NET, and change event detection is enabled together with service discovery.
+schemaVersion: "1"
+type: "component"
+id: "aws-cloudwatch-application-signals"
+kind: "monitoring"
+provider: "aws"
+defaults:
+  signal: "all"
+  collectorMode: "push"
+  managed: true
+properties:
+  changeEvents:
+    type: "boolean"
+    default: true
+  crossAccount:
+    type: "boolean"
+    default: false
+  language:
+    type: "enum"
+    values: ["java", "python", "nodejs", "dotnet"]

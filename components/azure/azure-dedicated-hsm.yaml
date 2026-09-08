@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Dedicated HSM: bare Thales Luna 7 model A790 appliances (FIPS 140-2 Level 3, 10 partitions)
+# connected to the customer virtual network. Microsoft has no administrative control once the
+# customer takes the device, and the service is retiring in 2028 ("What is Dedicated HSM?").
+schemaVersion: "1"
+type: "component"
+id: "azure-dedicated-hsm"
+kind: "key-management"
+provider: "azure"
+defaults:
+  managed: false
+  hsm: true
+  rotationAutomated: false
+properties:
+  hsmModel:
+    type: "enum"
+    values: ["thales-luna-7-a790"]
+    default: "thales-luna-7-a790"
+  partitions:
+    type: "integer"
+    default: 10
+  customerAdministered:
+    type: "boolean"
+    default: true
+  retirementAnnounced:
+    type: "boolean"
+    default: true

@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Eclipse Hono: multi-tenant device connectivity layer. The "Component View" describes MQTT, HTTP,
+# AMQP and CoAP protocol adapters in front of a device registry that holds per-device credentials,
+# an HTTP device management API for provisioning, and a Command Router for command and control.
+# Hono routes telemetry to messaging infrastructure; it stores no device twin of its own.
+schemaVersion: "1"
+type: "component"
+id: "hono"
+kind: "iot-hub"
+provider: "default"
+defaults:
+  protocol: "multi"
+  perDeviceIdentity: true
+  deviceProvisioning: true
+  deviceTwin: false
+  managed: false
+properties:
+  commandAndControl:
+    type: "boolean"
+    default: true
+  multiTenant:
+    type: "boolean"
+    default: true

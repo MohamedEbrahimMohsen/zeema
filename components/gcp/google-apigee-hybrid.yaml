@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Apigee hybrid: the Apigee runtime plane runs in a Kubernetes cluster you operate while Google
+# hosts the management plane. Per "What is Apigee hybrid" TLS is configured on the ingress gateway as part
+# of installation, and rate limiting comes from SpikeArrest or Quota policies added to a proxy.
+schemaVersion: "1"
+type: "component"
+id: "google-apigee-hybrid"
+kind: "api-gateway"
+provider: "gcp"
+defaults:
+  managed: false
+  tls: true
+  rateLimiting: false
+properties:
+  controlPlaneManaged:
+    type: "boolean"
+    default: true
+  runtimePlaneSelfHosted:
+    type: "boolean"
+    default: true

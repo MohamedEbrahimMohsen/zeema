@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Cloud internet gateway: optional virtual router at the VCN edge, one per VCN, enabled once
+# created and carrying both ingress and egress ("Internet Gateway"). It performs no address
+# translation, so only resources with public IPs in public subnets can use it.
+schemaVersion: "1"
+type: "component"
+id: "oci-internet-gateway"
+kind: "network-fabric"
+provider: "oci"
+defaults:
+  managed: true
+  overlay: true
+  interconnect: "public"
+  multicast: false
+properties:
+  enabledOnCreate:
+    type: "boolean"
+    default: true
+  networkAddressTranslation:
+    type: "boolean"
+    default: false
+  bidirectional:
+    type: "boolean"
+    default: true

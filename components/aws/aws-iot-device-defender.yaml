@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS IoT Device Defender: managed security auditing and anomaly detection over an AWS IoT fleet.
+# "What is AWS IoT Device Defender?" states devices report high-value security metrics that are
+# evaluated continuously, alarms are published to the console, CloudWatch and optionally SNS, Audit
+# is turned on per account, and ML Detect builds models from a trailing 14-day period. The Detect
+# feature entered maintenance on 30 June 2026 (AWS "Services in Maintenance"); Audit is unaffected.
+schemaVersion: "1"
+type: "component"
+id: "aws-iot-device-defender"
+kind: "monitoring"
+provider: "aws"
+defaults:
+  signal: "alerts"
+  collectorMode: "push"
+  managed: true
+properties:
+  auditEnabled:
+    type: "boolean"
+    default: false
+  detectMode:
+    type: "enum"
+    values: ["rules", "ml"]
+  mlDetectTrainingDays:
+    type: "integer"
+    default: 14
+  snsAlerting:
+    type: "boolean"
+    default: false

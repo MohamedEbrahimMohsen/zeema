@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# MySQL HeatWave DB system: Oracle's managed MySQL Enterprise Edition on OCI. "Features of MySQL HeatWave
+# Service" states all block volumes and volume backups are encrypted with Oracle-managed keys by default;
+# "Backups" gives a 7 day default retention (1-35); a DB system is standalone until high availability
+# (a primary and two secondaries using Group Replication) is enabled.
+schemaVersion: "1"
+type: "component"
+id: "oci-mysql-heatwave"
+kind: "sql-database"
+provider: "oci"
+defaults:
+  managed: true
+  backupEnabled: true
+  backupRetentionDays: 7
+  replication: "none"
+  encryptionAtRest: true
+  concurrencyControl: "pessimistic"
+properties:
+  highAvailability:
+    type: "boolean"
+    default: false
+  heatwaveCluster:
+    type: "boolean"
+    default: false

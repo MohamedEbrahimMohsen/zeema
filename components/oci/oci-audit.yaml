@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Cloud Audit: the tenancy log of calls to supported OCI public API endpoints.
+# Defaults from "Overview of Audit" and "Audit Log Retention Period": recording is automatic for all supported API
+# endpoints, and log events are retained for 365 days as a tenancy-level setting covering every region and
+# compartment. Object Storage logs bucket events but not object events.
+schemaVersion: "1"
+type: "component"
+id: "oci-audit"
+kind: "monitoring"
+provider: "oci"
+defaults:
+  managed: true
+  signal: "logs"
+  collectorMode: "push"
+  independentOfMonitored: false
+  retentionDays: 365
+properties:
+  recordsAllApiCalls:
+    type: "boolean"
+    default: true
+  scope:
+    type: "enum"
+    values: ["tenancy", "compartment"]
+    default: "tenancy"
+  apiQueryWindowDays:
+    type: "integer"
+    default: 14

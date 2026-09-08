@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Managed Grafana: managed Grafana workspace bringing metrics, logs and traces from connected
+# data sources into one interface. "What is Azure Managed Grafana?": Standard is the default tier,
+# X1 is the default instance size and supports 500 alert rules per organization (X2 supports 1,000),
+# and zone redundancy, private endpoints and Grafana Enterprise are Standard-tier options.
+schemaVersion: "1"
+type: "component"
+id: "azure-managed-grafana"
+kind: "monitoring"
+provider: "azure"
+defaults:
+  managed: true
+  signal: "all"
+properties:
+  tier:
+    type: "enum"
+    values: ["essential", "standard"]
+    default: "standard"
+  instanceSize:
+    type: "enum"
+    values: ["x1", "x2"]
+    default: "x1"
+  alertRuleLimit:
+    type: "integer"
+    default: 500
+  zoneRedundancy:
+    type: "boolean"
+    default: false
+  grafanaEnterprise:
+    type: "boolean"
+    default: false

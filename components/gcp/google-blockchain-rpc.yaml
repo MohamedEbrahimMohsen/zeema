@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud Blockchain RPC: managed read and write access to blockchains through their standard RPC
+# APIs. Per "Blockchain RPC overview" the service is in Preview, Ethereum is the first supported
+# blockchain and the free tier allows up to 100 requests per second.
+schemaVersion: "1"
+type: "component"
+id: "google-blockchain-rpc"
+kind: "third-party-api"
+provider: "gcp"
+defaults:
+  managed: true
+  qpsQuota: 100
+  callbackStyle: "none"
+properties:
+  writeAccess:
+    type: "boolean"
+    default: true
+  preview:
+    type: "boolean"
+    default: true

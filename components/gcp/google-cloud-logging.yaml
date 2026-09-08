@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud Logging log bucket: managed log storage that services push into. Per "Configure and manage
+# log buckets" and "Quotas and limits", the _Default and user-defined buckets keep logs 30 days and the
+# _Required audit bucket keeps them 400 days; Log Analytics is an opt-in upgrade.
+schemaVersion: "1"
+type: "component"
+id: "google-cloud-logging"
+kind: "monitoring"
+provider: "gcp"
+defaults:
+  managed: true
+  signal: "logs"
+  collectorMode: "push"
+  retentionDays: 30
+properties:
+  requiredBucketRetentionDays:
+    type: "integer"
+    default: 400
+  logAnalytics:
+    type: "boolean"
+    default: false
+  customerManagedEncryption:
+    type: "boolean"
+    default: false

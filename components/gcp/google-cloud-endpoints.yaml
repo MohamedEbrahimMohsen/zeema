@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud Endpoints: the Envoy-based ESPv2 proxy that you deploy in front of your own API. Per "About
+# Cloud Endpoints" you run ESPv2 on Cloud Run, GKE, Compute Engine or App Engine yourself while Google
+# provides the service management backend, and authentication and quotas come from the OpenAPI config.
+schemaVersion: "1"
+type: "component"
+id: "google-cloud-endpoints"
+kind: "api-gateway"
+provider: "gcp"
+defaults:
+  managed: false
+  rateLimiting: false
+properties:
+  proxy:
+    type: "string"
+    default: "espv2"
+  hostingPlatform:
+    type: "enum"
+    values: ["cloud-run", "gke", "compute-engine", "app-engine-standard"]
+  apiKeys:
+    type: "boolean"
+    default: true

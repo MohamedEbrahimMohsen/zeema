@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Application Recovery Controller (ARC): recovery controls for multi-AZ and multi-Region
+# applications - zonal shift and autoshift, routing control, Region switch and readiness check ("What is ARC?").
+# Routing controls are on-off switches wired to Route 53 health checks, and each routing control cluster
+# is a data plane of endpoints in five AWS Regions ("Routing control in ARC"). Zonal shifts are manual
+# and expire after at most three days unless autoshift is turned on for the resource.
+schemaVersion: "1"
+type: "component"
+id: "aws-application-recovery-controller"
+kind: "dns"
+provider: "aws"
+defaults:
+  managed: true
+  healthChecked: true
+properties:
+  capability:
+    type: "enum"
+    values: ["zonal-shift", "zonal-autoshift", "routing-control", "region-switch", "readiness-check"]
+  clusterRegions:
+    type: "integer"
+    default: 5
+  zonalAutoshift:
+    type: "boolean"
+    default: false
+  safetyRules:
+    type: "boolean"
+    default: false
+  readinessCheck:
+    type: "boolean"
+    default: false

@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Mailgun (Sinch): transactional email API. "Mailgun API overview" documents 500 requests per
+# 10 seconds (50/s) and no idempotency; webhooks are HMAC-SHA256 signed with the signing key.
+schemaVersion: "1"
+type: "component"
+id: "mailgun"
+kind: "third-party-api"
+provider: "default"
+defaults:
+  managed: true
+  idempotent: false
+  callbackStyle: "webhook"
+  qpsQuota: 50
+properties:
+  region:
+    type: "enum"
+    values: ["us", "eu"]
+    default: "us"
+  signedCallbacks:
+    type: "boolean"
+    default: true

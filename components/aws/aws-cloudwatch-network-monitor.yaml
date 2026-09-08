@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# CloudWatch Network Monitor (Network Synthetic Monitor): AWS-managed probes that measure round-trip time and
+# packet loss from a VPC subnet to on-premises destinations. "How Network Synthetic Monitor works": no agents on
+# the monitored resources, aggregation interval is 30 or 60 seconds, probes use ICMP or TCP over IPv4 or IPv6.
+schemaVersion: "1"
+type: "component"
+id: "aws-cloudwatch-network-monitor"
+kind: "monitoring"
+provider: "aws"
+defaults:
+  signal: "metrics"
+  collectorMode: "pull"
+  independentOfMonitored: true
+  managed: true
+properties:
+  probeProtocol:
+    type: "enum"
+    values: ["icmp", "tcp"]
+  aggregationPeriodSeconds:
+    type: "integer"
+  addressFamily:
+    type: "enum"
+    values: ["ipv4", "ipv6"]

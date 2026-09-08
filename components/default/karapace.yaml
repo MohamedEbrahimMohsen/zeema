@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Karapace: Apache-2.0 drop-in replacement for the Confluent Schema Registry and REST proxy. Global
+# compatibility is BACKWARD, schemas live in the _schemas topic and it listens on 8081 ("Karapace",
+# "karapace README").
+schemaVersion: "1"
+type: "component"
+id: "karapace"
+kind: "schema-registry"
+provider: "default"
+defaults:
+  compatibility: "backward"
+  enforced: false
+  managed: false
+properties:
+  schemaFormat:
+    type: "enum"
+    values: ["avro", "protobuf", "json-schema"]
+    default: "avro"
+  schemasTopic:
+    type: "string"
+    default: "_schemas"
+  restProxy:
+    type: "boolean"
+    default: false

@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Harbor: CNCF open source registry for OCI images and artifacts, organised into projects.
+# "Create Projects" states a project is private unless the Public box is ticked; "Vulnerability Scanning"
+# says Trivy is installed only with the --with-trivy option; "Creating Tag Immutability Rules" says the
+# rules must be created before any tag is immutable, so nothing is retained or frozen out of the box.
+schemaVersion: "1"
+type: "component"
+id: "harbor"
+kind: "container-registry"
+provider: "default"
+defaults:
+  managed: false
+  visibility: "private"
+  imageScanning: false
+  immutableTags: false
+  geoReplicated: false
+properties:
+  scanner:
+    type: "enum"
+    values: ["none", "trivy", "external"]
+    default: "none"
+  tagRetentionPolicy:
+    type: "boolean"
+    default: false
+  replicationConfigured:
+    type: "boolean"
+    default: false
+  preventVulnerableImages:
+    type: "boolean"
+    default: false

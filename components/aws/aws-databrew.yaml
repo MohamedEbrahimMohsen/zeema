@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Glue DataBrew job: serverless visual data preparation that reads a dataset and writes the prepared output
+# to Amazon S3 ("What is AWS Glue DataBrew?"). A job runs on demand unless a schedule is associated; the default
+# number of compute nodes is 5, the default timeout is 2,880 minutes and "by default, the job isn't retried",
+# with output encryption offered as an option ("Creating and working with AWS Glue DataBrew recipe jobs").
+schemaVersion: "1"
+type: "component"
+id: "aws-databrew"
+kind: "worker"
+provider: "aws"
+defaults:
+  managed: true
+  trigger: "manual"
+  instances: 5
+  accelerator: "none"
+  rateControl: "none"
+  fanoutStrategy: "none"
+properties:
+  jobType:
+    type: "enum"
+    values: ["recipe", "profile"]
+    default: "recipe"
+  timeoutMinutes:
+    type: "integer"
+    default: 2880
+  retries:
+    type: "integer"
+    default: 0
+  outputEncryption:
+    type: "boolean"
+    default: false

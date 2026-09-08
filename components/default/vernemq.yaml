@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# VerneMQ: clustered MQTT broker with LevelDB message store, MQTT 5 and MQTT over WebSocket built in.
+# "VerneMQ Options" gives the shipped defaults: 20 s retry interval, 20 in-flight messages,
+# 1000 online and 1000 offline queued messages; allow_anonymous is off until it is turned on.
+schemaVersion: "1"
+type: "component"
+id: "vernemq"
+kind: "iot-hub"
+provider: "default"
+defaults:
+  protocol: "mqtt"
+  managed: false
+properties:
+  allowAnonymous:
+    type: "boolean"
+    default: false
+  clustering:
+    type: "boolean"
+    default: true
+  maxOnlineMessages:
+    type: "integer"
+    default: 1000
+  maxOfflineMessages:
+    type: "integer"
+    default: 1000
+  maxInflightMessages:
+    type: "integer"
+    default: 20
+  retryIntervalSeconds:
+    type: "integer"
+    default: 20

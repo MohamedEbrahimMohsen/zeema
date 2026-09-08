@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Container Instances: single container groups billed by the second, with no VMs to manage
+# and no orchestrator ("Serverless containers in Azure"). A container group has no autoscaling, and
+# when no restart policy is given at creation the group runs with the Always policy.
+schemaVersion: "1"
+type: "component"
+id: "azure-container-instances"
+kind: "app-server"
+provider: "azure"
+defaults:
+  managed: true
+  stateless: true
+  autoscaling: false
+properties:
+  restartPolicy:
+    type: "enum"
+    values: ["always", "on-failure", "never"]
+    default: "always"
+  osType:
+    type: "enum"
+    values: ["linux", "windows"]
+  sku:
+    type: "enum"
+    values: ["regular", "confidential", "spot"]

@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# ClearML: AI development platform with experiment tracking, orchestration, data and model management.
+# Facts from "ClearML Server": the same server runs either as the hosted service at app.clear.ml or
+# self-hosted from Docker images, Kubernetes Helm charts or cloud AMIs.
+schemaVersion: "1"
+type: "component"
+id: "clearml"
+kind: "ml-platform"
+provider: "default"
+defaults:
+  experimentTracking: true
+  modelRegistry: true
+  managed: false
+properties:
+  hosting:
+    type: "enum"
+    values: ["self-hosted", "hosted-service"]
+    default: "self-hosted"
+  deploymentFormat:
+    type: "enum"
+    values: ["docker-compose", "kubernetes", "cloud-image"]
+  dataManagement:
+    type: "boolean"
+    default: true

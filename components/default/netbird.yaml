@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# NetBird: WireGuard peer-to-peer overlay coordinated by management and signal servers
+# with a Coturn relay fallback for peers that cannot connect directly. "How NetBird works"
+# states the private key never leaves the machine, so relayed traffic stays encrypted.
+schemaVersion: "1"
+type: "component"
+id: "netbird"
+kind: "vpn-gateway"
+provider: "default"
+defaults:
+  managed: true
+  tunnelType: "wireguard"
+  peerType: "point-to-site"
+  bgp: false
+  activeActive: false
+properties:
+  hosting:
+    type: "enum"
+    values: ["cloud", "self-hosted"]
+    default: "cloud"
+  relayFallback:
+    type: "boolean"
+    default: true
+  idpIntegration:
+    type: "boolean"
+    default: false
+  routingPeer:
+    type: "boolean"
+    default: false

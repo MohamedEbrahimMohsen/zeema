@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Spanner Graph: property graphs mapped onto Spanner tables and queried with ISO GQL.
+# "Spanner Graph overview" states the graph is declared over existing relational tables with
+# no data migration, and that it requires the Enterprise or Enterprise Plus edition and the
+# GoogleSQL dialect, inheriting Spanner's scalability, availability and consistency.
+schemaVersion: "1"
+type: "component"
+id: "google-spanner-graph"
+kind: "graph-database"
+provider: "gcp"
+defaults:
+  inMemory: false
+  managed: true
+properties:
+  queryLanguage:
+    type: "enum"
+    values: ["gql", "googlesql"]
+    default: "gql"
+  spannerEdition:
+    type: "enum"
+    values: ["enterprise", "enterprise-plus"]
+    default: "enterprise"
+  backedByRelationalTables:
+    type: "boolean"
+    default: true

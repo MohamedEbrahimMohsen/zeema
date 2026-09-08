@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure AI Video Indexer: runs audio and video models over uploaded or live media to produce transcripts, translations, detections and summaries.
+# "What is Azure AI Video Indexer?" states it runs either as a cloud application or as an Azure Arc extension on Kubernetes, that face identification, customization and celebrity recognition need Limited Access approval, and that only silence is detected unless Advanced Audio Analysis is chosen at upload.
+schemaVersion: "1"
+type: "component"
+id: "azure-video-indexer"
+kind: "ai-service"
+provider: "azure"
+defaults:
+  managed: true
+  modality: "multimodal"
+  contentFiltering: true
+  publicEndpoint: true
+  customerManagedKeys: false
+properties:
+  deployment:
+    type: "enum"
+    values: ["cloud", "arc-enabled"]
+    default: "cloud"
+  indexingPreset:
+    type: "enum"
+    values: ["basic-audio", "basic-video", "standard", "advanced"]
+    default: "standard"
+  liveStreamAnalysis:
+    type: "boolean"
+    default: false
+  faceIdentification:
+    type: "boolean"
+    default: false

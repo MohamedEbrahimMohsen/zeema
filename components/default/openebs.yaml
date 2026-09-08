@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenEBS: container-native storage for Kubernetes with a Local engine and a Replicated (Mayastor) engine over NVMe-oF ("OpenEBS Architecture").
+# The StorageClass installed by default is mayastor-single-replica, repl = 1, protocol nvmf ("Create Replicated PV Mayastor StorageClass(s)").
+schemaVersion: "1"
+type: "component"
+id: "openebs"
+kind: "block-storage"
+provider: "default"
+defaults:
+  managed: false
+  snapshots: true
+  redundancy: "local"
+properties:
+  engine:
+    type: "enum"
+    values: ["local", "replicated"]
+    default: "local"
+  replicaCount:
+    type: "integer"
+    default: 1
+  transport:
+    type: "enum"
+    values: ["nvmf", "iscsi"]
+    default: "nvmf"

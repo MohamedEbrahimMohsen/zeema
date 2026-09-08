@@ -1,0 +1,39 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Audit Manager: continuous evidence collection against compliance frameworks. "Understanding
+# how AWS Audit Manager collects evidence": an active assessment collects from four data sources -
+# AWS Config and Security Hub CSPM compliance checks on their own schedules, CloudTrail user
+# activity continually, and describe API calls on a daily, weekly or monthly frequency you choose.
+# "AWS Audit Manager availability change": 35 managed frameworks, remediation is not supported,
+# evidence is retained for two years from the date of its collection, and the service entered
+# maintenance mode on 30 April 2026 and cannot be set up in new accounts or Regions.
+schemaVersion: "1"
+type: "component"
+id: "aws-audit-manager"
+kind: "monitoring"
+provider: "aws"
+defaults:
+  signal: "all"
+  collectorMode: "pull"
+  retentionDays: 730
+  independentOfMonitored: false
+  managed: true
+properties:
+  frameworkType:
+    type: "enum"
+    values: ["standard", "custom"]
+    default: "standard"
+  standardFrameworkCount:
+    type: "integer"
+    default: 35
+  apiCallCollectionFrequency:
+    type: "enum"
+    values: ["daily", "weekly", "monthly"]
+  cloudTrailEvidence:
+    type: "boolean"
+    default: true
+  complianceCheckEvidence:
+    type: "boolean"
+    default: true
+  organizationWide:
+    type: "boolean"
+    default: false

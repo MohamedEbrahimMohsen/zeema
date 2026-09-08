@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apache Beam: unified batch and streaming model executed by a runner (Dataflow, Flink, Spark).
+# "By default, all data in a PCollection is assigned to the single global window, and late data is
+# discarded", and the default trigger is event-time based, firing when the watermark estimates all
+# data has arrived ("Apache Beam, Basics of the Beam model"). Checkpointing and state come from the runner.
+schemaVersion: "1"
+type: "component"
+id: "beam"
+kind: "stream-processor"
+provider: "default"
+defaults:
+  managed: false
+  windowing: "none"
+  lateDataPolicy: "drop"
+  exactlyOnce: false
+properties:
+  runner:
+    type: "enum"
+    values: ["direct", "flink", "spark", "samza", "dataflow"]
+    default: "direct"
+  sdk:
+    type: "enum"
+    values: ["java", "python", "go", "typescript"]
+    default: "java"

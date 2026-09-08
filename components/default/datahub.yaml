@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# DataHub: open-source metadata platform for discovery, governance and observability.
+# "About DataHub Lineage": table- and column-level lineage is produced automatically during
+# ingestion (SQL parser for sources without native lineage); classification runs only where a
+# connector's ClassificationConfig is filled in, and policies govern DataHub itself, not the source.
+schemaVersion: "1"
+type: "component"
+id: "datahub"
+kind: "data-catalog"
+provider: "default"
+defaults:
+  managed: false
+  lineage: true
+  classification: false
+  accessPolicyEnforcement: false
+properties:
+  columnLevelLineage:
+    type: "boolean"
+    default: true
+  sqlParserLineage:
+    type: "boolean"
+    default: true
+  ingestionMode:
+    type: "enum"
+    values: ["ui", "cli"]
+  dataContracts:
+    type: "boolean"
+    default: false

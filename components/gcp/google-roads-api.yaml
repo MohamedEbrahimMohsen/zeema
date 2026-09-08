@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Roads API: snaps GPS traces to roads, returns nearest roads and posted speed limits.
+# "Roads API Usage and Billing": a maximum of 100 points per request, no maximum number of requests per day, and
+# requests per minute are limited across all Roads API endpoints without a published figure.
+schemaVersion: "1"
+type: "component"
+id: "google-roads-api"
+kind: "third-party-api"
+provider: "gcp"
+defaults:
+  managed: true
+  idempotent: true
+  callbackStyle: "none"
+  hostedPage: false
+  handlesMoney: false
+  slaPercent: "99.9"
+properties:
+  maxPointsPerRequest:
+    type: "integer"
+    default: 100
+  dailyRequestLimit:
+    type: "boolean"
+    default: false

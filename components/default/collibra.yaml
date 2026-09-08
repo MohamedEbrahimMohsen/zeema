@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Collibra: SaaS data intelligence platform (catalog, glossary, lineage, quality, privacy).
+# "Platform products and features": automatic data classification predicts the content of
+# registered sources from sampled data, Collibra Data Lineage is cloud-only and ships 30+
+# automated scanners producing attribute-level technical lineage, and Protect grants tiered
+# access to sensitive data through no-code policies.
+schemaVersion: "1"
+type: "component"
+id: "collibra"
+kind: "data-catalog"
+provider: "default"
+defaults:
+  managed: true
+  classification: true
+  lineage: true
+  accessPolicyEnforcement: true
+properties:
+  technicalLineage:
+    type: "boolean"
+    default: true
+  dataQuality:
+    type: "boolean"
+    default: false
+  protectPolicies:
+    type: "boolean"
+    default: false
+  dataMarketplace:
+    type: "boolean"
+    default: false

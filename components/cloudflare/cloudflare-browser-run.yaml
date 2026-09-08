@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Browser Run (formerly Browser Rendering): headless Chromium instances driven on demand from a
+# Worker binding or the REST API. "Browser Run - Limits" gives 3 concurrent browsers on Free and 200
+# on Paid, a 60 second inactivity timeout and a keep-alive of at most 10 minutes.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-browser-run"
+kind: "worker"
+provider: "cloudflare"
+defaults:
+  managed: true
+  trigger: "manual"
+  accelerator: "none"
+  idempotent: false
+properties:
+  plan:
+    type: "enum"
+    values: ["free", "paid"]
+    default: "free"
+  concurrentBrowsers:
+    type: "integer"
+    default: 3
+  idleTimeoutSeconds:
+    type: "integer"
+    default: 60
+  maxKeepAliveMinutes:
+    type: "integer"
+    default: 10

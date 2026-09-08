@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloud Identity: the managed directory of users, groups and devices behind Google Cloud accounts.
+# Per "Cloud Identity overview" it federates with external identity providers and feeds IAM; per
+# "Cloud Identity editions" the Free edition raises the user cap by 50 and carries basic mobile
+# device management and optional 2-Step Verification, while Premium adds advanced device management
+# and the security center.
+schemaVersion: "1"
+type: "component"
+id: "google-cloud-identity"
+kind: "identity-provider"
+provider: "gcp"
+defaults:
+  protocol: "saml"
+  authorizationModel: "none"
+  centralised: true
+  mfa: false
+  managed: true
+properties:
+  edition:
+    type: "enum"
+    values: ["free", "premium"]
+    default: "free"
+  freeUserCap:
+    type: "integer"
+    default: 50
+  deviceManagement:
+    type: "enum"
+    values: ["basic", "advanced"]
+    default: "basic"
+  externalIdpFederation:
+    type: "boolean"
+    default: false

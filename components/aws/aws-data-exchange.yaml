@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Data Exchange: managed entitlement and delivery layer for data another organisation owns, consumed through
+# a data grant or an AWS Marketplace subscription. It "supports five types of data sets: Files, API, Amazon
+# Redshift, Amazon S3, and AWS Lake Formation (Preview)", and receivers pull revisions or call the provider's API
+# rather than being called back ("What is AWS Data Exchange?").
+schemaVersion: "1"
+type: "component"
+id: "aws-data-exchange"
+kind: "third-party-api"
+provider: "aws"
+defaults:
+  managed: true
+  callbackStyle: "none"
+  hostedPage: false
+  handlesMoney: false
+properties:
+  dataSetType:
+    type: "enum"
+    values: ["files", "api", "amazon-redshift", "amazon-s3", "aws-lake-formation"]
+  entitlement:
+    type: "enum"
+    values: ["data-grant", "marketplace-subscription", "open-data"]

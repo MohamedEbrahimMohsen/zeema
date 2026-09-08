@@ -1,0 +1,40 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Security Lake: a managed security data lake of S3 buckets in your own account holding
+# normalised OCSF data in Apache Parquet. "Lifecycle management in Security Lake": the default
+# storage class is S3 Standard and, with no retention settings, data is stored indefinitely;
+# S3 Object Lock is disabled when the data lake buckets are created. Objects inherit the Amazon S3
+# Standard durability profile (three Availability Zones, eleven nines).
+schemaVersion: "1"
+type: "component"
+id: "aws-security-lake"
+kind: "object-store"
+provider: "aws"
+defaults:
+  zones: 3
+  durabilityNines: 11
+  replication: "erasure-coded"
+  tier: "hot"
+  objectLock: false
+  strongReadAfterWrite: true
+  checksumOnWrite: true
+  encryptionAtRest: true
+  versioning: false
+  managed: true
+properties:
+  storageClass:
+    type: "enum"
+    values: ["standard", "standard-ia", "one-zone-ia", "intelligent-tiering", "glacier", "deep-archive"]
+    default: "standard"
+  objectExpiration:
+    type: "boolean"
+    default: false
+  encryptionKey:
+    type: "enum"
+    values: ["s3-managed", "customer-managed-kms"]
+    default: "s3-managed"
+  rollupRegion:
+    type: "boolean"
+    default: false
+  organizationWide:
+    type: "boolean"
+    default: false

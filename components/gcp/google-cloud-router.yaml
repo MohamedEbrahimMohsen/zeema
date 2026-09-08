@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloud Router: a distributed, fully managed BGP speaker that exchanges dynamic routes between a VPC network and peer networks.
+# Defaults from "Cloud Router overview" (managed BGP, no user-run instances; used by Cloud VPN, Cloud Interconnect and Cloud NAT).
+schemaVersion: "1"
+type: "component"
+id: "google-cloud-router"
+kind: "network-fabric"
+provider: "gcp"
+defaults:
+  managed: true
+  overlay: true
+  interconnect: "private"
+properties:
+  attachedTo:
+    type: "enum"
+    values: ["cloud-vpn", "cloud-interconnect", "cloud-nat", "router-appliance"]
+  bgpAsn:
+    type: "integer"
+  advertiseMode:
+    type: "enum"
+    values: ["default", "custom"]

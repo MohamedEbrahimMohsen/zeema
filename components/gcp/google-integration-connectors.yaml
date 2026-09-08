@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud Integration Connectors connection: managed connectivity to a Google Cloud or third-party
+# application, reusable across integrations. Per the connector configuration pages, a connection left with
+# no node values gets a minimum of 2 nodes for availability and a maximum of 50, and autoscales in between.
+schemaVersion: "1"
+type: "component"
+id: "google-integration-connectors"
+kind: "third-party-api"
+provider: "gcp"
+defaults:
+  managed: true
+  callbackStyle: "none"
+properties:
+  minNodes:
+    type: "integer"
+    default: 2
+  maxNodes:
+    type: "integer"
+    default: 50
+  autoScaling:
+    type: "boolean"
+    default: true

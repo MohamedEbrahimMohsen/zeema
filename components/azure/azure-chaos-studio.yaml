@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Chaos Studio: managed chaos engineering and resilience testing. "What is Azure Chaos
+# Studio?": Workspaces running Scenarios are the current resource model and Experiments (classic)
+# is the legacy one; classic faults are service-direct (run through the management API, no agent)
+# or agent-based, a Workspace discovers resources through a scope, and each run produces a report.
+schemaVersion: "1"
+type: "component"
+id: "azure-chaos-studio"
+kind: "worker"
+provider: "azure"
+defaults:
+  managed: true
+  trigger: "manual"
+properties:
+  resourceModel:
+    type: "enum"
+    values: ["workspace", "experiment-classic"]
+  faultType:
+    type: "enum"
+    values: ["service-direct", "agent-based"]
+  scopeLevel:
+    type: "enum"
+    values: ["subscription", "resource-group", "service-group"]
+  scenarioReports:
+    type: "boolean"
+    default: true

@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Ray Serve: model serving library on a Ray cluster, one deployment per served model.
+# Defaults from "Configure Ray Serve deployments": num_replicas 1 with autoscaling opt-in via
+# num_replicas="auto", and max_ongoing_requests 5 since Ray 2.32.0.
+schemaVersion: "1"
+type: "component"
+id: "ray-serve"
+kind: "ml-inference"
+provider: "default"
+defaults:
+  training: "batch"
+  inputs: "live"
+  instances: 1
+  managed: false
+properties:
+  autoscaling:
+    type: "boolean"
+    default: false
+  maxOngoingRequests:
+    type: "integer"
+    default: 5
+  modelComposition:
+    type: "boolean"
+    default: false

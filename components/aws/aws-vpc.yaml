@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon VPC: a logically isolated virtual network in one AWS Region.
+# "What is Amazon VPC?" + "VPC configuration options" + "Amazon VPC quotas": every account gets one
+# default VPC per Region, tenancy defaults to Default (shared hardware), 5 VPCs and 5 IPv4 CIDRs each.
+schemaVersion: "1"
+type: "component"
+id: "aws-vpc"
+kind: "network-fabric"
+provider: "aws"
+defaults:
+  managed: true
+  interconnect: "private"
+  multicast: false
+  kernelBypass: false
+properties:
+  instanceTenancy:
+    type: "enum"
+    values: ["default", "dedicated"]
+    default: "default"
+  ipAddressing:
+    type: "enum"
+    values: ["ipv4-only", "dual-stack", "ipv6-only"]
+    default: "ipv4-only"
+  defaultVpcPerRegion:
+    type: "boolean"
+    default: true
+  vpcsPerRegionQuota:
+    type: "integer"
+    default: 5
+  ipv4CidrBlocksPerVpcQuota:
+    type: "integer"
+    default: 5

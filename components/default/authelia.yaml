@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Authelia: self-hosted authentication and authorization portal, usually behind a reverse proxy.
+# "Access Control": the default_policy is deny and rules raise a request to one_factor or
+# two_factor, so two-factor is not the standing policy. It can also act as an OpenID Connect provider.
+schemaVersion: "1"
+type: "component"
+id: "authelia"
+kind: "identity-provider"
+provider: "default"
+defaults:
+  protocol: "oidc"
+  authorizationModel: "abac"
+  centralised: true
+  managed: false
+  mfa: false
+properties:
+  defaultPolicy:
+    type: "enum"
+    values: ["deny", "bypass", "one-factor", "two-factor"]
+    default: "deny"
+  userStorage:
+    type: "enum"
+    values: ["file", "ldap"]
+    default: "file"
+  sessionStorage:
+    type: "enum"
+    values: ["memory", "redis"]
+    default: "memory"

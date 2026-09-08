@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Netdata Agent: self-hosted per-node monitoring that polls its collectors and stores samples in the
+# dbengine; three storage tiers by default, tier 0 keeping 14 days ("Database configuration reference").
+schemaVersion: "1"
+type: "component"
+id: "netdata"
+kind: "monitoring"
+provider: "default"
+defaults:
+  signal: "metrics"
+  collectorMode: "pull"
+  managed: false
+  retentionDays: 14
+properties:
+  storageTiers:
+    type: "integer"
+    default: 3
+  cloudConnected:
+    type: "boolean"
+    default: false

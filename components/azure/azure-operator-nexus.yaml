@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Operator Nexus: carrier-grade hybrid cloud racks deployed in an operator's own
+# datacenter, with the control plane hosted in Azure and reached over ExpressRoute
+# ("Introduction to Azure Operator Nexus"): bare-metal, network fabric and Nexus Kubernetes LCM.
+schemaVersion: "1"
+type: "component"
+id: "azure-operator-nexus"
+kind: "edge-appliance"
+provider: "azure"
+defaults:
+  connectivity: "connected"
+  formFactor: "rack"
+  cloudManaged: true
+properties:
+  bareMetalManagement:
+    type: "boolean"
+    default: true
+  nexusKubernetes:
+    type: "boolean"
+    default: true
+  networkFabricAutomation:
+    type: "boolean"
+    default: true
+  networkPacketBroker:
+    type: "boolean"
+    default: true

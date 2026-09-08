@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenStack Nova, the compute service that provisions instances. Per the "Compute Service (nova)"
+# documentation it provisions virtual servers, supports bare metal through Ironic and limited containers, and
+# the majority of deployments run the libvirt/KVM compute driver.
+schemaVersion: "1"
+type: "component"
+id: "openstack-nova"
+kind: "virtual-machine"
+provider: "default"
+defaults:
+  managed: false
+properties:
+  computeDriver:
+    type: "enum"
+    values: ["libvirt-kvm", "ironic", "vmware", "hyperv", "zvm"]
+    default: "libvirt-kvm"
+  bareMetal:
+    type: "boolean"
+    default: false
+  availabilityZone:
+    type: "string"

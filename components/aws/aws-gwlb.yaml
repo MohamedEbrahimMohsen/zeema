@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Gateway Load Balancer: managed transparent layer-3 gateway that flow-hashes IP packets to
+# virtual appliances over GENEVE port 6081 ("What is a Gateway Load Balancer?").
+# Flow stickiness is 5-tuple and existing flows stay on a failed target (no_rebalance); cross-zone
+# load balancing and TCP reset are off by default ("Edit attributes for your Gateway Load Balancer").
+schemaVersion: "1"
+type: "component"
+id: "aws-gwlb"
+kind: "load-balancer"
+provider: "aws"
+defaults:
+  managed: true
+  layer: "l4"
+  hashing: "consistent"
+  connectionPreserving: true
+  healthChecks: true
+  global: false
+properties:
+  flowStickiness:
+    type: "enum"
+    values: ["5-tuple", "3-tuple", "2-tuple"]
+    default: "5-tuple"
+  crossZone:
+    type: "boolean"
+    default: false
+  targetFailover:
+    type: "enum"
+    values: ["no-rebalance", "rebalance"]
+    default: "no-rebalance"
+  tcpResetOnUnhealthy:
+    type: "boolean"
+    default: false
+  deletionProtection:
+    type: "boolean"
+    default: false

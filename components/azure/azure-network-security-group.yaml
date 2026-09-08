@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Network Security Group: five-tuple allow/deny filter on a subnet or NIC ("Azure network security
+# groups overview"). The default rules end in DenyAllInbound / DenyAllOutbound at priority 65500, a flow
+# record makes it stateful, and AllowInternetOutBound (65001) leaves egress to the internet open.
+schemaVersion: "1"
+type: "component"
+id: "azure-network-security-group"
+kind: "firewall"
+provider: "azure"
+defaults:
+  managed: true
+  defaultAction: "deny"
+  stateful: true
+  logging: false
+  intrusionPrevention: false
+properties:
+  scope:
+    type: "enum"
+    values: ["subnet", "network-interface"]
+  defaultInternetOutboundAllowed:
+    type: "boolean"
+    default: true
+  defaultVnetInboundAllowed:
+    type: "boolean"
+    default: true

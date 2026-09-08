@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Resend: transactional email API. "Introduction" documents a default 10 requests/second per team;
+# "Idempotency Keys" documents an Idempotency-Key header on send with a 24 hour window.
+schemaVersion: "1"
+type: "component"
+id: "resend"
+kind: "third-party-api"
+provider: "default"
+defaults:
+  managed: true
+  idempotent: true
+  callbackStyle: "webhook"
+  qpsQuota: 10
+properties:
+  idempotencyWindowHours:
+    type: "integer"
+    default: 24

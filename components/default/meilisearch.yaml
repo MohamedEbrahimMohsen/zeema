@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Meilisearch: single-node typo-tolerant search engine. Per "Tasks and asynchronous
+# operations" document additions and settings updates are enqueued and processed one at a
+# time, and per "Typo tolerance" that feature is on by default.
+schemaVersion: "1"
+type: "component"
+id: "meilisearch"
+kind: "search-index"
+provider: "default"
+defaults:
+  structure: "inverted"
+  shardingStrategy: "none"
+  indexing: "async"
+  managed: false
+properties:
+  typoTolerance:
+    type: "boolean"
+    default: true
+  vectorSearch:
+    type: "boolean"
+    default: false
+  taskQueue:
+    type: "boolean"
+    default: true

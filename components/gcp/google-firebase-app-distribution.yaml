@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Firebase App Distribution ("Firebase App Distribution" overview and "App Distribution
+# troubleshooting & FAQ"): stores pre-release APK, AAB and IPA builds and hands them to invited
+# testers and tester groups only. A project keeps at most 1,000 releases per app and a release is
+# removed once it is older than 150 days.
+schemaVersion: "1"
+type: "component"
+id: "google-firebase-app-distribution"
+kind: "artifact-repository"
+provider: "gcp"
+defaults:
+  artifactType: "package"
+  visibility: "private"
+  upstreamProxy: false
+  retentionDays: 150
+  managed: true
+properties:
+  maxReleasesPerApp:
+    type: "integer"
+    default: 1000
+  testerGroups:
+    type: "boolean"
+    default: true
+  inAppFeedback:
+    type: "boolean"
+    default: false

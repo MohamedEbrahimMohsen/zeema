@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# GitHub: hosted Git source repositories. "About repositories" gives three visibility levels - public,
+# accessible to everyone on the internet, private, limited to people you share access with, and internal
+# for an enterprise account - and treats branch protection as rules an administrator adds afterwards.
+schemaVersion: "1"
+type: "component"
+id: "github"
+kind: "artifact-repository"
+provider: "default"
+defaults:
+  artifactType: "source"
+  managed: true
+  upstreamProxy: false
+properties:
+  visibilityLevel:
+    type: "enum"
+    values: ["public", "private", "internal"]
+  hostingModel:
+    type: "enum"
+    values: ["github-com", "enterprise-cloud", "enterprise-server"]
+    default: "github-com"
+  branchProtection:
+    type: "boolean"
+    default: false

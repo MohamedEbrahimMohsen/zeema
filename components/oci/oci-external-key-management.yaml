@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Cloud External Key Management: master keys live in a third-party key management system outside OCI.
+# Defaults from "External Key Management Service" and "How External KMS Works": key material is never imported
+# into OCI, only key references are stored in the vault, and cryptographic operations run in the external KMS.
+schemaVersion: "1"
+type: "component"
+id: "oci-external-key-management"
+kind: "key-management"
+provider: "oci"
+defaults:
+  managed: false
+  hsm: true
+  rotationAutomated: false
+  envelopeEncryption: true
+properties:
+  keyMaterialLocation:
+    type: "enum"
+    values: ["external-kms", "oci-hsm", "oci-software"]
+    default: "external-kms"
+  keyMaterialImportedToOci:
+    type: "boolean"
+    default: false
+  cryptoOperationsExternal:
+    type: "boolean"
+    default: true

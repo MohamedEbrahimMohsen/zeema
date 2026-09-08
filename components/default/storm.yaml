@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apache Storm: topology of spouts and bolts. Core Storm acks tuple trees for at-least-once delivery,
+# with the tuple timeout defaulting to 30 seconds and at-most-once obtained by setting
+# TOPOLOGY_ACKERS to 0; exactly-once is only available through Trident
+# ("Apache Storm, Guaranteeing Message Processing").
+schemaVersion: "1"
+type: "component"
+id: "storm"
+kind: "stream-processor"
+provider: "default"
+defaults:
+  managed: false
+  windowing: "none"
+  exactlyOnce: false
+  stateBackend: "memory"
+properties:
+  acking:
+    type: "boolean"
+    default: true
+  messageTimeoutSeconds:
+    type: "integer"
+    default: 30
+  api:
+    type: "enum"
+    values: ["core", "trident", "streams"]
+    default: "core"

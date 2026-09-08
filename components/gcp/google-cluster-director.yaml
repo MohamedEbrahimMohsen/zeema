@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cluster Director: automated lifecycle management for AI and HPC clusters of compute- and
+# accelerator-optimized Compute Engine instances ("Cluster Director overview"). It ships a managed
+# Slurm environment for job scheduling, topology-aware scheduling that colocates instances, and
+# autohealing that replaces failed instances; capacity is scaled by editing machine configurations.
+schemaVersion: "1"
+type: "component"
+id: "google-cluster-director"
+kind: "big-data-cluster"
+provider: "gcp"
+defaults:
+  managed: true
+  engine: "hpc"
+  spotInstances: false
+  zoneRedundant: false
+properties:
+  orchestrator:
+    type: "enum"
+    values: ["slurm"]
+    default: "slurm"
+  autohealing:
+    type: "boolean"
+    default: true
+  topologyAwareScheduling:
+    type: "boolean"
+    default: true

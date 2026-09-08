@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Trino: distributed SQL query engine that queries data sets spread over heterogeneous sources
+# through connectors; it holds no storage of its own. "MERGE": only connectors that implement MERGE
+# can be the target of an upsert, so data modification is a property of the connector, not the engine.
+schemaVersion: "1"
+type: "component"
+id: "trino"
+kind: "data-warehouse"
+provider: "default"
+defaults:
+  realtime: false
+  upsert: false
+  managed: false
+properties:
+  storesData:
+    type: "boolean"
+    default: false
+  queryFederation:
+    type: "boolean"
+    default: true
+  topology:
+    type: "enum"
+    values: ["single-node", "coordinator-workers"]
+    default: "coordinator-workers"

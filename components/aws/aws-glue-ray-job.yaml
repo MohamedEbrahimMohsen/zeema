@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Glue for Ray job: managed Ray job run on the same AWS Glue job machinery as Spark ETL, "designed for
+# running the same script on a recurring cadence" ("Working with Ray jobs in AWS Glue"). Maintenance: closed to
+# new customers since 31 March 2026; existing jobs stay placeable until end of support. Ray jobs have access to
+# one worker type, Z.2X, and the runtime is chosen from the Runtime field, whose only valid value is Ray2.4.
+schemaVersion: "1"
+type: "component"
+id: "aws-glue-ray-job"
+kind: "worker"
+provider: "aws"
+defaults:
+  managed: true
+  trigger: "batch"
+  accelerator: "none"
+  rateControl: "none"
+  fanoutStrategy: "none"
+properties:
+  workerType:
+    type: "enum"
+    values: ["z-2x"]
+    default: "z-2x"
+  rayRuntime:
+    type: "string"
+    default: "Ray2.4"
+  numberOfWorkers:
+    type: "integer"

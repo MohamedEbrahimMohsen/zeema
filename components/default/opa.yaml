@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Open Policy Agent: general-purpose policy engine that decides, it does not enforce.
+# "Open Policy Agent Documentation": policies are written in Rego; OPA runs as a daemon, sidecar,
+# CLI or embedded Go library and returns arbitrary structured decisions, so no effect is assumed.
+schemaVersion: "1"
+type: "component"
+id: "opa"
+kind: "policy-engine"
+provider: "default"
+defaults:
+  scope: "resource"
+  remediation: false
+  managed: false
+properties:
+  policyLanguage:
+    type: "enum"
+    values: ["rego"]
+    default: "rego"
+  deploymentMode:
+    type: "enum"
+    values: ["daemon", "sidecar", "library", "cli"]
+    default: "daemon"
+  bundleDistribution:
+    type: "boolean"
+    default: false

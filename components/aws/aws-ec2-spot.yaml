@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon EC2 Spot Instances: spare EC2 capacity at a discount that AWS reclaims when it needs it
+# back ("Spot Instances"). Interruption gives a two-minute notice and terminates the instance
+# unless another behaviour is set ("Behavior of Spot Instance interruptions").
+schemaVersion: "1"
+type: "component"
+id: "aws-ec2-spot"
+kind: "virtual-machine"
+provider: "aws"
+defaults:
+  managed: false
+  diskEncryption: false
+  zoneRedundant: false
+properties:
+  interruptionBehavior:
+    type: "enum"
+    values: ["terminate", "stop", "hibernate"]
+    default: "terminate"
+  requestType:
+    type: "enum"
+    values: ["one-time", "persistent"]
+    default: "one-time"
+  interruptionNoticeSeconds:
+    type: "integer"
+    default: 120
+  maxPriceSet:
+    type: "boolean"
+    default: false

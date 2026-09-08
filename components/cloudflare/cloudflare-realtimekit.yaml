@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# RealtimeKit: managed audio and video platform on top of the Realtime SFU. Unlike the raw
+# SFU it owns sessions: "your application owns users and workflows, while RealtimeKit
+# manages sessions and media", with meetings, participant roles, recording and transcription
+# ("RealtimeKit overview").
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-realtimekit"
+kind: "media-router"
+provider: "cloudflare"
+defaults:
+  managed: true
+  mode: "sfu"
+properties:
+  roomsManaged:
+    type: "boolean"
+    default: true
+  participantRoles:
+    type: "boolean"
+    default: true
+  recording:
+    type: "boolean"
+  transcription:
+    type: "boolean"

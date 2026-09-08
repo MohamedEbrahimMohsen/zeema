@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# GKE Multi-Cloud: Kubernetes clusters created in AWS or Azure whose control plane runs in the
+# customer's own cloud account as a Google-managed service, plus attached clusters for any
+# CNCF-conformant cluster ("GKE Multi-Cloud documentation"). The control plane runs three replicas
+# for high availability and is administered from the Google Cloud console through the Connect gateway.
+schemaVersion: "1"
+type: "component"
+id: "google-gke-multi-cloud"
+kind: "container-orchestrator"
+provider: "gcp"
+defaults:
+  managed: true
+properties:
+  platform:
+    type: "enum"
+    values: ["aws", "azure", "attached"]
+  controlPlaneReplicas:
+    type: "integer"
+    default: 3
+  connectGateway:
+    type: "boolean"
+    default: true

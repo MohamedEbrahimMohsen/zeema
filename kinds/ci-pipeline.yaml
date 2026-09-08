@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Delivery rather than runtime, so it is not a worker: it has triggers, runners and approval gates. approvalRequired, artifactSigning and selfHostedRunners have no default so release-control rules can catch their absence.
+schemaVersion: "1"
+type: "kind"
+id: "ci-pipeline"
+category: "ops"
+properties:
+  trigger:
+    type: "enum"
+    values: ["manual", "commit", "pull-request", "schedule"]
+  approvalRequired:
+    type: "boolean"
+  selfHostedRunners:
+    type: "boolean"
+  artifactSigning:
+    type: "boolean"
+  secretsFromVault:
+    type: "boolean"
+  concurrency:
+    type: "integer"
+  managed:
+    type: "boolean"
+    default: false

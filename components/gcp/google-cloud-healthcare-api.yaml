@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloud Healthcare API dataset: a regional container holding FHIR, DICOM and HL7v2 stores.
+# "Cloud Healthcare API overview": each dataset is created in one storage location and its
+# stores live in that same region. "Enable customer-managed encryption keys (CMEK)":
+# Google Cloud encrypts the data at rest with Google-managed keys unless a Cloud KMS key
+# is supplied at dataset creation, and the key cannot be changed afterwards.
+schemaVersion: "1"
+type: "component"
+id: "google-cloud-healthcare-api"
+kind: "nosql-database"
+provider: "gcp"
+defaults:
+  model: "document"
+  replication: "single-region"
+  encryptionAtRest: true
+  managed: true
+properties:
+  storeType:
+    type: "enum"
+    values: ["fhir", "dicom", "hl7v2"]
+    default: "fhir"
+  fhirVersion:
+    type: "enum"
+    values: ["dstu2", "stu3", "r4", "r5"]
+  customerManagedKeys:
+    type: "boolean"
+    default: false
+  deidentification:
+    type: "boolean"
+    default: false
+  pubsubNotifications:
+    type: "boolean"
+    default: false
+  resourceVersioning:
+    type: "boolean"
+    default: false

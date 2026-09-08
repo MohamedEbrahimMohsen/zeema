@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI File Storage with Lustre: a managed Lustre 2.15.5 file system for AI training and HPC, sold
+# in four throughput tiers of 125, 250, 500 or 1000 MBps per provisioned TB, with write throughput
+# up to half of read ("Overview of File Storage with Lustre"). "Creating a File System": encryption
+# uses Oracle-managed keys and root squash is None unless you set it, with squash UID/GID 65534.
+schemaVersion: "1"
+type: "component"
+id: "oci-file-storage-lustre"
+kind: "file-storage"
+provider: "oci"
+defaults:
+  managed: true
+  protocol: "lustre"
+  redundancy: "zonal"
+  publicAccess: false
+  backupEnabled: false
+properties:
+  performanceTier:
+    type: "enum"
+    values: ["mbps-125", "mbps-250", "mbps-500", "mbps-1000"]
+  encryptionAtRest:
+    type: "boolean"
+    default: true
+  rootSquash:
+    type: "enum"
+    values: ["none", "root"]
+    default: "none"
+  lustreVersion:
+    type: "string"
+    default: "2.15.5"

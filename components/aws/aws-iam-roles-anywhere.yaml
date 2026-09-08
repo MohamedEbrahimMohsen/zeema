@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IAM Roles Anywhere: workloads outside AWS exchange an X.509 certificate from a trusted CA
+# for temporary IAM credentials. "What is AWS IAM Roles Anywhere?" — trust boundary is the
+# account, no organization-wide controls; CreateProfile defaults session duration to 3600 seconds.
+schemaVersion: "1"
+type: "component"
+id: "aws-iam-roles-anywhere"
+kind: "identity-provider"
+provider: "aws"
+defaults:
+  protocol: "iam"
+  authorizationModel: "rbac"
+  centralised: false
+  mfa: false
+  managed: true
+properties:
+  trustAnchorSource:
+    type: "enum"
+    values: ["aws-private-ca", "external-ca"]
+    default: "aws-private-ca"
+  sessionDurationSeconds:
+    type: "integer"
+    default: 3600
+  acceptRoleSessionName:
+    type: "boolean"
+    default: false

@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Thanos: long-term storage for Prometheus over an object store. Per "Thanos Compactor",
+# downsampling to 5m and 1h runs by default and the three retention flags default to 0d,
+# so nothing is deleted until retention is configured.
+schemaVersion: "1"
+type: "component"
+id: "thanos"
+kind: "timeseries-database"
+provider: "default"
+defaults:
+  downsampling: true
+  tiers: "hot-cold"
+  labelIndex: true
+  compression: "gorilla"
+  managed: false
+properties:
+  downsampleResolutions:
+    type: "enum"
+    values: ["raw", "raw-5m", "raw-5m-1h"]
+    default: "raw-5m-1h"
+  objectStoreBackend:
+    type: "enum"
+    values: ["s3", "gcs", "azure", "swift", "filesystem"]
+    default: "s3"
+  deduplication:
+    type: "boolean"
+    default: true

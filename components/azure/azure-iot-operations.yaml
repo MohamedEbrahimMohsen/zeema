@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure IoT Operations: unified edge data plane on Azure Arc-enabled Kubernetes, with an
+# edge-native MQTT broker, Akri asset discovery and data flows ("What Is Azure IoT
+# Operations?"). It keeps running for a maximum of 72 hours while disconnected.
+schemaVersion: "1"
+type: "component"
+id: "azure-iot-operations"
+kind: "edge-appliance"
+provider: "azure"
+defaults:
+  connectivity: "intermittent"
+  offlineMode: true
+  formFactor: "virtual"
+  cloudManaged: true
+properties:
+  offlineDurationHours:
+    type: "integer"
+    default: 72
+  mqttBroker:
+    type: "boolean"
+    default: true
+  dataFlows:
+    type: "boolean"
+    default: true
+  assetDiscovery:
+    type: "boolean"
+    default: true

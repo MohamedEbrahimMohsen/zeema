@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# BigQuery Data Transfer Service: managed scheduled loads into BigQuery from SaaS, storage and
+# database sources. "BigQuery Data Transfer Service overview" and "Scheduling queries": transfers run
+# on a service-managed schedule, daily by default, and support manual backfill runs.
+schemaVersion: "1"
+type: "component"
+id: "google-bigquery-data-transfer"
+kind: "worker"
+provider: "gcp"
+defaults:
+  managed: true
+  trigger: "schedule"
+  schedule: "daily"
+properties:
+  refreshWindowDays:
+    type: "integer"
+  backfill:
+    type: "boolean"
+    default: true

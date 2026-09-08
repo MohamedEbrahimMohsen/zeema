@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Managed Blockchain (AMB) network: a private, permissioned Hyperledger Fabric network of
+# members and peer nodes holding an immutable, cryptographically secured ledger
+# ("What Is Amazon Managed Blockchain (AMB) Hyperledger Fabric?").
+# Membership changes go through a proposal and voting policy set at network creation, clients reach
+# the network over AWS PrivateLink, and transactions must stay under 4 MB
+# ("Key Concepts: AMB Networks, Members, and Peer Nodes").
+schemaVersion: "1"
+type: "component"
+id: "aws-managed-blockchain"
+kind: "ledger"
+provider: "aws"
+defaults:
+  managed: true
+  doubleEntry: false
+  appendOnly: true
+  tamperEvident: true
+  sealed: false
+properties:
+  framework:
+    type: "enum"
+    values: ["hyperledger-fabric", "ethereum", "bitcoin"]
+    default: "hyperledger-fabric"
+  edition:
+    type: "enum"
+    values: ["starter", "standard"]
+  votingPolicyGoverned:
+    type: "boolean"
+    default: true
+  privateLinkAccess:
+    type: "boolean"
+    default: true
+  maxTransactionSizeMb:
+    type: "integer"
+    default: 4

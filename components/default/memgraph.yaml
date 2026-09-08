@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Memgraph: in-memory Cypher graph database. Per "Storage memory usage" the default storage
+# mode is IN_MEMORY_TRANSACTIONAL, which keeps the graph in RAM and durably writes WAL files
+# and periodic snapshots; a fresh install runs as a single instance with no replicas.
+schemaVersion: "1"
+type: "component"
+id: "memgraph"
+kind: "graph-database"
+provider: "default"
+defaults:
+  inMemory: true
+  masterPerShard: false
+  crossRegionConsistency: "none"
+  managed: false
+properties:
+  storageMode:
+    type: "enum"
+    values: ["in-memory-transactional", "in-memory-analytical", "on-disk-transactional"]
+    default: "in-memory-transactional"
+  durability:
+    type: "boolean"
+    default: true
+  replicas:
+    type: "integer"
+    default: 0

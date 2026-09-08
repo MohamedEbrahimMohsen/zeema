@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Gitea: "a painless, self-hosted, all-in-one software development service" written in Go, with code
+# hosting, issues, Gitea Actions and a registry for over 20 package types ("About Gitea"). The
+# "Configuration Cheat Sheet" gives the shipped defaults: PROTOCOL http, HTTP_PORT 3000 and
+# DEFAULT_PRIVATE last, so a new repository copies the privacy of the previous one.
+schemaVersion: "1"
+type: "component"
+id: "gitea"
+kind: "artifact-repository"
+provider: "default"
+defaults:
+  artifactType: "source"
+  managed: false
+  upstreamProxy: false
+properties:
+  httpPort:
+    type: "integer"
+    default: 3000
+  protocol:
+    type: "enum"
+    values: ["http", "https", "fcgi", "http-unix", "fcgi-unix"]
+    default: "http"
+  defaultRepositoryPrivacy:
+    type: "enum"
+    values: ["last", "private", "public"]
+    default: "last"
+  packageRegistry:
+    type: "boolean"
+    default: true

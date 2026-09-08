@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# WSO2 API Manager: self-hosted open source API management platform (publisher, developer portal,
+# gateway, key manager). Per the "Overview", API security is OAuth 2.0 based with API key, mutual SSL
+# and JWT also supported, and new APIs carry the Unlimited business plan, so nothing is throttled.
+schemaVersion: "1"
+type: "component"
+id: "wso2-api-manager"
+kind: "api-gateway"
+provider: "default"
+defaults:
+  managed: false
+  auth: "oauth2"
+  rateLimiting: false
+properties:
+  gatewayType:
+    type: "enum"
+    values: ["classic", "kubernetes", "federated"]
+    default: "classic"
+  keyManager:
+    type: "enum"
+    values: ["built-in", "external"]
+    default: "built-in"

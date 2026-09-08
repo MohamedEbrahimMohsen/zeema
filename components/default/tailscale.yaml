@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Tailscale: hosted coordination plane over a WireGuard data plane. Devices form a
+# peer-to-peer mesh (tailnet) with end-to-end encryption; per "Tailnet policy file",
+# a new tailnet uses the default allow-all policy until ACLs are written.
+schemaVersion: "1"
+type: "component"
+id: "tailscale"
+kind: "vpn-gateway"
+provider: "default"
+defaults:
+  managed: true
+  tunnelType: "wireguard"
+  peerType: "point-to-site"
+  bgp: false
+  activeActive: false
+properties:
+  topology:
+    type: "enum"
+    values: ["mesh", "hub-and-spoke"]
+    default: "mesh"
+  defaultAcl:
+    type: "enum"
+    values: ["allow-all", "custom"]
+    default: "allow-all"
+  exitNode:
+    type: "boolean"
+    default: false
+  subnetRouter:
+    type: "boolean"
+    default: false

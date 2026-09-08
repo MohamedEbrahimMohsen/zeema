@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Data Integrator on OCI: the ODI Studio and agent stack deployed from Marketplace as a Resource
+# Manager stack you run on your own compute ("Getting Started with Oracle Data Integrator on Oracle Cloud
+# Marketplace"). Installing it with the option to create a repository in an Autonomous Database produces an
+# empty ODI repository and a default standalone agent, which orchestrates ELT jobs against the target.
+schemaVersion: "1"
+type: "component"
+id: "oci-data-integrator"
+kind: "worker"
+provider: "oci"
+defaults:
+  trigger: "schedule"
+properties:
+  agentType:
+    type: "enum"
+    values: ["standalone", "collocated", "java-ee"]
+    default: "standalone"
+  repository:
+    type: "enum"
+    values: ["autonomous-database", "mysql-embedded"]
+    default: "autonomous-database"
+  licensing:
+    type: "enum"
+    values: ["bring-your-own-license", "license-included"]
+    default: "bring-your-own-license"

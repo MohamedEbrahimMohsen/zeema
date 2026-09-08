@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Translator: machine translation for text, documents and custom models.
+# "Service limits - Translator" states each translate request is capped at 50,000 characters, hourly character quotas run from 2 million (F0) to 200 million (S4), and batch document translation accepts documents up to 40 MB while synchronous translation accepts 10 MB.
+schemaVersion: "1"
+type: "component"
+id: "azure-ai-translator"
+kind: "ai-service"
+provider: "azure"
+defaults:
+  managed: true
+  modality: "text"
+  publicEndpoint: true
+  customerManagedKeys: false
+properties:
+  tier:
+    type: "enum"
+    values: ["f0", "s1", "s2", "s3", "s4"]
+  maxCharactersPerRequest:
+    type: "integer"
+    default: 50000
+  documentTranslationMode:
+    type: "enum"
+    values: ["synchronous", "batch"]
+  customTranslator:
+    type: "boolean"
+    default: false

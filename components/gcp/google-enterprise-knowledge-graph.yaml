@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Enterprise Knowledge Graph (Preview): a managed service that reconciles entities across up to ten
+# BigQuery source tables into clusters with stable machine IDs, written back to BigQuery, and serves
+# entity lookups through the Knowledge Graph Search API ("Enterprise Knowledge Graph overview").
+schemaVersion: "1"
+type: "component"
+id: "google-enterprise-knowledge-graph"
+kind: "graph-database"
+provider: "gcp"
+defaults:
+  managed: true
+  inMemory: false
+  masterPerShard: false
+  crossRegionConsistency: "none"
+properties:
+  entityReconciliation:
+    type: "boolean"
+    default: true
+  knowledgeGraphSearch:
+    type: "boolean"
+    default: true
+  outputTarget:
+    type: "enum"
+    values: ["bigquery"]
+    default: "bigquery"

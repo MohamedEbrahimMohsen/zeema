@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Volcano: Kubernetes-native batch scheduler for AI, big data and HPC jobs.
+# Facts from the Volcano project README: self-installed scheduler, controller-manager and
+# admission webhook in volcano-system; gang scheduling, queues, fair-share, preemption, backfill.
+schemaVersion: "1"
+type: "component"
+id: "volcano"
+kind: "big-data-cluster"
+provider: "default"
+defaults:
+  engine: "kubernetes-batch"
+  autoscaling: false
+  spotInstances: false
+  managed: false
+properties:
+  gangScheduling:
+    type: "boolean"
+    default: true
+  workloadFramework:
+    type: "enum"
+    values: ["spark", "flink", "ray", "tensorflow", "pytorch", "mpi"]
+  queues:
+    type: "integer"
+  preemption:
+    type: "boolean"

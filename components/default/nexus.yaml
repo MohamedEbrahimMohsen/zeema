@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Sonatype Nexus Repository: universal package manager supporting 30+ formats, with hosted repositories for
+# internal artifacts, proxy repositories caching external sources and group repositories exposing several
+# behind one endpoint ("Sonatype Nexus Repository"). Cleanup policies are configured per repository, and
+# vulnerability and malware detection are the separate Lifecycle and Repository Firewall products.
+schemaVersion: "1"
+type: "component"
+id: "nexus"
+kind: "artifact-repository"
+provider: "default"
+defaults:
+  artifactType: "package"
+  managed: false
+  upstreamProxy: false
+  vulnerabilityScanning: false
+properties:
+  repositoryType:
+    type: "enum"
+    values: ["hosted", "proxy", "group"]
+    default: "hosted"
+  edition:
+    type: "enum"
+    values: ["community", "pro"]
+    default: "community"
+  cleanupPolicy:
+    type: "boolean"
+    default: false

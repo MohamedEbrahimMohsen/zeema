@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Resilience Hub: assesses an application against an RTO/RPO resiliency policy, scores it and recommends
+# alarms, SOPs and AWS FIS tests. "AWS Resilience Hub - Resilience management" and the CreateApp API reference:
+# an application is described from CloudFormation, Terraform, Resource Groups or EKS sources, a resiliency policy
+# is attached, and the assessment schedule is either Daily or Disabled.
+schemaVersion: "1"
+type: "component"
+id: "aws-resilience-hub"
+kind: "monitoring"
+provider: "aws"
+defaults:
+  signal: "alerts"
+  collectorMode: "pull"
+  independentOfMonitored: true
+  managed: true
+properties:
+  assessmentSchedule:
+    type: "enum"
+    values: ["disabled", "daily"]
+  permissionModel:
+    type: "enum"
+    values: ["legacy-iam-user", "role-based"]
+  driftDetection:
+    type: "boolean"
+    default: true

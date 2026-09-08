@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Citrix Virtual Apps and Desktops: customer-deployed brokering of published apps and desktops
+# through Delivery Controllers, VDAs and StoreFront. "By default, horizontal load balancing is
+# enabled", which assigns each session to the least-loaded machine ("Load balance machines"). The
+# Maximum number of sessions policy defaults to 250 per server and concurrent logon tolerance to 2,
+# while CPU usage load management is off by default ("Load management policy settings").
+schemaVersion: "1"
+type: "component"
+id: "citrix-virtual-apps"
+kind: "virtual-desktop"
+provider: "default"
+defaults:
+  managed: false
+  loadBalancing: "breadth-first"
+  maxSessionsPerHost: 250
+properties:
+  sessionOsType:
+    type: "enum"
+    values: ["single-session", "multi-session"]
+  desktopAssignment:
+    type: "enum"
+    values: ["random", "static"]
+  concurrentLogonTolerance:
+    type: "integer"
+    default: 2
+  cpuUsageLoadManagement:
+    type: "boolean"
+    default: false

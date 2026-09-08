@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Managed Grafana: fully managed Grafana workspaces that query metrics, logs and traces from AWS and
+# third-party data sources. "What is Amazon Managed Grafana?" and the CreateWorkspace API reference: a workspace
+# must authenticate through IAM Identity Center or SAML 2.0, grafanaVersion defaults to the latest version, and
+# without networkAccessControl all IP addresses and VPC endpoints can reach the workspace.
+schemaVersion: "1"
+type: "component"
+id: "aws-managed-grafana"
+kind: "monitoring"
+provider: "aws"
+defaults:
+  signal: "all"
+  collectorMode: "pull"
+  managed: true
+properties:
+  authenticationProvider:
+    type: "enum"
+    values: ["iam-identity-center", "saml"]
+  accountAccessType:
+    type: "enum"
+    values: ["current-account", "organization"]
+    default: "current-account"
+  networkAccessControl:
+    type: "boolean"
+    default: false
+  ipAddressType:
+    type: "enum"
+    values: ["ipv4", "dual-stack"]
+    default: "ipv4"

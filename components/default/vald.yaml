@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Vald: Kubernetes-native distributed ANN engine built on the NGT graph-and-tree algorithm.
+# "About Vald": indexes are stored on several agents so index replicas exist and rebalance when an
+# agent is lost. Helm chart values: the load-balancing gateway writes 3 index replicas by default.
+schemaVersion: "1"
+type: "component"
+id: "vald"
+kind: "vector-database"
+provider: "default"
+defaults:
+  metadataFiltering: false
+  hybridSearch: false
+  replicas: 3
+  managed: false
+properties:
+  algorithm:
+    type: "enum"
+    values: ["ngt", "faiss"]
+    default: "ngt"
+  objectType:
+    type: "enum"
+    values: ["float", "float16", "uint8"]
+    default: "float"
+  autoIndexing:
+    type: "boolean"
+    default: true

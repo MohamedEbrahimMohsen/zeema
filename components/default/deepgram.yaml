@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Deepgram: hosted speech-to-text and text-to-speech API with batch (pre-recorded) and streaming endpoints.
+# Per "Model Improvement Partnership Program", participation is voluntary and the only customer data used
+# for future model training is data contractually included through the program; all data is encrypted in
+# flight with TLS 1.3 and at rest with AES-256. A self-hosted deployment is offered as a separate product.
+schemaVersion: "1"
+type: "component"
+id: "deepgram"
+kind: "ai-service"
+provider: "default"
+defaults:
+  managed: true
+  modality: "speech"
+  publicEndpoint: true
+properties:
+  transcriptionMode:
+    type: "enum"
+    values: ["pre-recorded", "streaming"]
+    default: "pre-recorded"
+  modelImprovementProgram:
+    type: "boolean"
+    default: false
+  selfHosted:
+    type: "boolean"
+    default: false
+  redaction:
+    type: "boolean"
+    default: false

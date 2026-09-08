@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Greenplum: self-managed MPP analytics database on PostgreSQL. "Choosing the table storage model":
+# row-oriented heap tables are the default storage type, append-optimized storage must be asked for
+# with appendoptimized=true, and column orientation is only available on append-optimized tables.
+schemaVersion: "1"
+type: "component"
+id: "greenplum"
+kind: "data-warehouse"
+provider: "default"
+defaults:
+  realtime: false
+  format: "row"
+  managed: false
+properties:
+  storageModel:
+    type: "enum"
+    values: ["heap", "append-optimized"]
+    default: "heap"
+  orientation:
+    type: "enum"
+    values: ["row", "column"]
+    default: "row"

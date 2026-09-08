@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apache Hadoop YARN: ResourceManager plus per-node NodeManagers accepting application submissions.
+# Defaults from "Apache Hadoop YARN" and yarn-default.xml: CapacityScheduler, RM HA off, ACLs off, HTTP_ONLY.
+schemaVersion: "1"
+type: "component"
+id: "hadoop-yarn"
+kind: "big-data-cluster"
+provider: "default"
+defaults:
+  engine: "hadoop"
+  autoscaling: false
+  spotInstances: false
+  managed: false
+properties:
+  scheduler:
+    type: "enum"
+    values: ["capacity", "fair", "fifo"]
+    default: "capacity"
+  resourceManagerHa:
+    type: "boolean"
+    default: false
+  aclEnabled:
+    type: "boolean"
+    default: false
+  httpPolicy:
+    type: "enum"
+    values: ["http-only", "https-only"]
+    default: "http-only"
+  stateStoreRecovery:
+    type: "boolean"
+    default: false

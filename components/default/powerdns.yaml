@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# PowerDNS Authoritative Server: self-hosted authoritative-only nameserver with pluggable backends.
+# Per "Settings", default-ttl is 3600, launch has no default backend, the resolver setting (used for
+# ALIAS and stub lookups) is unset, and both the HTTP API and RFC 2136 dnsupdate are disabled.
+schemaVersion: "1"
+type: "component"
+id: "powerdns"
+kind: "dns"
+provider: "default"
+defaults:
+  managed: false
+  anycast: false
+  ttlSeconds: 3600
+properties:
+  backend:
+    type: "enum"
+    values: ["bind", "gmysql", "gpgsql", "gsqlite3", "lmdb", "remote"]
+  apiEnabled:
+    type: "boolean"
+    default: false
+  dynamicUpdates:
+    type: "boolean"
+    default: false

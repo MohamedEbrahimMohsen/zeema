@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Athena workgroup: serverless interactive SQL over data in place in Amazon S3 ("What is Amazon Athena?"),
+# so it is managed and pays per query. Queries run in the primary workgroup on the Athena SQL engine unless a
+# workgroup selects Apache Spark; query-result encryption and capacity reservations are opt-in ("Create a workgroup").
+schemaVersion: "1"
+type: "component"
+id: "aws-athena"
+kind: "data-warehouse"
+provider: "aws"
+defaults:
+  managed: true
+  realtime: false
+  upsert: false
+properties:
+  queryEngine:
+    type: "enum"
+    values: ["athena-sql", "apache-spark"]
+    default: "athena-sql"
+  capacityMode:
+    type: "enum"
+    values: ["on-demand", "provisioned"]
+    default: "on-demand"
+  queryResultEncryption:
+    type: "boolean"
+    default: false

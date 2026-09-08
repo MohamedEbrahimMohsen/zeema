@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# MariaDB MaxScale: plugin-based database proxy for MariaDB and MySQL, one router per
+# service. Service parameters: connection sharing is off (idle_session_pool_time -1s);
+# readwritesplit defaults to slave_selection_criteria least_current_operations,
+# causal_reads none, transaction_replay off, max_slave_connections 255.
+schemaVersion: "1"
+type: "component"
+id: "maxscale"
+kind: "database-proxy"
+provider: "default"
+defaults:
+  pooling: false
+  routing: "none"
+properties:
+  router:
+    type: "enum"
+    values: ["readwritesplit", "readconnroute", "schemarouter", "smartrouter", "binlogrouter"]
+  causalReads:
+    type: "enum"
+    values: ["none", "local", "global", "fast", "universal"]
+    default: "none"
+  transactionReplay:
+    type: "boolean"
+    default: false
+  maxSlaveConnections:
+    type: "integer"
+    default: 255

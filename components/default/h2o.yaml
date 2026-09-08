@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# H2O-3: open source in-memory distributed ML cluster with AutoML and the Flow web UI.
+# Defaults from "Welcome to H2O-3" and "Starting H2O-3": nodes join a cluster at launch, the REST
+# port is 54321 and internal security is off unless Kerberos, LDAP or PAM is configured.
+schemaVersion: "1"
+type: "component"
+id: "h2o"
+kind: "ml-platform"
+provider: "default"
+defaults:
+  experimentTracking: false
+  modelRegistry: false
+  managed: false
+properties:
+  port:
+    type: "integer"
+    default: 54321
+  authentication:
+    type: "enum"
+    values: ["none", "kerberos", "ldap", "pam"]
+    default: "none"
+  autoMl:
+    type: "boolean"
+    default: true
+  flowUi:
+    type: "boolean"
+    default: true

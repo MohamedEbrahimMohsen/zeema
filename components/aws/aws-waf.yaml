@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS WAF web ACL: managed layer-7 firewall for HTTP/HTTPS requests to CloudFront, API Gateway,
+# Application Load Balancer, AppSync, Cognito, App Runner and Verified Access; rule actions are
+# terminating and the web ACL default action must be Allow or Block ("What is AWS WAF?",
+# "Setting the protection pack (web ACL) default action in AWS WAF"). Bot Control and rate-based rules
+# are opt-in, logging is opt-in, capacity is 5,000 WCUs and the body inspection limit is 16 KB by
+# default for CloudFront and API Gateway ("AWS WAF quotas").
+schemaVersion: "1"
+type: "component"
+id: "aws-waf"
+kind: "waf"
+provider: "aws"
+defaults:
+  managed: true
+  mode: "prevention"
+  botProtection: false
+  rateLimiting: false
+properties:
+  defaultAction:
+    type: "enum"
+    values: ["allow", "block"]
+  webAclCapacityUnits:
+    type: "integer"
+    default: 5000
+  bodyInspectionLimitKb:
+    type: "integer"
+    default: 16
+  logging:
+    type: "boolean"
+    default: false
+  scope:
+    type: "enum"
+    values: ["cloudfront", "regional"]

@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle OCI Generative AI Agents: a fully managed agent with RAG, SQL and function-calling
+# tools, reached through an agent endpoint. "Limits and Limitations for Generative AI Agents":
+# 100 MB per file, 24,000 characters per user message, 1,000 sessions per endpoint, 3 endpoints
+# per agent. "Creating an Endpoint": session idle timeout defaults to 3600 seconds.
+schemaVersion: "1"
+type: "component"
+id: "oci-generative-ai-agents"
+kind: "ai-service"
+provider: "oci"
+defaults:
+  modality: "text"
+  publicEndpoint: true
+  managed: true
+properties:
+  sessionIdleTimeoutSeconds:
+    type: "integer"
+    default: 3600
+  maxUserMessageCharacters:
+    type: "integer"
+    default: 24000
+  maxFileSizeMb:
+    type: "integer"
+    default: 100
+  maxSessionsPerEndpoint:
+    type: "integer"
+    default: 1000
+  contentModeration:
+    type: "enum"
+    values: ["disable", "block", "inform"]
+  piiProtection:
+    type: "enum"
+    values: ["disable", "block", "inform"]

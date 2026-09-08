@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloud NGFW (Cloud Firewall): distributed stateful firewall policies attached to VPC networks.
+# Defaults from "VPC firewall rules" (implied deny ingress and implied allow egress, stateful connection tracking, rule logging disabled, new rules at priority 1000) and "About Cloud NGFW" (Essentials tier at no cost, Enterprise adds layer-7 intrusion prevention).
+schemaVersion: "1"
+type: "component"
+id: "google-cloud-ngfw"
+kind: "firewall"
+provider: "gcp"
+defaults:
+  managed: true
+  defaultAction: "deny"
+  stateful: true
+  logging: false
+  intrusionPrevention: false
+properties:
+  tier:
+    type: "enum"
+    values: ["essentials", "standard", "enterprise"]
+    default: "essentials"
+  policyType:
+    type: "enum"
+    values: ["hierarchical", "global-network", "regional-network"]
+  newRulePriority:
+    type: "integer"
+    default: 1000

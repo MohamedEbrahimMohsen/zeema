@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Trusted Advisor: inspects an AWS account against best-practice checks for cost, availability, performance,
+# security and service limits. "AWS Trusted Advisor": the full check set needs a Business Support+, Enterprise
+# Support or Unified Operations plan; on Basic Support only service-limit checks plus selected security and
+# fault-tolerance checks are available and automatic check updates are not, so checks are refreshed manually.
+schemaVersion: "1"
+type: "component"
+id: "aws-trusted-advisor"
+kind: "monitoring"
+provider: "aws"
+defaults:
+  signal: "alerts"
+  collectorMode: "pull"
+  independentOfMonitored: true
+  managed: true
+properties:
+  supportPlan:
+    type: "enum"
+    values: ["basic", "business-plus", "enterprise", "unified-operations"]
+    default: "basic"
+  automaticCheckRefresh:
+    type: "boolean"
+    default: false
+  eventBridgeIntegration:
+    type: "boolean"
+    default: false

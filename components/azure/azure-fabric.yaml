@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Microsoft Fabric: SaaS analytics platform over OneLake. "What is Microsoft Fabric" states it is
+# delivered as SaaS, that Fabric Data Warehouse natively stores data in the open Delta Lake format,
+# and that Real-Time Intelligence analyses data as it arrives. Capacity is bought as F SKUs.
+schemaVersion: "1"
+type: "component"
+id: "azure-fabric"
+kind: "data-warehouse"
+provider: "azure"
+defaults:
+  realtime: true
+  format: "columnar"
+  managed: true
+properties:
+  workload:
+    type: "enum"
+    values: ["data-warehouse", "lakehouse", "real-time-intelligence", "data-science", "data-factory", "power-bi"]
+  capacitySku:
+    type: "enum"
+    values: ["f2", "f4", "f8", "f16", "f32", "f64", "f128", "f256", "f512", "f1024", "f2048"]
+  mirroring:
+    type: "boolean"
+    default: false

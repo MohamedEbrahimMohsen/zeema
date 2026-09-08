@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Firebase Hosting ("Firebase Hosting" overview and "Manage cache behavior"): static assets are
+# cached on the global CDN edge and compressed automatically, and zero-configuration SSL means
+# content is always served over HTTPS. Responses produced by rewrites to backend code are not
+# cached at the edge by default.
+schemaVersion: "1"
+type: "component"
+id: "google-firebase-hosting"
+kind: "cdn"
+provider: "gcp"
+defaults:
+  caching: true
+  tls: true
+  edgeCompute: false
+  originShield: false
+  managed: true
+properties:
+  backendRewrites:
+    type: "boolean"
+    default: false
+  backendResponseCaching:
+    type: "boolean"
+    default: false
+  automaticCompression:
+    type: "boolean"
+    default: true
+  customDomain:
+    type: "boolean"
+    default: false

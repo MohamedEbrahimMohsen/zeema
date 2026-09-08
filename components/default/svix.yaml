@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Svix: webhooks as a service. "Why verify webhooks" states Svix signs every webhook with a unique
+# key per endpoint following the Standard Webhooks spec and rejects timestamps more than five
+# minutes old; "Retries" gives the eight-attempt exponential schedule (immediate, 5 s, 5 min, 30 min,
+# 2 h, 5 h, 10 h, 10 h) and the endpoint being disabled after five days of failures.
+schemaVersion: "1"
+type: "component"
+id: "svix"
+kind: "webhook-endpoint"
+provider: "default"
+defaults:
+  managed: true
+  signatureVerified: true
+  retriedByCaller: true
+  idempotent: false
+properties:
+  deployment:
+    type: "enum"
+    values: ["cloud", "self-hosted"]
+    default: "cloud"
+  retryAttempts:
+    type: "integer"
+    default: 8
+  endpointDisabledAfterDays:
+    type: "integer"
+    default: 5
+  signatureToleranceMinutes:
+    type: "integer"
+    default: 5

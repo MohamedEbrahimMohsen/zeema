@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Fargate: serverless compute for ECS tasks, no EC2 instances to provision ("Architect for AWS Fargate
+# for Amazon ECS"). Each task gets its own isolation boundary and an awsvpc elastic network interface;
+# "Fargate task ephemeral storage" gives a task 20 GiB of ephemeral storage encrypted with AES-256 by default.
+schemaVersion: "1"
+type: "component"
+id: "aws-fargate"
+kind: "app-server"
+provider: "aws"
+defaults:
+  managed: true
+  autoscaling: false
+properties:
+  capacityProvider:
+    type: "enum"
+    values: ["fargate", "fargate-spot"]
+    default: "fargate"
+  operatingSystem:
+    type: "enum"
+    values: ["linux", "windows"]
+  ephemeralStorageGib:
+    type: "integer"
+    default: 20
+  ephemeralStorageEncrypted:
+    type: "boolean"
+    default: true

@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Workers VPC: a binding that lets a Worker reach private services that are not exposed to the public
+# internet. Per "Workers VPC" a VPC Service binds one host and port over a Cloudflare Tunnel, while a
+# VPC Network binds a whole Tunnel, Mesh or WAN on-ramp; both carry HTTP and raw TCP. Currently beta.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-workers-vpc"
+kind: "private-link"
+provider: "cloudflare"
+defaults:
+  managed: true
+  publicAccessDisabled: true
+properties:
+  bindingType:
+    type: "enum"
+    values: ["vpc-service", "vpc-network"]
+  onRamp:
+    type: "enum"
+    values: ["tunnel", "mesh", "wan"]
+    default: "tunnel"
+  protocol:
+    type: "enum"
+    values: ["http", "tcp"]
+    default: "http"

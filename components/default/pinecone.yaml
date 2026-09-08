@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Pinecone: fully managed serverless vector database. "Indexing overview": records are partitioned
+# into namespaces created automatically on upsert, metadata filtering is built in and dense, sparse
+# and BM25 search can be combined in one index. "Create an index": serverless indexes, dimensions 1-20000.
+schemaVersion: "1"
+type: "component"
+id: "pinecone"
+kind: "vector-database"
+provider: "default"
+defaults:
+  metadataFiltering: true
+  hybridSearch: true
+  namespaces: true
+  managed: true
+properties:
+  deploymentMode:
+    type: "enum"
+    values: ["serverless", "pod-based"]
+    default: "serverless"
+  maxDimensions:
+    type: "integer"
+    default: 20000
+  deletionProtection:
+    type: "boolean"
+    default: false

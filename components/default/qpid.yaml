@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apache Qpid Broker-J: pure-Java AMQP broker (0-8 through 1.0) whose standard queue is a simple FIFO
+# and whose configuration and message stores are on-disk ("Java Broker Concepts", "Queues").
+schemaVersion: "1"
+type: "component"
+id: "qpid"
+kind: "queue"
+provider: "default"
+defaults:
+  delivery: "at-least-once"
+  ordering: "none"
+  deadLetterQueue: false
+  persistence: true
+  replay: false
+  managed: false
+properties:
+  queueType:
+    type: "enum"
+    values: ["standard", "priority", "sorted", "lvq"]
+    default: "standard"
+  protocolVersion:
+    type: "enum"
+    values: ["amqp-0-8", "amqp-0-9", "amqp-0-9-1", "amqp-0-10", "amqp-1-0"]
+    default: "amqp-1-0"
+  highAvailability:
+    type: "boolean"
+    default: false

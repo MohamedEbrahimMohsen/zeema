@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apache RocketMQ: partitioned log with per-MessageQueue FIFO order; NORMAL is the default message
+# type and consumption retries default to 16 before the dead-letter topic ("Parameter Constraints and
+# Suggestions", "Basic Concepts", "Deployment Method").
+schemaVersion: "1"
+type: "component"
+id: "rocketmq"
+kind: "stream"
+provider: "default"
+defaults:
+  delivery: "at-least-once"
+  ordering: "per-key"
+  storage: "persistent"
+  transactions: true
+  managed: false
+properties:
+  messageType:
+    type: "enum"
+    values: ["normal", "fifo", "delay", "transaction"]
+    default: "normal"
+  maxConsumeRetries:
+    type: "integer"
+    default: 16
+  replicationMode:
+    type: "enum"
+    values: ["single-replica", "async-master-slave", "sync-dual-write", "auto-failover"]
+    default: "single-replica"

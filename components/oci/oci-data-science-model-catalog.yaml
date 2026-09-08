@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle OCI Data Science model catalog: the managed repository of model artifacts plus their
+# provenance and taxonomy metadata. "Model Catalog": saved models are immutable by design — a
+# change means a new model entry — artifacts are limited to 100 MB through the Console and up
+# to 400 GB through the SDKs and CLI. No retention or scanning behaviour is documented.
+schemaVersion: "1"
+type: "component"
+id: "oci-data-science-model-catalog"
+kind: "artifact-repository"
+provider: "oci"
+defaults:
+  artifactType: "generic"
+  visibility: "private"
+  immutableVersions: true
+  upstreamProxy: false
+  managed: true
+properties:
+  maxArtifactSizeGb:
+    type: "integer"
+    default: 400
+  consoleUploadLimitMb:
+    type: "integer"
+    default: 100
+  modelVersionSets:
+    type: "boolean"
+    default: false
+  introspectionTests:
+    type: "boolean"
+    default: false

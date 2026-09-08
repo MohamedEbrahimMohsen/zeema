@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Backup vault: Region-scoped store for recovery points created by backup plans across AWS services.
+# "What is AWS Backup?": schedule, lifecycle and retention come from the backup plan, backups are stored
+# incrementally, cross-Region and cross-account copies are opt-in, and Vault Lock (WORM) must be turned on.
+schemaVersion: "1"
+type: "component"
+id: "aws-backup"
+kind: "backup-service"
+provider: "aws"
+defaults:
+  redundancy: "regional"
+  crossRegionRestore: false
+  managed: true
+properties:
+  vaultLock:
+    type: "enum"
+    values: ["none", "governance", "compliance"]
+    default: "none"
+  crossAccountCopy:
+    type: "boolean"
+    default: false
+  coldStorageTransition:
+    type: "boolean"
+    default: false
+  incrementalBackups:
+    type: "boolean"
+    default: true

@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS internet gateway: the VPC's public-internet attachment point.
+# "Enable internet access for a VPC using an internet gateway": horizontally scaled, redundant
+# and highly available, supports IPv4 and IPv6, and performs one-to-one NAT for IPv4; free of charge.
+schemaVersion: "1"
+type: "component"
+id: "aws-internet-gateway"
+kind: "network-fabric"
+provider: "aws"
+defaults:
+  managed: true
+  interconnect: "public"
+  multicast: false
+  kernelBypass: false
+properties:
+  horizontallyScaled:
+    type: "boolean"
+    default: true
+  ipv6Support:
+    type: "boolean"
+    default: true
+  performsNat:
+    type: "boolean"
+    default: true
+  gatewaysPerVpc:
+    type: "integer"
+    default: 1

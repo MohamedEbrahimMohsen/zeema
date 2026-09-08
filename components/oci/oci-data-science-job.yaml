@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle OCI Data Science job: a repeatable task (data prep, training, batch inference) whose
+# infrastructure is provisioned and torn down per job run. "Data Science Jobs": job runs are
+# started explicitly rather than scheduled, the maximum runtime ceiling is 30 days and is
+# enforced even when it is not configured, logging is optional, and CPU or GPU shapes may be
+# chosen with up to 1 TB of block storage.
+schemaVersion: "1"
+type: "component"
+id: "oci-data-science-job"
+kind: "worker"
+provider: "oci"
+defaults:
+  trigger: "manual"
+  accelerator: "none"
+  idempotent: false
+  rateControl: "none"
+  fanoutStrategy: "none"
+  managed: true
+properties:
+  maxRuntimeMinutes:
+    type: "integer"
+    default: 43200
+  maxBlockStorageGb:
+    type: "integer"
+    default: 1024
+  logging:
+    type: "boolean"
+    default: false
+  customContainer:
+    type: "boolean"
+    default: false

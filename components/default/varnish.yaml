@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Varnish Cache: HTTP reverse proxy cache. The default malloc store holds 100 MB in memory only and
+# nukes least recently used objects when full, and default_ttl caches a response for 120 seconds
+# ("Storage backends", "varnishd").
+schemaVersion: "1"
+type: "component"
+id: "varnish"
+kind: "cache"
+provider: "default"
+defaults:
+  persistence: false
+  evictionPolicy: "lru"
+  ttlSeconds: 120
+  invalidation: "ttl"
+properties:
+  storageBackend:
+    type: "enum"
+    values: ["malloc", "file"]
+    default: "malloc"
+  storageSizeMb:
+    type: "integer"
+    default: 100

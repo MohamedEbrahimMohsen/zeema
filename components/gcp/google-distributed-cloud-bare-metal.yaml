@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Distributed Cloud (software only) for bare metal ("Google Distributed Cloud (software only)
+# for bare metal overview"): GKE clusters on physical machines you own and operate. Control plane
+# nodes are your own hardware inside your network, every cluster joins a fleet through a Connect
+# Agent installed with the product, and node pool autoscaling is a separate step you enable.
+schemaVersion: "1"
+type: "component"
+id: "google-distributed-cloud-bare-metal"
+kind: "container-orchestrator"
+provider: "gcp"
+defaults:
+  privateControlPlane: true
+  rbac: true
+  autoscaling: false
+  managed: false
+properties:
+  deploymentModel:
+    type: "enum"
+    values: ["standalone", "hybrid", "multi-cluster"]
+  fleetRegistration:
+    type: "boolean"
+    default: true
+  airGappedInstall:
+    type: "boolean"
+    default: false
+  customerSuppliedHardware:
+    type: "boolean"
+    default: true

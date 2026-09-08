@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cisco AppDynamics: APM whose agents push metrics and snapshots to a Controller; the Controller keeps
+# 1-minute data 4 hours, 10-minute data 48 hours and 1-hour rollups 365 days ("Modify Metric Data Retention Periods").
+schemaVersion: "1"
+type: "component"
+id: "appdynamics"
+kind: "monitoring"
+provider: "default"
+defaults:
+  signal: "all"
+  collectorMode: "push"
+  managed: true
+  independentOfMonitored: true
+  retentionDays: 365
+properties:
+  controllerHosting:
+    type: "enum"
+    values: ["saas", "on-premises"]
+    default: "saas"
+  minuteRetentionHours:
+    type: "integer"
+    default: 4

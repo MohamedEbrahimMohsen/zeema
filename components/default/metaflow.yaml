@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Metaflow: open source framework and workspace for ML flows, artifact versioning and tracking.
+# Defaults from "What is Metaflow" and "Infrastructure": the local stack keeps metadata and the
+# datastore in local files; a cloud deployment adds a metadata service, blob datastore and compute.
+schemaVersion: "1"
+type: "component"
+id: "metaflow"
+kind: "ml-platform"
+provider: "default"
+defaults:
+  experimentTracking: true
+  managed: false
+properties:
+  metadataService:
+    type: "enum"
+    values: ["local", "service"]
+    default: "local"
+  datastore:
+    type: "enum"
+    values: ["local", "s3", "azure-blob", "gcs"]
+    default: "local"
+  computeLayer:
+    type: "enum"
+    values: ["local", "aws-batch", "kubernetes"]
+    default: "local"

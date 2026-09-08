@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Firebase In-App Messaging ("Firebase In-App Messaging" overview and "Modify message behavior"):
+# campaigns composed in the Firebase console are rendered inside the running app as cards, banners,
+# modals or images. It is not a push, email or SMS channel, and messages are delivered
+# automatically to every targeted user whenever a triggering condition is satisfied.
+schemaVersion: "1"
+type: "component"
+id: "google-firebase-in-app-messaging"
+kind: "notification-service"
+provider: "gcp"
+defaults:
+  channelPush: false
+  channelEmail: false
+  channelSms: false
+  dedupKey: false
+  templateStore: true
+  queuePerChannel: false
+  managed: true
+properties:
+  channelInApp:
+    type: "boolean"
+    default: true
+  automaticDelivery:
+    type: "boolean"
+    default: true
+  requiresRunningApp:
+    type: "boolean"
+    default: true

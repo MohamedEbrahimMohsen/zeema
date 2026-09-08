@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Customer.io: SaaS messaging and journeys platform. "Set up message channels" documents email,
+# in-app, push and SMS/MMS channels; "The subscription center" documents topic and channel opt-outs.
+schemaVersion: "1"
+type: "component"
+id: "customer-io"
+kind: "notification-service"
+provider: "default"
+defaults:
+  managed: true
+  channelPush: true
+  channelEmail: true
+  channelSms: true
+  templateStore: true
+properties:
+  subscriptionCenter:
+    type: "boolean"
+    default: true
+  channelInApp:
+    type: "boolean"
+    default: true

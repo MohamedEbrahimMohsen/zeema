@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare Realtime TURN: anycast relay for WebRTC clients behind NAT or firewalls.
+# "When a client tries to connect to turn.cloudflare.com, it automatically connects to the
+# Cloudflare location closest to them." STUN/TURN over UDP and TCP on 3478 and TURN over
+# TLS on 5349, with 53, 80 and 443 as alternates ("TURN overview").
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-turn"
+kind: "media-router"
+provider: "cloudflare"
+defaults:
+  managed: true
+  mode: "p2p"
+  transport: "both"
+properties:
+  turnPort:
+    type: "integer"
+    default: 3478
+  turnTlsPort:
+    type: "integer"
+    default: 5349
+  anycast:
+    type: "boolean"
+    default: true

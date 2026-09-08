@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Load Testing: fully managed load generator that drives an application from test engines.
+# "What is Azure Load Testing" states it runs Apache JMeter or Locust scripts (or a generated script
+# for a URL quick test), stops an automated test automatically on error conditions, encrypts stored
+# data with service-managed keys, and reaches private endpoints only through VNet injection.
+schemaVersion: "1"
+type: "component"
+id: "azure-load-testing"
+kind: "client"
+provider: "azure"
+defaults:
+  platform: "sdk"
+  managed: true
+properties:
+  testFramework:
+    type: "enum"
+    values: ["url", "jmeter", "locust"]
+  engineInstances:
+    type: "integer"
+  autoStop:
+    type: "boolean"
+    default: true
+  vnetInjection:
+    type: "boolean"
+    default: false

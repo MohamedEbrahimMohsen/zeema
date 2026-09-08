@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# XCP-ng, the open source Xen Cloud Platform. Per "Welcome to XCP-ng documentation" it is a type-1
+# hypervisor booting directly on the metal, shipped as a turnkey ISO appliance, backed by Vates and managed
+# centrally through Xen Orchestra.
+schemaVersion: "1"
+type: "component"
+id: "xcp-ng"
+kind: "virtual-machine"
+provider: "default"
+defaults:
+  managed: false
+properties:
+  hypervisorType:
+    type: "enum"
+    values: ["xen-type-1"]
+    default: "xen-type-1"
+  managementTool:
+    type: "enum"
+    values: ["xen-orchestra", "xe-cli", "xcp-ng-center"]
+    default: "xen-orchestra"
+  pooled:
+    type: "boolean"
+    default: false

@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Firestore with MongoDB compatibility: the Firestore Enterprise edition speaking the MongoDB
+# API. "Firestore with MongoDB compatibility overview" states it is a serverless document
+# database with strongly consistent queries and transactions, offered as regional
+# (99.99% availability) or multi-regional (99.999%) deployments.
+schemaVersion: "1"
+type: "component"
+id: "google-firestore-mongodb"
+kind: "nosql-database"
+provider: "gcp"
+defaults:
+  model: "document"
+  consistency: "strong"
+  replication: "single-region"
+  conflictResolution: "none"
+  encryptionAtRest: true
+  backupEnabled: false
+  managed: true
+properties:
+  edition:
+    type: "enum"
+    values: ["enterprise"]
+    default: "enterprise"
+  locationType:
+    type: "enum"
+    values: ["region", "multi-region"]
+    default: "region"

@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon ECR private registry: managed OCI image registry with IAM resource-based permissions
+# ("What is Amazon Elastic Container Registry?"). "Encryption at rest": repositories are encrypted with
+# S3-managed AES-256 by default; repositories are created mutable and scanning must be configured.
+schemaVersion: "1"
+type: "component"
+id: "aws-ecr"
+kind: "container-registry"
+provider: "aws"
+defaults:
+  managed: true
+  visibility: "private"
+  geoReplicated: false
+  immutableTags: false
+  imageScanning: false
+  staticCredentials: false
+properties:
+  encryptionType:
+    type: "enum"
+    values: ["aes-256", "kms", "dsse-kms"]
+    default: "aes-256"
+  scanningType:
+    type: "enum"
+    values: ["basic", "enhanced"]
+    default: "basic"
+  pullThroughCache:
+    type: "boolean"
+    default: false

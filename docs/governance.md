@@ -30,6 +30,10 @@ Add a kind only when **all** of these hold:
 The pull request must include the kind file, at least one component, the `en` locale
 entries, and an update to at least one reference design that uses it.
 
+The provider coverage pass (`docs/coverage-loop.md`) is the one exception to the
+reference-design requirement: a kind proposed there ships with its components, locale
+entries and glyph, and the design requirement is settled when the first design uses it.
+
 ## 3. Adding a component
 
 A component is a concrete product implementing exactly one kind.
@@ -40,8 +44,13 @@ Acceptance criteria:
 - Declares `provider` and lives in `components/<provider>/`. The provider is the vendor that
   owns the product, never where it happens to be hosted. Adding a provider folder is a
   schema change (the enum in `component.schema.json`) and needs at least three components.
-- Not a duplicate. One file per product, not per hosting variant. `postgres` covers RDS
-  PostgreSQL, Cloud SQL and self-hosted; a managed flag is a property, not a component.
+- Not a duplicate. One file per product. The self-hosted product lives in `default`
+  (`postgres`). A cloud provider's managed offering of it is a separate component in the
+  provider folder (`aws-rds`, `azure-database-for-postgresql`, `google-cloud-sql`) because
+  it is the resource a designer places and it carries its own defaults: backup retention,
+  zone redundancy, encryption. When the offering hosts several engines, `engine` is a
+  component property. Two components for the same product under the same provider are a
+  duplicate.
 - Every `defaults` key exists on the kind and reflects the product's actual default
   behaviour, not a recommended configuration. Redis defaults to no eviction, so the
   `redis` component does not default `evictionPolicy`.
@@ -126,6 +135,12 @@ change freely, and this file records that freedom expires at public ship.
 `.broken.yaml` file. Together they are the format's evidence and, later, the linter's test
 fixtures. A reference design may be anonymised from a real system but must be realistic:
 real products, real edge modes, real requirements.
+
+`references/designs/` holds designs imported from real sources (pictures, models,
+infrastructure code) by the `arkore-design-import` skill. Each keeps the original next to its
+encoding and a mapping between the two. Fidelity to the source is the acceptance criterion
+there: same nodes, edges and groups, labels verbatim. An imported design becomes a reference
+design in `designs/` only through a separate decision that adds the `.broken.yaml` variant.
 
 ## 9. Recording gaps
 

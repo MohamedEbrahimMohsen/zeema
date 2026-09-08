@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenVPN Community Edition: SSL/TLS VPN daemon. The reference manual documents --proto
+# defaulting to udp and --port to 1194, with a routed tun device carrying IP packets;
+# tap (bridged layer 2) and TCP transport are explicit options.
+schemaVersion: "1"
+type: "component"
+id: "openvpn"
+kind: "vpn-gateway"
+provider: "default"
+defaults:
+  managed: false
+  tunnelType: "ssl"
+  peerType: "point-to-site"
+  bgp: false
+  activeActive: false
+properties:
+  transport:
+    type: "enum"
+    values: ["udp", "tcp"]
+    default: "udp"
+  listenPort:
+    type: "integer"
+    default: 1194
+  deviceType:
+    type: "enum"
+    values: ["tun", "tap"]
+    default: "tun"
+  tlsAuth:
+    type: "boolean"
+    default: false

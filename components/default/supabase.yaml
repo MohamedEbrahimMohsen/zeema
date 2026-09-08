@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Supabase: managed Postgres platform. Free plan projects get no automatic daily backups; Pro keeps
+# 7 days, Team 14 and Enterprise up to 30, and PITR is a paid add-on (Supabase "Backups").
+schemaVersion: "1"
+type: "component"
+id: "supabase"
+kind: "sql-database"
+provider: "default"
+defaults:
+  managed: true
+  backupEnabled: false
+properties:
+  plan:
+    type: "enum"
+    values: ["free", "pro", "team", "enterprise"]
+    default: "free"
+  pointInTimeRecovery:
+    type: "boolean"
+    default: false

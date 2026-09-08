@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Email Security (formerly Area 1): inbound email security gateway that "uses AI, threat
+# intelligence, and security rules to analyze every incoming email". Inline MX is the
+# preferred deployment because only it can modify a message ("Understanding Email Security
+# Deployments"), and Email Link Isolation "is turned on by default" ("Configure link actions").
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-email-security"
+kind: "email-security-gateway"
+provider: "cloudflare"
+defaults:
+  managed: true
+  deliveryMode: "inline-mx"
+  linkRewriting: true
+properties:
+  dispositionHeader:
+    type: "string"
+    default: "X-CFEmailSecurity-Disposition"
+  retroScan:
+    type: "boolean"
+    default: false
+  postDeliveryRemediation:
+    type: "boolean"

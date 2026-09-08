@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Travis CI: hosted builds driven by .travis.yml. "Customizing the build" gives a 50 minute job
+# limit on public repositories, 120 minutes on private ones and a 10 minute no-output timeout, and
+# states there is no preset concurrency limit; "Building pull requests" builds a pull request when
+# it is opened and on every added commit unless the repository setting is disabled.
+schemaVersion: "1"
+type: "component"
+id: "travis-ci"
+kind: "ci-pipeline"
+provider: "default"
+defaults:
+  trigger: "commit"
+  approvalRequired: false
+  selfHostedRunners: false
+  managed: true
+properties:
+  publicJobTimeoutMinutes:
+    type: "integer"
+    default: 50
+  privateJobTimeoutMinutes:
+    type: "integer"
+    default: 120
+  noOutputTimeoutMinutes:
+    type: "integer"
+    default: 10
+  buildPullRequests:
+    type: "boolean"
+    default: true
+  osImage:
+    type: "enum"
+    values: ["linux", "windows"]
+    default: "linux"

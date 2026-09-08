@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Together AI: hosted open-model inference API (chat, image, embedding, rerank) over a public endpoint.
+# Per "Rate limits", limits are dynamic and adjust with recent usage rather than fixed per-model tiers;
+# per the Privacy Policy, prompts and completions are not used for training without explicit opt-in and
+# Zero Data Retention is an opt-in setting.
+schemaVersion: "1"
+type: "component"
+id: "together-ai"
+kind: "ai-service"
+provider: "default"
+defaults:
+  managed: true
+  modality: "multimodal"
+  publicEndpoint: true
+  contentFiltering: false
+properties:
+  serving:
+    type: "enum"
+    values: ["serverless", "dedicated"]
+    default: "serverless"
+  dynamicRateLimits:
+    type: "boolean"
+    default: true
+  zeroDataRetention:
+    type: "boolean"
+    default: false
+  trainingOptIn:
+    type: "boolean"
+    default: false

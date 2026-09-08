@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Outposts rack: a 42U rack of AWS compute and storage installed at a customer site, which AWS
+# owns, operates, monitors and patches ("What is AWS Outposts?"). Each Outpost is an extension of one
+# Availability Zone and needs a service link back to its Region; four or more compute racks require
+# an ACE rack, and a local gateway connects the rack to the on-premises network.
+schemaVersion: "1"
+type: "component"
+id: "aws-outposts"
+kind: "edge-appliance"
+provider: "aws"
+defaults:
+  managed: true
+  cloudManaged: true
+  connectivity: "connected"
+  formFactor: "rack"
+properties:
+  rackUnits:
+    type: "integer"
+    default: 42
+  localGateway:
+    type: "boolean"
+    default: true
+  anchoredToOneAvailabilityZone:
+    type: "boolean"
+    default: true
+  aceRackRequiredFromRackCount:
+    type: "integer"
+    default: 4

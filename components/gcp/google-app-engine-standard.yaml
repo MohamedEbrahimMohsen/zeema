@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# App Engine standard environment service: sandboxed container instances on preconfigured runtimes
+# (Go, Java, Node.js, PHP, Python, Ruby) with automatic scaling ("The App Engine standard
+# environment"). The default instance class is F1 and App Engine turns off dynamic instances when the
+# app is idle; projects created after March 2025 default automatic scaling to 20 maximum instances.
+schemaVersion: "1"
+type: "component"
+id: "google-app-engine-standard"
+kind: "app-server"
+provider: "gcp"
+defaults:
+  managed: true
+  stateless: true
+  autoscaling: true
+properties:
+  instanceClass:
+    type: "string"
+    default: "F1"
+  scalingType:
+    type: "enum"
+    values: ["automatic", "basic", "manual"]
+    default: "automatic"
+  maxInstances:
+    type: "integer"
+    default: 20
+  scalesToZero:
+    type: "boolean"
+    default: true

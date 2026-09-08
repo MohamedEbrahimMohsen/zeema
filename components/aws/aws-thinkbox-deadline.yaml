@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Thinkbox Deadline 10: self-installed render farm manager whose Workers pull tasks from a
+# Repository on a shared network path. In maintenance since 7 November 2025 per "Services in
+# Maintenance"; no end-of-support date has been published (checked 2026-09-07), so it stays
+# placeable. The Deadline 10 user manual overview lists Pulse, the Remote Connection Server and the
+# License Forwarder as optional applications, so each defaults to absent.
+schemaVersion: "1"
+type: "component"
+id: "aws-thinkbox-deadline"
+kind: "worker"
+provider: "aws"
+defaults:
+  trigger: "batch"
+properties:
+  pulse:
+    type: "boolean"
+    default: false
+  remoteConnectionServer:
+    type: "boolean"
+    default: false
+  licenseForwarder:
+    type: "boolean"
+    default: false
+  licensingModel:
+    type: "enum"
+    values: ["license-server", "usage-based"]

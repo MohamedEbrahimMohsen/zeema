@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS App Studio: generative-AI low-code builder whose published apps are hosted by AWS. Per the App
+# Studio FAQs the apps "operate as standalone web applications with unique URLs" and AWS handles "the
+# operations, maintenance, and scaling for the underlying cloud services", and the data stays in the
+# connected sources reached through connectors to AWS services and third-party SaaS.
+schemaVersion: "1"
+type: "component"
+id: "aws-app-studio"
+kind: "app-server"
+provider: "aws"
+defaults:
+  autoscaling: true
+  ownsData: false
+  managed: true
+properties:
+  connectorType:
+    type: "enum"
+    values: ["aws-service", "third-party-saas", "api"]
+  generativeAiAuthoring:
+    type: "boolean"
+    default: true
+  publicUrl:
+    type: "boolean"
+    default: true
+  roleBasedAccess:
+    type: "boolean"
+    default: true

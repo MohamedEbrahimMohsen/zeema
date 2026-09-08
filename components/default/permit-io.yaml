@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Permit.io: fine-grained authorization as a service; the control plane is SaaS while the
+# policy decision point runs next to the workload. "Permit's PDP (Policy Decision Point)":
+# the PDP bundles OPA and OPAL and supports RBAC, ABAC and ReBAC policies.
+schemaVersion: "1"
+type: "component"
+id: "permit-io"
+kind: "policy-engine"
+provider: "default"
+defaults:
+  scope: "resource"
+  remediation: false
+  managed: true
+properties:
+  pdpDeployment:
+    type: "enum"
+    values: ["cloud", "sidecar", "self-hosted"]
+    default: "cloud"
+  policyEngine:
+    type: "enum"
+    values: ["opa", "cedar"]
+    default: "opa"
+  accessModel:
+    type: "enum"
+    values: ["rbac", "abac", "rebac"]
+    default: "rbac"

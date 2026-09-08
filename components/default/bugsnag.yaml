@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# SmartBear Insight Hub (BugSnag): SaaS error monitoring whose notifier libraries automatically detect
+# errors and report them to the hosted dashboard, where they are grouped ("Getting started guide").
+schemaVersion: "1"
+type: "component"
+id: "bugsnag"
+kind: "monitoring"
+provider: "default"
+defaults:
+  signal: "all"
+  collectorMode: "push"
+  managed: true
+  independentOfMonitored: true
+  alertGrouping: true
+properties:
+  notifierLibrary:
+    type: "boolean"
+    default: true

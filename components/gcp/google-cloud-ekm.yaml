@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloud External Key Manager: Cloud KMS keys whose material lives with an external partner.
+# Protection level EXTERNAL over the internet or EXTERNAL_VPC; manually managed external keys
+# cannot rotate automatically, and Google does not control the external key's availability
+# ("Cloud External Key Manager overview").
+schemaVersion: "1"
+type: "component"
+id: "google-cloud-ekm"
+kind: "key-management"
+provider: "gcp"
+defaults:
+  managed: true
+  hsm: false
+  rotationAutomated: false
+  envelopeEncryption: true
+properties:
+  connectionMode:
+    type: "enum"
+    values: ["internet", "vpc"]
+    default: "internet"
+  coordinatedExternalKey:
+    type: "boolean"
+    default: false
+  externalKeyAvailabilityDependency:
+    type: "boolean"
+    default: true

@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# HashiCorp Boundary: identity-aware proxy that brokers just-in-time TCP, SSH, RDP and
+# database sessions without exposing the target network. "What is Boundary" notes session
+# recording is an Enterprise/HCP Plus feature, so the open source control plane records nothing.
+schemaVersion: "1"
+type: "component"
+id: "boundary"
+kind: "bastion-host"
+provider: "default"
+defaults:
+  managed: false
+  protocols: "both"
+  sessionRecording: false
+  justInTimeAccess: true
+properties:
+  edition:
+    type: "enum"
+    values: ["community", "enterprise", "hcp"]
+    default: "community"
+  credentialBrokering:
+    type: "boolean"
+    default: false
+  workerProxy:
+    type: "boolean"
+    default: true

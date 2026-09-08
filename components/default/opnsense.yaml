@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OPNsense: HardenedBSD/pf firewall distribution. The Firewall manual states the default
+# inbound policy is block, outbound is accepted, rules are stateful by default, and
+# per-rule logging is an explicit option. IDS/IPS is an optional service.
+schemaVersion: "1"
+type: "component"
+id: "opnsense"
+kind: "firewall"
+provider: "default"
+defaults:
+  managed: false
+  defaultAction: "deny"
+  stateful: true
+  intrusionPrevention: false
+properties:
+  haMode:
+    type: "enum"
+    values: ["none", "carp"]
+    default: "none"
+  idsEnabled:
+    type: "boolean"
+    default: false
+  vpnServer:
+    type: "boolean"
+    default: false

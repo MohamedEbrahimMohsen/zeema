@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# K3s, Rancher's single-binary Kubernetes distribution. Per the "CIS Self Assessment Guide" the API server
+# runs with --authorization-mode=Node,RBAC, per "Basic Network Options" the default CNI is Flannel with a
+# built-in network policy controller (--disable-network-policy turns it off), and SQLite is the default datastore.
+schemaVersion: "1"
+type: "component"
+id: "k3s"
+kind: "container-orchestrator"
+provider: "default"
+defaults:
+  managed: false
+  autoscaling: false
+  rbac: true
+  networkPolicy: true
+properties:
+  datastore:
+    type: "enum"
+    values: ["sqlite", "embedded-etcd", "external"]
+    default: "sqlite"
+  cniPlugin:
+    type: "enum"
+    values: ["flannel", "calico", "cilium", "none"]
+    default: "flannel"
+  serviceLoadBalancer:
+    type: "boolean"
+    default: true
+  ingressController:
+    type: "boolean"
+    default: true

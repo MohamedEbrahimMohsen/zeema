@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Microsoft Defender for IoT: agentless network-layer monitoring for OT and IoT networks. On-premises
+# OT sensors watch mirrored traffic and, when cloud connected, surface devices, vulnerabilities and
+# alerts in the Azure portal; air-gapped and hybrid deployments keep data on-premises
+# ("Enhance your OT security with Defender for IoT").
+schemaVersion: "1"
+type: "component"
+id: "azure-defender-for-iot"
+kind: "monitoring"
+provider: "azure"
+defaults:
+  managed: true
+  signal: "alerts"
+  collectorMode: "push"
+  independentOfMonitored: true
+properties:
+  deploymentMode:
+    type: "enum"
+    values: ["cloud-connected", "air-gapped", "hybrid"]
+    default: "cloud-connected"
+  agentless:
+    type: "boolean"
+    default: true
+  onPremisesSensor:
+    type: "boolean"
+    default: true
+  sentinelIntegration:
+    type: "boolean"
+    default: false

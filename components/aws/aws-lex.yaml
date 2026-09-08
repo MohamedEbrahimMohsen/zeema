@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Lex V2 bot: managed conversational interface with intents, slots and Lambda fulfilment, reachable over text and voice runtime APIs.
+# "Quotas" (Lex V2) gives the runtime defaults: 1,024 characters of input text, 55 seconds of speech per utterance, 50 concurrent text-mode and 125 concurrent voice-mode conversations per alias, a 15-minute maximum conversation and a 30-second Lambda timeout; "Logging conversations with conversation logs" states logs are configured per alias and are off until enabled.
+schemaVersion: "1"
+type: "component"
+id: "aws-lex"
+kind: "ai-service"
+provider: "aws"
+defaults:
+  managed: true
+  modality: "multimodal"
+  publicEndpoint: true
+  customerManagedKeys: false
+properties:
+  concurrentTextConversations:
+    type: "integer"
+    default: 50
+  concurrentVoiceConversations:
+    type: "integer"
+    default: 125
+  maxInputTextCharacters:
+    type: "integer"
+    default: 1024
+  maxConversationMinutes:
+    type: "integer"
+    default: 15
+  conversationLogs:
+    type: "boolean"
+    default: false
+  lambdaFulfilment:
+    type: "boolean"
+    default: false

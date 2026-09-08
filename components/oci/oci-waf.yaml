@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Cloud Web Application Firewall: regional WAF policy plugged into a load balancer, or a
+# global edge policy fronted by a DNS CNAME ("Web Application Firewall Overview"). The design
+# principle is passiveness: a new policy carries no rules until protection capabilities are chosen.
+schemaVersion: "1"
+type: "component"
+id: "oci-waf"
+kind: "waf"
+provider: "oci"
+defaults:
+  managed: true
+  customRuleCount: 0
+  botProtection: false
+  rateLimiting: false
+properties:
+  policyType:
+    type: "enum"
+    values: ["waf-policy", "edge-policy"]
+    default: "waf-policy"
+  enforcementPoint:
+    type: "enum"
+    values: ["load-balancer", "dns-cname"]
+    default: "load-balancer"
+  ruleAction:
+    type: "enum"
+    values: ["allow", "check", "return-http-response"]
+  protectionCapabilityCount:
+    type: "integer"
+    default: 0

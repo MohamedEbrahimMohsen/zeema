@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Confidential VM: a Compute Engine VM whose memory is encrypted in use by the hardware
+# ("Confidential VM overview"). The confidential computing service is chosen when the instance is
+# created and the technology follows the machine type and CPU platform (AMD SEV, AMD SEV-SNP,
+# Intel TDX), so no technology is defaulted here; attestation reports the VM's identity and state.
+schemaVersion: "1"
+type: "component"
+id: "google-confidential-vm"
+kind: "virtual-machine"
+provider: "gcp"
+defaults:
+  managed: false
+  diskEncryption: true
+  zoneRedundant: false
+properties:
+  confidentialComputingTechnology:
+    type: "enum"
+    values: ["amd-sev", "amd-sev-snp", "intel-tdx"]
+  memoryEncryption:
+    type: "boolean"
+    default: true
+  attestation:
+    type: "boolean"
+    default: true
+  confidentialAccelerator:
+    type: "boolean"
+    default: false

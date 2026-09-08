@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Site-to-Site VPN: IPsec connection between a customer gateway device and a VPC.
+# "What is AWS Site-to-Site VPN?": every connection includes two tunnels, standard tunnel bandwidth is
+# 1.25 Gbps (5 Gbps only with the Large Bandwidth Tunnel option), and a connection carries IPv4 or IPv6, not both.
+schemaVersion: "1"
+type: "component"
+id: "aws-site-to-site-vpn"
+kind: "vpn-gateway"
+provider: "aws"
+defaults:
+  managed: true
+  peerType: "site-to-site"
+  tunnelType: "ipsec"
+  throughputMbps: 1250
+properties:
+  tunnelCount:
+    type: "integer"
+    default: 2
+  largeBandwidthTunnel:
+    type: "boolean"
+    default: false
+  accelerated:
+    type: "boolean"
+    default: false
+  ipVersion:
+    type: "enum"
+    values: ["ipv4", "ipv6"]
+    default: "ipv4"

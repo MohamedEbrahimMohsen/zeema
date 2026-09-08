@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Firestore in Datastore mode: the Datastore entity API served by Firestore. "Datastore
+# overview" states that all queries are strongly consistent and that data is encrypted
+# automatically before it is written to disk; backups and point-in-time recovery are opt-in.
+schemaVersion: "1"
+type: "component"
+id: "google-firestore-datastore-mode"
+kind: "nosql-database"
+provider: "gcp"
+defaults:
+  model: "document"
+  consistency: "strong"
+  replication: "single-region"
+  conflictResolution: "none"
+  encryptionAtRest: true
+  backupEnabled: false
+  managed: true
+properties:
+  locationType:
+    type: "enum"
+    values: ["region", "multi-region"]
+    default: "region"
+  pointInTimeRecovery:
+    type: "boolean"
+    default: false

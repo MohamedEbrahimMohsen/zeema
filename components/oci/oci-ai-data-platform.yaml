@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI AI Data Platform workbench: a managed lakehouse workspace for building and orchestrating data workflows.
+# "Get Started with Oracle AI Data Platform Workbench" states an Oracle Autonomous AI Lakehouse instance must
+# be created and configured as part of the workbench and serves as the default vector store, that Spark compute
+# is configured per workbench, that data at rest is encrypted with Oracle-managed keys unless a Vault
+# customer-managed key is chosen at creation, and that user sessions expire after 8 hours.
+schemaVersion: "1"
+type: "component"
+id: "oci-ai-data-platform"
+kind: "big-data-cluster"
+provider: "oci"
+defaults:
+  managed: true
+  engine: "spark"
+properties:
+  encryptionKey:
+    type: "enum"
+    values: ["oracle-managed", "customer-managed"]
+    default: "oracle-managed"
+  lakehouseAttached:
+    type: "boolean"
+    default: true
+  sessionLifetimeHours:
+    type: "integer"
+    default: 8

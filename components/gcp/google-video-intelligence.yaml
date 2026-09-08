@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud Video Intelligence API: label, shot, object and speech annotation over
+# video. "Quotas and limits": 60 requests per minute, 180 seconds of backend processing
+# per minute (about three videos in parallel), 50 GB and 3 hours per video, one video
+# per request. Annotation of stored video is a long-running operation.
+schemaVersion: "1"
+type: "component"
+id: "google-video-intelligence"
+kind: "ai-service"
+provider: "gcp"
+defaults:
+  modality: "vision"
+  publicEndpoint: true
+  quotaUnitsPerMinute: 60
+  managed: true
+properties:
+  processing:
+    type: "enum"
+    values: ["stored-async", "streaming"]
+    default: "stored-async"
+  backendSecondsPerMinute:
+    type: "integer"
+    default: 180
+  maxVideoGb:
+    type: "integer"
+    default: 50
+  maxVideoHours:
+    type: "integer"
+    default: 3

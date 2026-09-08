@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Nitro Enclaves: a hardened VM carved out of a parent EC2 instance with no persistent storage,
+# no interactive access and no external networking, reachable only over a local socket from its
+# parent ("What is Nitro Enclaves?"). Up to four enclaves per parent instance; attestation is built in.
+schemaVersion: "1"
+type: "component"
+id: "aws-nitro-enclave"
+kind: "virtual-machine"
+provider: "aws"
+defaults:
+  managed: false
+  os: "linux"
+  publicIp: false
+  zoneRedundant: false
+properties:
+  persistentStorage:
+    type: "boolean"
+    default: false
+  interactiveAccess:
+    type: "boolean"
+    default: false
+  externalNetworking:
+    type: "boolean"
+    default: false
+  attestation:
+    type: "boolean"
+    default: true
+  maxEnclavesPerParent:
+    type: "integer"
+    default: 4

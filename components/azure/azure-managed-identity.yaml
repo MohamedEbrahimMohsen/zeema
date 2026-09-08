@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Managed identities for Azure resources: a workload identity on an Azure compute resource that acquires
+# Microsoft Entra tokens without a secret. "Managed identities for Azure resources": credentials are managed
+# by the platform and are not accessible to you, access is granted through Azure RBAC role assignments, and
+# use as a federated identity credential on an Entra ID app is an opt-in (limit of 20 per app).
+schemaVersion: "1"
+type: "component"
+id: "azure-managed-identity"
+kind: "identity-provider"
+provider: "azure"
+defaults:
+  protocol: "oauth2"
+  authorizationModel: "rbac"
+  centralised: true
+  managed: true
+  mfa: false
+properties:
+  identityType:
+    type: "enum"
+    values: ["system-assigned", "user-assigned"]
+  credentialsPlatformManaged:
+    type: "boolean"
+    default: true
+  rbacAssignmentRequired:
+    type: "boolean"
+    default: true
+  federatedIdentityCredential:
+    type: "boolean"
+    default: false

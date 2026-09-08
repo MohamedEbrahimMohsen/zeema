@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Lab Services: fully managed classroom labs that give each lab user a dedicated VM. The
+# overview states the service manages the infrastructure, assigns lab users an individual lab virtual
+# machine, encrypts all content with a Microsoft-managed key, and offers schedules, usage quotas and
+# automatic shutdown as opt-in cost controls. Retiring on 28 June 2027.
+schemaVersion: "1"
+type: "component"
+id: "azure-lab-services"
+kind: "virtual-desktop"
+provider: "azure"
+defaults:
+  sessionMode: "personal"
+  maxSessionsPerHost: 1
+  managed: true
+properties:
+  imageSource:
+    type: "enum"
+    values: ["marketplace", "compute-gallery"]
+  usageQuotaHours:
+    type: "integer"
+  autoShutdown:
+    type: "boolean"
+  advancedNetworking:
+    type: "boolean"
+    default: false

@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon EC2 instance: a virtual server you boot from an AMI and keep patching yourself
+# ("What is Amazon EC2?"). EBS encryption by default is a Region setting you must switch on
+# ("Enable Amazon EBS encryption by default"), and an instance lives in one Availability Zone.
+schemaVersion: "1"
+type: "component"
+id: "aws-ec2"
+kind: "virtual-machine"
+provider: "aws"
+defaults:
+  managed: false
+  diskEncryption: false
+  zoneRedundant: false
+properties:
+  tenancy:
+    type: "enum"
+    values: ["default", "dedicated", "host"]
+    default: "default"
+  purchaseOption:
+    type: "enum"
+    values: ["on-demand", "reserved", "spot", "dedicated-host"]
+    default: "on-demand"
+  rootVolume:
+    type: "enum"
+    values: ["ebs", "instance-store"]
+    default: "ebs"
+  metadataVersion:
+    type: "enum"
+    values: ["v1-or-v2", "v2-only"]
+    default: "v1-or-v2"

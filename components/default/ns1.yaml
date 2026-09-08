@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM NS1 Connect: managed authoritative DNS delivered from a globally distributed anycast network of
+# 26 points of presence across six continents. Traffic steering filter chains and health check monitors
+# are configured per record, so query answers are static until they are set up.
+schemaVersion: "1"
+type: "component"
+id: "ns1"
+kind: "dns"
+provider: "default"
+defaults:
+  managed: true
+  anycast: true
+  healthChecked: false
+  geoRouting: false
+properties:
+  trafficSteering:
+    type: "boolean"
+    default: false

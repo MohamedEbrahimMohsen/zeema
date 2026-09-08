@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Document Intelligence: OCR and structured extraction from documents with read, layout, prebuilt and custom models.
+# "Service quotas and limits - Document Intelligence" gives the Standard (S0) defaults: 15 analyze transactions per second, 500 MB maximum document size, 2,000 pages per analysis and 5,000 template models.
+schemaVersion: "1"
+type: "component"
+id: "azure-document-intelligence"
+kind: "ai-service"
+provider: "azure"
+defaults:
+  managed: true
+  modality: "vision"
+  publicEndpoint: true
+  customerManagedKeys: false
+properties:
+  modelType:
+    type: "enum"
+    values: ["read", "layout", "prebuilt", "custom-template", "custom-neural", "classifier"]
+  analyzeTransactionsPerSecond:
+    type: "integer"
+    default: 15
+  maxDocumentSizeMb:
+    type: "integer"
+    default: 500
+  maxPagesPerAnalysis:
+    type: "integer"
+    default: 2000

@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Spring Apps: a fully managed host for Spring Boot and Steeltoe applications that wires apps
+# to the Spring runtime for you ("Introduction to Azure Spring Apps"). All three plans entered a
+# retirement period on 17 March 2025, which a design review should be able to see.
+schemaVersion: "1"
+type: "component"
+id: "azure-spring-apps"
+kind: "app-server"
+provider: "azure"
+defaults:
+  managed: true
+  stateless: true
+  autoscaling: false
+properties:
+  plan:
+    type: "enum"
+    values: ["basic", "standard", "enterprise"]
+  retirementAnnounced:
+    type: "boolean"
+    default: true

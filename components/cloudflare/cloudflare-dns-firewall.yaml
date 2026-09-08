@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare DNS Firewall: caching resolver proxy in front of customer authoritative nameservers.
+# "DNS Firewall": queries are proxied and cached at the nearest data center; ECS fallback and
+# attack mitigation are off unless configured. Enterprise-only paid add-on.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-dns-firewall"
+kind: "firewall"
+provider: "cloudflare"
+defaults:
+  managed: true
+properties:
+  minimumCacheTtlSeconds:
+    type: "integer"
+  maximumCacheTtlSeconds:
+    type: "integer"
+  negativeCacheTtlSeconds:
+    type: "integer"
+  rateLimitQueriesPerSecond:
+    type: "integer"
+  ecsFallback:
+    type: "boolean"
+    default: false
+  attackMitigation:
+    type: "boolean"
+    default: false

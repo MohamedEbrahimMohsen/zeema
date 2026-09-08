@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AKS Edge Essentials: a Microsoft-supported lightweight K8S or K3S distribution installed on
+# PC-class Windows hardware, one Linux and/or Windows node VM per machine, statically sized
+# ("About AKS Edge Essentials"). 4 GB RAM and 2 vCPUs minimum; secret encryption on by default.
+schemaVersion: "1"
+type: "component"
+id: "azure-aks-edge-essentials"
+kind: "edge-appliance"
+provider: "azure"
+defaults:
+  formFactor: "virtual"
+  cloudManaged: false
+properties:
+  distribution:
+    type: "enum"
+    values: ["k3s", "k8s"]
+  minRamGb:
+    type: "integer"
+    default: 4
+  minVcpus:
+    type: "integer"
+    default: 2
+  secretEncryption:
+    type: "boolean"
+    default: true
+  clusterLifecycleManagement:
+    type: "boolean"
+    default: false

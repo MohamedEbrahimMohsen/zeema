@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# HCP Terraform: HashiCorp's hosted Terraform service at app.terraform.io. "Overview" states it
+# "runs Terraform on disposable virtual machines in its own cloud infrastructure by default" and
+# caps a Free organization at 500 managed resources with one concurrent remote run and one
+# concurrent agent run; workspace execution mode defaults to the project's setting, which is remote.
+schemaVersion: "1"
+type: "component"
+id: "hcp-terraform"
+kind: "ci-pipeline"
+provider: "default"
+defaults:
+  trigger: "commit"
+  approvalRequired: false
+  selfHostedRunners: false
+  concurrency: 1
+  managed: true
+properties:
+  executionMode:
+    type: "enum"
+    values: ["remote", "local", "agent"]
+    default: "remote"
+  managedResourceLimit:
+    type: "integer"
+    default: 500
+  autoApply:
+    type: "boolean"
+    default: false
+  policyEnforcement:
+    type: "enum"
+    values: ["none", "sentinel", "opa"]
+    default: "none"

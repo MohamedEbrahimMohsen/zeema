@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Database Autonomous Recovery Service: managed backup destination for OCI databases, storing
+# daily virtual full backups. "Protection Policies": Oracle-defined Bronze 14, Silver 35, Gold 65 and
+# Platinum 95 days, 14-95 for custom policies; the Base Database console preselects Silver. Retention
+# lock, which makes backups immutable until the retention period ends, is optional.
+schemaVersion: "1"
+type: "component"
+id: "oci-autonomous-recovery-service"
+kind: "backup-service"
+provider: "oci"
+defaults:
+  managed: true
+  frequency: "daily"
+  retentionDays: 35
+  immutable: false
+  crossRegionRestore: false
+properties:
+  protectionPolicy:
+    type: "enum"
+    values: ["bronze", "silver", "gold", "platinum", "custom"]
+    default: "silver"
+  realTimeProtection:
+    type: "boolean"
+  retentionLock:
+    type: "boolean"
+    default: false
+  backupCopyToRemoteRegion:
+    type: "boolean"
+    default: false

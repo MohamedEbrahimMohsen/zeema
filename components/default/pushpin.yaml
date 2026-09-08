@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Pushpin: reverse proxy that adds realtime push to an ordinary HTTP backend through the GRIP
+# protocol. "About Pushpin" states instances do not talk to each other and sticky routing is not
+# needed, lists WebSocket, HTTP streaming and HTTP long-polling as client transports, documents
+# sequence IDs and message de-duping, and gives the publish control API on port 5561.
+schemaVersion: "1"
+type: "component"
+id: "pushpin"
+kind: "realtime-gateway"
+provider: "default"
+defaults:
+  protocol: "websocket"
+  stateful: false
+  sequenceNumbers: true
+  managed: false
+properties:
+  gripProtocol:
+    type: "boolean"
+    default: true
+  publishApiPort:
+    type: "integer"
+    default: 5561
+  stickyRoutingRequired:
+    type: "boolean"
+    default: false

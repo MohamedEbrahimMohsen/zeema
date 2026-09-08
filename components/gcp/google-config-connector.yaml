@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud Config Connector: Kubernetes add-on whose controllers reconcile Google Cloud resources
+# declared as custom resources. Per "Config Connector overview" it is not installed on GKE clusters by
+# default, offers namespaced and cluster installation modes, and reconciles asynchronously and continuously.
+schemaVersion: "1"
+type: "component"
+id: "google-config-connector"
+kind: "ci-pipeline"
+provider: "gcp"
+defaults:
+  managed: true
+  trigger: "manual"
+  selfHostedRunners: true
+properties:
+  installMode:
+    type: "enum"
+    values: ["namespaced", "cluster"]
+  continuousReconciliation:
+    type: "boolean"
+    default: true
+  gkeAddonEnabledByDefault:
+    type: "boolean"
+    default: false

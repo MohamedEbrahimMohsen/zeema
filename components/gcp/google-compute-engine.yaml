@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Compute Engine VM instance: a machine you boot from an image and keep patching yourself
+# ("Compute Engine instances" — you specify the zone, operating system and machine type, so an
+# instance lives in one zone). Persistent disks are encrypted at rest with Google-owned and
+# Google-managed keys without any action ("Protect resources by using Cloud KMS keys").
+schemaVersion: "1"
+type: "component"
+id: "google-compute-engine"
+kind: "virtual-machine"
+provider: "gcp"
+defaults:
+  managed: false
+  diskEncryption: true
+  zoneRedundant: false
+properties:
+  provisioningModel:
+    type: "enum"
+    values: ["standard", "spot"]
+    default: "standard"
+  machineFamily:
+    type: "enum"
+    values: ["general-purpose", "compute-optimized", "memory-optimized", "storage-optimized", "accelerator-optimized"]
+    default: "general-purpose"
+  onHostMaintenance:
+    type: "enum"
+    values: ["migrate", "terminate"]
+    default: "migrate"

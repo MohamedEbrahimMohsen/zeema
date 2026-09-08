@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle SOA Suite on Marketplace: a Resource Manager stack that provisions a customer-administered
+# WebLogic Suite domain on compute instances with a database schema, offered as SOA with SB & B2B,
+# MFT or BAM clusters. BPEL orchestrates and Human Workflow carries approvals, so the domain is not
+# Oracle-managed. Facts from "Using Oracle SOA Suite on Marketplace in Oracle Cloud Infrastructure".
+schemaVersion: "1"
+type: "component"
+id: "oci-soa-suite"
+kind: "workflow-engine"
+provider: "oci"
+defaults:
+  managed: false
+  durable: true
+  pattern: "dag"
+  humanReview: true
+properties:
+  serviceType:
+    type: "enum"
+    values: ["soa-with-sb-and-b2b-cluster", "mft-cluster", "bam-cluster"]
+  nodeCount:
+    type: "integer"
+  databaseRequired:
+    type: "boolean"
+    default: true
+  b2bGateway:
+    type: "boolean"
+    default: false

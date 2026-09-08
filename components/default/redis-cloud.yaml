@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Redis Cloud: Redis' own managed database service. High availability and data persistence are
+# chosen when the database is created and default to neither, so replication and persistence stay
+# at the kind defaults ("Create an Essentials database").
+schemaVersion: "1"
+type: "component"
+id: "redis-cloud"
+kind: "cache"
+provider: "default"
+defaults:
+  managed: true
+properties:
+  plan:
+    type: "enum"
+    values: ["free", "essentials", "pro"]
+  highAvailability:
+    type: "enum"
+    values: ["none", "single-zone", "multi-zone"]
+  dataPersistence:
+    type: "enum"
+    values: ["none", "append-only-file", "snapshot"]
+  activeActive:
+    type: "boolean"
+    default: false

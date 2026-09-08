@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Microsoft Graph Data Connect: bulk extraction of Microsoft 365 datasets into an analytics store.
+# The overview states it delivers Microsoft 365 bulk data through Microsoft Fabric, Azure Synapse or
+# Azure Data Factory pipelines into an Azure Storage sink, under granular tenant consent requests that
+# an administrator approves before a run.
+schemaVersion: "1"
+type: "component"
+id: "azure-graph-data-connect"
+kind: "worker"
+provider: "azure"
+defaults:
+  trigger: "batch"
+  managed: true
+properties:
+  pipelineHost:
+    type: "enum"
+    values: ["fabric", "synapse", "data-factory"]
+  datasetCategory:
+    type: "enum"
+    values: ["basic", "cleaned", "curated"]
+  consentRequired:
+    type: "boolean"
+    default: true

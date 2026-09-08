@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Cloud HSM: single-tenant FIPS 140-3 Level 3 HSM cluster reached over a private link from
+# the customer virtual network; Microsoft runs high availability, patching and maintenance while
+# the customer keeps HSM administration. Each cluster has three HSM nodes ("Overview of Azure Cloud HSM").
+schemaVersion: "1"
+type: "component"
+id: "azure-cloud-hsm"
+kind: "key-management"
+provider: "azure"
+defaults:
+  managed: true
+  hsm: true
+properties:
+  singleTenant:
+    type: "boolean"
+    default: true
+  hsmNodeCount:
+    type: "integer"
+    default: 3
+  customerAdministered:
+    type: "boolean"
+    default: true
+  virtualNetworkOnlyAccess:
+    type: "boolean"
+    default: true

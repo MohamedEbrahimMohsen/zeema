@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare Bot Management: every request gets a bot score from 1 to 99, where 1-29 is automated
+# or likely automated and 30-99 likely human ("Bot scores"); verified bots are classified apart
+# from malicious automation and JavaScript detections back the machine-learning model.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-bot-management"
+kind: "bot-management"
+provider: "cloudflare"
+defaults:
+  managed: true
+  scoreThreshold: 30
+  verifiedBotsAllowed: true
+  machineLearning: true
+properties:
+  tier:
+    type: "enum"
+    values: ["bot-fight-mode", "super-bot-fight-mode", "bot-management-enterprise"]
+    default: "bot-fight-mode"
+  perRequestBotScore:
+    type: "boolean"
+    default: false
+  sequenceRules:
+    type: "boolean"
+    default: false

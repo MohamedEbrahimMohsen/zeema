@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare One Appliance (formerly Magic WAN Connector): a Cloudflare-certified box or virtual
+# image at a network location that steers site traffic into Cloudflare over IPsec tunnels and is
+# administered from the Cloudflare dashboard, with no on-site IT ("Cloudflare One Appliance").
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-one-appliance"
+kind: "edge-appliance"
+provider: "cloudflare"
+defaults:
+  managed: true
+  cloudManaged: true
+  connectivity: "connected"
+  offlineMode: false
+properties:
+  deploymentForm:
+    type: "enum"
+    values: ["hardware", "virtual"]
+  tunnelType:
+    type: "enum"
+    values: ["ipsec"]
+    default: "ipsec"

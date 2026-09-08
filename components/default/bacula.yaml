@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Bacula: network backup suite of a Director, Storage Daemons, File Daemons and a catalog database ("Bacula Documentation").
+# Retention (File, Job, Volume) and data encryption are directives an administrator sets, so no retention default is claimed here.
+schemaVersion: "1"
+type: "component"
+id: "bacula"
+kind: "backup-service"
+provider: "default"
+defaults:
+  managed: false
+  crossRegionRestore: false
+properties:
+  catalogDatabase:
+    type: "enum"
+    values: ["postgresql", "mysql", "sqlite"]
+  storageMedium:
+    type: "enum"
+    values: ["disk", "tape", "cloud"]
+  dataEncryption:
+    type: "boolean"

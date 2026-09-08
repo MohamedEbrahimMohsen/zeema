@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Ant Media Server: self-hosted streaming server. Per "Enterprise and Community Edition", the
+# free Community Edition does WebRTC ingest with HLS playback; clustering, adaptive bitrate
+# transcoding, SRT/WHIP ingest and stream security are Enterprise-only, so they are off by default.
+schemaVersion: "1"
+type: "component"
+id: "ant-media"
+kind: "media-router"
+provider: "default"
+defaults:
+  managed: false
+  mode: "sfu"
+  transport: "both"
+  cascading: false
+properties:
+  edition:
+    type: "enum"
+    values: ["community", "enterprise"]
+    default: "community"
+  adaptiveBitrate:
+    type: "boolean"
+    default: false
+  clustering:
+    type: "boolean"
+    default: false

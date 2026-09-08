@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# A broker over many hosts, where virtual-machine describes one machine. sessionMode, maxSessionsPerHost and mfaRequired have no default so capacity and access rules can catch an unsized or unprotected pool.
+schemaVersion: "1"
+type: "kind"
+id: "virtual-desktop"
+category: "compute"
+properties:
+  sessionMode:
+    type: "enum"
+    values: ["pooled", "personal"]
+  hostCount:
+    type: "integer"
+  maxSessionsPerHost:
+    type: "integer"
+  loadBalancing:
+    type: "enum"
+    values: ["breadth-first", "depth-first"]
+  persistentProfiles:
+    type: "boolean"
+  mfaRequired:
+    type: "boolean"
+  managed:
+    type: "boolean"
+    default: false

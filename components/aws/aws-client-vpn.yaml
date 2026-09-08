@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Client VPN: managed remote-access VPN terminating OpenVPN/TLS client sessions.
+# "What is AWS Client VPN?" + "Split-tunnel on AWS Client VPN endpoints": TLS over port 443 by default,
+# split-tunnel off so all client traffic crosses the tunnel, and no authorization rules exist until you add them.
+schemaVersion: "1"
+type: "component"
+id: "aws-client-vpn"
+kind: "vpn-gateway"
+provider: "aws"
+defaults:
+  managed: true
+  peerType: "point-to-site"
+  tunnelType: "ssl"
+properties:
+  splitTunnel:
+    type: "boolean"
+    default: false
+  transportPort:
+    type: "integer"
+    default: 443
+  defaultAuthorizationRules:
+    type: "boolean"
+    default: false
+  connectionLogging:
+    type: "boolean"
+    default: false
+  ipAddressType:
+    type: "enum"
+    values: ["ipv4", "ipv6", "dualstack"]
+    default: "ipv4"

@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Knot DNS: self-hosted, authoritative-only DNS server. Per the Knot DNS documentation, automatic
+# DNSSEC signing must be switched on per zone and response rate limiting is the optional mod-rrl
+# module, so neither is active in a stock configuration.
+schemaVersion: "1"
+type: "component"
+id: "knot-dns"
+kind: "dns"
+provider: "default"
+defaults:
+  managed: false
+  anycast: false
+properties:
+  dnssecSigning:
+    type: "boolean"
+    default: false
+  keyManagement:
+    type: "enum"
+    values: ["manual", "automatic"]
+    default: "manual"
+  responseRateLimiting:
+    type: "boolean"
+    default: false

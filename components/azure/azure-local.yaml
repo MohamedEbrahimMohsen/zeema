@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Local: on-premises hyperconverged infrastructure managed through Azure Arc as the
+# control plane, in connected or disconnected deployments ("What Is Azure Local?").
+# 1 to 64 machines per system and a 10 Mbit link to Azure ("System requirements for Azure Local").
+schemaVersion: "1"
+type: "component"
+id: "azure-local"
+kind: "edge-appliance"
+provider: "azure"
+defaults:
+  connectivity: "connected"
+  formFactor: "rack"
+  cloudManaged: true
+properties:
+  deploymentModel:
+    type: "enum"
+    values: ["connected", "disconnected"]
+    default: "connected"
+  minMachines:
+    type: "integer"
+    default: 1
+  maxMachines:
+    type: "integer"
+    default: 64
+  minBandwidthMbit:
+    type: "integer"
+    default: 10

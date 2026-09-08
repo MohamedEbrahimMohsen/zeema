@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Elemental MediaConvert: file-based (batch) video transcoding with ABR packaging, DRM and
+# closed captions ("What is AWS Elemental MediaConvert?"). "Working with queues in AWS Elemental
+# MediaConvert" states the default queue is an on-demand queue; "Setting job priority" gives
+# priority default 0 in the range -50 to 50.
+schemaVersion: "1"
+type: "component"
+id: "aws-mediaconvert"
+kind: "media-transcoder"
+provider: "aws"
+defaults:
+  managed: true
+  mode: "file"
+properties:
+  queueType:
+    type: "enum"
+    values: ["on-demand", "reserved"]
+    default: "on-demand"
+  jobPriority:
+    type: "integer"
+    default: 0
+  acceleration:
+    type: "enum"
+    values: ["disabled", "enabled", "preferred"]
+    default: "disabled"

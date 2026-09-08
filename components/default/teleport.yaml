@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Teleport: identity-aware access proxy for SSH, Kubernetes, databases and Windows/RDP.
+# The configuration reference makes a second factor mandatory by default, and the session
+# recording architecture records at the node asynchronously unless the proxy mode is set.
+schemaVersion: "1"
+type: "component"
+id: "teleport"
+kind: "bastion-host"
+provider: "default"
+defaults:
+  managed: false
+  protocols: "both"
+  sessionRecording: true
+  mfaRequired: true
+  justInTimeAccess: false
+properties:
+  recordingMode:
+    type: "enum"
+    values: ["node", "node-sync", "proxy", "proxy-sync", "off"]
+    default: "node"
+  certificateAuth:
+    type: "boolean"
+    default: true
+  accessRequests:
+    type: "boolean"
+    default: false

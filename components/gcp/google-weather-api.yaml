@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Weather API: current conditions, forecasts and recent history for a coordinate.
+# "Weather API Overview": up to 240 hours of hourly forecast, up to 10 days of daily forecast and up to 24 hours of
+# cached hourly history. The usage and billing page publishes no fixed per-minute quota.
+schemaVersion: "1"
+type: "component"
+id: "google-weather-api"
+kind: "third-party-api"
+provider: "gcp"
+defaults:
+  managed: true
+  idempotent: true
+  callbackStyle: "none"
+  hostedPage: false
+  handlesMoney: false
+  slaPercent: "99.9"
+properties:
+  hourlyForecastHours:
+    type: "integer"
+    default: 240
+  dailyForecastDays:
+    type: "integer"
+    default: 10
+  hourlyHistoryHours:
+    type: "integer"
+    default: 24

@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI Events: managed CloudEvents bus for tenancy resource state changes. A rule filters events and
+# delivers them to a Notifications topic, a Streaming stream or a function; 50 rules per tenancy and
+# Object Storage buckets must opt in. Facts from "Overview of Events".
+schemaVersion: "1"
+type: "component"
+id: "oci-events"
+kind: "pubsub-topic"
+provider: "oci"
+defaults:
+  managed: true
+  replay: false
+  ordering: "none"
+  topicPerEventType: false
+properties:
+  eventFormat:
+    type: "enum"
+    values: ["cloudevents"]
+    default: "cloudevents"
+  actionTarget:
+    type: "enum"
+    values: ["notifications", "streaming", "functions"]
+  rulesPerTenancy:
+    type: "integer"
+    default: 50
+  objectStorageEventsOptIn:
+    type: "boolean"
+    default: false

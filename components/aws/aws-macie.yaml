@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Macie: sensitive-data discovery and S3 security posture monitoring. "What is Amazon
+# Macie?": enabling Macie automatically builds an S3 general purpose bucket inventory and starts
+# evaluating those buckets for security and access control. "Reviewing and analyzing Macie
+# findings": policy and sensitive data findings are stored for 90 days. "Default settings for
+# automated sensitive data discovery": analyses cover all general purpose buckets and use only the
+# recommended set of managed data identifiers, with no custom identifiers or allow lists.
+schemaVersion: "1"
+type: "component"
+id: "aws-macie"
+kind: "monitoring"
+provider: "aws"
+defaults:
+  signal: "alerts"
+  collectorMode: "pull"
+  retentionDays: 90
+  independentOfMonitored: false
+  managed: true
+properties:
+  bucketInventoryMonitoring:
+    type: "boolean"
+    default: true
+  automatedSensitiveDataDiscovery:
+    type: "boolean"
+  customDataIdentifiers:
+    type: "boolean"
+    default: false
+  discoveryJobSchedule:
+    type: "enum"
+    values: ["one-time", "daily", "weekly", "monthly"]
+  organizationWide:
+    type: "boolean"
+    default: false

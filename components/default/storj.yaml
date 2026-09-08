@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Storj: decentralised S3-compatible object store; every segment is erasure coded and spread over
+# statistically uncorrelated nodes. Per "File repair", a segment is split into 80 pieces of which any 29
+# reconstruct the file; per "Object versioning", a new bucket is unversioned; per "Design decision:
+# server-side encryption", the native uplink protocol encrypts end to end and the S3 gateway is server-side.
+schemaVersion: "1"
+type: "component"
+id: "storj"
+kind: "object-store"
+provider: "default"
+defaults:
+  managed: true
+  replication: "erasure-coded"
+  tier: "hot"
+  versioning: false
+  encryptionAtRest: true
+properties:
+  accessProtocol:
+    type: "enum"
+    values: ["native-uplink", "s3-gateway"]
+    default: "s3-gateway"
+  endToEndEncryption:
+    type: "boolean"
+    default: false
+  piecesPerSegment:
+    type: "integer"
+    default: 80
+  piecesToReconstruct:
+    type: "integer"
+    default: 29

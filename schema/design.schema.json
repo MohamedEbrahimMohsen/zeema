@@ -268,6 +268,11 @@
               "point-of-presence"
             ]
           },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Display name from the source design, for renderers and importers. Never read by rules."
+          },
           "parent": {
             "$ref": "#/definitions/id"
           }
@@ -290,6 +295,11 @@
           },
           "component": {
             "$ref": "#/definitions/id"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Display name from the source design, for renderers and importers. Never read by rules."
           },
           "group": {
             "$ref": "#/definitions/id"

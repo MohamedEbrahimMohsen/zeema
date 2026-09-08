@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Flipt: self-hosted open-source feature flag server, Git-native in v2.
+# "Flipt concepts": variant flags are the default type, distributions and threshold rollouts
+# give percentage rollouts, and storage is local Git-backed with no external dependencies.
+schemaVersion: "1"
+type: "component"
+id: "flipt"
+kind: "feature-flag-service"
+provider: "default"
+defaults:
+  stagedRollout: true
+  managed: false
+properties:
+  storageBackend:
+    type: "enum"
+    values: ["local-git", "remote-git", "object-store"]
+    default: "local-git"
+  flagType:
+    type: "enum"
+    values: ["variant", "boolean"]
+    default: "variant"
+  persistsEntityData:
+    type: "boolean"
+    default: false

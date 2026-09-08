@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Queue Storage: managed point-to-point queue in a storage account. A retrieved message is
+# only hidden for the visibility timeout and reappears if it is not deleted, so delivery is
+# at-least-once; the default message time-to-live is seven days ("Introduction to Azure Queue
+# Storage", "Get Messages (REST API)").
+schemaVersion: "1"
+type: "component"
+id: "azure-queue-storage"
+kind: "queue"
+provider: "azure"
+defaults:
+  delivery: "at-least-once"
+  ordering: "none"
+  persistence: true
+  retentionDays: 7
+  managed: true
+properties:
+  maxMessageSizeKib:
+    type: "integer"
+    default: 64
+  visibilityTimeoutSeconds:
+    type: "integer"
+    default: 30
+  maxMessagesPerRead:
+    type: "integer"
+    default: 1
+  redundancy:
+    type: "enum"
+    values: ["lrs", "zrs", "grs", "gzrs", "ra-grs", "ra-gzrs"]
+    default: "lrs"

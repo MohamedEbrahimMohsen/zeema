@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI local NVMe storage: NVMe SSDs physically installed in a DenseIO, GPU or HPC instance
+# ("Compute Shapes" gives 6.8 TB drives, up to 81.6 TB on BM.DenseIO.E5.128). "Protecting Data on
+# NVMe Devices" is explicit that Oracle does not image, back up, encrypt at rest, or RAID these
+# devices, and that protecting the data on them is the customer's responsibility.
+schemaVersion: "1"
+type: "component"
+id: "oci-local-nvme"
+kind: "block-storage"
+provider: "oci"
+defaults:
+  managed: false
+  mediaType: "ssd"
+  encryptionAtRest: false
+  redundancy: "local"
+  snapshots: false
+properties:
+  shapeFamily:
+    type: "enum"
+    values: ["denseio", "gpu", "hpc", "optimized"]
+  serviceManagedRaid:
+    type: "boolean"
+    default: false
+  serviceManagedBackup:
+    type: "boolean"
+    default: false
+  driveCapacityGb:
+    type: "integer"
+    default: 6800

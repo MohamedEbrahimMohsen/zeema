@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare Turnstile: a CAPTCHA alternative that runs non-interactive JavaScript challenges and
+# only shows a checkbox when the managed widget decides the visitor is risky ("Turnstile overview");
+# a widget token is valid for 300 seconds and may be redeemed once ("Server-side validation").
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-turnstile"
+kind: "bot-management"
+provider: "cloudflare"
+defaults:
+  managed: true
+  challengeAction: "managed-challenge"
+  jsDetections: true
+  sessionTokenLifetimeMinutes: 5
+properties:
+  widgetMode:
+    type: "enum"
+    values: ["managed", "non-interactive", "invisible"]
+    default: "managed"
+  singleUseToken:
+    type: "boolean"
+    default: true
+  preClearance:
+    type: "boolean"
+    default: false

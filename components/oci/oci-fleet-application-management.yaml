@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI Fleet Application Management: groups resources into fleets and runs runbooks, patching and compliance tasks against them.
+# Defaults from "Fleet Application Management Overview": lifecycle operations are scheduled daily or monthly, maintenance windows are
+# active as soon as they are created, and fleets are formed manually or dynamically.
+schemaVersion: "1"
+type: "component"
+id: "oci-fleet-application-management"
+kind: "worker"
+provider: "oci"
+defaults:
+  managed: true
+  trigger: "schedule"
+properties:
+  fleetMembership:
+    type: "enum"
+    values: ["manual", "dynamic"]
+    default: "manual"
+  schedulingFrequency:
+    type: "enum"
+    values: ["daily", "monthly"]
+    default: "daily"
+  maintenanceWindowActiveOnCreate:
+    type: "boolean"
+    default: true

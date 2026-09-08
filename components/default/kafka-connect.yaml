@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apache Kafka Connect: worker framework that streams data between Kafka and external systems; source
+# and sink connector offsets are committed to Kafka topics every 60 seconds by default
+# ("Kafka Connect", "Kafka Connect Worker Configuration Reference").
+schemaVersion: "1"
+type: "component"
+id: "kafka-connect"
+kind: "change-data-capture"
+provider: "default"
+defaults:
+  ordered: true
+  managed: false
+properties:
+  deploymentMode:
+    type: "enum"
+    values: ["standalone", "distributed"]
+  connectorDirection:
+    type: "enum"
+    values: ["source", "sink"]
+    default: "source"
+  offsetFlushIntervalMs:
+    type: "integer"
+    default: 60000

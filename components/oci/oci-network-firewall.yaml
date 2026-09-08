@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Cloud Network Firewall: managed stateful firewall powered by Palo Alto Networks, 4 Gbps
+# throughput, with IDPS and TLS inspection available ("Network Firewall Overview"). A regional
+# firewall instance is spread across all availability domains in the region.
+schemaVersion: "1"
+type: "component"
+id: "oci-network-firewall"
+kind: "firewall"
+provider: "oci"
+defaults:
+  managed: true
+  stateful: true
+properties:
+  scope:
+    type: "enum"
+    values: ["regional", "availability-domain"]
+    default: "regional"
+  throughputGbps:
+    type: "integer"
+    default: 4
+  tlsInspection:
+    type: "boolean"
+  intrusionDetection:
+    type: "boolean"

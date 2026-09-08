@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare Stream (video on demand): uploads are encoded automatically and served as an
+# adaptive ladder, "using the H.264 codec with adaptive bitrate streaming, supporting
+# resolutions from 360p to 1080p" ("Stream overview"). Playback is HLS and DASH from the
+# Cloudflare network ("Use your own player"); uploads are capped at 30 GB ("FAQ").
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-stream"
+kind: "media-transcoder"
+provider: "cloudflare"
+defaults:
+  managed: true
+  mode: "file"
+  videoCodec: "h264"
+  packaging: "hls"
+properties:
+  maxUploadSizeGb:
+    type: "integer"
+    default: 30
+  maxResolution:
+    type: "enum"
+    values: ["360p", "480p", "720p", "1080p"]
+    default: "1080p"
+  dashManifest:
+    type: "boolean"
+    default: true
+  signedUrls:
+    type: "boolean"
+    default: false

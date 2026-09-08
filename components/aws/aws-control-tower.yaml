@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Control Tower: orchestrates a governed multi-account landing zone over Organizations, Service Catalog
+# and IAM Identity Center. Per "Control behavior and guidance", preventive controls are SCPs, RCPs and
+# declarative policies, detective controls are Config rules, proactive controls are CloudFormation hooks,
+# and from landing zone version 4.0 mandatory controls are no longer applied by default.
+schemaVersion: "1"
+type: "component"
+id: "aws-control-tower"
+kind: "policy-engine"
+provider: "aws"
+defaults:
+  scope: "organization"
+  remediation: false
+  managed: true
+properties:
+  controlBehavior:
+    type: "enum"
+    values: ["preventive", "detective", "proactive"]
+  controlGuidance:
+    type: "enum"
+    values: ["mandatory", "strongly-recommended", "elective"]
+  mandatoryControlsApplied:
+    type: "boolean"
+    default: false
+  accountFactory:
+    type: "boolean"
+    default: true

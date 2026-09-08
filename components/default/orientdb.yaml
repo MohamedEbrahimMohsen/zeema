@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OrientDB: multi-model document and graph store. Every server joins as a master and the shipped
+# distributed configuration reads at quorum 1 and writes at a majority
+# ("Distributed configuration", "Distributed architecture").
+schemaVersion: "1"
+type: "component"
+id: "orientdb"
+kind: "nosql-database"
+provider: "default"
+defaults:
+  model: "document"
+  consistency: "tunable"
+  replication: "single-region"
+  quorumReads: 1
+properties:
+  writeQuorum:
+    type: "enum"
+    values: ["one", "majority", "all"]
+    default: "majority"
+  autoDeploy:
+    type: "boolean"
+    default: true

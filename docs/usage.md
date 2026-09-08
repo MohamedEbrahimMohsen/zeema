@@ -121,3 +121,14 @@ A node always references a **component**, never a kind. When the product is not 
 decided, use the generic component for the kind (`container-service` for `app-server`).
 When no generic component exists for a kind, that is a gap; record it in
 `docs/schema-gaps.md`.
+
+## 8. Importing an existing design
+
+A design that already exists as a picture, a draw.io or Mermaid file, or infrastructure code
+does not have to be retyped. The `arkore-design-import` skill in `.claude/skills/` converts
+it into `references/designs/<name>/`: the original file, the Arkore design with every box,
+arrow and boundary preserved (`label` keeps the source text), a `mapping.yaml` that records
+where each item went, a Mermaid rendering and notes. A box with no matching component is
+added to the catalogue first, through the `arkore-catalogue-add` skill, in every provider
+where the product exists. The result is checked mechanically: counts and labels must match
+the source, and the rules that fire are reported rather than silenced.

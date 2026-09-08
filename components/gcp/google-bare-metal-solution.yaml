@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Bare Metal Solution server: a sole-tenancy physical server in a Google-operated regional extension,
+# reached from a VPC over a Partner Interconnect connection ("Bare Metal Solution overview"). Servers
+# range from 8 to 448 cores with up to 24 TB of memory, ship with a 200 GB network boot disk, and use
+# bring-your-own OS licences; the customer owns OS patching and data security.
+# Lifecycle: Bare Metal Solution is transitioning to an allowlist-only model (read 2026-09-08).
+schemaVersion: "1"
+type: "component"
+id: "google-bare-metal-solution"
+kind: "virtual-machine"
+provider: "gcp"
+defaults:
+  managed: false
+  os: "linux"
+  publicIp: false
+  zoneRedundant: false
+properties:
+  bringYourOwnLicense:
+    type: "boolean"
+    default: true
+  storageProtocol:
+    type: "enum"
+    values: ["fibre-channel", "nfs"]
+    default: "fibre-channel"
+  bootDiskGb:
+    type: "integer"
+    default: 200
+  connectivity:
+    type: "enum"
+    values: ["partner-interconnect"]
+    default: "partner-interconnect"

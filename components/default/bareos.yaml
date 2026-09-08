@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Bareos: Bacula-derived backup suite of Director, Storage and File daemons with a catalog ("What is Bareos?").
+# Catalog maintenance documents the shipped retention defaults: Job Retention 180 days, File Retention 60 days.
+schemaVersion: "1"
+type: "component"
+id: "bareos"
+kind: "backup-service"
+provider: "default"
+defaults:
+  managed: false
+  retentionDays: 180
+  crossRegionRestore: false
+properties:
+  fileRetentionDays:
+    type: "integer"
+    default: 60
+  catalogDatabase:
+    type: "enum"
+    values: ["postgresql", "mysql", "sqlite"]
+    default: "postgresql"
+  storageMedium:
+    type: "enum"
+    values: ["disk", "tape", "cloud"]

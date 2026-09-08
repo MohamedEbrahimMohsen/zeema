@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Vision API Product Search: visual similarity index over reference images grouped into
+# product sets. "Quickstart: Create a product set and search for products": the index is
+# updated approximately every day. "Quotas and limits": 1,800 query requests per minute.
+# In maintenance mode; Google points new work at Vision Warehouse.
+schemaVersion: "1"
+type: "component"
+id: "google-vision-product-search"
+kind: "search-index"
+provider: "gcp"
+defaults:
+  structure: "vector"
+  indexing: "batch"
+  rebuildCadenceHours: 24
+  shardingStrategy: "none"
+  geoScheme: "none"
+  managed: true
+properties:
+  maxReferenceImagesPerProductSet:
+    type: "integer"
+    default: 1000000
+  queryRequestsPerMinute:
+    type: "integer"
+    default: 1800
+  maintenanceMode:
+    type: "boolean"
+    default: true

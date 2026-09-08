@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Ansible AWX: self-hosted automation controller that "helps teams manage complex multi-tier
+# deployments by adding control, knowledge, and delegation to Ansible-powered environments",
+# deployed into Kubernetes with the AWX Operator. Workflows run job templates against inventories;
+# an approval node is a node you add, and its expiry timeout is unset by default.
+schemaVersion: "1"
+type: "component"
+id: "awx"
+kind: "ci-pipeline"
+provider: "default"
+defaults:
+  trigger: "manual"
+  approvalRequired: false
+  selfHostedRunners: true
+  managed: false
+properties:
+  approvalTimeoutSeconds:
+    type: "integer"
+  executionEnvironment:
+    type: "boolean"
+    default: true
+  credentialType:
+    type: "enum"
+    values: ["machine", "vault", "source-control", "cloud", "external-secret"]
+    default: "machine"

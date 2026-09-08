@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare DDoS Protection: the HTTP and network-layer managed rulesets are always enabled for
+# every zone and prefix ("HTTP DDoS Attack Protection managed ruleset"); rule sensitivity defaults
+# to high and the origin-error rule trips at 1,000 errors per second.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-ddos-protection"
+kind: "ddos-protection"
+provider: "cloudflare"
+defaults:
+  managed: true
+  scope: "both"
+  alwaysOn: true
+  telemetry: true
+properties:
+  sensitivity:
+    type: "enum"
+    values: ["high", "medium", "low", "essentially-off"]
+    default: "high"
+  mitigationAction:
+    type: "enum"
+    values: ["block", "managed-challenge", "force-connection-close", "log"]
+  originErrorRateThreshold:
+    type: "integer"
+    default: 1000
+  advancedDdosProtection:
+    type: "boolean"
+    default: false

@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Lambda@Edge: a Lambda function CloudFront runs at edge locations on viewer or origin events
+# ("Customize at the edge with Lambda@Edge"). The function must live in US East (N. Virginia), it
+# cannot be attached to a VPC and it gets no environment variables ("Restrictions on Lambda@Edge").
+# The function timeout quota is 30 seconds ("Quotas on Lambda@Edge").
+schemaVersion: "1"
+type: "component"
+id: "aws-lambda-edge"
+kind: "app-server"
+provider: "aws"
+defaults:
+  managed: true
+  stateless: true
+  autoscaling: true
+properties:
+  homeRegion:
+    type: "string"
+    default: "us-east-1"
+  maxTimeoutSeconds:
+    type: "integer"
+    default: 30
+  vpcAccess:
+    type: "boolean"
+    default: false
+  environmentVariables:
+    type: "boolean"
+    default: false
+  trigger:
+    type: "enum"
+    values: ["viewer-request", "viewer-response", "origin-request", "origin-response"]

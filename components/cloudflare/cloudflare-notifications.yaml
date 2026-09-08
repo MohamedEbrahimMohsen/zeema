@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare Notifications: account-level alert policies delivered to people and systems.
+# "Notifications" states free plans can set up email-based notifications, Business and higher add
+# PagerDuty and Professional and higher add webhooks, so email is the channel every account has.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-notifications"
+kind: "notification-service"
+provider: "cloudflare"
+defaults:
+  managed: true
+  channelEmail: true
+  channelPush: false
+  channelSms: false
+properties:
+  destination:
+    type: "enum"
+    values: ["email", "webhook", "pagerduty"]
+    default: "email"

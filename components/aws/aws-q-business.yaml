@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Q Business: managed generative-AI assistant over enterprise data sources, built on Amazon
+# Bedrock, answering with citations and honouring each user's document permissions. In maintenance
+# since 30 June 2026 (closed to new customers, existing applications keep running). Per "What is
+# Amazon Q Business" end users are authenticated through IAM Identity Center or IAM unless an
+# anonymous application is created, and built-in admin controls and hallucination mitigation apply.
+schemaVersion: "1"
+type: "component"
+id: "aws-q-business"
+kind: "ai-service"
+provider: "aws"
+defaults:
+  managed: true
+  modality: "text"
+  contentFiltering: true
+  publicEndpoint: false
+properties:
+  retriever:
+    type: "enum"
+    values: ["native-index", "kendra-index"]
+  userAuthentication:
+    type: "enum"
+    values: ["iam-identity-center", "iam-federation", "anonymous"]
+  responseScope:
+    type: "enum"
+    values: ["enterprise-data-only", "enterprise-data-and-model-knowledge"]
+  webExperience:
+    type: "boolean"
+    default: true

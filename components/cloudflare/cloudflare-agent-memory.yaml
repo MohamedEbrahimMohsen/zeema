@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Agent Memory (private beta): managed per-user, per-tenant memory for agents. Ingested
+# conversations are extracted, classified, deduplicated and, for non-task memories,
+# embedded as vectors; recall searches keyword, topic and vector indexes at once
+# ("How Agent Memory works"). Memories are scoped by namespace and profile.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-agent-memory"
+kind: "vector-database"
+provider: "cloudflare"
+defaults:
+  managed: true
+  namespaces: true
+  hybridSearch: true
+properties:
+  automaticExtraction:
+    type: "boolean"
+    default: true
+  deduplication:
+    type: "boolean"
+    default: true
+  releaseStage:
+    type: "enum"
+    values: ["private-beta", "beta", "ga"]
+    default: "private-beta"

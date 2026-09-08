@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Detective: builds a behavior graph from AWS logs to investigate security findings.
+# "What is Amazon Detective?": it automatically extracts events from CloudTrail and VPC flow logs
+# and ingests GuardDuty findings, and gives access to up to a year of historical event data.
+# Optional source packages (EKS audit logs) and the Security Lake integration are opt-in.
+schemaVersion: "1"
+type: "component"
+id: "aws-detective"
+kind: "monitoring"
+provider: "aws"
+defaults:
+  signal: "all"
+  collectorMode: "pull"
+  retentionDays: 365
+  independentOfMonitored: false
+  managed: true
+properties:
+  cloudTrailAndVpcFlowLogs:
+    type: "boolean"
+    default: true
+  guardDutyFindings:
+    type: "boolean"
+    default: true
+  eksAuditLogs:
+    type: "boolean"
+    default: false
+  securityLakeIntegration:
+    type: "boolean"
+    default: false
+  organizationWide:
+    type: "boolean"
+    default: false

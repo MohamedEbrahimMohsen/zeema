@@ -11,7 +11,7 @@ properties:
     default: "l7"
   hashing:
     type: "enum"
-    values: ["round-robin", "least-connections", "ecmp", "maglev", "consistent"]
+    values: ["round-robin", "least-connections", "ecmp", "maglev", "consistent", "random"]
     default: "round-robin"
   connectionPreserving:
     type: "boolean"

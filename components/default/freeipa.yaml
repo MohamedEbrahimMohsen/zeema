@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# FreeIPA: integrated identity management for Linux/UNIX - 389 Directory Server, MIT Kerberos
+# KDC, DNS and a Dogtag CA. "About" and "V4/OTP": full multi-master LDAPv3 replication;
+# native OTP two-factor is a plugin an administrator enables per user, not the default.
+schemaVersion: "1"
+type: "component"
+id: "freeipa"
+kind: "identity-provider"
+provider: "default"
+defaults:
+  protocol: "custom"
+  authorizationModel: "rbac"
+  centralised: true
+  managed: false
+  mfa: false
+properties:
+  accessControl:
+    type: "enum"
+    values: ["hbac", "rbac"]
+    default: "hbac"
+  integratedCa:
+    type: "boolean"
+    default: true
+  replicationModel:
+    type: "enum"
+    values: ["multi-master"]
+    default: "multi-master"

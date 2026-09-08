@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AssemblyAI: hosted speech-to-text API with asynchronous (pre-recorded) and streaming transcription.
+# Per "What are my concurrency limits?", a free account is limited to 5 concurrent transcriptions and an
+# upgraded account to 200 asynchronous and 100 streaming, with excess jobs queued FIFO; per "How long does
+# AssemblyAI retain data in the Production Environment?", asynchronous artifacts start deletion at 72 hours.
+schemaVersion: "1"
+type: "component"
+id: "assemblyai"
+kind: "ai-service"
+provider: "default"
+defaults:
+  managed: true
+  modality: "speech"
+  publicEndpoint: true
+  dataRetentionDays: 3
+properties:
+  transcriptionMode:
+    type: "enum"
+    values: ["async", "streaming"]
+    default: "async"
+  concurrencyLimit:
+    type: "integer"
+    default: 5
+  zeroDataRetention:
+    type: "boolean"
+    default: false
+  piiRedaction:
+    type: "boolean"
+    default: false

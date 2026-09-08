@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Fluent Bit: "an open source telemetry agent that processes logs, metrics, traces, and profiles"
+# ("Fluent Bit Manual, What is Fluent Bit?"). Buffering defaults to memory - the default storage.type
+# for inputs is memory - and the service flush interval defaults to 1 second
+# ("Fluent Bit Manual, Buffering and storage").
+schemaVersion: "1"
+type: "component"
+id: "fluent-bit"
+kind: "monitoring"
+provider: "default"
+defaults:
+  managed: false
+  signal: "all"
+  collectorMode: "push"
+  alertGrouping: false
+properties:
+  storageType:
+    type: "enum"
+    values: ["memory", "filesystem"]
+    default: "memory"
+  flushIntervalSeconds:
+    type: "integer"
+    default: 1

@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Elastic Disaster Recovery: continuous block-level replication of source servers into a staging area
+# subnet in a chosen Region, with point-in-time recovery. "What is Elastic Disaster Recovery?": data is
+# replicated to a staging area subnet in your account and recovery instances launch within minutes;
+# "AWS DRS individual replication settings": replication servers default to the t3.small instance type and
+# are shared between source servers unless a dedicated replication instance is selected.
+schemaVersion: "1"
+type: "component"
+id: "aws-drs"
+kind: "backup-service"
+provider: "aws"
+defaults:
+  redundancy: "regional"
+  crossRegionRestore: true
+  managed: true
+properties:
+  replicationServerInstanceType:
+    type: "string"
+    default: "t3.small"
+  dedicatedReplicationServer:
+    type: "boolean"
+    default: false
+  pointInTimeRecovery:
+    type: "boolean"
+    default: true
+  privateIpDataRouting:
+    type: "boolean"
+    default: false

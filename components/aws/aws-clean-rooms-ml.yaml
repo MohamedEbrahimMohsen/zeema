@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Clean Rooms ML: managed modelling inside a Clean Rooms collaboration, using an AWS authored lookalike model
+# or a member's dockerized custom algorithm from Amazon ECR; "the training data provider's data is never shared
+# with the seed data provider" and outputs go only to the configured results receiver ("AWS Clean Rooms ML").
+# A lookalike model "isn't automatically retrained"; sharing relevance metrics is a configuration choice.
+schemaVersion: "1"
+type: "component"
+id: "aws-clean-rooms-ml"
+kind: "ml-platform"
+provider: "aws"
+defaults:
+  managed: true
+  modelRegistry: false
+  experimentTracking: false
+  publicAccess: false
+properties:
+  modelType:
+    type: "enum"
+    values: ["lookalike", "custom"]
+    default: "lookalike"
+  automaticRetraining:
+    type: "boolean"
+    default: false
+  shareRelevanceMetrics:
+    type: "boolean"
+    default: false

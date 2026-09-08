@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare API Shield: an Enterprise add-on in front of API hostnames that discovers endpoints,
+# validates them against an OpenAPI schema, enforces mTLS client certificates and detects
+# volumetric abuse per endpoint ("API Shield overview").
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-api-shield"
+kind: "api-gateway"
+provider: "cloudflare"
+defaults:
+  managed: true
+  tls: true
+  protocol: "http"
+  rateLimiting: true
+properties:
+  apiDiscovery:
+    type: "boolean"
+    default: true
+  schemaValidation:
+    type: "boolean"
+    default: false
+  mutualTls:
+    type: "boolean"
+    default: false
+  sequenceAnalytics:
+    type: "boolean"
+    default: false

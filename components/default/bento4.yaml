@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Bento4: C++ library and tools that read and write ISO-MP4 files. Per the Bento4 project
+# documentation it multiplexes and packages (fMP4, DASH, HLS, CMAF) and supports MPEG Common
+# Encryption with Marlin, PlayReady and Widevine, but it never re-encodes video.
+schemaVersion: "1"
+type: "component"
+id: "bento4"
+kind: "media-transcoder"
+provider: "default"
+defaults:
+  managed: false
+  mode: "file"
+  packaging: "none"
+  drm: false
+  redundantPipeline: false
+properties:
+  outputFormat:
+    type: "enum"
+    values: ["mp4", "dash", "hls", "cmaf"]
+    default: "mp4"
+  encryptionScheme:
+    type: "enum"
+    values: ["none", "cenc", "marlin", "playready", "widevine"]
+    default: "none"

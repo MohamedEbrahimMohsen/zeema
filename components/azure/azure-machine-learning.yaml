@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Machine Learning workspace: the project container for data, jobs, registered models and compute used to train and operationalize models.
+# "What is Azure Machine Learning?" states the workspace ships MLflow integration, job artifacts and lineage for tracking, a model catalog and registry, and serverless, cluster and Kubernetes compute; the docs do not state a default network isolation mode, so it is left absent.
+schemaVersion: "1"
+type: "component"
+id: "azure-machine-learning"
+kind: "ml-platform"
+provider: "azure"
+defaults:
+  managed: true
+  modelRegistry: true
+  experimentTracking: true
+properties:
+  computeType:
+    type: "enum"
+    values: ["serverless", "compute-instance", "compute-cluster", "kubernetes"]
+    default: "serverless"
+  managedNetworkIsolation:
+    type: "enum"
+    values: ["disabled", "allow-internet-outbound", "allow-only-approved-outbound"]
+  automatedMl:
+    type: "boolean"
+    default: true
+  promptFlow:
+    type: "boolean"
+    default: true

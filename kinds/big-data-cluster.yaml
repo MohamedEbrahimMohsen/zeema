@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# A sized cluster that accepts job submissions, where worker is a single job runner and data-warehouse is query-only storage. workerNodes and zoneRedundant have no default so sizing and resilience rules can catch an undeclared cluster.
+schemaVersion: "1"
+type: "kind"
+id: "big-data-cluster"
+category: "compute"
+properties:
+  engine:
+    type: "enum"
+    values: ["spark", "hadoop", "presto", "flink", "hpc", "ray", "dask", "kubernetes-batch"]
+  workerNodes:
+    type: "integer"
+  runtimeVersion:
+    type: "string"
+  autoscaling:
+    type: "boolean"
+    default: false
+  spotInstances:
+    type: "boolean"
+    default: false
+  zoneRedundant:
+    type: "boolean"
+  managed:
+    type: "boolean"
+    default: false

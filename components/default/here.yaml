@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# HERE Location Services: hosted geocoding, routing and map tile REST APIs, read-only and called with an API key.
+# "RPS Limits and Excluded Use Cases": a new project starts on the Limited Plan, where Geocode & Reverse
+# Geocode is capped at 5 requests per second, vector and raster tiles at 50, and the whole plan at 1,000
+# requests per day; requests over the cap fail with HTTP 429.
+schemaVersion: "1"
+type: "component"
+id: "here"
+kind: "third-party-api"
+provider: "default"
+defaults:
+  managed: true
+  idempotent: true
+  callbackStyle: "none"
+  hostedPage: false
+  handlesMoney: false
+  qpsQuota: 5
+properties:
+  plan:
+    type: "enum"
+    values: ["limited", "base"]
+    default: "limited"
+  dailyRequestQuota:
+    type: "integer"
+    default: 1000
+  tileRequestsPerSecond:
+    type: "integer"
+    default: 50

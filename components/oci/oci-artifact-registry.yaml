@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI Artifact Registry repository: storage for generic artifacts and blobs, explicitly not for
+# container images or custom compute images, which belong to Container Registry and Compute
+# ("Overview of Artifact Registry"). The same page limits a tenancy to 500 repositories and 500 GB
+# per region; "Creating a Repository in Artifact Registry" makes the immutability flag mandatory.
+schemaVersion: "1"
+type: "component"
+id: "oci-artifact-registry"
+kind: "artifact-repository"
+provider: "oci"
+defaults:
+  managed: true
+  artifactType: "generic"
+  upstreamProxy: false
+properties:
+  containerImagesSupported:
+    type: "boolean"
+    default: false
+  maxRepositoriesPerRegion:
+    type: "integer"
+    default: 500
+  maxStorageGbPerRegion:
+    type: "integer"
+    default: 500

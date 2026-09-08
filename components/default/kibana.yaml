@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Kibana: dashboards, Discover and visualisations over Elasticsearch indices.
+# "Report and share": permalinks and iframe embed code exist, but shared links still require
+# authentication unless anonymous authentication is configured. "Controlling access at the
+# document and field level": a role without those permissions sees every document and field.
+schemaVersion: "1"
+type: "component"
+id: "kibana"
+kind: "bi-service"
+provider: "default"
+defaults:
+  managed: false
+  publicSharing: false
+  rowLevelSecurity: false
+  embeddedReports: true
+properties:
+  anonymousAuthentication:
+    type: "boolean"
+    default: false
+  documentLevelSecurity:
+    type: "boolean"
+    default: false
+  fieldLevelSecurity:
+    type: "boolean"
+    default: false
+  reporting:
+    type: "enum"
+    values: ["pdf", "png", "csv"]

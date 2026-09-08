@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Model Armor: screens LLM prompts and responses inline against a template of filters (responsible AI,
+# prompt injection and jailbreak, Sensitive Data Protection, malicious URL). Per "Model Armor overview"
+# the service is stateless and holds nothing unless Cloud Logging is turned on, each filter carries a
+# confidence threshold, and floor settings set a project or organization baseline for all templates.
+schemaVersion: "1"
+type: "component"
+id: "google-model-armor"
+kind: "policy-engine"
+provider: "gcp"
+defaults:
+  scope: "resource"
+  remediation: false
+  managed: true
+properties:
+  enforcementType:
+    type: "enum"
+    values: ["inspect-only", "inspect-and-block"]
+  filterConfidence:
+    type: "enum"
+    values: ["low-and-above", "medium-and-above", "high"]
+  loggingEnabled:
+    type: "boolean"
+    default: false
+  floorSettings:
+    type: "boolean"
+    default: false

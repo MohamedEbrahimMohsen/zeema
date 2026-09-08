@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Route 53 Resolver DNS Firewall: rule groups associated with a VPC that filter outbound DNS
+# queries by domain name; queries that match no rule pass through ("Using DNS Firewall to filter
+# outbound DNS traffic"). Fail open is disabled by default, so the failure mode is closed
+# ("FirewallConfig"). Logging and metrics are configured separately.
+schemaVersion: "1"
+type: "component"
+id: "aws-route53-dns-firewall"
+kind: "firewall"
+provider: "aws"
+defaults:
+  managed: true
+  defaultAction: "allow"
+  stateful: false
+  logging: false
+  intrusionPrevention: false
+properties:
+  failureMode:
+    type: "enum"
+    values: ["open", "closed"]
+    default: "closed"
+  ruleAction:
+    type: "enum"
+    values: ["allow", "block", "alert"]
+    default: "block"
+  blockResponse:
+    type: "enum"
+    values: ["nodata", "nxdomain", "override"]
+  awsManagedDomainLists:
+    type: "boolean"
+    default: false

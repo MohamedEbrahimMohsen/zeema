@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# BeeGFS: parallel file system mounted through a Linux kernel client, file contents striped over storage targets ("BeeGFS Architecture Overview").
+# The root stripe pattern is RAID0 (4x1M) - four targets, 1 MiB chunks, no buddy mirroring ("Striping").
+schemaVersion: "1"
+type: "component"
+id: "beegfs"
+kind: "file-storage"
+provider: "default"
+defaults:
+  protocol: "native"
+  managed: false
+  publicAccess: false
+  backupEnabled: false
+  redundancy: "local"
+properties:
+  stripeTargets:
+    type: "integer"
+    default: 4
+  chunkSizeKib:
+    type: "integer"
+    default: 1024
+  buddyMirroring:
+    type: "boolean"
+    default: false

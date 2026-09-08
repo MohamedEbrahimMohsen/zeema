@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Anti Money Laundering AI: an API that trains, backtests and runs a bank-specific model
+# and writes AML risk scores. "AML AI overview": scores are produced on a calendar month
+# basis, inputs and outputs are BigQuery tables in the same location as the AML AI
+# instance, and "AML AI uses no data other than what you provide". CMEK is opt-in.
+schemaVersion: "1"
+type: "component"
+id: "google-anti-money-laundering-ai"
+kind: "ai-service"
+provider: "gcp"
+defaults:
+  modality: "structured"
+  publicEndpoint: true
+  customerManagedKeys: false
+  managed: true
+properties:
+  operation:
+    type: "enum"
+    values: ["engine-config", "train", "backtest", "predict"]
+    default: "predict"
+  lineOfBusiness:
+    type: "enum"
+    values: ["retail", "commercial"]
+    default: "retail"
+  scoringCadenceDays:
+    type: "integer"
+    default: 30

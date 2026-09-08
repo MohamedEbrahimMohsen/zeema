@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# PagerDuty: SaaS incident response; monitoring tools push events that become alerts and notification
+# rules reach responders by push, phone, SMS, email or Slack ("Getting started", "User profile").
+schemaVersion: "1"
+type: "component"
+id: "pagerduty"
+kind: "notification-service"
+provider: "default"
+defaults:
+  managed: true
+  channelPush: true
+  channelEmail: true
+  channelSms: true
+  dedupKey: true
+properties:
+  voiceCall:
+    type: "boolean"
+    default: true
+  escalationPolicy:
+    type: "boolean"
+    default: true

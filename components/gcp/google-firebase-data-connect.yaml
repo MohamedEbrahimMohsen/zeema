@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Firebase Data Connect / SQL Connect ("Firebase SQL Connect" overview and "Secure Data Connect with
+# authorization and attestation"): a managed GraphQL endpoint over Cloud SQL for PostgreSQL. Only
+# operations deployed to the server can be called - clients cannot submit arbitrary GraphQL - and an
+# operation with no @auth directive defaults to NO_ACCESS, callable only by the Admin SDK.
+schemaVersion: "1"
+type: "component"
+id: "google-firebase-data-connect"
+kind: "api-gateway"
+provider: "gcp"
+defaults:
+  auth: "jwt"
+  protocol: "http"
+  tls: true
+  managed: true
+properties:
+  defaultOperationAccess:
+    type: "enum"
+    values: ["no-access", "public", "user-anon", "user", "user-email-verified"]
+    default: "no-access"
+  predefinedOperationsOnly:
+    type: "boolean"
+    default: true
+  appCheckAttestation:
+    type: "boolean"
+    default: false
+  backingDatabase:
+    type: "string"
+    default: "cloud-sql-postgresql"

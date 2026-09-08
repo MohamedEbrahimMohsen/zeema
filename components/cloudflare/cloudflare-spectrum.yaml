@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare Spectrum: layer 4 reverse proxy for any TCP or UDP application on anycast edge IPs.
+# "Spectrum configuration options": edge TLS termination is off unless flexible/full/full-strict is
+# chosen, Proxy Protocol is opt-in, and L3/4 DDoS protection is included.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-spectrum"
+kind: "load-balancer"
+provider: "cloudflare"
+defaults:
+  managed: true
+  layer: "l4"
+  global: true
+  healthChecks: false
+properties:
+  protocol:
+    type: "enum"
+    values: ["tcp", "udp"]
+    default: "tcp"
+  edgeTlsTermination:
+    type: "enum"
+    values: ["off", "flexible", "full", "full-strict"]
+    default: "off"
+  proxyProtocol:
+    type: "boolean"
+    default: false
+  argoSmartRouting:
+    type: "boolean"
+    default: false

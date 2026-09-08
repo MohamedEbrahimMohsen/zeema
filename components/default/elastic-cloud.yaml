@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Elastic Cloud: Elastic's own hosted Elasticsearch. Per "Elastic Cloud" a deployment is
+# either Elastic Cloud Hosted, managed together with Elastic and using index lifecycle
+# management, or Elastic Cloud Serverless, fully managed and scaled by Elastic.
+schemaVersion: "1"
+type: "component"
+id: "elastic-cloud"
+kind: "search-index"
+provider: "default"
+defaults:
+  structure: "inverted"
+  shardingStrategy: "hash"
+  indexing: "async"
+  replicas: 1
+  managed: true
+properties:
+  deploymentType:
+    type: "enum"
+    values: ["hosted", "serverless"]
+    default: "hosted"
+  indexLifecycleManagement:
+    type: "boolean"
+    default: true

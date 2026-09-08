@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Data Manager for Energy (formerly Microsoft Energy Data Services): first-party PaaS running the
+# OSDU data platform. Microsoft operates deployment, scale and upgrades; encryption in transit and at
+# rest is provided, auth is Microsoft Entra ID, and an instance auto-scales and can hold several data
+# partitions. Facts from "What is Microsoft Azure Data Manager for Energy?".
+schemaVersion: "1"
+type: "component"
+id: "azure-energy-data-services"
+kind: "third-party-api"
+provider: "azure"
+defaults:
+  managed: true
+properties:
+  osduCompatible:
+    type: "boolean"
+    default: true
+  autoScaling:
+    type: "boolean"
+    default: true
+  encryptionAtRest:
+    type: "boolean"
+    default: true
+  encryptionInTransit:
+    type: "boolean"
+    default: true
+  multipleDataPartitions:
+    type: "boolean"
+    default: true

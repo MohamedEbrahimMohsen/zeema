@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS PrivateLink endpoint service: a service you host behind a Network Load Balancer and share.
+# "Share your services through AWS PrivateLink": consumers connect only after the provider grants
+# permission, private DNS is opt-in, and cross-Region access requires an explicit IAM permission.
+schemaVersion: "1"
+type: "component"
+id: "aws-privatelink-service"
+kind: "private-link"
+provider: "aws"
+defaults:
+  managed: true
+  approvalRequired: true
+  privateDnsIntegration: false
+  crossRegion: false
+properties:
+  frontEndLoadBalancer:
+    type: "enum"
+    values: ["network-load-balancer", "gateway-load-balancer"]
+    default: "network-load-balancer"
+  ipAddressType:
+    type: "enum"
+    values: ["ipv4", "ipv6", "dualstack"]
+    default: "ipv4"
+  crossZoneLoadBalancing:
+    type: "boolean"
+    default: false

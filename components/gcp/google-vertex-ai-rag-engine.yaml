@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Vertex AI RAG Engine corpus: a fully managed retrieval index over documents, backed by the
+# RAG Engine managed vector database unless another one is attached ("RAG Engine overview").
+# The corpus indexes and retrieves text passages for grounding Gemini calls.
+schemaVersion: "1"
+type: "component"
+id: "google-vertex-ai-rag-engine"
+kind: "ai-service"
+provider: "gcp"
+defaults:
+  managed: true
+  modality: "text"
+  customerManagedKeys: false
+properties:
+  vectorDatabase:
+    type: "enum"
+    values: ["rag-managed-db", "vertex-vector-search", "pinecone", "weaviate"]
+    default: "rag-managed-db"
+  grounding:
+    type: "boolean"
+    default: true

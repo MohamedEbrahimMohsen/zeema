@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# BigQuery sharing (Analytics Hub): data exchanges and listings that share BigQuery datasets by
+# reference. "Introduction to Analytics Hub": an exchange is private by default, no data is copied,
+# and a shared dataset supports at most 1,000 linked datasets.
+schemaVersion: "1"
+type: "component"
+id: "google-analytics-hub"
+kind: "data-catalog"
+provider: "gcp"
+defaults:
+  managed: true
+  accessPolicyEnforcement: true
+properties:
+  discoverability:
+    type: "enum"
+    values: ["private", "public"]
+    default: "private"
+  sharingModel:
+    type: "enum"
+    values: ["by-reference", "copy"]
+    default: "by-reference"
+  egressRestriction:
+    type: "boolean"
+    default: false
+  maxLinkedDatasets:
+    type: "integer"
+    default: 1000

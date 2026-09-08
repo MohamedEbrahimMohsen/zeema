@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Node-RED: flow-based wiring of nodes that pass messages. Context uses an in-memory store by default,
+# so values are not saved across restarts unless the file-system store is configured ("Concepts").
+schemaVersion: "1"
+type: "component"
+id: "node-red"
+kind: "workflow-engine"
+provider: "default"
+defaults:
+  durable: false
+  pattern: "dag"
+  compensation: false
+  managed: false
+properties:
+  contextStore:
+    type: "enum"
+    values: ["memory", "file"]
+    default: "memory"

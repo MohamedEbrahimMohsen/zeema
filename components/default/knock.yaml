@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Knock: SaaS notification infrastructure. "What is Knock" documents email, SMS, push, chat and an
+# in-app feed, Liquid message templates and per-recipient preferences enforced at send time.
+schemaVersion: "1"
+type: "component"
+id: "knock"
+kind: "notification-service"
+provider: "default"
+defaults:
+  managed: true
+  channelPush: true
+  channelEmail: true
+  channelSms: true
+  templateStore: true
+properties:
+  inAppFeed:
+    type: "boolean"
+    default: true
+  preferenceCenter:
+    type: "boolean"
+    default: true

@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Mollie: hosted checkout PSP. "API idempotency" documents an Idempotency-Key header cached for one
+# hour; "Webhooks" shows the callback posts only an id and carries no signature, so you must refetch.
+schemaVersion: "1"
+type: "component"
+id: "mollie"
+kind: "third-party-api"
+provider: "default"
+defaults:
+  managed: true
+  idempotent: true
+  handlesMoney: true
+  callbackStyle: "webhook"
+  hostedPage: true
+properties:
+  idempotencyWindowHours:
+    type: "integer"
+    default: 1
+  signedCallbacks:
+    type: "boolean"
+    default: false

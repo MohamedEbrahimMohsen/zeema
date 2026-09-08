@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Harness FME (formerly Split): hosted feature management and experimentation platform.
+# "Install the FME SDK": SDKs download the targeting rules and keep a local copy, then
+# evaluate percentage rules with a deterministic hash into 100 buckets, so no user data leaves.
+schemaVersion: "1"
+type: "component"
+id: "split"
+kind: "feature-flag-service"
+provider: "default"
+defaults:
+  stagedRollout: true
+  managed: true
+properties:
+  localEvaluation:
+    type: "boolean"
+    default: true
+  impressionTracking:
+    type: "boolean"
+    default: true
+  splitEvaluatorService:
+    type: "boolean"
+    default: false

@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Squid: caching proxy. With no cache_dir configured it caches in memory only, sized by cache_mem
+# at 256 MB, and replaces objects with the list-based lru policy
+# ("cache_dir", "cache_mem", "cache_replacement_policy").
+schemaVersion: "1"
+type: "component"
+id: "squid"
+kind: "cache"
+provider: "default"
+defaults:
+  persistence: false
+  evictionPolicy: "lru"
+  invalidation: "ttl"
+properties:
+  diskCache:
+    type: "boolean"
+    default: false
+  memoryCacheMb:
+    type: "integer"
+    default: 256

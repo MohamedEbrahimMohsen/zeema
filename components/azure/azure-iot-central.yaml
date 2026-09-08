@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure IoT Central: fully hosted IoT application platform (aPaaS) over device templates and
+# device twins ("What is Azure IoT Central"). It uses an internal Device Provisioning Service
+# instance for device connections, and the standard plan makes the first two devices free.
+schemaVersion: "1"
+type: "component"
+id: "azure-iot-central"
+kind: "iot-hub"
+provider: "azure"
+defaults:
+  managed: true
+  protocol: "multi"
+  perDeviceIdentity: true
+  deviceTwin: true
+  deviceProvisioning: true
+properties:
+  plan:
+    type: "enum"
+    values: ["standard-0", "standard-1", "standard-2"]
+  applicationTemplate:
+    type: "enum"
+    values: ["custom", "retail", "energy", "government", "healthcare"]
+    default: "custom"
+  freeDeviceAllowance:
+    type: "integer"
+    default: 2

@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Imperva Application Security (Cloud WAF): reverse-proxy SaaS WAF. Per "Create and Manage
+# Policies" the built-in WAF rules (SQL Injection, Cross Site Scripting, Illegal Resource
+# Access, Remote File Inclusion) default to Block Request, so it enforces out of the box.
+schemaVersion: "1"
+type: "component"
+id: "imperva"
+kind: "waf"
+provider: "default"
+defaults:
+  managed: true
+  mode: "prevention"
+  managedRuleSet: "imperva-default"
+  botProtection: true
+properties:
+  deployment:
+    type: "enum"
+    values: ["cloud-waf", "waf-gateway", "connector"]
+    default: "cloud-waf"
+  ddosProtection:
+    type: "boolean"
+    default: true
+  cdnEnabled:
+    type: "boolean"
+    default: false

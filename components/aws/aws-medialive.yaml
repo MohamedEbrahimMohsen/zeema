@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Elemental MediaLive: real-time live video encoder that transcodes attached inputs into
+# broadcast and streaming output groups ("What Is MediaLive?"). "Channel class" defines STANDARD
+# (two pipelines) and SINGLE_PIPELINE (one pipeline) and states no default, so channelClass carries
+# none; the CloudFormation AWS::MediaLive::Channel reference shows Vpc and InferenceSettings as
+# optional additions to a channel.
+schemaVersion: "1"
+type: "component"
+id: "aws-medialive"
+kind: "media-transcoder"
+provider: "aws"
+defaults:
+  managed: true
+  mode: "live"
+properties:
+  channelClass:
+    type: "enum"
+    values: ["standard", "single-pipeline"]
+  vpcMode:
+    type: "boolean"
+    default: false
+  elementalInference:
+    type: "boolean"
+    default: false

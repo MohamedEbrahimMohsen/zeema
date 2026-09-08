@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Application Insights: the application performance monitoring feature of Azure Monitor, collecting
+# traces, metrics and logs through OpenTelemetry into a workspace ("Application Insights
+# OpenTelemetry observability overview"). "Manage Data Retention in a Log Analytics Workspace":
+# tables related to Application Insights resources keep data for 90 days at no charge.
+schemaVersion: "1"
+type: "component"
+id: "azure-application-insights"
+kind: "monitoring"
+provider: "azure"
+defaults:
+  managed: true
+  signal: "all"
+  collectorMode: "push"
+  retentionDays: 90
+properties:
+  workspaceBased:
+    type: "boolean"
+    default: true
+  availabilityTests:
+    type: "boolean"
+    default: false
+  profiler:
+    type: "boolean"
+    default: false
+  snapshotDebugger:
+    type: "boolean"
+    default: false

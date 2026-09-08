@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# ArangoDB: multi-model store (document, graph, key-value) on the RocksDB engine.
+# Per "Collections" a collection is created with replicationFactor 1, which disables
+# synchronous replication between DB-Servers.
+schemaVersion: "1"
+type: "component"
+id: "arangodb"
+kind: "graph-database"
+provider: "default"
+defaults:
+  inMemory: false
+  masterPerShard: true
+  crossRegionConsistency: "none"
+  managed: false
+properties:
+  deploymentMode:
+    type: "enum"
+    values: ["single-server", "active-failover", "cluster"]
+    default: "single-server"
+  replicationFactor:
+    type: "integer"
+    default: 1
+  numberOfShards:
+    type: "integer"
+    default: 1
+  dataModel:
+    type: "enum"
+    values: ["document", "graph", "key-value", "multi-model"]
+    default: "multi-model"

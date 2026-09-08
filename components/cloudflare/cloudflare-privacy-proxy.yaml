@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Privacy Proxy: a MASQUE forward proxy run by Cloudflare for Enterprise partners — it is the
+# second hop behind iCloud Private Relay and Microsoft Edge Secure Network. Destinations see
+# Cloudflare IPs while geolocation accuracy is preserved ("Privacy Proxy overview").
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-privacy-proxy"
+kind: "third-party-api"
+provider: "cloudflare"
+defaults:
+  managed: true
+properties:
+  deploymentModel:
+    type: "enum"
+    values: ["single-hop", "double-hop"]
+  clientIpMasking:
+    type: "boolean"
+    default: true
+  geolocationPreserved:
+    type: "boolean"
+    default: true

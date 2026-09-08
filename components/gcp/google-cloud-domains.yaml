@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloud Domains registration: registers a domain name and points it at name servers.
+# Defaults from "Cloud Domains overview": registrations renew automatically every year; privacy protection and DNSSEC are choices made at registration, Cloud DNS is recommended but not automatic.
+schemaVersion: "1"
+type: "component"
+id: "google-cloud-domains"
+kind: "dns"
+provider: "gcp"
+defaults:
+  managed: true
+properties:
+  autoRenew:
+    type: "boolean"
+    default: true
+  nameServers:
+    type: "enum"
+    values: ["cloud-dns", "custom"]
+    default: "cloud-dns"
+  privacyProtection:
+    type: "enum"
+    values: ["public-contact-data", "private-contact-data", "redacted-contact-data"]

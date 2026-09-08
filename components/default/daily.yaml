@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Daily: hosted video call API. Per "POST /rooms/:room" the room property sfu_switchover
+# defaults to 0.5, so a room is in SFU mode from the first participant; recording is off unless
+# enable_recording is set and geo (call server region) defaults to no pinned region.
+schemaVersion: "1"
+type: "component"
+id: "daily"
+kind: "media-router"
+provider: "default"
+defaults:
+  managed: true
+  mode: "sfu"
+properties:
+  recordingEnabled:
+    type: "boolean"
+    default: false
+  pinnedRegion:
+    type: "boolean"
+    default: false

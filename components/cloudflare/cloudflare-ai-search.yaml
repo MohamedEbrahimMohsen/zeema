@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AI Search (formerly AutoRAG): managed retrieval pipeline that chunks, embeds and indexes
+# a data source and answers semantic plus keyword queries ("AI Search overview").
+# Scheduled sync jobs keep the index fresh ("Indexing": "runs a sync job every 6 hours").
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-ai-search"
+kind: "search-index"
+provider: "cloudflare"
+defaults:
+  managed: true
+  structure: "vector"
+  indexing: "batch"
+  rebuildCadenceHours: 6
+properties:
+  syncIntervalHours:
+    type: "integer"
+    default: 6
+  dataSource:
+    type: "enum"
+    values: ["r2", "website", "built-in-storage"]
+  hybridSearch:
+    type: "boolean"
+    default: true

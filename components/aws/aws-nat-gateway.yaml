@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon VPC NAT gateway: managed outbound address translation for private subnets.
+# "NAT gateways" + "NAT gateway basics" + "Troubleshoot NAT gateways": connectivity type defaults to
+# public with one Elastic IP, it lives in a single Availability Zone, and idle flows drop after 350 s.
+schemaVersion: "1"
+type: "component"
+id: "aws-nat-gateway"
+kind: "nat-gateway"
+provider: "aws"
+defaults:
+  managed: true
+  staticIpCount: 1
+  zoneRedundant: false
+  logging: false
+properties:
+  connectivityType:
+    type: "enum"
+    values: ["public", "private"]
+    default: "public"
+  idleTimeoutSeconds:
+    type: "integer"
+    default: 350
+  baselineBandwidthGbps:
+    type: "integer"
+    default: 5
+  maxBandwidthGbps:
+    type: "integer"
+    default: 100
+  connectionsPerDestinationPerAddress:
+    type: "integer"
+    default: 55000

@@ -1,0 +1,37 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle AI Database@Google Cloud: OCI-managed Exadata infrastructure standing in a Google Cloud datacenter.
+# Defaults from "Overview for Oracle AI Database@Google Cloud": the hardware sits in Google Cloud zones and is
+# logically mapped to an OCI region, an ODB network provisions the OCI VCN and up to five subnets automatically,
+# and backups go to Autonomous Recovery Service or OCI Object Storage with data-at-rest encryption keys held in
+# OCI Vault.
+schemaVersion: "1"
+type: "component"
+id: "oci-database-at-google-cloud"
+kind: "sql-database"
+provider: "oci"
+defaults:
+  managed: true
+  backupEnabled: true
+  encryptionAtRest: true
+  replication: "none"
+  concurrencyControl: "pessimistic"
+  commitProtocol: "single"
+properties:
+  service:
+    type: "enum"
+    values: ["exadata-database-service", "exadata-exascale", "autonomous-ai-database", "base-database"]
+    default: "exadata-database-service"
+  hostCloud:
+    type: "enum"
+    values: ["google-cloud"]
+    default: "google-cloud"
+  vpcModel:
+    type: "enum"
+    values: ["standalone-vpc", "shared-vpc"]
+    default: "standalone-vpc"
+  odbSubnetLimit:
+    type: "integer"
+    default: 5
+  billedThroughHostMarketplace:
+    type: "boolean"
+    default: true

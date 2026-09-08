@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS CloudTrail Lake event data store: an immutable, ORC-backed collection of audit events queried with SQL.
+# In maintenance since 31 March 2026 and closed to new customers from 31 May 2026; existing users continue.
+# "Working with AWS CloudTrail Lake" and "Managing CloudTrail Lake costs": One-year extendable retention pricing
+# is the default option with a 366-day default retention (max 3653); all events are encrypted by CloudTrail.
+schemaVersion: "1"
+type: "component"
+id: "aws-cloudtrail-lake"
+kind: "monitoring"
+provider: "aws"
+defaults:
+  signal: "logs"
+  collectorMode: "push"
+  retentionDays: 366
+  managed: true
+properties:
+  pricingOption:
+    type: "enum"
+    values: ["one-year-extendable-retention", "seven-year-retention"]
+    default: "one-year-extendable-retention"
+  eventCategory:
+    type: "enum"
+    values: ["cloudtrail-events", "insights-events", "config-items", "audit-manager-evidence", "external-events"]
+    default: "cloudtrail-events"
+  organizationScope:
+    type: "boolean"
+    default: false
+  federationEnabled:
+    type: "boolean"
+    default: false

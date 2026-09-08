@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apache CouchDB: peer-based document store. A 3.x database is created with q=2 shards and n=3
+# replicas read and written at quorum, and losing revisions are kept for the application to merge
+# ("Clustering: theory", "Replication and conflict model").
+schemaVersion: "1"
+type: "component"
+id: "couchdb"
+kind: "nosql-database"
+provider: "default"
+defaults:
+  model: "document"
+  consistency: "eventual"
+  replication: "single-region"
+  replicationFactor: 3
+  conflictResolution: "app-merge"
+  quorumReads: 2
+  quorumWrites: 2
+properties:
+  version:
+    type: "string"
+  shards:
+    type: "integer"
+    default: 2

@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# LocalAI: self-hosted drop-in replacement for the OpenAI REST API, running models locally.
+# Defaults from "Getting started": listens on http://localhost:8080, the default image is CPU-only
+# and GPU backends (NVIDIA, AMD, Intel, Vulkan) are detected or selected separately.
+schemaVersion: "1"
+type: "component"
+id: "localai"
+kind: "ml-inference"
+provider: "default"
+defaults:
+  training: "batch"
+  inputs: "live"
+  accelerator: "none"
+  managed: false
+properties:
+  port:
+    type: "integer"
+    default: 8080
+  modality:
+    type: "enum"
+    values: ["text", "image", "audio", "embeddings"]
+    default: "text"
+  modelSource:
+    type: "enum"
+    values: ["local-file", "huggingface", "ollama", "oci-registry"]

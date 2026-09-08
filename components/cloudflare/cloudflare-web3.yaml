@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare Web3 gateways: HTTP front doors onto IPFS and Ethereum. "Web3" calls the IPFS gateway
+# read-only and the Ethereum gateway read and write over the official JSON-RPC API; the gateway
+# pages give 50 GB of data transfer and 500,000 HTTP requests included below Enterprise.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-web3"
+kind: "third-party-api"
+provider: "cloudflare"
+defaults:
+  managed: true
+  callbackStyle: "none"
+  hostedPage: false
+  handlesMoney: false
+properties:
+  gatewayType:
+    type: "enum"
+    values: ["ipfs", "ethereum"]
+    default: "ipfs"
+  ipfsGatewayMode:
+    type: "enum"
+    values: ["dnslink", "universal-path"]
+    default: "dnslink"
+  includedDataTransferGb:
+    type: "integer"
+    default: 50
+  includedHttpRequests:
+    type: "integer"
+    default: 500000

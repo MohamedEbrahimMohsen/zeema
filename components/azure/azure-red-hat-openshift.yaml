@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Red Hat OpenShift: OpenShift clusters jointly operated by Red Hat and Microsoft
+# ("Introduction to Azure Red Hat OpenShift"); control plane, infrastructure and application nodes
+# are patched for you. A cluster needs three control plane and three worker nodes, and az aro
+# create defaults to a public API server and ingress with FIPS and host encryption off.
+schemaVersion: "1"
+type: "component"
+id: "azure-red-hat-openshift"
+kind: "container-orchestrator"
+provider: "azure"
+defaults:
+  managed: true
+  nodeCount: 3
+  autoscaling: false
+  rbac: true
+  privateControlPlane: false
+properties:
+  controlPlaneNodes:
+    type: "integer"
+    default: 3
+  ingressVisibility:
+    type: "enum"
+    values: ["public", "private"]
+    default: "public"
+  fipsValidatedModules:
+    type: "boolean"
+    default: false
+  encryptionAtHost:
+    type: "boolean"
+    default: false
+  workerVmSize:
+    type: "string"
+    default: "Standard_D4s_v5"

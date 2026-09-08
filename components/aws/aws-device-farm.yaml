@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Device Farm: real Android, iOS and web-browser devices hosted by AWS, used either through an
+# interactive remote-access session or through automated test runs. Per "What is AWS Device Farm?"
+# tests run "in a fully managed environment" on Device Farm test hosts, a remote access session has a
+# 150-minute limit, and the service is only available in the us-west-2 (Oregon) Region.
+schemaVersion: "1"
+type: "component"
+id: "aws-device-farm"
+kind: "client"
+provider: "aws"
+defaults:
+  platform: "mobile"
+  offlineCapable: false
+  managed: true
+properties:
+  testMode:
+    type: "enum"
+    values: ["automated-run", "remote-access"]
+  deviceOwnership:
+    type: "enum"
+    values: ["public-fleet", "private-device"]
+    default: "public-fleet"
+  remoteAccessSessionMinutes:
+    type: "integer"
+    default: 150
+  vpcConnectivity:
+    type: "boolean"
+    default: false
+  singleRegion:
+    type: "boolean"
+    default: true

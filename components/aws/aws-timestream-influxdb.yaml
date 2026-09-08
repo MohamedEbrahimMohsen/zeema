@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Timestream for InfluxDB: managed open-source InfluxDB 2.x DB instance. "What is Timestream for
+# InfluxDB?" states the instance is placed in a single Availability Zone chosen for you unless you pick
+# a Multi-AZ deployment with a standby, and that tag values are indexed by the engine;
+# "CreateDbInstance" defaults the InfluxDB port to 8086 and offers three provisioned IOPS storage tiers.
+schemaVersion: "1"
+type: "component"
+id: "aws-timestream-influxdb"
+kind: "timeseries-database"
+provider: "aws"
+defaults:
+  managed: true
+  tiers: "single"
+  labelIndex: true
+properties:
+  deploymentType:
+    type: "enum"
+    values: ["single-az", "with-multiaz-standby"]
+    default: "single-az"
+  dbStorageType:
+    type: "enum"
+    values: ["influx-io-included-3k", "influx-io-included-12k", "influx-io-included-16k"]
+  port:
+    type: "integer"
+    default: 8086
+  publiclyAccessible:
+    type: "boolean"

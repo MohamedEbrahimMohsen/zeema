@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon File Cache: managed high-speed Lustre cache in front of S3 buckets or NFSv3 file systems.
+# "What is Amazon File Cache?": the CACHE_1 deployment type is preset in the console and replicates data
+# within the cache's own Availability Zone, storage is SSD, cache data is automatically encrypted at rest
+# with AWS KMS keys and in transit from supported EC2 instances; up to 8 linked data repositories.
+schemaVersion: "1"
+type: "component"
+id: "aws-file-cache"
+kind: "file-storage"
+provider: "aws"
+defaults:
+  protocol: "lustre"
+  redundancy: "zonal"
+  encryptionInTransit: true
+  publicAccess: false
+  backupEnabled: false
+  managed: true
+properties:
+  deploymentType:
+    type: "enum"
+    values: ["cache-1"]
+    default: "cache-1"
+  dataRepositoryType:
+    type: "enum"
+    values: ["s3", "nfs"]
+  maxLinkedRepositories:
+    type: "integer"
+    default: 8
+  encryptionAtRest:
+    type: "boolean"
+    default: true
+  lazyLoad:
+    type: "boolean"
+    default: true

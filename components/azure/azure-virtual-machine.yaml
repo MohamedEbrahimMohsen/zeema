@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Virtual Machines: a leased machine you boot from an image and keep patching yourself
+# ("Overview of virtual machines in Azure"). Managed disks are encrypted at rest with
+# platform-managed keys by default ("Server-side encryption of Azure managed disks").
+schemaVersion: "1"
+type: "component"
+id: "azure-virtual-machine"
+kind: "virtual-machine"
+provider: "azure"
+defaults:
+  managed: false
+  diskEncryption: true
+  zoneRedundant: false
+properties:
+  securityType:
+    type: "enum"
+    values: ["standard", "trusted-launch", "confidential"]
+    default: "trusted-launch"
+  osDiskSizeGib:
+    type: "integer"
+    default: 127
+  managedDisks:
+    type: "boolean"
+    default: true

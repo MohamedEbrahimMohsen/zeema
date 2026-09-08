@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Crossplane: "a control plane framework for platform engineering", installed into a Kubernetes
+# cluster and reconciling managed resources against external APIs through providers and
+# compositions. "Managed resources" documents deletionPolicy defaulting to Delete, so the external
+# resource goes with the Kubernetes object, and managementPolicies defaulting to "*" — full control.
+schemaVersion: "1"
+type: "component"
+id: "crossplane"
+kind: "ci-pipeline"
+provider: "default"
+defaults:
+  trigger: "manual"
+  approvalRequired: false
+  selfHostedRunners: true
+  managed: false
+properties:
+  deletionPolicy:
+    type: "enum"
+    values: ["delete", "orphan"]
+    default: "delete"
+  managementPolicy:
+    type: "enum"
+    values: ["full", "observe-only", "custom"]
+    default: "full"
+  compositions:
+    type: "boolean"
+    default: false

@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# HDFS: the Hadoop distributed file system, a NameNode plus DataNodes holding rack-aware block replicas ("HDFS Architecture").
+# hdfs-default.xml: dfs.replication 3, dfs.blocksize 134217728, dfs.encrypt.data.transfer false; transparent encryption zones are opt-in.
+schemaVersion: "1"
+type: "component"
+id: "hdfs"
+kind: "file-storage"
+provider: "default"
+defaults:
+  protocol: "native"
+  managed: false
+  publicAccess: false
+  encryptionInTransit: false
+  backupEnabled: false
+  redundancy: "local"
+properties:
+  replicationFactor:
+    type: "integer"
+    default: 3
+  blockSizeMib:
+    type: "integer"
+    default: 128
+  transparentEncryptionZone:
+    type: "boolean"
+    default: false

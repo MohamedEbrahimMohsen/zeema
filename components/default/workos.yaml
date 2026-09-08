@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# WorkOS: hosted enterprise auth API - AuthKit sessions, SSO against any SAML or OIDC IdP,
+# Directory Sync over SCIM. "Integrating Role-Based Access Control": roles and permissions are
+# defined per organization; MFA ships with AuthKit but is turned on per environment.
+schemaVersion: "1"
+type: "component"
+id: "workos"
+kind: "identity-provider"
+provider: "default"
+defaults:
+  protocol: "oidc"
+  authorizationModel: "rbac"
+  centralised: true
+  managed: true
+  mfa: false
+properties:
+  ssoProtocol:
+    type: "enum"
+    values: ["saml", "oidc"]
+    default: "saml"
+  directorySync:
+    type: "boolean"
+    default: false
+  fineGrainedAuthorization:
+    type: "boolean"
+    default: false

@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Simple Workflow Service: task coordination where AWS stores the execution history and
+# hands tasks to deciders and workers you run yourself, on EC2 or on premises. "What is Amazon
+# Simple Workflow Service?" carries no end-of-life date but recommends AWS Step Functions for most
+# new workflow and orchestration use cases; "Amazon SWF Quotas" gives the hard limits below.
+schemaVersion: "1"
+type: "component"
+id: "aws-swf"
+kind: "workflow-engine"
+provider: "aws"
+defaults:
+  managed: true
+  durable: true
+  pattern: "dag"
+  stepsIdempotent: false
+  compensation: false
+  humanReview: false
+properties:
+  workerHosting:
+    type: "enum"
+    values: ["aws", "on-premises"]
+    default: "aws"
+  maxWorkflowExecutionDays:
+    type: "integer"
+    default: 365
+  maxHistoryEvents:
+    type: "integer"
+    default: 25000
+  maxOpenChildWorkflows:
+    type: "integer"
+    default: 1000

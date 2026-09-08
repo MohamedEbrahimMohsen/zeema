@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon FinSpace with Managed kdb Insights: managed kdb+ time series analytics for capital markets, running
+# HDB, RDB, tickerplant, gateway and general-purpose clusters over kdb databases ("What is Amazon FinSpace?").
+# Sunset: closed to new customers since 7 October 2025, end of support 7 October 2026; still placeable until then.
+# Clusters run on dedicated capacity unless a scaling group is created first ("Creating a Managed kdb Insights cluster").
+schemaVersion: "1"
+type: "component"
+id: "aws-finspace"
+kind: "timeseries-database"
+provider: "aws"
+defaults:
+  managed: true
+properties:
+  clusterType:
+    type: "enum"
+    values: ["general-purpose", "tickerplant", "hdb", "rdb", "gateway"]
+  azMode:
+    type: "enum"
+    values: ["single", "multi"]
+  scalingGroup:
+    type: "boolean"
+    default: false

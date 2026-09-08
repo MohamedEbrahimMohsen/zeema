@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Proxmox VE, an open source virtualization platform. Per the "Proxmox VE Administration Guide" it combines
+# KVM full virtualization with LXC containers, runs on a single node unless a cluster is assembled, and
+# treats high availability as an opt-in feature of a multi-node cluster.
+schemaVersion: "1"
+type: "component"
+id: "proxmox"
+kind: "virtual-machine"
+provider: "default"
+defaults:
+  managed: false
+properties:
+  virtualizationType:
+    type: "enum"
+    values: ["kvm", "lxc"]
+    default: "kvm"
+  clustered:
+    type: "boolean"
+    default: false
+  highAvailability:
+    type: "boolean"
+    default: false
+  storageBackend:
+    type: "enum"
+    values: ["lvm-thin", "zfs", "ceph", "nfs", "directory"]
+    default: "lvm-thin"

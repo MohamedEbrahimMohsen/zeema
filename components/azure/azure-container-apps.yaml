@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Container Apps: serverless container hosting with KEDA-based autoscaling
+# ("Azure Container Apps overview"). With no scale rule defined the platform applies an HTTP rule
+# of 0 to 10 replicas at 10 concurrent requests per replica, so an app scales to zero by default.
+schemaVersion: "1"
+type: "component"
+id: "azure-container-apps"
+kind: "app-server"
+provider: "azure"
+defaults:
+  managed: true
+  stateless: true
+  autoscaling: true
+properties:
+  minReplicas:
+    type: "integer"
+    default: 0
+  maxReplicas:
+    type: "integer"
+    default: 10
+  concurrentRequestsPerReplica:
+    type: "integer"
+    default: 10

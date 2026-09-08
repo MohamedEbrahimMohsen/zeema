@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Bedrock AgentCore: managed serverless hosting for AI agents and MCP tools. Per "Host agent or
+# tools with Amazon Bedrock AgentCore Runtime" each user session runs in its own microVM that is
+# terminated and sanitized afterwards, sessions run up to 8 hours on microVMs (14 days on Instances),
+# payloads up to 100 MB are accepted and agent tracing is built in.
+schemaVersion: "1"
+type: "component"
+id: "aws-bedrock-agentcore"
+kind: "ai-service"
+provider: "aws"
+defaults:
+  managed: true
+  modality: "multimodal"
+properties:
+  computeType:
+    type: "enum"
+    values: ["micro-vm", "instances"]
+    default: "micro-vm"
+  sessionIsolation:
+    type: "boolean"
+    default: true
+  maxSessionHours:
+    type: "integer"
+    default: 8
+  protocol:
+    type: "enum"
+    values: ["http", "mcp", "a2a"]
+  builtInTracing:
+    type: "boolean"
+    default: true

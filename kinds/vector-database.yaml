@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Abstract kind: Stores fixed-dimension embeddings and answers nearest-neighbour queries (Pinecone, Milvus, Qdrant, pgvector, S3 Vectors, Vertex Vector Search).
+schemaVersion: "1"
+type: "kind"
+id: "vector-database"
+category: "data"
+properties:
+  dimensions:
+    type: "integer"
+  distanceMetric:
+    type: "enum"
+    values: ["cosine", "euclidean", "dot-product"]
+  indexType:
+    type: "enum"
+    values: ["flat", "hnsw", "ivf", "disk-ann", "lsh"]
+  quantization:
+    type: "enum"
+    values: ["none", "scalar", "product", "binary"]
+    default: "none"
+  metadataFiltering:
+    type: "boolean"
+    default: false
+  hybridSearch:
+    type: "boolean"
+    default: false
+  namespaces:
+    type: "boolean"
+    default: false
+  replicas:
+    type: "integer"
+  managed:
+    type: "boolean"
+    default: false

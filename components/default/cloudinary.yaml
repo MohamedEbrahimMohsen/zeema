@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudinary: SaaS media store that holds uploaded images and video and delivers transformed derivatives
+# from res.cloudinary.com over a CDN. Per "Backups and version management", automatic backup is off by
+# default and without it deleted assets and previous versions cannot be restored; per "How to integrate
+# Cloudinary", the onboarding flow creates an unsigned upload preset so browsers can upload without a secret.
+schemaVersion: "1"
+type: "component"
+id: "cloudinary"
+kind: "object-store"
+provider: "default"
+defaults:
+  managed: true
+  tier: "hot"
+  versioning: false
+  objectLock: false
+properties:
+  automaticBackup:
+    type: "boolean"
+    default: false
+  backupStorage:
+    type: "enum"
+    values: ["cloudinary-managed", "customer-bucket"]
+    default: "cloudinary-managed"
+  uploadPreset:
+    type: "enum"
+    values: ["signed", "unsigned"]
+    default: "signed"
+  cdnDelivery:
+    type: "boolean"
+    default: true
+  onTheFlyTransformations:
+    type: "boolean"
+    default: true

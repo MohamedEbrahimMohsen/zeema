@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Supply Chain: a cloud supply chain management application reached from a hosted web client at
+# an awsapps.com URL with IAM Identity Center credentials ("What is AWS Supply Chain?"). Its data
+# lake ingests from ERP, warehouse systems or an Amazon S3 connector; Insights, Order Planning and
+# Tracking, Demand Planning, Supply Planning, N-Tier Visibility and Sustainability are separate
+# features an administrator configures.
+schemaVersion: "1"
+type: "component"
+id: "aws-supply-chain"
+kind: "third-party-api"
+provider: "aws"
+defaults:
+  managed: true
+  hostedPage: true
+properties:
+  dataConnector:
+    type: "enum"
+    values: ["s3", "erp", "edi"]
+  demandPlanning:
+    type: "boolean"
+    default: false
+  supplyPlanning:
+    type: "boolean"
+    default: false
+  nTierVisibility:
+    type: "boolean"
+    default: false

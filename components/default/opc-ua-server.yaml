@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OPC UA server: industrial address-space server. OPC 10000-6 "Mappings" defines the transport
+# mappings OPC UA TCP (opc.tcp), HTTPS and WebSockets; OPC 10000-1 describes application instance
+# certificates as the identity every client and server presents.
+schemaVersion: "1"
+type: "component"
+id: "opc-ua-server"
+kind: "iot-hub"
+provider: "default"
+defaults:
+  protocol: "multi"
+  perDeviceIdentity: true
+  managed: false
+properties:
+  transport:
+    type: "enum"
+    values: ["opc-tcp", "https", "websocket"]
+    default: "opc-tcp"
+  securityMode:
+    type: "enum"
+    values: ["none", "sign", "sign-and-encrypt"]
+  userAuthentication:
+    type: "enum"
+    values: ["anonymous", "username-password", "x509-certificate"]
+  pubSub:
+    type: "boolean"
+    default: false

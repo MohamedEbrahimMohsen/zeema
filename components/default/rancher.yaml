@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Rancher, a management plane for many Kubernetes clusters. Per "Role-Based Access Control (RBAC)" global,
+# cluster and project roles are implemented on top of Kubernetes RBAC and enforced by Kubernetes, so a
+# Rancher-managed estate is RBAC-governed out of the box.
+schemaVersion: "1"
+type: "component"
+id: "rancher"
+kind: "container-orchestrator"
+provider: "default"
+defaults:
+  managed: false
+  autoscaling: false
+  rbac: true
+properties:
+  managesMultipleClusters:
+    type: "boolean"
+    default: true
+  provisionedDistribution:
+    type: "enum"
+    values: ["rke2", "k3s", "imported"]
+    default: "rke2"
+  centralizedAuthentication:
+    type: "boolean"
+    default: true

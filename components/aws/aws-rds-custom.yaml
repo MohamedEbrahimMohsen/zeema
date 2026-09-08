@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon RDS Custom: managed Oracle or SQL Server DB instance where you keep privileged OS and
+# database access. "RDS Custom for Oracle requirements and limitations" requires a symmetric KMS key,
+# forbids setting backup retention to 0, and limits EBS storage to gp2, gp3 or io1.
+schemaVersion: "1"
+type: "component"
+id: "aws-rds-custom"
+kind: "sql-database"
+provider: "aws"
+defaults:
+  managed: true
+  backupEnabled: true
+  backupRetentionDays: 1
+  replication: "none"
+  encryptionAtRest: true
+properties:
+  engine:
+    type: "enum"
+    values: ["oracle", "sql-server"]
+  licensing:
+    type: "enum"
+    values: ["bring-your-own-media", "license-included"]
+  storageType:
+    type: "enum"
+    values: ["gp2", "gp3", "io1"]
+  customEngineVersion:
+    type: "boolean"
+    default: false
+  automaticMinorVersionUpgrade:
+    type: "boolean"
+    default: false

@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Dynatrace: SaaS observability platform; OneAgent pushes metrics, logs and traces into Grail, which
+# retains metrics for 15 months by default ("Data retention periods").
+schemaVersion: "1"
+type: "component"
+id: "dynatrace"
+kind: "monitoring"
+provider: "default"
+defaults:
+  signal: "all"
+  collectorMode: "push"
+  managed: true
+  independentOfMonitored: true
+  retentionDays: 462
+properties:
+  oneAgent:
+    type: "boolean"
+    default: true
+  logRetentionDays:
+    type: "integer"
+    default: 35

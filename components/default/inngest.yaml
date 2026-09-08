@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Inngest: event-driven step functions on a hosted platform that checkpoints each step result so work
+# resumes from the last successful step. In addition to the initial attempt a function or step is
+# retried up to 4 times with backoff ("Retries").
+schemaVersion: "1"
+type: "component"
+id: "inngest"
+kind: "workflow-engine"
+provider: "default"
+defaults:
+  durable: true
+  pattern: "dag"
+  compensation: false
+  managed: true
+properties:
+  retries:
+    type: "integer"
+    default: 4

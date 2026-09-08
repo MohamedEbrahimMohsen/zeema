@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Time Zone API: returns the time zone id, UTC offset and DST offset for a coordinate and timestamp.
+# "Time Zone API Usage and Billing": usage limit of 30,000 queries per minute. Read-only HTTPS GET, safely repeatable.
+schemaVersion: "1"
+type: "component"
+id: "google-time-zone-api"
+kind: "third-party-api"
+provider: "gcp"
+defaults:
+  managed: true
+  idempotent: true
+  callbackStyle: "none"
+  hostedPage: false
+  handlesMoney: false
+  slaPercent: "99.9"
+properties:
+  queriesPerMinute:
+    type: "integer"
+    default: 30000

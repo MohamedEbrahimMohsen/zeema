@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# HCP Vault Dedicated: HashiCorp-operated Vault clusters on AWS or Azure.
+# "HCP Vault Dedicated tiers and features": Development is a single node with no SLA;
+# auto-unseal uses a per-cluster cloud KMS key and HSM auto-unseal is not available.
+schemaVersion: "1"
+type: "component"
+id: "hcp-vault"
+kind: "key-management"
+provider: "default"
+defaults:
+  managed: true
+  hsm: false
+  rotationAutomated: false
+properties:
+  tier:
+    type: "enum"
+    values: ["development", "essentials", "standard"]
+    default: "development"
+  autoUnseal:
+    type: "boolean"
+    default: true
+  performanceReplication:
+    type: "boolean"
+    default: false

@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Forgejo: self-hosted software forge, distributed under GPL v3+ from v9.0 (Forgejo FAQ), with Forgejo
+# Actions and a package registry covering 24 package types. Forge federation over ForgeFed is a stated
+# primary goal but is experimental, with moderation and access control not yet developed, so it is off.
+schemaVersion: "1"
+type: "component"
+id: "forgejo"
+kind: "artifact-repository"
+provider: "default"
+defaults:
+  artifactType: "source"
+  managed: false
+  upstreamProxy: false
+properties:
+  federationEnabled:
+    type: "boolean"
+    default: false
+  packageRegistry:
+    type: "boolean"
+    default: true
+  actionsEnabled:
+    type: "boolean"

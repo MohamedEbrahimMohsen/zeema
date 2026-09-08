@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Advisor: analyses resource configuration and usage telemetry and raises recommendations.
+# "Introduction to Azure Advisor": recommendations are divided into five categories (reliability,
+# security, performance, cost, operational excellence), a recommendation starts active and can be
+# postponed, dismissed or completed, and Advisor also includes Microsoft Defender for Cloud
+# recommendations.
+schemaVersion: "1"
+type: "component"
+id: "azure-advisor"
+kind: "monitoring"
+provider: "azure"
+defaults:
+  managed: true
+  signal: "alerts"
+properties:
+  categories:
+    type: "integer"
+    default: 5
+  recommendationState:
+    type: "enum"
+    values: ["active", "postponed", "dismissed", "completed"]
+    default: "active"
+  defenderForCloudIntegration:
+    type: "boolean"
+    default: true

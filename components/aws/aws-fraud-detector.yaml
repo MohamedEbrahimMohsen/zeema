@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Fraud Detector: managed fraud detection that scores an event against trained models and rules and returns an outcome from GetEventPrediction. Sunset, end of support 7 October 2026, closed to new customers since 7 November 2025; placeable until end of support.
+# "Quotas" gives the defaults: 200 GetEventPrediction calls per second (12,000 per minute), a 256 KB payload and 5,000 inputs per call, 100 detectors, 5,000 rules and 5,000 variables per account, 50 models with 5 deployed model versions and 5 GB of training data.
+schemaVersion: "1"
+type: "component"
+id: "aws-fraud-detector"
+kind: "ai-service"
+provider: "aws"
+defaults:
+  modality: "structured"
+  managed: true
+  publicEndpoint: true
+  customerManagedKeys: false
+  quotaUnitsPerMinute: 12000
+properties:
+  maxPayloadKbPerPrediction:
+    type: "integer"
+    default: 256
+  detectorsPerAccount:
+    type: "integer"
+    default: 100
+  rulesPerAccount:
+    type: "integer"
+    default: 5000
+  deployedModelVersions:
+    type: "integer"
+    default: 5
+  storedEvents:
+    type: "boolean"
+    default: false

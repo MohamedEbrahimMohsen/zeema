@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare Tunnel: the cloudflared connector dials out to the Cloudflare network, so the origin
+# needs no inbound listener. "Cloudflare Tunnel" states you can block all inbound traffic; the
+# dashboard flow creates a remotely-managed tunnel.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-tunnel"
+kind: "private-link"
+provider: "cloudflare"
+defaults:
+  managed: true
+  publicAccessDisabled: true
+properties:
+  managementMode:
+    type: "enum"
+    values: ["remotely-managed", "locally-managed"]
+    default: "remotely-managed"
+  outboundOnly:
+    type: "boolean"
+    default: true

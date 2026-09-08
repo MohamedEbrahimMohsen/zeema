@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI DevOps build pipeline: managed CI pipeline whose four stage types are managed build, deliver
+# artifacts, trigger deployment and wait; builds run on service-managed build runners, so there are
+# no self-hosted runners and no approval gate. Limits from "What is DevOps" and "Creating a Build Pipeline".
+schemaVersion: "1"
+type: "component"
+id: "oci-devops-build-pipeline"
+kind: "ci-pipeline"
+provider: "oci"
+defaults:
+  managed: true
+  selfHostedRunners: false
+  approvalRequired: false
+properties:
+  stageType:
+    type: "enum"
+    values: ["managed-build", "deliver-artifacts", "trigger-deployment", "wait"]
+  maxStages:
+    type: "integer"
+    default: 100
+  maxConcurrentBuildRuns:
+    type: "integer"
+    default: 30
+  triggerSource:
+    type: "enum"
+    values: ["manual", "commit", "pull-request"]

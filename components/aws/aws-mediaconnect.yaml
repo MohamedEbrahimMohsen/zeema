@@ -1,0 +1,37 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Elemental MediaConnect: live video transport that ingests a source into a flow and routes it
+# to outputs and entitlements ("What is AWS Elemental MediaConnect?"). "Source failover on a
+# MediaConnect flow" lists the source protocols and their failover support and states that a flow in
+# Failover mode switches after 500 milliseconds without data; "Static key encryption in AWS
+# Elemental MediaConnect" makes encryption an opt-in feature keyed from Secrets Manager.
+schemaVersion: "1"
+type: "component"
+id: "aws-mediaconnect"
+kind: "media-router"
+provider: "aws"
+defaults:
+  managed: true
+  mode: "ingest"
+properties:
+  sourceProtocol:
+    type: "enum"
+    values:
+      - "zixi-push"
+      - "zixi-pull"
+      - "rtp"
+      - "rtp-fec"
+      - "rist"
+      - "srt-listener"
+      - "srt-caller"
+      - "cdi"
+      - "st-2110-jpegxs"
+      - "ndi-speed-hq"
+  failoverMode:
+    type: "enum"
+    values: ["merge", "failover"]
+  failoverSwitchMilliseconds:
+    type: "integer"
+    default: 500
+  encryption:
+    type: "boolean"
+    default: false

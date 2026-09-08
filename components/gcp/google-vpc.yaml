@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud VPC network: a global, software-defined overlay on Google's backbone.
+# Defaults from "VPC networks" (auto mode subnet creation, IPv4-only, default network firewall rules) and "Maximum transmission unit" (1460 bytes).
+schemaVersion: "1"
+type: "component"
+id: "google-vpc"
+kind: "network-fabric"
+provider: "gcp"
+defaults:
+  managed: true
+  overlay: true
+  interconnect: "cloud-backbone"
+properties:
+  subnetMode:
+    type: "enum"
+    values: ["auto", "custom"]
+    default: "auto"
+  stackType:
+    type: "enum"
+    values: ["ipv4-only", "ipv4-ipv6"]
+    default: "ipv4-only"
+  mtuBytes:
+    type: "integer"
+    default: 1460

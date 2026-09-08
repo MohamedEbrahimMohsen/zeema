@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Camunda 8: BPMN process orchestration on the Zeebe engine ("Zeebe architecture") — brokers track the
+# state of active process instances. BPMN compensation boundary events and handlers undo completed
+# activities ("Compensation events"), and user tasks are first class. SaaS and self-managed both ship.
+schemaVersion: "1"
+type: "component"
+id: "camunda"
+kind: "workflow-engine"
+provider: "default"
+defaults:
+  durable: true
+  pattern: "dag"
+  compensation: true
+  humanReview: true
+  managed: false
+properties:
+  edition:
+    type: "enum"
+    values: ["saas", "self-managed"]
+    default: "self-managed"

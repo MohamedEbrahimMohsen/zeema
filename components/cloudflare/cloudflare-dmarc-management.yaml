@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# DMARC Management: collects the aggregate DMARC reports receivers send back and shows
+# "whether messages sent from your domain are passing SPF, DKIM, and DMARC checks".
+# Enabling it appends a Cloudflare rua entry to the zone's DMARC record so the reports are
+# delivered to Cloudflare ("Enable DMARC Management"). Available on all plans.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-dmarc-management"
+kind: "monitoring"
+provider: "cloudflare"
+defaults:
+  managed: true
+  signal: "logs"
+  collectorMode: "push"
+  independentOfMonitored: true
+properties:
+  automaticRuaRecord:
+    type: "boolean"
+    default: true
+  reportType:
+    type: "enum"
+    values: ["aggregate", "forensic"]
+    default: "aggregate"

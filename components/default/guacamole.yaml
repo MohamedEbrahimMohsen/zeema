@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apache Guacamole: self-hosted HTML5 remote desktop gateway, a web app plus the guacd proxy
+# ("Introduction"). A balancing connection group "dynamically balance[s] load across the connections
+# it contains, choosing the connection with the fewest number of active users", session affinity is
+# opt-in ("Administration"); MFA (Duo, TOTP) and session recording are optional extensions, and
+# web-app to guacd traffic "will be unencrypted" unless guacd-ssl is set ("Configuring Guacamole").
+schemaVersion: "1"
+type: "component"
+id: "guacamole"
+kind: "virtual-desktop"
+provider: "default"
+defaults:
+  managed: false
+  loadBalancing: "breadth-first"
+  mfaRequired: false
+properties:
+  protocol:
+    type: "enum"
+    values: ["vnc", "rdp", "ssh", "telnet", "kubernetes"]
+  sessionAffinity:
+    type: "boolean"
+    default: false
+  sessionRecording:
+    type: "boolean"
+    default: false
+  guacdEncryption:
+    type: "boolean"
+    default: false

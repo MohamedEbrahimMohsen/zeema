@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Cloud IAM with Identity Domains: the user population, groups and sign-on policies of a tenancy.
+# Defaults from "Identity Domains Overview" and "Managing Sign-On Policies": every domain ships an active
+# Default Sign-On Policy whose Default Sign-On Rule lets users in with username and password, so no MFA.
+schemaVersion: "1"
+type: "component"
+id: "oci-identity-domain"
+kind: "identity-provider"
+provider: "oci"
+defaults:
+  managed: true
+  protocol: "iam"
+  authorizationModel: "rbac"
+  centralised: true
+  mfa: false
+properties:
+  domainType:
+    type: "enum"
+    values: ["free", "oracle-apps", "premium", "external-user"]
+    default: "free"
+  federationProtocol:
+    type: "enum"
+    values: ["saml", "oidc", "oauth2", "none"]
+    default: "none"
+  selfRegistration:
+    type: "boolean"
+    default: false

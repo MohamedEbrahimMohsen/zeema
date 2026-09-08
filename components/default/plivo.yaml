@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Plivo Messaging: SMS and MMS API. "Account and feature limits" documents 300 API requests per
+# 5 seconds (60/s); "Messages per Second" documents a default outbound MPS of 5 for SMS.
+schemaVersion: "1"
+type: "component"
+id: "plivo"
+kind: "third-party-api"
+provider: "default"
+defaults:
+  managed: true
+  idempotent: false
+  callbackStyle: "webhook"
+  qpsQuota: 60
+properties:
+  messagesPerSecond:
+    type: "integer"
+    default: 5

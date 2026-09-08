@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# authentik: self-hosted IdP and SSO platform installed with Docker Compose or Kubernetes.
+# "authentik Overview": providers for OAuth2/OIDC, SAML, LDAP and SCIM. "Access control":
+# authorization is RBAC over roles, permissions and groups. MFA is a stage added to a flow.
+schemaVersion: "1"
+type: "component"
+id: "authentik"
+kind: "identity-provider"
+provider: "default"
+defaults:
+  protocol: "oidc"
+  authorizationModel: "rbac"
+  centralised: true
+  managed: false
+  mfa: false
+properties:
+  edition:
+    type: "enum"
+    values: ["open-source", "enterprise"]
+    default: "open-source"
+  providerType:
+    type: "enum"
+    values: ["oauth2", "saml", "ldap", "proxy", "scim", "rac"]
+    default: "oauth2"

@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Autonomous AI Database on Dedicated Exadata Infrastructure: autonomous databases inside a
+# customer-isolated Autonomous Container Database. "Backup and Restore Autonomous AI Database on
+# Dedicated Exadata Infrastructure": automatic backups on, 15-day retention (7-95), weekly full
+# plus daily incremental, Object Storage the default destination in the public cloud.
+schemaVersion: "1"
+type: "component"
+id: "oci-autonomous-database-dedicated"
+kind: "sql-database"
+provider: "oci"
+defaults:
+  managed: true
+  backupEnabled: true
+  backupRetentionDays: 15
+  replication: "none"
+  encryptionAtRest: true
+  concurrencyControl: "pessimistic"
+properties:
+  backupDestination:
+    type: "enum"
+    values: ["object-storage", "recovery-service"]
+    default: "object-storage"
+  autonomousDataGuard:
+    type: "boolean"
+    default: false
+  retentionLock:
+    type: "boolean"
+    default: false
+  crossRegionBackup:
+    type: "boolean"
+    default: false

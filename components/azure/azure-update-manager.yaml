@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Update Manager: update assessment and patch deployment for Azure VMs and Arc-enabled
+# servers. "Azure Update Manager Overview": it is native functionality with zero onboarding and no
+# dependency on Log Analytics or Azure Automation; periodic assessment is enabled explicitly and
+# then checks for updates every 24 hours, and scheduled patching and hotpatching are opted into.
+schemaVersion: "1"
+type: "component"
+id: "azure-update-manager"
+kind: "worker"
+provider: "azure"
+defaults:
+  managed: true
+  trigger: "schedule"
+properties:
+  periodicAssessment:
+    type: "boolean"
+    default: false
+  assessmentIntervalHours:
+    type: "integer"
+    default: 24
+  scheduledPatching:
+    type: "boolean"
+    default: false
+  hotpatching:
+    type: "boolean"
+    default: false
+  arcEnabledServers:
+    type: "boolean"
+    default: true

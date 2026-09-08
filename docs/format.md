@@ -181,8 +181,8 @@ failure-isolated slice of the system serving a subset of tenants) and `point-of-
 A node's **ancestry** is its group, that group's parent, and so on. Rules ask questions
 like "how many `region` groups are in this node's ancestry".
 
-Groups carry no properties in v1. They exist for rules and for renderers, which draw them
-as nested boxes.
+Groups carry no properties in v1 apart from an optional `label` (the boundary's name as
+drawn in the source). They exist for rules and for renderers, which draw them as nested boxes.
 
 ### nodes
 
@@ -190,6 +190,7 @@ as nested boxes.
 |---|---|---|
 | `id` | yes | Unique within the design |
 | `component` | yes | Id of a component in `components/` |
+| `label` | no | Display name as it appears in the source design, kept verbatim by importers. Read by renderers, never by rules. |
 | `group` | no | Id of a group in this design |
 | `props` | no | Property values; see resolution order above |
 | `nfr` | no | `rps` (integer), `latencyP95Ms` (integer), `consistency` (`strong` or `eventual`) |

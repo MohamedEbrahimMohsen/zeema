@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Meltano: open source, CLI-first, self-hosted ELT runner over Singer taps and targets. Pipelines are
+# declared in meltano.yml and invoked with `meltano run`; incremental state is kept in a state backend
+# keyed by a State ID so a later run resumes where the previous one stopped
+# ("Meltano Documentation, Replicate Data"). Scheduling comes from cron or an orchestrator.
+schemaVersion: "1"
+type: "component"
+id: "meltano"
+kind: "worker"
+provider: "default"
+defaults:
+  managed: false
+  trigger: "manual"
+properties:
+  orchestrator:
+    type: "enum"
+    values: ["none", "cron", "airflow", "dagster"]
+    default: "none"
+  stateBackend:
+    type: "enum"
+    values: ["systemdb", "filesystem", "object-storage"]
+    default: "systemdb"

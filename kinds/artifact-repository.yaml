@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Package and version semantics object-store has no notion of; artifactType folds source repositories in, since a feed and a repo share visibility, retention and upstream properties. visibility and immutableVersions have no default so supply-chain rules can test for absence.
+schemaVersion: "1"
+type: "kind"
+id: "artifact-repository"
+category: "data"
+properties:
+  artifactType:
+    type: "enum"
+    values: ["package", "source", "generic"]
+    required: true
+  visibility:
+    type: "enum"
+    values: ["private", "public"]
+  upstreamProxy:
+    type: "boolean"
+    default: false
+  immutableVersions:
+    type: "boolean"
+  vulnerabilityScanning:
+    type: "boolean"
+  retentionDays:
+    type: "integer"
+  managed:
+    type: "boolean"
+    default: false

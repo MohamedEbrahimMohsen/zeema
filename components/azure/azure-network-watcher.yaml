@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Network Watcher: monitoring, diagnostics and traffic tooling for Azure IaaS networking.
+# "Azure Network Watcher Overview": it is automatically enabled in a region when a virtual network
+# is created there, is limited to one instance per region per subscription, and flow logs and
+# traffic analytics are configured per resource rather than on by default.
+schemaVersion: "1"
+type: "component"
+id: "azure-network-watcher"
+kind: "monitoring"
+provider: "azure"
+defaults:
+  managed: true
+  signal: "all"
+properties:
+  autoEnabled:
+    type: "boolean"
+    default: true
+  instancesPerRegionLimit:
+    type: "integer"
+    default: 1
+  flowLogs:
+    type: "boolean"
+    default: false
+  trafficAnalytics:
+    type: "boolean"
+    default: false

@@ -1,0 +1,37 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI GPU compute instance: a VM or bare metal instance on a GPU shape ("Compute Shapes" lists
+# VM.GPU.A10.1 and .2 alongside bare metal BM.GPU.A10.4, L40S.4, A100-v2.8, H100.8, H200.8,
+# B200.8 and AMD MI300X.8/MI355X.8). Boot volumes are encrypted by default and the instance sits
+# in one availability domain, as for any Compute instance.
+schemaVersion: "1"
+type: "component"
+id: "oci-gpu-instance"
+kind: "virtual-machine"
+provider: "oci"
+defaults:
+  managed: false
+  os: "linux"
+  diskEncryption: true
+  zoneRedundant: false
+properties:
+  shape:
+    type: "enum"
+    values:
+      - "vm-gpu-a10-1"
+      - "vm-gpu-a10-2"
+      - "bm-gpu-a10-4"
+      - "bm-gpu-l40s-4"
+      - "bm-gpu-a100-v2-8"
+      - "bm-gpu-h100-8"
+      - "bm-gpu-h200-8"
+      - "bm-gpu-b200-8"
+      - "bm-gpu-mi300x-8"
+  gpuVendor:
+    type: "enum"
+    values: ["nvidia", "amd"]
+    default: "nvidia"
+  gpuCount:
+    type: "integer"
+  clusterNetworkCapable:
+    type: "boolean"
+    default: false

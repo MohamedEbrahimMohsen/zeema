@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Cloud WAN core network: managed global WAN across AWS Regions and on-premises sites.
+# "What is AWS Cloud WAN?": core network edges full-mesh peer over the AWS global network, segments are
+# isolated routing domains that only talk within themselves, and the home Region is fixed at us-west-2.
+schemaVersion: "1"
+type: "component"
+id: "aws-cloud-wan"
+kind: "network-fabric"
+provider: "aws"
+defaults:
+  managed: true
+  interconnect: "cloud-backbone"
+  multicast: false
+  kernelBypass: false
+properties:
+  segmentIsolation:
+    type: "boolean"
+    default: true
+  fullMeshEdgePeering:
+    type: "boolean"
+    default: true
+  multiRegion:
+    type: "boolean"
+    default: true
+  ipv6Support:
+    type: "boolean"
+    default: true
+  homeRegion:
+    type: "string"
+    default: "us-west-2"

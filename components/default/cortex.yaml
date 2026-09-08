@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cortex: horizontally scalable, multi-tenant Prometheus backend. Per "Blocks Storage",
+# each series is held by 3 ingesters, TSDB blocks cut every 2h are shipped to an object
+# store, and no downsampling is performed.
+schemaVersion: "1"
+type: "component"
+id: "cortex"
+kind: "timeseries-database"
+provider: "default"
+defaults:
+  downsampling: false
+  tiers: "hot-cold"
+  labelIndex: true
+  compression: "gorilla"
+  managed: false
+properties:
+  replicationFactor:
+    type: "integer"
+    default: 3
+  blockRangeHours:
+    type: "integer"
+    default: 2
+  multiTenant:
+    type: "boolean"
+    default: true

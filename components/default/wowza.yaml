@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Wowza Streaming Engine: self-hosted server that ingests live and VOD streams and delivers
+# them over RTMP (1935), SRT, RTSP, WebRTC, MPEG-TS, CMAF and HLS (Wowza Streaming Engine
+# product articles). Wowza Transcoder is a separate component, off until it is enabled.
+schemaVersion: "1"
+type: "component"
+id: "wowza"
+kind: "media-router"
+provider: "default"
+defaults:
+  managed: false
+  mode: "ingest"
+  transport: "both"
+  cascading: false
+properties:
+  ingestProtocol:
+    type: "enum"
+    values: ["rtmp", "srt", "rtsp", "webrtc", "mpeg-ts"]
+    default: "rtmp"
+  playbackProtocol:
+    type: "enum"
+    values: ["hls", "dash", "webrtc", "rtmp", "rtsp"]
+    default: "hls"
+  transcoderEnabled:
+    type: "boolean"
+    default: false

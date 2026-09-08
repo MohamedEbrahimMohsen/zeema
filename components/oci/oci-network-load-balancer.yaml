@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Cloud Network Load Balancer: layer 3/4 balancer with a 5-tuple hash policy by default and
+# full NAT of source and destination addresses unless preservation is chosen ("Network Load Balancer
+# Overview"). A regional subnet gives it high availability across availability domains.
+schemaVersion: "1"
+type: "component"
+id: "oci-network-load-balancer"
+kind: "load-balancer"
+provider: "oci"
+defaults:
+  managed: true
+  layer: "l4"
+  hashing: "consistent"
+  healthChecks: true
+  global: false
+properties:
+  loadBalancingPolicy:
+    type: "enum"
+    values: ["five-tuple-hash", "three-tuple-hash", "two-tuple-hash"]
+    default: "five-tuple-hash"
+  visibility:
+    type: "enum"
+    values: ["public", "private"]
+  addressPreservation:
+    type: "enum"
+    values: ["full-nat", "source-preservation", "transparent"]
+    default: "full-nat"
+  maxBackendServers:
+    type: "integer"
+    default: 1024

@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare Browser Isolation: runs page code in a remote browser on Cloudflare's network.
+# "Remote browser isolation" states the session is deleted when the user closes the isolated
+# browser; "Isolation policies" has copy/paste, downloads, uploads, keyboard and printing all
+# allowed unless a policy restricts them.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-browser-isolation"
+kind: "virtual-desktop"
+provider: "cloudflare"
+defaults:
+  managed: true
+  persistentProfiles: false
+properties:
+  onRamp:
+    type: "enum"
+    values: ["in-line", "prefixed-url"]
+    default: "in-line"
+  fileDownloadsAllowed:
+    type: "boolean"
+    default: true
+  copyPasteAllowed:
+    type: "boolean"
+    default: true
+  printingAllowed:
+    type: "boolean"
+    default: true

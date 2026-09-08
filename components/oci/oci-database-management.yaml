@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Database Management (Diagnostics & Management): one console that monitors, tunes and administers
+# fleets of Oracle Cloud, external, Exadata and HeatWave databases from outside them. "Oracle Cloud
+# Database Metrics": metrics land in the oracle_oci_database namespace under a Basic or Full
+# management option, are retained for 90 days, and alarm intervals must be 5 minutes or more.
+schemaVersion: "1"
+type: "component"
+id: "oci-database-management"
+kind: "monitoring"
+provider: "oci"
+defaults:
+  managed: true
+  signal: "metrics"
+  collectorMode: "pull"
+  retentionDays: 90
+  independentOfMonitored: true
+properties:
+  managementOption:
+    type: "enum"
+    values: ["basic", "full"]
+  targetType:
+    type: "enum"
+    values: ["oracle-cloud-database", "external-database", "exadata", "mysql"]
+  minimumAlarmIntervalMinutes:
+    type: "integer"
+    default: 5

@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# CloudWatch RUM: real user monitoring of web and mobile clients through an app monitor and a browser client.
+# "CloudWatch RUM": end user data is retained 30 days and then deleted. AppMonitorConfiguration API reference:
+# SessionSampleRate defaults to 0.1 (10% of sessions); X-Ray tracing and cookies are opt-in.
+schemaVersion: "1"
+type: "component"
+id: "aws-cloudwatch-rum"
+kind: "monitoring"
+provider: "aws"
+defaults:
+  signal: "metrics"
+  collectorMode: "push"
+  retentionDays: 30
+  managed: true
+properties:
+  sessionSamplePercent:
+    type: "integer"
+    default: 10
+  enableXRay:
+    type: "boolean"
+    default: false
+  allowCookies:
+    type: "boolean"
+    default: false

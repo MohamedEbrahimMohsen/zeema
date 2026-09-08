@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon WorkSpaces Secure Browser: an on-demand, fully managed Linux browsing service reached
+# through a web portal, one portal per Region per account ("Getting started with Amazon WorkSpaces
+# Secure Browser"). Ending a session discards the instance hosting the browser, giving browser
+# isolation, and portal data is encrypted with AWS KMS by default ("Data encryption"). Session
+# logging, user access logging, IP access control, URL filtering and data protection are optional
+# per portal ("Configuring portal settings").
+schemaVersion: "1"
+type: "component"
+id: "aws-workspaces-secure-browser"
+kind: "virtual-desktop"
+provider: "aws"
+defaults:
+  managed: true
+  sessionMode: "pooled"
+  maxSessionsPerHost: 1
+  persistentProfiles: false
+properties:
+  userAccessLogging:
+    type: "boolean"
+    default: false
+  sessionLogger:
+    type: "boolean"
+    default: false
+  ipAccessControl:
+    type: "boolean"
+    default: false
+  urlFiltering:
+    type: "boolean"
+    default: false
+  dataProtectionSettings:
+    type: "boolean"
+    default: false
+  idleDisconnectTimeoutMinutes:
+    type: "integer"

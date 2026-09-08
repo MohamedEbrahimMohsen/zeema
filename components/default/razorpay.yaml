@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Razorpay: hosted Checkout PSP for India, Malaysia, Singapore and the US. Webhooks are signed with
+# X-Razorpay-Signature only when a webhook secret is set; idempotency is not documented.
+schemaVersion: "1"
+type: "component"
+id: "razorpay"
+kind: "third-party-api"
+provider: "default"
+defaults:
+  managed: true
+  idempotent: false
+  handlesMoney: true
+  callbackStyle: "webhook"
+  hostedPage: true
+properties:
+  signedCallbacks:
+    type: "boolean"
+    default: false

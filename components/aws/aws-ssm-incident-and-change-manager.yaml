@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Systems Manager Incident Manager and Change Manager: human-in-the-loop runbook workflows over SSM
+# Automation. Per the Change Manager guide a change request needs approvals unless the change template
+# allows auto-approval, and the Change Calendar check is an option you turn on; per the Incident Manager
+# guide incidents are opened by CloudWatch alarms or EventBridge events and engage on-call contacts.
+# Both are in maintenance: closed to new customers since 7 November 2025, existing customers unaffected.
+schemaVersion: "1"
+type: "component"
+id: "aws-ssm-incident-and-change-manager"
+kind: "workflow-engine"
+provider: "aws"
+defaults:
+  durable: true
+  pattern: "dag"
+  humanReview: true
+  managed: true
+properties:
+  capability:
+    type: "enum"
+    values: ["incident-response", "change-management"]
+  autoApprovalAllowed:
+    type: "boolean"
+    default: false
+  changeCalendarCheck:
+    type: "boolean"
+    default: false
+  incidentTrigger:
+    type: "enum"
+    values: ["cloudwatch-alarm", "eventbridge-event", "manual"]

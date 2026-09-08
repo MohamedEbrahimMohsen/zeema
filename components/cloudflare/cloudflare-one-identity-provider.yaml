@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare One identity providers: SAML, OIDC and OAuth integrations behind Access and Gateway.
+# "Identity providers" states Cloudflare configures its own identity provider as the default login
+# method and that multiple providers can be integrated simultaneously; MFA is enforced by policy.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-one-identity-provider"
+kind: "identity-provider"
+provider: "cloudflare"
+defaults:
+  managed: true
+  centralised: true
+  mfa: false
+properties:
+  providerType:
+    type: "enum"
+    values: ["cloudflare-otp", "saml", "oidc", "oauth"]
+    default: "cloudflare-otp"
+  multipleProviders:
+    type: "boolean"
+    default: true

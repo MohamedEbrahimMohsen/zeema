@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle APEX Application Development: the APEX workload type of Autonomous AI Database, a
+# preconfigured fully managed low-code runtime. Oracle configures, patches and upgrades every APEX
+# component; provisioning defaults are 2 ECPUs with compute auto scaling enabled.
+schemaVersion: "1"
+type: "component"
+id: "oci-apex-service"
+kind: "app-server"
+provider: "oci"
+defaults:
+  managed: true
+  autoscaling: true
+  runtime: "oracle-apex"
+properties:
+  ecpuCount:
+    type: "integer"
+    default: 2
+  networkAccess:
+    type: "enum"
+    values: ["secure-access-everywhere", "allowed-ips-and-vcns", "private-endpoint"]
+    default: "secure-access-everywhere"
+  autonomousDataGuard:
+    type: "boolean"
+    default: false
+  promotableToTransactionProcessing:
+    type: "boolean"
+    default: true

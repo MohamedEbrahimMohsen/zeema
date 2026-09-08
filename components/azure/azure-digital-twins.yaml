@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Digital Twins: managed PaaS twin graph of DTDL-modelled entities with a query API and
+# event routes ("What is Azure Digital Twins?"). Limits from "Service limits - Azure Digital
+# Twins": 2,000,000 twins, 10,000 models and 6 routing endpoints per instance.
+schemaVersion: "1"
+type: "component"
+id: "azure-digital-twins"
+kind: "graph-database"
+provider: "azure"
+defaults:
+  managed: true
+properties:
+  maxTwins:
+    type: "integer"
+    default: 2000000
+  maxModels:
+    type: "integer"
+    default: 10000
+  maxRoutingEndpoints:
+    type: "integer"
+    default: 6
+  dataHistory:
+    type: "boolean"
+    default: false

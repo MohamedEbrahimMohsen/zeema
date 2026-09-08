@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Lightdash: BI layer on top of a dbt project, with charts, dashboards and scheduled deliveries.
+# "User attributes": row-level security comes from sql_filter on lightdash.attributes and column
+# access from required_attributes, but no user attribute exists until an admin creates one.
+# "Roles": organization, project and space roles, with space content private to its members.
+schemaVersion: "1"
+type: "component"
+id: "lightdash"
+kind: "bi-service"
+provider: "default"
+defaults:
+  managed: false
+  rowLevelSecurity: false
+  publicSharing: false
+  embeddedReports: false
+properties:
+  semanticLayer:
+    type: "enum"
+    values: ["dbt"]
+    default: "dbt"
+  userAttributes:
+    type: "boolean"
+    default: false
+  scheduledDeliveries:
+    type: "boolean"
+    default: false
+  deployment:
+    type: "enum"
+    values: ["self-hosted", "cloud"]
+    default: "self-hosted"

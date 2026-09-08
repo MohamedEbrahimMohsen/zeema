@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloud Service Mesh: Google-managed xDS control plane for Envoy sidecars or proxyless gRPC clients.
+# Defaults from "Cloud Service Mesh overview": Google runs, upgrades and scales the control plane; peers authenticate with mTLS; traffic management includes circuit breakers and canary routing.
+schemaVersion: "1"
+type: "component"
+id: "google-cloud-service-mesh"
+kind: "service-mesh"
+provider: "gcp"
+defaults:
+  managed: true
+  sidecar: true
+  mtls: true
+  circuitBreaking: true
+properties:
+  dataPlane:
+    type: "enum"
+    values: ["envoy-sidecar", "proxyless-grpc"]
+    default: "envoy-sidecar"
+  controlPlaneHosting:
+    type: "enum"
+    values: ["managed", "in-cluster"]
+    default: "managed"

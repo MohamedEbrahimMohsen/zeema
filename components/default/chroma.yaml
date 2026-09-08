@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Chroma: Apache-2.0 embedded vector database. "Configuring Chroma collections": the default space is
+# squared L2, single-node uses an HNSW index with ef_construction 100 and max_neighbors 16 while the
+# distributed and Cloud deployments use SPANN. "Introduction": metadata filtering and full-text search.
+schemaVersion: "1"
+type: "component"
+id: "chroma"
+kind: "vector-database"
+provider: "default"
+defaults:
+  indexType: "hnsw"
+  distanceMetric: "euclidean"
+  quantization: "none"
+  metadataFiltering: true
+  hybridSearch: true
+  managed: false
+properties:
+  deployment:
+    type: "enum"
+    values: ["single-node", "distributed", "cloud"]
+    default: "single-node"
+  space:
+    type: "enum"
+    values: ["l2", "cosine", "ip"]
+    default: "l2"
+  efConstruction:
+    type: "integer"
+    default: 100
+  maxNeighbors:
+    type: "integer"
+    default: 16

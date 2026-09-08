@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# FoundationDB: ordered key-value store with strictly serializable ACID transactions. A fresh
+# install runs the memory storage engine, and single redundancy keeps one copy of each key
+# ("Configuration", "Administration").
+schemaVersion: "1"
+type: "component"
+id: "foundationdb"
+kind: "nosql-database"
+provider: "default"
+defaults:
+  model: "key-value"
+  consistency: "strong"
+  replication: "single-region"
+  replicationFactor: 1
+  conflictResolution: "none"
+properties:
+  redundancyMode:
+    type: "enum"
+    values: ["single", "double", "triple"]
+    default: "single"
+  storageEngine:
+    type: "enum"
+    values: ["memory", "ssd", "ssd-redwood-v1", "ssd-rocksdb-v1"]
+    default: "memory"

@@ -1,0 +1,38 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Security Incident Response: a managed service that ingests and triages security findings and
+# engages an AWS response team. "What is AWS Security Incident Response?": it generates no findings
+# of its own, ingests all Amazon GuardDuty and AWS Security Hub CSPM findings from the configured
+# sources, deduplicates and triages them, and escalates only validated concerns as proactive cases;
+# AWS-supported reactive cases carry a 15-minute initial response SLO. "Step 1: Enable and
+# configure": coverage is chosen for the whole organization or for selected OUs, never per account,
+# and containment actions are pre-authorized only after signup.
+schemaVersion: "1"
+type: "component"
+id: "aws-security-incident-response"
+kind: "monitoring"
+provider: "aws"
+defaults:
+  signal: "alerts"
+  collectorMode: "push"
+  alertGrouping: true
+  independentOfMonitored: false
+  managed: true
+properties:
+  guardDutyIngestion:
+    type: "boolean"
+    default: true
+  securityHubIngestion:
+    type: "boolean"
+    default: true
+  membershipScope:
+    type: "enum"
+    values: ["full-organization", "selected-ous"]
+  preAuthorizedContainment:
+    type: "boolean"
+    default: false
+  ec2Triage:
+    type: "boolean"
+    default: false
+  initialResponseSloMinutes:
+    type: "integer"
+    default: 15

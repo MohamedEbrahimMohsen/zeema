@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Operates on request content rather than addresses and ports, so it holds a managed rule set and a detection/prevention mode a rule reads directly. mode has no default because a WAF left in detection is exactly what a rule should catch.
+schemaVersion: "1"
+type: "kind"
+id: "waf"
+category: "security"
+properties:
+  mode:
+    type: "enum"
+    values: ["detection", "prevention", "off"]
+  managedRuleSet:
+    type: "string"
+  customRuleCount:
+    type: "integer"
+  botProtection:
+    type: "boolean"
+  rateLimiting:
+    type: "boolean"
+  managed:
+    type: "boolean"
+    default: false

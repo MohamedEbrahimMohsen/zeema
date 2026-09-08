@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Digital Experience Monitoring: device, network and application telemetry pushed by enrolled
+# Cloudflare One Clients. "Digital experience" calls synthetic tests optional administrator-created
+# checks; the tests pages give a 7-day log retention period and a 5 to 60 minute test interval.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-dex"
+kind: "monitoring"
+provider: "cloudflare"
+defaults:
+  managed: true
+  signal: "metrics"
+  collectorMode: "push"
+  retentionDays: 7
+properties:
+  requiresDeviceClient:
+    type: "boolean"
+    default: true
+  syntheticTests:
+    type: "boolean"
+    default: false
+  testType:
+    type: "enum"
+    values: ["http", "traceroute"]
+    default: "http"
+  testIntervalMinutes:
+    type: "integer"

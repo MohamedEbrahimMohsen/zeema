@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Teradata Vantage: shared-nothing MPP analytics platform. Architecture docs: parsing engines,
+# BYNET and AMPs, with rows hash-distributed by primary index to each AMP's virtual disk.
+# "Column partitioning": storing a table by column instead of by row is an opt-in Teradata Columnar feature.
+schemaVersion: "1"
+type: "component"
+id: "teradata"
+kind: "data-warehouse"
+provider: "default"
+defaults:
+  realtime: false
+  format: "row"
+  managed: false
+properties:
+  columnPartitioning:
+    type: "boolean"
+    default: false
+  deployment:
+    type: "enum"
+    values: ["on-premises", "vantagecloud-enterprise", "vantagecloud-lake"]
+  distribution:
+    type: "enum"
+    values: ["primary-index-hash", "no-primary-index"]
+    default: "primary-index-hash"

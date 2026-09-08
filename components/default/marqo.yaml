@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Marqo: open-source tensor search engine that embeds documents on ingest and serves lexical, tensor
+# and hybrid queries. "Create structured index": spaceType defaults to prenormalized-angular with
+# HNSW parameters efConstruction 512 and m 16, and the default model is hf/e5-base-v2.
+schemaVersion: "1"
+type: "component"
+id: "marqo"
+kind: "vector-database"
+provider: "default"
+defaults:
+  indexType: "hnsw"
+  distanceMetric: "cosine"
+  metadataFiltering: true
+  hybridSearch: true
+  managed: false
+properties:
+  spaceType:
+    type: "enum"
+    values: ["prenormalized-angular", "angular", "euclidean", "dotproduct", "hamming"]
+    default: "prenormalized-angular"
+  efConstruction:
+    type: "integer"
+    default: 512
+  hnswM:
+    type: "integer"
+    default: 16
+  schemaMode:
+    type: "enum"
+    values: ["structured", "unstructured"]
+    default: "unstructured"

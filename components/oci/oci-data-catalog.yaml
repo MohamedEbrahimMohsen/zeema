@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI Data Catalog: "a fully managed, self-service, data discovery and governance solution for your enterprise
+# data" ("Data Catalog overview"). Data sources are registered as data assets and harvested on demand or on a
+# schedule to extract technical metadata; business glossaries, custom properties and tags are added by hand,
+# and who may read the catalog is governed by IAM policies rather than by the catalog enforcing source access.
+schemaVersion: "1"
+type: "component"
+id: "oci-data-catalog"
+kind: "data-catalog"
+provider: "oci"
+defaults:
+  managed: true
+  scanSchedule: "manual"
+  accessPolicyEnforcement: false
+properties:
+  businessGlossary:
+    type: "boolean"
+    default: true
+  privateEndpointHarvesting:
+    type: "boolean"
+    default: false
+  customProperties:
+    type: "boolean"
+    default: true

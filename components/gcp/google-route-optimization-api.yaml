@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Route Optimization API: assigns shipments to vehicles and orders the stops (fleet routing solver).
+# "Route Optimization API Usage and Billing": maximum 60 QPM for both optimizeTours and batchOptimizeTours; a batch
+# carries at most 100 OptimizeToursRequest entries and 100 MB combined.
+schemaVersion: "1"
+type: "component"
+id: "google-route-optimization-api"
+kind: "third-party-api"
+provider: "gcp"
+defaults:
+  managed: true
+  idempotent: true
+  callbackStyle: "none"
+  hostedPage: false
+  handlesMoney: false
+  slaPercent: "99.9"
+properties:
+  queriesPerMinute:
+    type: "integer"
+    default: 60
+  batchRequestsPerCall:
+    type: "integer"
+    default: 100
+  batchMaxSizeMb:
+    type: "integer"
+    default: 100

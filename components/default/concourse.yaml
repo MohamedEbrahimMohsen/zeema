@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Concourse: self-hosted web node and workers running container-based pipelines over versioned
+# resources. "Resources" documents the polling model: check_every defaults to 1m and check_timeout
+# to 1h, and a resource is public: false by default, so pipelines advance on detected new versions
+# rather than on a webhook or an approval gate.
+schemaVersion: "1"
+type: "component"
+id: "concourse"
+kind: "ci-pipeline"
+provider: "default"
+defaults:
+  trigger: "commit"
+  selfHostedRunners: true
+  approvalRequired: false
+  managed: false
+properties:
+  resourceCheckSeconds:
+    type: "integer"
+    default: 60
+  resourceCheckTimeoutMinutes:
+    type: "integer"
+    default: 60
+  publicPipeline:
+    type: "boolean"
+    default: false
+  credentialManager:
+    type: "enum"
+    values: ["none", "vault", "credhub", "aws-secretsmanager", "kubernetes"]
+    default: "none"

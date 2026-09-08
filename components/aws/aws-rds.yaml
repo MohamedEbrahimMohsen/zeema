@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon RDS DB instance: managed relational database for MySQL, PostgreSQL, MariaDB, Oracle,
+# SQL Server and Db2. "CreateDBInstance" gives BackupRetentionPeriod default 1 (a positive value
+# enables backups), storage not encrypted by default, gp3 storage, and Single-AZ unless MultiAZ is set.
+schemaVersion: "1"
+type: "component"
+id: "aws-rds"
+kind: "sql-database"
+provider: "aws"
+defaults:
+  managed: true
+  backupEnabled: true
+  backupRetentionDays: 1
+  replication: "none"
+  encryptionAtRest: false
+properties:
+  engine:
+    type: "enum"
+    values: ["postgres", "mysql", "mariadb", "oracle", "sql-server", "db2"]
+  multiAz:
+    type: "boolean"
+    default: false
+  storageType:
+    type: "enum"
+    values: ["gp2", "gp3", "io1", "io2", "standard"]
+    default: "gp3"
+  publiclyAccessible:
+    type: "boolean"
+    default: true
+  deletionProtection:
+    type: "boolean"
+    default: false

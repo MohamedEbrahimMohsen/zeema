@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cohere API: hosted text models for chat, embedding, rerank and classification over a public endpoint.
+# Per "Different Types of API Keys and Rate Limits", a new account gets a trial key limited to 20 requests
+# per minute on the Chat API and production keys allow 500; per "Safety Modes", the Chat API applies
+# safety mode CONTEXTUAL unless the request asks for STRICT or OFF.
+schemaVersion: "1"
+type: "component"
+id: "cohere-api"
+kind: "ai-service"
+provider: "default"
+defaults:
+  managed: true
+  modality: "text"
+  publicEndpoint: true
+  contentFiltering: true
+  quotaUnitsPerMinute: 20
+properties:
+  keyType:
+    type: "enum"
+    values: ["trial", "production"]
+    default: "trial"
+  safetyMode:
+    type: "enum"
+    values: ["contextual", "strict", "off"]
+    default: "contextual"
+  endpoint:
+    type: "enum"
+    values: ["chat", "embed", "rerank", "classify"]
+    default: "chat"
+  trainingOptOut:
+    type: "boolean"
+    default: false

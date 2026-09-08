@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Keyspaces (for Apache Cassandra): serverless wide-column tables reached over CQL.
+# "Amazon Keyspaces: How it works" states three copies of the data in multiple Availability Zones,
+# encryption at rest automatically enabled on table creation and TLS required for all client
+# connections; "Configure read/write capacity modes" names on-demand as the default capacity mode.
+schemaVersion: "1"
+type: "component"
+id: "aws-keyspaces"
+kind: "nosql-database"
+provider: "aws"
+defaults:
+  managed: true
+  model: "wide-column"
+  consistency: "tunable"
+  replication: "single-region"
+  replicationFactor: 3
+  backupEnabled: false
+  encryptionAtRest: true
+properties:
+  capacityMode:
+    type: "enum"
+    values: ["on-demand", "provisioned"]
+    default: "on-demand"
+  pointInTimeRecovery:
+    type: "boolean"
+    default: false
+  multiRegion:
+    type: "boolean"
+    default: false

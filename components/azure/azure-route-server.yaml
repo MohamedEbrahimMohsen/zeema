@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Route Server: fully managed BGP route reflector between network virtual appliances and the
+# Azure software-defined network ("What is Azure Route Server?"). Limits are 16 BGP peers and 4,000
+# routes per peer; route maps and branch-to-branch route exchange are configured on top, not by default.
+schemaVersion: "1"
+type: "component"
+id: "azure-route-server"
+kind: "network-fabric"
+provider: "azure"
+defaults:
+  managed: true
+  overlay: true
+properties:
+  branchToBranch:
+    type: "boolean"
+    default: false
+  routeMaps:
+    type: "boolean"
+    default: false
+  maxBgpPeers:
+    type: "integer"
+    default: 16
+  maxRoutesPerPeer:
+    type: "integer"
+    default: 4000

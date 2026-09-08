@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon EKS Anywhere: EKS Distro-based Kubernetes you run on your own on-premises or edge infrastructure
+# ("Amazon EKS Anywhere: Overview"). It is a user-managed product on user-managed infrastructure, it runs
+# air-gapped without a connection to the AWS Cloud, and the AWS Cloud integrations are opt-in.
+schemaVersion: "1"
+type: "component"
+id: "aws-eks-anywhere"
+kind: "edge-appliance"
+provider: "aws"
+defaults:
+  managed: false
+  cloudManaged: false
+  offlineMode: true
+properties:
+  infrastructureProvider:
+    type: "enum"
+    values: ["vsphere", "bare-metal", "nutanix", "snow", "docker"]
+  eksConnector:
+    type: "boolean"
+    default: false
+  enterpriseSubscription:
+    type: "boolean"
+    default: false

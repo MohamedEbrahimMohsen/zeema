@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OKE virtual node pool: serverless Kubernetes nodes whose data plane Oracle patches and upgrades,
+# billed per pod ("Comparing Virtual Nodes with Managed Nodes"). That page allows virtual nodes
+# only in enhanced clusters, requires the VCN-native pod networking CNI, scales a virtual node to
+# 1,000 pods and rules out the Kubernetes Cluster Autoscaler.
+schemaVersion: "1"
+type: "component"
+id: "oci-oke-virtual-node-pool"
+kind: "container-orchestrator"
+provider: "oci"
+defaults:
+  managed: true
+  autoscaling: false
+properties:
+  requiresEnhancedCluster:
+    type: "boolean"
+    default: true
+  podNetworking:
+    type: "enum"
+    values: ["vcn-native-pod-networking"]
+    default: "vcn-native-pod-networking"
+  maxPodsPerVirtualNode:
+    type: "integer"
+    default: 1000
+  billingModel:
+    type: "enum"
+    values: ["per-pod", "per-node"]
+    default: "per-pod"
+  clusterAutoscalerSupported:
+    type: "boolean"
+    default: false

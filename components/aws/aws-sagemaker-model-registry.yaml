@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon SageMaker Model Registry: catalogue of model package groups, each registration adding a new
+# numbered model version. Per the CreateModelPackage API Reference a versioned model must be set to
+# "Approved" before it can be deployed, and Marketplace certification is a separate opt-in flag.
+schemaVersion: "1"
+type: "component"
+id: "aws-sagemaker-model-registry"
+kind: "artifact-repository"
+provider: "aws"
+defaults:
+  managed: true
+  artifactType: "package"
+  visibility: "private"
+  upstreamProxy: false
+properties:
+  approvalStatus:
+    type: "enum"
+    values: ["pending-manual-approval", "approved", "rejected"]
+  marketplaceCertified:
+    type: "boolean"
+    default: false
+  customerManagedKey:
+    type: "boolean"
+    default: false

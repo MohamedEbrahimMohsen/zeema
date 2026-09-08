@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Network Connectivity Center hub: a global orchestration resource that connects VPC and hybrid spokes over Google's network.
+# Defaults from "Network Connectivity Center overview": the hub is global, any-to-any connectivity across attached spokes, site-to-site data transfer is opt-in per hybrid spoke.
+schemaVersion: "1"
+type: "component"
+id: "google-network-connectivity-center"
+kind: "network-fabric"
+provider: "gcp"
+defaults:
+  managed: true
+  overlay: true
+  interconnect: "cloud-backbone"
+properties:
+  spokeType:
+    type: "enum"
+    values: ["vpc", "vpn-tunnel", "interconnect-attachment", "router-appliance", "producer-vpc"]
+  siteToSiteDataTransfer:
+    type: "boolean"
+    default: false
+  spokeCount:
+    type: "integer"

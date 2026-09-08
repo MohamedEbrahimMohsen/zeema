@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Salt Project: "a Python-based, open-source remote execution framework for configuration
+# management, automation, provisioning, and orchestration", self-hosted as a Salt master with Salt
+# minions. The master configuration reference defaults transport to zeromq, publish_port to 4505,
+# ret_port to 4506 and worker_threads to 5; salt-ssh is the agentless alternative to a minion.
+schemaVersion: "1"
+type: "component"
+id: "salt"
+kind: "ci-pipeline"
+provider: "default"
+defaults:
+  trigger: "manual"
+  approvalRequired: false
+  selfHostedRunners: true
+  concurrency: 5
+  managed: false
+properties:
+  transport:
+    type: "enum"
+    values: ["zeromq", "tcp"]
+    default: "zeromq"
+  publishPort:
+    type: "integer"
+    default: 4505
+  returnPort:
+    type: "integer"
+    default: 4506
+  connectionMode:
+    type: "enum"
+    values: ["minion", "salt-ssh", "proxy", "masterless"]
+    default: "minion"

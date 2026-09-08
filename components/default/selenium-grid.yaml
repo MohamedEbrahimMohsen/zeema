@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Selenium Grid: routes WebDriver commands to remote browser instances for parallel and cross-browser
+# runs. Standalone is the default deployment; Hub and Node and fully Distributed (Router, Distributor,
+# Session Map, Node) are the other modes ("Grid").
+schemaVersion: "1"
+type: "component"
+id: "selenium-grid"
+kind: "client"
+provider: "default"
+defaults:
+  platform: "desktop"
+  localCache: false
+  managed: false
+properties:
+  deploymentMode:
+    type: "enum"
+    values: ["standalone", "hub-and-node", "distributed"]
+    default: "standalone"
+  port:
+    type: "integer"
+    default: 4444
