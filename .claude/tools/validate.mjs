@@ -1,8 +1,8 @@
 // Arkore repository validator. Tooling only; v1 ships no code.
 //   node validate.mjs                  whole repository (kinds, components, locale, icons, rules, designs)
 //   node validate.mjs --design <file>  one design: schema + references + fired rules with messages (exit 1 only on structural problems)
-// Reference designs in designs/ must trip exactly the rules named in their header; imported designs in
-// references/designs/<name>/<name>.yaml are checked structurally and their fired rules are reported.
+// designs/reference/<id>/design.yaml must trip no rule and design.broken.yaml exactly the rules named in its header;
+// designs/imported/<id>/design.yaml is checked structurally and its fired rules are reported.
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -149,22 +149,17 @@ if (only) {
     for (const h of hits) console.log(` - [${h.severity}] ${h.id}: ${h.message}`);
   }
 } else {
-  const designs = loadDir("designs", "design");
+  const folders = (tier) => { const dir = path.join(ROOT, "designs", tier); return fs.existsSync(dir) ? fs.readdirSync(dir, { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name) : []; };
+  const loadDesign = (tier, id, file) => { const rel = `designs/${tier}/${id}/${file}`; if (!fs.existsSync(path.join(ROOT, rel))) { fail(`${rel}: missing`); return null; } const d = loadOne(rel, "design"); if (d && d.doc.id !== id) fail(`${rel}: id ${d.doc.id} != folder name ${id}`); return d; };
+  const designs = folders("reference").flatMap((id) => [loadDesign("reference", id, "design.yaml"), loadDesign("reference", id, "design.broken.yaml")]).filter(Boolean);
   const expectedFor = (file, raw) => { if (!file.endsWith(".broken.yaml")) return []; const header = raw.split("\n").filter((l) => l.startsWith("#")).join("\n"); const [tripPart] = header.split(/MUST NOT/i); const idx = tripPart.search(/MUST trip/i); const seg = idx >= 0 ? tripPart.slice(idx) : ""; return [...new Set([...seg.matchAll(/([a-z][a-z0-9-]+)/g)].map((m) => m[1]).filter((x) => ruleIds.has(x)))]; };
   for (const d of designs) { if (!checkDesign(d)) continue; const fired = [...new Set(runRules(d.doc).map((h) => h.id))].sort(); const exp = expectedFor(d.file, d.raw).sort(); const ok = JSON.stringify(fired) === JSON.stringify(exp); console.log(`${ok ? "OK  " : "FAIL"} ${d.file}: [${fired.join(", ")}]`); if (!ok) fail(`${d.file}: expected [${exp.join(", ")}]`); }
   const allFired = new Set(designs.flatMap(({ doc }) => runRules(doc).map((h) => h.id)));
   for (const r of rules) if (!allFired.has(r.id)) fail(`rule ${r.id} tripped by no design`);
-  // imported designs: references/designs/<name>/<name>.yaml
-  const refDir = path.join(ROOT, "references", "designs");
-  const imported = fs.existsSync(refDir) ? fs.readdirSync(refDir, { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => `references/designs/${d.name}/${d.name}.yaml`) : [];
-  for (const rel of imported) {
-    if (!fs.existsSync(path.join(ROOT, rel))) { fail(`${rel}: missing (folder name must equal design file name)`); continue; }
-    const d = loadOne(rel, "design"); if (!d) continue;
-    if (d.doc.id !== path.basename(rel, ".yaml")) fail(`${rel}: id ${d.doc.id} != folder name`);
-    if (checkDesign(d)) { const fired = [...new Set(runRules(d.doc).map((h) => h.id))].sort(); console.log(`IMP  ${rel}: [${fired.join(", ")}]`); }
-  }
+  const imported = folders("imported").map((id) => loadDesign("imported", id, "design.yaml")).filter(Boolean);
+  for (const d of imported) { if (!fs.existsSync(path.join(ROOT, path.dirname(d.file), "mapping.yaml"))) fail(`${d.file}: mapping.yaml missing`); if (checkDesign(d)) { const fired = [...new Set(runRules(d.doc).map((h) => h.id))].sort(); console.log(`IMP  ${d.file}: [${fired.join(", ")}]`); } }
   const byProv = {}; for (const c of Object.values(components)) byProv[c.provider] = (byProv[c.provider] ?? 0) + 1;
-  console.log(`\nkinds=${Object.keys(kinds).length} components=${Object.keys(components).length} ${JSON.stringify(byProv)} rules=${rules.length} designs=${designs.length} imported=${imported.length}`);
+  console.log(`\nkinds=${Object.keys(kinds).length} components=${Object.keys(components).length} ${JSON.stringify(byProv)} rules=${rules.length} reference=${designs.length / 2} imported=${imported.length}`);
 }
 if (problems.length) { console.log(`\nPROBLEMS (${problems.length}):`); problems.forEach((p) => console.log(" - " + p)); process.exit(1); }
 console.log("all checks passed");

@@ -15,7 +15,11 @@ const EXTRA = JSON.parse(fs.readFileSync(new URL('./badges-extra.json', import.m
 const FORCE = process.argv.includes('--force');
 const bySlug = {}; for (const k of Object.keys(si)) { const i = si[k]; if (i && i.slug) bySlug[i.slug] = i; }
 const OPEN = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">';
-const kindSvg = b => `${OPEN}${b}</svg>\n`;
+// The glyph repeats its presentation attributes on an inner <g> as well as on the root, so a
+// consumer that inlines the body (a renderer, a sprite sheet) keeps the stroke.
+const INNER = '<g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">';
+const kindSvg = b => `${OPEN}${INNER}${b}</g></svg>
+`;
 const roundPath = (d, n) => d.replace(/-?\d*\.?\d+(?:e-?\d+)?/g, m => { let r = Number(m).toFixed(n); if (n > 0) r = r.replace(/\.?0+$/, ''); if (r === '' || r === '-' || r === '-0') r = '0'; return r.replace(/^(-?)0\./, '$1.'); }).replace(/([\d.])\s+(-)/g, '$1$2').replace(/\s+/g, ' ').trim();
 const fitPath = d => { for (const n of [3, 2, 1, 0]) { const r = roundPath(d, n); if (r.length <= 2996) return r; } return null; };
 const ORIG = { ...ORIGINAL_BADGES, oci: { hex: 'C74634', title: 'OCI (original neutral mark)', path: 'M7 5h10a7 7 0 0 1 0 14H7A7 7 0 0 1 7 5zm0 3a4 4 0 0 0 0 8h10a4 4 0 0 0 0-8z' } };
@@ -30,7 +34,7 @@ for (const [key, slug] of Object.entries(SLUGS)) {
 for (const key of new Set(Object.values(EXTRA))) if (!providerInfo[key] && bySlug[key]) { const d = fitPath(bySlug[key].path); if (d) providerInfo[key] = { hex: bySlug[key].hex, path: d, title: bySlug[key].title, source: 'simple-icons' }; }
 for (const [key, p] of Object.entries(providerInfo)) {
   const f = path.join(ICONS, 'providers', `${key}.svg`); if (fs.existsSync(f) && !FORCE) continue;
-  fs.writeFileSync(f, `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" role="img" fill="#${p.hex}"><title>${p.title.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</title><path${p.source === 'original' ? ' fill-rule="evenodd"' : ''} d="${p.path}"/></svg>\n`);
+  fs.writeFileSync(f, `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" role="img" fill="#${p.hex}"><title>${p.title.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</title><g fill=\"#${p.hex}\"><path${p.source === 'original' ? ' fill-rule="evenodd"' : ''} d="${p.path}"/></g></svg>\n`);
 }
 const CX = 18.5, CY = 18.5, R = 4.5, HALO = 5.3, MARK = 5.4, S = (MARK / 24).toFixed(4), TX = (CX - MARK / 2).toFixed(2), TY = (CY - MARK / 2).toFixed(2);
 const markColour = hex => { const c = n => { const v = parseInt(hex.substr(n, 2), 16) / 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; return (0.2126 * c(0) + 0.7152 * c(2) + 0.0722 * c(4)) > 0.45 ? '#111' : '#fff'; };

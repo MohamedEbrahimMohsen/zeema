@@ -1,6 +1,6 @@
 ---
 name: arkore-design-import
-description: Convert an architecture design (image, draw.io, Mermaid, PlantUML, Excalidraw, Markdown, Terraform, Bicep, ARM, CloudFormation, Pulumi) into an identical Arkore design YAML stored under references/designs/<name>/ with the source, a mapping table, a diagram and notes; adds missing components to the catalogue through the arkore-catalogue-add skill. Use when the user drops a design or diagram into docs/ (or anywhere) and asks to convert, import, encode, map or "arkore-ify" it, or says "new design".
+description: Convert an architecture design (image, draw.io, Mermaid, PlantUML, Excalidraw, Markdown, Terraform, Bicep, ARM, CloudFormation, Pulumi) into an identical Arkore design YAML stored under designs/imported/<name>/ with the source, a mapping table, a diagram and notes; adds missing components to the catalogue through the arkore-catalogue-add skill. Use when the user drops a design or diagram into docs/ (or anywhere) and asks to convert, import, encode, map or "arkore-ify" it, or says "new design".
 ---
 
 # Import a design into Arkore
@@ -18,11 +18,11 @@ component is `azure-queue-storage`; the node keeps `label: "Storage Queue"`.
 ## Where things go
 
 ```
-references/designs/<name>/
+designs/imported/<name>/
   source/<original file(s)>     untouched copy of what the user gave
-  <name>.yaml                   the Arkore design (id == <name> == folder name)
+  design.yaml                   the Arkore design (id == <name> == folder name)
   mapping.yaml                  source inventory and where every item went (machine checked)
-  diagram.md                    Mermaid rendering of <name>.yaml, for side-by-side review
+  diagram.md                    Mermaid rendering of design.yaml, for side-by-side review
   notes.md                      decisions, assumptions, gaps, rules fired
 ```
 
@@ -71,16 +71,37 @@ unmapped: []
 gaps: []
 ```
 
+When a design is the union of several figures, put the figure numbers in `source.figures` and
+add `figure: "<number>"` to every node, group, edge and ignored entry, so each item says where
+it came from. A node drawn in two figures lists both: `figure: "11-4, 11-7"`.
+
 Rules for counting:
 - A box is a node when it is a runtime element: a service, store, queue, gateway, client,
   device, external system, a person or actor (clients are kinds too: `web-client`,
   `mobile-app`, `browser`...). Titles, legends, step numbers and free notes go to `ignored`.
 - A boundary (region, VNet, subscription, cluster, trust zone, swimlane) is a group. A box
   that only contains other boxes is a group, not a node.
+- A border (dashed or solid) that encloses exactly one box, or several icons that are copies
+  of one thing (three server icons captioned "Workers"), is that box's own decoration saying
+  "several instances", not a boundary. It becomes no group. Two or more distinct boxes inside
+  a border make it a group.
+- A flow chart whose boxes are numbered procedure steps ("1. input longURL", "2. check DB")
+  is not an architecture. Its steps go to `ignored`; only the runtime elements it names
+  (a store, a service) are nodes, and only if no other figure already drew them.
 - Every arrow is one edge in the direction drawn. Undirected lines: direction of the call
   (caller -> callee); say so in `note`. Double-headed: two edges.
 - `counts` are what you counted in the source, not what you produced. Do not adjust them later
   to make the check pass; fix the design instead.
+
+### 2b. Sources you may not copy
+
+When the source is a book, a paid course, a vendor whitepaper or anything else under someone
+else's copyright, `source/` holds a citation and your own factual transcription, never the
+file itself, its pages, its images or its prose: title, author, chapter, figure numbers, page
+numbers, then the tables of boxes, boundaries and arrows as drawn. Box labels are facts and
+the fidelity check needs them. Set `source.file` to that Markdown file, `source.format` to
+`"book-figure"`, and list the figure numbers in `source.figures`. A file the user owns (their
+own diagram, their own infrastructure code) is copied into `source/` as usual.
 
 ### 3. Resolve every box to a component
 
@@ -92,11 +113,15 @@ For each node, in this order, and record `node`, `component`, `confidence`, `not
    - The box names a product (`SQS`, `Storage Queue`, `Front Door`, `Kafka`, `Redis`): use that
      component. A cloud product is always the provider's component, never the self-hosted one
      (`azure-database-for-postgresql`, not `postgres`). `confidence: exact`.
-   - The box is generic (`Web app`, `Worker`, `DB`, `Cache`, `Queue`): pick the generic component
-     of the right kind from the `default` provider (`container-service`, `container-worker`,
-     `vm-service`, the engine-less database, `memcached`/`redis` only if named). If the source
-     shows a provider context (an Azure region, AWS icons) prefer that provider's product for
-     that role and say why in `note`. `confidence: close`.
+   - The box is generic (`Web app`, `Worker`, `DB`, `Cache`, `Queue`): pick the generic
+     component of the right kind from the `default` provider. Never substitute a product the
+     source does not name. `confidence: close`. The generics are `container-service`
+     (any service box), `container-worker`, `vm-service`, `message-queue`, `cache-cluster`,
+     `relational-database`, `nosql-store` (set `props: { model: ... }` when the source says
+     document or wide-column), `blob-store`, `content-delivery-network`, `load-balancer-tier`,
+     `dns-resolver`, `observability-stack`, and the clients `web-browser`, `mobile-app`,
+     `sdk-client`. If the source shows a provider context (an Azure region, AWS icons) prefer
+     that provider's product for that role and say why in `note`.
    - Ambiguous (`Database` in a design with no other hints): choose the most common product for
      that role, `confidence: assumed`, and explain in `note`. Assumed nodes are listed in the
      final report; never hide one.
@@ -118,7 +143,7 @@ account / project / resource group / cluster / namespace / bounded context -> `s
 shard / tenant slice -> `cell`; edge / PoP / CDN edge -> `point-of-presence`. Anything else:
 closest kind plus an entry in `gaps`.
 
-### 4. Write `<name>.yaml`
+### 4. Write `design.yaml`
 
 - First line `# yaml-language-server: $schema=../../../schema/design.schema.json`, then a
   header comment: source file, import date, one line per assumption.
@@ -138,13 +163,16 @@ closest kind plus an entry in `gaps`.
 Run from the repository root, all three must pass:
 
 ```bash
-node .claude/tools/validate.mjs --design references/designs/<name>/<name>.yaml
+node .claude/tools/validate.mjs --design designs/imported/<name>/design.yaml
 ```
 ```bash
-python .claude/tools/check_fidelity.py references/designs/<name>
+python .claude/tools/check_fidelity.py designs/imported/<name>
 ```
 ```bash
-python .claude/tools/design_to_mermaid.py references/designs/<name>/<name>.yaml -o references/designs/<name>/diagram.md
+python .claude/tools/design_to_mermaid.py designs/imported/<name>/design.yaml -o designs/imported/<name>/diagram.md
+```
+```bash
+python .claude/tools/design_to_svg.py designs/imported/<name>/design.yaml -o designs/imported/<name>/diagram.svg
 ```
 
 Then do the visual pass: open the source again and walk it box by box against
@@ -163,7 +191,7 @@ not import errors; keep them for the report and do not change the design to sile
   rules fired.
 - Each `gaps` entry also goes to `docs/schema-gaps.md` in its entry format (Design, Missing,
   Workaround, Proposed change, Status open).
-- Add the design to the index table in `references/designs/README.md`.
+- Add the design to the imported table in `designs/README.md`.
 - Run `node .claude/tools/validate.mjs` (whole repository) once at the end; it also lists
   imported designs and must end with `all checks passed`.
 
@@ -171,7 +199,7 @@ not import errors; keep them for the report and do not change the design to sile
 
 Counts (source / design), the mapping table, assumed mappings with their reason, components and
 kinds added, gaps, and the rules that fired. If the user wants the design to become a rule
-fixture in `designs/` (clean plus `.broken.yaml`), that is a separate task; say so, do not do it
+reference design in `designs/reference/` (clean plus `design.broken.yaml`), that is a separate task; say so, do not do it
 unasked.
 
 ## Never
