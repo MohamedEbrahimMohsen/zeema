@@ -8,6 +8,8 @@ import * as si from 'simple-icons';
 import { KIND_GLYPHS } from './kindglyphs.mjs';
 import { KIND_GLYPHS_EXTRA } from './kindglyphs-extra.mjs';
 import { PROVIDER_SLUG, ORIGINAL_BADGES, COMPONENT_PROVIDER } from './providers.mjs';
+import { pathIsValid } from './pathcheck.mjs';
+import { roundPath } from './roundpath.mjs';
 import { fileURLToPath } from 'node:url';
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..'), ICONS = path.join(REPO, 'icons');
 const GLYPHS = { ...KIND_GLYPHS, ...KIND_GLYPHS_EXTRA };
@@ -20,8 +22,18 @@ const OPEN = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width=
 const INNER = '<g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">';
 const kindSvg = b => `${OPEN}${INNER}${b}</g></svg>
 `;
-const roundPath = (d, n) => d.replace(/-?\d*\.?\d+(?:e-?\d+)?/g, m => { let r = Number(m).toFixed(n); if (n > 0) r = r.replace(/\.?0+$/, ''); if (r === '' || r === '-' || r === '-0') r = '0'; return r.replace(/^(-?)0\./, '$1.'); }).replace(/([\d.])\s+(-)/g, '$1$2').replace(/\s+/g, ' ').trim();
-const fitPath = d => { for (const n of [3, 2, 1, 0]) { const r = roundPath(d, n); if (r.length <= 2996) return r; } return null; };
+// Round every number in a path. A number that shortens must not merge with the one before it:
+// the source relies on '.' or '-' as an implicit separator, and a value that rounds to "0"
+// loses that separator, which turns two coordinates into one and makes the path invalid.
+// Shorten a mark to fit the budget, but never at the cost of correctness: a rounding that
+// merges two coordinates into one is discarded, and the unrounded path is used instead.
+const fitPath = d => {
+  for (const n of [3, 2, 1, 0]) {
+    const r = roundPath(d, n);
+    if (r && r.length <= 2996 && pathIsValid(r)) return r;
+  }
+  return d.length <= 2996 && pathIsValid(d) ? d : null;
+};
 const ORIG = { ...ORIGINAL_BADGES, oci: { hex: 'C74634', title: 'OCI (original neutral mark)', path: 'M7 5h10a7 7 0 0 1 0 14H7A7 7 0 0 1 7 5zm0 3a4 4 0 0 0 0 8h10a4 4 0 0 0 0-8z' } };
 const SLUGS = { ...PROVIDER_SLUG, oci: null };
 const providerInfo = {};

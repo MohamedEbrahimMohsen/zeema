@@ -25,6 +25,9 @@ Run everything from the repository root.
 | `python .claude/tools/arkore_locale.py add <snippet.yaml>` / `check` / `prune` | Merge locale entries into `locales/en.yaml` (kept sorted); report or drop entries without files. |
 | `node .claude/tools/icons.mjs [--force]` | Write missing kind icons and component icons (badge from `badges-extra.json`, then `providers.mjs`, then the provider folder). |
 | `python .claude/tools/design_to_mermaid.py <design.yaml> [-o diagram.md]` | Render a design as a Mermaid flowchart (groups as subgraphs, sync solid, async dotted). |
+| `node .claude/tools/check_icon_paths.mjs` | Walk every `d` attribute in `icons/` command by command and fail on a path a browser would refuse to draw. |
+| `node .claude/tools/editor_test.mjs` | The canvas acceptance gate: parser, round trip, rules, structure, layout, bundle, icon paths, the full repository gate and the performance budgets. |
+| `node .claude/tools/build_editor_data.mjs` | Regenerate `editor/data/` from the catalogue. |
 | `python .claude/tools/design_to_svg.py <design.yaml> [-o out.svg]` | Render a design as a standalone SVG: boxes carrying the real component icon, coloured by the kind's category, dashed group frames, solid arrows for sync and dashed for async. Layout is computed (layered ranks, barycentre ordering, group members on one rank); the format stores none. |
 | `python .claude/tools/check_fidelity.py designs/imported/<name>` | Prove an imported design matches its `mapping.yaml`: counts, every item mapped both ways, labels verbatim, no unmapped items. |
 
