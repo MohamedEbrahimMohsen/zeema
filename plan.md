@@ -259,3 +259,26 @@ Three things the build found that the plan did not anticipate.
   twelve imported designs trip rules, so a findings panel that blocked a save would have made
   the editor unable to save the repository's own designs. Structural errors block; findings never
   do.
+
+## 11. Added after the first release
+
+Two features the user asked for once the canvas was in their hands.
+
+**A design can be created here, and saved without being asked twice.** `New` writes into
+`designs/authored/<id>/`, a third tier for designs with no external source: no `mapping.yaml`,
+because there is nothing to be faithful to, and no broken twin, because it owes no rule set. The
+validator checks it structurally like an imported design and reports its findings; the dev
+server is the only thing that may create the folder, and only for a kebab-case id. Autosave, when
+switched on, writes the file a moment after each change and refuses while a structural error
+stands, so it can never write something CI would reject. The design list now comes from the
+server rather than the committed bundle, so a design created a minute ago is in the picker.
+
+**An edge can be placed by hand.** Dragging an edge bows it: the control point of its curve moves
+along the perpendicular, which is what pulls apart two edges running between the same pair, or
+lifts one clear of a box it runs under. Double clicking hands it back to the automatic path. A
+bow lives in the layout sidecar under a key derived from the pair and its position among that
+pair's own edges, never in the design file, because the format has nowhere to put geometry and
+edges have no id to hang it on. An unknown key is dropped on load.
+
+Both are covered by the gate: `test_geometry.mjs` for keys, bows and the drag arithmetic, and
+`test_editor_server.mjs`, which starts the server and checks what it will and will not write.

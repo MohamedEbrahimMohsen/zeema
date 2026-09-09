@@ -47,6 +47,7 @@ code { font: 11px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; background
   padding: 0 12px; border-bottom: 1px solid var(--border); background: var(--panel);
 }
 #toolbar .group { display: flex; align-items: center; gap: 8px; }
+#autosave-wrap { display: flex; align-items: center; gap: 4px; color: var(--muted); font-size: 12px; cursor: pointer; }
 .brand { letter-spacing: .01em; }
 .sep { width: 1px; height: 20px; background: var(--border); }
 

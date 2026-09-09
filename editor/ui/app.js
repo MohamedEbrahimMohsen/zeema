@@ -8,6 +8,7 @@ import { layout } from "../core/layout.js";
 import { check } from "../core/structure.js";
 import { runRules } from "../core/rules.js";
 import * as D from "../core/document.js";
+import { edgeKeys } from "../core/geometry.js";
 import { Scene, installArrowhead } from "./scene.js";
 import { Palette } from "./palette.js";
 import { Inspector } from "./inspector.js";
@@ -20,7 +21,7 @@ const clone = (x) => JSON.parse(JSON.stringify(x));
 const state = {
   catalogue: null, search: null, icons: {}, index: [],
   path: null, layoutPath: null, editable: true,
-  doc: null, cst: null, positions: {}, sizes: {},
+  doc: null, cst: null, positions: {}, sizes: {}, bows: {},
   undo: [], redo: [], dirty: false, lastDragAt: 0,
 };
 
@@ -59,7 +60,7 @@ function render() {
   findingsCache = derive();
   scene.render({
     doc: state.doc, catalogue: state.catalogue, icons: state.icons,
-    positions: state.positions, sizes: state.sizes,
+    positions: state.positions, sizes: state.sizes, bows: state.bows,
     findings: [...findingsCache.structural, ...findingsCache.rules],
   });
   inspector.render(scene.selection, state);
@@ -74,7 +75,7 @@ function render() {
 // ---------------------------------------------------------------- commands
 
 function commit(next, opts = {}) {
-  const snapshot = { doc: clone(state.doc), positions: clone(state.positions) };
+  const snapshot = { doc: clone(state.doc), positions: clone(state.positions), bows: clone(state.bows) };
   const coalesce = opts.coalesce && Date.now() - state.lastDragAt < 400;
   if (!coalesce) state.undo.push(snapshot);
   if (state.undo.length > 100) state.undo.shift();
@@ -84,22 +85,23 @@ function commit(next, opts = {}) {
   if (opts.coalesce) state.lastDragAt = Date.now();
   scheduleDraft();
   render();
+  scheduleDiskSave();
 }
 
 function undo() {
   if (!state.undo.length) return;
-  state.redo.push({ doc: clone(state.doc), positions: clone(state.positions) });
+  state.redo.push({ doc: clone(state.doc), positions: clone(state.positions), bows: clone(state.bows) });
   const prev = state.undo.pop();
-  state.doc = prev.doc; state.positions = prev.positions;
+  state.doc = prev.doc; state.positions = prev.positions; state.bows = prev.bows || {};
   state.dirty = true;
   render();
 }
 
 function redo() {
   if (!state.redo.length) return;
-  state.undo.push({ doc: clone(state.doc), positions: clone(state.positions) });
+  state.undo.push({ doc: clone(state.doc), positions: clone(state.positions), bows: clone(state.bows) });
   const next = state.redo.pop();
-  state.doc = next.doc; state.positions = next.positions;
+  state.doc = next.doc; state.positions = next.positions; state.bows = next.bows || {};
   state.dirty = true;
   render();
 }
@@ -117,7 +119,7 @@ function saveDraft() {
   if (!state.path || !state.dirty) return;
   try {
     localStorage.setItem(draftKey(state.path), JSON.stringify({
-      base: state.baseHash, doc: state.doc, positions: state.positions, at: Date.now(),
+      base: state.baseHash, doc: state.doc, positions: state.positions, bows: state.bows, at: Date.now(),
     }));
   } catch { /* a full or blocked store is not a reason to stop editing */ }
 }
@@ -130,6 +132,7 @@ function restoreDraft() {
     if (draft.base !== state.baseHash) { localStorage.removeItem(draftKey(state.path)); return false; }
     state.doc = draft.doc;
     state.positions = draft.positions || state.positions;
+    state.bows = draft.bows || {};
     state.dirty = true;
     return true;
   } catch { return false; }
@@ -151,13 +154,17 @@ async function openDesign(entry) {
   state.editable = entry.editable !== false;
   state.doc = doc; state.cst = cst;
   state.undo = []; state.redo = []; state.dirty = false;
-  state.positions = {};
+  state.positions = {}; state.bows = {};
   const saved = await files.loadLayout(entry.layout);
   autoLayout();
   if (saved && saved.nodes) {
     for (const [id, xy] of Object.entries(saved.nodes)) {
       if (state.doc.nodes.some((n) => n.id === id)) state.positions[id] = xy;
     }
+  }
+  if (saved && saved.edges) {
+    const live = new Set(edgeKeys(state.doc));
+    for (const [key, bow] of Object.entries(saved.edges)) if (live.has(key)) state.bows[key] = bow;
   }
   const restored = restoreDraft();
   scene.selection = { type: null, ref: null };
@@ -171,14 +178,82 @@ async function save() {
   if (!state.editable) return;
   const text = serialize(state.cst, state.doc);
   await files.put(state.path, text);
-  await files.put(state.layoutPath, JSON.stringify({ version: 1, nodes: state.positions }, null, 2) + "\n");
+  await files.put(state.layoutPath, JSON.stringify(
+    { version: 2, nodes: state.positions, edges: state.bows }, null, 2) + "\n");
   const fresh = parse(text);                 // the file on disk is now the source of truth
   state.cst = fresh.cst; state.doc = fresh.doc;
   state.baseHash = hash(text);
   state.dirty = false;
   clearDraft();
+  if (!state.index.some((e) => e.path === state.path && e.onDisk)) {
+    try { state.index = await files.loadIndex(); } catch { /* the picker keeps what it has */ }
+  }
   render();
   $("#save-state").textContent = "saved";
+}
+
+
+// ---------------------------------------------------------------- new design
+// A design made here has no external source and no broken twin, so it goes in designs/authored/.
+// The file is written with the schema pointer the repository gate expects, and it stays unsaved
+// until it has at least one node, because a design with an empty nodes list is not valid.
+
+function newDesignText(id) {
+  return [
+    "# yaml-language-server: $schema=../../../schema/design.schema.json",
+    "# Authored in the Arkore canvas.",
+    "schemaVersion: " + JSON.stringify("1"),
+    "type: " + JSON.stringify("design"),
+    "id: " + JSON.stringify(id),
+    "",
+  ].join("\n");
+}
+
+function newDesign() {
+  const raw = prompt("Design id (kebab-case, becomes designs/authored/<id>/)", "untitled-design");
+  if (raw === null) return;
+  const id = raw.trim();
+  if (!/^[a-z][a-z0-9-]*$/.test(id)) { alert("A design id is lower case letters, digits and hyphens, starting with a letter."); return; }
+  if (state.index.some((e) => e.tier === "authored" && e.id === id)) { alert(`designs/authored/${id}/ already exists.`); return; }
+  const { doc, cst } = parse(newDesignText(id));
+  doc.nodes = []; doc.edges = [];
+  state.path = `designs/authored/${id}/design.yaml`;
+  state.layoutPath = `designs/authored/${id}/design.layout.json`;
+  state.editable = true;
+  state.doc = doc; state.cst = cst;
+  state.baseHash = "";
+  state.positions = {}; state.bows = {};
+  state.undo = []; state.redo = []; state.dirty = true;
+  const entry = { path: state.path, tier: "authored", id, editable: true, layout: state.layoutPath };
+  state.index.push(entry);
+  addPickerOption(entry, true);
+  scene.selection = { type: null, ref: null };
+  render();
+  document.title = `${id} — Arkore canvas`;
+  $("#save-state").textContent = "new, add a component to save";
+}
+
+function addPickerOption(entry, select) {
+  const picker = $("#design-picker");
+  const o = document.createElement("option");
+  o.value = entry.path;
+  o.textContent = `${entry.id}${entry.editable === false ? " (broken, read only)" : ""} · ${entry.tier}`;
+  picker.append(o);
+  if (select) picker.value = entry.path;
+}
+
+// ---------------------------------------------------------------- autosave to disk
+// The draft in localStorage is the crash net; this is the real thing. It only ever runs when the
+// design is editable and structurally valid, so autosave can never write a file CI would reject.
+
+let diskTimer = null;
+function scheduleDiskSave() {
+  if (!$("#autosave").checked) return;
+  clearTimeout(diskTimer);
+  diskTimer = setTimeout(() => {
+    if (!state.dirty || !state.editable || findingsCache.structural.length) return;
+    save().catch((e) => { $("#save-state").textContent = "autosave failed: " + e.message; });
+  }, 1500);
 }
 
 // ---------------------------------------------------------------- boot
@@ -192,6 +267,11 @@ const scene = new Scene($("#scene"), {
     commit(next, { coalesce: true });
   },
   onConnect: (from, to) => commit(D.addEdge(state.doc, from, to)),
+  onBowPreview: (key, value) => scene.repaintEdges({ ...state.bows, [key]: value }),
+  onBow: (key, value, reset) => {
+    if (value) state.bows[key] = value; else delete state.bows[key];
+    commit(null, { coalesce: !reset });
+  },
   onRename: (id) => {
     const node = state.doc.nodes.find((n) => n.id === id);
     const value = prompt("Label", node.label || node.id);
@@ -266,12 +346,7 @@ async function boot() {
   state.catalogue = catalogue; state.search = search; state.index = index;
 
   const picker = $("#design-picker");
-  for (const entry of index) {
-    const o = document.createElement("option");
-    o.value = entry.path;
-    o.textContent = `${entry.id}${entry.editable === false ? " (broken, read only)" : ""} · ${entry.tier}`;
-    picker.append(o);
-  }
+  for (const entry of index) addPickerOption(entry, false);
   picker.addEventListener("change", () => openDesign(index.find((e) => e.path === picker.value)));
 
   palette = new Palette($("#palette"), {
@@ -279,6 +354,7 @@ async function boot() {
     onCreate: (id) => createNode(id, null),
   });
 
+  try { $("#autosave").checked = localStorage.getItem("arkore-canvas:autosave") === "1"; } catch {}
   const first = index.find((e) => e.path.includes("chat-system")) || index[0];
   picker.value = first.path;
   await openDesign(first);
@@ -293,6 +369,11 @@ async function boot() {
 // ---------------------------------------------------------------- events
 
 $("#save").addEventListener("click", () => save().catch((e) => alert("Save failed: " + e.message)));
+$("#new-design").addEventListener("click", newDesign);
+$("#autosave").addEventListener("change", (ev) => {
+  try { localStorage.setItem("arkore-canvas:autosave", ev.target.checked ? "1" : "0"); } catch {}
+  if (ev.target.checked) scheduleDiskSave();
+});
 $("#undo").addEventListener("click", undo);
 $("#redo").addEventListener("click", redo);
 $("#zoom-fit").addEventListener("click", () => scene.fit());
@@ -314,6 +395,7 @@ window.addEventListener("keydown", (ev) => {
   const mod = ev.metaKey || ev.ctrlKey;
   if (mod && ev.key.toLowerCase() === "s") { ev.preventDefault(); save().catch((e) => alert("Save failed: " + e.message)); return; }
   if (mod && ev.key.toLowerCase() === "z") { ev.preventDefault(); ev.shiftKey ? redo() : undo(); return; }
+  if (mod && ev.key.toLowerCase() === "n") { ev.preventDefault(); newDesign(); return; }
   if (typing) return;
   if (mod && ev.key === "0") { ev.preventDefault(); scene.fit(); return; }
   if (mod && ev.key === "1") { ev.preventDefault(); scene.view.k = 1; scene.applyView(); return; }

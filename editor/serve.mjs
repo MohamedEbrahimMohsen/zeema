@@ -28,14 +28,52 @@ const inside = (p) => {
   return full.startsWith(ROOT) ? full : null;
 };
 
+// A design made in the canvas has no external source and no broken twin, so it goes in its own
+// tier. designs/authored/<id>/ is the only place the editor may create a folder; reference and
+// imported folders must already exist, and the seven broken reference variants stay read only
+// because each has to keep tripping exactly the rules its header names.
+const TIERS = new Set(["reference", "imported", "authored"]);
+const FILES = /^(design\.yaml|design\.layout\.json|design\.broken\.layout\.json)$/;
+
 const writable = (rel) => {
-  if (!rel.startsWith("designs/")) return "writes are only allowed under designs/";
-  const base = path.basename(rel);
+  const parts = rel.split("/");
+  if (parts[0] !== "designs") return "writes are only allowed under designs/";
+  if (parts.length !== 4) return "a design lives at designs/<tier>/<id>/<file>";
+  const [, tier, id, base] = parts;
+  if (!TIERS.has(tier)) return `unknown tier ${tier}`;
   if (base === "design.broken.yaml") return "the broken reference variants are read only";
-  if (!/^(design\.yaml|design\.layout\.json|design\.broken\.layout\.json)$/.test(base))
-    return "only design.yaml and its layout sidecar may be written";
-  if (!fs.existsSync(path.dirname(path.resolve(ROOT, rel)))) return "no such design folder";
+  if (!FILES.test(base)) return "only design.yaml and its layout sidecar may be written";
+  const dir = path.resolve(ROOT, "designs", tier, id);
+  if (fs.existsSync(dir)) return null;
+  if (tier !== "authored") return "no such design folder";
+  if (!/^[a-z][a-z0-9-]*$/.test(id)) return "a design id is kebab-case: lower case, digits, hyphens";
+  fs.mkdirSync(dir, { recursive: true });
   return null;
+};
+
+// The live design index. The committed editor/data/designs.json is a snapshot taken when the
+// bundle was generated, so a design created since then would be invisible until someone
+// regenerated it. This endpoint reads the folders instead.
+const designIndex = () => {
+  const out = [];
+  for (const tier of ["reference", "imported", "authored"]) {
+    const dir = path.join(ROOT, "designs", tier);
+    if (!fs.existsSync(dir)) continue;
+    for (const id of fs.readdirSync(dir).sort()) {
+      if (!fs.statSync(path.join(dir, id)).isDirectory()) continue;
+      for (const file of ["design.yaml", "design.broken.yaml"]) {
+        const full = path.join(dir, id, file);
+        if (!fs.existsSync(full)) continue;
+        out.push({
+          path: `designs/${tier}/${id}/${file}`,
+          tier, id,
+          editable: file === "design.yaml",
+          layout: `designs/${tier}/${id}/${file.replace(/\.yaml$/, ".layout.json")}`,
+        });
+      }
+    }
+  }
+  return out;
 };
 
 const server = http.createServer((req, res) => {
@@ -59,6 +97,12 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  if (url === "/api/designs" && (req.method === "GET" || req.method === "HEAD")) {
+    const body = JSON.stringify(designIndex(), null, 2) + "\n";
+    res.writeHead(200, { "content-type": "application/json", "content-length": Buffer.byteLength(body), "cache-control": "no-cache" });
+    res.end(req.method === "HEAD" ? undefined : body);
+    return;
+  }
   if (req.method !== "GET" && req.method !== "HEAD") { res.writeHead(405).end(); return; }
   let target = full;
   if (fs.existsSync(target) && fs.statSync(target).isDirectory()) target = path.join(target, "index.html");
@@ -70,6 +114,17 @@ const server = http.createServer((req, res) => {
     "cache-control": "no-cache",
   });
   res.end(req.method === "HEAD" ? undefined : body);
+});
+
+// A port already in use is the most likely way this fails, and an unhandled 'error' event turns
+// that into a stack trace. Say what happened and how to get past it.
+server.on("error", (e) => {
+  if (e.code === "EADDRINUSE") {
+    console.error(`port ${PORT} is already in use. Another server is probably running; try:
+  node editor/serve.mjs ${PORT + 10}`);
+    process.exit(1);
+  }
+  throw e;
 });
 
 server.listen(PORT, () => {

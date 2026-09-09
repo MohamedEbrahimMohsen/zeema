@@ -119,7 +119,7 @@ const tierFolders = (tier) => {
 };
 
 const designs = [];
-for (const tier of ["imported", "reference"]) {
+for (const tier of ["imported", "reference", "authored"]) {
   for (const id of tierFolders(tier)) {
     for (const file of ["design.yaml", "design.broken.yaml"]) {
       const rel = `designs/${tier}/${id}/${file}`;

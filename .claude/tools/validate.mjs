@@ -157,9 +157,17 @@ if (only) {
   const allFired = new Set(designs.flatMap(({ doc }) => runRules(doc).map((h) => h.id)));
   for (const r of rules) if (!allFired.has(r.id)) fail(`rule ${r.id} tripped by no design`);
   const imported = folders("imported").map((id) => loadDesign("imported", id, "design.yaml")).filter(Boolean);
+  // designs/authored/<id>/ holds designs made in the canvas: no external source, so no
+  // mapping.yaml, and no broken twin, so no rule expectations. Structure still has to hold.
+  const authored = folders("authored").map((id) => loadDesign("authored", id, "design.yaml")).filter(Boolean);
   for (const d of imported) { if (!fs.existsSync(path.join(ROOT, path.dirname(d.file), "mapping.yaml"))) fail(`${d.file}: mapping.yaml missing`); if (checkDesign(d)) { const fired = [...new Set(runRules(d.doc).map((h) => h.id))].sort(); console.log(`IMP  ${d.file}: [${fired.join(", ")}]`); } }
+  for (const d of authored) {
+    if (!checkDesign(d)) continue;
+    const fired = [...new Set(runRules(d.doc).map((h) => h.id))].sort();
+    console.log(`AUT  ${d.file}: [${fired.join(", ")}]`);
+  }
   const byProv = {}; for (const c of Object.values(components)) byProv[c.provider] = (byProv[c.provider] ?? 0) + 1;
-  console.log(`\nkinds=${Object.keys(kinds).length} components=${Object.keys(components).length} ${JSON.stringify(byProv)} rules=${rules.length} reference=${designs.length / 2} imported=${imported.length}`);
+  console.log(`\nkinds=${Object.keys(kinds).length} components=${Object.keys(components).length} ${JSON.stringify(byProv)} rules=${rules.length} reference=${designs.length / 2} imported=${imported.length} authored=${authored.length}`);
 }
 if (problems.length) { console.log(`\nPROBLEMS (${problems.length}):`); problems.forEach((p) => console.log(" - " + p)); process.exit(1); }
 console.log("all checks passed");

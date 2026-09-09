@@ -3,7 +3,7 @@
 // emitted once into <defs> as symbols and instanced with <use>, so a hundred nodes of the same
 // component cost one glyph.
 
-import { edgeGeometry, pathOf, groupFrames, innermostFrameAt } from "../core/geometry.js";
+import { edgeGeometry, pathOf, groupFrames, innermostFrameAt, bowAt } from "../core/geometry.js";
 
 const NS = "http://www.w3.org/2000/svg";
 const el = (name, attrs = {}) => {
@@ -66,7 +66,7 @@ export class Scene {
   // ---------------------------------------------------------------- render
 
   render(model) {
-    this.model = model;                      // { doc, catalogue, icons, positions, sizes, findings }
+    this.model = model;            // { doc, catalogue, icons, positions, sizes, bows, findings }
     this.boxes = {};
     for (const n of model.doc.nodes) {
       const p = model.positions[n.id] || [0, 0];
@@ -99,14 +99,15 @@ export class Scene {
     const g = this.layers.edges;
     g.textContent = "";
     this.edgeEls.clear();
-    this.geom = edgeGeometry(this.model.doc, this.boxes);
+    this.geom = edgeGeometry(this.model.doc, this.boxes, this.model.bows || {});
     for (const e of this.geom) {
       const d = pathOf(e.points);
       const hit = el("path", { class: "edge-hit", d });
       const line = el("path", { class: `edge${e.dashed ? " async" : ""}`, d, "marker-end": "url(#arrowhead)" });
-      hit.addEventListener("pointerdown", (ev) => { ev.stopPropagation(); this.select("edge", e.i); });
+      hit.addEventListener("pointerdown", (ev) => { ev.stopPropagation(); this.select("edge", e.i); this.startBow(e, ev); });
+      hit.addEventListener("dblclick", (ev) => { ev.stopPropagation(); this.h.onBow && this.h.onBow(e.key, 0, true); });
       g.append(hit, line);
-      this.edgeEls.set(e.i, { hit, line });
+      this.edgeEls.set(e.i, { hit, line, key: e.key, from: e.from, to: e.to });
       if (e.label) {
         const mid = e.points.length === 3 ? e.points[1] : [(e.points[0][0] + e.points[1][0]) / 2, (e.points[0][1] + e.points[1][1]) / 2];
         const t = el("text", { class: "edge-label", x: mid[0], y: mid[1] - 4, "text-anchor": "middle" });
@@ -173,6 +174,19 @@ export class Scene {
     }
   }
 
+  // A live preview during a bow drag: recompute the edge paths and nothing else.
+  repaintEdges(bows) {
+    this.model.bows = bows;
+    const geom = edgeGeometry(this.model.doc, this.boxes, bows);
+    for (const e of geom) {
+      const els = this.edgeEls.get(e.i);
+      if (!els) continue;
+      const d = pathOf(e.points);
+      els.line.setAttribute("d", d);
+      els.hit.setAttribute("d", d);
+    }
+  }
+
   renderSelection() {
     for (const [id, node] of this.nodeEls) node.classList.toggle("selected", this.selection.type === "node" && this.selection.ref === id);
     for (const [i, e] of this.edgeEls) e.line.classList.toggle("selected", this.selection.type === "edge" && this.selection.ref === i);
@@ -216,12 +230,14 @@ export class Scene {
       }
       if (this.drag) this.moveDrag(ev);
       if (this.wire) this.moveWire(ev);
+      if (this.bowDrag) this.moveBow(ev);
     });
 
     const end = (ev) => {
       if (this.pan) { this.pan = null; svg.classList.remove("panning"); }
       if (this.drag) this.endDrag(ev);
       if (this.wire) this.endWire(ev);
+      if (this.bowDrag) this.endBow(ev);
     };
     svg.addEventListener("pointerup", end);
     svg.addEventListener("pointercancel", end);
@@ -245,7 +261,7 @@ export class Scene {
     b[1] = Math.round(wy - this.drag.dy);
     this.drag.moved = true;
     this.nodeEls.get(this.drag.id).setAttribute("transform", `translate(${b[0]} ${b[1]})`);
-    const geom = edgeGeometry(this.model.doc, this.boxes);
+    const geom = edgeGeometry(this.model.doc, this.boxes, this.model.bows || {});
     for (const e of geom) {
       if (e.from !== this.drag.id && e.to !== this.drag.id) continue;
       const els = this.edgeEls.get(e.i);
@@ -265,6 +281,27 @@ export class Scene {
     const frames = groupFrames(this.model.doc, this.boxes);
     const group = innermostFrameAt(frames, centre[0], centre[1]);
     this.h.onMove && this.h.onMove(id, b[0], b[1], group);
+  }
+
+  // Dragging an edge moves the control point of its curve along the perpendicular, which is what
+  // pulls two edges between the same pair apart, or pushes one clear of a box it runs under.
+  startBow(edge, ev) {
+    this.bowDrag = { key: edge.key, from: edge.from, to: edge.to, moved: false };
+    this.svg.setPointerCapture(ev.pointerId);
+  }
+
+  moveBow(ev) {
+    const [wx, wy] = this.toWorld(ev.clientX, ev.clientY);
+    const value = bowAt(this.boxes, this.bowDrag.from, this.bowDrag.to, wx, wy);
+    this.bowDrag.moved = true;
+    this.bowDrag.value = value;
+    if (this.h.onBowPreview) this.h.onBowPreview(this.bowDrag.key, value);
+  }
+
+  endBow() {
+    const { key, moved, value } = this.bowDrag;
+    this.bowDrag = null;
+    if (moved && this.h.onBow) this.h.onBow(key, value, false);
   }
 
   startWire(from, ev) {

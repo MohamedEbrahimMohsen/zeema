@@ -26,13 +26,21 @@ tripping exactly the rules their headers name.
 - **Findings.** Structural errors block a save because the file would not be valid. Rule
   findings never block, because a real design can legitimately trip a rule. Click one to select
   and centre its subject.
+- **New.** `New` starts a design in `designs/authored/<id>/`, the tier for designs made here:
+  no external source, so no `mapping.yaml`, and no broken twin. It stays unsaved until it has at
+  least one node, because a design with an empty node list is not valid.
 - **Save.** Byte preserving. An unmodified file comes back identical, comments and blank lines
-  and quoting included; an edited one differs only on the lines you changed. Node positions go
-  to a `design.layout.json` sidecar, never into the YAML.
+  and quoting included; an edited one differs only on the lines you changed. Turn on `auto` and
+  the file is written a moment after each change, but only while the design is structurally
+  valid, so autosave can never write a file CI would reject.
+- **Edges you can place.** Drag an edge to bow it away from whatever it collides with, which is
+  how you separate two edges running between the same pair. Double click an edge to hand it back
+  to the automatic path. Node positions and edge bows go to a `design.layout.json` sidecar,
+  never into the YAML, because the format has nowhere to put them.
 
 ## Keys
 
-`Ctrl S` save · `Ctrl Z` / `Ctrl Shift Z` undo and redo · `Ctrl 0` fit · `Ctrl 1` actual size ·
+`Ctrl N` new · `Ctrl S` save · `Ctrl Z` / `Ctrl Shift Z` undo and redo · `Ctrl 0` fit · `Ctrl 1` actual size ·
 `G` group the selection · `Delete` remove the selection · `Esc` deselect · double click a node to
 rename its label.
 
@@ -48,7 +56,7 @@ importable by node, which is what makes it testable without a browser:
 | `core/structure.js` | The validator's own structural checks, message for message, plus a schema layer |
 | `core/rules.js` | The 36 rules, ported bug for bug, with subjects so a finding points at something |
 | `core/layout.js` | The repository renderer's layout, ported number for number |
-| `core/geometry.js` | Edge paths and group frames, derived from positions on every drag |
+| `core/geometry.js` | Edge paths, bows and group frames, derived from positions on every drag |
 
 `editor/data/` is generated and committed:
 

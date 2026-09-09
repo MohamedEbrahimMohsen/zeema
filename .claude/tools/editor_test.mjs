@@ -24,7 +24,9 @@ const run = (file) => {
 
 console.log("module tests");
 for (const [name, file] of [["F1,F2 yaml", "test_yaml.mjs"], ["F7 layout", "test_layout.mjs"],
-  ["F4 rules", "test_rules.mjs"], ["F5,F6 structure", "test_structure.mjs"], ["F8 bundle", "test_build_editor_data.mjs"]])
+  ["F4 rules", "test_rules.mjs"], ["F5,F6 structure", "test_structure.mjs"],
+  ["F8 bundle", "test_build_editor_data.mjs"], ["icon paths", "check_icon_paths.mjs"],
+  ["edge geometry", "test_geometry.mjs"], ["write channel", "test_editor_server.mjs"]])
   ok(name, run(file));
 
 console.log("\ncross-module");

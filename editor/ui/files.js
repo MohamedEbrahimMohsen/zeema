@@ -4,7 +4,13 @@
 
 const abs = (p) => "/" + String(p).replace(/^\/+/, "");
 
+// The server lists the design folders live, so a design created a minute ago is there. The
+// committed bundle is the fallback for anything serving these files statically.
 export async function loadIndex() {
+  try {
+    const live = await fetch("/api/designs", { cache: "no-cache" });
+    if (live.ok) return live.json();
+  } catch { /* fall through to the snapshot */ }
   const r = await fetch("data/designs.json", { cache: "no-cache" });
   if (!r.ok) throw new Error("designs.json missing; run node .claude/tools/build_editor_data.mjs");
   return r.json();

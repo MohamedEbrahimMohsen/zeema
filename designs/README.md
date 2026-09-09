@@ -1,6 +1,6 @@
 # Designs
 
-One folder per design; the folder name is the design id. Two tiers.
+One folder per design; the folder name is the design id. Three tiers.
 
 ```
 designs/
@@ -11,6 +11,9 @@ designs/
     diagram.md          Mermaid rendering of design.yaml
     diagram.svg         drawn rendering with the component icons (design.broken.yaml gets diagram.broken.svg)
     notes.md            what the design shows, what the broken variant breaks
+  authored/<id>/      made in the Arkore canvas
+    design.yaml         the design; no external source, so no mapping.yaml, and no broken twin
+    design.layout.json  node positions and edge bows, written by the editor
   imported/<id>/      brought in from a real source by the arkore-design-import skill
     design.yaml         the same design as the source, expressed in Arkore components
     source/             the original file(s), untouched
@@ -33,7 +36,7 @@ Both renderings are generated, never hand-drawn: `design_to_mermaid.py` writes `
 `design_to_svg.py` writes `diagram.svg`, which places the real component icons and computes a
 layout, because the format stores none. Regenerate them after editing a design.
 
-An imported design becomes a reference design only by a separate decision that adds
+An authored or imported design becomes a reference design only by a separate decision that adds
 `design.broken.yaml`. The validator (`node .claude/tools/validate.mjs`) checks both tiers.
 
 ## Reference
