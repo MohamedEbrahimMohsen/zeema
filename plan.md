@@ -379,3 +379,24 @@ rectangle: opened on its own, a dark box in the corner of a white page. The pale
 one the person chose, and light when they have not chosen, and the SVG carries a background only
 when it needs one, which is when the ink is pale. A raster keeps its ground: JPEG cannot be
 transparent, and a PNG of a diagram is nearly always dropped onto a slide.
+
+## 16. Whose design is it
+
+The canvas could save over anything. That is wrong for two of the three tiers: a reference design
+is curated, an imported one is faithful to a figure in a source document, and an afternoon of
+dragging boxes around should not be able to rewrite either. Both had in fact already been changed
+by accident in a session before this one.
+
+`designs/authored/` is now the only tier the server writes, refusal message and all, and the live
+index marks everything else read only, which is what greys out Save and keeps autosave away from
+it. Editing a reference design is still the point: change it, then `Clone`, and the document in
+hand — unsaved edits, positions and bows — is written to `designs/authored/` under a new id, with
+a header line saying where it came from. The names offered are `<id>-copy`, then `-copy-2`, an
+eight character random suffix for when the name does not matter, or one typed in. Cloning a copy
+counts on from the original rather than stacking another "copy" on the end.
+
+Double click needed a third way of working out what is under the pointer. `ev.target` is
+retargeted by pointer capture, and `elementFromPoint` returns nothing when the page has no
+layout, which is a real state inside an embedded pane. The last resort asks the model: the node
+under the point, else the nearest edge within a few pixels of its curve, else the innermost
+boundary. That one is ours and always knows.

@@ -9,9 +9,10 @@ node editor/serve.mjs
 ```
 
 Then open `http://localhost:8000/editor/`. That server is also the write channel: a save is a
-PUT back to the same path, so the editor edits the repository in place. Writes are refused
-outside `designs/`, and refused for the seven `design.broken.yaml` files, which have to keep
-tripping exactly the rules their headers name.
+PUT back to the same path, so the editor edits the repository in place. It writes one tier:
+`designs/authored/`. The reference designs are curated and the imported ones are faithful to a
+source document, so neither can be saved over from an editing session; open one, change it, and
+`Clone` makes what is on screen a design of your own.
 
 ## What it does
 
@@ -49,6 +50,10 @@ tripping exactly the rules their headers name.
 - **Arrange.** Places every component again, in layers from the sources down, by the same layout
   the repository's renderer uses. It replaces the positions of the whole design, which is why it
   is one `Ctrl Z` away, like everything else.
+- **Clone.** A reference or imported design can be edited on the canvas and not saved over.
+  `Clone` writes what is on screen, unsaved edits and layout included, to
+  `designs/authored/<id>/`, offering `<id>-copy`, then `-copy-2`, or an eight character random
+  suffix, or a name you type. The copy records where it came from in its header.
 - **New.** `New` starts a design in `designs/authored/<id>/`, the tier for designs made here:
   no external source, so no `mapping.yaml`, and no broken twin. It stays unsaved until it has at
   least one node, because a design with an empty node list is not valid.

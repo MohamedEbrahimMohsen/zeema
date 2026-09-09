@@ -23,6 +23,29 @@ const CATEGORY_HUE = { messaging: "violet", compute: "blue", data: "amber", edge
 
 const overlaps = (b, r) => b[0] < r[2] && b[0] + b[2] > r[0] && b[1] < r[3] && b[1] + b[3] > r[1];
 
+// How far a point is from an edge, which is a segment or a quadratic. The curve is sampled
+// rather than solved: this decides what a click hit, not where a line is drawn.
+function distanceToSegment(ax, ay, bx, by, x, y) {
+  const dx = bx - ax, dy = by - ay;
+  const len = dx * dx + dy * dy;
+  const t = len ? Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / len)) : 0;
+  return Math.hypot(x - (ax + dx * t), y - (ay + dy * t));
+}
+
+function distanceToPath(points, x, y) {
+  if (points.length === 2) return distanceToSegment(points[0][0], points[0][1], points[1][0], points[1][1], x, y);
+  const [[x1, y1], [cx, cy], [x2, y2]] = points;
+  let best = Infinity, px = x1, py = y1;
+  for (let i = 1; i <= 12; i++) {
+    const t = i / 12, u = 1 - t;
+    const qx = u * u * x1 + 2 * u * t * cx + t * t * x2;
+    const qy = u * u * y1 + 2 * u * t * cy + t * t * y2;
+    best = Math.min(best, distanceToSegment(px, py, qx, qy, x, y));
+    px = qx; py = qy;
+  }
+  return best;
+}
+
 export class Scene {
   constructor(svg, handlers) {
     this.svg = svg;
@@ -375,13 +398,32 @@ export class Scene {
     svg.addEventListener("pointercancel", end);
   }
 
-  // What is under a pointer event, as a selection subject. The event's own target is asked
-  // first, and where that is the scene itself, the point is: an event retargeted by pointer
-  // capture still knows where it happened.
+  // What is under a pointer event, as a selection subject. Three ways of asking, because the
+  // first two can both come back empty: the event's own target is retargeted to the scene by
+  // pointer capture, and elementFromPoint answers nothing when the page has no layout to
+  // speak of. The last one asks the model, which is ours and always knows.
   targetOf(ev) {
     const direct = this.subjectOf(ev.target);
     if (direct.type) return direct;
-    return this.subjectOf(document.elementFromPoint(ev.clientX, ev.clientY));
+    const painted = this.subjectOf(document.elementFromPoint(ev.clientX, ev.clientY));
+    if (painted.type) return painted;
+    const [wx, wy] = this.toWorld(ev.clientX, ev.clientY);
+    return this.subjectAt(wx, wy);
+  }
+
+  // The same question answered from the geometry rather than the DOM, in the order the layers
+  // are painted: a node, then an edge near the pointer, then the innermost boundary around it.
+  subjectAt(wx, wy) {
+    const node = this.nodeAt(wx, wy);
+    if (node) return { type: "node", ref: node };
+    let best = null, bestDistance = 9;
+    for (const e of this.geom || []) {
+      const d = distanceToPath(e.points, wx, wy);
+      if (d < bestDistance) { best = e.i; bestDistance = d; }
+    }
+    if (best !== null) return { type: "edge", ref: best };
+    const group = innermostFrameAt(this.frames || {}, wx, wy);
+    return group ? { type: "group", ref: group } : { type: null, ref: null };
   }
 
   subjectOf(el) {

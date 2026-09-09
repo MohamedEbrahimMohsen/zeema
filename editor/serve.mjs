@@ -6,9 +6,9 @@
 //
 //   node editor/serve.mjs [port]
 //
-// Writes are refused outside designs/, refused for anything that is not design.yaml,
-// design.broken.yaml or a *.layout.json sidecar, and refused for the seven broken variants,
-// which must keep tripping exactly the rules their headers name.
+// Writes are refused outside designs/, refused for anything that is not design.yaml or a
+// *.layout.json sidecar, and refused for every tier but authored: the reference and imported
+// designs are the repository's own, and the canvas clones one rather than overwriting it.
 
 import http from "node:http";
 import fs from "node:fs";
@@ -28,12 +28,12 @@ const inside = (p) => {
   return full.startsWith(ROOT) ? full : null;
 };
 
-// A design made in the canvas has no external source and no broken twin, so it goes in its own
-// tier. designs/authored/<id>/ is the only place the editor may create a folder; reference and
-// imported folders must already exist, and the seven broken reference variants stay read only
-// because each has to keep tripping exactly the rules its header names.
+// designs/authored/ is the only tier this server writes, and the only place it may create a
+// folder. The reference designs are curated and the imported ones are faithful to a source
+// document; neither is something an editing session should be able to overwrite by accident, so
+// the canvas clones one into authored/ instead. Anything else about them stays as it was.
 const TIERS = new Set(["reference", "imported", "authored"]);
-const FILES = /^(design\.yaml|design\.layout\.json|design\.broken\.layout\.json)$/;
+const FILES = /^(design\.yaml|design\.layout\.json)$/;
 
 const writable = (rel) => {
   const parts = rel.split("/");
@@ -41,13 +41,11 @@ const writable = (rel) => {
   if (parts.length !== 4) return "a design lives at designs/<tier>/<id>/<file>";
   const [, tier, id, base] = parts;
   if (!TIERS.has(tier)) return `unknown tier ${tier}`;
-  if (base === "design.broken.yaml") return "the broken reference variants are read only";
+  if (tier !== "authored") return `${tier} designs are read only; clone one to edit it`;
   if (!FILES.test(base)) return "only design.yaml and its layout sidecar may be written";
-  const dir = path.resolve(ROOT, "designs", tier, id);
-  if (fs.existsSync(dir)) return null;
-  if (tier !== "authored") return "no such design folder";
   if (!/^[a-z][a-z0-9-]*$/.test(id)) return "a design id is kebab-case: lower case, digits, hyphens";
-  fs.mkdirSync(dir, { recursive: true });
+  const dir = path.resolve(ROOT, "designs", tier, id);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
   return null;
 };
 
@@ -67,7 +65,7 @@ const designIndex = () => {
         out.push({
           path: `designs/${tier}/${id}/${file}`,
           tier, id,
-          editable: file === "design.yaml",
+          editable: tier === "authored" && file === "design.yaml",
           layout: `designs/${tier}/${id}/${file.replace(/\.yaml$/, ".layout.json")}`,
         });
       }

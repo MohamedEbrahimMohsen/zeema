@@ -9,6 +9,8 @@ nodes:
   - { id: "azure-functions-6", component: "azure-functions" }
   - { id: "sdk-client-2", component: "sdk-client" }
   - { id: "azure-functions", component: "azure-functions" }
+  - { id: "sdk-client", component: "sdk-client" }
+  - { id: "sdk-client-3", component: "sdk-client" }
 edges:
   - from: "abc"
     to: "azure-functions-6"
@@ -26,3 +28,4 @@ edges:
     label: "Hello"
     retryPolicy: "fixed"
   - { from: "sdk-client-2", to: "azure-functions", protocol: "http", mode: "sync" }
+  - { from: "sdk-client-3", to: "sdk-client-2", protocol: "http", mode: "sync" }

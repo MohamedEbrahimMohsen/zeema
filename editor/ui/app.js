@@ -94,7 +94,10 @@ function renderNow() {
   inspector.render(scene.selection, state, scene.multi);
   findings.render(findingsCache.structural, findingsCache.rules, state.catalogue);
   $("#save").disabled = !state.editable || findingsCache.structural.length > 0;
-  $("#save-state").textContent = !state.editable ? "read only" : state.dirty ? "unsaved" : "saved";
+  $("#clone").disabled = !state.doc.nodes.length;
+  $("#save-state").textContent = !state.editable
+    ? (state.dirty ? "read only — Clone to keep these edits" : "read only — Clone to edit")
+    : state.dirty ? "unsaved" : "saved";
   $("#empty-state").hidden = state.doc.nodes.length > 0;
   $("#undo").disabled = !state.undo.length;
   $("#redo").disabled = !state.redo.length;
@@ -261,11 +264,66 @@ function newDesign() {
   $("#save-state").textContent = "new, add a component to save";
 }
 
+// ---------------------------------------------------------------- clone
+// The reference designs are curated and the imported ones are faithful to a source document, so
+// the canvas cannot save over either. Editing one is still the point: change it, then clone, and
+// what you have on screen, unsaved edits and layout included, becomes a design of your own in
+// designs/authored/. The copy records where it came from in its header, because a design with no
+// mapping.yaml and no source folder otherwise has nothing to say about its own origin.
+
+function cloneHeader(text, from) {
+  const note = `# Cloned from ${from} in the Arkore canvas.`;
+  const lines = text.split("\n");
+  const at = lines[0].startsWith("# yaml-language-server") ? 1 : 0;
+  lines.splice(at, 0, note);
+  return lines.join("\n");
+}
+
+async function cloneInto(newId) {
+  const from = state.path;
+  const text = cloneHeader(serialize(state.cst, { ...state.doc, id: newId }), from);
+  const target = `designs/authored/${newId}/design.yaml`;
+  const layoutPath = `designs/authored/${newId}/design.layout.json`;
+  await files.put(target, text);
+  await files.put(layoutPath, JSON.stringify({ version: 2, nodes: state.positions, edges: state.bows }, null, 2) + "\n");
+  const entry = { path: target, tier: "authored", id: newId, editable: true, layout: layoutPath };
+  if (!state.index.some((e) => e.path === target)) { state.index.push(entry); addPickerOption(entry, true); }
+  $("#design-picker").value = target;
+  clearDraft();                       // the edits are in the clone now, not pending on the original
+  await openDesign(entry);
+  notify(`cloned ${state.doc.id} from ${from.split("/")[2]}`);
+}
+
+function cloneDesign() {
+  if (!state.doc) return;
+  if (!state.doc.nodes.length) return notify("a design with no components cannot be cloned");
+  const taken = new Set(state.index.filter((e) => e.tier === "authored").map((e) => e.id));
+  const numbered = D.cloneId(state.doc.id, taken);
+  const random = D.cloneId(state.doc.id, taken, true);
+  const run = (id) => cloneInto(id).catch((e) => notify("clone failed: " + e.message));
+  const r = $("#clone").getBoundingClientRect();
+  showMenu(r.left, r.bottom + 4, [
+    { label: numbered, hint: "next copy", run: () => run(numbered) },
+    { label: random, hint: "unique", run: () => run(random) },
+    "-",
+    { label: "Name it myself", run: () => {
+      const typed = prompt("Id for the copy (kebab-case, becomes designs/authored/<id>/)", numbered);
+      if (typed === null) return;
+      const id = D.toId(typed);
+      if (!typed.trim()) return notify("a design id cannot be empty");
+      if (taken.has(id)) return notify(`designs/authored/${id}/ already exists`);
+      run(id);
+    } },
+  ]);
+}
+
 function addPickerOption(entry, select) {
   const picker = $("#design-picker");
   const o = document.createElement("option");
   o.value = entry.path;
-  o.textContent = `${entry.id}${entry.editable === false ? " (broken, read only)" : ""} · ${entry.tier}`;
+  const why = entry.path.endsWith("design.broken.yaml") ? "broken, read only"
+    : entry.editable === false ? "read only" : null;
+  o.textContent = `${entry.id}${why ? ` (${why})` : ""} · ${entry.tier}`;
   picker.append(o);
   if (select) picker.value = entry.path;
 }
@@ -556,6 +614,7 @@ async function boot() {
 
 $("#save").addEventListener("click", () => save().catch((e) => alert("Save failed: " + e.message)));
 $("#new-design").addEventListener("click", newDesign);
+$("#clone").addEventListener("click", cloneDesign);
 $("#autosave").addEventListener("change", (ev) => {
   try { localStorage.setItem("arkore-canvas:autosave", ev.target.checked ? "1" : "0"); } catch {}
   if (ev.target.checked) scheduleDiskSave();

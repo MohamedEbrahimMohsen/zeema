@@ -30,15 +30,19 @@ try {
 
   const index = await (await fetch(base + "/api/designs")).json();
   ok("the live index lists every design", index.length >= 26, `${index.length} entries`);
-  ok("the broken variants are marked read only", index.filter((e) => e.path.endsWith("design.broken.yaml")).every((e) => e.editable === false));
+  ok("only the authored tier is marked editable", index.every((e) => e.editable === (e.tier === "authored" && e.path.endsWith("design.yaml"))));
+  ok("the repository's own designs are all read only", index.filter((e) => e.tier !== "authored").every((e) => e.editable === false));
   ok("every listed path exists", index.every((e) => fs.existsSync(path.join(ROOT, e.path))));
 
   const put = (p, body) => fetch(base + "/" + p, { method: "PUT", body });
   const refusals = [
     ["editor/ui/app.js", "outside designs/"],
+    ["designs/reference/slack-messaging/design.yaml", "a reference design"],
     ["designs/reference/slack-messaging/design.broken.yaml", "a broken reference variant"],
+    ["designs/reference/slack-messaging/design.layout.json", "a reference design's layout"],
+    ["designs/imported/chat-system/design.yaml", "an imported design"],
     ["designs/imported/chat-system/notes.md", "a file that is not a design or a sidecar"],
-    ["designs/imported/does-not-exist/design.yaml", "a folder that does not exist"],
+    ["designs/authored/server-test-scratch/notes.md", "a file that is not a design or a sidecar"],
     ["designs/authored/Bad_Id/design.yaml", "an id that is not kebab-case"],
     ["designs/nonsense/x/design.yaml", "an unknown tier"],
   ];
@@ -59,6 +63,12 @@ try {
 
   const after = await (await fetch(base + "/api/designs")).json();
   ok("a new design appears in the live index", after.some((e) => e.id === "server-test-scratch" && e.tier === "authored"));
+
+  // A refused write leaves the file exactly as it was: nothing is half applied.
+  const untouched = fs.readFileSync(path.join(ROOT, "designs/imported/chat-system/design.yaml"), "utf8");
+  await put("designs/imported/chat-system/design.yaml", "wrecked");
+  ok("a refused write changes nothing on disk",
+    fs.readFileSync(path.join(ROOT, "designs/imported/chat-system/design.yaml"), "utf8") === untouched);
 } finally {
   fs.rmSync(scratch, { recursive: true, force: true });
   stop();

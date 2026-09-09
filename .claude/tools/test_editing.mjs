@@ -221,6 +221,48 @@ check1("ungrouping the last boundary takes the key out of the file", () => {
   assert.deepEqual(check(parse(out).doc, catalogue, { file: "x" }), []);
 });
 
+// ---------------------------------------------------------------- cloning
+
+check1("a copy is named after what it was copied from", () => {
+  assert.equal(D.cloneId("chat-system", new Set()), "chat-system-copy");
+  assert.equal(D.cloneId("chat-system", new Set(["chat-system-copy"])), "chat-system-copy-2");
+  assert.equal(D.cloneId("chat-system", new Set(["chat-system-copy", "chat-system-copy-2"])), "chat-system-copy-3");
+});
+
+check1("copying a copy counts on rather than stacking another copy on the end", () => {
+  assert.equal(D.cloneId("chat-system-copy", new Set(["chat-system-copy"])), "chat-system-copy-2");
+  assert.equal(D.cloneId("chat-system-copy-2", new Set(["chat-system-copy", "chat-system-copy-2"])), "chat-system-copy-3");
+});
+
+check1("the random form is a legal id and does not repeat itself", () => {
+  const seen = new Set();
+  for (let i = 0; i < 400; i++) {
+    const id = D.cloneId("chat-system", seen, true);
+    assert.match(id, /^chat-system-[a-z0-9]{8}$/);
+    assert.equal(D.toId(id), id, "a clone id is already a legal id");
+    assert.equal(seen.has(id), false, "it never hands back one that is taken");
+    seen.add(id);
+  }
+  assert.equal(D.randomSuffix().length, 8);
+});
+
+check1("a clone carries the edits, under its own id", () => {
+  // What the canvas does on Clone: the document in hand, with the new id, through the same
+  // serialiser, so an unsaved change is in the copy rather than lost with the original.
+  const original = fs.readFileSync(path.join(ROOT, "designs/imported/chat-system/design.yaml"), "utf8");
+  const { doc, cst } = parse(original);
+  const edited = D.setNodeLabel(doc, doc.nodes[0].id, "My version", catalogue).doc;
+  const text = serialize(cst, { ...edited, id: "chat-system-copy" });
+  const back = parse(text).doc;
+  assert.equal(back.id, "chat-system-copy");
+  assert.equal(back.nodes.length, doc.nodes.length);
+  assert.equal(back.edges.length, doc.edges.length);
+  assert.ok(back.nodes.some((n) => n.label === "My version"));
+  assert.deepEqual(check(back, catalogue, { file: "chat-system-copy" }), []);
+  assert.equal(original.includes('id: "chat-system"'), true);
+  assert.equal(text.includes('id: "chat-system-copy"'), true, "only the id line moved");
+});
+
 // ---------------------------------------------------------------- export
 
 check1("the three export formats are what their extensions say", async () => {

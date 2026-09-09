@@ -61,6 +61,29 @@ export function uniqueId(taken, base) {
   for (let n = 2; ; n++) if (!taken.has(`${start}-${n}`)) return `${start}-${n}`;
 }
 
+// The name a copy of a design gets. Cloning chat-system gives chat-system-copy, then
+// chat-system-copy-2, and cloning a copy counts on from the original rather than stacking
+// another "copy" on the end. The random form is for when a name does not matter and a
+// collision would be annoying: eight characters is enough that two clones never meet.
+export function cloneId(id, taken = new Set(), random = false) {
+  const base = toId(String(id).replace(/-copy(-\d+)?$/, ""));
+  if (random) {
+    let suffix;
+    do { suffix = randomSuffix(); } while (taken.has(`${base}-${suffix}`));
+    return `${base}-${suffix}`;
+  }
+  if (!taken.has(`${base}-copy`)) return `${base}-copy`;
+  for (let n = 2; ; n++) if (!taken.has(`${base}-copy-${n}`)) return `${base}-copy-${n}`;
+}
+
+export function randomSuffix(length = 8) {
+  const alphabet = "abcdefghijklmnopqrstuvwxyz0123456789";
+  const bytes = globalThis.crypto && globalThis.crypto.getRandomValues
+    ? globalThis.crypto.getRandomValues(new Uint8Array(length))
+    : Array.from({ length }, () => Math.floor(Math.random() * 256));
+  return Array.from(bytes, (b) => alphabet[b % alphabet.length]).join("");
+}
+
 // What a node is called on the canvas: its own label, else the component's proper name. Never
 // the id, which is a key and reads like one. Two instances of Azure Function both say Azure
 // Function, because there is one Azure Function and these are two of it.
