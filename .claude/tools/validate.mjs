@@ -85,6 +85,12 @@ const propDefs = (c) => ({ ...kinds[c.kind].properties, ...(c.properties ?? {}) 
 const effective = (node) => { const c = components[node.component]; const defs = propDefs(c); const out = {}; for (const [k, d] of Object.entries(defs)) { if (node.props?.[k] !== undefined) out[k] = node.props[k]; else if (c.defaults?.[k] !== undefined) out[k] = c.defaults[k]; else if (d.default !== undefined) out[k] = d.default; } return out; };
 const kindOf = (node) => kinds[components[node.component].kind];
 const checkDesign = ({ file, doc }) => {
+  // A malformed list is reported, never thrown on: "edges:" with nothing under it parses as
+  // null, and a validator that crashes on it tells nobody which file is wrong.
+  for (const key of ["nodes", "edges"]) {
+    if (!Array.isArray(doc[key])) { fail(`${file}: ${key} is not a list`); return false; }
+  }
+  if (doc.groups !== undefined && !Array.isArray(doc.groups)) { fail(`${file}: groups is not a list`); return false; }
   const nodeIds = new Set(doc.nodes.map((n) => n.id)); const groupIds = new Set((doc.groups ?? []).map((g) => g.id));
   if (nodeIds.size !== doc.nodes.length) fail(`${file}: duplicate node ids`);
   if (groupIds.size !== (doc.groups ?? []).length) fail(`${file}: duplicate group ids`);

@@ -174,6 +174,13 @@ export function parse(text) {
     while (j < lines.length && (isBlank(lines[j]) || indentOf(lines[j]) > 0)) j++;
     while (j > start && isBlank(lines[j - 1])) j--;
     const body = lines.slice(start, j);
+    // "edges:" with nothing under it is null, not an empty map. Reading it as a map is how a
+    // list ends up as an object, which every consumer downstream then trips over.
+    if (body.every((l) => isBlank(l))) {
+      doc[key] = null;
+      cst.sections.push({ type: "empty", key, text: line });
+      i = j; continue;
+    }
     const isSeq = body.some((l) => l.trimStart().startsWith("- "));
     if (isSeq) {
       const items = [];
@@ -287,6 +294,13 @@ function emitBlockMap(value, style, indent) {
 
 const idOf = (e, key) => (key === "edges" ? `${e.from} ${e.to}` : e && e.id);
 
+// A block sequence with nothing in it has no block form: "edges:" on its own is null, and a
+// design whose edges parse as null is not a design. An empty list is written in flow style.
+function emitSeq(key, list, entries = []) {
+  if (!list.length) return [`${key}: []`];
+  return [`${key}:`, ...entries];
+}
+
 export function serialize(cst, doc) {
   const out = [];
   if (cst.headerLines && cst.headerLines.length) out.push(...cst.headerLines);
@@ -297,6 +311,16 @@ export function serialize(cst, doc) {
       seen.add(s.key);
       if (!(s.key in doc)) continue;
       out.push(same(doc[s.key], cst.doc[s.key]) ? s.text : `${s.key}: ${emitValue(doc[s.key], s.style)}`);
+      continue;
+    }
+    if (s.type === "empty") {
+      seen.add(s.key);
+      if (!(s.key in doc)) continue;
+      const v = doc[s.key];
+      if (v === null || v === undefined) out.push(s.text);
+      else if (Array.isArray(v)) out.push(...emitSeq(s.key, v));
+      else if (typeof v === "object") out.push(`${s.key}:`, ...emitBlockMap(v, null, 2));
+      else out.push(`${s.key}: ${emitValue(v)}`);
       continue;
     }
     if (s.type === "map") {
@@ -316,7 +340,7 @@ export function serialize(cst, doc) {
       bucket.push({ it, entry: s.entries[n] });
       originals.set(key, bucket);
     });
-    out.push(`${s.key}:`);
+    const body = [];
     const used = new Map();
     for (const value of list) {
       const key = idOf(value, s.key);
@@ -325,17 +349,18 @@ export function serialize(cst, doc) {
       const orig = bucket[n];
       used.set(key, n + 1);
       if (orig) {
-        out.push(...orig.it.trivia);
-        if (same(value, orig.entry.value)) out.push(...orig.it.lines);
-        else out.push(...emitEntry(value, orig.entry.style, orig.entry.indent));
-      } else out.push(...emitEntry(value, null, 2));
+        body.push(...orig.it.trivia);
+        if (same(value, orig.entry.value)) body.push(...orig.it.lines);
+        else body.push(...emitEntry(value, orig.entry.style, orig.entry.indent));
+      } else body.push(...emitEntry(value, null, 2));
     }
+    out.push(...emitSeq(s.key, list, body));
     if (s.trailing && s.trailing.length) out.push(...s.trailing);
   }
   for (const key of Object.keys(doc)) {
     if (seen.has(key)) continue;
     const v = doc[key];
-    if (Array.isArray(v)) { out.push(`${key}:`, ...v.flatMap((e) => emitEntry(e, null, 2))); }
+    if (Array.isArray(v)) { out.push(...emitSeq(key, v, v.flatMap((e) => emitEntry(e, null, 2)))); }
     else if (v && typeof v === "object") out.push(`${key}:`, ...emitBlockMap(v, null, 2));
     else out.push(`${key}: ${emitValue(v)}`);
   }

@@ -75,14 +75,24 @@ check("search: 1623 rows, six columns, haystack lowercased and contains the id",
   }
 });
 
-check("designs: 26 rows, 7 not editable, paths and layouts exist", () => {
+check("designs: one row per design file on disk, broken variants not editable", () => {
   const d = json["designs.json"];
-  assert.equal(d.length, 26);
-  assert.equal(d.filter((x) => x.editable === false).length, 7);
-  assert.equal(d.filter((x) => x.editable === true).length, 19);
+  const TIERS = ["reference", "imported", "authored"];
+  const onDisk = [];
+  for (const tier of TIERS) {
+    const dir = path.join(ROOT, "designs", tier);
+    if (!fs.existsSync(dir)) continue;
+    for (const id of fs.readdirSync(dir)) {
+      for (const name of ["design.yaml", "design.broken.yaml"]) {
+        if (fs.existsSync(path.join(dir, id, name))) onDisk.push(`designs/${tier}/${id}/${name}`);
+      }
+    }
+  }
+  assert.deepEqual(d.map((x) => x.path).sort(), onDisk.sort());
+  assert.equal(d.filter((x) => x.editable === false).length, onDisk.filter((p) => p.endsWith("design.broken.yaml")).length);
   for (const row of d) {
     assert.ok(fs.existsSync(path.join(ROOT, row.path)), `${row.path} missing`);
-    assert.ok(["reference", "imported"].includes(row.tier));
+    assert.ok(TIERS.includes(row.tier));
     assert.equal(row.layout, row.path.replace(/\.yaml$/, ".layout.json"));
     assert.equal(row.editable, path.basename(row.path) === "design.yaml");
     assert.equal(row.path, `designs/${row.tier}/${row.id}/${path.basename(row.path)}`);

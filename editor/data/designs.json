@@ -180,5 +180,12 @@
     "id": "twitter-timeline",
     "editable": false,
     "layout": "designs/reference/twitter-timeline/design.broken.layout.json"
+  },
+  {
+    "path": "designs/authored/flowsaga/design.yaml",
+    "tier": "authored",
+    "id": "flowsaga",
+    "editable": true,
+    "layout": "designs/authored/flowsaga/design.layout.json"
   }
 ]

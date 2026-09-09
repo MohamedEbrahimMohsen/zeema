@@ -1,0 +1,46 @@
+{
+  "version": 2,
+  "nodes": {
+    "sdk-client": [
+      -200,
+      185
+    ],
+    "azure-functions": [
+      188,
+      259
+    ],
+    "azure-functions-2": [
+      309,
+      178
+    ],
+    "azure-durable-functions": [
+      508,
+      200
+    ],
+    "azure-functions-3": [
+      836,
+      46
+    ],
+    "azure-functions-4": [
+      399,
+      79
+    ],
+    "azure-static-web-apps": [
+      423,
+      34
+    ],
+    "jmeter": [
+      423,
+      10
+    ],
+    "cloudflare-warp": [
+      13,
+      62
+    ],
+    "azure-functions-5": [
+      477,
+      64
+    ]
+  },
+  "edges": {}
+}

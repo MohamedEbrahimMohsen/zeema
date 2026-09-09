@@ -55,7 +55,18 @@ function derive() {
 
 let findingsCache = { structural: [], rules: [] };
 
+// One bad frame used to end the session: an exception thrown while drawing left the canvas
+// showing the last good picture and swallowed every command after it, so the editor looked
+// frozen. A frame that throws now says so and the document is still there to undo.
 function render() {
+  try { renderNow(); }
+  catch (e) {
+    console.error(e);
+    $("#save-state").textContent = "draw failed: " + e.message;
+  }
+}
+
+function renderNow() {
   relayout();
   findingsCache = derive();
   scene.render({
@@ -147,7 +158,9 @@ function scheduleDraft() { clearTimeout(draftTimer); draftTimer = setTimeout(sav
 
 async function openDesign(entry) {
   const text = await files.loadDesign(entry.path);
-  const { doc, cst } = parse(text);
+  const parsed = parse(text);
+  const { doc, repaired } = D.normalize(parsed.doc);
+  const cst = parsed.cst;
   state.baseHash = hash(text);
   state.path = entry.path;
   state.layoutPath = entry.layout;
@@ -168,9 +181,11 @@ async function openDesign(entry) {
   }
   const restored = restoreDraft();
   scene.selection = { type: null, ref: null };
+  if (repaired.length) state.dirty = true;
   render();
   scene.fit();
   if (restored) $("#save-state").textContent = "unsaved work restored";
+  else if (repaired.length) $("#save-state").textContent = "repaired on open: " + repaired.join("; ");
   document.title = `${doc.id} — Arkore canvas`;
 }
 
@@ -181,7 +196,7 @@ async function save() {
   await files.put(state.layoutPath, JSON.stringify(
     { version: 2, nodes: state.positions, edges: state.bows }, null, 2) + "\n");
   const fresh = parse(text);                 // the file on disk is now the source of truth
-  state.cst = fresh.cst; state.doc = fresh.doc;
+  state.cst = fresh.cst; state.doc = D.normalize(fresh.doc).doc;
   state.baseHash = hash(text);
   state.dirty = false;
   clearDraft();
@@ -198,24 +213,14 @@ async function save() {
 // The file is written with the schema pointer the repository gate expects, and it stays unsaved
 // until it has at least one node, because a design with an empty nodes list is not valid.
 
-function newDesignText(id) {
-  return [
-    "# yaml-language-server: $schema=../../../schema/design.schema.json",
-    "# Authored in the Arkore canvas.",
-    "schemaVersion: " + JSON.stringify("1"),
-    "type: " + JSON.stringify("design"),
-    "id: " + JSON.stringify(id),
-    "",
-  ].join("\n");
-}
-
 function newDesign() {
   const raw = prompt("Design id (kebab-case, becomes designs/authored/<id>/)", "untitled-design");
   if (raw === null) return;
   const id = raw.trim();
   if (!/^[a-z][a-z0-9-]*$/.test(id)) { alert("A design id is lower case letters, digits and hyphens, starting with a letter."); return; }
   if (state.index.some((e) => e.tier === "authored" && e.id === id)) { alert(`designs/authored/${id}/ already exists.`); return; }
-  const { doc, cst } = parse(newDesignText(id));
+  const parsed = parse(D.newDesignText(id));
+  const doc = D.normalize(parsed.doc).doc, cst = parsed.cst;
   doc.nodes = []; doc.edges = [];
   state.path = `designs/authored/${id}/design.yaml`;
   state.layoutPath = `designs/authored/${id}/design.layout.json`;

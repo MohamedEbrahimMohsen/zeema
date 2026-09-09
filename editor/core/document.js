@@ -10,6 +10,44 @@ export function createDoc(id = "untitled") {
   return { schemaVersion: "1", type: "design", id, nodes: [], edges: [] };
 }
 
+// The text a design starts life as, with the schema pointer the repository gate expects. It
+// lives here rather than in the UI so the tests author a design through the same door a person
+// does, and a change to the template cannot pass a test that used a copy of the old one.
+export function newDesignText(id) {
+  return [
+    "# yaml-language-server: $schema=../../../schema/design.schema.json",
+    "# Authored in the Arkore canvas.",
+    "schemaVersion: " + JSON.stringify("1"),
+    "type: " + JSON.stringify("design"),
+    "id: " + JSON.stringify(id),
+    "",
+  ].join("\n");
+}
+
+// A design read off disk can be wrong in ways the editor cannot draw: a list that parsed as null
+// or as a map takes down layout, geometry and every command that iterates it. Coerce those three
+// keys to lists before anything touches them, and report what was coerced so the person is told
+// rather than left wondering why the file changed under them. Nothing else is repaired here:
+// the structural check is what reports the rest, and it can only run on a document it can walk.
+export function normalize(doc) {
+  const out = clone(doc);
+  const repaired = [];
+  for (const key of ["nodes", "edges", "groups"]) {
+    const v = out[key];
+    if (Array.isArray(v)) continue;
+    if (v === undefined) {
+      if (key === "groups") continue;                    // groups is genuinely optional
+      out[key] = [];
+      repaired.push(`${key} was missing and is now an empty list`);
+      continue;
+    }
+    const empty = v === null || (typeof v === "object" && !Object.keys(v).length);
+    out[key] = [];
+    repaired.push(empty ? `${key} was empty and is now an empty list` : `${key} was not a list and was emptied`);
+  }
+  return { doc: out, repaired };
+}
+
 export function uniqueId(taken, base) {
   const slug = String(base).toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "") || "node";
   const start = /^[a-z]/.test(slug) ? slug : "n-" + slug;

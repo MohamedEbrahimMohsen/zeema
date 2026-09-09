@@ -32,7 +32,10 @@ tripping exactly the rules their headers name.
 - **Save.** Byte preserving. An unmodified file comes back identical, comments and blank lines
   and quoting included; an edited one differs only on the lines you changed. Turn on `auto` and
   the file is written a moment after each change, but only while the design is structurally
-  valid, so autosave can never write a file CI would reject.
+  valid, so autosave can never write a file CI would reject. A design with no edges yet is
+  written `edges: []`, because a bare `edges:` is YAML for null and a design whose edge list is
+  null is a design nothing downstream can read. A file that arrives that way is repaired when it
+  opens, and the repair is named in the status line rather than done quietly.
 - **Edges you can place.** Drag an edge to bow it away from whatever it collides with, which is
   how you separate two edges running between the same pair. Double click an edge to hand it back
   to the automatic path. Node positions and edge bows go to a `design.layout.json` sidecar,
@@ -71,8 +74,9 @@ node .claude/tools/editor_test.mjs
 ```
 
 Everything runs under node with no browser: parser conformance against a real YAML library,
-byte-identical round trips on all 26 designs, rule parity with the validator including the
-message strings, structural parity on deliberately broken documents, a sweep that builds a
+byte-identical round trips on all 26 committed designs, rule parity with the validator including
+the message strings, structural parity on deliberately broken documents, a sweep that builds a
 one-node design for every one of the 1,623 components, layout equality with the Python renderer
-on all 324 node placements, bundle freshness, and the full repository gate after rewriting every
+on all 324 node placements, bundle freshness, the write channel against a real server, the whole
+authoring cycle from New through seven saves, and the full repository gate after rewriting every
 design with the editor's own serialiser.

@@ -26,7 +26,8 @@ console.log("module tests");
 for (const [name, file] of [["F1,F2 yaml", "test_yaml.mjs"], ["F7 layout", "test_layout.mjs"],
   ["F4 rules", "test_rules.mjs"], ["F5,F6 structure", "test_structure.mjs"],
   ["F8 bundle", "test_build_editor_data.mjs"], ["icon paths", "check_icon_paths.mjs"],
-  ["edge geometry", "test_geometry.mjs"], ["write channel", "test_editor_server.mjs"]])
+  ["edge geometry", "test_geometry.mjs"], ["write channel", "test_editor_server.mjs"],
+  ["authoring", "test_authoring.mjs"]])
   ok(name, run(file));
 
 console.log("\ncross-module");
@@ -47,7 +48,7 @@ let after = "";
 try { after = execFileSync(process.execPath, [path.join(ROOT, ".claude/tools/validate.mjs")], { encoding: "utf8" }); }
 catch (e) { after = String(e.stdout || ""); }
 for (const [p, text] of originals) fs.writeFileSync(p, text);
-ok("F3 full gate after a rewrite of all 26 designs", after === baseline, `${rewritten}/${index.length} byte identical`);
+ok(`F3 full gate after a rewrite of all ${index.length} designs`, after === baseline, `${rewritten}/${index.length} byte identical`);
 
 // F10: the measured budgets.
 const chat = parse(fs.readFileSync(path.join(ROOT, "designs/imported/chat-system/design.yaml"), "utf8")).doc;
