@@ -46,6 +46,21 @@ function autoLayout() {
   state.sizes = result.sizes;
 }
 
+// Moving a node's position from one id to another, which an id rename is.
+function movePosition(from, to) {
+  if (!state.positions[from]) return;
+  state.positions[to] = state.positions[from];
+  delete state.positions[from];
+}
+
+// Place every component again from scratch, by the same layout the repository's renderer uses:
+// sources at the top, each node a layer below whatever reaches it. It replaces the positions of
+// the whole design, which is why it is one undo away.
+function arrange() {
+  commit(null, { apply: autoLayout });
+  scene.fit();
+}
+
 function derive() {
   let structural = [], rules = [];
   try { structural = check(state.doc, state.catalogue, { file: state.doc.id }); }
@@ -87,12 +102,16 @@ function renderNow() {
 
 // ---------------------------------------------------------------- commands
 
+// Positions and bows are not in the document, so a command that moves something has to hand its
+// mutation to commit rather than run it first: a snapshot taken after the move is a snapshot of
+// the move, and undo then puts back what is already there. `apply` runs after the snapshot.
 function commit(next, opts = {}) {
   const snapshot = { doc: clone(state.doc), positions: clone(state.positions), bows: clone(state.bows) };
   const coalesce = opts.coalesce && Date.now() - state.lastDragAt < 400;
   if (!coalesce) state.undo.push(snapshot);
   if (state.undo.length > 100) state.undo.shift();
   state.redo.length = 0;
+  if (opts.apply) opts.apply();
   if (next) state.doc = next;
   state.dirty = true;
   if (opts.coalesce) state.lastDragAt = Date.now();
@@ -273,17 +292,15 @@ const scene = new Scene($("#scene"), {
   onMove: (moves) => {
     let next = null;
     for (const m of moves) {
-      state.positions[m.id] = [m.x, m.y];
       const node = (next || state.doc).nodes.find((n) => n.id === m.id);
       if (node && (node.group || null) !== (m.group || null)) next = D.setNodeGroup(next || state.doc, m.id, m.group);
     }
-    commit(next, { coalesce: true });
+    commit(next, { coalesce: true, apply: () => { for (const m of moves) state.positions[m.id] = [m.x, m.y]; } });
   },
   onConnect: (from, to) => commit(D.addEdge(state.doc, from, to)),
   onBowPreview: (key, value) => scene.repaintEdges({ ...state.bows, [key]: value }),
   onBow: (key, value, reset) => {
-    if (value) state.bows[key] = value; else delete state.bows[key];
-    commit(null, { coalesce: !reset });
+    commit(null, { coalesce: !reset, apply: () => { if (value) state.bows[key] = value; else delete state.bows[key]; } });
   },
   labelOf: (kind, ref) => {
     // The box opens on what the node is called, which for an unnamed one is its component's
@@ -314,13 +331,10 @@ const inspector = new Inspector($("#inspector"), {
     if (newId === oldId) return render();
     if (!typed.trim()) return notify("an id cannot be empty");
     if (state.doc.nodes.some((n) => n.id === newId)) return notify(`${newId} is the id of another component`);
-    const p = state.positions[oldId];
-    delete state.positions[oldId];
-    state.positions[newId] = p;
     scene.selection = { type: "node", ref: newId };
     scene.multi = new Set([...scene.multi].map((x) => (x === oldId ? newId : x)));
     scene.multi.add(newId);
-    commit(D.renameNode(state.doc, oldId, newId, state.catalogue));
+    commit(D.renameNode(state.doc, oldId, newId, state.catalogue), { apply: () => movePosition(oldId, newId) });
   },
   swap: (id, componentId) => {
     const { doc, dropped } = D.swapComponent(state.doc, id, componentId, state.catalogue);
@@ -376,13 +390,11 @@ function notify(message) { render(); $("#save-state").textContent = message; }
 function renameToLabel(id, value) {
   const { doc, id: now } = D.setNodeLabel(state.doc, id, value, state.catalogue);
   if (now !== id) {
-    state.positions[now] = state.positions[id];
-    delete state.positions[id];
     if (scene.selection.type === "node" && scene.selection.ref === id) scene.selection = { type: "node", ref: now };
     scene.multi = new Set([...scene.multi].map((x) => (x === id ? now : x)));
     if (scene.selection.type === "node") scene.multi.add(scene.selection.ref);
   }
-  commit(doc);
+  commit(doc, { apply: () => { if (now !== id) movePosition(id, now); } });
 }
 
 function deleteSelection() {
@@ -420,24 +432,26 @@ function duplicateSelection() {
   const ids = selectionIds();
   if (!ids.length) return;
   const { doc, map } = D.duplicateNodes(state.doc, ids, state.catalogue);
-  for (const [from, to] of Object.entries(map)) {
-    const p = state.positions[from] || [40, 40];
-    state.positions[to] = [p[0] + 28, p[1] + 28];
-  }
   const copies = Object.values(map);
   scene.multi = new Set(copies);
   scene.selection = { type: "node", ref: copies[copies.length - 1] };
-  commit(doc);
+  commit(doc, { apply: () => {
+    for (const [from, to] of Object.entries(map)) {
+      const p = state.positions[from] || [40, 40];
+      state.positions[to] = [p[0] + 28, p[1] + 28];
+    }
+  } });
 }
 
 function nudge(dx, dy) {
   const ids = selectionIds();
   if (!ids.length) return;
-  for (const id of ids) {
-    const p = state.positions[id];
-    if (p) state.positions[id] = [p[0] + dx, p[1] + dy];
-  }
-  commit(null, { coalesce: true });
+  commit(null, { coalesce: true, apply: () => {
+    for (const id of ids) {
+      const p = state.positions[id];
+      if (p) state.positions[id] = [p[0] + dx, p[1] + dy];
+    }
+  } });
 }
 
 function selectAll() { scene.selectNodes(state.doc.nodes.map((n) => n.id)); }
@@ -491,7 +505,7 @@ function menuFor(target) {
   return [
     { label: "Select all", hint: "Ctrl A", disabled: !state.doc.nodes.length, run: selectAll },
     { label: "Fit to the window", hint: "Ctrl 0", run: () => scene.fit() },
-    { label: "Tidy the layout", run: () => { autoLayout(); commit(null); scene.fit(); } },
+    { label: "Arrange every component", hint: "by layer", disabled: !state.doc.nodes.length, run: arrange },
   ];
 }
 
@@ -499,9 +513,9 @@ let palette = null;
 
 function createNode(componentId, at) {
   const { doc, id, needsDecision } = D.addNode(state.doc, componentId, state.catalogue);
-  if (at) state.positions[id] = [Math.round(at[0]), Math.round(at[1])];
   scene.selection = { type: "node", ref: id };
-  commit(doc);
+  scene.multi = new Set([id]);
+  commit(doc, { apply: () => { if (at) state.positions[id] = [Math.round(at[0]), Math.round(at[1])]; } });
   if (needsDecision.length) $("#save-state").textContent = `${id}: choose ${needsDecision.join(", ")}`;
 }
 
@@ -550,7 +564,7 @@ $("#undo").addEventListener("click", undo);
 $("#redo").addEventListener("click", redo);
 $("#zoom-fit").addEventListener("click", () => scene.fit());
 $("#zoom-100").addEventListener("click", () => { scene.view.k = 1; scene.applyView(); });
-$("#tidy").addEventListener("click", () => { autoLayout(); commit(null); scene.fit(); });
+$("#arrange").addEventListener("click", arrange);
 $("#help-toggle").addEventListener("click", () => toggleHelp());
 function toggleHelp(force) {
   const panel = $("#help");

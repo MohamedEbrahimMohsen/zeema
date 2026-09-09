@@ -51,14 +51,35 @@ export function save(name, data, mime) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
+// Which palette an export is drawn in. A theme the person chose is the one they meant, so it is
+// used; with no choice made, the page follows the operating system, and a diagram going into a
+// document should not come out dark because it is the evening. The stamp is put on and taken off
+// inside one task, so nothing is ever painted in it.
+function withPalette(run) {
+  const root = document.documentElement;
+  const chosen = root.getAttribute("data-theme");
+  if (!chosen) root.setAttribute("data-theme", "light");
+  try { return run(chosen || "light"); }
+  finally { if (!chosen) root.removeAttribute("data-theme"); }
+}
+
 // One entry point for all three: the SVG is the source in every case, so the raster formats can
 // never drift from the vector one.
+//
+// The SVG carries a background only when it needs one. On a light palette the ink is dark and
+// the drawing sits on whatever page it is put on, which is what a vector is for; a dark palette
+// has pale ink, which on someone else's white page would be invisible, so that one brings its
+// own ground. A raster always has a ground: JPEG cannot be transparent at all, and a PNG of a
+// diagram is nearly always dropped straight onto a slide.
 export async function exportScene(scene, id, format, { scale = 2 } = {}) {
   const spec = FORMATS[format];
   if (!spec) throw new Error(`unknown format ${format}`);
-  const svgText = scene.toSVG({ background: true });
+  const { svgText, ground } = withPalette((palette) => ({
+    svgText: scene.toSVG({ background: format !== "svg" || palette === "dark" }),
+    ground: scene.cssVar("--bg") || "#ffffff",
+  }));
   if (format === "svg") { save(`${id}.svg`, svgText, spec.mime); return { bytes: svgText.length }; }
-  const blob = await rasterise(svgText, { mime: spec.mime, scale, background: scene.cssVar("--bg") || "#ffffff" });
+  const blob = await rasterise(svgText, { mime: spec.mime, scale, background: ground });
   save(`${id}.${spec.ext}`, blob, spec.mime);
   return { bytes: blob.size };
 }

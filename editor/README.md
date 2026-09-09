@@ -41,9 +41,14 @@ tripping exactly the rules their headers name.
   boundary removes the boundary and keeps what was in it; the menu also offers deleting both.
 - **Export.** `Export` writes the drawing as PNG, JPEG or SVG. The SVG is the source in all
   three cases, so a raster can never show something the vector does not, and it is written with
-  the colours the page currently has rather than references to them, which is what makes it a
-  file and not a screenshot of this stylesheet. `Theme` chooses light, dark, or whatever the
-  system says, and the export follows it.
+  the colours the page has rather than references to them, which is what makes it a file and not
+  a screenshot of this stylesheet. The palette is the one you chose with `Theme`; with no choice
+  made it is light, because a diagram going into a document should not come out dark for having
+  been exported in the evening. The SVG carries no background, so it sits on whatever page you
+  put it on; PNG and JPEG do, because a raster of a diagram lands on a slide.
+- **Arrange.** Places every component again, in layers from the sources down, by the same layout
+  the repository's renderer uses. It replaces the positions of the whole design, which is why it
+  is one `Ctrl Z` away, like everything else.
 - **New.** `New` starts a design in `designs/authored/<id>/`, the tier for designs made here:
   no external source, so no `mapping.yaml`, and no broken twin. It stays unsaved until it has at
   least one node, because a design with an empty node list is not valid.

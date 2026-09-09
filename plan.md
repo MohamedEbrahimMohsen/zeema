@@ -358,3 +358,24 @@ The colours cannot be checked by rendering under node, so the gate checks the ne
 every variable name the scene can emit, the assembled `--f-<hue>-fill` ones included, is declared
 in the stylesheet. A typo there is a black box in someone's slide deck and nothing on screen to
 warn about it.
+
+## 15. Two things the canvas got wrong about itself
+
+**Undo did not cover anything that moved.** Positions and bows live outside the document, and
+every command that changed one mutated `state.positions` and then called `commit`, which takes
+its snapshot at the top. The snapshot was therefore of the move, and undo put back what was
+already on screen. It looked as though it worked, because the stack still held snapshots from
+earlier commands whose positions predated the drag, so an undo far enough back did move things.
+`commit` now takes the mutation as `apply` and runs it after the snapshot, and every caller that
+touched positions hands it over: a drag, a nudge, a duplicate, an id rename, a placement, a bow,
+and the layout button.
+
+**"Tidy" said nothing about what it did.** It is `Arrange`, it says it places every component
+again in layers, and it is undoable like everything else.
+
+**The exported SVG was a black box.** The export took the palette the page was showing, and the
+page follows the operating system, so an export made in the evening carried a near-black ground
+rectangle: opened on its own, a dark box in the corner of a white page. The palette is now the
+one the person chose, and light when they have not chosen, and the SVG carries a background only
+when it needs one, which is when the ink is pale. A raster keeps its ground: JPEG cannot be
+transparent, and a PNG of a diagram is nearly always dropped onto a slide.

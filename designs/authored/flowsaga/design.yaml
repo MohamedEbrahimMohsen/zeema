@@ -5,19 +5,19 @@ type: "design"
 id: "flowsaga"
 
 nodes:
-  - { id: "sdk-client", component: "sdk-client" }
+  - { id: "abc", component: "sdk-client", label: "ABC" }
   - { id: "azure-functions-6", component: "azure-functions" }
   - { id: "sdk-client-2", component: "sdk-client" }
   - { id: "azure-functions", component: "azure-functions" }
 edges:
-  - from: "sdk-client"
+  - from: "abc"
     to: "azure-functions-6"
     protocol: "http"
     mode: "sync"
     delivery: "exactly-once"
     label: "Hello"
     retryPolicy: "fixed"
-  - { from: "sdk-client", to: "azure-functions-6", protocol: "http", mode: "sync" }
+  - { from: "abc", to: "azure-functions-6", protocol: "http", mode: "sync" }
   - from: "sdk-client-2"
     to: "azure-functions"
     protocol: "http"
