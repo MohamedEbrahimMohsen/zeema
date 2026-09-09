@@ -23,6 +23,12 @@ tripping exactly the rules their headers name.
   node's dot to draw an edge and the component it would land on lights up. Double click any label
   to edit it where it is. Membership changes when you drop a node inside a frame, and dragging one
   node of a selection drags all of them, as one entry in the history.
+- **Names.** A component is called what the catalogue calls it: place Azure Functions twice and
+  both boxes say Azure Functions, because there is one Azure Functions and these are two of it.
+  Double click to name one; the name is what the canvas shows and, while the id is still the one
+  the editor generated, the id follows it, so the file says `orders-worker` rather than
+  `azure-functions-2`. An id you typed yourself is never rewritten behind you, and the id field
+  takes what you type, turns it into kebab-case, and says so when the id is already someone's.
 - **Inspector.** Generated from the catalogue, never hard coded: a kind's properties, a
   component's own, the six optional edge fields, group kind and parent, and the whole
   `requirements` tree generated from the JSON Schema. A control shows the value the design would

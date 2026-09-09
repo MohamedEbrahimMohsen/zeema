@@ -341,6 +341,9 @@ export function serialize(cst, doc) {
     }
     // sequence
     seen.add(s.key);
+    // A key the document no longer has is gone, not empty: ungrouping the last boundary must
+    // remove "groups" rather than leave "groups: []" behind for ever.
+    if (!(s.key in doc) || doc[s.key] === undefined) continue;
     const list = doc[s.key] || [];
     const originals = new Map();
     s.items.forEach((it, n) => {

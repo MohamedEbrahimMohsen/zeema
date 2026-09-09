@@ -10,6 +10,7 @@
 // the right button opens a menu about whatever is under it.
 
 import { edgeGeometry, pathOf, groupFrames, innermostFrameAt, bowAt } from "../core/geometry.js";
+import { displayName } from "../core/document.js";
 
 const NS = "http://www.w3.org/2000/svg";
 const el = (name, attrs = {}) => {
@@ -131,7 +132,6 @@ export class Scene {
           ev.stopPropagation();
           this.select("group", group.id);
         });
-        target.addEventListener("dblclick", (ev) => { ev.stopPropagation(); this.editLabel("group", group.id); });
       }
       g.append(rect, hit, label);
       this.frameEls.set(group.id, { rect, hit, label });
@@ -153,13 +153,11 @@ export class Scene {
         this.select("edge", e.i);
         this.startBow(e, ev);
       });
-      hit.addEventListener("dblclick", (ev) => { ev.stopPropagation(); this.editLabel("edge", e.i); });
       g.append(hit, line);
       const els = { hit, line, key: e.key, from: e.from, to: e.to, label: null };
       if (e.label) {
         const t = el("text", { class: "edge-label", x: e.mid[0], y: e.mid[1] - 5, "text-anchor": "middle" });
         t.textContent = e.label;
-        t.addEventListener("dblclick", (ev) => { ev.stopPropagation(); this.editLabel("edge", e.i); });
         g.append(t);
         els.label = t;
       }
@@ -201,7 +199,7 @@ export class Scene {
         box.append(use);
       }
       const name = el("text", { class: "name", x: b[2] / 2, y: 52, "text-anchor": "middle" });
-      name.textContent = n.label || n.id;
+      name.textContent = displayName(this.model.catalogue, n);
       const comp = el("text", { class: "comp", x: b[2] / 2, y: 68, "text-anchor": "middle" });
       comp.textContent = n.component;
       box.append(name, comp);
@@ -222,7 +220,6 @@ export class Scene {
       box.addEventListener("pointerenter", () => box.querySelectorAll(".handle").forEach((h) => h.setAttribute("opacity", 1)));
       box.addEventListener("pointerleave", () => box.querySelectorAll(".handle").forEach((h) => h.setAttribute("opacity", 0)));
       box.addEventListener("pointerdown", (ev) => this.startDrag(n.id, ev));
-      box.addEventListener("dblclick", (ev) => { ev.stopPropagation(); this.editLabel("node", n.id); });
       g.append(box);
       this.nodeEls.set(n.id, box);
     }
@@ -313,6 +310,16 @@ export class Scene {
       this.applyView();
     }, { passive: false });
 
+    // Double click is handled here rather than on each shape. A drag captures the pointer, and a
+    // captured pointer retargets the click that follows it to the element holding the capture,
+    // so a listener on the node itself never hears the double click that a real mouse produces.
+    svg.addEventListener("dblclick", (ev) => {
+      const target = this.targetOf(ev);
+      if (!target.type) return;
+      ev.preventDefault();
+      this.editLabel(target.type, target.ref);
+    });
+
     svg.addEventListener("contextmenu", (ev) => {
       ev.preventDefault();
       const target = this.targetOf(ev);
@@ -368,12 +375,21 @@ export class Scene {
     svg.addEventListener("pointercancel", end);
   }
 
-  // What is under a pointer event, as a selection subject.
+  // What is under a pointer event, as a selection subject. The event's own target is asked
+  // first, and where that is the scene itself, the point is: an event retargeted by pointer
+  // capture still knows where it happened.
   targetOf(ev) {
-    const node = ev.target.closest(".node-box");
+    const direct = this.subjectOf(ev.target);
+    if (direct.type) return direct;
+    return this.subjectOf(document.elementFromPoint(ev.clientX, ev.clientY));
+  }
+
+  subjectOf(el) {
+    if (!el || !el.closest) return { type: null, ref: null };
+    const node = el.closest(".node-box");
     if (node) return { type: "node", ref: node.dataset.id };
-    for (const [i, els] of this.edgeEls) if (els.hit === ev.target || els.line === ev.target || els.label === ev.target) return { type: "edge", ref: i };
-    for (const [id, f] of this.frameEls) if (f.hit === ev.target || f.label === ev.target || f.rect === ev.target) return { type: "group", ref: id };
+    for (const [i, els] of this.edgeEls) if (els.hit === el || els.line === el || els.label === el) return { type: "edge", ref: i };
+    for (const [id, f] of this.frameEls) if (f.hit === el || f.label === el || f.rect === el) return { type: "group", ref: id };
     return { type: null, ref: null };
   }
 
@@ -542,6 +558,9 @@ export class Scene {
   // clicking away commit, Escape abandons, and an emptied field clears the label.
   editLabel(kind, ref) {
     this.closeEditor();
+    // Editing something selects it, so the inspector is showing the thing being renamed and a
+    // keystroke afterwards acts on it.
+    if (kind !== "node" || !this.multi.has(ref)) this.select(kind, ref);
     const current = this.h.labelOf ? this.h.labelOf(kind, ref) : "";
     if (current === null || current === undefined) return;
     let anchor, width;

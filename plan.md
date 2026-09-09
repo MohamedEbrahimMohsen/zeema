@@ -313,3 +313,25 @@ two do", and the interesting part is where the model made that impossible.
 
 `test_editing.mjs` covers the document side of all of it, and `?` in the page lists every gesture,
 because a canvas whose features can only be found by being told about them has not shipped them.
+
+## 13. Identity
+
+A node was called by its id, and its id was the component's id with a counter on it, so placing
+Azure Functions twice drew a box called `azure-functions-2`. That reads as a second, forked
+component, which is exactly the thing the catalogue exists to prevent: there is one Azure
+Functions and a design may hold two of it.
+
+- A node is drawn with its **name**: its own label, else the component's name from the locale.
+  Two instances both say Azure Functions. The line under it still names the component id.
+- **The name drives the id.** While the id is the generated one, `azure-functions` or
+  `azure-functions-2`, naming the node rewrites the id from the name, cascading through edges,
+  ref properties and group membership. `orders-worker` is what lands in the file. An id someone
+  typed is never rewritten, which is what `isGeneratedId` is for.
+- **The id field accepts what a person types.** "Azure Function EU" becomes
+  `azure-function-eu` rather than being silently put back, which is what a field that refuses
+  without saying anything looks like from the outside. The one refusal left, an id another node
+  has, says so.
+- **Double click was broken with a real mouse.** A drag captures the pointer, and a captured
+  pointer retargets the click that follows to the element holding the capture, so the listener on
+  the node never heard it; only a synthetic event dispatched straight at the node did, which is
+  why the tests passed. Double click is now handled once on the scene and hit tested by point.

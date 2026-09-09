@@ -5,12 +5,20 @@
       -217,
       187
     ],
+    "sdk-client-2": [
+      -210,
+      361
+    ],
+    "azure-functions": [
+      195,
+      357
+    ],
     "azure-functions-6": [
-      191,
-      187
+      188,
+      186
     ]
   },
   "edges": {
-    "sdk-client>azure-functions-6": -405
+    "sdk-client>azure-functions-6": -328
   }
 }

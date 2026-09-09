@@ -156,5 +156,69 @@ check1("clearing a label removes the key rather than writing an empty one", () =
   assert.equal("label" in edges.edges[0], false);
 });
 
+// ---------------------------------------------------------------- names and ids
+
+check1("a component is called by its name, and two of it are both called that", () => {
+  const doc = base();
+  assert.equal(D.displayName(catalogue, doc.nodes[0]), catalogue.locale.components.redis.name);
+  assert.equal(D.displayName(catalogue, { id: "x-2", component: "redis", label: "Session cache" }), "Session cache");
+  const twice = D.addNode(D.addNode(doc, "azure-functions", catalogue).doc, "azure-functions", catalogue).doc;
+  const both = twice.nodes.slice(-2).map((n) => D.displayName(catalogue, n));
+  assert.deepEqual(both, [both[0], both[0]], "both instances carry the component's one name");
+  assert.match(both[0], /Function/);
+});
+
+check1("what a person types becomes a legal id", () => {
+  assert.equal(D.toId("Azure Function"), "azure-function");
+  assert.equal(D.toId("Orders / worker #2"), "orders-worker-2");
+  assert.equal(D.toId("3rd party"), "n-3rd-party");
+  assert.equal(D.toId("   "), "node");
+});
+
+check1("the counter in a generated id is recognised, a typed id is not", () => {
+  assert.equal(D.isGeneratedId({ id: "azure-functions", component: "azure-functions" }), true);
+  assert.equal(D.isGeneratedId({ id: "azure-functions-6", component: "azure-functions" }), true);
+  assert.equal(D.isGeneratedId({ id: "orders-worker", component: "azure-functions" }), false);
+});
+
+check1("naming a node takes the counter out of its id, everywhere at once", () => {
+  let doc = D.addNode(base(), "azure-functions", catalogue).doc;
+  doc = D.addNode(doc, "azure-functions", catalogue).doc;
+  assert.equal(doc.nodes[4].id, "azure-functions-2", "the second one starts with a counter");
+  doc = D.addEdge(doc, "a", "azure-functions-2");
+  const named = D.setNodeLabel(doc, "azure-functions-2", "Orders worker", catalogue);
+  assert.equal(named.id, "orders-worker");
+  assert.equal(named.doc.nodes[4].label, "Orders worker");
+  assert.equal(named.doc.edges[2].to, "orders-worker", "the edge follows the rename");
+  assert.deepEqual(check(named.doc, catalogue, { file: "t" }), []);
+});
+
+check1("an id someone typed is never renamed by naming the node", () => {
+  const doc = D.renameNode(base(), "a", "session-cache", catalogue);
+  const named = D.setNodeLabel(doc, "session-cache", "Something else", catalogue);
+  assert.equal(named.id, "session-cache");
+  assert.equal(named.doc.nodes[0].label, "Something else");
+});
+
+check1("two nodes named the same still get ids of their own", () => {
+  let doc = D.addNode(base(), "azure-functions", catalogue).doc;
+  doc = D.addNode(doc, "azure-functions", catalogue).doc;
+  const first = D.setNodeLabel(doc, "azure-functions", "Worker", catalogue);
+  const second = D.setNodeLabel(first.doc, "azure-functions-2", "Worker", catalogue);
+  assert.equal(first.id, "worker");
+  assert.equal(second.id, "worker-2");
+  assert.deepEqual(check(second.doc, catalogue, { file: "t" }), []);
+});
+
+check1("ungrouping the last boundary takes the key out of the file", () => {
+  const text = 'schemaVersion: "1"\ntype: "design"\nid: "x"\nnodes:\n  - { id: "a", component: "redis", group: "g" }\nedges: []\ngroups:\n  - { id: "g", kind: "system" }\n';
+  const { doc, cst } = parse(text);
+  const after = D.deleteGroup(doc, "g");
+  const out = serialize(cst, after);
+  assert.equal(/groups/.test(out), false, "no empty groups list is left behind");
+  assert.equal(YAML.parse(out).groups, undefined);
+  assert.deepEqual(check(parse(out).doc, catalogue, { file: "x" }), []);
+});
+
 console.log(`\n${failed ? failed + " FAILING" : "editing checks passed"}`);
 process.exit(failed ? 1 : 0);

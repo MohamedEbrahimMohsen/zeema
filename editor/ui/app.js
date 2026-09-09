@@ -285,13 +285,15 @@ const scene = new Scene($("#scene"), {
     commit(null, { coalesce: !reset });
   },
   labelOf: (kind, ref) => {
-    if (kind === "node") { const n = state.doc.nodes.find((x) => x.id === ref); return n ? n.label || "" : null; }
+    // The box opens on what the node is called, which for an unnamed one is its component's
+    // name, so double clicking Azure Function offers "Azure Function" to edit.
+    if (kind === "node") { const n = state.doc.nodes.find((x) => x.id === ref); return n ? D.displayName(state.catalogue, n) : null; }
     if (kind === "edge") { const e = state.doc.edges[ref]; return e ? e.label || "" : null; }
     const g = (state.doc.groups || []).find((x) => x.id === ref);
     return g ? g.label || "" : null;
   },
   onLabel: (kind, ref, value) => {
-    if (kind === "node") commit(D.setNodeField(state.doc, ref, "label", value));
+    if (kind === "node") { renameToLabel(ref, value); return; }
     if (kind === "edge") commit(D.setEdgeField(state.doc, ref, "label", value));
     if (kind === "group") commit(D.setGroupField(state.doc, ref, "label", value));
   },
@@ -299,16 +301,24 @@ const scene = new Scene($("#scene"), {
 });
 
 const inspector = new Inspector($("#inspector"), {
-  setField: (id, f, v) => commit(D.setNodeField(state.doc, id, f, v)),
+  setField: (id, f, v) => (f === "label" ? renameToLabel(id, v) : commit(D.setNodeField(state.doc, id, f, v))),
   setProp: (id, p, v) => commit(D.setNodeProp(state.doc, id, p, v)),
   setNfr: (id, f, v) => commit(D.setNfr(state.doc, id, f, v)),
   setGroup: (id, g) => commit(D.setNodeGroup(state.doc, id, g)),
-  rename: (oldId, newId) => {
-    if (!newId || !/^[a-z][a-z0-9-]*$/.test(newId) || state.doc.nodes.some((n) => n.id === newId)) return render();
+  // An id is kebab-case, so what is typed is turned into one rather than refused for its shape.
+  // The one thing that cannot be done is take an id another node already has, and that says so
+  // instead of quietly putting the old value back, which reads as a field that does not work.
+  rename: (oldId, typed) => {
+    const newId = D.toId(typed);
+    if (newId === oldId) return render();
+    if (!typed.trim()) return notify("an id cannot be empty");
+    if (state.doc.nodes.some((n) => n.id === newId)) return notify(`${newId} is the id of another component`);
     const p = state.positions[oldId];
     delete state.positions[oldId];
     state.positions[newId] = p;
     scene.selection = { type: "node", ref: newId };
+    scene.multi = new Set([...scene.multi].map((x) => (x === oldId ? newId : x)));
+    scene.multi.add(newId);
     commit(D.renameNode(state.doc, oldId, newId, state.catalogue));
   },
   swap: (id, componentId) => {
@@ -354,6 +364,25 @@ const findings = new Findings($("#findings"), {
 // them goes through commit, which is what puts it in the undo history.
 
 function selectionIds() { return [...scene.multi]; }
+
+// Say something in the status line and have it survive the redraw that follows, which is what
+// puts "unsaved" there. Anything the person needs to read goes through here.
+function notify(message) { render(); $("#save-state").textContent = message; }
+
+// Naming a node renames it: while the id is the one the editor generated, it follows the name,
+// so azure-functions-2 becomes orders-worker and the counter is gone. The selection follows the
+// new id, because it is the same node.
+function renameToLabel(id, value) {
+  const { doc, id: now } = D.setNodeLabel(state.doc, id, value, state.catalogue);
+  if (now !== id) {
+    state.positions[now] = state.positions[id];
+    delete state.positions[id];
+    if (scene.selection.type === "node" && scene.selection.ref === id) scene.selection = { type: "node", ref: now };
+    scene.multi = new Set([...scene.multi].map((x) => (x === id ? now : x)));
+    if (scene.selection.type === "node") scene.multi.add(scene.selection.ref);
+  }
+  commit(doc);
+}
 
 function deleteSelection() {
   const s = scene.selection;
@@ -486,7 +515,7 @@ async function boot() {
   // other, and switching to it has to work.
   picker.addEventListener("change", () => {
     const entry = state.index.find((e) => e.path === picker.value);
-    if (!entry) { $("#save-state").textContent = "no such design: " + picker.value; return; }
+    if (!entry) { notify("no such design: " + picker.value); return; }
     openDesign(entry).catch((e) => { $("#save-state").textContent = "could not open: " + e.message; });
   });
 

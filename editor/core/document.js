@@ -48,11 +48,47 @@ export function normalize(doc) {
   return { doc: out, repaired };
 }
 
+// What a person types, as an id this format accepts. "Azure Function" becomes azure-function,
+// so a name typed on the canvas is a legal id rather than a rejection.
+export function toId(text) {
+  const slug = String(text).toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "") || "node";
+  return /^[a-z]/.test(slug) ? slug : "n-" + slug;
+}
+
 export function uniqueId(taken, base) {
-  const slug = String(base).toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "") || "node";
-  const start = /^[a-z]/.test(slug) ? slug : "n-" + slug;
+  const start = toId(base);
   if (!taken.has(start)) return start;
   for (let n = 2; ; n++) if (!taken.has(`${start}-${n}`)) return `${start}-${n}`;
+}
+
+// What a node is called on the canvas: its own label, else the component's proper name. Never
+// the id, which is a key and reads like one. Two instances of Azure Function both say Azure
+// Function, because there is one Azure Function and these are two of it.
+export function displayName(catalogue, node) {
+  if (node.label) return node.label;
+  const loc = catalogue.locale && catalogue.locale.components[node.component];
+  return (loc && loc.name) || node.component || node.id;
+}
+
+// An id nobody chose: the component's own id, or that with the counter the editor adds when a
+// second one is placed. Those are the only ids the editor is free to rewrite when a name is
+// typed, so an id a person set is never renamed behind their back.
+export function isGeneratedId(node) {
+  if (!node.component) return false;
+  const base = toId(node.component);
+  return node.id === base || new RegExp(`^${base}-\\d+$`).test(node.id);
+}
+
+// Naming a node names it everywhere. While its id is still the generated one, the id follows
+// the name, so the file says orders-worker rather than azure-functions-2 and the counter
+// disappears as soon as the thing has a name. An id someone typed is left alone.
+export function setNodeLabel(doc, id, label, catalogue) {
+  const node = doc.nodes.find((n) => n.id === id);
+  const next = setNodeField(doc, id, "label", label);
+  if (!node || !label || !isGeneratedId(node)) return { doc: next, id };
+  const taken = new Set(next.nodes.filter((n) => n.id !== id).map((n) => n.id));
+  const wanted = uniqueId(taken, label);
+  return wanted === id ? { doc: next, id } : { doc: renameNode(next, id, wanted, catalogue), id: wanted };
 }
 
 const nodeIds = (doc) => new Set(doc.nodes.map((n) => n.id));
