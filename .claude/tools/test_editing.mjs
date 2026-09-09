@@ -11,14 +11,15 @@ import * as D from "../../editor/core/document.js";
 import { parse, serialize } from "../../editor/core/yaml.js";
 import { check } from "../../editor/core/structure.js";
 import { midpointOf, edgeGeometry, pathOf } from "../../editor/core/geometry.js";
+import { FORMATS, exportScene } from "../../editor/ui/export.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const catalogue = JSON.parse(fs.readFileSync(path.join(ROOT, "editor/data/catalogue.json"), "utf8"));
 let failed = 0;
-const check1 = (name, fn) => {
-  try { fn(); console.log("ok   " + name); }
-  catch (e) { failed++; console.log("FAIL " + name + "\n     " + String(e.message).split("\n").slice(0, 6).join("\n     ")); }
-};
+// Checks are queued and run in order at the end, so an asynchronous one is awaited rather than
+// left running after the summary has already been printed.
+const queue = [];
+const check1 = (name, fn) => queue.push([name, fn]);
 
 const base = () => ({
   schemaVersion: "1", type: "design", id: "t",
@@ -219,6 +220,48 @@ check1("ungrouping the last boundary takes the key out of the file", () => {
   assert.equal(YAML.parse(out).groups, undefined);
   assert.deepEqual(check(parse(out).doc, catalogue, { file: "x" }), []);
 });
+
+// ---------------------------------------------------------------- export
+
+check1("the three export formats are what their extensions say", async () => {
+  assert.deepEqual(Object.keys(FORMATS).sort(), ["jpg", "png", "svg"]);
+  assert.equal(FORMATS.png.mime, "image/png");
+  assert.equal(FORMATS.jpg.mime, "image/jpeg");
+  assert.equal(FORMATS.svg.mime, "image/svg+xml");
+  assert.equal(FORMATS.jpg.ext, "jpg");
+});
+
+// A colour in the drawing is a CSS variable, and the export writes the value each one currently
+// has. A name with no declaration resolves to nothing, which is a black box in someone's slide
+// deck and nothing on screen to warn about it, so every name the scene can emit is checked.
+check1("every colour the export can emit is a colour that exists", () => {
+  const css = fs.readFileSync(path.join(ROOT, "editor/ui/style.css"), "utf8");
+  const scene = fs.readFileSync(path.join(ROOT, "editor/ui/scene.js"), "utf8");
+  const declared = new Set([...css.matchAll(/(--[a-z0-9-]+)\s*:/g)].map((m) => m[1]));
+  const used = new Set([...scene.matchAll(/var\((--[a-z0-9-]+)\)/g)].map((m) => m[1]));
+  // A node's fill is built from its category's hue, so those names are assembled here the way
+  // the scene assembles them, from the same table.
+  const table = /const CATEGORY_HUE = \{([\s\S]*?)\};/.exec(scene);
+  assert.ok(table, "the category table could not be found in scene.js");
+  const hues = [...table[1].matchAll(/"([a-z]+)"/g)].map((m) => m[1]);
+  assert.ok(hues.length >= 8, `only ${hues.length} categories have a colour`);
+  for (const hue of hues.concat("grey")) {
+    used.add(`--f-${hue}-fill`);
+    used.add(`--f-${hue}-line`);
+  }
+  const missing = [...used].filter((name) => !declared.has(name));
+  assert.deepEqual(missing, [], `the stylesheet declares no ${missing.join(", ")}`);
+  assert.ok(used.has("--bg") && used.has("--ink"), "the export names the ground and the ink");
+});
+
+check1("an unknown export format is refused rather than written", async () => {
+  await assert.rejects(() => exportScene({}, "x", "bmp"), /unknown format/);
+});
+
+for (const [name, fn] of queue) {
+  try { await fn(); console.log("ok   " + name); }
+  catch (e) { failed++; console.log("FAIL " + name + "\n     " + String(e.message).split("\n").slice(0, 6).join("\n     ")); }
+}
 
 console.log(`\n${failed ? failed + " FAILING" : "editing checks passed"}`);
 process.exit(failed ? 1 : 0);

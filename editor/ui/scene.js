@@ -612,22 +612,55 @@ export class Scene {
   closeEditor() { if (this.editor) this.editor.finish(false); }
 
   // ---------------------------------------------------------------- export
+  // A drawing that only renders inside this page is not an export. Every colour on the scene is
+  // a CSS variable, and a variable resolves to nothing in a file opened anywhere else, so the
+  // whole document is written with the values this page currently has: what you see is what
+  // comes out, in whichever theme you are looking at it.
 
-  toSVG() {
-    const boxes = Object.values(this.boxes);
-    const x0 = Math.min(...boxes.map((b) => b[0])) - 40, y0 = Math.min(...boxes.map((b) => b[1])) - 60;
-    const x1 = Math.max(...boxes.map((b) => b[0] + b[2])) + 40, y1 = Math.max(...boxes.map((b) => b[1] + b[3])) + 40;
+  cssVar(name) { return getComputedStyle(this.svg).getPropertyValue(name).trim(); }
+
+  resolveVars(text) {
+    return text.replace(/var\((--[a-z0-9-]+)\)/gi, (whole, name) => this.cssVar(name) || whole);
+  }
+
+  // What the drawing occupies, measured rather than guessed: a bowed edge, a group label or a
+  // frame reaches past the node boxes, and bounds taken from the boxes alone clip them.
+  bounds(pad = 28) {
+    let bb;
+    try { bb = this.viewport.getBBox(); } catch { bb = null; }
+    if (!bb || !bb.width || !bb.height) {
+      const boxes = Object.values(this.boxes || {});
+      if (!boxes.length) return [0, 0, 320, 200];
+      const x0 = Math.min(...boxes.map((b) => b[0])), y0 = Math.min(...boxes.map((b) => b[1]));
+      const x1 = Math.max(...boxes.map((b) => b[0] + b[2])), y1 = Math.max(...boxes.map((b) => b[1] + b[3]));
+      bb = { x: x0, y: y0, width: x1 - x0, height: y1 - y0 };
+    }
+    return [Math.round(bb.x - pad), Math.round(bb.y - pad), Math.round(bb.width + pad * 2), Math.round(bb.height + pad * 2)];
+  }
+
+  toSVG({ background = true } = {}) {
+    const [x, y, w, h] = this.bounds();
     const clone = this.viewport.cloneNode(true);
     clone.removeAttribute("transform");
     clone.querySelectorAll(".handle, .edge-hit, .frame-hit, .marquee, .wire").forEach((n) => n.remove());
     clone.querySelectorAll(".selected, .primary").forEach((n) => n.classList.remove("selected", "primary"));
     const defs = this.defs.cloneNode(true);
-    const style = `<style>.frame{fill:none;stroke:#b4b4ae;stroke-width:1;stroke-dasharray:5 4}.frame-label{font-size:12px;fill:#6b6b66}` +
-      `.edge{stroke:#8a8a85;stroke-width:1.2;fill:none}.edge.async{stroke-dasharray:6 4}.edge-label{font-size:12px;fill:#6b6b66}` +
-      `.node-box text.name{font-size:14px;font-weight:500;fill:#1b1b19}.node-box text.comp{font-size:12px;fill:#6b6b66}` +
-      `.glyph{color:#1b1b19}</style>`;
-    return `<svg xmlns="${NS}" viewBox="${x0} ${y0} ${x1 - x0} ${y1 - y0}" width="${x1 - x0}" height="${y1 - y0}" ` +
-      `font-family="ui-sans-serif, system-ui, sans-serif">${style}${defs.outerHTML}${clone.outerHTML}</svg>\n`;
+    const style = "<style>" + [
+      ".frame{fill:none;stroke:var(--frame);stroke-width:1;stroke-dasharray:5 4}",
+      ".frame-label{font-size:12px;fill:var(--muted)}",
+      ".edge{stroke:var(--line);stroke-width:1.2;fill:none}",
+      ".edge.async{stroke-dasharray:6 4}",
+      ".edge-label{font-size:12px;fill:var(--muted);paint-order:stroke;stroke:var(--bg);stroke-width:3px}",
+      ".node-box text.name{font-size:14px;font-weight:500;fill:var(--ink)}",
+      ".node-box text.comp{font-size:12px;fill:var(--muted)}",
+      ".glyph{color:var(--ink)}",
+      ".badge-error{fill:var(--danger)}.badge-warn{fill:var(--warn)}",
+    ].join("") + "</style>";
+    const ground = background ? `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="var(--bg)"/>` : "";
+    return this.resolveVars(
+      `<svg xmlns="${NS}" viewBox="${x} ${y} ${w} ${h}" width="${w}" height="${h}" ` +
+      `font-family="ui-sans-serif, system-ui, sans-serif">${style}${defs.outerHTML}${ground}${clone.outerHTML}</svg>
+`);
   }
 }
 

@@ -15,6 +15,7 @@ import { Inspector } from "./inspector.js";
 import { Findings } from "./findings.js";
 import * as files from "./files.js";
 import { showMenu, closeMenu } from "./menu.js";
+import { exportScene } from "./export.js";
 
 const $ = (sel) => document.querySelector(sel);
 const clone = (x) => JSON.parse(JSON.stringify(x));
@@ -525,6 +526,7 @@ async function boot() {
   });
 
   try { $("#autosave").checked = localStorage.getItem("arkore-canvas:autosave") === "1"; } catch {}
+  try { setTheme(localStorage.getItem("arkore-canvas:theme") || "system"); } catch { setTheme("system"); }
   const first = index.find((e) => e.path.includes("chat-system")) || index[0];
   picker.value = first.path;
   await openDesign(first);
@@ -557,7 +559,42 @@ function toggleHelp(force) {
   $("#help-toggle").setAttribute("aria-expanded", String(show));
 }
 
-$("#export-svg").addEventListener("click", () => files.download(`${state.doc.id}.svg`, scene.toSVG(), "image/svg+xml"));
+// Export is three formats off one drawing: the SVG is the source, and PNG and JPEG are that SVG
+// painted onto a canvas, so a raster can never show something the vector does not.
+const EXPORTS = [
+  { format: "png", label: "PNG", hint: "2x, for slides" },
+  { format: "jpg", label: "JPEG", hint: "2x, no transparency" },
+  { format: "svg", label: "SVG", hint: "vector, editable" },
+];
+
+async function runExport(format) {
+  if (!state.doc || !state.doc.nodes.length) return notify("there is nothing to export yet");
+  try {
+    const { bytes } = await exportScene(scene, state.doc.id, format);
+    notify(`${state.doc.id}.${format} saved, ${Math.max(1, Math.round(bytes / 1024))} KB`);
+  } catch (e) {
+    notify("export failed: " + e.message);
+  }
+}
+
+// The palette is also an export setting, so it is a control rather than whatever the operating
+// system happens to say this evening. Three states, and the choice is remembered.
+const THEMES = ["system", "light", "dark"];
+function setTheme(name) {
+  if (name === "system") document.documentElement.removeAttribute("data-theme");
+  else document.documentElement.setAttribute("data-theme", name);
+  $("#theme").textContent = name === "system" ? "Theme" : name === "light" ? "Light" : "Dark";
+  try { localStorage.setItem("arkore-canvas:theme", name); } catch { /* private window */ }
+}
+$("#theme").addEventListener("click", () => {
+  const now = document.documentElement.getAttribute("data-theme") || "system";
+  setTheme(THEMES[(THEMES.indexOf(now) + 1) % THEMES.length]);
+});
+
+$("#export").addEventListener("click", (ev) => {
+  const r = ev.currentTarget.getBoundingClientRect();
+  showMenu(r.left, r.bottom + 4, EXPORTS.map((e) => ({ label: e.label, hint: e.hint, run: () => runExport(e.format) })));
+});
 
 const canvas = $("#canvas-wrap");
 canvas.addEventListener("dragover", (ev) => ev.preventDefault());

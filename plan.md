@@ -335,3 +335,26 @@ Functions and a design may hold two of it.
   pointer retargets the click that follows to the element holding the capture, so the listener on
   the node never heard it; only a synthetic event dispatched straight at the node did, which is
   why the tests passed. Double click is now handled once on the scene and hit tested by point.
+
+## 14. Getting the drawing out
+
+`Export` offers PNG, JPEG and SVG. One drawing feeds all three: `scene.toSVG()` is the source,
+and the raster formats are that SVG drawn onto a canvas at 2x, so a PNG can never show something
+the SVG does not.
+
+The SVG export was not a file anyone else could open. Every colour on the scene is a CSS
+variable, including the node fills, which are inline `fill="var(--f-blue-fill)"` attributes, and
+a variable resolves to nothing outside the page that declares it: every node body and every
+arrowhead would have come out unpainted. The export now resolves each name against the live
+document and writes the value, so the file carries its own colours.
+
+Two smaller corrections came with it. The bounds were taken from the node boxes, which clips a
+bowed edge, a group frame or a wide label; they are measured with `getBBox` now. And the palette
+is a control rather than whatever the operating system says this evening, because the export
+takes the theme that is showing and someone exporting a diagram for a document usually wants the
+light one.
+
+The colours cannot be checked by rendering under node, so the gate checks the next best thing:
+every variable name the scene can emit, the assembled `--f-<hue>-fill` ones included, is declared
+in the stylesheet. A typo there is a black box in someone's slide deck and nothing on screen to
+warn about it.

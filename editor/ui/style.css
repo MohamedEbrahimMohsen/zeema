@@ -9,8 +9,11 @@
   --f-rose-fill:#fceceb; --f-rose-line:#e5a7a1; --f-red-fill:#fbe9e9; --f-red-line:#e09b98;
   --f-grey-fill:#f0f0ef; --f-grey-line:#c2c2bf;
 }
+/* Three states, not two: no stamp means follow the system, and a stamp wins over it in both
+   directions. The export takes whichever palette is live, so this is also how a person chooses
+   what their PNG looks like. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg:#141416; --panel:#1b1b1e; --ink:#ececea; --muted:#a1a19c; --line:#7e7e88;
     --frame:#55555c; --border:#2c2c31; --accent:#7aa2dd; --accent-soft:#1b2a3f;
     --danger:#f2b8b5; --warn:#e6c065; --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
@@ -21,6 +24,17 @@
     --f-grey-fill:#26262a; --f-grey-line:#5a5a60;
   }
 }
+html[data-theme="dark"] {
+    --bg:#141416; --panel:#1b1b1e; --ink:#ececea; --muted:#a1a19c; --line:#7e7e88;
+    --frame:#55555c; --border:#2c2c31; --accent:#7aa2dd; --accent-soft:#1b2a3f;
+    --danger:#f2b8b5; --warn:#e6c065; --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+    --f-blue-fill:#1b2a3f; --f-blue-line:#3f6698; --f-teal-fill:#152e2b; --f-teal-line:#3c7d72;
+    --f-amber-fill:#33280f; --f-amber-line:#8a6a2b; --f-violet-fill:#241f3d; --f-violet-line:#5b4f9c;
+    --f-purple-fill:#2d1c34; --f-purple-line:#7a4d8c; --f-green-fill:#162b18; --f-green-line:#417a47;
+    --f-rose-fill:#33191a; --f-rose-line:#8f4c48; --f-red-fill:#341a1a; --f-red-line:#8d4340;
+    --f-grey-fill:#26262a; --f-grey-line:#5a5a60;
+}
+
 * { box-sizing: border-box; }
 html, body { height: 100%; }
 body {

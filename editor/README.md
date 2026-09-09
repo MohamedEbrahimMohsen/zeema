@@ -39,6 +39,11 @@ tripping exactly the rules their headers name.
 - **Boundaries.** Select components and press `G`, or right click and choose Group. Grouping
   things that already share a boundary nests inside it rather than beside it. `Delete` on a
   boundary removes the boundary and keeps what was in it; the menu also offers deleting both.
+- **Export.** `Export` writes the drawing as PNG, JPEG or SVG. The SVG is the source in all
+  three cases, so a raster can never show something the vector does not, and it is written with
+  the colours the page currently has rather than references to them, which is what makes it a
+  file and not a screenshot of this stylesheet. `Theme` chooses light, dark, or whatever the
+  system says, and the export follows it.
 - **New.** `New` starts a design in `designs/authored/<id>/`, the tier for designs made here:
   no external source, so no `mapping.yaml`, and no broken twin. It stays unsaved until it has at
   least one node, because a design with an empty node list is not valid.
@@ -78,6 +83,7 @@ importable by node, which is what makes it testable without a browser:
 | `core/structure.js` | The validator's own structural checks, message for message, plus a schema layer |
 | `core/rules.js` | The 36 rules, ported bug for bug, with subjects so a finding points at something |
 | `ui/scene.js` | The SVG scene and every pointer gesture on it |
+| `ui/export.js` | The drawing as a file: SVG, or that SVG painted onto a canvas |
 | `ui/menu.js` | The right click menu, which is data the scene's caller decides |
 | `core/layout.js` | The repository renderer's layout, ported number for number |
 | `core/geometry.js` | Edge paths, bows, label points and group frames, derived from positions on every drag |
