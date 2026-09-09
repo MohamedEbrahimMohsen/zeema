@@ -43,13 +43,17 @@ export class Scene {
     this.viewport.setAttribute("transform", `translate(${x} ${y}) scale(${k})`);
   }
 
-  fit(padding = 60) {
+  fit(padding = 48) {
     const boxes = Object.values(this.boxes || {});
     if (!boxes.length) { this.view = { x: 0, y: 0, k: 1 }; this.applyView(); return; }
+    const r = this.svg.getBoundingClientRect();
+    // The first fit can land before the pane has a size; try again on the next frame rather
+    // than dividing by nothing and rendering the design microscopically.
+    if (r.width < 40 || r.height < 40) { requestAnimationFrame(() => this.fit(padding)); return; }
     const x0 = Math.min(...boxes.map((b) => b[0])), y0 = Math.min(...boxes.map((b) => b[1]));
     const x1 = Math.max(...boxes.map((b) => b[0] + b[2])), y1 = Math.max(...boxes.map((b) => b[1] + b[3]));
-    const r = this.svg.getBoundingClientRect();
-    const k = Math.min((r.width - padding * 2) / Math.max(1, x1 - x0), (r.height - padding * 2) / Math.max(1, y1 - y0), 1.6);
+    const raw = Math.min((r.width - padding * 2) / Math.max(1, x1 - x0), (r.height - padding * 2) / Math.max(1, y1 - y0), 1.6);
+    const k = Math.max(0.35, raw);            // never smaller than readable; the wheel goes lower
     this.view = { k, x: (r.width - (x1 - x0) * k) / 2 - x0 * k, y: (r.height - (y1 - y0) * k) / 2 - y0 * k };
     this.applyView();
   }
