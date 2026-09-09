@@ -56,9 +56,16 @@ function controlFor(def, value, resolved, onChange) {
 export class Inspector {
   constructor(root, api) { this.root = root; this.api = api; }
 
-  render(selection, state) {
+  render(selection, state, multi) {
     const { doc, catalogue } = state;
     this.root.textContent = "";
+    // With more than one thing selected the fields below still edit the one that was clicked
+    // last, so the panel says so rather than letting a typed value look like it applies to all.
+    if (multi && multi.size > 1) {
+      this.root.append(h("div", { class: "pill selection-count" }, `${multi.size} components selected`),
+        h("div", { class: "resolved", style: "margin:6px 0 12px" },
+          "Right click for group, duplicate and delete. The fields below edit the last one you clicked."));
+    }
     if (!selection || !selection.type) return this.design(doc, catalogue);
     if (selection.type === "node") {
       const node = doc.nodes.find((n) => n.id === selection.ref);

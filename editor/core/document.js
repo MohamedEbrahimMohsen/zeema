@@ -186,6 +186,18 @@ export function addEdge(doc, from, to) {
   return d;
 }
 
+// An edge drawn the wrong way round is the commonest mistake on a canvas, and redrawing it
+// loses every field on it. Swapping the ends keeps the rest.
+export function reverseEdge(doc, index) {
+  const d = clone(doc);
+  const e = d.edges[index];
+  if (!e) return d;
+  const from = e.from;
+  e.from = e.to;
+  e.to = from;
+  return d;
+}
+
 export function setEdgeField(doc, index, field, value) {
   const d = clone(doc);
   const e = d.edges[index];
@@ -203,15 +215,79 @@ export function deleteEdge(doc, index) {
   return d;
 }
 
+// Copying a selection copies what is inside it: the nodes with fresh ids, and the edges whose
+// two ends are both in the copy. An edge with one end outside would have to guess which end the
+// copy owns, so it is left behind. The id map is returned because the caller has to move the
+// copy somewhere, and positions live outside the document.
+export function duplicateNodes(doc, ids, catalogue) {
+  const d = clone(doc);
+  const wanted = doc.nodes.filter((n) => ids.includes(n.id));
+  const taken = nodeIds(d);
+  const map = {};
+  for (const n of wanted) {
+    const copy = clone(n);
+    copy.id = uniqueId(taken, n.id.replace(/-\d+$/, ""));
+    taken.add(copy.id);
+    map[n.id] = copy.id;
+    d.nodes.push(copy);
+  }
+  // A ref property pointing inside the copy follows the copy; one pointing outside is kept.
+  for (const original of wanted) {
+    const copy = d.nodes.find((x) => x.id === map[original.id]);
+    if (!copy || !copy.props) continue;
+    for (const [name, def] of Object.entries(propDefs(catalogue, copy.component))) {
+      if (def.type === "ref" && map[copy.props[name]]) copy.props[name] = map[copy.props[name]];
+    }
+  }
+  for (const e of doc.edges) {
+    if (!map[e.from] || !map[e.to]) continue;
+    const copy = clone(e);
+    copy.from = map[e.from]; copy.to = map[e.to];
+    d.edges.push(copy);
+  }
+  return { doc: d, map };
+}
+
 export function addGroup(doc, memberIds, kind = "system", label) {
   const d = clone(doc);
   d.groups = d.groups || [];
   const id = uniqueId(groupIds(d), label || kind);
   const g = { id, kind };
   if (label) g.label = label;
+  // Grouping things that already share a group nests inside it rather than beside it, which is
+  // what the frames then draw: a boundary inside a region, not two boundaries crossing.
+  const parents = new Set(d.nodes.filter((n) => memberIds.includes(n.id)).map((n) => n.group || null));
+  if (parents.size === 1) { const only = [...parents][0]; if (only) g.parent = only; }
   d.groups.push(g);
   for (const n of d.nodes) if (memberIds.includes(n.id)) n.group = id;
   return { doc: d, id };
+}
+
+// Every node inside a group, including the ones inside its child groups.
+export function groupMembers(doc, groupId) {
+  const groups = doc.groups || [];
+  const wanted = new Set([groupId]);
+  for (let grew = true; grew;) {
+    grew = false;
+    for (const g of groups) if (g.parent && wanted.has(g.parent) && !wanted.has(g.id)) { wanted.add(g.id); grew = true; }
+  }
+  return doc.nodes.filter((n) => wanted.has(n.group)).map((n) => n.id);
+}
+
+// The other reading of deleting a boundary: take what is inside it with it. Offered next to
+// ungrouping rather than instead of it, because one of them cannot be guessed from a keystroke.
+export function deleteGroupDeep(doc, groupId) {
+  const members = groupMembers(doc, groupId);
+  const groups = doc.groups || [];
+  const doomed = new Set([groupId]);
+  for (let grew = true; grew;) {
+    grew = false;
+    for (const g of groups) if (g.parent && doomed.has(g.parent) && !doomed.has(g.id)) { doomed.add(g.id); grew = true; }
+  }
+  const d = deleteNodes(doc, members);
+  d.groups = (d.groups || []).filter((g) => !doomed.has(g.id));
+  if (!d.groups.length) delete d.groups;
+  return d;
 }
 
 export function setNodeGroup(doc, nodeId, groupId) {

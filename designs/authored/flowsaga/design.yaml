@@ -6,13 +6,5 @@ id: "flowsaga"
 
 nodes:
   - { id: "sdk-client", component: "sdk-client" }
-  - { id: "azure-functions", component: "azure-functions" }
-  - { id: "azure-functions-2", component: "azure-functions" }
-  - { id: "azure-durable-functions", component: "azure-durable-functions" }
-  - { id: "azure-functions-3", component: "azure-functions" }
-  - { id: "azure-functions-4", component: "azure-functions" }
-  - { id: "azure-static-web-apps", component: "azure-static-web-apps" }
-  - { id: "jmeter", component: "jmeter" }
-  - { id: "cloudflare-warp", component: "cloudflare-warp" }
-  - { id: "azure-functions-5", component: "azure-functions" }
-edges: []
+  - { id: "azure-functions-6", component: "azure-functions" }
+edges: [{ from: "sdk-client", to: "azure-functions-6", protocol: "http", mode: "sync", delivery: "exactly-once", label: "Hello", retryPolicy: "fixed" }, { from: "sdk-client", to: "azure-functions-6", protocol: "http", mode: "sync" }]

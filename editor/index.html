@@ -20,7 +20,7 @@
   </div>
   <div class="group">
     <button id="undo" title="Undo (Ctrl Z)">Undo</button>
-    <button id="redo" title="Redo (Ctrl Shift Z)">Redo</button>
+    <button id="redo" title="Redo (Ctrl Y or Ctrl Shift Z)">Redo</button>
     <span class="sep"></span>
     <button id="zoom-fit" title="Fit (Ctrl 0)">Fit</button>
     <button id="zoom-100" title="Actual size (Ctrl 1)">100%</button>
@@ -29,6 +29,7 @@
   </div>
   <div class="group">
     <span id="lint-summary" class="muted"></span>
+    <button id="help-toggle" title="What the mouse and the keyboard do (?)" aria-expanded="false">?</button>
   </div>
 </header>
 
@@ -49,6 +50,32 @@
       </g>
     </svg>
     <div id="empty-state" class="muted" hidden>Open a design, or drag a component from the palette.</div>
+    <div id="help" hidden>
+      <h2>Pointer</h2>
+      <dl>
+        <dt>Drag on empty space</dt><dd>sweep a selection box</dd>
+        <dt>Shift click</dt><dd>add to or remove from the selection</dd>
+        <dt>Middle button, or space and drag</dt><dd>pan</dd>
+        <dt>Wheel</dt><dd>zoom</dd>
+        <dt>Drag a node's dot</dt><dd>draw an edge; the target lights up</dd>
+        <dt>Drag an edge</dt><dd>bow it away from what it collides with</dd>
+        <dt>Double click</dt><dd>edit a label, on a node, an edge or a boundary</dd>
+        <dt>Right click</dt><dd>group, ungroup, duplicate, reverse, delete</dd>
+      </dl>
+      <h2>Keys</h2>
+      <dl>
+        <dt>G</dt><dd>group the selection</dd>
+        <dt>Ctrl Shift G</dt><dd>ungroup</dd>
+        <dt>Ctrl D</dt><dd>duplicate</dd>
+        <dt>Ctrl A</dt><dd>select every component</dd>
+        <dt>Arrows</dt><dd>nudge, with shift for ten at a time</dd>
+        <dt>Enter</dt><dd>edit the selected label</dd>
+        <dt>Delete</dt><dd>remove the selection; on a boundary, ungroup</dd>
+        <dt>Ctrl Z, Ctrl Y</dt><dd>undo and redo, everything on this list included</dd>
+        <dt>Ctrl S, Ctrl N</dt><dd>save, new design</dd>
+        <dt>Ctrl 0, Ctrl 1</dt><dd>fit, actual size</dd>
+      </dl>
+    </div>
   </section>
 
   <aside id="right">

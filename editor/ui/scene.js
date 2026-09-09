@@ -2,6 +2,12 @@
 // changes shape, and transform, which runs during a drag and creates no DOM at all. Icons are
 // emitted once into <defs> as symbols and instanced with <use>, so a hundred nodes of the same
 // component cost one glyph.
+//
+// The pointer follows the conventions a person already has from draw.io and Excalidraw, because
+// a canvas that invents its own is a canvas nobody can use without being taught: left drag on
+// empty space sweeps a selection box, the middle button pans from anywhere, space turns the left
+// button into the hand, shift adds to the selection, double click edits a label in place, and
+// the right button opens a menu about whatever is under it.
 
 import { edgeGeometry, pathOf, groupFrames, innermostFrameAt, bowAt } from "../core/geometry.js";
 
@@ -13,6 +19,8 @@ const el = (name, attrs = {}) => {
 };
 const CATEGORY_HUE = { messaging: "violet", compute: "blue", data: "amber", edge: "teal",
   external: "rose", client: "purple", ops: "green", security: "red" };
+
+const overlaps = (b, r) => b[0] < r[2] && b[0] + b[2] > r[0] && b[1] < r[3] && b[1] + b[3] > r[1];
 
 export class Scene {
   constructor(svg, handlers) {
@@ -30,9 +38,12 @@ export class Scene {
     this.symbols = new Set();
     this.nodeEls = new Map();
     this.edgeEls = new Map();
-    this.selection = { type: null, ref: null };
+    this.frameEls = new Map();
+    this.selection = { type: null, ref: null };   // the primary selection, which the inspector shows
+    this.multi = new Set();                       // every selected node, the primary included
     this.drag = null;
     this.wire = null;
+    this.space = false;
     this._bind();
   }
 
@@ -58,9 +69,28 @@ export class Scene {
     this.applyView();
   }
 
+  // Pointer capture keeps a drag alive when the pointer leaves the element. A pointer id the
+  // browser does not know about throws rather than returning false, and a drag is not worth
+  // losing over it.
+  capture(ev) { try { this.svg.setPointerCapture(ev.pointerId); } catch { /* not a live pointer */ } }
+
   toWorld(clientX, clientY) {
     const r = this.svg.getBoundingClientRect();
     return [(clientX - r.left - this.view.x) / this.view.k, (clientY - r.top - this.view.y) / this.view.k];
+  }
+
+  toScreen(wx, wy) {
+    const r = this.svg.getBoundingClientRect();
+    return [r.left + this.view.x + wx * this.view.k, r.top + this.view.y + wy * this.view.k];
+  }
+
+  nodeAt(wx, wy, except = null) {
+    for (const n of [...this.model.doc.nodes].reverse()) {
+      if (n.id === except) continue;
+      const b = this.boxes[n.id];
+      if (b && wx >= b[0] && wx <= b[0] + b[2] && wy >= b[1] && wy <= b[1] + b[3]) return n.id;
+    }
+    return null;
   }
 
   // ---------------------------------------------------------------- render
@@ -73,6 +103,7 @@ export class Scene {
       const s = model.sizes[n.id] || [140, 78];
       this.boxes[n.id] = [p[0], p[1], s[0], s[1]];
     }
+    for (const id of [...this.multi]) if (!this.boxes[id]) this.multi.delete(id);
     this.frames = groupFrames(model.doc, this.boxes);
     this.renderFrames();
     this.renderEdges();
@@ -83,15 +114,27 @@ export class Scene {
   renderFrames() {
     const g = this.layers.frames;
     g.textContent = "";
+    this.frameEls.clear();
     for (const group of this.model.doc.groups || []) {
       const f = this.frames[group.id];
       if (!f) continue;
-      g.append(el("rect", { class: "frame", x: f[0], y: f[1], width: f[2], height: f[3], rx: 10 }));
+      const rect = el("rect", { class: "frame", x: f[0], y: f[1], width: f[2], height: f[3], rx: 10 });
+      // The border itself is the handle. A boundary has no body to click, so without this a
+      // group can only be reached through its label, which is a small target and easy to miss.
+      const hit = el("rect", { class: "frame-hit", x: f[0], y: f[1], width: f[2], height: f[3], rx: 10 });
       const label = el("text", { class: "frame-label", x: f[0] + 12, y: f[1] + 19 });
-      label.textContent = group.label || `${group.id} (${group.kind})`;
-      label.style.cursor = "pointer";
-      label.addEventListener("pointerdown", (ev) => { ev.stopPropagation(); this.select("group", group.id); });
-      g.append(label);
+      const name = group.label || group.id;
+      label.textContent = name === group.kind ? name : `${name} (${group.kind})`;
+      for (const target of [hit, label]) {
+        target.addEventListener("pointerdown", (ev) => {
+          if (ev.button !== 0 || this.space) return;
+          ev.stopPropagation();
+          this.select("group", group.id);
+        });
+        target.addEventListener("dblclick", (ev) => { ev.stopPropagation(); this.editLabel("group", group.id); });
+      }
+      g.append(rect, hit, label);
+      this.frameEls.set(group.id, { rect, hit, label });
     }
   }
 
@@ -104,16 +147,23 @@ export class Scene {
       const d = pathOf(e.points);
       const hit = el("path", { class: "edge-hit", d });
       const line = el("path", { class: `edge${e.dashed ? " async" : ""}`, d, "marker-end": "url(#arrowhead)" });
-      hit.addEventListener("pointerdown", (ev) => { ev.stopPropagation(); this.select("edge", e.i); this.startBow(e, ev); });
-      hit.addEventListener("dblclick", (ev) => { ev.stopPropagation(); this.h.onBow && this.h.onBow(e.key, 0, true); });
+      hit.addEventListener("pointerdown", (ev) => {
+        if (ev.button !== 0 || this.space) return;
+        ev.stopPropagation();
+        this.select("edge", e.i);
+        this.startBow(e, ev);
+      });
+      hit.addEventListener("dblclick", (ev) => { ev.stopPropagation(); this.editLabel("edge", e.i); });
       g.append(hit, line);
-      this.edgeEls.set(e.i, { hit, line, key: e.key, from: e.from, to: e.to });
+      const els = { hit, line, key: e.key, from: e.from, to: e.to, label: null };
       if (e.label) {
-        const mid = e.points.length === 3 ? e.points[1] : [(e.points[0][0] + e.points[1][0]) / 2, (e.points[0][1] + e.points[1][1]) / 2];
-        const t = el("text", { class: "edge-label", x: mid[0], y: mid[1] - 4, "text-anchor": "middle" });
+        const t = el("text", { class: "edge-label", x: e.mid[0], y: e.mid[1] - 5, "text-anchor": "middle" });
         t.textContent = e.label;
+        t.addEventListener("dblclick", (ev) => { ev.stopPropagation(); this.editLabel("edge", e.i); });
         g.append(t);
+        els.label = t;
       }
+      this.edgeEls.set(e.i, els);
     }
   }
 
@@ -162,13 +212,17 @@ export class Scene {
       }
       for (const [hx, hy] of [[b[2] / 2, 0], [b[2], b[3] / 2], [b[2] / 2, b[3]], [0, b[3] / 2]]) {
         const handle = el("circle", { class: "handle", cx: hx, cy: hy, r: 4.5, opacity: 0 });
-        handle.addEventListener("pointerdown", (ev) => { ev.stopPropagation(); this.startWire(n.id, ev); });
+        handle.addEventListener("pointerdown", (ev) => {
+          if (ev.button !== 0 || this.space) return;
+          ev.stopPropagation();
+          this.startWire(n.id, ev);
+        });
         box.append(handle);
       }
       box.addEventListener("pointerenter", () => box.querySelectorAll(".handle").forEach((h) => h.setAttribute("opacity", 1)));
       box.addEventListener("pointerleave", () => box.querySelectorAll(".handle").forEach((h) => h.setAttribute("opacity", 0)));
       box.addEventListener("pointerdown", (ev) => this.startDrag(n.id, ev));
-      box.addEventListener("dblclick", (ev) => { ev.stopPropagation(); this.h.onRename && this.h.onRename(n.id); });
+      box.addEventListener("dblclick", (ev) => { ev.stopPropagation(); this.editLabel("node", n.id); });
       g.append(box);
       this.nodeEls.set(n.id, box);
     }
@@ -184,24 +238,70 @@ export class Scene {
       const d = pathOf(e.points);
       els.line.setAttribute("d", d);
       els.hit.setAttribute("d", d);
+      if (els.label) { els.label.setAttribute("x", e.mid[0]); els.label.setAttribute("y", e.mid[1] - 5); }
     }
   }
 
   renderSelection() {
-    for (const [id, node] of this.nodeEls) node.classList.toggle("selected", this.selection.type === "node" && this.selection.ref === id);
+    for (const [id, node] of this.nodeEls) {
+      node.classList.toggle("selected", this.multi.has(id));
+      node.classList.toggle("primary", this.selection.type === "node" && this.selection.ref === id);
+    }
     for (const [i, e] of this.edgeEls) e.line.classList.toggle("selected", this.selection.type === "edge" && this.selection.ref === i);
+    for (const [id, f] of this.frameEls) f.rect.classList.toggle("selected", this.selection.type === "group" && this.selection.ref === id);
   }
+
+  // ---------------------------------------------------------------- selection
 
   select(type, ref) {
     this.selection = { type, ref };
+    this.multi = type === "node" ? new Set([ref]) : new Set();
+    this.emitSelection();
+  }
+
+  selectNodes(ids, primary = null) {
+    this.multi = new Set(ids);
+    const head = primary && this.multi.has(primary) ? primary : (ids.length ? ids[ids.length - 1] : null);
+    this.selection = head ? { type: "node", ref: head } : { type: null, ref: null };
+    this.emitSelection();
+  }
+
+  toggleNode(id) {
+    if (this.multi.has(id)) {
+      this.multi.delete(id);
+      const next = [...this.multi];
+      this.selection = next.length ? { type: "node", ref: next[next.length - 1] } : { type: null, ref: null };
+    } else {
+      this.multi.add(id);
+      this.selection = { type: "node", ref: id };
+    }
+    this.emitSelection();
+  }
+
+  emitSelection() {
     this.renderSelection();
-    this.h.onSelect && this.h.onSelect(this.selection);
+    this.h.onSelect && this.h.onSelect(this.selection, this.multi);
   }
 
   // ---------------------------------------------------------------- interaction
 
   _bind() {
     const svg = this.svg;
+
+    window.addEventListener("keydown", (ev) => {
+      if (ev.code !== "Space" || this.space) return;
+      if (/input|select|textarea/i.test(ev.target.tagName)) return;
+      this.space = true;
+      svg.classList.add("hand");
+      ev.preventDefault();                      // space would otherwise scroll the page
+    });
+    window.addEventListener("keyup", (ev) => {
+      if (ev.code !== "Space") return;
+      this.space = false;
+      svg.classList.remove("hand");
+    });
+    window.addEventListener("blur", () => { this.space = false; svg.classList.remove("hand"); });
+
     svg.addEventListener("wheel", (ev) => {
       ev.preventDefault();
       const [wx, wy] = this.toWorld(ev.clientX, ev.clientY);
@@ -213,12 +313,35 @@ export class Scene {
       this.applyView();
     }, { passive: false });
 
+    svg.addEventListener("contextmenu", (ev) => {
+      ev.preventDefault();
+      const target = this.targetOf(ev);
+      // Right clicking something outside the selection selects it first, so the menu is always
+      // about what the person pointed at.
+      if (target.type === "node" && !this.multi.has(target.ref)) this.select("node", target.ref);
+      else if (target.type === "edge" || target.type === "group") this.select(target.type, target.ref);
+      else if (target.type === null && this.selection.type) this.select(null, null);
+      this.h.onContext && this.h.onContext(target, ev.clientX, ev.clientY);
+    });
+
     svg.addEventListener("pointerdown", (ev) => {
-      if (ev.target.closest(".node-box") || ev.target.closest(".edge-hit")) return;
-      this.select(null, null);
-      this.pan = { x: ev.clientX, y: ev.clientY, vx: this.view.x, vy: this.view.y };
-      svg.classList.add("panning");
-      svg.setPointerCapture(ev.pointerId);
+      if (ev.button === 1 || (ev.button === 0 && this.space)) {   // the hand
+        ev.preventDefault();
+        this.pan = { x: ev.clientX, y: ev.clientY, vx: this.view.x, vy: this.view.y };
+        svg.classList.add("panning");
+        this.capture(ev);
+        return;
+      }
+      if (ev.button !== 0) return;
+      if (ev.target.closest(".node-box") || ev.target.closest(".edge-hit") ||
+          ev.target.closest(".frame-hit") || ev.target.closest(".frame-label")) return;
+      // Empty canvas: sweep a selection box, the way every canvas editor does.
+      if (!ev.shiftKey) this.select(null, null);
+      const [wx, wy] = this.toWorld(ev.clientX, ev.clientY);
+      this.marquee = { x0: wx, y0: wy, x1: wx, y1: wy, add: ev.shiftKey, base: new Set(this.multi), moved: false,
+        rect: el("rect", { class: "marquee", x: wx, y: wy, width: 0, height: 0 }) };
+      this.layers.overlay.append(this.marquee.rect);
+      this.capture(ev);
     });
 
     svg.addEventListener("pointermove", (ev) => {
@@ -228,6 +351,7 @@ export class Scene {
         this.applyView();
         return;
       }
+      if (this.marquee) return this.moveMarquee(ev);
       if (this.drag) this.moveDrag(ev);
       if (this.wire) this.moveWire(ev);
       if (this.bowDrag) this.moveBow(ev);
@@ -235,6 +359,7 @@ export class Scene {
 
     const end = (ev) => {
       if (this.pan) { this.pan = null; svg.classList.remove("panning"); }
+      if (this.marquee) this.endMarquee(ev);
       if (this.drag) this.endDrag(ev);
       if (this.wire) this.endWire(ev);
       if (this.bowDrag) this.endBow(ev);
@@ -243,51 +368,120 @@ export class Scene {
     svg.addEventListener("pointercancel", end);
   }
 
-  startDrag(id, ev) {
-    ev.stopPropagation();
-    this.select("node", id);
-    const [wx, wy] = this.toWorld(ev.clientX, ev.clientY);
-    const b = this.boxes[id];
-    this.drag = { id, dx: wx - b[0], dy: wy - b[1], moved: false };
-    this.svg.setPointerCapture(ev.pointerId);
+  // What is under a pointer event, as a selection subject.
+  targetOf(ev) {
+    const node = ev.target.closest(".node-box");
+    if (node) return { type: "node", ref: node.dataset.id };
+    for (const [i, els] of this.edgeEls) if (els.hit === ev.target || els.line === ev.target || els.label === ev.target) return { type: "edge", ref: i };
+    for (const [id, f] of this.frameEls) if (f.hit === ev.target || f.label === ev.target || f.rect === ev.target) return { type: "group", ref: id };
+    return { type: null, ref: null };
   }
 
-  // Transform path: move the group and redraw only the edges that touch it. No element is
-  // created here, which is what keeps a drag smooth on a large design.
+  cancel() {
+    if (this.marquee) { this.marquee.rect.remove(); this.marquee = null; }
+    if (this.wire) { this.wire.line.remove(); this.clearWireTarget(); this.wire = null; }
+    if (this.bowDrag) { this.h.onBowPreview && this.h.onBowPreview(this.bowDrag.key, this.model.bows[this.bowDrag.key] || 0); this.bowDrag = null; }
+    if (this.drag) { this.drag = null; this.render(this.model); }
+  }
+
+  // ---------------------------------------------------------------- marquee
+
+  moveMarquee(ev) {
+    const [wx, wy] = this.toWorld(ev.clientX, ev.clientY);
+    const m = this.marquee;
+    m.x1 = wx; m.y1 = wy; m.moved = true;
+    const r = [Math.min(m.x0, m.x1), Math.min(m.y0, m.y1), Math.max(m.x0, m.x1), Math.max(m.y0, m.y1)];
+    m.rect.setAttribute("x", r[0]); m.rect.setAttribute("y", r[1]);
+    m.rect.setAttribute("width", r[2] - r[0]); m.rect.setAttribute("height", r[3] - r[1]);
+    const hit = Object.entries(this.boxes).filter(([, b]) => overlaps(b, r)).map(([id]) => id);
+    this.multi = m.add ? new Set([...m.base, ...hit]) : new Set(hit);
+    this.renderSelection();
+  }
+
+  endMarquee() {
+    const m = this.marquee;
+    this.marquee = null;
+    m.rect.remove();
+    if (!m.moved) return;                        // a plain click on empty space, already cleared
+    this.selectNodes([...this.multi]);
+  }
+
+  // ---------------------------------------------------------------- moving nodes
+
+  startDrag(id, ev) {
+    if (ev.button !== 0 || this.space) return;
+    ev.stopPropagation();
+    if (ev.shiftKey || ev.ctrlKey || ev.metaKey) { this.toggleNode(id); return; }
+    if (!this.multi.has(id)) this.select("node", id);
+    else if (this.selection.ref !== id) { this.selection = { type: "node", ref: id }; this.emitSelection(); }
+    const [wx, wy] = this.toWorld(ev.clientX, ev.clientY);
+    const ids = [...this.multi];
+    this.drag = { id, ids, moved: false, offsets: Object.fromEntries(ids.map((n) => [n, [wx - this.boxes[n][0], wy - this.boxes[n][1]]])) };
+    this.capture(ev);
+  }
+
+  // Transform path: move the boxes and redraw only what touches them. No element is created
+  // here, which is what keeps a drag smooth on a large design.
   moveDrag(ev) {
     const [wx, wy] = this.toWorld(ev.clientX, ev.clientY);
-    const b = this.boxes[this.drag.id];
-    b[0] = Math.round(wx - this.drag.dx);
-    b[1] = Math.round(wy - this.drag.dy);
     this.drag.moved = true;
-    this.nodeEls.get(this.drag.id).setAttribute("transform", `translate(${b[0]} ${b[1]})`);
-    const geom = edgeGeometry(this.model.doc, this.boxes, this.model.bows || {});
-    for (const e of geom) {
-      if (e.from !== this.drag.id && e.to !== this.drag.id) continue;
+    for (const id of this.drag.ids) {
+      const b = this.boxes[id];
+      const off = this.drag.offsets[id];
+      b[0] = Math.round(wx - off[0]);
+      b[1] = Math.round(wy - off[1]);
+      this.nodeEls.get(id).setAttribute("transform", `translate(${b[0]} ${b[1]})`);
+    }
+    const moving = new Set(this.drag.ids);
+    for (const e of edgeGeometry(this.model.doc, this.boxes, this.model.bows || {})) {
+      if (!moving.has(e.from) && !moving.has(e.to)) continue;
       const els = this.edgeEls.get(e.i);
       if (!els) continue;
       const d = pathOf(e.points);
       els.line.setAttribute("d", d);
       els.hit.setAttribute("d", d);
+      if (els.label) { els.label.setAttribute("x", e.mid[0]); els.label.setAttribute("y", e.mid[1] - 5); }
+    }
+    this.repaintFrames();
+  }
+
+  // Boundaries are derived from their members, so they have to follow a drag rather than wait
+  // for the next full render, or a node leaves its own frame behind while it moves.
+  repaintFrames() {
+    const frames = groupFrames(this.model.doc, this.boxes);
+    for (const [id, els] of this.frameEls) {
+      const f = frames[id];
+      if (!f) continue;
+      for (const r of [els.rect, els.hit]) {
+        r.setAttribute("x", f[0]); r.setAttribute("y", f[1]);
+        r.setAttribute("width", f[2]); r.setAttribute("height", f[3]);
+      }
+      els.label.setAttribute("x", f[0] + 12);
+      els.label.setAttribute("y", f[1] + 19);
     }
   }
 
-  endDrag(ev) {
-    const { id, moved } = this.drag;
+  endDrag() {
+    const { ids, moved } = this.drag;
     this.drag = null;
     if (!moved) return;
-    const b = this.boxes[id];
-    const centre = [b[0] + b[2] / 2, b[1] + b[3] / 2];
     const frames = groupFrames(this.model.doc, this.boxes);
-    const group = innermostFrameAt(frames, centre[0], centre[1]);
-    this.h.onMove && this.h.onMove(id, b[0], b[1], group);
+    // Membership is decided against the frames the group had before the drag, minus the frames
+    // of the groups being dragged, so dragging a whole group does not put it inside itself.
+    const moves = ids.map((id) => {
+      const b = this.boxes[id];
+      return { id, x: b[0], y: b[1], group: innermostFrameAt(frames, b[0] + b[2] / 2, b[1] + b[3] / 2) };
+    });
+    this.h.onMove && this.h.onMove(moves);
   }
+
+  // ---------------------------------------------------------------- edges
 
   // Dragging an edge moves the control point of its curve along the perpendicular, which is what
   // pulls two edges between the same pair apart, or pushes one clear of a box it runs under.
   startBow(edge, ev) {
     this.bowDrag = { key: edge.key, from: edge.from, to: edge.to, moved: false };
-    this.svg.setPointerCapture(ev.pointerId);
+    this.capture(ev);
   }
 
   moveBow(ev) {
@@ -306,29 +500,97 @@ export class Scene {
 
   startWire(from, ev) {
     const [wx, wy] = this.toWorld(ev.clientX, ev.clientY);
-    const line = el("path", { class: "edge", d: `M${wx} ${wy} L${wx} ${wy}`, "stroke-dasharray": "4 4" });
+    const line = el("path", { class: "wire", d: `M${wx} ${wy} L${wx} ${wy}` });
     this.layers.overlay.append(line);
-    this.wire = { from, line, x: wx, y: wy };
-    this.svg.setPointerCapture(ev.pointerId);
+    this.wire = { from, line, x: wx, y: wy, target: null };
+    this.nodeEls.get(from).classList.add("wire-source");
+    this.capture(ev);
   }
 
+  // The component the wire would land on is lit up while the pointer is over it, so a connection
+  // is never a guess about what was underneath the cursor.
   moveWire(ev) {
     const [wx, wy] = this.toWorld(ev.clientX, ev.clientY);
     const b = this.boxes[this.wire.from];
     this.wire.line.setAttribute("d", `M${b[0] + b[2] / 2} ${b[1] + b[3] / 2} L${wx} ${wy}`);
     this.wire.x = wx; this.wire.y = wy;
+    const target = this.nodeAt(wx, wy, this.wire.from);
+    if (target === this.wire.target) return;
+    this.clearWireTarget();
+    this.wire.target = target;
+    if (target) this.nodeEls.get(target).classList.add("wire-target");
+    this.wire.line.classList.toggle("live", !!target);
   }
 
-  endWire(ev) {
-    const { from, line, x, y } = this.wire;
+  clearWireTarget() {
+    for (const box of this.nodeEls.values()) box.classList.remove("wire-target");
+  }
+
+  endWire() {
+    const { from, line, target } = this.wire;
     this.wire = null;
     line.remove();
-    let target = null;
-    for (const [id, b] of Object.entries(this.boxes)) {
-      if (x >= b[0] && x <= b[0] + b[2] && y >= b[1] && y <= b[1] + b[3]) { target = id; break; }
-    }
+    this.clearWireTarget();
+    const source = this.nodeEls.get(from);
+    if (source) source.classList.remove("wire-source");
     if (target && target !== from) this.h.onConnect && this.h.onConnect(from, target);
   }
+
+  // ---------------------------------------------------------------- editing a label in place
+
+  // Double click opens the label where the label is, rather than in a browser dialog. Enter and
+  // clicking away commit, Escape abandons, and an emptied field clears the label.
+  editLabel(kind, ref) {
+    this.closeEditor();
+    const current = this.h.labelOf ? this.h.labelOf(kind, ref) : "";
+    if (current === null || current === undefined) return;
+    let anchor, width;
+    if (kind === "node") {
+      const b = this.boxes[ref];
+      if (!b) return;
+      anchor = this.toScreen(b[0] + b[2] / 2, b[1] + 44);
+      width = Math.max(120, b[2] * this.view.k);
+    } else if (kind === "edge") {
+      const e = (this.geom || []).find((x) => x.i === ref);
+      if (!e) return;
+      anchor = this.toScreen(e.mid[0], e.mid[1] - 12);
+      width = 150;
+    } else {
+      const f = this.frames[ref];
+      if (!f) return;
+      anchor = this.toScreen(f[0] + 12, f[1] + 10);
+      width = 170;
+    }
+    const wrap = this.svg.parentElement;
+    const r = wrap.getBoundingClientRect();
+    const input = document.createElement("input");
+    input.className = "inline-edit";
+    input.type = "text";
+    input.value = current;
+    input.style.left = Math.round(anchor[0] - r.left - (kind === "group" ? 0 : width / 2)) + "px";
+    input.style.top = Math.round(anchor[1] - r.top) + "px";
+    input.style.width = Math.round(width) + "px";
+    let done = false;
+    const finish = (commit) => {
+      if (done) return;
+      done = true;
+      input.remove();
+      this.editor = null;
+      if (commit && input.value !== current) this.h.onLabel && this.h.onLabel(kind, ref, input.value.trim());
+    };
+    input.addEventListener("keydown", (ev) => {
+      ev.stopPropagation();
+      if (ev.key === "Enter") finish(true);
+      if (ev.key === "Escape") finish(false);
+    });
+    input.addEventListener("blur", () => finish(true));
+    wrap.append(input);
+    input.focus();
+    input.select();
+    this.editor = { input, finish };
+  }
+
+  closeEditor() { if (this.editor) this.editor.finish(false); }
 
   // ---------------------------------------------------------------- export
 
@@ -338,7 +600,8 @@ export class Scene {
     const x1 = Math.max(...boxes.map((b) => b[0] + b[2])) + 40, y1 = Math.max(...boxes.map((b) => b[1] + b[3])) + 40;
     const clone = this.viewport.cloneNode(true);
     clone.removeAttribute("transform");
-    clone.querySelectorAll(".handle, .edge-hit").forEach((n) => n.remove());
+    clone.querySelectorAll(".handle, .edge-hit, .frame-hit, .marquee, .wire").forEach((n) => n.remove());
+    clone.querySelectorAll(".selected, .primary").forEach((n) => n.classList.remove("selected", "primary"));
     const defs = this.defs.cloneNode(true);
     const style = `<style>.frame{fill:none;stroke:#b4b4ae;stroke-width:1;stroke-dasharray:5 4}.frame-label{font-size:12px;fill:#6b6b66}` +
       `.edge{stroke:#8a8a85;stroke-width:1.2;fill:none}.edge.async{stroke-dasharray:6 4}.edge-label{font-size:12px;fill:#6b6b66}` +

@@ -310,7 +310,16 @@ export function serialize(cst, doc) {
     if (s.type === "scalar") {
       seen.add(s.key);
       if (!(s.key in doc)) continue;
-      out.push(same(doc[s.key], cst.doc[s.key]) ? s.text : `${s.key}: ${emitValue(doc[s.key], s.style)}`);
+      const v = doc[s.key];
+      if (same(v, cst.doc[s.key])) { out.push(s.text); continue; }
+      // A list written "edges: []" that gains entries becomes a block sequence rather than one
+      // enormous flow line, because that is how every design in the repository is written and a
+      // file the canvas saves should not be recognisable as one.
+      if (Array.isArray(v) && v.every((e) => e && typeof e === "object" && !Array.isArray(e))) {
+        out.push(...emitSeq(s.key, v, v.flatMap((e) => emitEntry(e, null, 2))));
+        continue;
+      }
+      out.push(`${s.key}: ${emitValue(v, s.style)}`);
       continue;
     }
     if (s.type === "empty") {

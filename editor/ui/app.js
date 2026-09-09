@@ -14,6 +14,7 @@ import { Palette } from "./palette.js";
 import { Inspector } from "./inspector.js";
 import { Findings } from "./findings.js";
 import * as files from "./files.js";
+import { showMenu, closeMenu } from "./menu.js";
 
 const $ = (sel) => document.querySelector(sel);
 const clone = (x) => JSON.parse(JSON.stringify(x));
@@ -74,7 +75,7 @@ function renderNow() {
     positions: state.positions, sizes: state.sizes, bows: state.bows,
     findings: [...findingsCache.structural, ...findingsCache.rules],
   });
-  inspector.render(scene.selection, state);
+  inspector.render(scene.selection, state, scene.multi);
   findings.render(findingsCache.structural, findingsCache.rules, state.catalogue);
   $("#save").disabled = !state.editable || findingsCache.structural.length > 0;
   $("#save-state").textContent = !state.editable ? "read only" : state.dirty ? "unsaved" : "saved";
@@ -181,6 +182,7 @@ async function openDesign(entry) {
   }
   const restored = restoreDraft();
   scene.selection = { type: null, ref: null };
+  scene.multi = new Set();
   if (repaired.length) state.dirty = true;
   render();
   scene.fit();
@@ -233,6 +235,7 @@ function newDesign() {
   state.index.push(entry);
   addPickerOption(entry, true);
   scene.selection = { type: null, ref: null };
+  scene.multi = new Set();
   render();
   document.title = `${id} — Arkore canvas`;
   $("#save-state").textContent = "new, add a component to save";
@@ -264,11 +267,15 @@ function scheduleDiskSave() {
 // ---------------------------------------------------------------- boot
 
 const scene = new Scene($("#scene"), {
-  onSelect: () => inspector.render(scene.selection, state),
-  onMove: (id, x, y, group) => {
-    state.positions[id] = [x, y];
-    const node = state.doc.nodes.find((n) => n.id === id);
-    const next = (node.group || null) !== (group || null) ? D.setNodeGroup(state.doc, id, group) : null;
+  onSelect: () => inspector.render(scene.selection, state, scene.multi),
+  // A drag reports every node it moved, so moving five is one entry in the history, not five.
+  onMove: (moves) => {
+    let next = null;
+    for (const m of moves) {
+      state.positions[m.id] = [m.x, m.y];
+      const node = (next || state.doc).nodes.find((n) => n.id === m.id);
+      if (node && (node.group || null) !== (m.group || null)) next = D.setNodeGroup(next || state.doc, m.id, m.group);
+    }
     commit(next, { coalesce: true });
   },
   onConnect: (from, to) => commit(D.addEdge(state.doc, from, to)),
@@ -277,11 +284,18 @@ const scene = new Scene($("#scene"), {
     if (value) state.bows[key] = value; else delete state.bows[key];
     commit(null, { coalesce: !reset });
   },
-  onRename: (id) => {
-    const node = state.doc.nodes.find((n) => n.id === id);
-    const value = prompt("Label", node.label || node.id);
-    if (value !== null) commit(D.setNodeField(state.doc, id, "label", value.trim()));
+  labelOf: (kind, ref) => {
+    if (kind === "node") { const n = state.doc.nodes.find((x) => x.id === ref); return n ? n.label || "" : null; }
+    if (kind === "edge") { const e = state.doc.edges[ref]; return e ? e.label || "" : null; }
+    const g = (state.doc.groups || []).find((x) => x.id === ref);
+    return g ? g.label || "" : null;
   },
+  onLabel: (kind, ref, value) => {
+    if (kind === "node") commit(D.setNodeField(state.doc, ref, "label", value));
+    if (kind === "edge") commit(D.setEdgeField(state.doc, ref, "label", value));
+    if (kind === "group") commit(D.setGroupField(state.doc, ref, "label", value));
+  },
+  onContext: (target, x, y) => showMenu(x, y, menuFor(target)),
 });
 
 const inspector = new Inspector($("#inspector"), {
@@ -335,6 +349,122 @@ const findings = new Findings($("#findings"), {
   },
 });
 
+// ---------------------------------------------------------------- commands on the selection
+// One implementation each, shared by the keyboard and the right click menu, and every one of
+// them goes through commit, which is what puts it in the undo history.
+
+function selectionIds() { return [...scene.multi]; }
+
+function deleteSelection() {
+  const s = scene.selection;
+  const ids = selectionIds();
+  scene.selection = { type: null, ref: null };
+  if (ids.length) { scene.multi = new Set(); return commit(D.deleteNodes(state.doc, ids)); }
+  scene.multi = new Set();
+  if (s.type === "edge") return commit(D.deleteEdge(state.doc, s.ref));
+  if (s.type === "group") return commit(D.deleteGroup(state.doc, s.ref));   // the boundary only
+  render();
+}
+
+function groupSelection() {
+  const ids = selectionIds();
+  if (!ids.length) return;
+  const { doc, id } = D.addGroup(state.doc, ids, "system");
+  scene.multi = new Set();
+  scene.selection = { type: "group", ref: id };
+  commit(doc);
+}
+
+function ungroup(id) {
+  scene.selection = { type: null, ref: null };
+  commit(D.deleteGroup(state.doc, id));
+}
+
+function deleteGroupAndNodes(id) {
+  scene.selection = { type: null, ref: null };
+  scene.multi = new Set();
+  commit(D.deleteGroupDeep(state.doc, id));
+}
+
+function duplicateSelection() {
+  const ids = selectionIds();
+  if (!ids.length) return;
+  const { doc, map } = D.duplicateNodes(state.doc, ids, state.catalogue);
+  for (const [from, to] of Object.entries(map)) {
+    const p = state.positions[from] || [40, 40];
+    state.positions[to] = [p[0] + 28, p[1] + 28];
+  }
+  const copies = Object.values(map);
+  scene.multi = new Set(copies);
+  scene.selection = { type: "node", ref: copies[copies.length - 1] };
+  commit(doc);
+}
+
+function nudge(dx, dy) {
+  const ids = selectionIds();
+  if (!ids.length) return;
+  for (const id of ids) {
+    const p = state.positions[id];
+    if (p) state.positions[id] = [p[0] + dx, p[1] + dy];
+  }
+  commit(null, { coalesce: true });
+}
+
+function selectAll() { scene.selectNodes(state.doc.nodes.map((n) => n.id)); }
+
+function releaseFromGroup() {
+  const ids = selectionIds();
+  if (!ids.length) return;
+  let doc = state.doc;
+  for (const id of ids) doc = D.setNodeGroup(doc, id, null);
+  commit(doc);
+}
+
+// What the right button offers, by what it was pressed on.
+function menuFor(target) {
+  const count = scene.multi.size;
+  if (target.type === "node") {
+    const grouped = state.doc.nodes.some((n) => scene.multi.has(n.id) && n.group);
+    return [
+      { label: "Rename label", hint: "double click", run: () => scene.editLabel("node", target.ref) },
+      { label: count > 1 ? `Group these ${count}` : "Group", hint: "G", run: groupSelection },
+      grouped ? { label: "Remove from group", run: releaseFromGroup } : null,
+      { label: count > 1 ? `Duplicate these ${count}` : "Duplicate", hint: "Ctrl D", run: duplicateSelection },
+      "-",
+      { label: count > 1 ? `Delete these ${count}` : "Delete", hint: "Del", danger: true, run: deleteSelection },
+    ];
+  }
+  if (target.type === "edge") {
+    const edge = state.doc.edges[target.ref];
+    return [
+      { label: "Edit label", hint: "double click", run: () => scene.editLabel("edge", target.ref) },
+      { label: "Reverse direction", run: () => commit(D.reverseEdge(state.doc, target.ref)) },
+      { label: edge && edge.mode === "async" ? "Make synchronous" : "Make asynchronous",
+        run: () => commit(D.setEdgeField(state.doc, target.ref, "mode", edge && edge.mode === "async" ? "sync" : "async")) },
+      { label: "Straighten", disabled: !state.bows[edgeKeys(state.doc)[target.ref]],
+        run: () => { delete state.bows[edgeKeys(state.doc)[target.ref]]; commit(null); } },
+      "-",
+      { label: "Delete", hint: "Del", danger: true, run: () => { scene.select(null, null); commit(D.deleteEdge(state.doc, target.ref)); } },
+    ];
+  }
+  if (target.type === "group") {
+    const members = D.groupMembers(state.doc, target.ref).length;
+    return [
+      { label: "Rename label", hint: "double click", run: () => scene.editLabel("group", target.ref) },
+      { label: "Select what is inside", run: () => scene.selectNodes(D.groupMembers(state.doc, target.ref)) },
+      "-",
+      { label: "Ungroup", hint: "Del", run: () => ungroup(target.ref) },
+      { label: `Delete the group and its ${members} component${members === 1 ? "" : "s"}`, danger: true,
+        run: () => deleteGroupAndNodes(target.ref) },
+    ];
+  }
+  return [
+    { label: "Select all", hint: "Ctrl A", disabled: !state.doc.nodes.length, run: selectAll },
+    { label: "Fit to the window", hint: "Ctrl 0", run: () => scene.fit() },
+    { label: "Tidy the layout", run: () => { autoLayout(); commit(null); scene.fit(); } },
+  ];
+}
+
 let palette = null;
 
 function createNode(componentId, at) {
@@ -352,7 +482,13 @@ async function boot() {
 
   const picker = $("#design-picker");
   for (const entry of index) addPickerOption(entry, false);
-  picker.addEventListener("change", () => openDesign(index.find((e) => e.path === picker.value)));
+  // state.index, not the boot snapshot: a design created in this session is in one and not the
+  // other, and switching to it has to work.
+  picker.addEventListener("change", () => {
+    const entry = state.index.find((e) => e.path === picker.value);
+    if (!entry) { $("#save-state").textContent = "no such design: " + picker.value; return; }
+    openDesign(entry).catch((e) => { $("#save-state").textContent = "could not open: " + e.message; });
+  });
 
   palette = new Palette($("#palette"), {
     search, catalogue, icons: state.icons,
@@ -384,6 +520,14 @@ $("#redo").addEventListener("click", redo);
 $("#zoom-fit").addEventListener("click", () => scene.fit());
 $("#zoom-100").addEventListener("click", () => { scene.view.k = 1; scene.applyView(); });
 $("#tidy").addEventListener("click", () => { autoLayout(); commit(null); scene.fit(); });
+$("#help-toggle").addEventListener("click", () => toggleHelp());
+function toggleHelp(force) {
+  const panel = $("#help");
+  const show = force === undefined ? panel.hidden : force;
+  panel.hidden = !show;
+  $("#help-toggle").setAttribute("aria-expanded", String(show));
+}
+
 $("#export-svg").addEventListener("click", () => files.download(`${state.doc.id}.svg`, scene.toSVG(), "image/svg+xml"));
 
 const canvas = $("#canvas-wrap");
@@ -395,33 +539,44 @@ canvas.addEventListener("drop", (ev) => {
   createNode(id, scene.toWorld(ev.clientX, ev.clientY));
 });
 
+const NUDGE = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
+
 window.addEventListener("keydown", (ev) => {
   const typing = /input|select|textarea/i.test(ev.target.tagName);
   const mod = ev.metaKey || ev.ctrlKey;
   if (mod && ev.key.toLowerCase() === "s") { ev.preventDefault(); save().catch((e) => alert("Save failed: " + e.message)); return; }
+  // Ctrl Z undoes; both of the two things people press to redo do redo.
   if (mod && ev.key.toLowerCase() === "z") { ev.preventDefault(); ev.shiftKey ? redo() : undo(); return; }
+  if (mod && ev.key.toLowerCase() === "y") { ev.preventDefault(); redo(); return; }
   if (mod && ev.key.toLowerCase() === "n") { ev.preventDefault(); newDesign(); return; }
   if (typing) return;
   if (mod && ev.key === "0") { ev.preventDefault(); scene.fit(); return; }
   if (mod && ev.key === "1") { ev.preventDefault(); scene.view.k = 1; scene.applyView(); return; }
-  if (ev.key === "Escape") { scene.select(null, null); return; }
-  if (ev.key === "Backspace" || ev.key === "Delete") {
-    const s = scene.selection;
-    if (!s.type) return;
+  if (mod && ev.key.toLowerCase() === "a") { ev.preventDefault(); selectAll(); return; }
+  if (mod && ev.key.toLowerCase() === "d") { ev.preventDefault(); duplicateSelection(); return; }
+  if (mod && ev.shiftKey && ev.key.toLowerCase() === "g") {
     ev.preventDefault();
-    scene.selection = { type: null, ref: null };
-    if (s.type === "node") commit(D.deleteNodes(state.doc, [s.ref]));
-    if (s.type === "edge") commit(D.deleteEdge(state.doc, s.ref));
-    if (s.type === "group") commit(D.deleteGroup(state.doc, s.ref));
+    if (scene.selection.type === "group") ungroup(scene.selection.ref);
     return;
   }
-  if (ev.key === "g" || ev.key === "G") {
-    const s = scene.selection;
-    if (s.type !== "node") return;
-    const { doc, id } = D.addGroup(state.doc, [s.ref], "system");
-    scene.selection = { type: "group", ref: id };
-    commit(doc);
+  if (ev.key === "?" || ev.key === "F1") { ev.preventDefault(); toggleHelp(); return; }
+  if (ev.key === "Escape") { closeMenu(); scene.closeEditor(); scene.cancel(); toggleHelp(false); scene.select(null, null); return; }
+  if (ev.key === "Enter" && scene.selection.type) { ev.preventDefault(); scene.editLabel(scene.selection.type, scene.selection.ref); return; }
+  if (NUDGE[ev.key]) {
+    if (!scene.multi.size) return;
+    ev.preventDefault();
+    const [dx, dy] = NUDGE[ev.key];
+    const step = ev.shiftKey ? 10 : 1;
+    nudge(dx * step, dy * step);
+    return;
   }
+  if (ev.key === "Backspace" || ev.key === "Delete") {
+    if (!scene.selection.type && !scene.multi.size) return;
+    ev.preventDefault();
+    deleteSelection();
+    return;
+  }
+  if (ev.key === "g" || ev.key === "G") { if (scene.multi.size) groupSelection(); }
 });
 
 window.addEventListener("beforeunload", (ev) => { if (state.dirty) { ev.preventDefault(); ev.returnValue = ""; } });

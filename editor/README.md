@@ -17,8 +17,12 @@ tripping exactly the rules their headers name.
 
 - **Palette.** All 1,623 components, searchable. `provider:aws` and `kind:queue` narrow it.
   Drag a row onto the canvas to place a node.
-- **Canvas.** Pan, zoom, drag nodes, pull an edge from a node's handle, press `G` to wrap the
-  selection in a group. Membership changes when you drop a node inside a frame.
+- **Canvas.** The gestures are the ones draw.io and Excalidraw already taught you: drag on
+  empty space to sweep a selection box, shift click to add or remove, the middle button or space
+  to pan, the wheel to zoom, and the right button for a menu about whatever is under it. Drag a
+  node's dot to draw an edge and the component it would land on lights up. Double click any label
+  to edit it where it is. Membership changes when you drop a node inside a frame, and dragging one
+  node of a selection drags all of them, as one entry in the history.
 - **Inspector.** Generated from the catalogue, never hard coded: a kind's properties, a
   component's own, the six optional edge fields, group kind and parent, and the whole
   `requirements` tree generated from the JSON Schema. A control shows the value the design would
@@ -26,6 +30,9 @@ tripping exactly the rules their headers name.
 - **Findings.** Structural errors block a save because the file would not be valid. Rule
   findings never block, because a real design can legitimately trip a rule. Click one to select
   and centre its subject.
+- **Boundaries.** Select components and press `G`, or right click and choose Group. Grouping
+  things that already share a boundary nests inside it rather than beside it. `Delete` on a
+  boundary removes the boundary and keeps what was in it; the menu also offers deleting both.
 - **New.** `New` starts a design in `designs/authored/<id>/`, the tier for designs made here:
   no external source, so no `mapping.yaml`, and no broken twin. It stays unsaved until it has at
   least one node, because a design with an empty node list is not valid.
@@ -37,15 +44,21 @@ tripping exactly the rules their headers name.
   null is a design nothing downstream can read. A file that arrives that way is repaired when it
   opens, and the repair is named in the status line rather than done quietly.
 - **Edges you can place.** Drag an edge to bow it away from whatever it collides with, which is
-  how you separate two edges running between the same pair. Double click an edge to hand it back
-  to the automatic path. Node positions and edge bows go to a `design.layout.json` sidecar,
-  never into the YAML, because the format has nowhere to put them.
+  how you separate two edges running between the same pair; its label rides the curve rather than
+  the control point, so it stays on the line however far you pull it. Right click an edge to
+  straighten it, reverse it, or switch it between sync and async. Node positions and edge bows go
+  to a `design.layout.json` sidecar, never into the YAML, because the format has nowhere to put
+  them.
 
 ## Keys
 
-`Ctrl N` new · `Ctrl S` save · `Ctrl Z` / `Ctrl Shift Z` undo and redo · `Ctrl 0` fit · `Ctrl 1` actual size ·
-`G` group the selection · `Delete` remove the selection · `Esc` deselect · double click a node to
-rename its label.
+`Ctrl N` new · `Ctrl S` save · `Ctrl Z` undo · `Ctrl Y` or `Ctrl Shift Z` redo · `Ctrl A` select
+every component · `Ctrl D` duplicate · `Ctrl 0` fit · `Ctrl 1` actual size · `G` group ·
+`Ctrl Shift G` ungroup · arrows nudge, with `Shift` for ten at a time · `Enter` edit the selected
+label · `Delete` remove the selection · `Esc` deselect · `?` the whole list, in the page.
+
+Every one of them, and every pointer gesture, goes through the same history: `Ctrl Z` takes it
+back and `Ctrl Y` puts it back.
 
 ## How it is built
 
@@ -58,8 +71,10 @@ importable by node, which is what makes it testable without a browser:
 | `core/document.js` | Pure document operations, including every cascade an id rename or a delete implies |
 | `core/structure.js` | The validator's own structural checks, message for message, plus a schema layer |
 | `core/rules.js` | The 36 rules, ported bug for bug, with subjects so a finding points at something |
+| `ui/scene.js` | The SVG scene and every pointer gesture on it |
+| `ui/menu.js` | The right click menu, which is data the scene's caller decides |
 | `core/layout.js` | The repository renderer's layout, ported number for number |
-| `core/geometry.js` | Edge paths, bows and group frames, derived from positions on every drag |
+| `core/geometry.js` | Edge paths, bows, label points and group frames, derived from positions on every drag |
 
 `editor/data/` is generated and committed:
 
@@ -78,5 +93,6 @@ byte-identical round trips on all 26 committed designs, rule parity with the val
 the message strings, structural parity on deliberately broken documents, a sweep that builds a
 one-node design for every one of the 1,623 components, layout equality with the Python renderer
 on all 324 node placements, bundle freshness, the write channel against a real server, the whole
-authoring cycle from New through seven saves, and the full repository gate after rewriting every
-design with the editor's own serialiser.
+authoring cycle from New through seven saves, what grouping, ungrouping, duplicating and
+reversing actually do to a document, and the full repository gate after rewriting every design
+with the editor's own serialiser.

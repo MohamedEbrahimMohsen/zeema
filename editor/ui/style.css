@@ -48,6 +48,8 @@ code { font: 11px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; background
 }
 #toolbar .group { display: flex; align-items: center; gap: 8px; }
 #autosave-wrap { display: flex; align-items: center; gap: 4px; color: var(--muted); font-size: 12px; cursor: pointer; }
+/* Status text can be a sentence; it says its piece on one line and takes no room from the toolbar. */
+#save-state { max-width: 26ch; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .brand { letter-spacing: .01em; }
 .sep { width: 1px; height: 20px; background: var(--border); }
 
@@ -123,3 +125,58 @@ h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: v
   main { grid-template-columns: 0 1fr 200px; }
   #palette { display: none; }
 }
+
+/* Pointer states. The empty canvas sweeps a selection box, space or the middle button pans. */
+#scene.hand { cursor: grab; }
+#scene.panning { cursor: grabbing; }
+.marquee { fill: var(--accent); fill-opacity: .07; stroke: var(--accent); stroke-width: 1; stroke-dasharray: 4 3; }
+
+.node-box.selected rect.body { stroke: var(--accent); stroke-width: 2; }
+.node-box.primary rect.body { stroke-width: 2.4; }
+.node-box.wire-target rect.body { stroke: var(--accent); stroke-width: 2.5; filter: drop-shadow(0 0 5px var(--accent)); }
+.node-box.wire-source rect.body { stroke-dasharray: 4 3; }
+.wire { stroke: var(--line); stroke-width: 1.4; fill: none; stroke-dasharray: 4 4; pointer-events: none; }
+.wire.live { stroke: var(--accent); stroke-width: 2; stroke-dasharray: none; }
+.frame-hit { fill: none; stroke: transparent; stroke-width: 16; pointer-events: stroke; cursor: pointer; }
+.frame.selected { stroke: var(--accent); stroke-width: 2; stroke-dasharray: 6 3; }
+.frame-label { cursor: pointer; }
+.edge-label { cursor: pointer; }
+
+/* Editing a label happens where the label is. */
+.inline-edit {
+  position: absolute; z-index: 5; padding: 2px 6px; border: 1px solid var(--accent);
+  border-radius: 6px; background: var(--panel); color: var(--ink); box-shadow: var(--shadow);
+  font: 13px/1.4 ui-sans-serif, system-ui, sans-serif; text-align: center;
+}
+
+/* The right click menu. */
+.menu {
+  position: fixed; z-index: 40; min-width: 190px; padding: 4px; background: var(--panel);
+  border: 1px solid var(--border); border-radius: 9px; box-shadow: var(--shadow);
+  display: flex; flex-direction: column;
+}
+.menu-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 18px;
+  background: none; border: 0; border-radius: 6px; padding: 5px 8px; text-align: left; width: 100%;
+}
+.menu-item:hover:not(:disabled) { background: var(--accent-soft); border-color: transparent; }
+.menu-item:disabled { opacity: .4; }
+.menu-item.danger .menu-label { color: var(--danger); }
+.menu-hint { font-size: 11px; color: var(--muted); }
+.menu-sep { height: 1px; background: var(--border); margin: 4px 2px; }
+.selection-count { display: inline-block; border-color: var(--accent); color: var(--accent); }
+
+/* The gesture sheet. Hidden until asked for, because the canvas is the point. */
+#help {
+  position: absolute; right: 12px; bottom: 12px; width: min(340px, calc(100% - 24px));
+  font-size: 12px; padding: 12px 14px;
+  background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+  box-shadow: var(--shadow); max-height: calc(100% - 24px); overflow: auto;
+}
+#help[hidden] { display: none; }
+#help h2 { margin: 10px 0 6px; }
+#help h2:first-child { margin-top: 0; }
+#help dl { display: grid; grid-template-columns: minmax(0, auto) 1fr; gap: 3px 12px; margin: 0; }
+#help dt { color: var(--ink); }
+#help dd { margin: 0; color: var(--muted); }
+#help-toggle { width: 26px; padding: 3px 0; text-align: center; }

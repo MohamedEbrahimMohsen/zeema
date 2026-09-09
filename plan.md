@@ -282,3 +282,34 @@ edges have no id to hang it on. An unknown key is dropped on load.
 
 Both are covered by the gate: `test_geometry.mjs` for keys, bows and the drag arithmetic, and
 `test_editor_server.mjs`, which starts the server and checks what it will and will not write.
+
+## 12. The second pass on the pointer
+
+The canvas worked and did not feel like a canvas. Everything here is a convention someone already
+has from draw.io or Excalidraw, so the correct design decision was almost always "do what those
+two do", and the interesting part is where the model made that impossible.
+
+- **Selection is a set.** Shift click adds and removes, a drag on empty space sweeps a box, and
+  dragging any member of a selection drags all of them as one entry in the history. The inspector
+  still edits one node, because its fields come from that node's component, so it says which one.
+- **The empty canvas no longer pans.** It sweeps. Panning moved to the middle button and to space
+  with the left button, which is where both of those editors put it.
+- **Labels are edited where they are**, on a node, an edge or a boundary, by an input placed over
+  the drawing rather than a browser prompt. Double click opens it, `Enter` commits, `Escape`
+  abandons, an emptied field deletes the key.
+- **The right button opens a menu about what is under it.** Group, ungroup, duplicate, reverse an
+  edge, switch it between sync and async, straighten it, delete. Nothing in it is unreachable
+  from the keyboard, and nothing in it bypasses `commit`.
+- **A boundary is now a thing you can hit.** Its border is a 16px stroke target, so a group is
+  reachable without finding its label. `Delete` on it removes the boundary and keeps the members,
+  which is the reading a keystroke can be trusted with; deleting the contents too is in the menu,
+  where it can say how many components it would take.
+- **Grouping nests.** Selecting things that already share a boundary and grouping them sets the
+  new group's `parent`, because frames are derived from membership and two crossing boundaries
+  would otherwise be drawn.
+- **An edge's label rides the curve.** It was drawn at the quadratic's control point, which sits
+  twice as far from the chord as the curve does, so a bowed edge left its label hundreds of pixels
+  away. `midpointOf` returns the curve at t = 0.5.
+
+`test_editing.mjs` covers the document side of all of it, and `?` in the page lists every gesture,
+because a canvas whose features can only be found by being told about them has not shipped them.
