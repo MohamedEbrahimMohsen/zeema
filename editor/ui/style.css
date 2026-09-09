@@ -194,3 +194,7 @@ h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: v
 #help dt { color: var(--ink); }
 #help dd { margin: 0; color: var(--muted); }
 #help-toggle { width: 26px; padding: 3px 0; text-align: center; }
+
+/* A control that cannot act says so rather than sitting there looking live. */
+#autosave-wrap.off { opacity: .4; cursor: not-allowed; }
+#autosave-wrap.off input { cursor: not-allowed; }

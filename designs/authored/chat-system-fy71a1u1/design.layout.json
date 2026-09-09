@@ -1,0 +1,42 @@
+{
+  "version": 2,
+  "nodes": {
+    "user": [
+      513,
+      336
+    ],
+    "load-balancer": [
+      260,
+      210
+    ],
+    "chat-servers": [
+      278,
+      538
+    ],
+    "presence-servers": [
+      449,
+      538
+    ],
+    "notification-servers": [
+      60,
+      538
+    ],
+    "api-servers": [
+      263,
+      374
+    ],
+    "kv-store": [
+      108,
+      702
+    ],
+    "kv-store-2": [
+      268,
+      702
+    ],
+    "kv-store-3": [
+      428,
+      702
+    ]
+  },
+  "edges": {}
+}

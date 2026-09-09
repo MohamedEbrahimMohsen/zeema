@@ -12,6 +12,7 @@ import { parse, serialize } from "../../editor/core/yaml.js";
 import { check } from "../../editor/core/structure.js";
 import { midpointOf, edgeGeometry, pathOf } from "../../editor/core/geometry.js";
 import { FORMATS, exportScene } from "../../editor/ui/export.js";
+import { routeOf, shortRouteOf, matchRoute } from "../../editor/ui/router.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const catalogue = JSON.parse(fs.readFileSync(path.join(ROOT, "editor/data/catalogue.json"), "utf8"));
@@ -261,6 +262,50 @@ check1("a clone carries the edits, under its own id", () => {
   assert.deepEqual(check(back, catalogue, { file: "chat-system-copy" }), []);
   assert.equal(original.includes('id: "chat-system"'), true);
   assert.equal(text.includes('id: "chat-system-copy"'), true, "only the id line moved");
+});
+
+// ---------------------------------------------------------------- the address bar
+
+const INDEX = [
+  { path: "designs/reference/doordash-delivery/design.yaml", tier: "reference", id: "doordash-delivery" },
+  { path: "designs/reference/doordash-delivery/design.broken.yaml", tier: "reference", id: "doordash-delivery" },
+  { path: "designs/imported/chat-system/design.yaml", tier: "imported", id: "chat-system" },
+  { path: "designs/authored/chat-system/design.yaml", tier: "authored", id: "chat-system" },
+  { path: "designs/authored/flowsaga/design.yaml", tier: "authored", id: "flowsaga" },
+];
+
+check1("a design's address names it, as shortly as it can", () => {
+  assert.equal(shortRouteOf(INDEX[4], INDEX), "/editor/flowsaga");
+  assert.equal(shortRouteOf(INDEX[0], INDEX), "/editor/doordash-delivery", "a broken twin is not an ambiguity");
+  // two tiers hold a chat-system, so the tier is part of the address
+  assert.equal(shortRouteOf(INDEX[2], INDEX), "/editor/imported/chat-system");
+  assert.equal(shortRouteOf(INDEX[3], INDEX), "/editor/authored/chat-system");
+  assert.equal(shortRouteOf(INDEX[1], INDEX), "/editor/reference/doordash-delivery/broken");
+});
+
+check1("an address opens the design it names", () => {
+  assert.equal(matchRoute("/editor/flowsaga", INDEX).path, INDEX[4].path);
+  assert.equal(matchRoute("/editor/imported/chat-system", INDEX).path, INDEX[2].path);
+  assert.equal(matchRoute("/editor/authored/chat-system", INDEX).path, INDEX[3].path);
+  assert.equal(matchRoute("/editor/reference/doordash-delivery/broken", INDEX).path, INDEX[1].path);
+  assert.equal(matchRoute("/editor/doordash-delivery", INDEX).path, INDEX[0].path, "the whole one, not the broken twin");
+  assert.equal(matchRoute("/editor/chat-system", INDEX).id, "chat-system", "an ambiguous id still opens one of them");
+});
+
+check1("an address that names nothing is no opinion, not an error", () => {
+  for (const url of ["/editor/", "/editor", "/editor/index.html", "/editor/deleted-design", "/", ""]) {
+    assert.equal(matchRoute(url, INDEX), null, url);
+  }
+  assert.equal(matchRoute("/editor/reference/flowsaga", INDEX), null, "the right id in the wrong tier is nothing");
+});
+
+check1("every address in the index survives a round trip", () => {
+  for (const entry of INDEX) {
+    const back = matchRoute(shortRouteOf(entry, INDEX), INDEX);
+    assert.equal(back && back.path, entry.path, entry.path);
+    const long = matchRoute(routeOf(entry), INDEX);
+    assert.equal(long && long.path, entry.path, `the long form of ${entry.path}`);
+  }
 });
 
 // ---------------------------------------------------------------- export

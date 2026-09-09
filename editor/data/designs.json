@@ -3,91 +3,91 @@
     "path": "designs/imported/chat-system/design.yaml",
     "tier": "imported",
     "id": "chat-system",
-    "editable": true,
+    "editable": false,
     "layout": "designs/imported/chat-system/design.layout.json"
   },
   {
     "path": "designs/imported/google-drive/design.yaml",
     "tier": "imported",
     "id": "google-drive",
-    "editable": true,
+    "editable": false,
     "layout": "designs/imported/google-drive/design.layout.json"
   },
   {
     "path": "designs/imported/key-value-store/design.yaml",
     "tier": "imported",
     "id": "key-value-store",
-    "editable": true,
+    "editable": false,
     "layout": "designs/imported/key-value-store/design.layout.json"
   },
   {
     "path": "designs/imported/news-feed/design.yaml",
     "tier": "imported",
     "id": "news-feed",
-    "editable": true,
+    "editable": false,
     "layout": "designs/imported/news-feed/design.layout.json"
   },
   {
     "path": "designs/imported/notification-system/design.yaml",
     "tier": "imported",
     "id": "notification-system",
-    "editable": true,
+    "editable": false,
     "layout": "designs/imported/notification-system/design.layout.json"
   },
   {
     "path": "designs/imported/notification-system-design/design.yaml",
     "tier": "imported",
     "id": "notification-system-design",
-    "editable": true,
+    "editable": false,
     "layout": "designs/imported/notification-system-design/design.layout.json"
   },
   {
     "path": "designs/imported/rate-limiter/design.yaml",
     "tier": "imported",
     "id": "rate-limiter",
-    "editable": true,
+    "editable": false,
     "layout": "designs/imported/rate-limiter/design.layout.json"
   },
   {
     "path": "designs/imported/scale-to-millions/design.yaml",
     "tier": "imported",
     "id": "scale-to-millions",
-    "editable": true,
+    "editable": false,
     "layout": "designs/imported/scale-to-millions/design.layout.json"
   },
   {
     "path": "designs/imported/search-autocomplete/design.yaml",
     "tier": "imported",
     "id": "search-autocomplete",
-    "editable": true,
+    "editable": false,
     "layout": "designs/imported/search-autocomplete/design.layout.json"
   },
   {
     "path": "designs/imported/url-shortener/design.yaml",
     "tier": "imported",
     "id": "url-shortener",
-    "editable": true,
+    "editable": false,
     "layout": "designs/imported/url-shortener/design.layout.json"
   },
   {
     "path": "designs/imported/web-crawler/design.yaml",
     "tier": "imported",
     "id": "web-crawler",
-    "editable": true,
+    "editable": false,
     "layout": "designs/imported/web-crawler/design.layout.json"
   },
   {
     "path": "designs/imported/youtube/design.yaml",
     "tier": "imported",
     "id": "youtube",
-    "editable": true,
+    "editable": false,
     "layout": "designs/imported/youtube/design.layout.json"
   },
   {
     "path": "designs/reference/doordash-delivery/design.yaml",
     "tier": "reference",
     "id": "doordash-delivery",
-    "editable": true,
+    "editable": false,
     "layout": "designs/reference/doordash-delivery/design.layout.json"
   },
   {
@@ -101,7 +101,7 @@
     "path": "designs/reference/multi-region-web/design.yaml",
     "tier": "reference",
     "id": "multi-region-web",
-    "editable": true,
+    "editable": false,
     "layout": "designs/reference/multi-region-web/design.layout.json"
   },
   {
@@ -115,7 +115,7 @@
     "path": "designs/reference/object-storage/design.yaml",
     "tier": "reference",
     "id": "object-storage",
-    "editable": true,
+    "editable": false,
     "layout": "designs/reference/object-storage/design.layout.json"
   },
   {
@@ -129,7 +129,7 @@
     "path": "designs/reference/order-processing/design.yaml",
     "tier": "reference",
     "id": "order-processing",
-    "editable": true,
+    "editable": false,
     "layout": "designs/reference/order-processing/design.layout.json"
   },
   {
@@ -143,7 +143,7 @@
     "path": "designs/reference/payment-system/design.yaml",
     "tier": "reference",
     "id": "payment-system",
-    "editable": true,
+    "editable": false,
     "layout": "designs/reference/payment-system/design.layout.json"
   },
   {
@@ -157,7 +157,7 @@
     "path": "designs/reference/slack-messaging/design.yaml",
     "tier": "reference",
     "id": "slack-messaging",
-    "editable": true,
+    "editable": false,
     "layout": "designs/reference/slack-messaging/design.layout.json"
   },
   {
@@ -171,7 +171,7 @@
     "path": "designs/reference/twitter-timeline/design.yaml",
     "tier": "reference",
     "id": "twitter-timeline",
-    "editable": true,
+    "editable": false,
     "layout": "designs/reference/twitter-timeline/design.layout.json"
   },
   {
@@ -180,6 +180,13 @@
     "id": "twitter-timeline",
     "editable": false,
     "layout": "designs/reference/twitter-timeline/design.broken.layout.json"
+  },
+  {
+    "path": "designs/authored/chat-system-fy71a1u1/design.yaml",
+    "tier": "authored",
+    "id": "chat-system-fy71a1u1",
+    "editable": true,
+    "layout": "designs/authored/chat-system-fy71a1u1/design.layout.json"
   },
   {
     "path": "designs/authored/flowsaga/design.yaml",

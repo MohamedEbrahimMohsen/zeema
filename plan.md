@@ -400,3 +400,32 @@ retargeted by pointer capture, and `elementFromPoint` returns nothing when the p
 layout, which is a real state inside an embedded pane. The last resort asks the model: the node
 under the point, else the nearest edge within a few pixels of its curve, else the innermost
 boundary. That one is ours and always knows.
+
+## 17. Read only, meant this time
+
+The tier rule shipped on the server and in the page's Save button, and a design was still
+overwritten. Two reasons, both the same mistake: trusting a flag from elsewhere.
+
+The page took `editable` from whatever answered `/api/designs`, and a server process started
+before the rule existed still reports the repository's own designs as writable. The committed
+`designs.json`, the fallback index, said the same. So the page believed it could write, left the
+autosave checkbox live, and a server old enough to agree wrote the file. The policy is now
+derived in the page from the tier, the bundle carries the same rule, and the autosave control is
+disabled with a title saying why. Three independent layers, each tested: the page will not ask,
+the bundle does not claim, and the server refuses.
+
+## 18. An address for a design
+
+`/editor/chat-system` opens it. `/editor/imported/chat-system` where two tiers hold the same id,
+`/editor/reference/doordash-delivery/broken` for a broken variant, and the address updates as
+designs are switched, with `replaceState` rather than `pushState`, because a picker is not
+navigation and filling someone's back button with every design they glanced at is rude.
+
+`router.js` is the whole feature and has no DOM in it: `shortRouteOf` picks the shortest address
+that still names one design, `matchRoute` goes back, and an address naming nothing returns null,
+which means "no opinion" and opens the editor normally rather than erroring on a stale link.
+
+The page moved to absolute references for its own stylesheet and module, and the generated bundle
+is now fetched relative to `import.meta.url`, so a page at `/editor/imported/chat-system` finds
+its assets. A `<base>` tag would have been the obvious way to do that and is the wrong one: it
+also retargets fragment references, and every icon on the canvas is a `url(#ic-...)`.

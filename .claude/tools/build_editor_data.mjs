@@ -128,7 +128,7 @@ for (const tier of ["imported", "reference", "authored"]) {
         path: rel,
         tier,
         id,
-        editable: file === "design.yaml",
+        editable: tier === "authored" && file === "design.yaml",
         layout: rel.replace(/\.yaml$/, ".layout.json"),
       });
     }

@@ -1,0 +1,63 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Cloned from designs/imported/chat-system/design.yaml in the Arkore canvas.
+# Imported 2026-09-08 from source/chat-system.md, a transcription of Figure 12-8 (the adjusted
+# high-level design, page 186) of "System Design Interview - An Insider's Guide" (Alex Xu),
+# Chapter 12: Design A Chat System, pages 178-199. The book is copyrighted; source/ holds the
+# citation and the transcription only.
+# Decisions, all recorded in mapping.yaml and notes.md:
+#   - Every box is unbranded, so the generic default components are used (web-browser,
+#     load-balancer-tier, container-service, nosql-store). No product is named anywhere in the
+#     figure; Zookeeper, HBase and Cassandra appear in the prose of other sections and are not
+#     drawn here.
+#   - The three "KV store" boxes are three separate boxes with the same caption, so three
+#     nodes; they sit in the unlabelled dashed boundary, a system group without a label.
+#   - Five arrow ends land on the "Real time service" boundary rather than on a box. The
+#     format has no edge-to-group, so each is attached to the box it is drawn under: the two
+#     under Chat servers and the two under Presence servers to those nodes, and the "ws" line,
+#     which lands on the top edge between them, to Chat servers, which is what the paragraph
+#     explaining Figure 12-8 says the client keeps its persistent connection to.
+#   - The four arrows into the KV store boundary land on the boundary, not on a KV store box;
+#     each is attached to the nearest KV store box, so Chat servers and Presence servers both
+#     reach the right-hand one.
+#   - props: chat servers are stateless: false because the chapter states the chat service is
+#     the only stateful service, and the User client is persistentConnection: true because the
+#     figure's own explanation says the client maintains a persistent WebSocket connection.
+#   - requirements.traffic.readWriteRatio comes from the storage section, which states the read
+#     to write ratio is about 1:1 for 1 on 1 chat apps.
+schemaVersion: "1"
+type: "design"
+id: "chat-system-fy71a1u1"
+
+requirements:
+  traffic:
+    readWriteRatio: 1
+
+groups:
+  - { id: "real-time-service", kind: "system", label: "Real time service" }
+  - { id: "kv-tier", kind: "system" }
+
+nodes:
+  - { id: "user", component: "user-device", label: "User", props: { persistentConnection: true } }
+  - { id: "load-balancer", component: "load-balancer-tier", label: "Load balancer" }
+  - { id: "chat-servers", component: "container-service", label: "Chat servers", group: "real-time-service", props: { stateless: false } }
+  - { id: "presence-servers", component: "container-service", label: "Presence servers", group: "real-time-service" }
+  - { id: "notification-servers", component: "container-service", label: "Notification servers" }
+  - { id: "api-servers", component: "container-service", label: "API servers" }
+  - { id: "kv-store", component: "nosql-store", label: "KV store", group: "kv-tier" }
+  - { id: "kv-store-2", component: "nosql-store", label: "KV store", group: "kv-tier" }
+  - { id: "kv-store-3", component: "nosql-store", label: "KV store", group: "kv-tier" }
+
+edges:
+  - { from: "user", to: "load-balancer", protocol: "http", mode: "sync" }
+  - { from: "user", to: "chat-servers", protocol: "ws", mode: "sync" }
+  - { from: "chat-servers", to: "user", protocol: "ws", mode: "async" }
+  - { from: "load-balancer", to: "api-servers", protocol: "http", mode: "sync" }
+  - { from: "api-servers", to: "notification-servers", protocol: "http", mode: "sync" }
+  - { from: "api-servers", to: "chat-servers", protocol: "http", mode: "sync" }
+  - { from: "chat-servers", to: "api-servers", protocol: "http", mode: "sync" }
+  - { from: "api-servers", to: "presence-servers", protocol: "http", mode: "sync" }
+  - { from: "presence-servers", to: "api-servers", protocol: "http", mode: "sync" }
+  - { from: "notification-servers", to: "kv-store", protocol: "kv", mode: "sync" }
+  - { from: "api-servers", to: "kv-store-2", protocol: "kv", mode: "sync" }
+  - { from: "chat-servers", to: "kv-store-3", protocol: "kv", mode: "sync" }
+  - { from: "presence-servers", to: "kv-store-3", protocol: "kv", mode: "sync" }

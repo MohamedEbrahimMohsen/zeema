@@ -8,7 +8,13 @@ repository validator accepts unchanged.
 node editor/serve.mjs
 ```
 
-Then open `http://localhost:8000/editor/`. That server is also the write channel: a save is a
+Then open `http://localhost:8000/editor/`. The address bar names the design, so a link to one is
+a link you can send: `/editor/chat-system`, or `/editor/imported/chat-system` where two tiers
+hold the same id, or `/editor/reference/doordash-delivery/broken` for a broken variant. Opening
+a design puts its address up; a link to one that no longer exists opens the editor rather than
+an error.
+
+That server is also the write channel: a save is a
 PUT back to the same path, so the editor edits the repository in place. It writes one tier:
 `designs/authored/`. The reference designs are curated and the imported ones are faithful to a
 source document, so neither can be saved over from an editing session; open one, change it, and
@@ -50,6 +56,10 @@ source document, so neither can be saved over from an editing session; open one,
 - **Arrange.** Places every component again, in layers from the sources down, by the same layout
   the repository's renderer uses. It replaces the positions of the whole design, which is why it
   is one `Ctrl Z` away, like everything else.
+- **Read only.** Whether a design can be written is decided from its tier, in the page, and not
+  taken on trust from the index it was handed, so an out of date server cannot hand back write
+  access to a curated design. Save is off, autosave is off and says why, and the server refuses
+  the write as well.
 - **Clone.** A reference or imported design can be edited on the canvas and not saved over.
   `Clone` writes what is on screen, unsaved edits and layout included, to
   `designs/authored/<id>/`, offering `<id>-copy`, then `-copy-2`, or an eight character random
@@ -94,6 +104,7 @@ importable by node, which is what makes it testable without a browser:
 | `core/rules.js` | The 36 rules, ported bug for bug, with subjects so a finding points at something |
 | `ui/scene.js` | The SVG scene and every pointer gesture on it |
 | `ui/export.js` | The drawing as a file: SVG, or that SVG painted onto a canvas |
+| `ui/router.js` | The address bar, both ways, over the design index |
 | `ui/menu.js` | The right click menu, which is data the scene's caller decides |
 | `core/layout.js` | The repository renderer's layout, ported number for number |
 | `core/geometry.js` | Edge paths, bows, label points and group frames, derived from positions on every drag |

@@ -16,6 +16,7 @@ import { Findings } from "./findings.js";
 import * as files from "./files.js";
 import { showMenu, closeMenu } from "./menu.js";
 import { exportScene } from "./export.js";
+import { matchRoute, shortRouteOf } from "./router.js";
 
 const $ = (sel) => document.querySelector(sel);
 const clone = (x) => JSON.parse(JSON.stringify(x));
@@ -95,6 +96,11 @@ function renderNow() {
   findings.render(findingsCache.structural, findingsCache.rules, state.catalogue);
   $("#save").disabled = !state.editable || findingsCache.structural.length > 0;
   $("#clone").disabled = !state.doc.nodes.length;
+  $("#autosave").disabled = !state.editable;
+  $("#autosave-wrap").classList.toggle("off", !state.editable);
+  $("#autosave-wrap").title = state.editable
+    ? "Save to disk a moment after each change"
+    : "This design is read only. Clone it and autosave applies to the copy.";
   $("#save-state").textContent = !state.editable
     ? (state.dirty ? "read only — Clone to keep these edits" : "read only — Clone to edit")
     : state.dirty ? "unsaved" : "saved";
@@ -188,7 +194,10 @@ async function openDesign(entry) {
   state.baseHash = hash(text);
   state.path = entry.path;
   state.layoutPath = entry.layout;
-  state.editable = entry.editable !== false;
+  // Whether a design can be written is decided here, from the tier, and not taken on trust from
+  // whatever answered /api/designs. A server started before this rule existed still reports the
+  // repository's own designs as editable, and the answer to that must not be to write to them.
+  state.editable = entry.tier === "authored" && entry.editable !== false;
   state.doc = doc; state.cst = cst;
   state.undo = []; state.redo = []; state.dirty = false;
   state.positions = {}; state.bows = {};
@@ -209,6 +218,7 @@ async function openDesign(entry) {
   if (repaired.length) state.dirty = true;
   render();
   scene.fit();
+  showInAddressBar(entry);
   if (restored) $("#save-state").textContent = "unsaved work restored";
   else if (repaired.length) $("#save-state").textContent = "repaired on open: " + repaired.join("; ");
   document.title = `${doc.id} — Arkore canvas`;
@@ -317,12 +327,24 @@ function cloneDesign() {
   ]);
 }
 
+// The address bar follows the design, so the link in it is always the link to what is on
+// screen. replaceState rather than pushState while switching designs: the picker is not
+// navigation, and filling someone's back button with every design they glanced at is rude.
+// A real navigation, the back button included, comes back through popstate.
+function showInAddressBar(entry, push = false) {
+  try {
+    const route = shortRouteOf(entry, state.index);
+    if (route === location.pathname) return;
+    history[push ? "pushState" : "replaceState"]({ path: entry.path }, "", route);
+  } catch { /* a page opened from a file:// URL has no history to write */ }
+}
+
 function addPickerOption(entry, select) {
   const picker = $("#design-picker");
   const o = document.createElement("option");
   o.value = entry.path;
   const why = entry.path.endsWith("design.broken.yaml") ? "broken, read only"
-    : entry.editable === false ? "read only" : null;
+    : entry.tier !== "authored" ? "read only" : null;
   o.textContent = `${entry.id}${why ? ` (${why})` : ""} · ${entry.tier}`;
   picker.append(o);
   if (select) picker.value = entry.path;
@@ -597,9 +619,19 @@ async function boot() {
     onCreate: (id) => createNode(id, null),
   });
 
+  window.addEventListener("popstate", () => {
+    const entry = matchRoute(location.pathname, state.index) || state.index[0];
+    if (!entry || entry.path === state.path) return;
+    picker.value = entry.path;
+    openDesign(entry).catch((e) => notify("could not open: " + e.message));
+  });
+
   try { $("#autosave").checked = localStorage.getItem("arkore-canvas:autosave") === "1"; } catch {}
   try { setTheme(localStorage.getItem("arkore-canvas:theme") || "system"); } catch { setTheme("system"); }
-  const first = index.find((e) => e.path.includes("chat-system")) || index[0];
+  // What the address bar asks for wins; a link to a design that no longer exists opens the
+  // editor on something rather than on an error.
+  const asked = matchRoute(location.pathname, index);
+  const first = asked || index.find((e) => e.path.includes("chat-system")) || index[0];
   picker.value = first.path;
   await openDesign(first);
 

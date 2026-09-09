@@ -104,6 +104,9 @@ const server = http.createServer((req, res) => {
   if (req.method !== "GET" && req.method !== "HEAD") { res.writeHead(405).end(); return; }
   let target = full;
   if (fs.existsSync(target) && fs.statSync(target).isDirectory()) target = path.join(target, "index.html");
+  // /editor/imported/chat-system is a design, not a file: the address names what to open, and
+  // the editor works out the rest, so any address under /editor/ that is not a file is the page.
+  if (!fs.existsSync(target) && url.startsWith("/editor/")) target = path.join(ROOT, "editor", "index.html");
   if (!fs.existsSync(target)) { res.writeHead(404, { "content-type": "text/plain" }).end("not found"); return; }
   const body = fs.readFileSync(target);
   res.writeHead(200, {

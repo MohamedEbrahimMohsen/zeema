@@ -89,12 +89,14 @@ check("designs: one row per design file on disk, broken variants not editable", 
     }
   }
   assert.deepEqual(d.map((x) => x.path).sort(), onDisk.sort());
-  assert.equal(d.filter((x) => x.editable === false).length, onDisk.filter((p) => p.endsWith("design.broken.yaml")).length);
+  // The bundle is the fallback index, so it has to carry the same policy the server enforces:
+  // only a design in the authored tier can be written back.
+  assert.equal(d.filter((x) => x.editable).length, onDisk.filter((p) => p.startsWith("designs/authored/")).length);
   for (const row of d) {
     assert.ok(fs.existsSync(path.join(ROOT, row.path)), `${row.path} missing`);
     assert.ok(TIERS.includes(row.tier));
     assert.equal(row.layout, row.path.replace(/\.yaml$/, ".layout.json"));
-    assert.equal(row.editable, path.basename(row.path) === "design.yaml");
+    assert.equal(row.editable, row.tier === "authored" && path.basename(row.path) === "design.yaml", row.path);
     assert.equal(row.path, `designs/${row.tier}/${row.id}/${path.basename(row.path)}`);
   }
 });
