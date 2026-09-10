@@ -11,6 +11,9 @@ nodes:
   - { id: "azure-functions", component: "azure-functions" }
   - { id: "sdk-client", component: "sdk-client" }
   - { id: "sdk-client-3", component: "sdk-client" }
+  - { id: "gatling", component: "gatling" }
+  - { id: "aws-bedrock", component: "aws-bedrock" }
+  - { id: "azure-aks-edge-essentials", component: "azure-aks-edge-essentials" }
 edges:
   - from: "abc"
     to: "azure-functions-6"

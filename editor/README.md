@@ -58,8 +58,9 @@ source document, so neither can be saved over from an editing session; open one,
   is one `Ctrl Z` away, like everything else.
 - **Read only.** Whether a design can be written is decided from its tier, in the page, and not
   taken on trust from the index it was handed, so an out of date server cannot hand back write
-  access to a curated design. Save is off, autosave is off and says why, and the server refuses
-  the write as well.
+  access to a curated design. Save is off, autosave is off and says why, the crash net keeps no
+  draft of it, and the server refuses the write as well. A reference design opens as what is on
+  disk, every time; the browser's own "leave site?" prompt is what guards a stray reload.
 - **Clone.** A reference or imported design can be edited on the canvas and not saved over.
   `Clone` writes what is on screen, unsaved edits and layout included, to
   `designs/authored/<id>/`, offering `<id>-copy`, then `-copy-2`, or an eight character random
@@ -105,6 +106,7 @@ importable by node, which is what makes it testable without a browser:
 | `ui/scene.js` | The SVG scene and every pointer gesture on it |
 | `ui/export.js` | The drawing as a file: SVG, or that SVG painted onto a canvas |
 | `ui/router.js` | The address bar, both ways, over the design index |
+| `ui/drafts.js` | The crash net: what is mirrored to the browser's store, and onto which file it may come back |
 | `ui/menu.js` | The right click menu, which is data the scene's caller decides |
 | `core/layout.js` | The repository renderer's layout, ported number for number |
 | `core/geometry.js` | Edge paths, bows, label points and group frames, derived from positions on every drag |

@@ -13,6 +13,7 @@ import { check } from "../../editor/core/structure.js";
 import { midpointOf, edgeGeometry, pathOf } from "../../editor/core/geometry.js";
 import { FORMATS, exportScene } from "../../editor/ui/export.js";
 import { routeOf, shortRouteOf, matchRoute } from "../../editor/ui/router.js";
+import { memoryStore, keepDraft, takeDraft, dropDraft, sweepDrafts, draftKey } from "../../editor/ui/drafts.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const catalogue = JSON.parse(fs.readFileSync(path.join(ROOT, "editor/data/catalogue.json"), "utf8"));
@@ -262,6 +263,69 @@ check1("a clone carries the edits, under its own id", () => {
   assert.deepEqual(check(back, catalogue, { file: "chat-system-copy" }), []);
   assert.equal(original.includes('id: "chat-system"'), true);
   assert.equal(text.includes('id: "chat-system-copy"'), true, "only the id line moved");
+});
+
+// ---------------------------------------------------------------- the crash net
+
+const editing = (over) => ({ path: "designs/authored/mine/design.yaml", editable: true, dirty: true,
+  baseHash: "abc", doc: { id: "mine" }, positions: { a: [1, 2] }, bows: {}, ...over });
+
+check1("work on a design that can be saved is kept, and comes back", () => {
+  const store = memoryStore();
+  assert.equal(keepDraft(store, editing()), true);
+  const back = takeDraft(store, editing());
+  assert.deepEqual(back.doc, { id: "mine" });
+  assert.deepEqual(back.positions, { a: [1, 2] });
+});
+
+// The complaint this exists to answer: move a component on a reference design, reload, and the
+// move is still there, which looks exactly like having saved over a curated design.
+check1("work on a design that cannot be saved is never kept", () => {
+  const store = memoryStore();
+  const readOnly = editing({ path: "designs/imported/chat-system/design.yaml", editable: false });
+  assert.equal(keepDraft(store, readOnly), false);
+  assert.deepEqual(store.keys(), [], "nothing was written");
+  assert.equal(takeDraft(store, readOnly), null);
+});
+
+check1("a draft kept before that rule existed is dropped rather than applied", () => {
+  const path = "designs/imported/chat-system/design.yaml";
+  const store = memoryStore({ [draftKey(path)]: JSON.stringify({ base: "abc", doc: { id: "x" } }) });
+  assert.equal(takeDraft(store, { path, editable: false, baseHash: "abc" }), null);
+  assert.deepEqual(store.keys(), [], "and it is gone, not left to surprise the next person");
+});
+
+check1("a draft is only applied to the file it was taken from", () => {
+  const store = memoryStore();
+  keepDraft(store, editing());
+  assert.equal(takeDraft(store, editing({ baseHash: "changed-underneath" })), null);
+  assert.deepEqual(store.keys(), [], "a stale draft is dropped, never applied");
+});
+
+check1("the sweep clears everything that can no longer be written", () => {
+  const index = [
+    { path: "designs/authored/mine/design.yaml", tier: "authored", editable: true },
+    { path: "designs/imported/chat-system/design.yaml", tier: "imported", editable: false },
+  ];
+  const store = memoryStore({
+    [draftKey("designs/authored/mine/design.yaml")]: "{}",
+    [draftKey("designs/imported/chat-system/design.yaml")]: "{}",
+    [draftKey("designs/authored/deleted/design.yaml")]: "{}",
+    "arkore-canvas:autosave": "1",
+  });
+  const removed = sweepDrafts(store, index);
+  assert.equal(removed.length, 2);
+  assert.deepEqual(store.keys().sort(), ["arkore-canvas:autosave", draftKey("designs/authored/mine/design.yaml")].sort(),
+    "the editable design's draft and the unrelated setting are left alone");
+});
+
+check1("a store that throws is no crash net, not a broken editor", () => {
+  const angry = { getItem() { throw new Error("blocked"); }, setItem() { throw new Error("blocked"); },
+    removeItem() { throw new Error("blocked"); }, keys() { throw new Error("blocked"); } };
+  assert.equal(keepDraft(angry, editing()), false);
+  assert.equal(takeDraft(angry, editing()), null);
+  assert.deepEqual(sweepDrafts(angry, []), []);
+  dropDraft(angry, "designs/authored/mine/design.yaml");         // must not throw
 });
 
 // ---------------------------------------------------------------- the address bar

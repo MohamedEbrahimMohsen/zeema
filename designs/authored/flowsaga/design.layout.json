@@ -24,6 +24,18 @@
     "sdk-client-3": [
       380,
       46
+    ],
+    "gatling": [
+      -15,
+      204
+    ],
+    "aws-bedrock": [
+      36,
+      337
+    ],
+    "azure-aks-edge-essentials": [
+      -3,
+      138
     ]
   },
   "edges": {

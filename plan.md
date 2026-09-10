@@ -429,3 +429,23 @@ The page moved to absolute references for its own stylesheet and module, and the
 is now fetched relative to `import.meta.url`, so a page at `/editor/imported/chat-system` finds
 its assets. A `<base>` tag would have been the obvious way to do that and is the wrong one: it
 also retargets fragment references, and every icon on the canvas is a `url(#ic-...)`.
+
+## 19. Read only, the third time
+
+Move a component on a reference design, reload, and the move is still there. Nothing had been
+written: the file on disk was byte for byte what it had always been. What came back was the
+crash net, the localStorage mirror that exists so an accidental reload does not lose work on its
+way to a file. Work on a reference design is not on its way to that file, and restoring it shows
+a curated design as something other than what is on disk, which is indistinguishable from having
+saved over it.
+
+A design that cannot be saved now keeps no draft, restores none, and has any draft kept under
+the old rule dropped when it is opened; the boot sweep clears them all without waiting for
+someone to open one. An accidental reload is still guarded, by the browser's own prompt, which
+`beforeunload` already raises whenever there are unsaved changes.
+
+The rule moved into `ui/drafts.js` with the store as an argument, because this is the third
+thing to leak through the read-only boundary after the server and the Save button, and each of
+the three was found by a person rather than by the gate. It is six checks now: kept when it can
+be saved, never when it cannot, dropped when the file changed underneath, swept for designs that
+are no longer writable or no longer exist, and a store that throws leaves the editor working.

@@ -17,6 +17,7 @@ import * as files from "./files.js";
 import { showMenu, closeMenu } from "./menu.js";
 import { exportScene } from "./export.js";
 import { matchRoute, shortRouteOf } from "./router.js";
+import * as drafts from "./drafts.js";
 
 const $ = (sel) => document.querySelector(sel);
 const clone = (x) => JSON.parse(JSON.stringify(x));
@@ -148,41 +149,16 @@ function redo() {
 }
 
 
-// ---------------------------------------------------------------- autosave
-// Unsaved work survives a reload, but only on top of the same file: the base text is hashed at
-// open, and a restore happens only when the file on disk still hashes the same. A design that
-// changed underneath is never silently overwritten by stale edits.
+// ---------------------------------------------------------------- the crash net
+// Unsaved work survives a reload. Which work, and onto which file, is drafts.js's decision;
+// this is the wiring: hash the text at open, mirror after a pause, drop it once it is on disk.
 
 const hash = (text) => { let h = 2166136261; for (let i = 0; i < text.length; i++) { h ^= text.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36); };
-const draftKey = (path) => "arkore-canvas:" + path;
-
-function saveDraft() {
-  if (!state.path || !state.dirty) return;
-  try {
-    localStorage.setItem(draftKey(state.path), JSON.stringify({
-      base: state.baseHash, doc: state.doc, positions: state.positions, bows: state.bows, at: Date.now(),
-    }));
-  } catch { /* a full or blocked store is not a reason to stop editing */ }
-}
-
-function restoreDraft() {
-  try {
-    const raw = localStorage.getItem(draftKey(state.path));
-    if (!raw) return false;
-    const draft = JSON.parse(raw);
-    if (draft.base !== state.baseHash) { localStorage.removeItem(draftKey(state.path)); return false; }
-    state.doc = draft.doc;
-    state.positions = draft.positions || state.positions;
-    state.bows = draft.bows || {};
-    state.dirty = true;
-    return true;
-  } catch { return false; }
-}
-
-function clearDraft() { try { localStorage.removeItem(draftKey(state.path)); } catch {} }
+const store = drafts.browserStore();
 
 let draftTimer = null;
-function scheduleDraft() { clearTimeout(draftTimer); draftTimer = setTimeout(saveDraft, 500); }
+function scheduleDraft() { clearTimeout(draftTimer); draftTimer = setTimeout(() => drafts.keepDraft(store, state), 500); }
+function clearDraft() { drafts.dropDraft(store, state.path); }
 
 // ---------------------------------------------------------------- files
 
@@ -212,7 +188,14 @@ async function openDesign(entry) {
     const live = new Set(edgeKeys(state.doc));
     for (const [key, bow] of Object.entries(saved.edges)) if (live.has(key)) state.bows[key] = bow;
   }
-  const restored = restoreDraft();
+  const draft = drafts.takeDraft(store, state);
+  if (draft) {
+    state.doc = draft.doc;
+    state.positions = draft.positions || state.positions;
+    state.bows = draft.bows || {};
+    state.dirty = true;
+  }
+  const restored = !!draft;
   scene.selection = { type: null, ref: null };
   scene.multi = new Set();
   if (repaired.length) state.dirty = true;
@@ -625,6 +608,8 @@ async function boot() {
     picker.value = entry.path;
     openDesign(entry).catch((e) => notify("could not open: " + e.message));
   });
+
+  drafts.sweepDrafts(store, index);
 
   try { $("#autosave").checked = localStorage.getItem("arkore-canvas:autosave") === "1"; } catch {}
   try { setTheme(localStorage.getItem("arkore-canvas:theme") || "system"); } catch { setTheme("system"); }
