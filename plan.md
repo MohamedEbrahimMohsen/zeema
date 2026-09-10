@@ -1,5 +1,10 @@
 # Arkore canvas: plan
 
+> **Superseded as a description of the system by [`docs/plan.md`](docs/plan.md).**
+> That file describes everything Arkore is today (Part I) and the Phase 2 community
+> platform (Part II), and is the one to read first. This file is kept as the build
+> journal: sections 1-19, one per pass, in the order the work actually happened.
+
 A drag and drop editor for Arkore designs. Drag a component from a palette onto an infinite
 canvas, connect nodes, wrap them in boundaries, set typed properties; what comes out is a
 `design.yaml` that the repository validator accepts unchanged.
