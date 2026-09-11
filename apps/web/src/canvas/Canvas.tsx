@@ -833,103 +833,115 @@ export function Canvas(props: Props) {
       <div className="toolbar">
         <Link
           href={`/d/${props.owner}/${props.slug}`}
-          className="btn no-underline"
+          className="btn btn-ghost no-underline"
           title="Back to the design page"
         >
-          ← {props.title}
+          ←
         </Link>
-        {props.canWrite ? (
-          <>
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={() => void save()}
-              disabled={blocking}
-              title={blocking ? "Fix structural errors first" : "Ctrl S"}
-            >
-              Save
-            </button>
-            <label className="flex items-center gap-1 text-xs">
-              <input
-                type="checkbox"
-                checked={autosave}
-                onChange={(ev) => setAutosave(ev.target.checked)}
-              />{" "}
-              auto
-            </label>
-          </>
-        ) : props.canClone ? (
-          <button type="button" className="btn btn-primary" onClick={doClone}>
-            Clone to edit
-          </button>
-        ) : (
-          <a
-            className="btn btn-primary no-underline"
-            href={`/signin?next=/d/${props.owner}/${props.slug}/canvas`}
-          >
-            Sign in to clone
-          </a>
-        )}
+        <span className="doc-title" title={props.title}>
+          {props.title}
+        </span>
         <span
-          className={`status text-xs ${status.includes("fail") || status.includes("conflict") ? "sev-error" : "muted"}`}
+          className={`status ${status.includes("fail") || status.includes("conflict") ? "status-err" : status === "saved" ? "status-ok" : status === "unsaved" ? "status-warn" : ""}`}
         >
           {status}
         </span>
-        <span className="mx-1 muted">|</span>
-        <button
-          type="button"
-          className="btn"
-          onClick={undo}
-          disabled={!e?.undo.length}
-          title="Ctrl Z"
-        >
-          Undo
-        </button>
-        <button
-          type="button"
-          className="btn"
-          onClick={redo}
-          disabled={!e?.redo.length}
-          title="Ctrl Y"
-        >
-          Redo
-        </button>
-        <button
-          type="button"
-          className="btn"
-          onClick={() => sceneRef.current?.fit()}
-          title="Ctrl 0"
-        >
-          Fit
-        </button>
-        <button
-          type="button"
-          className="btn"
-          onClick={arrange}
-          title="Lay every component out again"
-        >
-          Arrange
-        </button>
-        <button type="button" className="btn" onClick={() => doExport("svg")}>
-          SVG
-        </button>
-        <button type="button" className="btn" onClick={() => doExport("png")}>
-          PNG
-        </button>
-        {props.canWrite ? (
+        <span className="sep" />
+        <div className="group">
+          {props.canWrite ? (
+            <>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => void save()}
+                disabled={blocking}
+                title={blocking ? "Fix structural errors first" : "Ctrl S"}
+              >
+                Save <kbd>⌃S</kbd>
+              </button>
+              <label className="auto">
+                <input
+                  type="checkbox"
+                  checked={autosave}
+                  onChange={(ev) => setAutosave(ev.target.checked)}
+                />
+                auto
+              </label>
+              <button
+                type="button"
+                className="btn"
+                onClick={doClone}
+                title="A private copy in your account"
+              >
+                Clone
+              </button>
+            </>
+          ) : props.canClone ? (
+            <button type="button" className="btn btn-primary" onClick={doClone}>
+              Clone to edit
+            </button>
+          ) : (
+            <a
+              className="btn btn-primary no-underline"
+              href={`/signin?next=/d/${props.owner}/${props.slug}/canvas`}
+            >
+              Sign in to clone
+            </a>
+          )}
+        </div>
+        <span className="sep" />
+        <div className="group">
           <button
             type="button"
             className="btn"
-            onClick={doClone}
-            title="A private copy in your account"
+            onClick={undo}
+            disabled={!e?.undo.length}
+            title="Ctrl Z"
           >
-            Clone
+            Undo <kbd>⌃Z</kbd>
           </button>
-        ) : null}
-        <span className={`ml-auto text-xs ${blocking ? "sev-error" : "muted"}`}>{summary}</span>
+          <button
+            type="button"
+            className="btn"
+            onClick={redo}
+            disabled={!e?.redo.length}
+            title="Ctrl Y"
+          >
+            Redo <kbd>⌃Y</kbd>
+          </button>
+        </div>
+        <span className="sep" />
+        <div className="group">
+          <button
+            type="button"
+            className="btn"
+            onClick={() => sceneRef.current?.fit()}
+            title="Ctrl 0"
+          >
+            Fit <kbd>⌃0</kbd>
+          </button>
+          <button
+            type="button"
+            className="btn"
+            onClick={arrange}
+            title="Lay every component out again"
+          >
+            Arrange
+          </button>
+        </div>
+        <span className="sep" />
+        <div className="group">
+          <button type="button" className="btn" onClick={() => doExport("svg")}>
+            SVG
+          </button>
+          <button type="button" className="btn" onClick={() => doExport("png")}>
+            PNG
+          </button>
+        </div>
+        <span className={`ml-auto status ${blocking ? "status-err" : ""}`}>{summary}</span>
         <button
           type="button"
-          className="btn"
+          className="btn btn-ghost"
           onClick={() => setHelp((h) => !h)}
           title="Keys and gestures"
         >
@@ -945,7 +957,7 @@ export function Canvas(props: Props) {
               onCreate={(id) => addComponent(id)}
             />
           ) : (
-            <div className="muted p-3 text-xs">Loading the catalogue…</div>
+            <div className="muted p-3 small">Loading the catalogue…</div>
           )}
         </aside>
         <div className="scene-wrap">
@@ -966,9 +978,9 @@ export function Canvas(props: Props) {
             </div>
           ) : null}
           {help ? (
-            <div className="panel absolute right-3 top-3 z-10 p-3 text-xs" style={{ width: 300 }}>
-              <div className="mb-1 font-medium">Keys and gestures</div>
-              <ul className="space-y-1">
+            <div className="panel help">
+              <div className="label">Keys and gestures</div>
+              <ul>
                 <li>Drag a component from the palette, or double-click it.</li>
                 <li>Drag a node's dot to another node to wire an edge.</li>
                 <li>Drag an edge to bow it; right-click to reverse or switch sync/async.</li>

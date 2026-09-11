@@ -22,9 +22,7 @@ export function FindingsPanel({
   onSelect: (s: Subject) => void;
 }) {
   if (!structural.length && !rules.length)
-    return (
-      <div className="muted text-xs">Nothing to report. The design is valid and trips no rule.</div>
-    );
+    return <div className="meta">Nothing to report. The design is valid and trips no rule.</div>;
   const row = (
     f: CanvasFinding,
     severity: string,
@@ -40,7 +38,7 @@ export function FindingsPanel({
     >
       <div className="dot" />
       <div>
-        <div className={blocking ? "sev-error" : ""}>{f.message}</div>
+        <div className="msg">{f.message}</div>
         <div className="rule">
           {rule}
           {f.subject && f.subject.ref !== null && f.subject.ref !== undefined

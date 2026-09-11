@@ -85,39 +85,44 @@ export function DesignActions({
   return (
     <div className="flex flex-wrap items-center gap-2">
       <a
-        className={`btn ${canWrite ? "btn-primary" : ""} no-underline`}
+        className={`btn btn-sm ${canWrite ? "btn-primary" : ""} no-underline`}
         href={`/d/${owner}/${slug}/canvas`}
       >
         {canWrite ? "Open in canvas" : "View in canvas"}
       </a>
       {canWrite ? (
-        <a className="btn no-underline" href={`/d/${owner}/${slug}/edit`}>
+        <a className="btn btn-sm no-underline" href={`/d/${owner}/${slug}/edit`}>
           Edit YAML
         </a>
       ) : null}
       {canClone ? (
-        <button type="button" className="btn" onClick={clone} disabled={busy !== null}>
-          {busy === "clone" ? "Cloning…" : "Clone"}
+        <button type="button" className="btn btn-sm" onClick={clone} disabled={busy !== null}>
+          {busy === "clone" ? "cloning…" : "Clone"}
         </button>
       ) : !signedIn ? (
-        <a className="btn no-underline" href={`/signin?next=/d/${owner}/${slug}`}>
+        <a className="btn btn-sm no-underline" href={`/signin?next=/d/${owner}/${slug}`}>
           Sign in to clone
         </a>
       ) : null}
-      <button type="button" className="btn" onClick={exportSvg}>
+      <button type="button" className="btn btn-sm" onClick={exportSvg}>
         Export SVG
       </button>
-      <a className="btn no-underline" href={`${base}/yaml`} target="_blank" rel="noreferrer">
+      <a className="btn btn-sm no-underline" href={`${base}/yaml`} target="_blank" rel="noreferrer">
         YAML
       </a>
       {canWrite && !isCurated ? (
         <>
-          <button type="button" className="btn" onClick={toggleVisibility} disabled={busy !== null}>
+          <button
+            type="button"
+            className="btn btn-sm"
+            onClick={toggleVisibility}
+            disabled={busy !== null}
+          >
             {visibility === "public" ? "Make private" : "Make public"}
           </button>
           <button
             type="button"
-            className="btn btn-danger"
+            className="btn btn-sm btn-danger"
             onClick={remove}
             disabled={busy !== null}
           >
@@ -125,7 +130,7 @@ export function DesignActions({
           </button>
         </>
       ) : null}
-      {error ? <span className="sev-error text-sm">{error}</span> : null}
+      {error ? <span className="status status-err">{error}</span> : null}
     </div>
   );
 }

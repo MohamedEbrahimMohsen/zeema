@@ -5,8 +5,10 @@ import { createHash } from "node:crypto";
 import { and, desc, eq, ilike, isNull, or, sql } from "drizzle-orm";
 import { getDb, schema } from "@/db";
 import type { Design, DesignVersion, User } from "@/db/schema";
+import { brandMarkFor } from "./brand";
 import { type Catalogue, getCatalogue } from "./catalogue";
 import { analyse } from "./lint";
+import { type Sketch, sketchOf } from "./sketch";
 
 export class ServiceError extends Error {
   constructor(
@@ -50,6 +52,10 @@ export type DesignSummary = {
   stats: { viewCount: number; cloneCount: number; exportCount: number };
   providers: string[];
   nodeCount: number;
+  /** Brand mark inner-SVG for a well-known product, else null. */
+  brand: string | null;
+  /** The engine's layout of the current version, for the card thumbnail. */
+  sketch: Sketch | null;
 };
 
 export const ownerSegment = (owner: { username: string } | null) => owner?.username ?? "arkore";
@@ -234,10 +240,16 @@ export async function listDesigns(
           ? desc(schema.designs.createdAt)
           : desc(schema.designs.updatedAt);
   const rows = await db
-    .select({ design: schema.designs, ownerName: schema.users.username, stats: schema.designStats })
+    .select({
+      design: schema.designs,
+      ownerName: schema.users.username,
+      stats: schema.designStats,
+      yaml: schema.designVersions.yaml,
+    })
     .from(schema.designs)
     .leftJoin(schema.users, eq(schema.users.id, schema.designs.ownerId))
     .leftJoin(schema.designStats, eq(schema.designStats.designId, schema.designs.id))
+    .leftJoin(schema.designVersions, eq(schema.designVersions.id, schema.designs.currentVersionId))
     .where(where)
     .orderBy(order, desc(schema.designs.id))
     .limit(pageSize)
@@ -246,8 +258,9 @@ export async function listDesigns(
     .select({ count: sql<number>`count(*)::int` })
     .from(schema.designs)
     .where(where);
+  const cat = getCatalogue();
   return {
-    items: rows.map(({ design, ownerName, stats }) => ({
+    items: rows.map(({ design, ownerName, stats, yaml }) => ({
       id: design.id,
       slug: design.slug,
       title: design.title,
@@ -265,6 +278,8 @@ export async function listDesigns(
         ...new Set((design.searchText.match(/provider:([a-z]+)/g) ?? []).map((m) => m.slice(9))),
       ],
       nodeCount: Number(/nodes:(\d+)/.exec(design.searchText)?.[1] ?? 0),
+      brand: brandMarkFor(design.slug),
+      sketch: yaml ? sketchOf(yaml, cat) : null,
     })),
     total: Number(count),
     page,

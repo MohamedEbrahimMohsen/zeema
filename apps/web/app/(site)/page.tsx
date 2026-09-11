@@ -11,18 +11,16 @@ export default async function Home() {
   const cat = getCatalogue();
   const featured = await listDesigns(viewer, { sort: "clones", pageSize: 6 });
   return (
-    <div className="space-y-10">
+    <div className="flex flex-col gap-10">
       <section className="grid gap-8 md:grid-cols-2 md:items-center">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight">
-            Architecture as typed, queryable data.
-          </h1>
-          <p className="mt-3 text-lg" style={{ color: "var(--muted)" }}>
+        <div className="flex flex-col gap-4">
+          <h1 className="display">Architecture as typed, queryable data.</h1>
+          <p className="muted" style={{ fontSize: "var(--fs-lead)" }}>
             A diagram is a picture. An Arkore design is a model: every box is a catalogued component
             with real properties, every promise the system makes is written down, and rules check
             the two against each other.
           </p>
-          <div className="mt-5 flex gap-3">
+          <div className="flex gap-2">
             <Link href="/browse" className="btn btn-primary no-underline">
               Browse designs
             </Link>
@@ -30,28 +28,20 @@ export default async function Home() {
               Create your own
             </Link>
           </div>
-          <dl className="muted mt-6 grid grid-cols-3 gap-3 text-sm">
-            <div>
-              <dt className="text-2xl font-semibold" style={{ color: "var(--ink)" }}>
-                {Object.keys(cat.kinds).length}
-              </dt>
-              <dd>kinds</dd>
-            </div>
-            <div>
-              <dt className="text-2xl font-semibold" style={{ color: "var(--ink)" }}>
-                {Object.keys(cat.components).length.toLocaleString()}
-              </dt>
-              <dd>components</dd>
-            </div>
-            <div>
-              <dt className="text-2xl font-semibold" style={{ color: "var(--ink)" }}>
-                {cat.rules.length}
-              </dt>
-              <dd>rules</dd>
-            </div>
+          <dl className="grid grid-cols-3 gap-3 pt-2">
+            {[
+              [Object.keys(cat.kinds).length, "kinds"],
+              [Object.keys(cat.components).length.toLocaleString(), "components"],
+              [cat.rules.length, "rules"],
+            ].map(([n, k]) => (
+              <div key={String(k)}>
+                <dt className="title">{n}</dt>
+                <dd className="label">{k}</dd>
+              </div>
+            ))}
           </dl>
         </div>
-        <pre className="panel mono overflow-x-auto p-4 text-sm leading-6">{`schemaVersion: "1"
+        <pre className="code">{`schemaVersion: "1"
 type: "design"
 id: "checkout"
 requirements: { messaging: { replay: true } }
@@ -65,14 +55,14 @@ edges:
 # pubsub-replay-required fires: the design
 # requires replay, and SNS cannot replay.`}</pre>
       </section>
-      <section>
+      <section className="flex flex-col gap-3">
         <div className="flex items-baseline justify-between">
-          <h2 className="text-xl font-medium">Most cloned</h2>
-          <Link href="/browse" className="text-sm">
+          <span className="label">Most cloned</span>
+          <Link href="/browse" className="small link">
             See all
           </Link>
         </div>
-        <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {featured.items.map((d) => (
             <DesignCard key={d.id} d={d} />
           ))}

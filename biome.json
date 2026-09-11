@@ -17,7 +17,8 @@
       "!**/*.svg",
       "!packages/catalogue/data",
       "!apps/web/public",
-      "!apps/web/drizzle"
+      "!apps/web/drizzle",
+      "!design-system"
     ]
   },
   "formatter": {

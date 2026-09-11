@@ -48,70 +48,74 @@ export function NewDesignForm() {
   };
 
   return (
-    <form onSubmit={submit} className="grid gap-4 lg:grid-cols-[1fr_320px]">
-      <div className="panel p-4">
-        <label className="block text-sm">
-          <span className="muted">Title</span>
+    <form onSubmit={submit} className="grid gap-6 lg:grid-cols-[1fr_320px]">
+      <div className="panel p-5 flex flex-col gap-4">
+        <div className="field">
+          <label htmlFor="nd-title">title</label>
           <input
-            className="input mt-1"
+            id="nd-title"
+            className="input"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
             maxLength={120}
             placeholder="Order processing"
           />
-        </label>
-        <label className="mt-3 block text-sm">
-          <span className="muted">Summary</span>
+          <span className="hint">string · required</span>
+        </div>
+        <div className="field">
+          <label htmlFor="nd-summary">summary</label>
           <input
-            className="input mt-1"
+            id="nd-summary"
+            className="input"
             value={summary}
             onChange={(e) => setSummary(e.target.value)}
             maxLength={280}
-            placeholder="One line for the browse card"
+            placeholder="One sentence for the browse card."
           />
-        </label>
-        <label className="mt-3 block text-sm">
-          <span className="muted">Design YAML</span>
+          <span className="hint">string · one sentence, full stop</span>
+        </div>
+        <div className="field">
+          <label htmlFor="nd-yaml">design</label>
           <textarea
-            className="input mono mt-1 min-h-[40vh]"
+            id="nd-yaml"
+            className="input mono min-h-[40vh]"
             spellCheck={false}
             value={yaml}
             onChange={(e) => setYaml(e.target.value)}
           />
-        </label>
+          <span className="hint">yaml · every node names a catalogue component</span>
+        </div>
       </div>
-      <aside className="space-y-3">
-        <div className="panel p-4 text-sm">
-          <div className="font-medium">Visibility</div>
-          <label className="mt-2 flex items-center gap-2">
+      <aside className="flex flex-col gap-4">
+        <div className="panel p-4 flex flex-col gap-2">
+          <span className="label">Visibility</span>
+          <label className="choice">
             <input
               type="radio"
               name="vis"
               checked={visibility === "private"}
               onChange={() => setVisibility("private")}
-            />{" "}
-            Private (only you)
+            />
+            Private
+            <span className="muted">only you</span>
           </label>
-          <label className="mt-1 flex items-center gap-2">
+          <label className="choice">
             <input
               type="radio"
               name="vis"
               checked={visibility === "public"}
               onChange={() => setVisibility("public")}
-            />{" "}
-            Public (anyone can read, clone, export)
+            />
+            Public
+            <span className="muted">anyone can read, clone, export</span>
           </label>
         </div>
-        <button
-          type="submit"
-          className="btn btn-primary w-full justify-center"
-          disabled={busy || !title}
-        >
-          {busy ? "Creating…" : "Create and open the editor"}
+        <button type="submit" className="btn btn-primary" disabled={busy || !title}>
+          {busy ? "creating…" : "Create and open the editor"}
         </button>
-        {error ? <p className="sev-error text-sm">{error}</p> : null}
-        <p className="muted text-xs">
+        {error ? <p className="status status-err">{error}</p> : null}
+        <p className="meta">
           A design must be structurally valid to be created: every component must exist in the
           catalogue and every edge must join two nodes.
         </p>

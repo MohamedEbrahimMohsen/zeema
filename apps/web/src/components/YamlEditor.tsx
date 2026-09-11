@@ -5,6 +5,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { Finding } from "@/lib/lint";
+import { FindingRow } from "./Findings";
 
 type Props = {
   owner: string;
@@ -12,6 +13,15 @@ type Props = {
   initialYaml: string;
   contentHash: string;
   title: string;
+};
+
+const STATUS: Record<string, [string, string]> = {
+  clean: ["", ""],
+  dirty: ["unsaved", "status-warn"],
+  saving: ["saving…", ""],
+  saved: ["saved", "status-ok"],
+  conflict: ["conflict", "status-err"],
+  error: ["error", "status-err"],
 };
 
 export function YamlEditor({ owner, slug, initialYaml, contentHash, title }: Props) {
@@ -88,41 +98,30 @@ export function YamlEditor({ owner, slug, initialYaml, contentHash, title }: Pro
 
   const blocking = findings.filter((f) => f.blocking);
   const rules = findings.filter((f) => !f.blocking);
+  const [word, tone] = STATUS[state];
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[1fr_360px]">
-      <div className="panel flex flex-col">
+    <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+      <div className="panel flex flex-col overflow-hidden">
         <div
-          className="flex items-center gap-3 border-b px-3 py-2 text-sm"
+          className="flex items-center gap-3 border-b px-3 py-2"
           style={{ borderColor: "var(--line)" }}
         >
-          <span className="font-medium">{title}</span>
-          <span className="muted">
-            {state === "dirty"
-              ? "unsaved"
-              : state === "saving"
-                ? "saving…"
-                : state === "saved"
-                  ? "saved"
-                  : state === "conflict"
-                    ? "conflict"
-                    : state === "error"
-                      ? "error"
-                      : ""}
-          </span>
+          <span className="medium">{title}</span>
+          <span className={`status ${tone}`}>{word}</span>
           <div className="ml-auto flex gap-2">
             <button
               type="button"
-              className="btn btn-primary"
+              className="btn btn-sm btn-primary"
               onClick={save}
               disabled={!valid || state === "saving" || (text === initialYaml && state === "clean")}
-              title={valid ? "Ctrl+S" : "Fix structural errors before saving"}
+              title={valid ? "Ctrl S" : "Fix structural errors before saving"}
             >
-              Save
+              Save <kbd>⌃S</kbd>
             </button>
             <button
               type="button"
-              className="btn"
+              className="btn btn-sm"
               onClick={() => router.push(`/d/${owner}/${slug}`)}
             >
               Done
@@ -140,53 +139,46 @@ export function YamlEditor({ owner, slug, initialYaml, contentHash, title }: Pro
         />
         {message ? (
           <div
-            className="sev-error border-t px-3 py-2 text-sm"
+            className="status status-err border-t px-3 py-2"
             style={{ borderColor: "var(--line)" }}
           >
             {message}
           </div>
         ) : null}
       </div>
-      <aside className="space-y-4">
-        <section className="panel p-4">
-          <h2 className="font-medium">Structure</h2>
+      <aside className="flex flex-col gap-4">
+        <section className="panel p-4 flex flex-col gap-2">
+          <span className="label">Structure</span>
           {blocking.length === 0 ? (
-            <p className="text-sm" style={{ color: "var(--ok)" }}>
-              Structurally valid. Save is enabled.
-            </p>
+            <p className="status status-ok">Structurally valid. Save is enabled.</p>
           ) : (
-            <ul className="mt-2 space-y-1 text-sm">
+            <div className="flex flex-col gap-2">
               {blocking.map((f, i) => (
-                <li key={i} className="sev-error">
-                  {f.message}
-                </li>
+                <FindingRow key={i} f={{ ...f, severity: "error" }} ruleName="structural" />
               ))}
-            </ul>
+            </div>
           )}
         </section>
-        <section className="panel p-4">
-          <h2 className="font-medium">Rules</h2>
+        <section className="panel p-4 flex flex-col gap-2">
+          <span className="label">Rules</span>
           {rules.length === 0 ? (
-            <p className="muted text-sm">No rule fires.</p>
+            <p className="small muted">No rule fires.</p>
           ) : (
-            <ul className="mt-2 space-y-2 text-sm">
+            <div className="flex flex-col gap-3">
               {rules.map((f, i) => (
-                <li key={i}>
-                  <span className={`sev-${f.severity} mono text-xs`}>{f.id}</span>
-                  <div>{f.message}</div>
-                </li>
+                <FindingRow key={i} f={f} />
               ))}
-            </ul>
+            </div>
           )}
         </section>
-        <section className="panel p-4 text-sm">
-          <h2 className="font-medium">Preview</h2>
-          <p className="muted">The picture updates after each save.</p>
+        <section className="panel p-4 flex flex-col gap-2">
+          <span className="label">Preview</span>
+          <p className="meta">The picture updates after each save.</p>
           <img
             src={`/api/v1/designs/${owner}/${slug}/render?theme=light&v=${hash}`}
             alt=""
-            className="mt-2 w-full rounded border"
-            style={{ borderColor: "var(--line)" }}
+            className="w-full"
+            style={{ border: "1px solid var(--line)", borderRadius: "var(--rc)" }}
           />
         </section>
       </aside>

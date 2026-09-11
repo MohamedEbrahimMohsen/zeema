@@ -6,14 +6,14 @@
 import { layout } from "./layout.js";
 
 const CATEGORY_HUE = {
-  messaging: "violet",
   compute: "blue",
-  data: "amber",
   edge: "teal",
-  external: "rose",
-  client: "purple",
-  ops: "green",
-  security: "red",
+  data: "amber",
+  ops: "violet",
+  security: "purple",
+  messaging: "green",
+  client: "rose",
+  external: "red",
 };
 
 // fill, stroke (light) | fill, stroke (dark)

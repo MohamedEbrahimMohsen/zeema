@@ -66,7 +66,9 @@ export function Palette({
       />
       <div className="pal-results">
         {hits.length === 0 ? (
-          <div className="muted p-3">Nothing matches. Try a product name, or kind:queue.</div>
+          <div className="muted p-3">
+            Nothing matches. Try a product name, or <code>kind:queue</code>.
+          </div>
         ) : null}
         {hits.map((row) => {
           const [id, name, kind, cat] = row;
@@ -92,7 +94,7 @@ export function Palette({
           );
         })}
         {total > hits.length ? (
-          <div className="muted p-2 text-xs">{total - hits.length} more, keep typing</div>
+          <div className="meta p-2">{total - hits.length} more, keep typing</div>
         ) : null}
       </div>
     </>

@@ -8,8 +8,8 @@ export default async function NewPage() {
   const viewer = await currentUser();
   if (!viewer) redirect("/signin?next=/new");
   return (
-    <div className="space-y-4">
-      <h1 className="text-2xl font-semibold">New design</h1>
+    <div className="flex flex-col gap-4">
+      <h1 className="title">New design</h1>
       <NewDesignForm />
     </div>
   );

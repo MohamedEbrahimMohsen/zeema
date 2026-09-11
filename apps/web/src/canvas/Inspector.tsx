@@ -148,7 +148,7 @@ export function Inspector({
 }) {
   const head =
     multi.size > 1 ? (
-      <div className="mb-3 text-xs muted">
+      <div className="mb-3 small muted">
         <b>{multi.size} components selected.</b> Right click for group, duplicate and delete. The
         fields below edit the last one you clicked.
       </div>
@@ -235,7 +235,7 @@ function NodePanel({
           ))}
         </select>
       </Field>
-      {loc?.description ? <p className="muted my-2 text-xs">{loc.description}</p> : null}
+      {loc?.description ? <p className="muted my-2 small">{loc.description}</p> : null}
       {Object.keys(defs).length ? <h2>Properties</h2> : null}
       {Object.entries(defs).map(([name, def]) => {
         const value = node.props ? node.props[name] : undefined;
@@ -286,7 +286,7 @@ function NodePanel({
       </Field>
       <button
         type="button"
-        className="btn btn-danger mt-3"
+        className="btn btn-sm btn-danger mt-3"
         onClick={() => api.remove("node", node.id)}
       >
         Delete node
@@ -379,7 +379,7 @@ function EdgePanel({
       {boolField("batched")}
       <button
         type="button"
-        className="btn btn-danger mt-3"
+        className="btn btn-sm btn-danger mt-3"
         onClick={() => api.remove("edge", index)}
       >
         Delete edge
@@ -439,12 +439,12 @@ function GroupPanel({ group, doc, api }: { group: any; doc: any; api: InspectorA
             ))}
         </select>
       </Field>
-      <div className="muted text-xs">
+      <div className="meta">
         {members} member{members === 1 ? "" : "s"}
       </div>
       <button
         type="button"
-        className="btn btn-danger mt-3"
+        className="btn btn-sm btn-danger mt-3"
         onClick={() => api.remove("group", group.id)}
       >
         Delete boundary
@@ -461,11 +461,11 @@ function DesignPanel({ doc, catalogue, api }: { doc: any; catalogue: any; api: I
       <Field name="id" note="kebab-case" isSet>
         <TextInput value={doc.id ?? ""} onCommit={(v) => api.setDesignId(v.trim())} />
       </Field>
-      <div className="muted text-xs">
+      <div className="meta">
         {doc.nodes.length} nodes · {doc.edges.length} edges · {(doc.groups ?? []).length} boundaries
       </div>
       <h2>Requirements</h2>
-      <p className="muted mb-2 text-xs">
+      <p className="meta mb-2">
         The promises this design makes. Rules compare components against them.
       </p>
       {Object.entries(schema.properties ?? {}).map(([groupName, groupSchema]: [string, any]) => {
@@ -473,7 +473,7 @@ function DesignPanel({ doc, catalogue, api }: { doc: any; catalogue: any; api: I
         const set = Object.keys(current).length;
         return (
           <details key={groupName} open={set > 0}>
-            <summary className="muted cursor-pointer py-1 text-xs">
+            <summary>
               {label(groupName)}
               {set ? ` · ${set} set` : ""}
             </summary>

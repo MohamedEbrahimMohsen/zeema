@@ -19,14 +19,14 @@ const el = (name: string, attrs: Record<string, unknown> = {}) => {
   return n;
 };
 const CATEGORY_HUE: Record<string, string> = {
-  messaging: "violet",
   compute: "blue",
-  data: "amber",
   edge: "teal",
-  external: "rose",
-  client: "purple",
-  ops: "green",
-  security: "red",
+  data: "amber",
+  ops: "violet",
+  security: "purple",
+  messaging: "green",
+  client: "rose",
+  external: "red",
 };
 
 export type Box = [number, number, number, number];
