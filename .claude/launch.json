@@ -10,6 +10,17 @@
       ],
       "port": 8000,
       "url": "http://localhost:8000"
+    },
+    {
+      "name": "web",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--dir",
+        "D:/Personal/_arkore/apps/web",
+        "dev"
+      ],
+      "port": 3100,
+      "autoPort": true
     }
   ]
 }
