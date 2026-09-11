@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google BigQuery: serverless columnar warehouse; streaming inserts are opt-in.
+schemaVersion: "1"
+type: "component"
+id: "bigquery"
+kind: "data-warehouse"
+provider: "gcp"
+defaults:
+  realtime: false
+  upsert: false
+  format: "columnar"
+  managed: true
+properties:
+  streamingInserts:
+    type: "boolean"
+    default: false
+  reservedSlots:
+    type: "boolean"
+    default: false

@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon DocumentDB (with MongoDB compatibility): cluster whose storage keeps six copies of the data
+# across three Availability Zones. "Encrypting Amazon DocumentDB data at rest" says console-created
+# clusters have encryption at rest enabled by default and that backups are always enabled for at least
+# 1 day; "Encrypting data in transit" says TLS is enabled by default for newly created clusters.
+schemaVersion: "1"
+type: "component"
+id: "aws-documentdb"
+kind: "nosql-database"
+provider: "aws"
+defaults:
+  managed: true
+  model: "document"
+  consistency: "tunable"
+  replication: "single-region"
+  replicationFactor: 6
+  backupEnabled: true
+  backupRetentionDays: 1
+  encryptionAtRest: true
+properties:
+  clusterType:
+    type: "enum"
+    values: ["instance-based", "elastic"]
+    default: "instance-based"
+  tls:
+    type: "boolean"
+    default: true
+  storageConfiguration:
+    type: "enum"
+    values: ["standard", "io-optimized"]
+    default: "standard"
+  globalCluster:
+    type: "boolean"
+    default: false

@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# KServe: Kubernetes InferenceService platform for predictive and generative model serving.
+# Facts from the KServe project README: Serverless mode on Knative gives request-based autoscaling
+# with scale to zero and canary rollouts; RawDeployment is lighter but has neither.
+schemaVersion: "1"
+type: "component"
+id: "kserve"
+kind: "ml-inference"
+provider: "default"
+defaults:
+  training: "batch"
+  inputs: "live"
+  managed: false
+properties:
+  deploymentMode:
+    type: "enum"
+    values: ["serverless", "raw-deployment"]
+    default: "serverless"
+  scaleToZero:
+    type: "boolean"
+    default: true
+  canaryRollout:
+    type: "boolean"
+    default: false
+  modelFramework:
+    type: "enum"
+    values: ["tensorflow", "pytorch", "sklearn", "xgboost", "onnx", "huggingface"]

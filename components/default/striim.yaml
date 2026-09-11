@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Striim: streaming integration platform with log-based CDC readers, shipped as Striim Cloud
+# (fully managed) and Striim Platform (self-managed). Recovery is not on out of the box:
+# "Recovery must have been enabled when the application was created" ("Recovering applications"),
+# and recovered flows are A1P (at-least-once) unless the target supports E1P.
+schemaVersion: "1"
+type: "component"
+id: "striim"
+kind: "change-data-capture"
+provider: "default"
+defaults:
+  managed: true
+  mode: "log-based"
+  ordered: true
+properties:
+  edition:
+    type: "enum"
+    values: ["striim-cloud", "striim-platform"]
+    default: "striim-cloud"
+  recovery:
+    type: "boolean"
+    default: false
+  processingGuarantee:
+    type: "enum"
+    values: ["at-least-once", "exactly-once"]
+    default: "at-least-once"

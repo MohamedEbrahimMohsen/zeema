@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Cloud Certificates: private certificate authorities and the TLS certificates they issue.
+# Defaults from "Certificates Overview" and "Creating a Certificate Authority": a CA requires an HSM-protected
+# asymmetric vault key (software keys are not supported) and is valid for three months unless a date is given.
+schemaVersion: "1"
+type: "component"
+id: "oci-certificates"
+kind: "key-management"
+provider: "oci"
+defaults:
+  managed: true
+  hsm: true
+  rotationAutomated: false
+  envelopeEncryption: false
+properties:
+  authorityType:
+    type: "enum"
+    values: ["root", "subordinate", "imported"]
+    default: "root"
+  keyAlgorithm:
+    type: "enum"
+    values: ["rsa-2048", "rsa-4096", "ecdsa-p384"]
+    default: "rsa-2048"
+  caValidityMonths:
+    type: "integer"
+    default: 3
+  automaticRenewal:
+    type: "boolean"
+    default: false

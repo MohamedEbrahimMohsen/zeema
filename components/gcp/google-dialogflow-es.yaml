@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Dialogflow ES agent: the intent-and-context virtual agent, one agent per project per
+# region. "Quotas and limits": Trial Edition allows 180 text and 100 audio detect-intent
+# requests per minute, Essentials 600 and 300; 2,000 intents and 250 entity types per
+# agent; 60 seconds of audio and 256 characters of input text per request.
+schemaVersion: "1"
+type: "component"
+id: "google-dialogflow-es"
+kind: "ai-service"
+provider: "gcp"
+defaults:
+  modality: "multimodal"
+  publicEndpoint: true
+  quotaUnitsPerMinute: 180
+  managed: true
+properties:
+  edition:
+    type: "enum"
+    values: ["trial", "essentials", "plus"]
+    default: "trial"
+  audioRequestsPerMinute:
+    type: "integer"
+    default: 100
+  maxIntents:
+    type: "integer"
+    default: 2000
+  maxEntityTypes:
+    type: "integer"
+    default: 250
+  maxInputCharacters:
+    type: "integer"
+    default: 256

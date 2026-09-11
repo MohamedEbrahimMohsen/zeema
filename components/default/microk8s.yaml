@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# MicroK8s, Canonical's snap-packaged Kubernetes. Per "Multi-user MicroK8s" the API server runs with
+# --authorization-mode=AlwaysAllow until the rbac add-on is enabled, and per "Getting started" the install
+# is minimal: DNS, storage and ingress are add-ons the operator turns on.
+schemaVersion: "1"
+type: "component"
+id: "microk8s"
+kind: "container-orchestrator"
+provider: "default"
+defaults:
+  managed: false
+  autoscaling: false
+  rbac: false
+properties:
+  cniPlugin:
+    type: "enum"
+    values: ["calico", "cilium", "flannel"]
+    default: "calico"
+  haCluster:
+    type: "boolean"
+    default: false
+  dnsAddon:
+    type: "boolean"
+    default: false
+  ingressAddon:
+    type: "boolean"
+    default: false

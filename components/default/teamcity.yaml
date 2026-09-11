@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# JetBrains TeamCity: build server installed on your own infrastructure by default. "Licensing
+# policy" states the free Professional server licence includes "3 build agents (with an option to
+# purchase more)" and a "maximum of 100 build configurations and 10 pipelines", while Enterprise
+# ships the same 3 agents with unlimited build configurations.
+schemaVersion: "1"
+type: "component"
+id: "teamcity"
+kind: "ci-pipeline"
+provider: "default"
+defaults:
+  selfHostedRunners: true
+  approvalRequired: false
+  concurrency: 3
+  managed: false
+properties:
+  edition:
+    type: "enum"
+    values: ["professional", "enterprise", "enterprise-plus"]
+    default: "professional"
+  hosting:
+    type: "enum"
+    values: ["on-premises", "cloud"]
+    default: "on-premises"
+  buildAgents:
+    type: "integer"
+    default: 3
+  buildConfigurationLimit:
+    type: "integer"
+    default: 100

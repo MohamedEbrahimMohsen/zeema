@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Prometheus: pull-based metrics, 15 days local retention, self-managed, remote write opt-in.
+schemaVersion: "1"
+type: "component"
+id: "prometheus"
+kind: "monitoring"
+provider: "default"
+defaults:
+  signal: "metrics"
+  collectorMode: "pull"
+  retentionDays: 15
+  managed: false
+properties:
+  remoteWrite:
+    type: "boolean"
+    default: false

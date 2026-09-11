@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Batch: managed batch job queues on EC2 or Fargate compute environments.
+schemaVersion: "1"
+type: "component"
+id: "aws-batch"
+kind: "worker"
+provider: "aws"
+defaults:
+  managed: true
+  trigger: "batch"
+properties:
+  computeEnvironment:
+    type: "enum"
+    values: ["ec2", "fargate", "spot"]
+    default: "ec2"

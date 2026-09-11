@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Maps: geospatial REST APIs and Web SDK (render, search, route, traffic, weather, time zone).
+# "Authentication with Microsoft Azure Maps": primary and secondary shared keys are generated automatically
+# at account creation, local authentication stays enabled unless disableLocalAuth is set, and a new account
+# allows all CORS origins. "Manage your Azure Maps account's pricing tier": Gen2 (G2) is the only tier for
+# new accounts; Gen1 S0/S1 is deprecated.
+schemaVersion: "1"
+type: "component"
+id: "azure-maps"
+kind: "third-party-api"
+provider: "azure"
+defaults:
+  managed: true
+  callbackStyle: "none"
+  hostedPage: false
+  handlesMoney: false
+properties:
+  pricingTier:
+    type: "enum"
+    values: ["gen2"]
+    default: "gen2"
+  authentication:
+    type: "enum"
+    values: ["shared-key", "entra-id", "sas-token"]
+    default: "shared-key"
+  localAuthDisabled:
+    type: "boolean"
+    default: false
+  corsAllowAllOrigins:
+    type: "boolean"
+    default: true

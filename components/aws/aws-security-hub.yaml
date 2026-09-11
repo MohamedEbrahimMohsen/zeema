@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Security Hub CSPM: aggregates findings from AWS security services and partner products and
+# runs control checks against security standards. "Turning off automatically enabled security
+# standards": the default standards are AWS Foundational Security Best Practices and CIS AWS
+# Foundations Benchmark v1.2.0, and enabling a standard enables every control in it. "Creating and
+# updating findings": active findings are stored for 90 days, archived findings for 30. Most
+# control checks require AWS Config resource recording.
+schemaVersion: "1"
+type: "component"
+id: "aws-security-hub"
+kind: "monitoring"
+provider: "aws"
+defaults:
+  signal: "alerts"
+  collectorMode: "push"
+  retentionDays: 90
+  independentOfMonitored: false
+  managed: true
+properties:
+  foundationalSecurityBestPractices:
+    type: "boolean"
+    default: true
+  cisFoundationsBenchmark:
+    type: "boolean"
+    default: true
+  configurationMode:
+    type: "enum"
+    values: ["local", "central"]
+    default: "local"
+  crossRegionAggregation:
+    type: "boolean"
+    default: false
+  automationRules:
+    type: "boolean"
+    default: false

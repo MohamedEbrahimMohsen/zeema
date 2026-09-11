@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Dragonfly: multi-threaded Redis-compatible store; snapshots only on shutdown and no
+# eviction unless cache mode is enabled, so evictionPolicy is left undefaulted.
+schemaVersion: "1"
+type: "component"
+id: "dragonfly"
+kind: "cache"
+provider: "default"
+defaults:
+  persistence: false
+properties:
+  cacheMode:
+    type: "boolean"
+    default: false
+  threads:
+    type: "integer"

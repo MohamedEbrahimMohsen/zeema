@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../schema/rule.schema.json
+# An app-server that calls a worker synchronously puts fan-out (or any background job) on the
+# request path: the caller's latency becomes the tail of the follower distribution.
+# Tripped by: designs/twitter-timeline.broken.yaml
+schemaVersion: "1"
+type: "rule"
+id: "fanout-inline-in-request-path"
+severity: "warning"
+select:
+  node:
+    kind: "app-server"
+when:
+  hasEdge:
+    direction: "out"
+    mode: "sync"
+    peerKind: "worker"
+message: "Service '{{node.id}}' calls a worker synchronously. Hand the job to a queue or stream so the request path does not wait for fan-out."

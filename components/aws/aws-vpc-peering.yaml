@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon VPC peering connection: private routing between two VPCs, same or different Region or account.
+# "What is VPC peering?": no gateway or appliance, so no single point of failure or bandwidth bottleneck;
+# inter-Region traffic stays on the AWS global backbone and is encrypted before leaving AWS facilities.
+schemaVersion: "1"
+type: "component"
+id: "aws-vpc-peering"
+kind: "network-fabric"
+provider: "aws"
+defaults:
+  managed: true
+  interconnect: "cloud-backbone"
+  multicast: false
+  kernelBypass: false
+properties:
+  crossRegion:
+    type: "boolean"
+    default: false
+  crossAccount:
+    type: "boolean"
+    default: false
+  interRegionTrafficEncrypted:
+    type: "boolean"
+    default: true
+  traversesPublicInternet:
+    type: "boolean"
+    default: false
+  bandwidthBottleneck:
+    type: "boolean"
+    default: false

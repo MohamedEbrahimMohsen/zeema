@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AI Commerce Search (Vertex AI Search for commerce, Retail API): search and
+# recommendations over a product catalog fed by catalog imports and user events.
+# "Quotas and limits": 300 searches and 60,000 predictions per minute, 12,000 product
+# writes and 60,000 user event writes per minute, 4,000,000 search-enabled products.
+schemaVersion: "1"
+type: "component"
+id: "google-vertex-ai-search-commerce"
+kind: "search-index"
+provider: "gcp"
+defaults:
+  structure: "vector"
+  indexing: "async"
+  shardingStrategy: "none"
+  geoScheme: "none"
+  managed: true
+properties:
+  serving:
+    type: "enum"
+    values: ["search", "recommendations", "browse"]
+    default: "search"
+  maxSearchEnabledProducts:
+    type: "integer"
+    default: 4000000
+  searchesPerMinute:
+    type: "integer"
+    default: 300
+  productWritesPerMinute:
+    type: "integer"
+    default: 12000
+  personalization:
+    type: "boolean"
+    default: false

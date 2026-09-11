@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle OCI Speech: managed batch transcription, live transcribe and text to speech, reading
+# and writing audio through Object Storage buckets. "Speech Overview": 2 GB and 4 hours per
+# file, up to 100 tasks per job, jobs retained for 90 days, 10 concurrent live transcribe
+# sessions per tenancy and 10,000 characters per text-to-speech request.
+schemaVersion: "1"
+type: "component"
+id: "oci-ai-speech"
+kind: "ai-service"
+provider: "oci"
+defaults:
+  modality: "speech"
+  publicEndpoint: true
+  dataRetentionDays: 90
+  managed: true
+properties:
+  mode:
+    type: "enum"
+    values: ["batch", "realtime", "text-to-speech"]
+    default: "batch"
+  maxFileGb:
+    type: "integer"
+    default: 2
+  maxDurationHours:
+    type: "integer"
+    default: 4
+  tasksPerJob:
+    type: "integer"
+    default: 100
+  concurrentRealtimeSessions:
+    type: "integer"
+    default: 10

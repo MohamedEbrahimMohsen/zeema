@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# coturn: STUN and TURN relay server. Per the coturn "turnserver" manual it listens on 3478 for
+# UDP/TCP and 5349 for TLS/DTLS, relays over both UDP and TCP unless --no-udp-relay or
+# --no-tcp-relay is given, and runs without authentication until a credential mechanism is set.
+schemaVersion: "1"
+type: "component"
+id: "coturn"
+kind: "media-router"
+provider: "default"
+defaults:
+  managed: false
+  mode: "p2p"
+  transport: "both"
+  cascading: false
+properties:
+  tlsEnabled:
+    type: "boolean"
+    default: false
+  authMechanism:
+    type: "enum"
+    values: ["anonymous", "long-term", "short-term"]
+    default: "anonymous"

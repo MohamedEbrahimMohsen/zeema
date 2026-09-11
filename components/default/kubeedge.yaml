@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# KubeEdge, Kubernetes extended to edge nodes. Per "MetaManager" edge metadata is persisted in a local
+# SQLite database so a node keeps operating while the cloud link is down, and per the CloudHub and EdgeHub
+# documentation the edge-cloud channel uses WebSocket by default with QUIC as an alternative.
+schemaVersion: "1"
+type: "component"
+id: "kubeedge"
+kind: "edge-appliance"
+provider: "default"
+defaults:
+  managed: false
+  cloudManaged: true
+  connectivity: "intermittent"
+  offlineMode: true
+properties:
+  transport:
+    type: "enum"
+    values: ["websocket", "quic"]
+    default: "websocket"
+  metadataStore:
+    type: "enum"
+    values: ["sqlite"]
+    default: "sqlite"
+  deviceTwin:
+    type: "boolean"
+    default: true

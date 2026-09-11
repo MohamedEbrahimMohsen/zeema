@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI Ops Insights: long-term capacity, host, database and SQL performance analytics over enabled resources.
+# Defaults from "Ops Insights Overview": data is kept for the last 25 months and purged 30 days after the service is disabled on a resource;
+# SQL-level data is collected every 30 minutes.
+schemaVersion: "1"
+type: "component"
+id: "oci-ops-insights"
+kind: "monitoring"
+provider: "oci"
+defaults:
+  managed: true
+  signal: "metrics"
+  collectorMode: "push"
+properties:
+  dataRetentionMonths:
+    type: "integer"
+    default: 25
+  sqlCollectionIntervalMinutes:
+    type: "integer"
+    default: 30
+  insightType:
+    type: "enum"
+    values: ["database", "host", "exadata", "process"]
+    default: "database"

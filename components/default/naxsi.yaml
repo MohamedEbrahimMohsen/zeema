@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# NAXSI: nginx WAF module. The wiki describes it as a "DROP-by-default firewall" driven by
+# a small core rule file plus whitelists, with an intensive learning phase recommended
+# before enforcement, so a fresh deployment runs in learning rather than blocking.
+schemaVersion: "1"
+type: "component"
+id: "naxsi"
+kind: "waf"
+provider: "default"
+defaults:
+  managed: false
+  managedRuleSet: "naxsi-core-rules"
+  botProtection: false
+  rateLimiting: false
+properties:
+  learningMode:
+    type: "boolean"
+    default: true
+  model:
+    type: "enum"
+    values: ["whitelist", "blacklist"]
+    default: "whitelist"
+  whitelistCount:
+    type: "integer"

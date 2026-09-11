@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Active Directory Domain Services: the on-premises Windows Server directory service.
+# "Active Directory Domain Services overview": LDAP directory with Kerberos sign-in and access
+# control on directory objects; every domain controller holds a full copy and takes part in
+# multi-master replication. MFA is not part of AD DS itself.
+schemaVersion: "1"
+type: "component"
+id: "active-directory"
+kind: "identity-provider"
+provider: "default"
+defaults:
+  protocol: "custom"
+  authorizationModel: "rbac"
+  centralised: true
+  managed: false
+  mfa: false
+properties:
+  authenticationProtocol:
+    type: "enum"
+    values: ["kerberos", "ntlm", "ldap"]
+    default: "kerberos"
+  replicationModel:
+    type: "enum"
+    values: ["multi-master"]
+    default: "multi-master"
+  globalCatalog:
+    type: "boolean"
+    default: true

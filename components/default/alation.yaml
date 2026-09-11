@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Alation: data catalog delivered as Alation Cloud Service.
+# Alation docs: lineage is calculated from metadata extraction (MDE), query log ingestion (QLI)
+# and Compose queries, both jobs run on a schedule against the source; the Policy Center manages
+# and enforces access policies from one control point.
+schemaVersion: "1"
+type: "component"
+id: "alation"
+kind: "data-catalog"
+provider: "default"
+defaults:
+  managed: true
+  classification: true
+  lineage: true
+  accessPolicyEnforcement: true
+properties:
+  queryLogIngestion:
+    type: "boolean"
+    default: false
+  columnLevelLineage:
+    type: "boolean"
+    default: true
+  connectorFramework:
+    type: "enum"
+    values: ["ocf", "native"]
+    default: "ocf"
+  agentDeployment:
+    type: "boolean"
+    default: false

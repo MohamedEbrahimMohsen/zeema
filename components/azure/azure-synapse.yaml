@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Synapse Analytics: managed warehouse; the built-in serverless SQL pool exists by
+# default, dedicated pools are provisioned explicitly.
+schemaVersion: "1"
+type: "component"
+id: "azure-synapse"
+kind: "data-warehouse"
+provider: "azure"
+defaults:
+  realtime: false
+  upsert: false
+  format: "columnar"
+  managed: true
+properties:
+  pool:
+    type: "enum"
+    values: ["serverless", "dedicated"]
+    default: "serverless"

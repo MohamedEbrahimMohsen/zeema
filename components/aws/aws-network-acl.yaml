@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS network ACL: stateless subnet-level packet filter evaluated by numbered rules.
+# "Control subnet traffic with network access control lists" + "Custom network ACLs for your VPC":
+# stateless, unmodifiable trailing '*' rule denies anything unmatched, the VPC default ACL allows all.
+schemaVersion: "1"
+type: "component"
+id: "aws-network-acl"
+kind: "firewall"
+provider: "aws"
+defaults:
+  managed: true
+  stateful: false
+  defaultAction: "deny"
+  logging: false
+  intrusionPrevention: false
+properties:
+  defaultAclAllowsAllTraffic:
+    type: "boolean"
+    default: true
+  rulesPerAclQuota:
+    type: "integer"
+    default: 20
+  aclsPerVpcQuota:
+    type: "integer"
+    default: 200
+  filtersEphemeralPortsSeparately:
+    type: "boolean"
+    default: true

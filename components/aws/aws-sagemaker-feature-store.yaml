@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon SageMaker Feature Store: managed feature groups with a low-latency online store and an
+# append-only offline store in S3 (Parquet). Per the CreateFeatureGroup API Reference the online store
+# is off by default (EnableOnlineStore False), offline data is KMS-encrypted at rest by default, and
+# the offline table format defaults to Glue. The service is distributed across multiple Availability Zones.
+schemaVersion: "1"
+type: "component"
+id: "aws-sagemaker-feature-store"
+kind: "ml-platform"
+provider: "aws"
+defaults:
+  managed: true
+  modelRegistry: false
+  experimentTracking: false
+properties:
+  storeMode:
+    type: "enum"
+    values: ["online", "offline", "online-and-offline"]
+  onlineStoreEnabled:
+    type: "boolean"
+    default: false
+  offlineTableFormat:
+    type: "enum"
+    values: ["glue", "iceberg"]
+    default: "glue"
+  throughputMode:
+    type: "enum"
+    values: ["on-demand", "provisioned"]
+    default: "on-demand"
+  encryptionAtRest:
+    type: "boolean"
+    default: true

@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS KMS: HSM-backed managed keys with envelope data keys; yearly rotation is opt-in, multi-region keys opt-in.
+schemaVersion: "1"
+type: "component"
+id: "aws-kms"
+kind: "key-management"
+provider: "aws"
+defaults:
+  managed: true
+  hsm: true
+  rotationAutomated: false
+  envelopeEncryption: true
+properties:
+  multiRegionKeys:
+    type: "boolean"
+    default: false

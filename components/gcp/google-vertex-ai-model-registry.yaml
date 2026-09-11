@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Vertex AI Model Registry: a managed store of model versions and aliases, private to the project and
+# governed by IAM ("Introduction to Vertex AI Model Registry"). It holds models rather than packages
+# or source, and offers no upstream proxy or vulnerability scanning.
+schemaVersion: "1"
+type: "component"
+id: "google-vertex-ai-model-registry"
+kind: "artifact-repository"
+provider: "gcp"
+defaults:
+  managed: true
+  artifactType: "generic"
+  visibility: "private"
+  upstreamProxy: false
+  vulnerabilityScanning: false
+properties:
+  versioning:
+    type: "boolean"
+    default: true
+  aliases:
+    type: "boolean"
+    default: true
+  customerManagedKeys:
+    type: "boolean"
+    default: false

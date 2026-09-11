@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Holds the bot score threshold, the detection engines and the challenge action that waf, rate-limiter and ddos-protection have nowhere to put. scoreThreshold and challengeAction have no default because a bot layer that never declared what it does with a bad score is exactly what a rule should catch.
+schemaVersion: "1"
+type: "kind"
+id: "bot-management"
+category: "security"
+properties:
+  scoreThreshold:
+    type: "integer"
+  challengeAction:
+    type: "enum"
+    values: ["block", "managed-challenge", "js-challenge", "captcha", "log"]
+  jsDetections:
+    type: "boolean"
+  machineLearning:
+    type: "boolean"
+  verifiedBotsAllowed:
+    type: "boolean"
+    default: true
+  scoreHeader:
+    type: "boolean"
+  sessionTokenLifetimeMinutes:
+    type: "integer"
+  managed:
+    type: "boolean"
+    default: false

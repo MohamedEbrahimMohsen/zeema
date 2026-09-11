@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud Deploy delivery pipeline: promotes a release through an ordered sequence of targets,
+# rendering and deploying with Skaffold. Per "Cloud Deploy overview" promotion is called explicitly,
+# approval is only required where requireApproval is set, and automation rules are opt-in.
+schemaVersion: "1"
+type: "component"
+id: "google-cloud-deploy"
+kind: "ci-pipeline"
+provider: "gcp"
+defaults:
+  managed: true
+  trigger: "manual"
+  approvalRequired: false
+  selfHostedRunners: false
+properties:
+  deployStrategy:
+    type: "enum"
+    values: ["standard", "canary"]
+    default: "standard"
+  automationRules:
+    type: "boolean"
+    default: false

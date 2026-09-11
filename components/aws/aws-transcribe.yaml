@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Transcribe: managed speech to text as batch jobs over media in Amazon S3 or as real-time HTTP/2 and WebSocket streams.
+# "Amazon Transcribe endpoints and quotas" gives the defaults: transcription job records retained 90 days, 250 concurrent batch transcription jobs, 25 concurrent streaming sessions, 2 GB and 28,800 seconds per audio file, and 100 vocabulary filters; content redaction and vocabulary filtering are opt-in features of a job.
+schemaVersion: "1"
+type: "component"
+id: "aws-transcribe"
+kind: "ai-service"
+provider: "aws"
+defaults:
+  managed: true
+  modality: "speech"
+  publicEndpoint: true
+  customerManagedKeys: false
+  contentFiltering: false
+  dataRetentionDays: 90
+properties:
+  transcriptionMode:
+    type: "enum"
+    values: ["batch", "streaming"]
+    default: "batch"
+  concurrentBatchJobs:
+    type: "integer"
+    default: 250
+  concurrentStreams:
+    type: "integer"
+    default: 25
+  maxAudioSecondsPerFile:
+    type: "integer"
+    default: 28800
+  customLanguageModel:
+    type: "boolean"
+    default: false

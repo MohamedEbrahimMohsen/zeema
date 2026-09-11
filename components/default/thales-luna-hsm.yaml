@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Thales Luna Network HSM: network-attached appliance holding keys in FIPS-validated hardware.
+# "The Luna HSM": shared by clients over the network, up to 100 logical partitions, and
+# factory-configured for either password or multifactor PED authentication.
+schemaVersion: "1"
+type: "component"
+id: "thales-luna-hsm"
+kind: "key-management"
+provider: "default"
+defaults:
+  managed: false
+  hsm: true
+  rotationAutomated: false
+properties:
+  formFactor:
+    type: "enum"
+    values: ["network", "pcie", "usb", "backup"]
+    default: "network"
+  authentication:
+    type: "enum"
+    values: ["password", "multifactor-ped"]
+    default: "password"
+  maxPartitions:
+    type: "integer"
+    default: 100

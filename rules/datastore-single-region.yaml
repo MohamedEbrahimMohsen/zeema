@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../schema/rule.schema.json
+# The design promises multi-region availability, but this datastore lives in one region
+# with no replication. A region outage takes the system of record with it.
+# Tripped by designs/multi-region-web.broken.yaml.
+schemaVersion: "1"
+type: "rule"
+id: "datastore-single-region"
+severity: "error"
+select:
+  node:
+    kind: "sql-database"
+when:
+  all:
+    - requirement: "availability.multiRegion"
+      equals: true
+    - inGroup:
+        kind: "region"
+        count:
+          eq: 1
+    - prop: "replication"
+      equals: "none"
+message: "Datastore '{{node.id}}' is single-region with no replication, but the design requires multi-region availability."

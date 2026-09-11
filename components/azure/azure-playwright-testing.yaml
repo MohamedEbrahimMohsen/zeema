@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Playwright Workspaces (formerly Microsoft Playwright Testing): fully managed cloud-hosted browsers
+# that a Playwright suite drives remotely. "What is Playwright Workspaces" states test code stays on
+# the client machine, browsers run on Windows and Linux, results published to the service are
+# encrypted with service-managed keys, and regional affinity is an opt-in feature.
+schemaVersion: "1"
+type: "component"
+id: "azure-playwright-testing"
+kind: "client"
+provider: "azure"
+defaults:
+  platform: "web"
+  managed: true
+properties:
+  browserEngine:
+    type: "enum"
+    values: ["chromium", "firefox", "webkit"]
+  osPlatform:
+    type: "enum"
+    values: ["linux", "windows"]
+  regionalAffinity:
+    type: "boolean"
+    default: false
+  publishResults:
+    type: "boolean"
+    default: false

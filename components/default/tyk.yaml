@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Tyk Gateway: self-hosted open source API gateway for REST, GraphQL, TCP and gRPC. Per "Tyk Gateway
+# Open Source (OSS)" it has no third-party dependency other than Redis, which it needs for distributed
+# rate limiting and token storage; limits are attached to keys and policies, not applied by default.
+schemaVersion: "1"
+type: "component"
+id: "tyk"
+kind: "api-gateway"
+provider: "default"
+defaults:
+  managed: false
+  rateLimiting: false
+properties:
+  redisBacked:
+    type: "boolean"
+    default: true
+  graphqlSupport:
+    type: "boolean"
+    default: true

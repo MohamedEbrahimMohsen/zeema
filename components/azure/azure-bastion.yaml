@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Bastion: managed RDP/SSH jump host reached over TLS on port 443 ("What is Azure Bastion?").
+# Basic, Standard and Premium deploy into AzureBastionSubnet with a public IP and two instances;
+# session recording and private-only deployment are Premium-only, so both are off out of the box.
+schemaVersion: "1"
+type: "component"
+id: "azure-bastion"
+kind: "bastion-host"
+provider: "azure"
+defaults:
+  managed: true
+  protocols: "both"
+  publicIp: true
+  sessionRecording: false
+  justInTimeAccess: false
+properties:
+  sku:
+    type: "enum"
+    values: ["developer", "basic", "standard", "premium"]
+  instanceCount:
+    type: "integer"
+    default: 2
+  shareableLink:
+    type: "boolean"
+    default: false

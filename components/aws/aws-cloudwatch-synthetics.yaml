@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# CloudWatch Synthetics canary: a scheduled script that probes an endpoint from outside the application.
+# "Synthetic monitoring (canaries)" and the CreateCanary API reference: run data is retained 31 days for both
+# successful and failed runs, browserConfigs defaults to Chrome, artifacts go to S3, cleanup defaults to AUTOMATIC.
+schemaVersion: "1"
+type: "component"
+id: "aws-cloudwatch-synthetics"
+kind: "monitoring"
+provider: "aws"
+defaults:
+  signal: "metrics"
+  collectorMode: "pull"
+  independentOfMonitored: true
+  retentionDays: 31
+  managed: true
+properties:
+  browser:
+    type: "enum"
+    values: ["chrome", "firefox"]
+    default: "chrome"
+  activeTracing:
+    type: "boolean"
+    default: false
+  provisionedResourceCleanup:
+    type: "enum"
+    values: ["automatic", "off"]
+    default: "automatic"

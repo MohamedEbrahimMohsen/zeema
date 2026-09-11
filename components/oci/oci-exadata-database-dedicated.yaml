@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Exadata Database Service on Dedicated Infrastructure: Oracle RAC databases on dedicated
+# Exadata racks. "Oracle Exadata Database Service on Dedicated Infrastructure Description": the
+# smallest scalable system is 2 database servers and 3 storage servers, Oracle runs the hardware and
+# hypervisor while the customer owns the guest VM; new tablespaces are TDE-encrypted by default.
+schemaVersion: "1"
+type: "component"
+id: "oci-exadata-database-dedicated"
+kind: "sql-database"
+provider: "oci"
+defaults:
+  managed: true
+  multiWriter: true
+  replication: "none"
+  encryptionAtRest: true
+  concurrencyControl: "pessimistic"
+properties:
+  infrastructureShape:
+    type: "enum"
+    values: ["base-system", "quarter-rack", "half-rack", "full-rack", "x8m", "x9m", "x11m", "x11mv"]
+  databaseServers:
+    type: "integer"
+    default: 2
+  licenseType:
+    type: "enum"
+    values: ["license-included", "bring-your-own-license"]
+  backupDestination:
+    type: "enum"
+    values: ["recovery-service", "object-storage", "local"]
+  dataGuard:
+    type: "boolean"
+    default: false

@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon EKS cluster: AWS runs the Kubernetes control plane ("What is Amazon EKS?"), with EKS standard
+# (you manage nodes) or EKS Auto Mode (EKS manages the data plane too). "Cluster API server endpoint":
+# a new cluster has the public endpoint enabled and the private endpoint disabled, secured by IAM and RBAC.
+schemaVersion: "1"
+type: "component"
+id: "aws-eks"
+kind: "container-orchestrator"
+provider: "aws"
+defaults:
+  managed: true
+  autoscaling: false
+  privateControlPlane: false
+  rbac: true
+properties:
+  computeMode:
+    type: "enum"
+    values: ["standard", "auto-mode"]
+    default: "standard"
+  nodeType:
+    type: "enum"
+    values: ["managed-node-group", "self-managed", "fargate", "hybrid-nodes"]
+  ipFamily:
+    type: "enum"
+    values: ["ipv4", "ipv6"]
+    default: "ipv4"

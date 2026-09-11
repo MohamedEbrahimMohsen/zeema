@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Augmented AI (A2I): human review loops that route low-confidence model predictions to a
+# workteam and write the reviewed results to S3. In maintenance since 30 June 2026 (SageMaker AI - A2I
+# availability change). Per the HumanLoopConfig API Reference a worker has 3,600 seconds (1 hour) to
+# complete a task by default, and TaskCount (1-3 workers per object) must be stated explicitly.
+schemaVersion: "1"
+type: "component"
+id: "aws-augmented-ai"
+kind: "workflow-engine"
+provider: "aws"
+defaults:
+  managed: true
+  humanReview: true
+  durable: true
+properties:
+  workforceType:
+    type: "enum"
+    values: ["private", "vendor", "public"]
+  taskTimeLimitSeconds:
+    type: "integer"
+    default: 3600
+  tasksPerObject:
+    type: "integer"
+  integrationSource:
+    type: "enum"
+    values: ["rekognition", "textract", "custom"]
+  customerManagedKey:
+    type: "boolean"
+    default: false

@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure DNS Private Resolver: managed conditional forwarding between Azure and on-premises DNS
+# ("Azure DNS Private Resolver Overview"). Fully managed with built-in high availability and zone
+# redundancy; up to 5 inbound and 5 outbound endpoints per resolver, 10,000 queries per second each.
+schemaVersion: "1"
+type: "component"
+id: "azure-dns-private-resolver"
+kind: "dns"
+provider: "azure"
+defaults:
+  managed: true
+  anycast: false
+properties:
+  zoneRedundant:
+    type: "boolean"
+    default: true
+  inboundEndpoints:
+    type: "integer"
+  outboundEndpoints:
+    type: "integer"
+  conditionalForwarding:
+    type: "boolean"
+    default: false

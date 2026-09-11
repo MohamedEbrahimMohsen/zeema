@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# TIBCO Enterprise Message Service: JMS broker whose delivery modes are PERSISTENT, NON_PERSISTENT and
+# the EMS extension RELIABLE_DELIVERY; only PERSISTENT messages are written to the server store
+# ("Message Delivery Modes", "How EMS Manages Persistent Messages").
+schemaVersion: "1"
+type: "component"
+id: "tibco-ems"
+kind: "queue"
+provider: "default"
+defaults:
+  delivery: "at-least-once"
+  ordering: "none"
+  deadLetterQueue: false
+  replay: false
+  managed: false
+properties:
+  deliveryMode:
+    type: "enum"
+    values: ["persistent", "non-persistent", "reliable-delivery"]
+    default: "persistent"
+  faultTolerance:
+    type: "boolean"
+    default: false
+  routing:
+    type: "boolean"
+    default: false

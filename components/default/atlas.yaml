@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apache Atlas: data governance and metadata framework for Hadoop.
+# Atlas overview: classifications such as PII are first-class and propagate along lineage,
+# lineage is captured from hooks on the processing engines, and authorization or data masking
+# on the source happens only once Apache Ranger is integrated.
+schemaVersion: "1"
+type: "component"
+id: "atlas"
+kind: "data-catalog"
+provider: "default"
+defaults:
+  managed: false
+  classification: true
+  lineage: true
+  accessPolicyEnforcement: false
+properties:
+  classificationPropagation:
+    type: "boolean"
+    default: true
+  rangerIntegration:
+    type: "boolean"
+    default: false
+  searchLanguage:
+    type: "enum"
+    values: ["dsl", "full-text", "basic"]
+  hookBasedIngestion:
+    type: "boolean"
+    default: true

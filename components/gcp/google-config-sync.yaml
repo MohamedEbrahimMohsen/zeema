@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud Config Sync: GitOps reconciler for GKE fleets. Per "Config Sync overview" and "Install
+# Config Sync" it continuously reconciles clusters against a Git, OCI or Helm source of truth, defaults to
+# the main branch and the hierarchy source format, and is not installed on a fleet unless you choose it.
+schemaVersion: "1"
+type: "component"
+id: "google-config-sync"
+kind: "ci-pipeline"
+provider: "gcp"
+defaults:
+  managed: true
+  trigger: "commit"
+  selfHostedRunners: true
+properties:
+  sourceType:
+    type: "enum"
+    values: ["git", "oci", "helm"]
+    default: "git"
+  sourceFormat:
+    type: "enum"
+    values: ["hierarchy", "unstructured"]
+    default: "hierarchy"
+  branch:
+    type: "string"
+    default: "main"
+  driftRemediation:
+    type: "boolean"
+    default: true

@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS HealthLake FHIR data store: managed, HIPAA-eligible transactional FHIR R4 server that indexes imported health data as FHIR resources and exposes them over FHIR R4, bulk export and Amazon Athena.
+# "What is AWS HealthLake?" states the data store is a transactional FHIR R4 server with durable primary storage, that HealthLake stores encrypted customer content, and that all connections use HTTPS over TLS by default; "Data Protection in AWS HealthLake" states TLS 1.2 is required. SMART on FHIR authorization is configured on the data store, so it is off until set.
+schemaVersion: "1"
+type: "component"
+id: "aws-healthlake"
+kind: "nosql-database"
+provider: "aws"
+defaults:
+  model: "document"
+  consistency: "strong"
+  replication: "single-region"
+  encryptionAtRest: true
+  managed: true
+properties:
+  fhirVersion:
+    type: "enum"
+    values: ["r4"]
+    default: "r4"
+  smartOnFhir:
+    type: "boolean"
+    default: false
+  bulkDataExport:
+    type: "boolean"
+    default: true
+  integratedMedicalNlp:
+    type: "boolean"
+  customerManagedKey:
+    type: "boolean"
+    default: false

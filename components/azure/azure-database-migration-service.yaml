@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Database Migration Service: managed service that moves SQL Server databases to Azure targets.
+# "What Is Azure Database Migration Service?": it is fully managed, supports online (minimal
+# downtime) and offline migrations, and each migration is started by the user from the portal,
+# PowerShell or the CLI rather than on a schedule.
+schemaVersion: "1"
+type: "component"
+id: "azure-database-migration-service"
+kind: "worker"
+provider: "azure"
+defaults:
+  managed: true
+  trigger: "manual"
+properties:
+  migrationMode:
+    type: "enum"
+    values: ["online", "offline"]
+  target:
+    type: "enum"
+    values: ["azure-sql-database", "azure-sql-managed-instance", "sql-server-on-azure-vm"]
+  privateEndpoint:
+    type: "boolean"
+    default: false

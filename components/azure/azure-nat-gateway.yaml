@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure NAT Gateway: fully managed outbound SNAT for a subnet ("What Is Azure NAT Gateway?").
+# The Standard SKU is zonal and is placed in No zone by default; TCP idle timeout defaults to 4 minutes,
+# with up to 16 public IPs and 50 Gbps. Flow logs and zone redundancy arrive only with StandardV2.
+schemaVersion: "1"
+type: "component"
+id: "azure-nat-gateway"
+kind: "nat-gateway"
+provider: "azure"
+defaults:
+  managed: true
+  idleTimeoutMinutes: 4
+  zoneRedundant: false
+  logging: false
+properties:
+  sku:
+    type: "enum"
+    values: ["standard", "standard-v2"]
+    default: "standard"
+  maxPublicIps:
+    type: "integer"
+    default: 16
+  throughputGbps:
+    type: "integer"
+    default: 50
+  ipv6Support:
+    type: "boolean"
+    default: false

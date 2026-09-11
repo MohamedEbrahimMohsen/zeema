@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Solar API: rooftop solar potential, panel layouts and imagery data layers for a building.
+# "Solar API Usage and Billing": a maximum of 600 queries per minute for both the Building Insights and Data Layers
+# methods, billed as two separate SKUs. Covered by the Google Maps Platform SLA (99.9%).
+schemaVersion: "1"
+type: "component"
+id: "google-solar-api"
+kind: "third-party-api"
+provider: "gcp"
+defaults:
+  managed: true
+  idempotent: true
+  callbackStyle: "none"
+  hostedPage: false
+  handlesMoney: false
+  slaPercent: "99.9"
+properties:
+  queriesPerMinute:
+    type: "integer"
+    default: 600
+  dataLayers:
+    type: "boolean"
+    default: true

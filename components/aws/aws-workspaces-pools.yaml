@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon WorkSpaces Pools: non-persistent desktops on ephemeral infrastructure, drawn from a pool
+# that runs an image you specify ("What is Amazon WorkSpaces?", "Administer WorkSpaces Pools").
+# Running mode is AutoStop, billed per connected instance with a 1-2 minute start, or AlwaysOn
+# ("Running mode for WorkSpaces Pools"). Id and kind assigned 2026-09-07 (row kept for placement
+# until end of support on 31 December 2027).
+schemaVersion: "1"
+type: "component"
+id: "aws-workspaces-pools"
+kind: "virtual-desktop"
+provider: "aws"
+defaults:
+  managed: true
+  sessionMode: "pooled"
+  maxSessionsPerHost: 1
+  persistentProfiles: false
+properties:
+  runningMode:
+    type: "enum"
+    values: ["always-on", "auto-stop"]
+  autoScaling:
+    type: "boolean"

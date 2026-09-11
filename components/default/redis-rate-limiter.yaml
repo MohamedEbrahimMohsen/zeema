@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Redis-backed rate limiter: distributed counters, atomic via Lua scripts. Algorithm varies by library.
+schemaVersion: "1"
+type: "component"
+id: "redis-rate-limiter"
+kind: "rate-limiter"
+provider: "default"
+defaults:
+  distributed: true
+  atomicOps: true
+properties:
+  luaScripted:
+    type: "boolean"
+    default: true

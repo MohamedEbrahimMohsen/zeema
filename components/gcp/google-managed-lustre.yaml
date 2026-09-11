@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud Managed Lustre: managed POSIX-compliant Lustre file system for AI and HPC.
+# "Managed Lustre overview" states capacity runs from 9,000 GiB to 80.1 PiB, all data is
+# encrypted at rest and all in-transit data to and within Google Cloud is encrypted.
+schemaVersion: "1"
+type: "component"
+id: "google-managed-lustre"
+kind: "file-storage"
+provider: "gcp"
+defaults:
+  protocol: "lustre"
+  encryptionInTransit: true
+  redundancy: "zonal"
+  backupEnabled: false
+  managed: true
+properties:
+  performanceTier:
+    type: "enum"
+    values: ["dynamic", "125-mbps-per-tib", "250-mbps-per-tib", "500-mbps-per-tib", "1000-mbps-per-tib"]
+  cloudStorageImportExport:
+    type: "boolean"
+    default: false

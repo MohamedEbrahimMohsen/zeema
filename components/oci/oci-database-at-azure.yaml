@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle AI Database@Azure: OCI-managed Exadata infrastructure standing in an Azure datacenter.
+# Defaults from "Overview for Oracle AI Database@Azure": the hardware sits in an Azure availability zone but is
+# logically mapped to an OCI region, databases reach the application over a delegated Azure subnet, data at rest is
+# encrypted with keys that may be customer managed in OCI Vault, and automatic backups go to Autonomous Recovery
+# Service or OCI Object Storage.
+schemaVersion: "1"
+type: "component"
+id: "oci-database-at-azure"
+kind: "sql-database"
+provider: "oci"
+defaults:
+  managed: true
+  backupEnabled: true
+  encryptionAtRest: true
+  replication: "none"
+  concurrencyControl: "pessimistic"
+  commitProtocol: "single"
+properties:
+  service:
+    type: "enum"
+    values: ["exadata-database-service", "autonomous-ai-database", "base-database"]
+    default: "exadata-database-service"
+  hostCloud:
+    type: "enum"
+    values: ["azure"]
+    default: "azure"
+  delegatedSubnet:
+    type: "boolean"
+    default: true
+  billedThroughHostMarketplace:
+    type: "boolean"
+    default: true
+  customerManagedKeys:
+    type: "boolean"
+    default: false

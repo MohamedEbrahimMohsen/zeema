@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Spark Structured Streaming: micro-batch engine triggered on processing time; sinks are at-least-once
+# unless idempotent, state lives in executor memory backed by checkpoint files.
+schemaVersion: "1"
+type: "component"
+id: "spark-streaming"
+kind: "stream-processor"
+provider: "default"
+defaults:
+  windowing: "processing-time"
+  exactlyOnce: false
+  stateBackend: "memory"
+properties:
+  triggerIntervalMs:
+    type: "integer"

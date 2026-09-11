@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Geocoding API: converts addresses to coordinates and coordinates back to addresses.
+# "Geocoding API Usage and Billing": queries-per-minute restriction of 3,000, no maximum number of requests per day.
+# Read-only HTTPS GET, so calls are safely repeatable. Covered by the Google Maps Platform SLA (99.9%).
+schemaVersion: "1"
+type: "component"
+id: "google-geocoding-api"
+kind: "third-party-api"
+provider: "gcp"
+defaults:
+  managed: true
+  idempotent: true
+  callbackStyle: "none"
+  hostedPage: false
+  handlesMoney: false
+  slaPercent: "99.9"
+properties:
+  queriesPerMinute:
+    type: "integer"
+    default: 3000
+  reverseGeocoding:
+    type: "boolean"
+    default: true

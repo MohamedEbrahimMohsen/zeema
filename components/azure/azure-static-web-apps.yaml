@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Static Web Apps: static assets served from points distributed around the world with an API
+# from managed Azure Functions ("What is Azure Static Web Apps?"). The Free plan is the entry plan:
+# three staging environments, two custom domains, 250 MB, no private endpoints and no SLA ("plans").
+schemaVersion: "1"
+type: "component"
+id: "azure-static-web-apps"
+kind: "cdn"
+provider: "azure"
+defaults:
+  managed: true
+  caching: true
+  tls: true
+  edgeCompute: false
+properties:
+  hostingPlan:
+    type: "enum"
+    values: ["free", "standard"]
+    default: "free"
+  stagingEnvironments:
+    type: "integer"
+    default: 3
+  customDomains:
+    type: "integer"
+    default: 2
+  maxAppSizeMb:
+    type: "integer"
+    default: 250
+  privateEndpoint:
+    type: "boolean"
+    default: false

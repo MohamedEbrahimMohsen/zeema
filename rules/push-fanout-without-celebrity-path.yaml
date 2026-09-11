@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../schema/rule.schema.json
+# Pure push fan-out over a social graph is brutal at the tail: one post by an account with
+# millions of followers becomes millions of cache writes. A threshold above which the worker
+# stops pushing and readers merge at read time bounds that write amplification.
+# Tripped by: designs/twitter-timeline.broken.yaml
+schemaVersion: "1"
+type: "rule"
+id: "push-fanout-without-celebrity-path"
+severity: "warning"
+select:
+  node:
+    kind: "worker"
+when:
+  all:
+    - prop: "fanoutStrategy"
+      equals: "push"
+    - prop: "fanoutThreshold"
+      exists: false
+    - hasNode:
+        kind: "graph-database"
+message: "Worker '{{node.id}}' pushes fan-out over a social graph with no fanoutThreshold. Declare a follower threshold above which timelines are merged at read time."

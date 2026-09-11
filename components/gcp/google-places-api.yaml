@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Places API: web service for place search, place details, photos and autocomplete.
+# "Places API Usage and Billing": the rate limit per minute is per API method per project, so each method carries a
+# separate quota; the docs publish no single numeric figure. Covered by the Google Maps Platform SLA (99.9%).
+schemaVersion: "1"
+type: "component"
+id: "google-places-api"
+kind: "third-party-api"
+provider: "gcp"
+defaults:
+  managed: true
+  idempotent: true
+  callbackStyle: "none"
+  hostedPage: false
+  handlesMoney: false
+  slaPercent: "99.9"
+properties:
+  quotaScope:
+    type: "enum"
+    values: ["per-method", "per-project"]
+    default: "per-method"
+  billingPerRequest:
+    type: "boolean"
+    default: true

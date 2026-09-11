@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Manticore Search: Sphinx successor with full-text, vector and columnar search. Per
+# "Introduction" row-wise attribute storage is the default and replication is Galera-based
+# multi-master; per "Creating a local table" CREATE TABLE in RT mode makes a real-time table.
+schemaVersion: "1"
+type: "component"
+id: "manticore"
+kind: "search-index"
+provider: "default"
+defaults:
+  structure: "inverted"
+  shardingStrategy: "none"
+  indexing: "sync"
+  managed: false
+properties:
+  tableType:
+    type: "enum"
+    values: ["real-time", "plain", "percolate", "distributed"]
+    default: "real-time"
+  attributeStorage:
+    type: "enum"
+    values: ["row-wise", "columnar"]
+    default: "row-wise"
+  replicationCluster:
+    type: "boolean"
+    default: false

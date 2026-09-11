@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Vertex AI Feature Store: managed feature serving where BigQuery is the offline source of truth and
+# a feature online store serves the values ("Vertex AI Feature Store overview"). It is a serving
+# surface, not a workspace, so it carries neither a model registry nor experiment tracking.
+schemaVersion: "1"
+type: "component"
+id: "google-vertex-ai-feature-store"
+kind: "ml-platform"
+provider: "gcp"
+defaults:
+  managed: true
+  modelRegistry: false
+  experimentTracking: false
+properties:
+  offlineSource:
+    type: "enum"
+    values: ["bigquery"]
+    default: "bigquery"
+  onlineServingType:
+    type: "enum"
+    values: ["bigtable", "optimized"]
+  embeddingRetrieval:
+    type: "boolean"
+    default: false
+  privateServiceConnect:
+    type: "boolean"
+    default: false

@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Radware DefensePro: stateless inline anti-DDoS appliance. Radware documents always-on
+# behavioural DDoS protection (BDoS) that profiles traffic and generates real-time
+# signatures automatically, covering both volumetric network and application-layer attacks.
+schemaVersion: "1"
+type: "component"
+id: "radware-defensepro"
+kind: "ddos-protection"
+provider: "default"
+defaults:
+  managed: false
+  scope: "both"
+  alwaysOn: true
+  adaptiveThresholds: true
+  telemetry: true
+properties:
+  deployment:
+    type: "enum"
+    values: ["inline", "out-of-band"]
+    default: "inline"
+  behavioralProtection:
+    type: "boolean"
+    default: true
+  sslAttackProtection:
+    type: "boolean"
+    default: false
+  cloudDiversion:
+    type: "boolean"
+    default: false

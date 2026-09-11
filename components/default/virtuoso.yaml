@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenLink Virtuoso: hybrid RDBMS and RDF quad store on disk. Per "Cluster Installation and
+# Configuration" sharding across self-contained partitions is the Elastic Cluster mode
+# enabled through cluster.ini and needs at least two nodes; a plain install is single-server.
+schemaVersion: "1"
+type: "component"
+id: "virtuoso"
+kind: "graph-database"
+provider: "default"
+defaults:
+  inMemory: false
+  masterPerShard: false
+  crossRegionConsistency: "none"
+  managed: false
+properties:
+  deploymentMode:
+    type: "enum"
+    values: ["single-server", "elastic-cluster"]
+    default: "single-server"
+  sparqlEndpoint:
+    type: "boolean"
+    default: true
+  relationalEngine:
+    type: "boolean"
+    default: true

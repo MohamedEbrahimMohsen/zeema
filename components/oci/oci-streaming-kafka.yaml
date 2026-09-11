@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI Streaming with Apache Kafka: fully managed single-tenant Kafka clusters (1 broker starter,
+# 3+ brokers for high availability), mTLS or SASL/SCRAM client auth, ACLs, 16 TB storage per broker.
+# Defaults from "Overview of Streaming with Apache Kafka" and "Concepts in Streaming with Apache Kafka".
+schemaVersion: "1"
+type: "component"
+id: "oci-streaming-kafka"
+kind: "stream"
+provider: "oci"
+defaults:
+  managed: true
+  delivery: "at-least-once"
+  ordering: "per-key"
+  storage: "persistent"
+properties:
+  clusterType:
+    type: "enum"
+    values: ["starter", "high-availability"]
+  brokers:
+    type: "integer"
+  clientAuthentication:
+    type: "enum"
+    values: ["mtls", "sasl-scram"]
+  autoCreateTopics:
+    type: "boolean"
+    default: false
+  aclAllowWhenUnset:
+    type: "boolean"
+    default: true

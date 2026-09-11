@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# GitLab Container Registry: the per-project OCI registry built into GitLab. Per "Container registry" the
+# registry is enabled by default on a project and its "Everyone With Access" default makes it as visible as
+# the project itself, so a public project has a public registry. Immutable container tags are rules an
+# owner adds; container scanning is a separate CI feature, not part of the registry.
+schemaVersion: "1"
+type: "component"
+id: "gitlab-registry"
+kind: "container-registry"
+provider: "default"
+defaults:
+  managed: false
+  imageScanning: false
+  immutableTags: false
+  geoReplicated: false
+properties:
+  visibilityFollowsProject:
+    type: "boolean"
+    default: true
+  enabledPerProject:
+    type: "boolean"
+    default: true
+  cleanupPolicy:
+    type: "boolean"
+    default: false

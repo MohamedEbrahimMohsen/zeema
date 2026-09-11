@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# LiveKit: open source WebRTC SFU ("LiveKit SFU", LiveKit Documentation). Per "Ports and
+# firewall", the ICE/UDP range 50000-60000 and ICE/TCP 7881 are enabled by default while the
+# embedded TURN server (3478/5349) is optional; multi-node needs an external Redis.
+schemaVersion: "1"
+type: "component"
+id: "livekit"
+kind: "media-router"
+provider: "default"
+defaults:
+  managed: false
+  mode: "sfu"
+  transport: "both"
+  cascading: false
+properties:
+  turnEnabled:
+    type: "boolean"
+    default: false
+  multiNode:
+    type: "boolean"
+    default: false

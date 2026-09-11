@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Zilliz Cloud: managed Milvus service. "Detailed plan comparison": Standard, Enterprise and
+# Business Critical SaaS plans plus BYOC, with replicas offered from Enterprise upwards; Standard is
+# the entry plan for prototypes. Quickstart examples index with AUTOINDEX and the COSINE metric.
+schemaVersion: "1"
+type: "component"
+id: "zilliz-cloud"
+kind: "vector-database"
+provider: "default"
+defaults:
+  distanceMetric: "cosine"
+  metadataFiltering: true
+  hybridSearch: true
+  managed: true
+properties:
+  plan:
+    type: "enum"
+    values: ["standard", "enterprise", "business-critical", "byoc"]
+    default: "standard"
+  autoIndex:
+    type: "boolean"
+    default: true
+  deployment:
+    type: "enum"
+    values: ["saas", "byoc"]
+    default: "saas"

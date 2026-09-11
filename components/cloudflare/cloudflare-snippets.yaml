@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Snippets: short JavaScript run on the edge for requests matched by a snippet rule, after Cache
+# Rules. "Rules - Snippets" gives the 5 ms execution budget, 2 MB memory, 32 KB package and the
+# per-plan snippet counts (none on Free, 25 on Pro, 50 on Business, 300 on Enterprise).
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-snippets"
+kind: "worker"
+provider: "cloudflare"
+defaults:
+  managed: true
+  trigger: "manual"
+  accelerator: "none"
+  rateControl: "none"
+properties:
+  plan:
+    type: "enum"
+    values: ["pro", "business", "enterprise"]
+    default: "pro"
+  maxSnippetsPerZone:
+    type: "integer"
+    default: 25
+  cpuTimeLimitMs:
+    type: "integer"
+    default: 5
+  memoryLimitMb:
+    type: "integer"
+    default: 2
+  codeSizeLimitKb:
+    type: "integer"
+    default: 32

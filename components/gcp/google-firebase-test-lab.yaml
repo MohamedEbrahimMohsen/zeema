@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Firebase Test Lab ("Firebase Test Lab" overview and "Run tests from the command line"): runs app
+# tests on Google-hosted physical and virtual devices, invoked from the console, Android Studio,
+# the gcloud CLI or a CI system. Devices are Google's, so there are no self-hosted runners, and
+# `--type robo` is implicit when no test type is given.
+schemaVersion: "1"
+type: "component"
+id: "google-firebase-test-lab"
+kind: "ci-pipeline"
+provider: "gcp"
+defaults:
+  trigger: "manual"
+  selfHostedRunners: false
+  managed: true
+properties:
+  testType:
+    type: "enum"
+    values: ["robo", "instrumentation", "game-loop"]
+    default: "robo"
+  deviceType:
+    type: "enum"
+    values: ["physical", "virtual"]

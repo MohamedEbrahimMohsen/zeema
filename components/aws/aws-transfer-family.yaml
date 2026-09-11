@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Transfer Family server: managed SFTP, FTPS, FTP and AS2 endpoints in front of Amazon S3 or Amazon EFS
+# ("What is AWS Transfer Family?"). It is backed by an auto scaling, redundant fleet across up to three
+# Availability Zones; "Create an SFTP-enabled server" creates a publicly accessible endpoint by default.
+schemaVersion: "1"
+type: "component"
+id: "aws-transfer-family"
+kind: "app-server"
+provider: "aws"
+defaults:
+  managed: true
+  stateless: true
+  autoscaling: true
+  ownsData: false
+properties:
+  protocol:
+    type: "enum"
+    values: ["sftp", "ftps", "ftp", "as2"]
+  endpointType:
+    type: "enum"
+    values: ["public", "vpc"]
+    default: "public"
+  identityProvider:
+    type: "enum"
+    values: ["service-managed", "directory-service", "custom"]
+  storageBackend:
+    type: "enum"
+    values: ["s3", "efs"]

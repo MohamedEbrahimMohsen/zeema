@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Integration 3: fully managed, preconfigured integration platform. Integrations are built in
+# one of five styles (app-driven or scheduled orchestration, file transfer, event, publish/subscribe),
+# monitored by business identifier and resubmitted from the errors page. Facts from "Oracle Integration
+# 3 - Get Started" and "Using Integrations in Oracle Integration 3".
+schemaVersion: "1"
+type: "component"
+id: "oci-integration"
+kind: "workflow-engine"
+provider: "oci"
+defaults:
+  managed: true
+  durable: true
+  pattern: "dag"
+properties:
+  integrationStyle:
+    type: "enum"
+    values: ["app-driven-orchestration", "scheduled-orchestration", "file-transfer", "event", "publish-subscribe"]
+  messagePacks:
+    type: "integer"
+  errorRecovery:
+    type: "boolean"
+    default: true
+  businessIdentifierTracking:
+    type: "boolean"
+    default: false

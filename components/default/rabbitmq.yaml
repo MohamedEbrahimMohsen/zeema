@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# RabbitMQ: AMQP broker. Queues are non-durable and messages transient unless declared otherwise,
+# so persistence defaults false. Dead-lettering requires an explicit x-dead-letter-exchange.
+schemaVersion: "1"
+type: "component"
+id: "rabbitmq"
+kind: "queue"
+provider: "default"
+defaults:
+  delivery: "at-least-once"
+  ordering: "none"
+  deadLetterQueue: false
+  replay: false
+  persistence: false
+properties:
+  quorumQueue:
+    type: "boolean"
+    default: false

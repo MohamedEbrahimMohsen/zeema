@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Red Hat Quay: registry for OCI images with Clair vulnerability scanning packaged alongside it, robot
+# accounts for automation and repository mirroring from external registries ("Use Red Hat Quay",
+# "Red Hat Quay architecture"). Pushing an image to a repository that does not exist yet creates it
+# private; robot accounts are available unless ROBOTS_DISALLOW is set.
+schemaVersion: "1"
+type: "component"
+id: "quay"
+kind: "container-registry"
+provider: "default"
+defaults:
+  managed: false
+  visibility: "private"
+  geoReplicated: false
+properties:
+  deploymentModel:
+    type: "enum"
+    values: ["standalone", "operator", "hosted"]
+    default: "standalone"
+  repositoryMirroring:
+    type: "boolean"
+    default: false
+  robotAccountsAllowed:
+    type: "boolean"
+    default: true

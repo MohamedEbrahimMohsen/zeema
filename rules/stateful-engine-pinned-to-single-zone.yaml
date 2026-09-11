@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../schema/rule.schema.json
+# A matching engine, coordination service or event store that lives in exactly one
+# availability zone with no failover or replication is lost with that zone, and everything
+# that depends on it stops. Tripped by: designs/object-storage.broken.yaml
+schemaVersion: "1"
+type: "rule"
+id: "stateful-engine-pinned-to-single-zone"
+severity: "error"
+select:
+  node:
+    kind: ["matching-engine", "coordination-service", "event-store"]
+when:
+  all:
+    - inGroup:
+        kind: "availability-zone"
+        count:
+          eq: 1
+    - any:
+        - prop: "failover"
+          equals: "none"
+        - prop: "replicated"
+          equals: false
+        - prop: "replication"
+          equals: "none"
+message: "'{{node.id}}' is pinned to a single availability zone with no failover or replication."

@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Vertex AI Pipelines: serverless orchestration of Kubeflow/TFX pipelines. Runs are submitted through
+# the API and only scheduled when a schedule or Pub/Sub trigger is added, so the trigger is manual
+# ("Introduction to Vertex AI Pipelines"). There are no runners to host and no approval gates.
+schemaVersion: "1"
+type: "component"
+id: "google-vertex-ai-pipelines"
+kind: "ci-pipeline"
+provider: "gcp"
+defaults:
+  managed: true
+  trigger: "manual"
+  selfHostedRunners: false
+  approvalRequired: false
+  artifactSigning: false
+properties:
+  executionCaching:
+    type: "boolean"
+    default: true
+  metadataStore:
+    type: "boolean"
+    default: true
+  artifactStore:
+    type: "enum"
+    values: ["cloud-storage"]
+    default: "cloud-storage"

@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare Wallets (beta): a programmable wallet giving an account or an AI agent a stable
+# identity and a way to pay for APIs and content. "Wallets" states one handle can be reserved per
+# account, that a reserved handle cannot yet send, receive or hold funds, and that it starts with
+# stablecoins; virtual wallets for agents operate via API keys.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-wallets"
+kind: "third-party-api"
+provider: "cloudflare"
+defaults:
+  managed: true
+  callbackStyle: "none"
+  hostedPage: false
+  handlesMoney: true
+properties:
+  walletType:
+    type: "enum"
+    values: ["personal", "virtual"]
+    default: "personal"
+  handlesPerAccount:
+    type: "integer"
+    default: 1
+  fundsEnabled:
+    type: "boolean"
+    default: false

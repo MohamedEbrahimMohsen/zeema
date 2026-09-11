@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon FSx for NetApp ONTAP: managed ONTAP file system reachable over NFS, SMB, iSCSI and NVMe.
+# "What is Amazon FSx for NetApp ONTAP?": Multi-AZ and Single-AZ deployment options, file system data and
+# backups encrypted at rest with AWS KMS keys, in-transit encryption via SMB Kerberos, IPSEC or Nitro,
+# and automatic daily backups performed by the service.
+schemaVersion: "1"
+type: "component"
+id: "aws-fsx-ontap"
+kind: "file-storage"
+provider: "aws"
+defaults:
+  protocol: "multi"
+  publicAccess: false
+  backupEnabled: true
+  managed: true
+properties:
+  deploymentType:
+    type: "enum"
+    values: ["single-az", "multi-az"]
+  encryptionAtRest:
+    type: "boolean"
+    default: true
+  dataTiering:
+    type: "boolean"
+    default: true
+  snapMirrorReplication:
+    type: "boolean"
+    default: false
+  snapLockWorm:
+    type: "boolean"
+    default: false

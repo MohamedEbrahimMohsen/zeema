@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI Monitoring: metrics are pushed to the service by OCI resources, agents and the API; alarms evaluate once a minute.
+# Defaults from "Monitoring Overview": metric and alarm-history retention 90 days, trigger delay 3 minutes, repeat notification every 2 hours.
+schemaVersion: "1"
+type: "component"
+id: "oci-monitoring"
+kind: "monitoring"
+provider: "oci"
+defaults:
+  managed: true
+  signal: "metrics"
+  collectorMode: "push"
+  retentionDays: 90
+properties:
+  alarmPendingDurationMinutes:
+    type: "integer"
+    default: 3
+  repeatNotificationHours:
+    type: "integer"
+    default: 2
+  alarmHistoryRetentionDays:
+    type: "integer"
+    default: 90

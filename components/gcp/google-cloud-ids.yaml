@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloud IDS endpoint: a zonal, Google-managed intrusion detection service built on Palo Alto Networks threat signatures.
+# Defaults from "Cloud IDS overview": it detects and alerts but takes no action to prevent attacks, and it inspects a copy of traffic delivered by Packet Mirroring.
+schemaVersion: "1"
+type: "component"
+id: "google-cloud-ids"
+kind: "firewall"
+provider: "gcp"
+defaults:
+  managed: true
+  intrusionPrevention: false
+  logging: true
+properties:
+  packetMirroring:
+    type: "boolean"
+    default: true
+  minimumAlertSeverity:
+    type: "enum"
+    values: ["informational", "low", "medium", "high", "critical"]
+  zonal:
+    type: "boolean"
+    default: true

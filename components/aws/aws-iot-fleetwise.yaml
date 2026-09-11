@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS IoT FleetWise: managed vehicle data collection hub. In maintenance since the 31 March 2026
+# announcement (AWS "Services in Maintenance"), closed to new customers but still placeable.
+# "What is AWS IoT FleetWise?" states vehicles send data to the cloud through MQTT messages, an
+# Edge Agent on the vehicle collects and sends signal updates, data can be stored on the vehicle and
+# forwarded under optimal conditions, destinations are Amazon Timestream and Amazon S3, and vision
+# system data is a preview opt-in.
+schemaVersion: "1"
+type: "component"
+id: "aws-iot-fleetwise"
+kind: "iot-hub"
+provider: "aws"
+defaults:
+  protocol: "mqtt"
+  perDeviceIdentity: true
+  deviceTwin: true
+  managed: true
+properties:
+  edgeAgent:
+    type: "boolean"
+    default: true
+  edgeDataStore:
+    type: "boolean"
+    default: false
+  dataDestination:
+    type: "enum"
+    values: ["timestream", "s3"]
+  visionSystemData:
+    type: "boolean"
+    default: false

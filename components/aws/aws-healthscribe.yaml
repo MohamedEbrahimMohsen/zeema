@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS HealthScribe: managed HIPAA-eligible clinical documentation that turns a patient-clinician conversation into a transcript and a structured clinical note, as a batch MedicalScribe job or an HTTP/2 stream.
+# "Amazon Transcribe endpoints and quotas" gives the MedicalScribe defaults: 5,400 seconds and 2 GB per audio file, 10 concurrent MedicalScribe streams, 1 concurrent post-stream analytics job and 5 concurrent medical notes jobs; the HealthScribe guide states output is written to a customer-owned Amazon S3 bucket.
+schemaVersion: "1"
+type: "component"
+id: "aws-healthscribe"
+kind: "ai-service"
+provider: "aws"
+defaults:
+  managed: true
+  modality: "speech"
+  publicEndpoint: true
+  customerManagedKeys: false
+properties:
+  transcriptionMode:
+    type: "enum"
+    values: ["batch", "streaming"]
+    default: "batch"
+  maxAudioSecondsPerFile:
+    type: "integer"
+    default: 5400
+  concurrentStreams:
+    type: "integer"
+    default: 10
+  concurrentMedicalNotesJobs:
+    type: "integer"
+    default: 5

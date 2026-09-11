@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../schema/rule.schema.json
+# A system of record with no backup or no stated retention is an unrecoverable data loss
+# waiting to happen. Tripped by designs/multi-region-web.broken.yaml.
+schemaVersion: "1"
+type: "rule"
+id: "datastore-missing-backup"
+severity: "error"
+select:
+  node:
+    kind: "sql-database"
+when:
+  any:
+    - prop: "backupEnabled"
+      equals: false
+    - prop: "backupRetentionDays"
+      exists: false
+message: "Datastore '{{node.id}}' has no backup or no retention policy declared."

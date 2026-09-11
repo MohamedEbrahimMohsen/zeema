@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Firecracker, an open source microVM monitor built on KVM. Per "Firecracker Design" one process holds
+# exactly one microVM with API, VMM and vCPU threads, the device model is limited to virtio-net,
+# virtio-block, a serial console and a partial i8042, and production use requires the jailer, which drops
+# privileges behind seccomp filters, cgroups and namespaces.
+schemaVersion: "1"
+type: "component"
+id: "firecracker"
+kind: "virtual-machine"
+provider: "default"
+defaults:
+  managed: false
+  os: "linux"
+properties:
+  jailer:
+    type: "boolean"
+    default: true
+  processPerMicrovm:
+    type: "boolean"
+    default: true
+  deviceModel:
+    type: "enum"
+    values: ["minimal-virtio"]
+    default: "minimal-virtio"
+  snapshotting:
+    type: "boolean"
+    default: false

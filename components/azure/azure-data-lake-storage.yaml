@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Data Lake Storage: Blob Storage with the hierarchical namespace enabled, reached over the
+# ABFS driver at the dfs endpoint ("Azure Data Lake Storage overview"). It inherits the storage
+# account defaults: LRS, three synchronous copies in one datacenter, encrypted at rest.
+schemaVersion: "1"
+type: "component"
+id: "azure-data-lake-storage"
+kind: "object-store"
+provider: "azure"
+defaults:
+  zones: 1
+  durabilityNines: 11
+  replication: "quorum"
+  strongReadAfterWrite: true
+  encryptionAtRest: true
+  managed: true
+properties:
+  hierarchicalNamespace:
+    type: "boolean"
+    default: true
+  redundancy:
+    type: "enum"
+    values: ["lrs", "zrs", "grs", "gzrs", "ra-grs", "ra-gzrs"]
+    default: "lrs"
+  endpoint:
+    type: "enum"
+    values: ["dfs", "blob"]
+    default: "dfs"
+  accessControl:
+    type: "enum"
+    values: ["rbac", "posix-acl", "both"]
+    default: "both"

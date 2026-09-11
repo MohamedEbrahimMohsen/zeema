@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Managed Instance for Apache Cassandra: managed open-source Cassandra datacenters in a VNet.
+# "Management Operations in Azure Managed Instance for Apache Cassandra": snapshot backups are on by
+# default every 24 hours and retained two days. "Security in Azure Managed Instance for Apache
+# Cassandra": all data is encrypted at rest and node-to-node encryption is enforced; client SSL is optional.
+schemaVersion: "1"
+type: "component"
+id: "azure-managed-cassandra"
+kind: "nosql-database"
+provider: "azure"
+defaults:
+  model: "wide-column"
+  consistency: "tunable"
+  replication: "single-region"
+  conflictResolution: "last-writer-wins"
+  backupEnabled: true
+  backupRetentionDays: 2
+  encryptionAtRest: true
+  managed: true
+properties:
+  backupIntervalHours:
+    type: "integer"
+    default: 24
+  nodeToNodeEncryption:
+    type: "boolean"
+    default: true
+  clientCertificateAuth:
+    type: "boolean"
+    default: false
+  customerManagedKeys:
+    type: "boolean"
+    default: false

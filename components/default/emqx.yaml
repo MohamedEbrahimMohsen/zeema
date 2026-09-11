@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# EMQX: distributed MQTT messaging platform. The EMQX documentation home describes MQTT 5.0 and 3.x,
+# MQTT over QUIC and multi-protocol gateways (CoAP, LwM2M, STOMP, MQTT-SN), native clustering out of
+# the box, RocksDB-backed durable sessions and per-client auth (username, JWT, X.509).
+schemaVersion: "1"
+type: "component"
+id: "emqx"
+kind: "iot-hub"
+provider: "default"
+defaults:
+  protocol: "multi"
+  perDeviceIdentity: true
+  managed: false
+properties:
+  edition:
+    type: "enum"
+    values: ["open-source", "enterprise"]
+    default: "open-source"
+  clustering:
+    type: "boolean"
+    default: true
+  mqttOverQuic:
+    type: "boolean"
+    default: false
+  deviceCredential:
+    type: "enum"
+    values: ["username-password", "jwt", "x509-certificate", "external-directory"]
+    default: "username-password"

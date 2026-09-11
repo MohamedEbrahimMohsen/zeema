@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Comprehend Medical: managed HIPAA-eligible NLP that extracts medical entities, PHI and ontology codes (ICD-10-CM, RxNorm, SNOMED CT) from English clinical text.
+# "Guidelines and quotas" gives the real-time defaults: 40 TPS (2,400 per minute) and 40,000 characters per second for DetectEntities-v2, DetectEntities and DetectPHI, a 20 KB maximum document, and 10 active batch jobs per operation; "AI services opt-out policies" states content may be stored for service improvement unless an Organizations opt-out policy is set.
+schemaVersion: "1"
+type: "component"
+id: "aws-comprehend-medical"
+kind: "ai-service"
+provider: "aws"
+defaults:
+  managed: true
+  modality: "text"
+  publicEndpoint: true
+  customerManagedKeys: false
+  quotaUnitsPerMinute: 2400
+properties:
+  analysisMode:
+    type: "enum"
+    values: ["synchronous", "asynchronous"]
+    default: "synchronous"
+  maxDocumentSizeKb:
+    type: "integer"
+    default: 20
+  charactersPerSecond:
+    type: "integer"
+    default: 40000
+  maxActiveAsyncJobs:
+    type: "integer"
+    default: 10
+  phiDetection:
+    type: "boolean"
+    default: true

@@ -1,0 +1,26 @@
+{
+  "name": "@arkore/catalogue",
+  "version": "0.1.0",
+  "description": "The Arkore catalogue: validation gate and bundle builder over kinds/, components/, rules/, locales/, icons/, schema/ and designs/.",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.js",
+    "./validate": "./src/validate.js",
+    "./build": "./src/build.js"
+  },
+  "scripts": {
+    "validate": "node src/validate.js",
+    "bundle": "node src/build.js",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@arkore/core": "workspace:*",
+    "ajv": "8.17.1",
+    "ajv-formats": "3.0.1",
+    "yaml": "2.8.2"
+  },
+  "devDependencies": {
+    "vitest": "5.0.0"
+  }
+}

@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Virtual Machine Scale Sets: a group of identical or mixed VMs spread across fault domains
+# or availability zones ("Azure Virtual Machine Scale Sets overview"). Orchestration mode is fixed
+# at creation, instances are regional unless zones are named, and autoscale rules are added later.
+schemaVersion: "1"
+type: "component"
+id: "azure-vm-scale-set"
+kind: "virtual-machine"
+provider: "azure"
+defaults:
+  managed: false
+  diskEncryption: true
+  zoneRedundant: false
+properties:
+  orchestrationMode:
+    type: "enum"
+    values: ["uniform", "flexible"]
+  upgradePolicy:
+    type: "enum"
+    values: ["manual", "automatic", "rolling"]
+  autoscaleEnabled:
+    type: "boolean"
+    default: false
+  maxInstances:
+    type: "integer"
+    default: 1000

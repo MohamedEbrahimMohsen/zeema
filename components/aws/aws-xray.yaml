@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS X-Ray: distributed tracing that collects segments from instrumented services and builds a trace map.
+# "Configuring sampling rules": the default rule records the first request each second (reservoir 1) plus 5% of
+# additional requests. "AWS X-Ray endpoints and quotas": trace and service graph retention is 30 days.
+schemaVersion: "1"
+type: "component"
+id: "aws-xray"
+kind: "monitoring"
+provider: "aws"
+defaults:
+  signal: "traces"
+  collectorMode: "push"
+  retentionDays: 30
+  managed: true
+properties:
+  samplingReservoirPerSecond:
+    type: "integer"
+    default: 1
+  samplingRatePercent:
+    type: "integer"
+    default: 5

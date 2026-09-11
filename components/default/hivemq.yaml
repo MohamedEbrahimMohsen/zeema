@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# HiveMQ Enterprise MQTT Broker: clustered MQTT broker supporting MQTT 3.1, 3.1.1 and 5.
+# "HiveMQ Configuration" gives the shipped config.xml defaults: a TCP listener on 1883, no
+# connection limit, 1000 queued messages per client, maximum QoS 2 and a 268435460 byte packet size.
+schemaVersion: "1"
+type: "component"
+id: "hivemq"
+kind: "iot-hub"
+provider: "default"
+defaults:
+  protocol: "mqtt"
+  managed: false
+properties:
+  listenerPort:
+    type: "integer"
+    default: 1883
+  maxQueuedMessages:
+    type: "integer"
+    default: 1000
+  maxQos:
+    type: "integer"
+    default: 2
+  maxPacketSizeBytes:
+    type: "integer"
+    default: 268435460
+  clustering:
+    type: "boolean"
+    default: true

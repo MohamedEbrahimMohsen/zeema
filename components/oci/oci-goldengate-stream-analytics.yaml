@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI GoldenGate Stream Analytics: a Stream Analytics deployment type of OCI GoldenGate that runs
+# pipelines over live event streams and publishes results to targets. "OCI GoldenGate Stream
+# Analytics": no Kafka cluster is included, so Kafka input or output (including GoldenGate change
+# data) needs a separate deployment such as OCI Streaming.
+schemaVersion: "1"
+type: "component"
+id: "oci-goldengate-stream-analytics"
+kind: "stream-processor"
+provider: "oci"
+defaults:
+  managed: true
+properties:
+  deploymentType:
+    type: "enum"
+    values: ["stream-analytics", "data-replication", "data-transforms"]
+    default: "stream-analytics"
+  externalKafkaRequired:
+    type: "boolean"
+    default: true
+  autoScaling:
+    type: "boolean"
+    default: true
+  licenseType:
+    type: "enum"
+    values: ["license-included", "bring-your-own-license"]

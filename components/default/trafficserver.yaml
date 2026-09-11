@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apache Traffic Server: self-hosted caching proxy used as a CDN or reverse proxy edge. HTTP object
+# caching is on by default and the RAM cache is enabled, auto-sized from the disk cache and evicting
+# least recently used objects ("HTTP proxy caching", "Cache storage").
+schemaVersion: "1"
+type: "component"
+id: "trafficserver"
+kind: "cdn"
+provider: "default"
+defaults:
+  caching: true
+  managed: false
+properties:
+  ramCache:
+    type: "boolean"
+    default: true
+  ramCacheAlgorithm:
+    type: "enum"
+    values: ["lru", "clfus", "s3-fifo"]
+    default: "lru"
+  parentProxy:
+    type: "boolean"
+    default: false

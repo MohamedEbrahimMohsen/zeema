@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Talkdesk CX Cloud: vendor-run contact center platform whose applications share one data model and
+# route interactions across voice, digital messaging, email, chat, SMS and social through a unified
+# routing engine, with skill-based routing selecting the agent ("Talkdesk CX Cloud"). Studio builds
+# the flows, ring groups the target sets, and the Recordings API "allows recording conversations
+# automatically" ("Talkdesk developer documentation").
+schemaVersion: "1"
+type: "component"
+id: "talkdesk"
+kind: "contact-center"
+provider: "default"
+defaults:
+  managed: true
+  channelVoice: true
+  channelChat: true
+  routing: "skills-based"
+properties:
+  digitalChannels:
+    type: "enum"
+    values: ["email", "chat", "sms", "social", "messaging"]
+  studioFlows:
+    type: "boolean"
+    default: true
+  interactionRecording:
+    type: "boolean"
+    default: false
+  workforceEngagement:
+    type: "boolean"
+    default: false

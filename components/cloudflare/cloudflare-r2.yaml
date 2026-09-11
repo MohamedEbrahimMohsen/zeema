@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# R2 bucket: S3-compatible object storage with no egress fees. "R2 - Consistency" states the effect
+# of an operation is observed globally and immediately, so reads are strongly read-after-write;
+# "R2 - Data security" states every object and its metadata is encrypted at rest with AES-256-GCM.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-r2"
+kind: "object-store"
+provider: "cloudflare"
+defaults:
+  managed: true
+  tier: "hot"
+  strongReadAfterWrite: true
+  encryptionAtRest: true
+  versioning: false
+  objectLock: false
+properties:
+  storageClass:
+    type: "enum"
+    values: ["standard", "infrequent-access"]
+    default: "standard"
+  s3Compatible:
+    type: "boolean"
+    default: true
+  publicAccess:
+    type: "boolean"
+    default: false
+  infrequentAccessMinimumDays:
+    type: "integer"
+    default: 30

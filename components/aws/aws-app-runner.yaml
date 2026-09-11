@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS App Runner: a fully managed web service built from a source image or source repository, with
+# TLS, load balancing and scaling handled for you ("App Runner architecture and concepts"). In
+# maintenance since 31 March 2026: closed to new customers, no new features, existing services keep
+# running ("AWS App Runner availability change"). Defaults: 100 concurrent requests per instance,
+# 1 to 25 instances, TCP health checks ("Managing App Runner automatic scaling",
+# "Configuring health checks for your service").
+schemaVersion: "1"
+type: "component"
+id: "aws-app-runner"
+kind: "app-server"
+provider: "aws"
+defaults:
+  managed: true
+  stateless: true
+  autoscaling: true
+properties:
+  maxConcurrencyPerInstance:
+    type: "integer"
+    default: 100
+  minInstances:
+    type: "integer"
+    default: 1
+  maxInstances:
+    type: "integer"
+    default: 25
+  healthCheckProtocol:
+    type: "enum"
+    values: ["tcp", "http"]
+    default: "tcp"
+  sourceType:
+    type: "enum"
+    values: ["source-code", "source-image"]

@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# CockroachDB Cloud: managed CockroachDB. Managed backups run every hour and are retained for
+# 30 days by default on Basic, Standard and Advanced clusters (CockroachDB Cloud "Managed backups").
+schemaVersion: "1"
+type: "component"
+id: "cockroachdb-cloud"
+kind: "sql-database"
+provider: "default"
+defaults:
+  managed: true
+  distributed: true
+  sharded: true
+  multiWriter: true
+  replication: "sync"
+  commitProtocol: "two-phase"
+  replicaFanout: 3
+  backupEnabled: true
+  backupRetentionDays: 30
+properties:
+  plan:
+    type: "enum"
+    values: ["basic", "standard", "advanced"]
+    default: "basic"
+  backupFrequencyMinutes:
+    type: "integer"
+    default: 60

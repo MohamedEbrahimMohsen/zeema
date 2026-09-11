@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare One RDP: RDP reached through Access and a connector rather than an exposed server.
+# "RDP" states you can make the server available over the Internet "without the risk of opening any
+# inbound ports on your local server", and lists browser-based, client and cloudflared options.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-rdp"
+kind: "bastion-host"
+provider: "cloudflare"
+defaults:
+  managed: true
+  protocols: "rdp"
+  publicIp: false
+  justInTimeAccess: false
+properties:
+  accessMode:
+    type: "enum"
+    values: ["browser-rendered", "device-client", "cloudflared-client"]
+    default: "browser-rendered"
+  connectorRequired:
+    type: "boolean"
+    default: true

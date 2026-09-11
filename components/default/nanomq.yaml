@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# NanoMQ: ultra-light MQTT broker for edge devices, fully MQTT 5.0 compliant (also 3.1.1) with
+# MQTT over QUIC, WebSocket and bridging. "NanoMQ Broker Configuration" gives the bridge cache
+# defaults: 102400 cached messages and a 5000 ms resend interval.
+schemaVersion: "1"
+type: "component"
+id: "nanomq"
+kind: "pubsub-topic"
+provider: "default"
+defaults:
+  delivery: "at-most-once"
+  ordering: "per-key"
+  replay: false
+  managed: false
+properties:
+  mqttVersion:
+    type: "enum"
+    values: ["v3-1-1", "v5"]
+    default: "v5"
+  mqttOverQuic:
+    type: "boolean"
+    default: false
+  bridgeDiskCacheMessages:
+    type: "integer"
+    default: 102400
+  bridgeResendIntervalMs:
+    type: "integer"
+    default: 5000

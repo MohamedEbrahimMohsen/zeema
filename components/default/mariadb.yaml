@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# MariaDB Server: MySQL-compatible relational database. Standard replication is one primary
+# fanning out to replicas and is opt-in; InnoDB takes row-level locks (MariaDB "Replication Overview", "InnoDB").
+schemaVersion: "1"
+type: "component"
+id: "mariadb"
+kind: "sql-database"
+provider: "default"
+defaults:
+  replication: "none"
+  concurrencyControl: "pessimistic"
+properties:
+  version:
+    type: "string"
+  galeraCluster:
+    type: "boolean"
+    default: false

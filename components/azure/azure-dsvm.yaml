@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Data Science Virtual Machine: a marketplace VM image with data science tools preinstalled,
+# explicitly unmanaged and without built-in hosted notebooks ("What is the Azure Data Science
+# Virtual Machine"). Deep learning frameworks fall back to CPU unless an N-series size is chosen.
+schemaVersion: "1"
+type: "component"
+id: "azure-dsvm"
+kind: "virtual-machine"
+provider: "azure"
+defaults:
+  managed: false
+  diskEncryption: true
+  zoneRedundant: false
+properties:
+  osImage:
+    type: "enum"
+    values: ["windows-server-2019", "windows-server-2022", "ubuntu-20-04"]
+  gpuEnabled:
+    type: "boolean"
+    default: false
+  hostedNotebooks:
+    type: "boolean"
+    default: false

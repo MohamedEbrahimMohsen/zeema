@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI cluster network with instance pools: identical bare metal HPC or GPU nodes wired together
+# on a high-bandwidth RDMA network with single-digit microsecond latency ("Cluster Networks with
+# Instance Pools"). All nodes sit in one availability domain that has cluster network hardware,
+# and the underlying instance pool is resized by hand rather than autoscaled.
+schemaVersion: "1"
+type: "component"
+id: "oci-cluster-network"
+kind: "virtual-machine"
+provider: "oci"
+defaults:
+  managed: false
+  os: "linux"
+  zoneRedundant: false
+properties:
+  shape:
+    type: "enum"
+    values:
+      - "bm-gpu-a100-v2-8"
+      - "bm-gpu-h100-8"
+      - "bm-gpu4-8"
+      - "bm-hpc2-36"
+      - "bm-optimized3-36"
+  rdmaNetwork:
+    type: "boolean"
+    default: true
+  singleAvailabilityDomain:
+    type: "boolean"
+    default: true
+  autoscalingSupported:
+    type: "boolean"
+    default: false

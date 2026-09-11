@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Agent Assist: real-time suggestions to human agents during a live conversation.
+# "Features | Agent Assist": smart reply, knowledge assist, sentiment analysis and
+# summarization over chat plus voice transcription, so it spans text and audio.
+# Suggestions come from data the customer uploads, not from a Google corpus.
+schemaVersion: "1"
+type: "component"
+id: "google-agent-assist"
+kind: "ai-service"
+provider: "gcp"
+defaults:
+  modality: "multimodal"
+  publicEndpoint: true
+  managed: true
+properties:
+  feature:
+    type: "enum"
+    values: ["smart-reply", "knowledge-assist", "summarization", "voice-transcription", "sentiment-analysis"]
+    default: "smart-reply"
+  realtimeSuggestions:
+    type: "boolean"
+    default: true
+  customKnowledgeBase:
+    type: "boolean"
+    default: true

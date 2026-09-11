@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Elastic APM: agents and OpenTelemetry SDKs push traces, metrics and logs to APM Server, which writes
+# Elasticsearch data streams; the default ILM policy deletes raw traces and error logs after 10 days.
+schemaVersion: "1"
+type: "component"
+id: "elastic-apm"
+kind: "monitoring"
+provider: "default"
+defaults:
+  signal: "all"
+  collectorMode: "push"
+  managed: false
+  retentionDays: 10
+properties:
+  appMetricsRetentionDays:
+    type: "integer"
+    default: 90
+  rumTraceRetentionDays:
+    type: "integer"
+    default: 90

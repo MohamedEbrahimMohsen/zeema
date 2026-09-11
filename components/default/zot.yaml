@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# zot: CNCF Sandbox "OCI-native container image registry, simplified". Its documentation stresses a single
+# binary with "no additional dependencies or services", running unprivileged, and bundling security
+# scanning, authentication, authorization, garbage collection and deduplication in that one process.
+schemaVersion: "1"
+type: "component"
+id: "zot"
+kind: "container-registry"
+provider: "default"
+defaults:
+  managed: false
+  geoReplicated: false
+properties:
+  singleBinary:
+    type: "boolean"
+    default: true
+  ociNative:
+    type: "boolean"
+    default: true
+  unprivileged:
+    type: "boolean"
+    default: true
+  syncEnabled:
+    type: "boolean"
+    default: false

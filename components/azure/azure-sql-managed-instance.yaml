@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure SQL Managed Instance: near-100% SQL Server compatible PaaS instance inside a VNet.
+# "Automatic, Geo-Redundant Backups": PITR retention defaults to 7 days (1-35) on geo-redundant
+# storage; TDE is on for all new databases and availability is local unless zone redundancy is enabled.
+schemaVersion: "1"
+type: "component"
+id: "azure-sql-managed-instance"
+kind: "sql-database"
+provider: "azure"
+defaults:
+  managed: true
+  replication: "none"
+  backupEnabled: true
+  backupRetentionDays: 7
+  encryptionAtRest: true
+  concurrencyControl: "pessimistic"
+properties:
+  serviceTier:
+    type: "enum"
+    values: ["general-purpose", "business-critical"]
+    default: "general-purpose"
+  backupStorageRedundancy:
+    type: "enum"
+    values: ["locally-redundant", "zone-redundant", "geo-redundant", "geo-zone-redundant"]
+    default: "geo-redundant"
+  zoneRedundant:
+    type: "boolean"
+    default: false
+  publicEndpoint:
+    type: "boolean"
+    default: false

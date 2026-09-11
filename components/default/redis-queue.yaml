@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Redis used as a queue (LPUSH/BRPOP list, or a Stream via Sidekiq, Bull, RQ, Celery).
+# A popped list entry is gone if the worker dies, so delivery is at-most-once and nothing is persisted by default.
+schemaVersion: "1"
+type: "component"
+id: "redis-queue"
+kind: "queue"
+provider: "default"
+defaults:
+  delivery: "at-most-once"
+  ordering: "global"
+  deadLetterQueue: false
+  replay: false
+  persistence: false
+properties:
+  implementation:
+    type: "enum"
+    values: ["list", "stream"]
+    default: "list"

@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apache BookKeeper: append-only ledgers striped across an ensemble of bookies. Entries are fsynced to
+# the journal before acknowledgement (journalSyncData is enabled by default) and cluster metadata lives
+# in ZooKeeper ("BookKeeper Concepts and Architecture", "BookKeeper Configuration").
+schemaVersion: "1"
+type: "component"
+id: "bookkeeper"
+kind: "event-store"
+provider: "default"
+defaults:
+  journaled: true
+  role: "journal"
+  managed: false
+properties:
+  journalSyncData:
+    type: "boolean"
+    default: true
+  metadataStore:
+    type: "enum"
+    values: ["zookeeper", "etcd"]
+    default: "zookeeper"
+  tlsEnabled:
+    type: "boolean"
+    default: false

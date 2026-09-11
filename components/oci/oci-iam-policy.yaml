@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Cloud IAM policy: allow statements attached to a compartment or the tenancy.
+# Defaults from "IAM Policies Overview" and "Deny Policies": access is implicitly denied until a policy
+# grants it, a policy attaches to exactly one compartment, and deny statements are opt-in per tenancy.
+schemaVersion: "1"
+type: "component"
+id: "oci-iam-policy"
+kind: "policy-engine"
+provider: "oci"
+defaults:
+  managed: true
+  enforcementMode: "enforced"
+  scope: "group"
+  remediation: false
+properties:
+  attachment:
+    type: "enum"
+    values: ["tenancy", "compartment"]
+    default: "compartment"
+  denyStatementsEnabled:
+    type: "boolean"
+    default: false
+  implicitDeny:
+    type: "boolean"
+    default: true

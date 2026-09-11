@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AutoMQ: Kafka fork that swaps the storage layer for an S3-first diskless architecture, so brokers are
+# stateless and a single copy in object storage replaces Kafka's three-way ISR replication
+# ("What is AutoMQ - Overview").
+schemaVersion: "1"
+type: "component"
+id: "automq"
+kind: "stream"
+provider: "default"
+defaults:
+  delivery: "at-least-once"
+  ordering: "per-key"
+  replicationFactor: 1
+  storage: "persistent"
+  managed: false
+properties:
+  objectStore:
+    type: "enum"
+    values: ["s3", "gcs", "azure-blob", "s3-compatible"]
+    default: "s3"
+  statelessBrokers:
+    type: "boolean"
+    default: true
+  autoScaling:
+    type: "boolean"
+    default: false

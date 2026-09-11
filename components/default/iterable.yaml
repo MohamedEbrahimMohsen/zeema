@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Iterable: SaaS cross-channel marketing platform. "Message Channels and Message Types Overview"
+# lists email, push, SMS, web push and in-app; the API reference documents 5 requests/second per key.
+schemaVersion: "1"
+type: "component"
+id: "iterable"
+kind: "notification-service"
+provider: "default"
+defaults:
+  managed: true
+  channelPush: true
+  channelEmail: true
+  channelSms: true
+  templateStore: true
+properties:
+  requestsPerSecondQuota:
+    type: "integer"
+    default: 5
+  channelWebPush:
+    type: "boolean"
+    default: true

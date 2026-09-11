@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon FSx File Gateway: on-premises appliance that caches FSx for Windows File Server SMB shares locally.
+# In maintenance mode since 28 October 2024 (closed to new customers, existing customers keep using it);
+# still placeable until end of support. "What is Amazon FSx File Gateway": deployed as a VM on VMware ESXi,
+# Hyper-V or KVM, as a hardware appliance or as an EC2 AMI, joined to Active Directory, and requires
+# Direct Connect or a VPN to reach the FSx for Windows File Server file system.
+schemaVersion: "1"
+type: "component"
+id: "aws-fsx-file-gateway"
+kind: "edge-appliance"
+provider: "aws"
+defaults:
+  connectivity: "connected"
+  offlineMode: false
+  formFactor: "virtual"
+  cloudManaged: true
+  managed: true
+properties:
+  fileProtocol:
+    type: "enum"
+    values: ["smb"]
+    default: "smb"
+  activeDirectoryJoined:
+    type: "boolean"
+    default: true
+  privateConnectivity:
+    type: "enum"
+    values: ["direct-connect", "vpn"]
+  localCache:
+    type: "boolean"
+    default: true

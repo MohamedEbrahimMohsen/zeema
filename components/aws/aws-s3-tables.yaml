@@ -1,0 +1,38 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon S3 Tables table bucket: S3 bucket type that stores Apache Iceberg tables for analytics.
+# "Working with Amazon S3 Tables and table buckets": same durability and availability as other S3
+# bucket types, Block Public Access always on, continuous automatic maintenance; default SSE-S3
+# encryption per "Using server-side encryption with AWS KMS keys (SSE-KMS) in table buckets".
+schemaVersion: "1"
+type: "component"
+id: "aws-s3-tables"
+kind: "object-store"
+provider: "aws"
+defaults:
+  zones: 3
+  durabilityNines: 11
+  replication: "erasure-coded"
+  tier: "hot"
+  strongReadAfterWrite: true
+  encryptionAtRest: true
+  versioning: false
+  objectLock: false
+  managed: true
+properties:
+  tableFormat:
+    type: "enum"
+    values: ["apache-iceberg"]
+    default: "apache-iceberg"
+  encryptionType:
+    type: "enum"
+    values: ["sse-s3", "sse-kms"]
+    default: "sse-s3"
+  automaticMaintenance:
+    type: "boolean"
+    default: true
+  blockPublicAccess:
+    type: "boolean"
+    default: true
+  maxTablesPerBucket:
+    type: "integer"
+    default: 10000

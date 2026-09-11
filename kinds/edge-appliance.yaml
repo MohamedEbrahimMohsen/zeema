@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Every other kind assumes a cloud region; this one is on-premises or field hardware with its own connectivity and local capacity. connectivity and offlineMode have no default so rules can catch a design that assumes an edge site is always online.
+schemaVersion: "1"
+type: "kind"
+id: "edge-appliance"
+category: "compute"
+properties:
+  connectivity:
+    type: "enum"
+    values: ["connected", "intermittent", "disconnected"]
+  offlineMode:
+    type: "boolean"
+  localStorageGib:
+    type: "integer"
+  formFactor:
+    type: "enum"
+    values: ["rack", "ruggedized", "virtual"]
+  cloudManaged:
+    type: "boolean"
+    default: true
+  managed:
+    type: "boolean"
+    default: false

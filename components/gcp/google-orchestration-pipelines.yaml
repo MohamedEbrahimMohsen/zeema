@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Orchestration Pipelines: declarative YAML pipelines for data and AI workflows, deployed onto
+# Managed Service for Apache Airflow. "Orchestration Pipelines overview": pipelines ship as versioned
+# bundles deployed per environment, and runs are either scheduled or started manually.
+schemaVersion: "1"
+type: "component"
+id: "google-orchestration-pipelines"
+kind: "workflow-engine"
+provider: "gcp"
+defaults:
+  managed: true
+  pattern: "dag"
+properties:
+  runner:
+    type: "enum"
+    values: ["managed-airflow-gen2", "managed-airflow-gen3"]
+  trigger:
+    type: "enum"
+    values: ["scheduled", "manual"]
+  versionedBundles:
+    type: "boolean"
+    default: true

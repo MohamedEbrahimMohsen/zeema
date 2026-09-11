@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cache Reserve: a persistent upper-tier cache implemented on top of R2 that shields the origin.
+# "Cache Reserve" states it is not on until it is enabled, requires a paid plan, and starts with a
+# 30 day retention period after which an unrequested asset is removed.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-cache-reserve"
+kind: "object-store"
+provider: "cloudflare"
+defaults:
+  managed: true
+  tier: "warm"
+  encryptionAtRest: true
+  versioning: false
+  objectLock: false
+properties:
+  enabled:
+    type: "boolean"
+    default: false
+  retentionDays:
+    type: "integer"
+    default: 30
+  backedByR2:
+    type: "boolean"
+    default: true
+  paidPlanRequired:
+    type: "boolean"
+    default: true

@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Upstream Kubernetes, self-hosted. Per "kube-apiserver reference" --authorization-mode defaults to
+# AlwaysAllow, per "Network Policies" pods are non-isolated and no plugin enforces policy out of the box,
+# and per "Encrypting Confidential Data at Rest" the API server stores plain-text resources in etcd.
+schemaVersion: "1"
+type: "component"
+id: "kubernetes"
+kind: "container-orchestrator"
+provider: "default"
+defaults:
+  managed: false
+  autoscaling: false
+  rbac: false
+  networkPolicy: false
+properties:
+  cniPlugin:
+    type: "enum"
+    values: ["none", "calico", "cilium", "flannel", "weave", "kube-router"]
+    default: "none"
+  secretsEncryptionAtRest:
+    type: "boolean"
+    default: false
+  ingressController:
+    type: "boolean"
+    default: false
+  datastore:
+    type: "enum"
+    values: ["etcd", "sqlite", "external"]
+    default: "etcd"

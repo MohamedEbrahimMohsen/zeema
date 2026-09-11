@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure SQL Database: managed SQL Server; automated backups (7 days) and TDE are on by default,
+# geo-replication is opt-in.
+schemaVersion: "1"
+type: "component"
+id: "azure-sql"
+kind: "sql-database"
+provider: "azure"
+defaults:
+  managed: true
+  replication: "none"
+  backupEnabled: true
+  backupRetentionDays: 7
+  encryptionAtRest: true
+  concurrencyControl: "pessimistic"
+properties:
+  serviceTier:
+    type: "enum"
+    values: ["general-purpose", "business-critical", "hyperscale"]
+    default: "general-purpose"

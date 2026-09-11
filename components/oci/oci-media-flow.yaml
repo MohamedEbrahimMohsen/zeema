@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle OCI Media Flow: file-based media workflow jobs that transcode, thumbnail and segment
+# content read from an Object Storage bucket, optionally calling Speech, Language and Vision.
+# "What is Media Flow": jobs are file based, output goes to an Object Storage bucket or is
+# ingested directly into Media Streams, HLS and DASH packaging produce adaptive bitrate
+# streams, and a tenant may hold 2,000 concurrent jobs and 500,000 media workflows.
+schemaVersion: "1"
+type: "component"
+id: "oci-media-flow"
+kind: "media-transcoder"
+provider: "oci"
+defaults:
+  mode: "file"
+  redundantPipeline: false
+  drm: false
+  managed: true
+properties:
+  outputTarget:
+    type: "enum"
+    values: ["object-storage", "media-streams"]
+    default: "object-storage"
+  aiTaskIntegration:
+    type: "boolean"
+    default: false
+  maxConcurrentJobs:
+    type: "integer"
+    default: 2000
+  maxMediaWorkflows:
+    type: "integer"
+    default: 500000

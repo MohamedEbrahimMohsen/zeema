@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud Firestore: managed document store with strong consistency; scheduled backups
+# and point-in-time recovery are opt-in.
+schemaVersion: "1"
+type: "component"
+id: "firestore"
+kind: "nosql-database"
+provider: "gcp"
+defaults:
+  model: "document"
+  consistency: "strong"
+  replication: "single-region"
+  conflictResolution: "none"
+  encryptionAtRest: true
+  managed: true
+properties:
+  mode:
+    type: "enum"
+    values: ["native", "datastore"]
+    default: "native"

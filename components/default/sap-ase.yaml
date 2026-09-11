@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# SAP Adaptive Server Enterprise: single-primary relational database. Allpages locking is the
+# default lock scheme; replication is a separate Replication Server product (SAP ASE "Deadlocks and Concurrency").
+schemaVersion: "1"
+type: "component"
+id: "sap-ase"
+kind: "sql-database"
+provider: "default"
+defaults:
+  replication: "none"
+  concurrencyControl: "pessimistic"
+properties:
+  version:
+    type: "string"
+  lockScheme:
+    type: "enum"
+    values: ["allpages", "datapages", "datarows"]
+    default: "allpages"

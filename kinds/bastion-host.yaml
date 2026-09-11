@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Holds the session and protocol properties access rules read, which app-server has none of. sessionRecording, mfaRequired and publicIp have no default so an unaudited or exposed jump host is catchable.
+schemaVersion: "1"
+type: "kind"
+id: "bastion-host"
+category: "security"
+properties:
+  protocols:
+    type: "enum"
+    values: ["ssh", "rdp", "both"]
+  sessionRecording:
+    type: "boolean"
+  mfaRequired:
+    type: "boolean"
+  publicIp:
+    type: "boolean"
+  justInTimeAccess:
+    type: "boolean"
+    default: false
+  managed:
+    type: "boolean"
+    default: false

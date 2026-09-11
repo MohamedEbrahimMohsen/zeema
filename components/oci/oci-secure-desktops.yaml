@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI Secure Desktops desktop pool: pools of identically configured managed virtual desktops, one
+# desktop per user per pool ("Creating a Desktop Pool"). That page gives each desktop a 50 GB
+# storage volume with no backup policy, leaves the action on inactivity and on disconnect at None
+# with a 60 minute grace period, and turns clipboard, audio, camera and drive mapping off.
+schemaVersion: "1"
+type: "component"
+id: "oci-secure-desktops"
+kind: "virtual-desktop"
+provider: "oci"
+defaults:
+  managed: true
+  maxSessionsPerHost: 1
+properties:
+  storageSizeGib:
+    type: "integer"
+    default: 50
+  clipboardAccess:
+    type: "boolean"
+    default: false
+  audioAccess:
+    type: "boolean"
+    default: false
+  actionOnDisconnect:
+    type: "enum"
+    values: ["none", "stop", "delete"]
+    default: "none"
+  gracePeriodMinutes:
+    type: "integer"
+    default: 60

@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Datadog: SaaS metrics, logs, traces and alerts pushed by agent; 15 months metric retention.
+schemaVersion: "1"
+type: "component"
+id: "datadog"
+kind: "monitoring"
+provider: "default"
+defaults:
+  signal: "all"
+  collectorMode: "push"
+  managed: true
+  independentOfMonitored: true
+  retentionDays: 456
+properties:
+  agentBased:
+    type: "boolean"
+    default: true

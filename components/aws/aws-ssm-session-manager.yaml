@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Systems Manager Session Manager: fully managed shell and port-forwarding access to managed nodes. Per
+# "AWS Systems Manager Session Manager" it needs no inbound ports, no bastion host and no public IP,
+# traffic is TLS 1.2, and logging session data to S3 or CloudWatch Logs is something you choose to enable.
+schemaVersion: "1"
+type: "component"
+id: "aws-ssm-session-manager"
+kind: "bastion-host"
+provider: "aws"
+defaults:
+  protocols: "both"
+  sessionRecording: false
+  publicIp: false
+  managed: true
+properties:
+  inboundPortsRequired:
+    type: "boolean"
+    default: false
+  portForwarding:
+    type: "boolean"
+    default: true
+  sessionEncryption:
+    type: "enum"
+    values: ["tls-1-2", "tls-1-2-plus-kms"]
+    default: "tls-1-2"
+  sessionLogDestination:
+    type: "enum"
+    values: ["none", "s3", "cloudwatch-logs"]
+    default: "none"

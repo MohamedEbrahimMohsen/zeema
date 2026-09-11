@@ -1,0 +1,10 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Generic load balancer whose product the design does not name. Layer 7 with round-robin
+# selection and health checks, which is what an unqualified load balancer box means.
+schemaVersion: "1"
+type: "component"
+id: "load-balancer-tier"
+kind: "load-balancer"
+provider: "default"
+defaults:
+  managed: false

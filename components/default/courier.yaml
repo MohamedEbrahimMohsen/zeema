@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Courier: SaaS notification API. "Courier platform overview" documents email, SMS, push, inbox and
+# chat delivery, an Idempotency-Key header on send, a template designer and preferences at send time.
+schemaVersion: "1"
+type: "component"
+id: "courier"
+kind: "notification-service"
+provider: "default"
+defaults:
+  managed: true
+  channelPush: true
+  channelEmail: true
+  channelSms: true
+  templateStore: true
+  dedupKey: true
+properties:
+  preferenceCenter:
+    type: "boolean"
+    default: true
+  visualTemplateEditor:
+    type: "boolean"
+    default: true

@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI Service Catalog private application: a Terraform stack package published inside your own tenancy
+# and offered through curated service catalogs, so only organisation-approved applications can be
+# launched. Private applications are never visible outside the tenancy.
+# Facts from "Overview of Service Catalog" and the service-catalog private-application CLI reference.
+schemaVersion: "1"
+type: "component"
+id: "oci-service-catalog"
+kind: "artifact-repository"
+provider: "oci"
+defaults:
+  managed: true
+  artifactType: "generic"
+  visibility: "private"
+properties:
+  packageType:
+    type: "enum"
+    values: ["terraform-stack"]
+    default: "terraform-stack"
+  listingType:
+    type: "enum"
+    values: ["private-application", "marketplace-image"]
+  catalogAssociationScope:
+    type: "enum"
+    values: ["tenancy", "compartment"]

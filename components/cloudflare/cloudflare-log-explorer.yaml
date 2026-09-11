@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Log Explorer: stores and searches Cloudflare logs natively instead of forwarding them out.
+# "Log Explorer" states logs are queried in the dashboard or API and that contract customers can
+# store them for up to two years at additional cost; the FAQ places the storage in single-tenant R2.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-log-explorer"
+kind: "monitoring"
+provider: "cloudflare"
+defaults:
+  managed: true
+  signal: "logs"
+  collectorMode: "push"
+properties:
+  datasetScope:
+    type: "enum"
+    values: ["zone", "account"]
+    default: "zone"
+  retentionMonthsMax:
+    type: "integer"
+    default: 24

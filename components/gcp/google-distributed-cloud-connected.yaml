@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Distributed Cloud connected ("Google Distributed Cloud connected overview"): Google-supplied
+# and Google-maintained server machines installed on your premises, reaching Google Cloud over a
+# secure Cloud VPN and provisioned from the Google Cloud console or gcloud. It runs both Kubernetes
+# container and virtual machine workloads; GPUs only on selected hardware configurations.
+schemaVersion: "1"
+type: "component"
+id: "google-distributed-cloud-connected"
+kind: "edge-appliance"
+provider: "gcp"
+defaults:
+  connectivity: "connected"
+  formFactor: "rack"
+  cloudManaged: true
+  managed: true
+properties:
+  kubernetesWorkloads:
+    type: "boolean"
+    default: true
+  virtualMachineWorkloads:
+    type: "boolean"
+    default: true
+  gpuSupport:
+    type: "boolean"
+    default: false

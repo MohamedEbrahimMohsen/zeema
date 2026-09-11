@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Agora: hosted realtime video and voice SDK. Media is relayed over the Software-Defined
+# Real-Time Network with data centres in over 200 countries ("Product overview", "Core
+# concepts"); the "Firewall requirements" page lists both UDP (3478, 4700-5000) and TCP (443)
+# paths, so clients reach the network over either transport.
+schemaVersion: "1"
+type: "component"
+id: "agora"
+kind: "media-router"
+provider: "default"
+defaults:
+  managed: true
+  mode: "sfu"
+  transport: "both"
+  cascading: true
+properties:
+  cloudRecording:
+    type: "boolean"
+    default: false
+  channelProfile:
+    type: "enum"
+    values: ["communication", "live-broadcasting"]

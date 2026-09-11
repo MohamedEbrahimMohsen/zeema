@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Jitsi Videobridge: WebRTC server that routes video streams among conference participants
+# (Jitsi Meet Handbook, Architecture). A default self-hosted install opens TCP/443 and UDP/10000
+# for media with the videobridge TCP harvester on 4443, and runs a single bridge per shard.
+schemaVersion: "1"
+type: "component"
+id: "jitsi"
+kind: "media-router"
+provider: "default"
+defaults:
+  managed: false
+  mode: "sfu"
+  transport: "both"
+  cascading: false
+properties:
+  bridgeCount:
+    type: "integer"
+    default: 1
+  tcpHarvester:
+    type: "boolean"
+    default: true

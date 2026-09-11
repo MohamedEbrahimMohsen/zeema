@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Abstract kind: Durable orchestration of multi-step business processes with retries and compensation (Cadence, Temporal, Step Functions).
+schemaVersion: "1"
+type: "kind"
+id: "workflow-engine"
+category: "compute"
+properties:
+  durable:
+    type: "boolean"
+    default: true
+  pattern:
+    type: "enum"
+    values: ["saga", "tcc", "two-phase-commit", "dag"]
+    default: "dag"
+  stepsIdempotent:
+    type: "boolean"
+    default: false
+  compensation:
+    type: "boolean"
+    default: false
+  humanReview:
+    type: "boolean"
+    default: false
+  managed:
+    type: "boolean"
+    default: false

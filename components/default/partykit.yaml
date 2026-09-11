@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# PartyKit: hosted stateful realtime servers ("parties"). The documentation describes one server
+# instance per room reached over WebSocket, persistent per-room storage, HTTP request handling and an
+# opt-in hibernation mode; deployment is to PartyKit's platform or to your own Cloudflare account.
+schemaVersion: "1"
+type: "component"
+id: "partykit"
+kind: "realtime-gateway"
+provider: "default"
+defaults:
+  managed: true
+  protocol: "websocket"
+  stateful: true
+  autoscaling: true
+  channelAssignment: "sticky"
+properties:
+  deployment:
+    type: "enum"
+    values: ["partykit-cloud", "self-hosted-cloudflare"]
+    default: "partykit-cloud"
+  hibernation:
+    type: "boolean"
+    default: false
+  roomStorage:
+    type: "boolean"
+    default: true
+  httpEndpoints:
+    type: "boolean"
+    default: true

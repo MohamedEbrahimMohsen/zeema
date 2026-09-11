@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Kinesis Video Streams: fully managed time-indexed media ingest. The CreateStream API
+# reference gives DataRetentionInHours default 0 (no persistence, 5-minute host buffer only) and
+# the HOT storage tier; "Data protection in Kinesis Video Streams" says SSE is always enabled.
+schemaVersion: "1"
+type: "component"
+id: "aws-kinesis-video-streams"
+kind: "stream"
+provider: "aws"
+defaults:
+  managed: true
+  delivery: "at-least-once"
+  ordering: "per-key"
+  retentionHours: 0
+  storage: "ephemeral"
+  compaction: false
+  schemaEnforced: false
+properties:
+  storageTier:
+    type: "enum"
+    values: ["hot", "warm"]
+    default: "hot"
+  encryptionAtRest:
+    type: "boolean"
+    default: true
+  customerManagedKey:
+    type: "boolean"
+    default: false
+  maxFragmentDurationSeconds:
+    type: "integer"
+    default: 20

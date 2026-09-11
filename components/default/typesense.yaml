@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Typesense: in-memory typo-tolerant search engine; writes are indexed synchronously and are
+# searchable on return.
+schemaVersion: "1"
+type: "component"
+id: "typesense"
+kind: "search-index"
+provider: "default"
+defaults:
+  structure: "inverted"
+  shardingStrategy: "none"
+  indexing: "sync"
+properties:
+  vectorSearch:
+    type: "boolean"
+    default: false

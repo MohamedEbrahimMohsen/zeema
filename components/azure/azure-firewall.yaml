@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Firewall: managed, fully stateful network firewall in Basic, Standard and Premium SKUs
+# ("What is Azure Firewall?"). The FAQ states it blocks connections to any target IP address or
+# FQDN unless an explicit rule allows it, and that the TCP idle timeout is four minutes.
+schemaVersion: "1"
+type: "component"
+id: "azure-firewall"
+kind: "firewall"
+provider: "azure"
+defaults:
+  managed: true
+  stateful: true
+  defaultAction: "deny"
+properties:
+  sku:
+    type: "enum"
+    values: ["basic", "standard", "premium"]
+  tcpIdleTimeoutMinutes:
+    type: "integer"
+    default: 4
+  tlsInspection:
+    type: "boolean"
+    default: false
+  forcedTunneling:
+    type: "boolean"
+    default: false

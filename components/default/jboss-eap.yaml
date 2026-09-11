@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Red Hat JBoss Enterprise Application Platform: the supported build of WildFly. "Introduction to
+# Red Hat JBoss EAP" states 8.0 is compatible with the Jakarta EE 10 Web Profile, Core Profile and Full
+# Platform and runs either as a standalone server or in a managed domain; the "Configuration Guide" says
+# standalone.sh uses standalone.xml by default, so clustering subsystems are not loaded unless chosen.
+schemaVersion: "1"
+type: "component"
+id: "jboss-eap"
+kind: "app-server"
+provider: "default"
+defaults:
+  managed: false
+  runtime: "jvm"
+properties:
+  operatingMode:
+    type: "enum"
+    values: ["standalone", "domain"]
+    default: "standalone"
+  configurationProfile:
+    type: "enum"
+    values: ["standalone", "standalone-ha", "standalone-full", "standalone-full-ha"]
+    default: "standalone"
+  jakartaProfile:
+    type: "enum"
+    values: ["web-profile", "core-profile", "full-platform"]
+  clustering:
+    type: "boolean"
+    default: false

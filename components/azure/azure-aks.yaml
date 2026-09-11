@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Kubernetes Service: Azure creates and operates the control plane at no cost ("What is
+# Azure Kubernetes Service (AKS)?"). A Standard-SKU cluster starts on the Free pricing tier with
+# manual scaling and manual upgrades, a public API server, and no network policy engine.
+schemaVersion: "1"
+type: "component"
+id: "azure-aks"
+kind: "container-orchestrator"
+provider: "azure"
+defaults:
+  managed: true
+  autoscaling: false
+  privateControlPlane: false
+  networkPolicy: false
+properties:
+  tier:
+    type: "enum"
+    values: ["free", "standard", "premium"]
+    default: "free"
+  clusterMode:
+    type: "enum"
+    values: ["standard", "automatic"]
+  autoUpgradeChannel:
+    type: "boolean"
+    default: false
+  workloadIdentity:
+    type: "boolean"
+    default: false

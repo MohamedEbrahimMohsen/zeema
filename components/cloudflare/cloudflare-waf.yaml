@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare WAF: the Free Managed Ruleset is deployed automatically on every new zone, so the WAF
+# filters (not just logs) out of the box ("Managed Rules", "Get started"); OWASP defaults to
+# paranoia level PL1 and a score threshold of 40 ("OWASP Core Ruleset - Concepts").
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-waf"
+kind: "waf"
+provider: "cloudflare"
+defaults:
+  managed: true
+  mode: "prevention"
+  managedRuleSet: "cloudflare-free-managed-ruleset"
+  rateLimiting: true
+properties:
+  plan:
+    type: "enum"
+    values: ["free", "pro", "business", "enterprise"]
+    default: "free"
+  owaspParanoiaLevel:
+    type: "enum"
+    values: ["pl1", "pl2", "pl3", "pl4"]
+    default: "pl1"
+  owaspScoreThreshold:
+    type: "integer"
+    default: 40
+  exposedCredentialsCheck:
+    type: "boolean"
+    default: false

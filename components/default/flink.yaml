@@ -1,0 +1,13 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apache Flink: stateful stream processing. Checkpointing is off until enabled, so exactly-once is not
+# a default; the default state backend is the in-heap HashMap backend.
+schemaVersion: "1"
+type: "component"
+id: "flink"
+kind: "stream-processor"
+provider: "default"
+defaults:
+  managed: false
+  windowing: "none"
+  exactlyOnce: false
+  stateBackend: "memory"

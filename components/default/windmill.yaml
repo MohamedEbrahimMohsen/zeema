@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Windmill: scripts and flows executed by a worker fleet. A PostgreSQL database holds the entire state
+# of Windmill including the job queue, and every other component is stateless ("Self-host Windmill").
+# Cloud and self-hosted deployments run the same engine.
+schemaVersion: "1"
+type: "component"
+id: "windmill"
+kind: "workflow-engine"
+provider: "default"
+defaults:
+  durable: true
+  pattern: "dag"
+  compensation: false
+  managed: false
+properties:
+  stateStore:
+    type: "string"
+    default: "postgres"
+  deployment:
+    type: "enum"
+    values: ["self-hosted", "cloud"]
+    default: "self-hosted"

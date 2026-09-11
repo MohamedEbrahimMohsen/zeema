@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Gloo Gateway: self-hosted Envoy-based Kubernetes ingress controller conformant with the Kubernetes
+# Gateway API. Per the product overview, local rate limiting, retries and timeouts are open source
+# while global rate limiting, JWT and external auth/OIDC need an enterprise licence, so all are opt-in.
+schemaVersion: "1"
+type: "component"
+id: "gloo"
+kind: "api-gateway"
+provider: "default"
+defaults:
+  managed: false
+  rateLimiting: false
+properties:
+  edition:
+    type: "enum"
+    values: ["open-source", "enterprise"]
+    default: "open-source"
+  gatewayApi:
+    type: "boolean"
+    default: true

@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud Vision API: metered image-annotation endpoint on vision.googleapis.com.
+# "Quotas and limits | Cloud Vision API": 1,800 requests per minute, 20 MB per image,
+# 16 images per synchronous images:annotate request. Features are requested per call.
+schemaVersion: "1"
+type: "component"
+id: "google-cloud-vision"
+kind: "ai-service"
+provider: "gcp"
+defaults:
+  modality: "vision"
+  publicEndpoint: true
+  quotaUnitsPerMinute: 1800
+  managed: true
+properties:
+  processing:
+    type: "enum"
+    values: ["sync", "async-batch"]
+    default: "sync"
+  imagesPerRequest:
+    type: "integer"
+    default: 16
+  maxImageMb:
+    type: "integer"
+    default: 20
+  safeSearchDetection:
+    type: "boolean"
+    default: false

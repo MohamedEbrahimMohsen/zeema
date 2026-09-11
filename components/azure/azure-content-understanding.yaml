@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Content Understanding: analyzers that turn documents, images, audio and video into a user-defined structured schema.
+# "What is Azure Content Understanding in Foundry Tools?" states confidence scores and grounding are enabled through the estimateFieldSourceAndConfidence setting and segmentation through enableSegment, so both are off unless configured, and that content filter results come from the Guardrails instance of the model deployment it uses.
+schemaVersion: "1"
+type: "component"
+id: "azure-content-understanding"
+kind: "ai-service"
+provider: "azure"
+defaults:
+  managed: true
+  modality: "multimodal"
+  contentFiltering: true
+  publicEndpoint: true
+  customerManagedKeys: false
+properties:
+  inputModality:
+    type: "enum"
+    values: ["document", "image", "audio", "video"]
+  analyzerType:
+    type: "enum"
+    values: ["prebuilt", "custom"]
+    default: "prebuilt"
+  confidenceScores:
+    type: "boolean"
+    default: false
+  segmentation:
+    type: "boolean"
+    default: false

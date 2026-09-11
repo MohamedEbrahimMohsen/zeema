@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud Workflows: serverless orchestration of steps defined in YAML. Per "Workflows quotas and
+# limits" an execution may run up to one year, execution history is kept 90 days, 10,000 executions can be
+# active per region and further executions are queued because backlogging is enabled by default.
+schemaVersion: "1"
+type: "component"
+id: "google-cloud-workflows"
+kind: "workflow-engine"
+provider: "gcp"
+defaults:
+  managed: true
+  durable: true
+  pattern: "dag"
+properties:
+  maxExecutionDays:
+    type: "integer"
+    default: 365
+  executionHistoryRetentionDays:
+    type: "integer"
+    default: 90
+  maxActiveExecutions:
+    type: "integer"
+    default: 10000
+  backlogQueueing:
+    type: "boolean"
+    default: true

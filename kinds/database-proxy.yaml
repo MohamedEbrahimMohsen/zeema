@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Abstract kind: Sits between services and a sharded or pooled datastore: routing, pooling, coalescing, shedding (Vitess, PgBouncer, ProxySQL).
+schemaVersion: "1"
+type: "kind"
+id: "database-proxy"
+category: "data"
+properties:
+  pooling:
+    type: "boolean"
+    default: true
+  poolSharded:
+    type: "boolean"
+    default: false
+  routing:
+    type: "enum"
+    values: ["none", "shard-key", "lookup"]
+    default: "none"
+  scatterGather:
+    type: "boolean"
+    default: false
+  hedging:
+    type: "boolean"
+    default: false
+  loadShedding:
+    type: "boolean"
+    default: false
+  requestCoalescing:
+    type: "boolean"
+    default: false
+  managed:
+    type: "boolean"
+    default: false

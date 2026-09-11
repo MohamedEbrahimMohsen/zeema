@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Falco: CNCF runtime security engine reading kernel events through the embedded modern eBPF driver and
+# pushing alerts to output channels; it keeps no long-term store ("Falco docs", "Kernel event sources").
+schemaVersion: "1"
+type: "component"
+id: "falco"
+kind: "monitoring"
+provider: "default"
+defaults:
+  signal: "alerts"
+  collectorMode: "push"
+  managed: false
+properties:
+  driver:
+    type: "enum"
+    values: ["modern-ebpf", "kernel-module"]
+    default: "modern-ebpf"

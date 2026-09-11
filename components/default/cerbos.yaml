@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cerbos: stateless self-hosted policy decision point for application authorization.
+# "Cerbos Policy Decision Point": open source, exposes REST and gRPC, RBAC with ABAC conditions.
+# "Resource policies": anything not matched by an ALLOW rule is implicitly denied.
+schemaVersion: "1"
+type: "component"
+id: "cerbos"
+kind: "policy-engine"
+provider: "default"
+defaults:
+  effect: "deny"
+  enforcementMode: "enforced"
+  scope: "resource"
+  remediation: false
+  managed: false
+properties:
+  accessModel:
+    type: "enum"
+    values: ["rbac", "abac", "rebac", "pbac"]
+    default: "rbac"
+  api:
+    type: "enum"
+    values: ["grpc", "rest"]
+    default: "grpc"
+  policyStore:
+    type: "enum"
+    values: ["disk", "git", "blob", "database", "hub"]
+    default: "disk"

@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Fluid Relay: managed Fluid Framework service that takes in client data operations, sequences
+# them and broadcasts the sequenced operations back, so every client rebuilds the same state.
+# Encryption at rest is on by default with Microsoft-managed keys. Facts from "Azure Fluid Relay
+# overview" and "Data encryption in Azure Fluid Relay".
+schemaVersion: "1"
+type: "component"
+id: "azure-fluid-relay"
+kind: "realtime-gateway"
+provider: "azure"
+defaults:
+  managed: true
+  protocol: "websocket"
+  stateful: true
+  sequenceNumbers: true
+properties:
+  encryptionAtRest:
+    type: "boolean"
+    default: true
+  customerManagedKeys:
+    type: "boolean"
+    default: false
+  serverSideCode:
+    type: "boolean"
+    default: false

@@ -1,0 +1,51 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# In-memory key-value store placed in front of a slower datastore.
+# evictionPolicy is deliberately optional with no default; cache-missing-eviction-policy reports its absence.
+schemaVersion: "1"
+type: "kind"
+id: "cache"
+category: "data"
+properties:
+  evictionPolicy:
+    type: "enum"
+    values: ["lru", "lfu", "ttl", "none"]
+  ttlSeconds:
+    type: "integer"
+  ttlJitter:
+    type: "boolean"
+    default: false
+  persistence:
+    type: "boolean"
+    default: false
+  replication:
+    type: "enum"
+    values: ["none", "single-az", "multi-az", "multi-region"]
+    default: "none"
+  invalidation:
+    type: "enum"
+    values: ["ttl", "event", "none"]
+    default: "ttl"
+  hashing:
+    type: "enum"
+    values: ["none", "consistent"]
+    default: "none"
+  usedAsPrimaryStore:
+    type: "boolean"
+    default: false
+  materialised:
+    type: "boolean"
+    default: false
+  structure:
+    type: "enum"
+    values: ["key-value", "bloom-filter", "hash-set", "sorted-set"]
+    default: "key-value"
+  readBarrier:
+    type: "boolean"
+    default: false
+  tier:
+    type: "enum"
+    values: ["core", "edge"]
+    default: "core"
+  managed:
+    type: "boolean"
+    default: false

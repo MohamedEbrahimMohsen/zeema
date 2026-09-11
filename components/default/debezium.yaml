@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Debezium: log-based CDC connectors (Postgres, MySQL, Mongo, SQL Server) usually run on Kafka Connect;
+# takes an initial snapshot and records schema history so schema changes are handled.
+schemaVersion: "1"
+type: "component"
+id: "debezium"
+kind: "change-data-capture"
+provider: "default"
+defaults:
+  mode: "log-based"
+  ordered: true
+  schemaEvolution: true
+properties:
+  deployment:
+    type: "enum"
+    values: ["kafka-connect", "server", "embedded"]
+    default: "kafka-connect"
+  snapshotOnStart:
+    type: "boolean"
+    default: true

@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloud Run functions (formerly Cloud Functions): a single function deployed on Cloud Run's serving
+# infrastructure ("Cloud Run functions overview"). Deployment defaults are 256 MB of memory, a
+# 60-second timeout, min instances 0, ingress `all` and security level secure-always so only HTTPS is
+# served; max instances default to no limit for 2nd gen and HTTP functions ("gcloud functions deploy").
+schemaVersion: "1"
+type: "component"
+id: "google-cloud-functions"
+kind: "app-server"
+provider: "gcp"
+defaults:
+  managed: true
+  stateless: true
+  autoscaling: true
+properties:
+  memoryMb:
+    type: "integer"
+    default: 256
+  timeoutSeconds:
+    type: "integer"
+    default: 60
+  minInstances:
+    type: "integer"
+    default: 0
+  maxInstances:
+    type: "integer"
+    default: 0
+  ingressSettings:
+    type: "enum"
+    values: ["all", "internal-only", "internal-and-cloud-load-balancing"]
+    default: "all"
+  httpsOnly:
+    type: "boolean"
+    default: true

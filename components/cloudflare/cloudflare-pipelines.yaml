@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare Pipelines: streams buffer events from an HTTP endpoint or a Worker binding, a SQL
+# pipeline transforms them, and a sink writes Iceberg tables or Parquet and JSON files to R2.
+# "Pipelines" states it provides exactly-once delivery to R2. Currently open beta, Workers Paid only.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-pipelines"
+kind: "stream-processor"
+provider: "cloudflare"
+defaults:
+  managed: true
+  exactlyOnce: true
+  windowing: "none"
+properties:
+  ingestSource:
+    type: "enum"
+    values: ["http-endpoint", "worker-binding"]
+    default: "http-endpoint"
+  sinkFormat:
+    type: "enum"
+    values: ["apache-iceberg", "parquet", "json"]
+  sqlTransformations:
+    type: "boolean"
+    default: true

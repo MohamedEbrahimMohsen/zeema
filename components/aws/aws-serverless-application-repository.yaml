@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Serverless Application Repository: a store of serverless applications published as AWS SAM
+# templates plus their deployment artifacts ("What Is the AWS Serverless Application Repository?").
+# A published application "is initially set to private", available only to the publishing account and
+# only in the Region it was created in until it is shared ("Publishing Applications").
+schemaVersion: "1"
+type: "component"
+id: "aws-serverless-application-repository"
+kind: "artifact-repository"
+provider: "aws"
+defaults:
+  managed: true
+  artifactType: "package"
+  visibility: "private"
+properties:
+  sharing:
+    type: "enum"
+    values: ["private", "privately-shared", "publicly-shared"]
+    default: "private"
+  availableInAllRegions:
+    type: "boolean"
+    default: false
+  packagingFormat:
+    type: "enum"
+    values: ["aws-sam"]
+    default: "aws-sam"
+  verifiedAuthor:
+    type: "boolean"
+    default: false

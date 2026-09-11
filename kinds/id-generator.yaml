@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Abstract kind: Issues unique identifiers (Snowflake, ticket servers, batched counters, ULID services).
+schemaVersion: "1"
+type: "kind"
+id: "id-generator"
+category: "data"
+properties:
+  strategy:
+    type: "enum"
+    values: ["uuid", "ulid", "snowflake", "counter", "counter-batched", "hash"]
+    required: true
+  central:
+    type: "boolean"
+    default: false
+  replicated:
+    type: "boolean"
+    default: false
+  timeSortable:
+    type: "boolean"
+    default: false
+  clockRollbackGuard:
+    type: "boolean"
+    default: false
+  batchSize:
+    type: "integer"
+  managed:
+    type: "boolean"
+    default: false

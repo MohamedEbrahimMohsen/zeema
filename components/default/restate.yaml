@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Restate: durable execution server that journals every step of a handler and replays the journal after
+# a failure, skipping completed steps; failed calls are retried until they succeed ("Durable execution").
+# State lives in the server's embedded key-value store; Restate Cloud is the managed alternative.
+schemaVersion: "1"
+type: "component"
+id: "restate"
+kind: "workflow-engine"
+provider: "default"
+defaults:
+  durable: true
+  pattern: "saga"
+  compensation: false
+  managed: false
+properties:
+  invocationRetry:
+    type: "boolean"
+    default: true
+  deployment:
+    type: "enum"
+    values: ["self-hosted", "cloud"]
+    default: "self-hosted"

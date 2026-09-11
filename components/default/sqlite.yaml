@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# SQLite: embedded single-file relational database, no server process and no replication.
+# Pager locks are pessimistic and the default journal mode is DELETE (SQLite "File Locking And Concurrency", "PRAGMA Statements").
+schemaVersion: "1"
+type: "component"
+id: "sqlite"
+kind: "sql-database"
+provider: "default"
+defaults:
+  replication: "none"
+  concurrencyControl: "pessimistic"
+  encryptionAtRest: false
+  backupEnabled: false
+properties:
+  version:
+    type: "string"
+  journalMode:
+    type: "enum"
+    values: ["delete", "truncate", "persist", "memory", "wal", "off"]
+    default: "delete"

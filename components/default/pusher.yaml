@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Pusher Channels: managed pub/sub over WebSocket. 10 KB message limit.
+schemaVersion: "1"
+type: "component"
+id: "pusher"
+kind: "realtime-gateway"
+provider: "default"
+defaults:
+  managed: true
+  protocol: "websocket"
+  stateful: false
+  autoscaling: true
+  drainOnScaleIn: true
+properties:
+  messageSizeKb:
+    type: "integer"
+    default: 10

@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Card network (Visa, Mastercard): dual-message authorisation and clearing, not idempotent.
+schemaVersion: "1"
+type: "component"
+id: "card-network"
+kind: "third-party-api"
+provider: "default"
+defaults:
+  handlesMoney: true
+  idempotent: false
+  callbackStyle: "none"
+properties:
+  dualMessage:
+    type: "boolean"
+    default: true

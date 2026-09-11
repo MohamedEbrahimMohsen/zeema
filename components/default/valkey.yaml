@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Valkey: open-source Redis fork; like Redis it ships with noeviction, so evictionPolicy is
+# left undefaulted for cache-missing-eviction-policy to surface.
+schemaVersion: "1"
+type: "component"
+id: "valkey"
+kind: "cache"
+provider: "default"
+defaults:
+  persistence: false
+properties:
+  cluster:
+    type: "boolean"
+    default: false

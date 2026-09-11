@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Generic partner or supplier API with a QPS quota; set qpsQuota and idempotent per contract.
+schemaVersion: "1"
+type: "component"
+id: "supplier-api"
+kind: "third-party-api"
+provider: "default"
+defaults:
+  callbackStyle: "none"
+properties:
+  authScheme:
+    type: "enum"
+    values: ["api-key", "oauth2", "mtls", "basic"]
+    default: "api-key"

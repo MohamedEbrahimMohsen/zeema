@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Visual Builder: managed hosting and development platform for JavaScript web and mobile
+# applications. The instance carries an embedded Oracle database holding business objects exposed as
+# REST APIs, with separate databases for the development, staging and live phases of an application.
+# Facts from "Administering Oracle Visual Builder" and "Developing Applications with Oracle Visual Builder".
+schemaVersion: "1"
+type: "component"
+id: "oci-visual-builder"
+kind: "app-server"
+provider: "oci"
+defaults:
+  managed: true
+  stateless: false
+  ownsData: true
+  runtime: "oracle-jet"
+properties:
+  embeddedDatabase:
+    type: "boolean"
+    default: true
+  lifecyclePhase:
+    type: "enum"
+    values: ["development", "staging", "live"]
+  businessObjectRestApi:
+    type: "boolean"
+    default: true

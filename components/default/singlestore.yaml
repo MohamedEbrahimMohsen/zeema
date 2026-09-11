@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# SingleStore: distributed relational database that shards data into partitions across leaf nodes
+# behind aggregators; replication from primary to replica partitions is synchronous by default (SingleStore "Replication").
+schemaVersion: "1"
+type: "component"
+id: "singlestore"
+kind: "sql-database"
+provider: "default"
+defaults:
+  distributed: true
+  sharded: true
+  replication: "sync"
+properties:
+  version:
+    type: "string"
+  deployment:
+    type: "enum"
+    values: ["self-managed", "helios"]
+    default: "self-managed"

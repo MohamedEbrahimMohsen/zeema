@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI Data Flow: "a fully managed service for running Apache Spark applications" where "you don't need to
+# spend any time on the underlying infrastructure, cluster provisioning, or software installation"
+# ("Data Flow overview"). Each run gets its own Spark cluster driven entirely by REST APIs, and both the
+# applications and the data they read and write live in Object Storage ("Data Flow service overview").
+schemaVersion: "1"
+type: "component"
+id: "oci-data-flow"
+kind: "big-data-cluster"
+provider: "oci"
+defaults:
+  managed: true
+  engine: "spark"
+properties:
+  language:
+    type: "enum"
+    values: ["java", "scala", "python", "sql", "spark-submit"]
+  executors:
+    type: "integer"
+  poolBacked:
+    type: "boolean"
+    default: false

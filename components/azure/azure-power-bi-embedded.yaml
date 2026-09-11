@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Power BI Embedded: Azure-billed Power BI capacity for embedding reports in an application.
+# "Capacity and SKUs in Power BI embedded analytics" states a capacity is a pool of resources reserved
+# for exclusive use, that Power BI Embedded ships the A SKUs, and that it is billed hourly with no
+# commitment and can be paused and resumed.
+schemaVersion: "1"
+type: "component"
+id: "azure-power-bi-embedded"
+kind: "bi-service"
+provider: "azure"
+defaults:
+  capacityMode: "dedicated"
+  embeddedReports: true
+  managed: true
+properties:
+  sku:
+    type: "enum"
+    values: ["a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8"]
+  embedScenario:
+    type: "enum"
+    values: ["app-owns-data", "user-owns-data"]
+    default: "app-owns-data"
+  pausable:
+    type: "boolean"
+    default: true

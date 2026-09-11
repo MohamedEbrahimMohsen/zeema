@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI Application Performance Monitoring: an APM domain collects distributed traces and spans, real user and availability monitoring data.
+# Defaults from "Application Performance Monitoring" and "Create an APM Domain": agents and tracers push spans to the domain;
+# the free-tier checkbox is cleared, so a new domain is a paid domain.
+schemaVersion: "1"
+type: "component"
+id: "oci-apm"
+kind: "monitoring"
+provider: "oci"
+defaults:
+  managed: true
+  signal: "traces"
+  collectorMode: "push"
+properties:
+  domainTier:
+    type: "enum"
+    values: ["paid", "free-tier"]
+    default: "paid"
+  monitoringFeature:
+    type: "enum"
+    values: ["distributed-tracing", "real-user-monitoring", "availability-monitoring", "server-monitoring"]
+    default: "distributed-tracing"

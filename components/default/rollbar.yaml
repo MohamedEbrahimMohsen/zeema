@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Rollbar: SaaS real-time error tracking; SDKs push occurrences that are collapsed into Items, kept
+# 30 days on free accounts and up to 180 days on paid plans ("Data Retention").
+schemaVersion: "1"
+type: "component"
+id: "rollbar"
+kind: "monitoring"
+provider: "default"
+defaults:
+  signal: "all"
+  collectorMode: "push"
+  managed: true
+  independentOfMonitored: true
+  alertGrouping: true
+  retentionDays: 30
+properties:
+  plan:
+    type: "enum"
+    values: ["free", "essentials", "advanced", "enterprise"]
+    default: "free"

@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud Storage: managed object store; a regional bucket spans the region's zones,
+# dual- and multi-region buckets are opt-in.
+schemaVersion: "1"
+type: "component"
+id: "gcs"
+kind: "object-store"
+provider: "gcp"
+defaults:
+  zones: 3
+  durabilityNines: 11
+  replication: "erasure-coded"
+  strongReadAfterWrite: true
+  checksumOnWrite: true
+  encryptionAtRest: true
+  versioning: false
+  managed: true
+properties:
+  locationType:
+    type: "enum"
+    values: ["region", "dual-region", "multi-region"]
+    default: "region"
+  storageClass:
+    type: "enum"
+    values: ["standard", "nearline", "coldline", "archive"]
+    default: "standard"

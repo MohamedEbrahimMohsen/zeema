@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apache Superset: open-source data exploration and dashboarding platform.
+# "Security Configurations": the Public role is only used once AUTH_ROLE_PUBLIC is configured
+# and what it may see is decided by PUBLIC_ROLE_LIKE, and row-level security filters exist only
+# where an admin creates them. "Configuring Superset": the metadata database defaults to SQLite
+# and async execution via Celery is optional.
+schemaVersion: "1"
+type: "component"
+id: "superset"
+kind: "bi-service"
+provider: "default"
+defaults:
+  managed: false
+  publicSharing: false
+  rowLevelSecurity: false
+  embeddedReports: false
+properties:
+  metadataDatabase:
+    type: "enum"
+    values: ["sqlite", "postgres", "mysql"]
+    default: "sqlite"
+  asyncQueries:
+    type: "boolean"
+    default: false
+  dashboardRbac:
+    type: "boolean"
+    default: false
+  resultsBackend:
+    type: "boolean"
+    default: false

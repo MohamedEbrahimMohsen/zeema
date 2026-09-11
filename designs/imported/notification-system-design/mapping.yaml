@@ -1,0 +1,42 @@
+source:
+  file: "source/notification-system-design.md"
+  format: "image"
+  counts: { nodes: 13, edges: 13, groups: 1 }
+nodes:
+  - { source: "Service N", node: "service-n", component: "container-service", confidence: "close", note: "generic calling service, no product named" }
+  - { source: "Notification servers", node: "notification-servers", component: "container-service", confidence: "close", note: "generic service tier" }
+  - { source: "Authentication", node: "authentication", component: "container-service", confidence: "close", note: "an auth function drawn inside the notification server tier; no identity product named" }
+  - { source: "Rate limit", node: "rate-limit", component: "in-process-limiter", confidence: "close", note: "drawn inside the notification server tier, so an in-process limiter; no product named" }
+  - { source: "Analytics service", node: "analytics-service", component: "container-service", confidence: "close", note: "generic service" }
+  - { source: "iOS PN", node: "ios-pn", component: "message-queue", confidence: "close", note: "queue icon, no broker named; the generic message queue" }
+  - { source: "Workers", node: "workers", component: "container-worker", confidence: "close", note: "generic worker pool" }
+  - { source: "APNs", node: "apns", component: "apns", confidence: "exact" }
+  - { source: "iOS", node: "ios", component: "mobile-app", confidence: "close", note: "phone icon labelled iOS; os set to ios" }
+  - { source: "CACHE", node: "cache", component: "cache-cluster", confidence: "close", note: "cache icon, no product named; the generic cache cluster" }
+  - { source: "DB", node: "db", component: "relational-database", confidence: "close", note: "cylinders labelled DB holding device settings and user info; no engine named" }
+  - { source: "Notification template", node: "notification-template", component: "relational-database", confidence: "close", note: "template store, no engine named" }
+  - { source: "Notification log", node: "notification-log", component: "relational-database", confidence: "close", note: "cylinders labelled log, no engine named" }
+groups:
+  - { source: "(unlabelled dashed box around Notification servers, Authentication, Rate limit)", group: "notification-server-tier", kind: "system", note: "no text on the boundary" }
+edges:
+  - { source: "Service N -> Notification servers", from: "service-n", to: "notification-servers" }
+  - { source: "Notification servers -> Analytics service (send pending)", from: "notification-servers", to: "analytics-service" }
+  - { source: "Notification servers -> iOS PN", from: "notification-servers", to: "ios-pn" }
+  - { source: "Notification servers -> CACHE", from: "notification-servers", to: "cache" }
+  - { source: "CACHE -> DB", from: "cache", to: "db" }
+  - { source: "iOS PN -> Workers", from: "ios-pn", to: "workers" }
+  - { source: "Workers -> iOS PN (retry on error)", from: "workers", to: "ios-pn" }
+  - { source: "Workers -> Analytics service (sent)", from: "workers", to: "analytics-service" }
+  - { source: "Workers -> APNs", from: "workers", to: "apns" }
+  - { source: "APNs -> iOS", from: "apns", to: "ios" }
+  - { source: "iOS -> Analytics service (click tracking)", from: "ios", to: "analytics-service" }
+  - { source: "Workers -> Notification template", from: "workers", to: "notification-template" }
+  - { source: "Workers -> Notification log", from: "workers", to: "notification-log" }
+ignored:
+  - { source: "(dashed border around Workers)", reason: "a border enclosing one box is that box's cluster styling (several instances), not a boundary" }
+
+  - { source: "device setting / user info", reason: "annotation of the DB box contents, not a box" }
+unmapped: []
+gaps:
+  - "No engine-less generic component exists for cache, queue or database; generic boxes had to be mapped to a concrete product (Redis, RabbitMQ, PostgreSQL, Cassandra) with confidence assumed."
+  - "Arrows 2, 8 and 11 are analytics event reports; the source does not say whether they are sync or async, modelled async without a delivery guarantee."

@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# JFrog Artifactory: binary repository manager holding local repositories for artifacts you produce,
+# remote repositories that proxy and cache an upstream URL, virtual repositories aggregating both behind
+# one URL, and federated repositories synchronised between JFrog deployments ("Repository Management").
+# Vulnerability scanning is JFrog Xray, a separate product, so a repository does not scan on its own.
+schemaVersion: "1"
+type: "component"
+id: "artifactory"
+kind: "artifact-repository"
+provider: "default"
+defaults:
+  artifactType: "package"
+  managed: false
+  upstreamProxy: false
+  vulnerabilityScanning: false
+properties:
+  repositoryType:
+    type: "enum"
+    values: ["local", "remote", "virtual", "federated"]
+    default: "local"
+  deploymentModel:
+    type: "enum"
+    values: ["self-hosted", "cloud"]
+    default: "self-hosted"
+  packageType:
+    type: "string"

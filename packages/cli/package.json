@@ -1,0 +1,12 @@
+{
+  "name": "@arkore/cli",
+  "version": "0.1.0",
+  "description": "arkore: lint, validate and render architecture designs from the command line.",
+  "license": "MIT",
+  "type": "module",
+  "bin": { "arkore": "./src/bin.js" },
+  "exports": { ".": "./src/index.js" },
+  "scripts": { "test": "vitest run" },
+  "dependencies": { "@arkore/core": "workspace:*", "@arkore/catalogue": "workspace:*", "yaml": "2.8.2" },
+  "devDependencies": { "vitest": "5.0.0" }
+}

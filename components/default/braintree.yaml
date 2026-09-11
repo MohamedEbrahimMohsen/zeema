@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Braintree (PayPal): server-SDK gateway with an embedded Drop-in UI rather than a hosted page.
+# "Webhooks: parse" shows every notification carries bt_signature; idempotency is not documented.
+schemaVersion: "1"
+type: "component"
+id: "braintree"
+kind: "third-party-api"
+provider: "default"
+defaults:
+  managed: true
+  idempotent: false
+  handlesMoney: true
+  callbackStyle: "webhook"
+  hostedPage: false
+properties:
+  signedCallbacks:
+    type: "boolean"
+    default: true

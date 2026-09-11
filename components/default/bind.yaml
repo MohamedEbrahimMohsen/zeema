@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# BIND 9: self-hosted implementation of the DNS protocol that can act as authoritative server,
+# recursive resolver or stub resolver. Per the BIND 9 ARM, dnssec-validation defaults to auto, using
+# the built-in root trust anchor and keeping it current without operator action.
+schemaVersion: "1"
+type: "component"
+id: "bind"
+kind: "dns"
+provider: "default"
+defaults:
+  managed: false
+  anycast: false
+properties:
+  role:
+    type: "enum"
+    values: ["authoritative", "recursive", "forwarder"]
+  dnssecValidation:
+    type: "enum"
+    values: ["auto", "yes", "no"]
+    default: "auto"

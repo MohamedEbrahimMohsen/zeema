@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Blockchain Platform: managed Hyperledger Fabric network (founder or participant instance)
+# with a tamper-proof append-only ledger, managed patching and embedded ledger backups, TLS 1.3/1.2 in
+# transit and encryption at rest, and an optional rich history database shadowed into an Autonomous
+# Database. It is a distributed ledger, not a double-entry money ledger.
+# Facts from "What Are the Advantages of Oracle Blockchain Platform?".
+schemaVersion: "1"
+type: "component"
+id: "oci-blockchain-platform"
+kind: "ledger"
+provider: "oci"
+defaults:
+  managed: true
+  appendOnly: true
+  tamperEvident: true
+  doubleEntry: false
+properties:
+  instanceType:
+    type: "enum"
+    values: ["founder", "participant"]
+  peers:
+    type: "integer"
+  richHistoryDatabase:
+    type: "boolean"
+    default: false
+  restProxy:
+    type: "boolean"
+    default: true

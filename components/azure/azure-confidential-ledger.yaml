@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure confidential ledger: append-only record store on hardware-backed enclaves (CCF).
+# "About Azure confidential ledger": records are immutable and append-only, every transaction gets a
+# Merkle-tree receipt for tamper evidence, nodes span availability zones, and ledger files are
+# replicated to the paired region. It stores arbitrary records, not double-entry postings.
+schemaVersion: "1"
+type: "component"
+id: "azure-confidential-ledger"
+kind: "ledger"
+provider: "azure"
+defaults:
+  managed: true
+  appendOnly: true
+  tamperEvident: true
+  doubleEntry: false
+  sealed: false
+  indexConsistency: "strong"
+properties:
+  ledgerType:
+    type: "enum"
+    values: ["public", "private"]
+  enclaveBacked:
+    type: "boolean"
+    default: true
+  zoneRedundant:
+    type: "boolean"
+    default: true
+  pairedRegionReplication:
+    type: "boolean"
+    default: true

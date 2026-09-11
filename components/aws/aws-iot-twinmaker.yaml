@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS IoT TwinMaker: managed entity-component knowledge graph for digital twins. "What is AWS IoT
+# TwinMaker?" states the graph holds metadata and connects to data in other locations through
+# built-in and custom connectors, that time-series properties are stored as a reference to the
+# time-series store, and that each workspace is linked to an Amazon S3 bucket holding its data.
+schemaVersion: "1"
+type: "component"
+id: "aws-iot-twinmaker"
+kind: "graph-database"
+provider: "aws"
+defaults:
+  inMemory: false
+  crossRegionConsistency: "none"
+  managed: true
+properties:
+  externalDataConnectors:
+    type: "boolean"
+    default: true
+  timeSeriesStoredInService:
+    type: "boolean"
+    default: false
+  workspaceBucketCustomerOwned:
+    type: "boolean"
+    default: true
+  sceneVisualization:
+    type: "boolean"
+    default: true

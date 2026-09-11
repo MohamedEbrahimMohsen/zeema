@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Wazuh: free and open source XDR and SIEM; agents forward endpoint events to the Wazuh server, which
+# stores them in the Wazuh indexer and raises alerts ("Getting started with Wazuh").
+schemaVersion: "1"
+type: "component"
+id: "wazuh"
+kind: "monitoring"
+provider: "default"
+defaults:
+  signal: "logs"
+  collectorMode: "push"
+  managed: false
+properties:
+  deployment:
+    type: "enum"
+    values: ["self-hosted", "cloud"]
+    default: "self-hosted"
+  agentBased:
+    type: "boolean"
+    default: true

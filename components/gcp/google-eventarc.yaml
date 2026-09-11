@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud Eventarc trigger: routes events from Google Cloud sources to a target in CloudEvents format.
+# Per "Eventarc overview" delivery is at-least-once with a default message retention of 24 hours and
+# exponential backoff, and there is no in-order, first-in-first-out delivery guarantee.
+schemaVersion: "1"
+type: "component"
+id: "google-eventarc"
+kind: "pubsub-topic"
+provider: "gcp"
+defaults:
+  managed: true
+  delivery: "at-least-once"
+  ordering: "none"
+  replay: false
+properties:
+  messageRetentionHours:
+    type: "integer"
+    default: 24
+  retryBackoff:
+    type: "enum"
+    values: ["exponential", "fixed"]
+    default: "exponential"
+  cloudEventsFormat:
+    type: "boolean"
+    default: true

@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Samba smbd: SMB/CIFS file and print server for Windows clients ("smbd(8)").
+# smbd listens on 139 (SMB over NetBIOS over TCP) and 445 (plain SMB over TCP) by default; SMB3 encryption is a configured option.
+schemaVersion: "1"
+type: "component"
+id: "samba"
+kind: "file-storage"
+provider: "default"
+defaults:
+  protocol: "smb"
+  managed: false
+  publicAccess: false
+  backupEnabled: false
+  redundancy: "local"
+properties:
+  netbiosOverTcp:
+    type: "boolean"
+    default: true
+  serverRole:
+    type: "enum"
+    values: ["standalone", "member-server", "domain-controller"]
+  smbEncryption:
+    type: "boolean"

@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Data Studio, named Looker Studio between 2022 and April 2026: Google-hosted reporting over shared
+# infrastructure. "Manage data freshness": a BigQuery data source caches for 12 hours by default
+# (two refreshes a day) and can be set as low as every minute.
+schemaVersion: "1"
+type: "component"
+id: "google-looker-studio"
+kind: "bi-service"
+provider: "gcp"
+defaults:
+  managed: true
+  capacityMode: "shared"
+  refreshesPerDay: 2
+properties:
+  edition:
+    type: "enum"
+    values: ["free", "pro"]
+    default: "free"
+  dataFreshnessHours:
+    type: "integer"
+    default: 12
+  minFreshnessMinutes:
+    type: "integer"
+    default: 1

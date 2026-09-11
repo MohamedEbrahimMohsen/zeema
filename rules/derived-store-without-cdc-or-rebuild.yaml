@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../schema/rule.schema.json
+# A search index is derived data. If nothing feeds it asynchronously (a stream, change data
+# capture or an indexing worker) it is either written inline on the request path or never
+# rebuilt after drift. Tripped by: designs/twitter-timeline.broken.yaml
+schemaVersion: "1"
+type: "rule"
+id: "derived-store-without-cdc-or-rebuild"
+severity: "error"
+select:
+  node:
+    kind: "search-index"
+when:
+  not:
+    hasEdge:
+      direction: "in"
+      mode: "async"
+      peerKind: ["stream", "change-data-capture", "worker"]
+message: "Search index '{{node.id}}' has no asynchronous feed from a stream, change data capture or worker. It cannot be rebuilt or kept in sync independently of the write path."

@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon CodeCatalyst: unified space for source repositories, CI/CD workflows, dev environments and
+# issue tracking. Per "What is Amazon CodeCatalyst?" projects are created from blueprints that ship a
+# repository, build scripts and deployment actions, and "You can either start workflows manually or
+# configure them to start automatically based on events such as code pushes".
+# Maintenance since 7 November 2025: "Amazon CodeCatalyst is no longer open to new customers."
+schemaVersion: "1"
+type: "component"
+id: "aws-codecatalyst"
+kind: "ci-pipeline"
+provider: "aws"
+defaults:
+  trigger: "manual"
+  selfHostedRunners: false
+  managed: true
+properties:
+  blueprintBased:
+    type: "boolean"
+    default: true
+  sourceRepositories:
+    type: "boolean"
+    default: true
+  devEnvironments:
+    type: "boolean"
+    default: true
+  issueTracking:
+    type: "boolean"
+    default: true
+  connectedAwsAccount:
+    type: "boolean"
+    default: false

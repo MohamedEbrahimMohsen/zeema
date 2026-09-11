@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# MetalLB: self-hosted LoadBalancer service implementation for bare-metal Kubernetes. Per "Concepts"
+# it allocates and announces service IPs in either layer 2 (ARP/NDP, one node owns the address) or
+# BGP mode; it does not health check backends itself and ECMP only exists with multipath routers.
+schemaVersion: "1"
+type: "component"
+id: "metallb"
+kind: "load-balancer"
+provider: "default"
+defaults:
+  layer: "l4"
+  managed: false
+  healthChecks: false
+properties:
+  announcementMode:
+    type: "enum"
+    values: ["layer2", "bgp"]
+  ecmp:
+    type: "boolean"
+    default: false

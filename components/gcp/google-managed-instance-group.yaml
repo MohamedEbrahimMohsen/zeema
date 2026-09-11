@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Compute Engine managed instance group: Compute Engine keeps a group of identical VMs alive from an
+# instance template ("Instance groups"). A zonal MIG deploys to a single zone and holds up to 1,000
+# VMs; a regional MIG spreads across zones of one region and holds up to 2,000. Autoscaling and
+# autohealing are opt-in.
+schemaVersion: "1"
+type: "component"
+id: "google-managed-instance-group"
+kind: "virtual-machine"
+provider: "gcp"
+defaults:
+  managed: true
+  diskEncryption: true
+  zoneRedundant: false
+properties:
+  scope:
+    type: "enum"
+    values: ["zonal", "regional"]
+    default: "zonal"
+  autoscaling:
+    type: "boolean"
+    default: false
+  autohealing:
+    type: "boolean"
+    default: false
+  maxSize:
+    type: "integer"
+    default: 1000

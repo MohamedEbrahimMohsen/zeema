@@ -1,0 +1,46 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Imported 2026-09-08 from source/notification-system-design.md (transcription of the
+# "Notification System Design" diagram the user pasted; original image not on disk).
+# Assumptions, all recorded in mapping.yaml and notes.md:
+#   - iOS PN queue -> rabbitmq, CACHE -> redis, DB and Notification template -> postgres,
+#     Notification log -> cassandra: no engine is named in the picture.
+#   - Authentication and Rate limit are boxes inside the notification server tier and are
+#     kept as nodes (container-service, in-process-limiter).
+#   - The two dashed boundaries carry no text; they are `system` groups without a label.
+#   - Analytics arrows (send pending, sent, click tracking) are modelled async.
+schemaVersion: "1"
+type: "design"
+id: "notification-system-design"
+
+groups:
+  - { id: "notification-server-tier", kind: "system" }
+
+nodes:
+  - { id: "service-n", component: "container-service", label: "Service N" }
+  - { id: "notification-servers", component: "container-service", label: "Notification servers", group: "notification-server-tier" }
+  - { id: "authentication", component: "container-service", label: "Authentication", group: "notification-server-tier" }
+  - { id: "rate-limit", component: "in-process-limiter", label: "Rate limit", group: "notification-server-tier" }
+  - { id: "analytics-service", component: "container-service", label: "Analytics service" }
+  - { id: "ios-pn", component: "message-queue", label: "iOS PN" }
+  - { id: "workers", component: "container-worker", label: "Workers" }
+  - { id: "apns", component: "apns", label: "APNs" }
+  - { id: "ios", component: "mobile-app", label: "iOS", props: { os: "ios" } }
+  - { id: "cache", component: "cache-cluster", label: "CACHE" }
+  - { id: "db", component: "relational-database", label: "DB" }
+  - { id: "notification-template", component: "relational-database", label: "Notification template" }
+  - { id: "notification-log", component: "relational-database", label: "Notification log" }
+
+edges:
+  - { from: "service-n", to: "notification-servers", protocol: "https", mode: "sync" }
+  - { from: "notification-servers", to: "analytics-service", protocol: "https", mode: "async", label: "send pending" }
+  - { from: "notification-servers", to: "ios-pn", protocol: "queue", mode: "async", delivery: "at-least-once" }
+  - { from: "notification-servers", to: "cache", protocol: "cache", mode: "sync" }
+  - { from: "cache", to: "db", protocol: "sql", mode: "sync", label: "device setting, user info" }
+  - { from: "ios-pn", to: "workers", protocol: "queue", mode: "async", delivery: "at-least-once" }
+  - { from: "workers", to: "ios-pn", protocol: "queue", mode: "async", delivery: "at-least-once", label: "retry on error" }
+  - { from: "workers", to: "analytics-service", protocol: "https", mode: "async", label: "sent" }
+  - { from: "workers", to: "apns", protocol: "https", mode: "sync" }
+  - { from: "apns", to: "ios", protocol: "apns", mode: "async", delivery: "at-most-once" }
+  - { from: "ios", to: "analytics-service", protocol: "https", mode: "async", label: "click tracking" }
+  - { from: "workers", to: "notification-template", protocol: "sql", mode: "sync" }
+  - { from: "workers", to: "notification-log", protocol: "sql", mode: "sync" }

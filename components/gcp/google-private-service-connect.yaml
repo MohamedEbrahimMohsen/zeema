@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Private Service Connect endpoint: an internal IP address in a consumer VPC network that reaches a published service or a Google API without leaving Google Cloud.
+# Defaults from "Private Service Connect" and "Access published services through endpoints": private DNS entries are created automatically, global access is disabled so only same-region, same-network clients reach the endpoint.
+schemaVersion: "1"
+type: "component"
+id: "google-private-service-connect"
+kind: "private-link"
+provider: "gcp"
+defaults:
+  managed: true
+  privateDnsIntegration: true
+  crossRegion: false
+properties:
+  target:
+    type: "enum"
+    values: ["google-apis", "published-service"]
+    default: "published-service"
+  connectionPreference:
+    type: "enum"
+    values: ["accept-automatic", "accept-manual"]

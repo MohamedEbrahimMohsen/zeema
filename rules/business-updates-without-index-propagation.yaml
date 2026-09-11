@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../schema/rule.schema.json
+# Application servers write this system of record and the design keeps a search index, but
+# no change-data-capture leaves the database. Index updates then depend on dual writes from
+# application code, which drift silently. Tripped by: designs/twitter-timeline.broken.yaml
+schemaVersion: "1"
+type: "rule"
+id: "business-updates-without-index-propagation"
+severity: "warning"
+select:
+  node:
+    kind: "sql-database"
+when:
+  all:
+    - hasEdge:
+        direction: "in"
+        mode: "sync"
+        peerKind: "app-server"
+    - hasNode:
+        kind: "search-index"
+    - not:
+        hasEdge:
+          direction: "out"
+          peerKind: "change-data-capture"
+message: "Database '{{node.id}}' is written by application servers and the design has a search index, but no change-data-capture propagates its updates. Index writes rely on dual writes."

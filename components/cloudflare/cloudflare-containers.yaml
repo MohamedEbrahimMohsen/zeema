@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare Containers: container instances started on demand by a Durable Object, placed in the
+# nearest location holding a pre-fetched image. "Containers - Platform details" gives the 10 minute
+# sleepAfter default and the SIGTERM/SIGKILL shutdown; "Containers - Limits" gives the instance types.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-containers"
+kind: "container-orchestrator"
+provider: "cloudflare"
+defaults:
+  managed: true
+  autoscaling: true
+properties:
+  instanceType:
+    type: "enum"
+    values: ["lite", "basic", "standard-1", "standard-2", "standard-3", "standard-4"]
+  sleepAfterMinutes:
+    type: "integer"
+    default: 10
+  shutdownGraceMinutes:
+    type: "integer"
+    default: 15
+  maxConcurrentVcpu:
+    type: "integer"
+    default: 1500
+  imageStorageGb:
+    type: "integer"
+    default: 50

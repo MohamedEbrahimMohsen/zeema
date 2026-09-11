@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Public IP address: a routable IPv4/IPv6 address resource ("Public IP addresses in Azure").
+# Basic SKU retired on 30 September 2025; Standard is static, secure by default (closed to inbound until
+# an NSG allows it), zone-redundant where zones exist, and idles flows out after 4 minutes.
+schemaVersion: "1"
+type: "component"
+id: "azure-public-ip"
+kind: "network-fabric"
+provider: "azure"
+defaults:
+  managed: true
+  interconnect: "public"
+properties:
+  sku:
+    type: "enum"
+    values: ["basic", "standard", "standard-v2"]
+    default: "standard"
+  allocation:
+    type: "enum"
+    values: ["static", "dynamic"]
+    default: "static"
+  zoneRedundant:
+    type: "boolean"
+    default: true
+  idleTimeoutMinutes:
+    type: "integer"
+    default: 4

@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Indexes the architecture's own data estate, where search-index searches documents a designer supplies. classification, lineage and accessPolicyEnforcement have no default so governance rules can catch a catalog that only lists assets.
+schemaVersion: "1"
+type: "kind"
+id: "data-catalog"
+category: "data"
+properties:
+  scanSchedule:
+    type: "enum"
+    values: ["manual", "daily", "weekly"]
+  sourceCount:
+    type: "integer"
+  classification:
+    type: "boolean"
+  lineage:
+    type: "boolean"
+  accessPolicyEnforcement:
+    type: "boolean"
+  managed:
+    type: "boolean"
+    default: false

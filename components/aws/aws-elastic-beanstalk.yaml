@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Elastic Beanstalk environment: you upload a source bundle and Elastic Beanstalk provisions the
+# EC2 instances, load balancing, health monitoring and scaling ("What is AWS Elastic Beanstalk?").
+# A load-balanced environment uses an Auto Scaling group; a single-instance one pins min, max and
+# desired capacity to 1 ("Environment types").
+schemaVersion: "1"
+type: "component"
+id: "aws-elastic-beanstalk"
+kind: "app-server"
+provider: "aws"
+defaults:
+  managed: true
+  stateless: true
+  autoscaling: true
+properties:
+  environmentTier:
+    type: "enum"
+    values: ["web-server", "worker"]
+    default: "web-server"
+  environmentType:
+    type: "enum"
+    values: ["load-balanced", "single-instance"]
+  platform:
+    type: "enum"
+    values: ["go", "java", "dotnet", "node-js", "php", "python", "ruby", "docker"]
+  managedPlatformUpdates:
+    type: "boolean"

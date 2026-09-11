@@ -1,0 +1,13 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Cloud Streaming: Kafka-compatible managed partitioned log, 24 hours default retention.
+schemaVersion: "1"
+type: "component"
+id: "oci-streaming"
+kind: "stream"
+provider: "oci"
+defaults:
+  managed: true
+  delivery: "at-least-once"
+  ordering: "per-key"
+  retentionHours: 24
+  storage: "persistent"

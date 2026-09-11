@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Key Vault Managed HSM: fully managed, single-tenant FIPS 140-3 Level 3 HSM cluster
+# ("Azure Key Vault Managed HSM Overview"). Soft-delete cannot be turned off and defaults to
+# 90 days; purge protection and key autorotation are opt-in ("Azure Key Vault Managed HSM soft-delete").
+schemaVersion: "1"
+type: "component"
+id: "azure-managed-hsm"
+kind: "key-management"
+provider: "azure"
+defaults:
+  managed: true
+  hsm: true
+  rotationAutomated: false
+properties:
+  singleTenant:
+    type: "boolean"
+    default: true
+  softDeleteRetentionDays:
+    type: "integer"
+    default: 90
+  purgeProtection:
+    type: "boolean"
+    default: false
+  multiRegionReplication:
+    type: "boolean"
+    default: false
+  keyManagementThroughArm:
+    type: "boolean"
+    default: false

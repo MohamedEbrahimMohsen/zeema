@@ -1,0 +1,46 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Partitioned, replayable, durable log (Kafka, Kinesis, Event Hubs). Consumers read by offset.
+# Durability knobs (acks, minInsyncReplicas, storage) exist so rules can catch false durability.
+schemaVersion: "1"
+type: "kind"
+id: "stream"
+category: "messaging"
+properties:
+  delivery:
+    type: "enum"
+    values: ["at-most-once", "at-least-once", "exactly-once"]
+    default: "at-least-once"
+  ordering:
+    type: "enum"
+    values: ["per-key", "global"]
+    default: "per-key"
+  partitions:
+    type: "integer"
+  replicationFactor:
+    type: "integer"
+  minInsyncReplicas:
+    type: "integer"
+  acks:
+    type: "enum"
+    values: ["none", "leader", "quorum", "all"]
+  retentionHours:
+    type: "integer"
+  compaction:
+    type: "boolean"
+    default: false
+  idempotentProducer:
+    type: "boolean"
+    default: false
+  transactions:
+    type: "boolean"
+    default: false
+  storage:
+    type: "enum"
+    values: ["ephemeral", "persistent"]
+    default: "persistent"
+  managed:
+    type: "boolean"
+    default: false
+  schemaEnforced:
+    type: "boolean"
+    default: false

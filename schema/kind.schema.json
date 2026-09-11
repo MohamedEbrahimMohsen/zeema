@@ -1,0 +1,123 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://arkore.dev/schema/v1/kind.schema.json",
+  "title": "Arkore Kind",
+  "description": "An abstract component kind: the vocabulary the linter reasons about.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "type",
+    "id",
+    "category",
+    "properties"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1"
+    },
+    "type": {
+      "const": "kind"
+    },
+    "id": {
+      "$ref": "#/definitions/id"
+    },
+    "category": {
+      "enum": [
+        "messaging",
+        "compute",
+        "data",
+        "edge",
+        "external",
+        "client",
+        "ops",
+        "security"
+      ]
+    },
+    "properties": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[a-z][a-zA-Z0-9]*$"
+      },
+      "additionalProperties": {
+        "$ref": "#/definitions/propertyDefinition"
+      }
+    }
+  },
+  "definitions": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "propertyDefinition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "boolean",
+            "integer",
+            "string",
+            "enum",
+            "ref"
+          ]
+        },
+        "values": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "default": {
+          "type": [
+            "boolean",
+            "integer",
+            "string"
+          ]
+        },
+        "required": {
+          "type": "boolean",
+          "default": false
+        },
+        "refKind": {
+          "$ref": "#/definitions/id"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "enum"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "values"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "ref"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "refKind"
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Amplify Hosting: Git-based continuous deployment of full-stack web apps onto the AWS global CDN
+# ("Welcome to AWS Amplify Hosting"). Apps get an https amplifyapp.com domain and, per "Connecting a custom
+# domain", a managed TLS certificate by default; atomic deployments are standard, password protection is opt-in.
+schemaVersion: "1"
+type: "component"
+id: "aws-amplify-hosting"
+kind: "cdn"
+provider: "aws"
+defaults:
+  managed: true
+  caching: true
+  tls: true
+  edgeCompute: false
+properties:
+  renderingMode:
+    type: "enum"
+    values: ["static", "spa", "ssr"]
+  atomicDeployments:
+    type: "boolean"
+    default: true
+  passwordProtection:
+    type: "boolean"
+    default: false

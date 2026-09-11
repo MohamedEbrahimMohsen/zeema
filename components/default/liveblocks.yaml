@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Liveblocks: hosted realtime collaboration infrastructure. "WebSocket infrastructure" describes a
+# managed WebSocket edge network on Cloudflare Workers that scales on its own and whose connection
+# engine handles offline and reconnection automatically; "Limits" gives the 32 MB broadcast message
+# size, the 2 MB per LiveObject and the 128 character room id.
+schemaVersion: "1"
+type: "component"
+id: "liveblocks"
+kind: "realtime-gateway"
+provider: "default"
+defaults:
+  managed: true
+  protocol: "websocket"
+  stateful: true
+  autoscaling: true
+properties:
+  plan:
+    type: "enum"
+    values: ["free", "pro", "enterprise"]
+    default: "free"
+  broadcastMessageSizeMb:
+    type: "integer"
+    default: 32
+  liveObjectSizeMb:
+    type: "integer"
+    default: 2
+  roomIdMaxLength:
+    type: "integer"
+    default: 128

@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Grafana OSS: self-hosted dashboards and alerting; it queries external data sources instead of
+# storing telemetry, and ships with an embedded SQLite3 database ("About Grafana", "Configure Grafana").
+schemaVersion: "1"
+type: "component"
+id: "grafana"
+kind: "monitoring"
+provider: "default"
+defaults:
+  signal: "all"
+  collectorMode: "pull"
+  managed: false
+properties:
+  metadataDatabase:
+    type: "enum"
+    values: ["sqlite3", "mysql", "postgres"]
+    default: "sqlite3"
+  httpPort:
+    type: "integer"
+    default: 3000

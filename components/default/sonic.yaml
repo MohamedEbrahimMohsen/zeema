@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Sonic: schema-less identifier index on RocksDB, reached over the Sonic Channel TCP
+# protocol. Per the project README it stores no documents and returns object IDs, runs as a
+# single node with no replication or sharding, and suggestions appear after a consolidate cycle.
+schemaVersion: "1"
+type: "component"
+id: "sonic"
+kind: "search-index"
+provider: "default"
+defaults:
+  structure: "inverted"
+  shardingStrategy: "none"
+  indexing: "async"
+  managed: false
+properties:
+  storesDocuments:
+    type: "boolean"
+    default: false
+  protocol:
+    type: "enum"
+    values: ["sonic-channel"]
+    default: "sonic-channel"
+  storageEngine:
+    type: "enum"
+    values: ["rocksdb"]
+    default: "rocksdb"

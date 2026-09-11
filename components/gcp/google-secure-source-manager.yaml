@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud Secure Source Manager instance: regionally deployed single-tenant managed Git hosting.
+# Per "Secure Source Manager overview" data is encrypted with Google-managed keys unless CMEK is
+# configured, and branch protection and VPC Service Controls are configured rather than on by default.
+schemaVersion: "1"
+type: "component"
+id: "google-secure-source-manager"
+kind: "artifact-repository"
+provider: "gcp"
+defaults:
+  managed: true
+  artifactType: "source"
+properties:
+  singleTenant:
+    type: "boolean"
+    default: true
+  regional:
+    type: "boolean"
+    default: true
+  customerManagedEncryption:
+    type: "boolean"
+    default: false
+  branchProtection:
+    type: "boolean"
+    default: false
+  vpcServiceControls:
+    type: "boolean"
+    default: false

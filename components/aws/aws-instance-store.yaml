@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# EC2 instance store: temporary block storage on disks physically attached to the host.
+# "Instance store temporary block storage for EC2 instances": data is ephemeral and lives only for the
+# life of the instance; "SSD instance store volumes for EC2 instances": NVMe instance storage is always
+# encrypted with an XTS-AES-256 block cipher whose keys are destroyed when the instance stops or terminates.
+schemaVersion: "1"
+type: "component"
+id: "aws-instance-store"
+kind: "block-storage"
+provider: "aws"
+defaults:
+  mediaType: "ssd"
+  redundancy: "local"
+  encryptionAtRest: true
+  snapshots: false
+  managed: false
+properties:
+  persistence:
+    type: "enum"
+    values: ["instance-lifetime"]
+    default: "instance-lifetime"
+  deviceInterface:
+    type: "enum"
+    values: ["nvme-ssd", "sata-ssd", "hdd"]
+    default: "nvme-ssd"
+  trimSupport:
+    type: "boolean"
+    default: false
+  customerManagedKey:
+    type: "boolean"
+    default: false

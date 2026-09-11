@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Gemini API on Vertex AI: a metered multimodal model endpoint reached over a public regional REST
+# endpoint with IAM authentication. Non-configurable safety filters always apply; the four
+# configurable content filters are off by default ("Safety and content filters").
+schemaVersion: "1"
+type: "component"
+id: "google-gemini-api"
+kind: "ai-service"
+provider: "gcp"
+defaults:
+  managed: true
+  modality: "multimodal"
+  contentFiltering: true
+  publicEndpoint: true
+  customerManagedKeys: false
+properties:
+  configurableSafetyFilters:
+    type: "boolean"
+    default: false
+  groundingWithGoogleSearch:
+    type: "boolean"
+    default: false
+  provisionedThroughput:
+    type: "boolean"
+    default: false

@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Cloud Virtual Cloud Network: regional software-defined network, CIDR /16 to /30, created
+# with a default route table, default security list and default DHCP options ("VCNs and Subnets").
+# IPv6 is opt-in; a VCN is IPv4-only unless a prefix is added.
+schemaVersion: "1"
+type: "component"
+id: "oci-vcn"
+kind: "network-fabric"
+provider: "oci"
+defaults:
+  managed: true
+  overlay: true
+  interconnect: "private"
+  multicast: false
+properties:
+  addressFamily:
+    type: "enum"
+    values: ["ipv4", "dual-stack"]
+    default: "ipv4"
+  ipv4CidrBlocks:
+    type: "integer"
+    default: 1
+  defaultSecurityListAttached:
+    type: "boolean"
+    default: true

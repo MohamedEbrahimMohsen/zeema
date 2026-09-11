@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../schema/rule.schema.json
+# A cache used as the only copy of data, with persistence off, loses that data on restart.
+# Tripped by: designs/twitter-timeline.broken.yaml
+schemaVersion: "1"
+type: "rule"
+id: "cache-as-primary-store-without-persistence"
+severity: "error"
+select:
+  node:
+    kind: "cache"
+when:
+  all:
+    - prop: "usedAsPrimaryStore"
+      equals: true
+    - prop: "persistence"
+      equals: false
+message: "Cache '{{node.id}}' is the primary store for its data but has persistence disabled."

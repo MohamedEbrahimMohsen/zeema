@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# XenServer, the commercial Xen-based virtualization platform. Per the "XenServer 8" product documentation
+# hosts are grouped into resource pools and managed with XenCenter, the CLI or the SDK, and the feature set
+# available on a host depends on the licence applied to it.
+schemaVersion: "1"
+type: "component"
+id: "xenserver"
+kind: "virtual-machine"
+provider: "default"
+defaults:
+  managed: false
+properties:
+  managementTool:
+    type: "enum"
+    values: ["xencenter", "xe-cli", "sdk"]
+    default: "xencenter"
+  resourcePool:
+    type: "boolean"
+    default: false
+  licensed:
+    type: "boolean"
+    default: false

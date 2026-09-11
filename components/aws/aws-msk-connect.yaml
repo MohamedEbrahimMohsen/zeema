@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon MSK Connect connector: managed Kafka Connect workers that copy data between a Kafka
+# cluster and an external system. "Understand MSK Connect" says AWS patches the workers, restarts
+# failed tasks and autoscales them; the CreateConnector API makes capacity mandatory (no default)
+# and defaults networkType to IPV4, with worker log delivery off unless a destination is enabled.
+schemaVersion: "1"
+type: "component"
+id: "aws-msk-connect"
+kind: "worker"
+provider: "aws"
+defaults:
+  managed: true
+  trigger: "stream"
+  rateControl: "none"
+  accelerator: "none"
+properties:
+  connectorRole:
+    type: "enum"
+    values: ["source", "sink"]
+  capacityMode:
+    type: "enum"
+    values: ["autoscaled", "provisioned"]
+  networkType:
+    type: "enum"
+    values: ["ipv4", "dual"]
+    default: "ipv4"
+  logDelivery:
+    type: "boolean"
+    default: false
+  clusterEncryptionInTransit:
+    type: "enum"
+    values: ["tls", "plaintext"]

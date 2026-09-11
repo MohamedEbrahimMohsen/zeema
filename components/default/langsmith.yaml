@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# LangSmith: SaaS observability and evaluation platform for LLM applications; the SDK pushes traces of
+# runs, feedback and evaluation results to smith.langchain.com. Per "Administration overview", traces are
+# kept 14 days on the base retention tier and 180 days on the extended tier, after which they are no longer
+# readable in the UI or the API; a self-hosted deployment is offered for enterprise plans.
+schemaVersion: "1"
+type: "component"
+id: "langsmith"
+kind: "monitoring"
+provider: "default"
+defaults:
+  managed: true
+  signal: "traces"
+  collectorMode: "push"
+  independentOfMonitored: true
+  retentionDays: 14
+properties:
+  retentionTier:
+    type: "enum"
+    values: ["base", "extended"]
+    default: "base"
+  selfHosted:
+    type: "boolean"
+    default: false
+  evaluations:
+    type: "boolean"
+    default: false
+  promptHub:
+    type: "boolean"
+    default: false

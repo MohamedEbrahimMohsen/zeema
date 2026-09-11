@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Abstract kind: Routes inbound and outbound customer contacts across voice and digital channels to agent queues, with recording and retention (Amazon Connect, Twilio Flex, Genesys Cloud, Azure Communication Services).
+schemaVersion: "1"
+type: "kind"
+id: "contact-center"
+category: "messaging"
+properties:
+  channelVoice:
+    type: "boolean"
+    default: true
+  channelChat:
+    type: "boolean"
+    default: false
+  outboundDialing:
+    type: "boolean"
+    default: false
+  routing:
+    type: "enum"
+    values: ["fifo", "skills-based", "attribute-based"]
+    default: "fifo"
+  maxConcurrentContacts:
+    type: "integer"
+  callRecording:
+    type: "boolean"
+    default: false
+  recordingRetentionDays:
+    type: "integer"
+  emergencyCalling:
+    type: "boolean"
+    default: false
+  managed:
+    type: "boolean"
+    default: false

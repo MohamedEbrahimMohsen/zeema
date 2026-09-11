@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Language: preconfigured and customizable text features (NER, PII detection, key phrases, sentiment, summarization, question answering).
+# "Data limits for Language service features" gives the S / multi-service tier 1,000 requests per minute (S0 / F0: 300), a 1 MB maximum request and 5,120 characters per document for synchronous preconfigured features.
+schemaVersion: "1"
+type: "component"
+id: "azure-ai-language"
+kind: "ai-service"
+provider: "azure"
+defaults:
+  managed: true
+  modality: "text"
+  publicEndpoint: true
+  customerManagedKeys: false
+  quotaUnitsPerMinute: 1000
+properties:
+  tier:
+    type: "enum"
+    values: ["f0", "s0", "s-multi-service"]
+    default: "s-multi-service"
+  invocation:
+    type: "enum"
+    values: ["synchronous", "asynchronous"]
+    default: "synchronous"
+  maxCharactersPerDocument:
+    type: "integer"
+    default: 5120
+  customModels:
+    type: "boolean"
+    default: false

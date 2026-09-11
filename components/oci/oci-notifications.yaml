@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI Notifications: managed publish/subscribe topics that fan messages out to email, SMS, HTTPS,
+# Slack, PagerDuty and Functions subscriptions. At-least-once delivery, retried with exponential
+# backoff for a default 2 hours. Facts from "Overview of Notifications" (limits table included).
+schemaVersion: "1"
+type: "component"
+id: "oci-notifications"
+kind: "notification-service"
+provider: "oci"
+defaults:
+  managed: true
+  channelPush: false
+  channelEmail: true
+  channelSms: true
+properties:
+  retryDurationHours:
+    type: "integer"
+    default: 2
+  maxMessageSizeKb:
+    type: "integer"
+    default: 64
+  publishRatePerMinute:
+    type: "integer"
+    default: 60
+  httpsSubscriptions:
+    type: "boolean"
+    default: true

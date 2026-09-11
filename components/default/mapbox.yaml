@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Mapbox: hosted maps, geocoding and navigation APIs, called read-only over HTTPS with an access token.
+# "API Docs, Rate limits": every endpoint caps requests and answers HTTP 429 when the cap is passed;
+# the Geocoding API default is 1000 requests per minute and the Directions API 300 requests per minute.
+schemaVersion: "1"
+type: "component"
+id: "mapbox"
+kind: "third-party-api"
+provider: "default"
+defaults:
+  managed: true
+  idempotent: true
+  callbackStyle: "none"
+  hostedPage: false
+  handlesMoney: false
+properties:
+  geocodingRequestsPerMinute:
+    type: "integer"
+    default: 1000
+  directionsRequestsPerMinute:
+    type: "integer"
+    default: 300
+  billingPerRequest:
+    type: "boolean"
+    default: true

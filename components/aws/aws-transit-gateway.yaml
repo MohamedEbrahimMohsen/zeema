@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Transit Gateway: managed hub on the AWS backbone; multicast domains and inter-region peering opt-in.
+schemaVersion: "1"
+type: "component"
+id: "aws-transit-gateway"
+kind: "network-fabric"
+provider: "aws"
+defaults:
+  managed: true
+  interconnect: "cloud-backbone"
+  multicast: false
+properties:
+  interRegionPeering:
+    type: "boolean"
+    default: false

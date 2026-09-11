@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Functions: managed FaaS. Consumption plan by default with a 5-minute function timeout.
+schemaVersion: "1"
+type: "component"
+id: "azure-functions"
+kind: "app-server"
+provider: "azure"
+defaults:
+  managed: true
+  stateless: true
+  autoscaling: true
+properties:
+  timeoutSeconds:
+    type: "integer"
+    default: 300
+  plan:
+    type: "enum"
+    values: ["consumption", "flex-consumption", "premium", "dedicated"]
+    default: "consumption"

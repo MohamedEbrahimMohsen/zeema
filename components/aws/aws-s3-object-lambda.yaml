@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon S3 Object Lambda: an Object Lambda Access Point that runs a Lambda function over the output of
+# S3 GET, LIST and HEAD requests. In maintenance since 7 November 2025 (available only to existing
+# customers and select APN partners, no new capabilities planned); still placeable until end of support.
+# "Transforming objects with S3 Object Lambda": the access point reads through a supporting standard
+# access point and S3 invokes the function automatically on each matching request.
+schemaVersion: "1"
+type: "component"
+id: "aws-s3-object-lambda"
+kind: "app-server"
+provider: "aws"
+defaults:
+  managed: true
+  stateless: true
+  autoscaling: true
+  ownsData: false
+properties:
+  transformedOperations:
+    type: "enum"
+    values: ["get", "list", "head"]
+    default: "get"
+  supportingAccessPointRequired:
+    type: "boolean"
+    default: true
+  cloudFrontOrigin:
+    type: "boolean"
+    default: false

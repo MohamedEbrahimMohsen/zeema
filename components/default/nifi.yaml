@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apache NiFi: dataflow engine. Guaranteed delivery rests on "a purpose-built persistent write-ahead
+# log and content repository", queues apply back pressure at configured limits, and clustering is the
+# optional Zero-Leader paradigm coordinated by ZooKeeper ("Apache NiFi Overview"). Runs standalone in a
+# JVM by default; NiFi 2.x binds to 127.0.0.1 when no security configuration is provided.
+schemaVersion: "1"
+type: "component"
+id: "nifi"
+kind: "stream-processor"
+provider: "default"
+defaults:
+  managed: false
+  windowing: "none"
+  exactlyOnce: false
+  stateBackend: "external"
+properties:
+  clustered:
+    type: "boolean"
+    default: false
+  backPressure:
+    type: "boolean"
+    default: true
+  provenanceRepository:
+    type: "boolean"
+    default: true

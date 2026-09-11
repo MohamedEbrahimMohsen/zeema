@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Twilio Flex: Twilio-hosted "digital engagement center for sales and customer support teams",
+# routed by TaskRouter, "a skills-based routing system that provides the heart of a contact center
+# that you can control from your code", with per-TaskChannel worker capacity ("Flex", "TaskRouter").
+# Call recording is off until it is turned on "on the Voice page in Flex Console", where dual-channel
+# recording is the preferred mode and is inbound only ("Core concepts: Voice").
+schemaVersion: "1"
+type: "component"
+id: "twilio-flex"
+kind: "contact-center"
+provider: "default"
+defaults:
+  managed: true
+  channelVoice: true
+  channelChat: true
+  routing: "skills-based"
+  callRecording: false
+properties:
+  taskChannel:
+    type: "enum"
+    values: ["voice", "chat", "sms", "video", "email", "default"]
+  dualChannelRecording:
+    type: "boolean"
+    default: false
+  workerCapacityConfigurable:
+    type: "boolean"
+    default: true
+  uiHosting:
+    type: "enum"
+    values: ["twilio-hosted", "self-hosted"]
+    default: "twilio-hosted"

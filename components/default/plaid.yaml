@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Plaid: bank account data access (auth, balances, transactions); money movement is the separate
+# Transfer product. Webhook JWT verification is documented as optional; /accounts/get is 15/min/Item.
+schemaVersion: "1"
+type: "component"
+id: "plaid"
+kind: "third-party-api"
+provider: "default"
+defaults:
+  managed: true
+  handlesMoney: false
+  callbackStyle: "webhook"
+properties:
+  signedCallbacks:
+    type: "boolean"
+    default: false
+  requestsPerMinutePerItem:
+    type: "integer"
+    default: 15

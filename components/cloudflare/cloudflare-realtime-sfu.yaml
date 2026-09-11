@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare Realtime SFU: managed WebRTC selective forwarding unit that "routes WebRTC
+# media tracks and DataChannels between browser, native, server, and external media
+# endpoints" on the global network. It carries no application semantics: "It does not
+# define rooms, participants, roles, or presence for your application" ("SFU overview").
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-realtime-sfu"
+kind: "media-router"
+provider: "cloudflare"
+defaults:
+  managed: true
+  mode: "sfu"
+properties:
+  dataChannels:
+    type: "boolean"
+    default: true
+  roomsManaged:
+    type: "boolean"
+    default: false

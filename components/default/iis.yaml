@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Microsoft Internet Information Services: Windows web server whose requests are taken by the kernel-mode
+# HTTP.sys listener and dispatched by WAS to per-application-pool worker processes ("Introduction to IIS
+# Architectures"). Modules are added or removed to shape the pipeline; "Application Pool Identities" states
+# that from IIS 7.5 a new pool's Identity property is ApplicationPoolIdentity by default.
+schemaVersion: "1"
+type: "component"
+id: "iis"
+kind: "app-server"
+provider: "default"
+defaults:
+  managed: false
+  runtime: "dotnet"
+properties:
+  pipelineMode:
+    type: "enum"
+    values: ["integrated", "classic"]
+    default: "integrated"
+  applicationPoolIdentity:
+    type: "enum"
+    values: ["application-pool-identity", "network-service", "local-system", "local-service", "custom"]
+    default: "application-pool-identity"
+  kernelModeCaching:
+    type: "boolean"
+    default: true

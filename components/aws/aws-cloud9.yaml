@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Cloud9: browser-based IDE whose environment is backed either by an EC2 instance AWS creates and
+# manages ("EC2 environment") or by an existing server ("SSH environment"). Per "Creating an EC2
+# Environment" the network setting chooses between Systems Manager access with no inbound ports and
+# SSH with open inbound ports, and the Timeout setting auto-hibernates the instance after inactivity.
+# Maintenance since 25 July 2024: "AWS Cloud9 is no longer available to new customers."
+schemaVersion: "1"
+type: "component"
+id: "aws-cloud9"
+kind: "virtual-desktop"
+provider: "aws"
+defaults:
+  sessionMode: "personal"
+  persistentProfiles: true
+  managed: true
+properties:
+  environmentType:
+    type: "enum"
+    values: ["ec2", "ssh"]
+  platform:
+    type: "enum"
+    values: ["amazon-linux-2023", "amazon-linux-2", "ubuntu-22-04"]
+  networkAccess:
+    type: "enum"
+    values: ["systems-manager", "ssh"]
+  autoHibernation:
+    type: "boolean"
+    default: true

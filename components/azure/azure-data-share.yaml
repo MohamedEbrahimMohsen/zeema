@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Data Share: managed data sharing between organizations. Snapshot-based sharing copies data
+# into the consumer account when the consumer triggers a snapshot; a provider can additionally
+# offer an hourly or daily snapshot schedule, and in-place sharing links the two stores instead
+# ("What is Azure Data Share?").
+schemaVersion: "1"
+type: "component"
+id: "azure-data-share"
+kind: "worker"
+provider: "azure"
+defaults:
+  trigger: "manual"
+  managed: true
+properties:
+  sharingMode:
+    type: "enum"
+    values: ["snapshot", "in-place"]
+    default: "snapshot"
+  snapshotType:
+    type: "enum"
+    values: ["full", "incremental"]
+    default: "full"
+  snapshotSchedule:
+    type: "enum"
+    values: ["none", "hourly", "daily"]
+    default: "none"

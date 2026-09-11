@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Akamai: managed CDN. EdgeWorkers and prefetching are opt-in.
+schemaVersion: "1"
+type: "component"
+id: "akamai"
+kind: "cdn"
+provider: "default"
+defaults:
+  managed: true
+  edgeCompute: false
+properties:
+  prefetching:
+    type: "boolean"
+    default: false

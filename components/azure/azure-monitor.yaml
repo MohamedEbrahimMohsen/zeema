@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Monitor: managed metrics (93 days) and Log Analytics logs, pushed by agents and platform.
+schemaVersion: "1"
+type: "component"
+id: "azure-monitor"
+kind: "monitoring"
+provider: "azure"
+defaults:
+  signal: "all"
+  collectorMode: "push"
+  managed: true
+  retentionDays: 93
+properties:
+  logAnalyticsWorkspace:
+    type: "boolean"
+    default: true

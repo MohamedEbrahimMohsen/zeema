@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# F5 BIG-IP LTM: customer-operated appliance or virtual edition. Per "About Pools" the default load
+# balancing method for a pool is Round Robin; per "About Virtual Servers" Standard is the basic
+# virtual server type, with Performance (Layer 4) using the Fast L4 profile.
+schemaVersion: "1"
+type: "component"
+id: "f5-big-ip"
+kind: "load-balancer"
+provider: "default"
+defaults:
+  managed: false
+  hashing: "round-robin"
+properties:
+  virtualServerType:
+    type: "enum"
+    values: ["standard", "performance-l4", "forwarding-ip", "forwarding-l2", "stateless"]
+    default: "standard"
+  formFactor:
+    type: "enum"
+    values: ["appliance", "virtual-edition", "chassis"]
+    default: "appliance"

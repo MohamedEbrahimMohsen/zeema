@@ -1,0 +1,129 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture 3, broken variant: home timeline with push fan-out done inline on
+# the write path, a Redis timeline cache that is the only copy of every timeline, and a
+# search index written by dual writes from the write API.
+#
+# This file MUST trip:
+#   - fanout-inline-in-request-path            (write-api calls fanout-daemon synchronously)
+#   - push-fanout-without-celebrity-path       (fanout-daemon pushes with no fanoutThreshold; social-graph is a graph-database)
+#   - derived-store-without-cdc-or-rebuild     (search-index only has sync in-edges from write-api and search-service)
+#   - business-updates-without-index-propagation (tweet-store is written sync by write-api, a search-index exists, no CDC leaves it)
+#   - cache-as-primary-store-without-persistence (home-timeline-cache: usedAsPrimaryStore true, persistence false)
+#   - materialised-cache-without-rebuild-path  (home-timeline-cache is materialised; only app-servers write into it)
+# and MUST NOT trip:
+#   - read-heavy-path-without-cache            (design contains caches; that rule is design-wide)
+#   - cache-missing-eviction-policy            (both caches declare lru)
+#   - datastore-missing-backup, datastore-single-region (tweet-store is backed up; multiRegion false)
+#   - queue-missing-dlq, pubsub-replay-required (no queue or topic in this design)
+#   - sync-chain-too-deep                      (longest sync chain from tfe is 3 hops: write-api -> fanout-daemon -> social-graph)
+#   - object-store-single-zone-with-durability-target, multi-leader-store-without-conflict-policy,
+#     stateful-engine-pinned-to-single-zone, shared-dependency-without-redundancy (no such nodes)
+schemaVersion: "1"
+type: "design"
+id: "twitter-timeline"
+
+requirements:
+  availability:
+    multiRegion: false
+    sla: "99.9"
+  latency:
+    p95Ms: 200
+  freshness:
+    maxSeconds: 5
+  traffic:
+    readWriteRatio: 100
+    skew: "heavy-tail"
+  consistency:
+    model: "ap"
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "dc-east", kind: "region" }
+  - { id: "edge", kind: "trust-zone", parent: "dc-east" }
+  - { id: "core", kind: "trust-zone", parent: "dc-east" }
+
+nodes:
+  - id: "web-client"
+    component: "web-browser"
+    props: { platform: "web" }
+
+  - id: "tfe"
+    component: "envoy-gateway"
+    group: "edge"
+    props: { auth: "oauth2", rateLimiting: true, tls: true }
+    nfr: { rps: 306000 }
+
+  - id: "write-api"
+    component: "container-service"
+    group: "core"
+    props: { orchestrator: "kubernetes", instances: 40, criticality: "high" }
+    nfr: { rps: 6000 }
+
+  - id: "timeline-service"
+    component: "container-service"
+    group: "core"
+    props: { orchestrator: "kubernetes", instances: 200, autoscaling: true, criticality: "high" }
+    nfr: { rps: 300000 }
+
+  - id: "search-service"
+    component: "container-service"
+    group: "core"
+    props: { orchestrator: "kubernetes", instances: 30 }
+    nfr: { rps: 20000 }
+
+  - id: "fanout-daemon"
+    component: "fanout-daemon"
+    group: "core"
+    props: { trigger: "manual", instances: 50, fanoutStrategy: "push", concurrency: 4000 }
+
+  - id: "social-graph"
+    component: "tao"
+    group: "core"
+    props: { masterPerShard: true }
+    nfr: { rps: 50000 }
+
+  - id: "home-timeline-cache"
+    component: "redis"
+    group: "core"
+    props: { cluster: true, evictionPolicy: "lru", ttlSeconds: 2592000, structure: "sorted-set", materialised: true, usedAsPrimaryStore: true, persistence: false, replication: "multi-az" }
+    nfr: { rps: 310000 }
+
+  - id: "tweet-cache"
+    component: "memcached"
+    group: "core"
+    props: { evictionPolicy: "lru", ttlSeconds: 3600, hashing: "consistent" }
+    nfr: { rps: 250000 }
+
+  - id: "tweet-store"
+    component: "mysql"
+    group: "core"
+    props: { sharded: true, shardKey: "tweet_id", idEncodesShard: true, replication: "async", backupEnabled: true, backupRetentionDays: 30, encryptionAtRest: true }
+    nfr: { rps: 60000, consistency: "eventual" }
+
+  - id: "search-index"
+    component: "elasticsearch"
+    group: "core"
+    props: { structure: "inverted", shardingStrategy: "time", indexing: "sync", replicas: 1 }
+    nfr: { rps: 26000 }
+
+  - id: "firehose"
+    component: "websocket-gateway"
+    group: "edge"
+    props: { protocol: "websocket", stateful: true, channelAssignment: "hash" }
+
+edges:
+  - { from: "web-client", to: "tfe", protocol: "https", mode: "sync" }
+  - { from: "tfe", to: "write-api", protocol: "http", mode: "sync", label: "post tweet" }
+  - { from: "tfe", to: "timeline-service", protocol: "http", mode: "sync", label: "read home timeline" }
+  - { from: "tfe", to: "search-service", protocol: "http", mode: "sync", label: "search" }
+  - { from: "write-api", to: "tweet-store", protocol: "mysql", mode: "sync", label: "persist first" }
+  - { from: "write-api", to: "fanout-daemon", protocol: "thrift", mode: "sync", timeoutMs: 5000, label: "resolve audience inline" }
+  - { from: "fanout-daemon", to: "social-graph", protocol: "thrift", mode: "sync", label: "list followers" }
+  - { from: "write-api", to: "home-timeline-cache", protocol: "redis", mode: "sync", batched: true, label: "insert tweet id into every follower list" }
+  - { from: "write-api", to: "search-index", protocol: "http", mode: "sync", label: "index inline (dual write)" }
+  - { from: "write-api", to: "firehose", protocol: "grpc", mode: "async", delivery: "at-most-once" }
+  - { from: "timeline-service", to: "home-timeline-cache", protocol: "redis", mode: "sync", label: "timeline ids" }
+  - { from: "timeline-service", to: "tweet-cache", protocol: "memcached", mode: "sync", label: "hydrate" }
+  - { from: "timeline-service", to: "tweet-store", protocol: "mysql", mode: "sync", label: "hydrate on cache miss" }
+  - { from: "search-service", to: "search-index", protocol: "http", mode: "sync", timeoutMs: 200, label: "scatter-gather" }

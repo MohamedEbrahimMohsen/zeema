@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Groq (GroqCloud): hosted open-weight text and audio models served on LPU accelerators over a public endpoint.
+# Per "Rate Limits", limits are per model in RPM, RPD, TPM and TPD at the organization level, the Free plan
+# allows 10-30 requests per minute depending on model, cached tokens do not count, and batch and flex
+# processing are Developer plan features.
+schemaVersion: "1"
+type: "component"
+id: "groq"
+kind: "ai-service"
+provider: "default"
+defaults:
+  managed: true
+  modality: "multimodal"
+  publicEndpoint: true
+  contentFiltering: false
+properties:
+  plan:
+    type: "enum"
+    values: ["free", "developer", "enterprise"]
+    default: "free"
+  batchProcessing:
+    type: "boolean"
+    default: false
+  flexProcessing:
+    type: "boolean"
+    default: false
+  cachedTokensCountToQuota:
+    type: "boolean"
+    default: false

@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Ping Identity Platform: PingOne cloud identity services plus self-managed software
+# (PingFederate, PingAM). "Ping Identity Platform" and "PingFederate": SSO over SAML, OAuth 2.0,
+# OpenID Connect and WS-Federation; MFA is the separate PingOne MFA / PingID service.
+schemaVersion: "1"
+type: "component"
+id: "ping-identity"
+kind: "identity-provider"
+provider: "default"
+defaults:
+  protocol: "oidc"
+  authorizationModel: "rbac"
+  centralised: true
+  managed: true
+  mfa: false
+properties:
+  deployment:
+    type: "enum"
+    values: ["pingone-cloud", "self-managed"]
+    default: "pingone-cloud"
+  capability:
+    type: "enum"
+    values: ["sso", "mfa", "directory", "authorize", "davinci", "verify"]
+    default: "sso"

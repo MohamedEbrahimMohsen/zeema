@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../schema/rule.schema.json
+# Retrying a transient failure at full speed turns one slow dependency into a retry
+# storm. A retry queue must back off, preferably exponentially with jitter.
+# Tripped by: designs/payment-system.broken.yaml
+schemaVersion: "1"
+type: "rule"
+id: "retry-without-backoff"
+severity: "warning"
+select:
+  node:
+    kind: "queue"
+when:
+  all:
+    - prop: "role"
+      equals: "retry"
+    - any:
+        - prop: "backoff"
+          exists: false
+        - prop: "backoff"
+          equals: "none"
+message: "Retry queue '{{node.id}}' declares no backoff. Retries without backoff amplify the outage they are retrying through."

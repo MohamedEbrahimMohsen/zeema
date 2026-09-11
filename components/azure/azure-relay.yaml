@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Relay: exposes an on-premises listener through a public cloud gateway over an outbound
+# connection, with no inbound firewall port. Hybrid Connections (WebSocket/HTTPS) is the current
+# feature; traffic is relayed unbuffered and nothing is stored. Facts from "What is Azure Relay?"
+# and "Azure Relay FAQs" (25 concurrent listeners per entity).
+schemaVersion: "1"
+type: "component"
+id: "azure-relay"
+kind: "network-fabric"
+provider: "azure"
+defaults:
+  managed: true
+  multicast: false
+  kernelBypass: false
+  overlay: true
+  interconnect: "public"
+properties:
+  feature:
+    type: "enum"
+    values: ["hybrid-connections", "wcf-relay"]
+    default: "hybrid-connections"
+  transport:
+    type: "enum"
+    values: ["websocket", "http"]
+    default: "websocket"
+  buffered:
+    type: "boolean"
+    default: false
+  maxConcurrentListeners:
+    type: "integer"
+    default: 25

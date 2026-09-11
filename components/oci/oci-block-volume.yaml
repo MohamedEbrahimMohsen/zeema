@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI Block Volume: a network disk attached to an instance, always encrypted at rest with AES-256
+# and replicated across storage servers in its availability domain for a 99.99% durability
+# objective ("Overview of Block Volume"). "Creating a Block Volume" defaults the size to 1024 GB
+# (50 GB to 32 TB) and leaves backup policy and replication off; Balanced (10 VPUs) is the default
+# performance level, 60 IOPS/GB up to 25,000 IOPS ("Block Volume Performance").
+schemaVersion: "1"
+type: "component"
+id: "oci-block-volume"
+kind: "block-storage"
+provider: "oci"
+defaults:
+  managed: true
+  sizeGib: 1024
+  encryptionAtRest: true
+  redundancy: "zonal"
+  snapshots: false
+properties:
+  performanceLevel:
+    type: "enum"
+    values: ["lower-cost", "balanced", "higher-performance", "ultra-high-performance"]
+    default: "balanced"
+  vpusPerGb:
+    type: "integer"
+    default: 10
+  inTransitEncryption:
+    type: "boolean"
+    default: false
+  crossRegionReplication:
+    type: "boolean"
+    default: false
+  maxSizeTib:
+    type: "integer"
+    default: 32

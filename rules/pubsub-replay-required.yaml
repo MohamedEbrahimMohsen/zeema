@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../schema/rule.schema.json
+# The design declares that consumers must be able to replay history, but a fan-out topic
+# without replay cannot deliver that. Tripped by designs/order-processing.broken.yaml.
+schemaVersion: "1"
+type: "rule"
+id: "pubsub-replay-required"
+severity: "error"
+select:
+  node:
+    kind: "pubsub-topic"
+when:
+  all:
+    - requirement: "messaging.replay"
+      equals: true
+    - prop: "replay"
+      equals: false
+message: "Topic '{{node.id}}' cannot replay messages, but the design requires replay. Use a stream or a replayable queue."

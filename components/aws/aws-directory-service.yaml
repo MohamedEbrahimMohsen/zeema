@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Directory Service: managed Active Directory (AWS Managed Microsoft AD) or a proxy to an
+# on-premises AD (AD Connector). "AWS Managed Microsoft AD": a highly available pair of domain
+# controllers in your VPC across different Availability Zones, daily snapshots; secure LDAP over
+# SSL/TLS and MFA over RADIUS are both features you enable.
+schemaVersion: "1"
+type: "component"
+id: "aws-directory-service"
+kind: "identity-provider"
+provider: "aws"
+defaults:
+  protocol: "custom"
+  authorizationModel: "rbac"
+  centralised: true
+  mfa: false
+  managed: true
+properties:
+  directoryType:
+    type: "enum"
+    values: ["managed-microsoft-ad", "managed-microsoft-ad-hybrid", "ad-connector"]
+    default: "managed-microsoft-ad"
+  edition:
+    type: "enum"
+    values: ["standard", "enterprise"]
+    default: "standard"
+  domainControllers:
+    type: "integer"
+    default: 2
+  availabilityZones:
+    type: "integer"
+    default: 2
+  secureLdap:
+    type: "boolean"
+    default: false

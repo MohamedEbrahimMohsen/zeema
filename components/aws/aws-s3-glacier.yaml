@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon S3 Glacier archive storage classes (Instant Retrieval, Flexible Retrieval, Deep Archive):
+# archive tier of an S3 bucket. "Understanding and managing Amazon S3 storage classes" gives all three
+# 99.999999999% durability across >= 3 Availability Zones, with 90/90/180 day minimum storage durations.
+schemaVersion: "1"
+type: "component"
+id: "aws-s3-glacier"
+kind: "object-store"
+provider: "aws"
+defaults:
+  zones: 3
+  durabilityNines: 11
+  replication: "erasure-coded"
+  tier: "cold"
+  strongReadAfterWrite: true
+  checksumOnWrite: true
+  encryptionAtRest: true
+  versioning: false
+  objectLock: false
+  managed: true
+properties:
+  storageClass:
+    type: "enum"
+    values: ["glacier-instant-retrieval", "glacier-flexible-retrieval", "glacier-deep-archive"]
+    default: "glacier-flexible-retrieval"
+  minStorageDurationDays:
+    type: "integer"
+    default: 90
+  realTimeAccess:
+    type: "boolean"
+    default: false
+  retrievalTier:
+    type: "enum"
+    values: ["expedited", "standard", "bulk"]
+    default: "standard"

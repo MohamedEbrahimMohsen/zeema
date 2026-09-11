@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon VPC IP Address Manager: plans, tracks and monitors IP address space for AWS workloads.
+# "What is IPAM?" + "How IPAM works": an IPAM is created in one Region and automatically gets a default
+# public scope and a default private scope; cross-Region and cross-account BYOIP sharing is opt-in.
+schemaVersion: "1"
+type: "component"
+id: "aws-vpc-ipam"
+kind: "network-fabric"
+provider: "aws"
+defaults:
+  managed: true
+  multicast: false
+  kernelBypass: false
+properties:
+  defaultScopes:
+    type: "integer"
+    default: 2
+  automaticCidrAllocation:
+    type: "boolean"
+    default: false
+  usageMonitoring:
+    type: "boolean"
+    default: true
+  byoipSharing:
+    type: "boolean"
+    default: false

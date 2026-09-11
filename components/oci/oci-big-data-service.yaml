@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI Big Data Service: "provisions fully configured, secure, highly available, and dedicated Hadoop and Spark
+# clusters on demand" on Oracle's Open Data Hub distribution ("Big Data Service overview"). "Creating a
+# cluster" requires a minimum of three worker nodes, offers "Secure and Highly Available (HA)" as an explicit
+# selection rather than a preselected one, and requires the Big Data Service version to be chosen by hand.
+schemaVersion: "1"
+type: "component"
+id: "oci-big-data-service"
+kind: "big-data-cluster"
+provider: "oci"
+defaults:
+  managed: true
+  engine: "hadoop"
+properties:
+  secureAndHighlyAvailable:
+    type: "boolean"
+    default: false
+  minimumWorkerNodes:
+    type: "integer"
+    default: 3
+  kafkaBrokerNodes:
+    type: "integer"
+  edgeNodes:
+    type: "integer"

@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Snort 3: signature-based intrusion detection engine. Per "Reading Traffic", the mode
+# defaults to passive when -Q (inline, DAQ afpacket) is not given, so Snort observes and
+# alerts rather than dropping unless deployed inline. Rule sets are downloaded separately.
+schemaVersion: "1"
+type: "component"
+id: "snort"
+kind: "firewall"
+provider: "default"
+defaults:
+  managed: false
+  defaultAction: "allow"
+  stateful: true
+  logging: true
+  intrusionPrevention: false
+properties:
+  mode:
+    type: "enum"
+    values: ["passive", "read-file", "inline"]
+    default: "passive"
+  ruleSet:
+    type: "enum"
+    values: ["community", "registered", "subscriber"]
+    default: "community"
+  daqModule:
+    type: "enum"
+    values: ["pcap", "afpacket", "nfq", "dump"]
+    default: "pcap"

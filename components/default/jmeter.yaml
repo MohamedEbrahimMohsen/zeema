@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apache JMeter: 100% Java load testing application. The GUI is for building and debugging a test plan
+# and CLI (non-GUI) mode is used for the actual load test; remote engines give distributed runs
+# ("Getting started"). Covers HTTP(S), FTP, JDBC, LDAP, JMS and SOAP.
+schemaVersion: "1"
+type: "component"
+id: "jmeter"
+kind: "client"
+provider: "default"
+defaults:
+  platform: "desktop"
+  localCache: false
+  managed: false
+properties:
+  executionMode:
+    type: "enum"
+    values: ["gui", "cli", "distributed"]
+    default: "gui"
+  protocol:
+    type: "enum"
+    values: ["http", "ftp", "jdbc", "ldap", "jms", "soap"]
+    default: "http"

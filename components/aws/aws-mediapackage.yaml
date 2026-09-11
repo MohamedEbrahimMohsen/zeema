@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Elemental MediaPackage: just-in-time packaging and origination for live and VOD streams
+# ("What is AWS Elemental MediaPackage?"). "Features of AWS Elemental MediaPackage" states that
+# MediaPackage creates two input URLs on every live channel for input redundancy, and that DRM and
+# CDN authorization are opt-in features; "Time-shifted viewing reference" caps the startover window
+# at 336 hours (14 days).
+schemaVersion: "1"
+type: "component"
+id: "aws-mediapackage"
+kind: "media-router"
+provider: "aws"
+defaults:
+  managed: true
+  mode: "ingest"
+  transport: "tcp"
+  rerouteOnFailure: true
+properties:
+  outputFormat:
+    type: "enum"
+    values: ["hls", "dash", "cmaf", "mss"]
+  drm:
+    type: "boolean"
+    default: false
+  cdnAuthorization:
+    type: "boolean"
+    default: false
+  maxStartoverHours:
+    type: "integer"
+    default: 336

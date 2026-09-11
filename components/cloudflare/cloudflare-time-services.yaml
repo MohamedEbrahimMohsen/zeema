@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare Time Services: NTP at time.cloudflare.com plus the authenticated NTS and Roughtime
+# variants. "Using Cloudflare's Time Service" states NTP is offered for free over the global anycast
+# network; NTS adds a TLS key exchange and Roughtime answers on roughtime.cloudflare.com:2003.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-time-services"
+kind: "third-party-api"
+provider: "cloudflare"
+defaults:
+  managed: true
+  callbackStyle: "none"
+  hostedPage: false
+  handlesMoney: false
+properties:
+  protocol:
+    type: "enum"
+    values: ["ntp", "nts", "roughtime"]
+    default: "ntp"
+  authenticated:
+    type: "boolean"
+    default: false
+  anycast:
+    type: "boolean"
+    default: true

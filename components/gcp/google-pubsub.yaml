@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud Pub/Sub: at-least-once, unordered unless ordering keys are used; subscriptions retain
+# acked messages for seven days and support seek, so replay is true.
+schemaVersion: "1"
+type: "component"
+id: "google-pubsub"
+kind: "pubsub-topic"
+provider: "gcp"
+defaults:
+  managed: true
+  delivery: "at-least-once"
+  ordering: "none"
+  replay: true
+properties:
+  retentionDays:
+    type: "integer"
+    default: 7

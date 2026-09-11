@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloud Talent Solution: a managed job-search index over jobs and companies held in
+# tenants, with inferred titles, seniority and commute search. "Quotas and limits":
+# 3,000 search, histogram and get requests per 60 seconds, 300 indexing and list requests
+# per 60 seconds, 3,000,000 jobs and 1,000,000 companies stored, 10 MB per request, and
+# expired jobs retained for 90 days by default.
+schemaVersion: "1"
+type: "component"
+id: "google-cloud-talent-solution"
+kind: "search-index"
+provider: "gcp"
+defaults:
+  structure: "inverted"
+  indexing: "async"
+  shardingStrategy: "none"
+  geoScheme: "none"
+  managed: true
+properties:
+  searchRequestsPerMinute:
+    type: "integer"
+    default: 3000
+  indexingRequestsPerMinute:
+    type: "integer"
+    default: 300
+  maxJobs:
+    type: "integer"
+    default: 3000000
+  maxCompanies:
+    type: "integer"
+    default: 1000000
+  expiredJobRetentionDays:
+    type: "integer"
+    default: 90
+  commuteSearch:
+    type: "boolean"
+    default: false

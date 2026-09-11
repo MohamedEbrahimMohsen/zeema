@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Bedrock: managed multi-provider foundation model API (text, image, embedding and video
+# modalities) reached over a public regional endpoint. Per "Data retention" the account and project
+# retention mode defaults to "inherit" (the model's own default); per "Monitor model invocation using
+# CloudWatch Logs and Amazon S3" model invocation logging is disabled by default, and guardrails are a
+# separate resource that must be named on each invocation.
+schemaVersion: "1"
+type: "component"
+id: "aws-bedrock"
+kind: "ai-service"
+provider: "aws"
+defaults:
+  managed: true
+  modality: "multimodal"
+  publicEndpoint: true
+  contentFiltering: false
+properties:
+  dataRetentionMode:
+    type: "enum"
+    values: ["inherit", "none", "default", "aws-review"]
+    default: "inherit"
+  modelInvocationLogging:
+    type: "boolean"
+    default: false
+  privateLink:
+    type: "boolean"
+    default: false
+  crossRegionInference:
+    type: "boolean"
+    default: false

@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloud IAM: the allow policy (role bindings) attached to a resource and inherited by everything
+# below it in the hierarchy. Per "IAM overview" every action is denied unless a permission grants it,
+# and deny policies, IAM Conditions and principal access boundaries are separate opt-in layers.
+# Per "Allow policies" a policy holds at most 1,500 principals and changes are eventually consistent.
+schemaVersion: "1"
+type: "component"
+id: "google-cloud-iam"
+kind: "policy-engine"
+provider: "gcp"
+defaults:
+  effect: "deny"
+  enforcementMode: "enforced"
+  remediation: false
+  managed: true
+properties:
+  roleType:
+    type: "enum"
+    values: ["basic", "predefined", "custom"]
+  denyPolicies:
+    type: "boolean"
+    default: false
+  conditionalBindings:
+    type: "boolean"
+    default: false
+  maxPrincipalsPerPolicy:
+    type: "integer"
+    default: 1500

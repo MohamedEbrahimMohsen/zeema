@@ -1,0 +1,37 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon EFS file system: serverless elastic NFSv4.1 file storage. "What is Amazon Elastic File System?"
+# gives Regional (multi-AZ) as the recommended default type with General Purpose performance and Elastic
+# throughput; "Encrypting data at rest": encryption at rest is enabled by default in the console (CLI/API
+# must enable it); "Backing up EFS file systems": console-created file systems get daily AWS Backup with
+# 35-day retention.
+schemaVersion: "1"
+type: "component"
+id: "aws-efs"
+kind: "file-storage"
+provider: "aws"
+defaults:
+  protocol: "nfs"
+  redundancy: "regional"
+  encryptionInTransit: false
+  publicAccess: false
+  backupEnabled: true
+  managed: true
+properties:
+  fileSystemType:
+    type: "enum"
+    values: ["regional", "one-zone"]
+    default: "regional"
+  performanceMode:
+    type: "enum"
+    values: ["general-purpose", "max-io"]
+    default: "general-purpose"
+  throughputMode:
+    type: "enum"
+    values: ["elastic", "bursting", "provisioned"]
+    default: "elastic"
+  encryptionAtRest:
+    type: "boolean"
+    default: true
+  backupRetentionDays:
+    type: "integer"
+    default: 35

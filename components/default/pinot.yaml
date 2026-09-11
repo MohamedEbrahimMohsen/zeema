@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apache Pinot: real-time OLAP store ingesting from streams; upsert tables are opt-in.
+schemaVersion: "1"
+type: "component"
+id: "pinot"
+kind: "data-warehouse"
+provider: "default"
+defaults:
+  realtime: true
+  upsert: false
+  format: "columnar"
+  managed: false
+properties:
+  streamIngestion:
+    type: "boolean"
+    default: true
+  starTreeIndex:
+    type: "boolean"
+    default: false

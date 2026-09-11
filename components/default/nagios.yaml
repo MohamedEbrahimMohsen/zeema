@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Nagios Core: self-hosted availability monitoring; active checks initiated by the Nagios process on a
+# regular schedule are the default method, passive checks are the alternative ("Active Checks").
+schemaVersion: "1"
+type: "component"
+id: "nagios"
+kind: "monitoring"
+provider: "default"
+defaults:
+  signal: "alerts"
+  collectorMode: "pull"
+  managed: false
+properties:
+  checkModel:
+    type: "enum"
+    values: ["active", "passive"]
+    default: "active"

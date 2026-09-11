@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Web Risk: checks URLs against Google's lists of unsafe web resources (phishing and deceptive
+# sites, malware, unwanted software). Per "Web Risk overview" the Lookup API sends the URL to
+# Google and answers synchronously, while the Update API keeps a local hashed database so only
+# hash prefixes leave the client.
+schemaVersion: "1"
+type: "component"
+id: "google-web-risk"
+kind: "third-party-api"
+provider: "gcp"
+defaults:
+  callbackStyle: "none"
+  hostedPage: false
+  handlesMoney: false
+  managed: true
+properties:
+  api:
+    type: "enum"
+    values: ["lookup", "update", "submission"]
+    default: "lookup"
+  localDatabase:
+    type: "boolean"
+    default: false
+  threatType:
+    type: "enum"
+    values: ["malware", "social-engineering", "unwanted-software"]

@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Hyperdrive: pooled, cached connections from Workers to an existing Postgres or MySQL database.
+# "How Hyperdrive works" states it manages the connection pool for you; "Query caching" states
+# caching is enabled by default with max_age 60 s and stale_while_revalidate 15 s, reads only.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-hyperdrive"
+kind: "database-proxy"
+provider: "cloudflare"
+defaults:
+  managed: true
+  pooling: true
+  routing: "none"
+  poolSharded: false
+  scatterGather: false
+properties:
+  engine:
+    type: "enum"
+    values: ["postgres", "mysql"]
+    default: "postgres"
+  queryCaching:
+    type: "boolean"
+    default: true
+  cacheMaxAgeSeconds:
+    type: "integer"
+    default: 60
+  staleWhileRevalidateSeconds:
+    type: "integer"
+    default: 15

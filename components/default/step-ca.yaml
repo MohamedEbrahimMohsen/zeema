@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Smallstep step-ca: self-hosted online certificate authority for X.509 and SSH certificates.
+# "step-ca documentation": the root CA is kept offline and the online intermediate signs;
+# key material sits in the file-based KMS unless a PKCS#11 HSM, cloud KMS or YubiKey is configured.
+schemaVersion: "1"
+type: "component"
+id: "step-ca"
+kind: "key-management"
+provider: "default"
+defaults:
+  managed: false
+  hsm: false
+  rotationAutomated: false
+properties:
+  keyManagementService:
+    type: "enum"
+    values: ["file", "pkcs11", "cloud-kms", "yubikey"]
+    default: "file"
+  acmeProvisioner:
+    type: "boolean"
+    default: false
+  sshCertificates:
+    type: "boolean"
+    default: false

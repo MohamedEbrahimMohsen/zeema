@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Vertex AI Agent Engine (Agent Runtime): a fully managed runtime that deploys and autoscales agent
+# applications with no infrastructure to manage ("Agent Engine overview"). Conversation state lives in
+# Agent Engine Sessions and Memory Bank, which are attached separately, so the runtime owns no data.
+schemaVersion: "1"
+type: "component"
+id: "google-vertex-ai-agent-engine"
+kind: "app-server"
+provider: "gcp"
+defaults:
+  managed: true
+  stateless: true
+  autoscaling: true
+  ownsData: false
+  shardingStrategy: "none"
+properties:
+  sessions:
+    type: "boolean"
+    default: false
+  memoryBank:
+    type: "boolean"
+    default: false
+  tracing:
+    type: "boolean"
+    default: false

@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Locust: open source load testing tool whose scenarios are plain Python, run on gevent greenlets.
+# A single process runs the test unless distributed master/worker mode is started; the web UI serves
+# real-time results on port 8089 ("What is Locust?").
+schemaVersion: "1"
+type: "component"
+id: "locust"
+kind: "client"
+provider: "default"
+defaults:
+  platform: "desktop"
+  localCache: false
+  managed: false
+properties:
+  distributed:
+    type: "boolean"
+    default: false
+  webUiPort:
+    type: "integer"
+    default: 8089
+  protocol:
+    type: "enum"
+    values: ["http", "custom"]
+    default: "http"

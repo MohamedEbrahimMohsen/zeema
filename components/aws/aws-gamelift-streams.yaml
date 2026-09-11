@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon GameLift Streams: browser-delivered application streaming from pooled GPU stream groups
+# ("What is Amazon GameLift Streams?"), which gives 1080p at 60 fps as the reference stream quality.
+# The CreateStreamGroup API reference makes StreamClass required with no default, defines always-on,
+# maximum and target-idle capacity per location, and states that a stream group expires 365 days
+# after creation and stops accepting new application associations after 180 days.
+schemaVersion: "1"
+type: "component"
+id: "aws-gamelift-streams"
+kind: "virtual-desktop"
+provider: "aws"
+defaults:
+  managed: true
+  sessionMode: "pooled"
+properties:
+  streamClassFamily:
+    type: "enum"
+    values: ["gen4n", "gen5n", "gen6n", "gen6e"]
+  referenceFrameRate:
+    type: "integer"
+    default: 60
+  alwaysOnCapacity:
+    type: "integer"
+  streamGroupExpiryDays:
+    type: "integer"
+    default: 365

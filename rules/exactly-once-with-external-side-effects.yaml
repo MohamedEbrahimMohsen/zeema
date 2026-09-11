@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../schema/rule.schema.json
+# Exactly-once delivery stops at the consumer. If the consumer then calls a third party
+# synchronously, that side effect is outside the transaction and can still happen twice.
+# Claiming exactly-once here hides the need for idempotent external calls.
+# Tripped by: designs/payment-system.broken.yaml
+schemaVersion: "1"
+type: "rule"
+id: "exactly-once-with-external-side-effects"
+severity: "warning"
+select:
+  edge:
+    delivery: "exactly-once"
+when:
+  to:
+    hasEdge:
+      direction: "out"
+      mode: "sync"
+      peerKind: "third-party-api"
+message: "Edge '{{edge.from}}' -> '{{edge.to}}' claims exactly-once delivery, but '{{edge.to}}' calls a third party synchronously. Exactly-once cannot cover that side effect; make the external call idempotent instead."

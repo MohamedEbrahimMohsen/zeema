@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon EventBridge Schema Registry: registries of OpenAPI 3 and JSONSchema Draft4 schemas used
+# to generate code bindings. "Amazon EventBridge schemas" describes no compatibility check and no
+# runtime validation of events, and "Inferring schemas from event bus events" shows discovery is
+# off until you start a discoverer, after which every changed event creates a new schema version.
+schemaVersion: "1"
+type: "component"
+id: "aws-eventbridge-schemas"
+kind: "schema-registry"
+provider: "aws"
+defaults:
+  managed: true
+  compatibility: "none"
+  enforced: false
+properties:
+  schemaFormat:
+    type: "enum"
+    values: ["openapi3", "jsonschema-draft4"]
+    default: "openapi3"
+  discoveryEnabled:
+    type: "boolean"
+    default: false
+  crossAccountDiscovery:
+    type: "boolean"
+    default: true
+  versioned:
+    type: "boolean"
+    default: true

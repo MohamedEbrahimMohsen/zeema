@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Abstract kind: Holds keys and secrets and rotates them (KMS, HSM, Vault, Secrets Manager).
+schemaVersion: "1"
+type: "kind"
+id: "key-management"
+category: "security"
+properties:
+  hsm:
+    type: "boolean"
+    default: false
+  rotationAutomated:
+    type: "boolean"
+    default: false
+  rotationDays:
+    type: "integer"
+  envelopeEncryption:
+    type: "boolean"
+    default: false
+  managed:
+    type: "boolean"
+    default: true

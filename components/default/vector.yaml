@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Vector: open source observability pipeline from Datadog, run as agent, aggregator or both, carrying
+# logs, metrics and traces. Sinks buffer in memory by default with a capacity of 500 events and a
+# when_full behaviour of block, so a slow sink applies back pressure rather than dropping events
+# ("Vector Documentation, Buffering model").
+schemaVersion: "1"
+type: "component"
+id: "vector"
+kind: "monitoring"
+provider: "default"
+defaults:
+  managed: false
+  signal: "all"
+  collectorMode: "push"
+  alertGrouping: false
+properties:
+  role:
+    type: "enum"
+    values: ["agent", "aggregator", "unified"]
+    default: "agent"
+  bufferType:
+    type: "enum"
+    values: ["memory", "disk"]
+    default: "memory"
+  bufferMaxEvents:
+    type: "integer"
+    default: 500
+  whenFull:
+    type: "enum"
+    values: ["block", "drop-newest", "overflow"]
+    default: "block"

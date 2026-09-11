@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon ECR Public: managed registry whose repositories are world-readable ("What Is Amazon Elastic
+# Container Registry Public?"). Pushes authenticate as an AWS principal, pulls are anonymous or
+# token-authenticated, and every public repository is listed in the Amazon ECR Public Gallery.
+schemaVersion: "1"
+type: "component"
+id: "aws-ecr-public"
+kind: "container-registry"
+provider: "aws"
+defaults:
+  managed: true
+  visibility: "public"
+  imageScanning: false
+  staticCredentials: false
+properties:
+  anonymousPull:
+    type: "boolean"
+    default: true
+  listedInPublicGallery:
+    type: "boolean"
+    default: true

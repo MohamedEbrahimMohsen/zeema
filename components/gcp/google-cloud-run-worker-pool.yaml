@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloud Run worker pool: a Cloud Run resource for non-request workloads such as pull queues; worker
+# pools have no endpoint or URL and instances are scaled manually ("Cloud Run resource model").
+# Like every Cloud Run resource a worker pool is regional and Cloud Run replicates it across the
+# zones of that region.
+schemaVersion: "1"
+type: "component"
+id: "google-cloud-run-worker-pool"
+kind: "worker"
+provider: "gcp"
+defaults:
+  managed: true
+  trigger: "queue"
+  accelerator: "none"
+  rateControl: "none"
+properties:
+  scalingMode:
+    type: "enum"
+    values: ["manual", "automatic"]
+    default: "manual"
+  httpEndpoint:
+    type: "boolean"
+    default: false
+  zoneRedundant:
+    type: "boolean"
+    default: true

@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Sentry: SaaS error and performance monitoring pushed by SDKs, issues grouped automatically, 90 days retention.
+schemaVersion: "1"
+type: "component"
+id: "sentry"
+kind: "monitoring"
+provider: "default"
+defaults:
+  signal: "all"
+  collectorMode: "push"
+  managed: true
+  alertGrouping: true
+  retentionDays: 90
+properties:
+  releaseTracking:
+    type: "boolean"
+    default: false

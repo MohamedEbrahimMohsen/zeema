@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Puppet Enterprise: self-hosted primary server with agents that pull and apply a catalog. The
+# Puppet configuration reference gives runinterval a default of 30m — "How often puppet agent
+# applies the catalog" — and masterport a default of 8140, "The default port puppet subcommands use
+# to communicate with Puppet Server", so the model is scheduled and agent-initiated out of the box.
+schemaVersion: "1"
+type: "component"
+id: "puppet"
+kind: "ci-pipeline"
+provider: "default"
+defaults:
+  trigger: "schedule"
+  approvalRequired: false
+  selfHostedRunners: true
+  managed: false
+properties:
+  runIntervalSeconds:
+    type: "integer"
+    default: 1800
+  serverPort:
+    type: "integer"
+    default: 8140
+  agentMode:
+    type: "enum"
+    values: ["agent", "agentless"]
+    default: "agent"
+  dataEncryption:
+    type: "enum"
+    values: ["none", "hiera-eyaml"]
+    default: "none"

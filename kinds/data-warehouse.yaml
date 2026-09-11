@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Abstract kind: Analytical store for batch or real-time OLAP (BigQuery, Redshift, Snowflake, Pinot, Hive).
+schemaVersion: "1"
+type: "kind"
+id: "data-warehouse"
+category: "data"
+properties:
+  realtime:
+    type: "boolean"
+    default: false
+  upsert:
+    type: "boolean"
+    default: false
+  format:
+    type: "enum"
+    values: ["columnar", "row"]
+    default: "columnar"
+  managed:
+    type: "boolean"
+    default: false

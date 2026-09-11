@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Assured Workloads: a folder created for a control package. Per "Assured Workloads overview" the
+# controls of the package define guardrails for every project in the folder, enforced through
+# organization policy constraints, and the service monitors for constraint and resource violations.
+schemaVersion: "1"
+type: "component"
+id: "google-assured-workloads"
+kind: "policy-engine"
+provider: "gcp"
+defaults:
+  effect: "deny"
+  enforcementMode: "enforced"
+  scope: "group"
+  remediation: false
+  managed: true
+properties:
+  controlPackage:
+    type: "enum"
+    values: ["regional-data-boundary", "fedramp-moderate", "fedramp-high", "hipaa", "itar", "irs-1075", "cjis", "impact-level-2", "impact-level-4", "impact-level-5", "canada-controlled-goods", "sovereign-controls-by-partners"]
+  dataResidency:
+    type: "boolean"
+    default: true
+  personnelAccessControls:
+    type: "boolean"
+  violationMonitoring:
+    type: "boolean"
+    default: true

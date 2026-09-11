@@ -1,0 +1,125 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #fafaf8;
+  --panel: #ffffff;
+  --ink: #1b1b19;
+  --muted: #6b6b66;
+  --line: #e4e4df;
+  --accent: #2f5fd0;
+  --accent-ink: #ffffff;
+  --ok: #2e7d4f;
+  --warn: #b26a00;
+  --err: #c2382f;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #131315;
+    --panel: #1b1b1f;
+    --ink: #ececea;
+    --muted: #a1a19c;
+    --line: #2c2c31;
+    --accent: #7ea2f0;
+    --accent-ink: #0f1526;
+    --ok: #6fc28f;
+    --warn: #e0a23d;
+    --err: #ef7d75;
+    color-scheme: dark;
+  }
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+a {
+  color: inherit;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--ink);
+  font-size: 0.9rem;
+  line-height: 1.2;
+  cursor: pointer;
+  text-decoration: none;
+}
+.btn:hover {
+  border-color: var(--muted);
+}
+.btn[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.btn-primary {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent);
+}
+.btn-danger {
+  color: var(--err);
+}
+
+.input {
+  width: 100%;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--ink);
+  font-size: 0.95rem;
+}
+.input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.tag {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.sev-error {
+  color: var(--err);
+}
+.sev-warning {
+  color: var(--warn);
+}
+.sev-info {
+  color: var(--muted);
+}
+
+.svg-preview svg {
+  width: 100%;
+  height: auto;
+  max-height: 70vh;
+}

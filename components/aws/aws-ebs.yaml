@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon EBS volume: network block device attached to one EC2 instance in a single Availability Zone.
+# "What is Amazon Elastic Block Store?": volume data is automatically replicated across multiple servers
+# in an Availability Zone; gp2/gp3/io1/st1/sc1 give 99.8%-99.9% durability, io2 Block Express 99.999%.
+# "CreateVolume" defaults VolumeType to gp2; encryption by default is a Region setting that must be enabled.
+schemaVersion: "1"
+type: "component"
+id: "aws-ebs"
+kind: "block-storage"
+provider: "aws"
+defaults:
+  mediaType: "ssd"
+  redundancy: "zonal"
+  encryptionAtRest: false
+  snapshots: false
+  managed: true
+properties:
+  volumeType:
+    type: "enum"
+    values: ["gp2", "gp3", "io1", "io2", "st1", "sc1", "standard"]
+    default: "gp2"
+  multiAttach:
+    type: "boolean"
+    default: false
+  maxSizeGib:
+    type: "integer"
+    default: 65536
+  annualFailureRatePercent:
+    type: "string"
+    default: "0.1"

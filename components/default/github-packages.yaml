@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# GitHub Packages: GitHub-hosted package registries for npm, RubyGems, Maven/Gradle, NuGet and containers
+# ("Introduction to GitHub Packages"). Permissions for a package are inherited from the repository that
+# hosts it unless granular permissions are set, and a package published from a private repository is
+# private, so visibility follows the repository rather than the package.
+schemaVersion: "1"
+type: "component"
+id: "github-packages"
+kind: "artifact-repository"
+provider: "default"
+defaults:
+  artifactType: "package"
+  managed: true
+  upstreamProxy: false
+properties:
+  registryFormat:
+    type: "enum"
+    values: ["npm", "rubygems", "maven", "gradle", "nuget", "container"]
+  permissionsInheritedFromRepository:
+    type: "boolean"
+    default: true

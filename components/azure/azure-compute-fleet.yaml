@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Compute Fleet: one API call that acquires capacity across many VM sizes and pricing models,
+# mixing Spot and standard VMs ("Azure Compute Fleet overview"). Managed mode is the default and
+# keeps the fleet in place; a fleet targets up to 10,000 VMs and one region unless configured wider.
+schemaVersion: "1"
+type: "component"
+id: "azure-compute-fleet"
+kind: "virtual-machine"
+provider: "azure"
+defaults:
+  managed: false
+  diskEncryption: true
+properties:
+  fleetMode:
+    type: "enum"
+    values: ["managed", "launch"]
+    default: "managed"
+  mixesSpotAndStandard:
+    type: "boolean"
+    default: true
+  maxVmCount:
+    type: "integer"
+    default: 10000
+  multiRegion:
+    type: "boolean"
+    default: false

@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS PrivateLink VPC endpoint: private connection from subnets in a VPC to a service.
+# "Access AWS services through AWS PrivateLink": an interface endpoint needs no internet gateway or NAT,
+# AWS services accept connection requests automatically, and the endpoint IP address type defaults to IPv4.
+schemaVersion: "1"
+type: "component"
+id: "aws-vpc-endpoint"
+kind: "private-link"
+provider: "aws"
+defaults:
+  managed: true
+  approvalRequired: false
+  crossRegion: false
+properties:
+  endpointType:
+    type: "enum"
+    values: ["interface", "gateway", "gateway-load-balancer"]
+    default: "interface"
+  ipAddressType:
+    type: "enum"
+    values: ["ipv4", "ipv6", "dualstack"]
+    default: "ipv4"
+  requiresInternetGateway:
+    type: "boolean"
+    default: false
+  serviceInitiatedRequests:
+    type: "boolean"
+    default: false

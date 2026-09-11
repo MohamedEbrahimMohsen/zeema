@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Files: managed SMB or NFS file shares; a share speaks one protocol, never both. Storage
+# accounts have encryption in transit enabled and an internet-reachable public endpoint by
+# default, soft delete is on for new accounts, and redundancy starts at LRS ("What is Azure
+# Files?", "Plan an Azure Files deployment").
+schemaVersion: "1"
+type: "component"
+id: "azure-files"
+kind: "file-storage"
+provider: "azure"
+defaults:
+  protocol: "smb"
+  encryptionInTransit: true
+  publicAccess: true
+  redundancy: "local"
+  backupEnabled: false
+  managed: true
+properties:
+  mediaTier:
+    type: "enum"
+    values: ["ssd", "hdd"]
+  billingModel:
+    type: "enum"
+    values: ["provisioned-v2", "provisioned-v1", "pay-as-you-go"]
+  softDelete:
+    type: "boolean"
+    default: true
+  maxSnapshotsPerShare:
+    type: "integer"
+    default: 200

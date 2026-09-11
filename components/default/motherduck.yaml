@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# MotherDuck: serverless cloud data warehouse built on DuckDB. "Getting started": no infrastructure
+# to manage, isolated compute per user, and a local-then-cloud workflow where a local DuckDB and the
+# cloud service take part in the same query. Sign-up is free with no card.
+schemaVersion: "1"
+type: "component"
+id: "motherduck"
+kind: "data-warehouse"
+provider: "default"
+defaults:
+  realtime: false
+  format: "columnar"
+  managed: true
+properties:
+  engine:
+    type: "enum"
+    values: ["duckdb"]
+    default: "duckdb"
+  hybridExecution:
+    type: "boolean"
+    default: true
+  serverless:
+    type: "boolean"
+    default: true

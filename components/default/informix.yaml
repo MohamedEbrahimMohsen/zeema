@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Informix: single-primary relational database. High-Availability Data Replication (HDR)
+# and Enterprise Replication are set up explicitly, not out of the box (Informix "Asynchronous mode for HDR replication").
+schemaVersion: "1"
+type: "component"
+id: "informix"
+kind: "sql-database"
+provider: "default"
+defaults:
+  replication: "none"
+  concurrencyControl: "pessimistic"
+properties:
+  version:
+    type: "string"
+  hdrEnabled:
+    type: "boolean"
+    default: false
+  enterpriseReplication:
+    type: "boolean"
+    default: false

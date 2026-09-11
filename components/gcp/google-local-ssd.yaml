@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Compute Engine Local SSD: physically attached ephemeral SSD. "About Local SSD" states each
+# disk is 375 GiB, data is encrypted automatically, data may be lost when the instance stops,
+# and Local SSD cannot be backed up with snapshots.
+schemaVersion: "1"
+type: "component"
+id: "google-local-ssd"
+kind: "block-storage"
+provider: "gcp"
+defaults:
+  mediaType: "ssd"
+  sizeGib: 375
+  redundancy: "local"
+  encryptionAtRest: true
+  snapshots: false
+  managed: true
+properties:
+  diskInterface:
+    type: "enum"
+    values: ["nvme", "scsi"]
+    default: "nvme"
+  ephemeral:
+    type: "boolean"
+    default: true

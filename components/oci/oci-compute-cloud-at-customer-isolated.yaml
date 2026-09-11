@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Compute Cloud@Customer Isolated: the air-gapped variant, run from a local control
+# plane with locally configured IAM and no permanent connection to OCI. "Overview of Compute
+# Cloud@Customer Isolated": management is local — by the customer, a partner or Oracle CSS —
+# and only a billing infrastructure resource ties it to the home tenancy. The base rack starts
+# at 552 cores, 6.7 TB of memory and 150 TB of storage and scales to 6,624 cores and 3.4 PB.
+schemaVersion: "1"
+type: "component"
+id: "oci-compute-cloud-at-customer-isolated"
+kind: "edge-appliance"
+provider: "oci"
+defaults:
+  formFactor: "rack"
+  connectivity: "disconnected"
+  offlineMode: true
+  cloudManaged: false
+  localStorageGib: 153600
+  managed: false
+properties:
+  controlPlane:
+    type: "enum"
+    values: ["oci-regional", "local"]
+    default: "local"
+  airGapped:
+    type: "boolean"
+    default: true
+  baseCores:
+    type: "integer"
+    default: 552
+  maxCores:
+    type: "integer"
+    default: 6624

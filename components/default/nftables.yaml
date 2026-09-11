@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# nftables: the Linux kernel packet classification framework. "Configuring chains" states
+# that if no policy is explicitly selected, the base chain policy accept is used;
+# connection tracking only applies where ct state rules are written.
+schemaVersion: "1"
+type: "component"
+id: "nftables"
+kind: "firewall"
+provider: "default"
+defaults:
+  managed: false
+  defaultAction: "allow"
+  stateful: false
+  intrusionPrevention: false
+properties:
+  family:
+    type: "enum"
+    values: ["ip", "ip6", "inet", "arp", "bridge", "netdev"]
+    default: "inet"
+  hook:
+    type: "enum"
+    values: ["prerouting", "input", "forward", "output", "postrouting"]
+    default: "input"
+  natEnabled:
+    type: "boolean"
+    default: false

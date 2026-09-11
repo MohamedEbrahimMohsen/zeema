@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Managed Service for Apache Kafka cluster. "Managed Service for Apache Kafka overview": clusters are
+# provisioned rack-aware across three zones, the default topic configuration requires three replicas
+# with two in sync, all connections must use TLS, and data is encrypted at rest with Google-managed
+# keys. Clusters run Kafka 3.7.1.
+schemaVersion: "1"
+type: "component"
+id: "google-managed-kafka"
+kind: "stream"
+provider: "gcp"
+defaults:
+  managed: true
+  replicationFactor: 3
+  minInsyncReplicas: 2
+  storage: "persistent"
+properties:
+  kafkaVersion:
+    type: "string"
+    default: "3.7.1"
+  zones:
+    type: "integer"
+    default: 3
+  tlsRequired:
+    type: "boolean"
+    default: true
+  mtlsAuthentication:
+    type: "boolean"
+    default: false
+  encryptionKeySource:
+    type: "enum"
+    values: ["google-managed", "customer-managed"]
+    default: "google-managed"

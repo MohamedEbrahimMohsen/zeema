@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud DNS: managed anycast authoritative DNS. DNSSEC and routing policies are opt-in.
+schemaVersion: "1"
+type: "component"
+id: "google-cloud-dns"
+kind: "dns"
+provider: "gcp"
+defaults:
+  managed: true
+  anycast: true
+properties:
+  dnssec:
+    type: "boolean"
+    default: false

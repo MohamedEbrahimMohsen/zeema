@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud Dataproc job: Spark or Hadoop job on a managed cluster, or Dataproc Serverless.
+schemaVersion: "1"
+type: "component"
+id: "dataproc-job"
+kind: "worker"
+provider: "gcp"
+defaults:
+  managed: true
+  trigger: "batch"
+properties:
+  serverless:
+    type: "boolean"
+    default: false

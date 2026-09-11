@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Docker Swarm mode, the clustering built into Docker Engine. Per "Manage swarm security with public key
+# infrastructure (PKI)" swarm init generates a root CA and every node gets a certificate, so node-to-node
+# traffic is mutually authenticated by default and certificates renew every three months.
+schemaVersion: "1"
+type: "component"
+id: "docker-swarm"
+kind: "container-orchestrator"
+provider: "default"
+defaults:
+  managed: false
+  autoscaling: false
+  rbac: false
+properties:
+  mutualTls:
+    type: "boolean"
+    default: true
+  certificateRotationDays:
+    type: "integer"
+    default: 90
+  overlayNetworkEncryption:
+    type: "boolean"
+    default: false
+  raftManagers:
+    type: "integer"
+    default: 1

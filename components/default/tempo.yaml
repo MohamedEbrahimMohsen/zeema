@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Grafana Tempo: self-hosted trace backend; the distributor accepts OTLP, Jaeger and Zipkin pushes and
+# the compactor keeps blocks for 336h (14 days) by default ("Tempo configuration").
+schemaVersion: "1"
+type: "component"
+id: "tempo"
+kind: "monitoring"
+provider: "default"
+defaults:
+  signal: "traces"
+  collectorMode: "push"
+  managed: false
+  retentionDays: 14
+properties:
+  storageBackend:
+    type: "enum"
+    values: ["local", "s3", "gcs", "azure"]
+  metricsGenerator:
+    type: "boolean"
+    default: false

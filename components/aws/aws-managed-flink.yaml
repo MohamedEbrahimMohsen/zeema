@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Managed Service for Apache Flink: single-tenant Flink cluster run by AWS across
+# Availability Zones. "Implement fault tolerance" gives the DEFAULT checkpoint configuration
+# (enabled, 60000 ms interval, 5000 ms minimum pause); "Implement application scaling" gives
+# Parallelism 1, ParallelismPerKPU 1 and automatic scaling enabled by default.
+schemaVersion: "1"
+type: "component"
+id: "aws-managed-flink"
+kind: "stream-processor"
+provider: "aws"
+defaults:
+  managed: true
+  checkpointIntervalSeconds: 60
+  exactlyOnce: true
+  instances: 1
+properties:
+  parallelismPerKpu:
+    type: "integer"
+    default: 1
+  autoScaling:
+    type: "boolean"
+    default: true
+  minPauseBetweenCheckpointsMs:
+    type: "integer"
+    default: 5000
+  apiFlavour:
+    type: "enum"
+    values: ["datastream", "table", "sql", "studio-notebook"]
+    default: "datastream"

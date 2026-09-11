@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Exchange market-data multicast feed: UDP multicast, sequenced, stateless publisher, gap recovery via retransmission and A/B line arbitration.
+schemaVersion: "1"
+type: "component"
+id: "multicast-feed"
+kind: "realtime-gateway"
+provider: "default"
+defaults:
+  protocol: "udp-multicast"
+  stateful: false
+  sequenceNumbers: true
+properties:
+  gapRecovery:
+    type: "enum"
+    values: ["none", "retransmission", "snapshot"]
+    default: "retransmission"
+  lineArbitration:
+    type: "boolean"
+    default: true

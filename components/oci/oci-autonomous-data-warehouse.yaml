@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Autonomous AI Lakehouse / Data Warehouse workload of Autonomous AI Database Serverless.
+# "Provision an Autonomous AI Database Instance": ECPU compute model, 2 ECPUs minimum, compute
+# auto scaling on and storage auto scaling off, Oracle-managed keys, secure access from everywhere.
+schemaVersion: "1"
+type: "component"
+id: "oci-autonomous-data-warehouse"
+kind: "data-warehouse"
+provider: "oci"
+defaults:
+  managed: true
+  format: "columnar"
+  upsert: true
+  realtime: false
+properties:
+  computeModel:
+    type: "enum"
+    values: ["ecpu", "ocpu"]
+    default: "ecpu"
+  ecpuCount:
+    type: "integer"
+    default: 2
+  computeAutoScaling:
+    type: "boolean"
+    default: true
+  storageAutoScaling:
+    type: "boolean"
+    default: false
+  autonomousDataGuard:
+    type: "boolean"
+    default: false
+  networkAccess:
+    type: "enum"
+    values: ["secure-access-everywhere", "allowed-ips-and-vcns", "private-endpoint"]
+    default: "secure-access-everywhere"

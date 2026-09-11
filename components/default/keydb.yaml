@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# KeyDB: multithreaded Redis fork. Active-active replication is opt-in via active-replica, and like
+# Redis it ships with noeviction, so evictionPolicy is left undefaulted for
+# cache-missing-eviction-policy to surface ("KeyDB: a multithreaded fork of Redis").
+schemaVersion: "1"
+type: "component"
+id: "keydb"
+kind: "cache"
+provider: "default"
+defaults:
+  persistence: false
+properties:
+  activeReplica:
+    type: "boolean"
+    default: false
+  flashStorage:
+    type: "boolean"
+    default: false
+  threads:
+    type: "integer"

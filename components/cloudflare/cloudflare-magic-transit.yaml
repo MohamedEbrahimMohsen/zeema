@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Magic Transit: BGP-announced IP prefixes (a /24 minimum, or Cloudflare IPs for smaller networks)
+# are scrubbed on the Cloudflare network and handed back over GRE, IPsec or CNI tunnels with
+# health checks and priority-based steering ("Magic Transit overview").
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-magic-transit"
+kind: "ddos-protection"
+provider: "cloudflare"
+defaults:
+  managed: true
+  scope: "network"
+  alwaysOn: true
+  telemetry: true
+properties:
+  deploymentMode:
+    type: "enum"
+    values: ["always-on", "on-demand"]
+    default: "always-on"
+  tunnelType:
+    type: "enum"
+    values: ["gre", "ipsec", "cni"]
+  minimumPrefixLength:
+    type: "integer"
+    default: 24

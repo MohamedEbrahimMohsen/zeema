@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Roving Edge Infrastructure: a ruggedized Roving Edge Device that runs Compute, Block
+# Volume, Object Storage, IAM and Networking at the edge with intermittent or no connectivity,
+# syncing object data back to the tenancy when a link is available. "Roving Edge Infrastructure
+# Device Specifications": the RED.2.56 shape carries 48 OCPUs, 384 GB of memory and a shared
+# pool giving 27.94 TiB of block volume or 41.91 TiB of object storage, on ISE self-encrypting
+# drives; "Overview of Oracle Roving Edge Infrastructure": data is encrypted at rest by default.
+schemaVersion: "1"
+type: "component"
+id: "oci-roving-edge"
+kind: "edge-appliance"
+provider: "oci"
+defaults:
+  formFactor: "ruggedized"
+  connectivity: "intermittent"
+  offlineMode: true
+  cloudManaged: false
+  localStorageGib: 28610
+  managed: false
+properties:
+  shape:
+    type: "enum"
+    values: ["red-2-56", "red-2-56-gpu", "red-2-56-stg"]
+    default: "red-2-56"
+  ocpus:
+    type: "integer"
+    default: 48
+  memoryGb:
+    type: "integer"
+    default: 384
+  encryptionAtRest:
+    type: "boolean"
+    default: true
+  dataSyncToObjectStorage:
+    type: "boolean"
+    default: true

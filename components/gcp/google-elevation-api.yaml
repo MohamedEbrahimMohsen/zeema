@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Elevation API: returns elevation above sea level for points or along a path.
+# "Elevation API Usage and Billing": 6,000 requests per minute combining client and server queries, a maximum of
+# 512 locations per request, and no maximum number of requests per day.
+schemaVersion: "1"
+type: "component"
+id: "google-elevation-api"
+kind: "third-party-api"
+provider: "gcp"
+defaults:
+  managed: true
+  idempotent: true
+  callbackStyle: "none"
+  hostedPage: false
+  handlesMoney: false
+  slaPercent: "99.9"
+properties:
+  queriesPerMinute:
+    type: "integer"
+    default: 6000
+  maxLocationsPerRequest:
+    type: "integer"
+    default: 512

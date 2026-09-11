@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle AI Database@AWS: OCI-managed Exadata infrastructure standing in an AWS datacenter.
+# Defaults from "Overview for Oracle AI Database@AWS" and "ODB Network Design": VM clusters live in a private,
+# isolated ODB network inside one AWS availability zone that maps to the OCI child site, the offering covers
+# Exadata Database Service and Autonomous AI Database on dedicated infrastructure, and billing arrives on a single
+# AWS Marketplace invoice.
+schemaVersion: "1"
+type: "component"
+id: "oci-database-at-aws"
+kind: "sql-database"
+provider: "oci"
+defaults:
+  managed: true
+  backupEnabled: true
+  encryptionAtRest: true
+  replication: "none"
+  concurrencyControl: "pessimistic"
+  commitProtocol: "single"
+properties:
+  service:
+    type: "enum"
+    values: ["exadata-database-service", "autonomous-ai-database"]
+    default: "exadata-database-service"
+  hostCloud:
+    type: "enum"
+    values: ["aws"]
+    default: "aws"
+  odbNetworkIsolated:
+    type: "boolean"
+    default: true
+  billedThroughHostMarketplace:
+    type: "boolean"
+    default: true
+  singleAvailabilityZone:
+    type: "boolean"
+    default: true

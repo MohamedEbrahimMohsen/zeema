@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Novu: open-source notification infrastructure (MIT), self-hostable with Docker Compose or run as
+# Novu Cloud. "Self-Host Novu" and the platform docs cover inbox, email, SMS, push and chat channels.
+schemaVersion: "1"
+type: "component"
+id: "novu"
+kind: "notification-service"
+provider: "default"
+defaults:
+  managed: false
+  channelPush: true
+  channelEmail: true
+  channelSms: true
+  templateStore: true
+properties:
+  deployment:
+    type: "enum"
+    values: ["self-hosted", "cloud"]
+    default: "self-hosted"
+  inAppInbox:
+    type: "boolean"
+    default: true

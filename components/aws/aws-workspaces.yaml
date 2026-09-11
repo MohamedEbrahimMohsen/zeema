@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon WorkSpaces Personal: persistent cloud desktops provisioned for one user's exclusive use
+# ("What is Amazon WorkSpaces?"). Running mode is AlwaysOn or AutoStop, whose AutoStop Time
+# defaults to 1 hour ("Manage the running mode"); volumes are unencrypted unless a KMS key is
+# chosen at launch, and an existing WorkSpace cannot be encrypted ("Encrypted WorkSpaces").
+schemaVersion: "1"
+type: "component"
+id: "aws-workspaces"
+kind: "virtual-desktop"
+provider: "aws"
+defaults:
+  managed: true
+  sessionMode: "personal"
+  maxSessionsPerHost: 1
+  persistentProfiles: true
+properties:
+  runningMode:
+    type: "enum"
+    values: ["always-on", "auto-stop"]
+  autoStopTimeoutHours:
+    type: "integer"
+    default: 1
+  protocol:
+    type: "enum"
+    values: ["pcoip", "dcv"]
+  volumeEncryption:
+    type: "boolean"
+    default: false
+  operatingSystem:
+    type: "enum"
+    values: ["windows", "ubuntu", "rocky-linux", "red-hat-enterprise-linux"]

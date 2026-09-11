@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Segment (Twilio Segment): hosted customer data platform that collects track/identify events from
+# sources and fans them out to destinations. "Product Limits": Segment recommends staying under
+# 1,000 requests per second on the HTTP Tracking API and rejects excess with HTTP 429. "Handling
+# Duplicate Data": events carry a messageId and Segment de-duplicates on it for at least 24 hours.
+schemaVersion: "1"
+type: "component"
+id: "segment"
+kind: "third-party-api"
+provider: "default"
+defaults:
+  managed: true
+  idempotent: true
+  qpsQuota: 1000
+  callbackStyle: "webhook"
+  hostedPage: false
+  handlesMoney: false
+properties:
+  deduplicationWindowHours:
+    type: "integer"
+    default: 24
+  deduplicationKey:
+    type: "enum"
+    values: ["message-id", "none"]
+    default: "message-id"

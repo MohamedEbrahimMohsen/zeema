@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon FSx for Lustre: managed POSIX Lustre file system for HPC and ML, optionally linked to an S3
+# data repository. "What is Amazon FSx for Lustre?": data at rest is automatically encrypted with AWS KMS
+# keys; "Deployment and storage class options": scratch file systems do not replicate data and do not
+# survive a file server failure, persistent SSD/HDD file systems replicate within one Availability Zone.
+schemaVersion: "1"
+type: "component"
+id: "aws-fsx-lustre"
+kind: "file-storage"
+provider: "aws"
+defaults:
+  protocol: "lustre"
+  publicAccess: false
+  managed: true
+properties:
+  deploymentType:
+    type: "enum"
+    values: ["scratch-2", "persistent-1", "persistent-2"]
+  storageClass:
+    type: "enum"
+    values: ["ssd", "intelligent-tiering", "hdd"]
+  encryptionAtRest:
+    type: "boolean"
+    default: true
+  dataRepositoryLinked:
+    type: "boolean"
+    default: false
+  dataReplicated:
+    type: "boolean"
+    default: false

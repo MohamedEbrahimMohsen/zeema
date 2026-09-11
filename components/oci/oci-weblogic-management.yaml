@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI WebLogic Management (WLMS): unified discovery, patch compliance and lifecycle operations for WebLogic domains on compute instances.
+# Defaults from "Overview of WebLogic Management": the Oracle Cloud Agent plug-in runs a domain discovery scan every 6 hours,
+# patching is on demand and the last applied patch can be rolled back.
+schemaVersion: "1"
+type: "component"
+id: "oci-weblogic-management"
+kind: "monitoring"
+provider: "oci"
+defaults:
+  managed: true
+  collectorMode: "push"
+properties:
+  discoveryScanIntervalHours:
+    type: "integer"
+    default: 6
+  onDemandPatching:
+    type: "boolean"
+    default: true
+  patchRollback:
+    type: "boolean"
+    default: true

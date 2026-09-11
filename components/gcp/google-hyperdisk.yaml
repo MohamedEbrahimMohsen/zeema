@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Compute Engine Hyperdisk: SSD-backed network block storage with independently provisioned
+# IOPS and throughput. "About Hyperdisk" states every Hyperdisk type is SSD and that only
+# Hyperdisk Balanced High Availability replicates synchronously across two zones.
+schemaVersion: "1"
+type: "component"
+id: "google-hyperdisk"
+kind: "block-storage"
+provider: "gcp"
+defaults:
+  mediaType: "ssd"
+  redundancy: "zonal"
+  encryptionAtRest: true
+  snapshots: false
+  managed: true
+properties:
+  hyperdiskType:
+    type: "enum"
+    values: ["balanced", "balanced-high-availability", "extreme", "ml", "throughput"]
+    default: "balanced"
+  crossZoneReplication:
+    type: "boolean"
+    default: false

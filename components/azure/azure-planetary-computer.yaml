@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Microsoft Planetary Computer Pro GeoCatalog: managed storage plus a STAC API for ingesting, searching and serving geospatial raster and data cube assets.
+# "Microsoft Planetary Computer Pro Features and Capabilities" states the GeoCatalog provides zone-redundant managed storage, cloud-optimizes supported data types on ingestion, exposes a managed STAC API, and secures all data with Microsoft Entra ID.
+schemaVersion: "1"
+type: "component"
+id: "azure-planetary-computer"
+kind: "object-store"
+provider: "azure"
+defaults:
+  managed: true
+properties:
+  zoneRedundant:
+    type: "boolean"
+    default: true
+  stacApi:
+    type: "boolean"
+    default: true
+  cloudOptimizationOnIngest:
+    type: "boolean"
+    default: true
+  accessControl:
+    type: "enum"
+    values: ["entra-id"]
+    default: "entra-id"

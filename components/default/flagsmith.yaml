@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Flagsmith: flags with segment percentage splits; SaaS by default, self-host available.
+schemaVersion: "1"
+type: "component"
+id: "flagsmith"
+kind: "feature-flag-service"
+provider: "default"
+defaults:
+  stagedRollout: true
+  managed: true
+properties:
+  localEvaluation:
+    type: "boolean"
+    default: false

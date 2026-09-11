@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI OS Management Hub: centrally patches and manages packages on Oracle Linux and Windows instances through scheduled update jobs.
+# Defaults from "OS Management Hub Overview": OCI instances register through the Oracle Cloud Agent plug-in, jobs run immediately or on a
+# recurring schedule, and the service removes events, old profile versions and silent instances after 90 days.
+schemaVersion: "1"
+type: "component"
+id: "oci-os-management-hub"
+kind: "worker"
+provider: "oci"
+defaults:
+  managed: true
+  trigger: "schedule"
+properties:
+  agentType:
+    type: "enum"
+    values: ["oracle-cloud-agent", "management-agent"]
+    default: "oracle-cloud-agent"
+  eventRetentionDays:
+    type: "integer"
+    default: 90
+  lifecycleEnvironments:
+    type: "boolean"
+    default: false
+  managementStation:
+    type: "boolean"
+    default: false

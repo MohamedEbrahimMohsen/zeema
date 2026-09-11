@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Zabbix: open-source distributed monitoring; the server polls agents and devices and also supports
+# trapping for active checks, with history and trends kept by the housekeeper ("What is Zabbix").
+schemaVersion: "1"
+type: "component"
+id: "zabbix"
+kind: "monitoring"
+provider: "default"
+defaults:
+  signal: "metrics"
+  collectorMode: "pull"
+  managed: false
+properties:
+  agentCheckMode:
+    type: "enum"
+    values: ["passive", "active"]
+    default: "passive"
+  trendsStored:
+    type: "boolean"
+    default: true

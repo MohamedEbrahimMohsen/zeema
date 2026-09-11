@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Fivetran: fully managed ELT service. "By default, Fivetran syncs your data from your source to
+# your destination every six hours using the fixed interval mode" ("Fivetran, Sync overview"),
+# which makes it a scheduled worker with a 6 hour cadence.
+schemaVersion: "1"
+type: "component"
+id: "fivetran"
+kind: "worker"
+provider: "default"
+defaults:
+  managed: true
+  trigger: "schedule"
+  schedule: "every 6 hours"
+properties:
+  syncMode:
+    type: "enum"
+    values: ["fixed-interval", "cron"]
+    default: "fixed-interval"
+  syncFrequencyHours:
+    type: "integer"
+    default: 6

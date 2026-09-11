@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Service Bus: peek-lock at-least-once, every queue ships with a dead-letter sub-queue,
+# messages persisted, 14-day default TTL. Sessions (per-key ordering) are opt-in.
+schemaVersion: "1"
+type: "component"
+id: "azure-service-bus"
+kind: "queue"
+provider: "azure"
+defaults:
+  managed: true
+  delivery: "at-least-once"
+  ordering: "none"
+  deadLetterQueue: true
+  replay: false
+  retentionDays: 14
+  persistence: true
+properties:
+  sessions:
+    type: "boolean"
+    default: false

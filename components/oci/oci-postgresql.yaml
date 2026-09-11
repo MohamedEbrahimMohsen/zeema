@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI Database with PostgreSQL: managed PostgreSQL on OCI database optimized storage, encrypted at rest and
+# in transit ("Overview of Database with PostgreSQL"). "Creating a database system" shows automatic backups,
+# point-in-time recovery, query insights and the reader endpoint all as opt-in, a 75,000 IOPS performance
+# tier, and a system that is never reachable from the internet: clients must sit in the same VCN.
+schemaVersion: "1"
+type: "component"
+id: "oci-postgresql"
+kind: "sql-database"
+provider: "oci"
+defaults:
+  managed: true
+  backupEnabled: false
+  replication: "none"
+  encryptionAtRest: true
+properties:
+  storageIops:
+    type: "integer"
+    default: 75000
+  pointInTimeRecovery:
+    type: "boolean"
+    default: false
+  readerEndpoint:
+    type: "boolean"
+    default: false
+  queryInsights:
+    type: "boolean"
+    default: false

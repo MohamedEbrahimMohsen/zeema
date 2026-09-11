@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# FreePBX: self-hosted open source web GUI that configures Asterisk, with modules for inbound
+# routes, queues and call recording ("FreePBX Open Source" documentation). "The default ring
+# strategy for queues is ringall", which rings all available agents until one answers ("Queues
+# Module User Guide"); recording is a per-queue and per-extension mode chosen from five options
+# rather than something the install turns on ("Call Recording walk through").
+schemaVersion: "1"
+type: "component"
+id: "freepbx"
+kind: "contact-center"
+provider: "default"
+defaults:
+  managed: false
+  channelVoice: true
+  channelChat: false
+  routing: "fifo"
+properties:
+  queueStrategy:
+    type: "enum"
+    values: ["ringall", "leastrecent", "fewestcalls", "random", "rrmemory", "rrordered", "linear", "wrandom"]
+    default: "ringall"
+  callRecordingMode:
+    type: "enum"
+    values: ["force", "yes", "dont-care", "no", "never"]
+  telephonyEngine:
+    type: "enum"
+    values: ["asterisk"]
+    default: "asterisk"

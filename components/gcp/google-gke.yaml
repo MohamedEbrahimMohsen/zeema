@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Kubernetes Engine Standard cluster: Google Cloud manages the control plane while you own the
+# node pools ("GKE overview"). A regional cluster replicates the control plane across zones and its
+# default node pool is nine nodes, three per zone in three zones ("Regional clusters"); new clusters
+# are enrolled in the Regular release channel and get node auto-upgrades ("Release channels").
+schemaVersion: "1"
+type: "component"
+id: "google-gke"
+kind: "container-orchestrator"
+provider: "gcp"
+defaults:
+  managed: true
+  nodeCount: 3
+properties:
+  locationType:
+    type: "enum"
+    values: ["zonal", "regional"]
+    default: "zonal"
+  releaseChannel:
+    type: "enum"
+    values: ["rapid", "regular", "stable", "extended", "none"]
+    default: "regular"
+  nodeAutoUpgrade:
+    type: "boolean"
+    default: true
+  zonesSpanned:
+    type: "integer"
+    default: 1

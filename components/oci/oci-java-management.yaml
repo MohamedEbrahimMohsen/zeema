@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI Java Management Service: a fleet groups managed instances whose JMS plug-in reports Java runtime inventory and usage back to the service.
+# Defaults from "JMS Fleet Management": advanced features are off until explicitly enabled on subscribed hosts,
+# and the agent discards events older than 48 hours when it cannot reach the service.
+schemaVersion: "1"
+type: "component"
+id: "oci-java-management"
+kind: "monitoring"
+provider: "oci"
+defaults:
+  managed: true
+  signal: "logs"
+  collectorMode: "push"
+properties:
+  advancedFeaturesEnabled:
+    type: "boolean"
+    default: false
+  eventDiscardAfterHours:
+    type: "integer"
+    default: 48
+  javaUsageTracking:
+    type: "boolean"
+    default: true

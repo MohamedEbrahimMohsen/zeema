@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Cloud network security group: virtual firewall applied to a set of VNICs rather than a
+# subnet, created empty with no rules, denying anything no rule allows ("Network Security Groups").
+# Service Limits: 120 rules per NSG, 5 NSGs per VNIC, 1,000 NSGs per VCN.
+schemaVersion: "1"
+type: "component"
+id: "oci-network-security-group"
+kind: "firewall"
+provider: "oci"
+defaults:
+  managed: true
+  defaultAction: "deny"
+  stateful: true
+  ruleCount: 0
+  logging: false
+  intrusionPrevention: false
+properties:
+  scope:
+    type: "enum"
+    values: ["vnic"]
+    default: "vnic"
+  nsgReferencesAllowed:
+    type: "boolean"
+    default: true
+  maxRules:
+    type: "integer"
+    default: 120
+  maxNsgsPerVnic:
+    type: "integer"
+    default: 5

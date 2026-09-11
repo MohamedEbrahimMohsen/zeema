@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI Container Instances: serverless containers with VM-level isolation and no servers to manage
+# ("Overview of Container Instances"). "Container Instance Shapes" gives the flexible CI shapes and
+# 15 GB of ephemeral storage per instance; "Creating a Container Instance" defaults the container
+# restart policy to ALWAYS and the graceful shutdown timeout to 0 seconds.
+schemaVersion: "1"
+type: "component"
+id: "oci-container-instances"
+kind: "app-server"
+provider: "oci"
+defaults:
+  managed: true
+  stateless: true
+  autoscaling: false
+properties:
+  shape:
+    type: "enum"
+    values: ["ci-standard-e4-flex", "ci-standard-e5-flex", "ci-standard-a1-flex"]
+  restartPolicy:
+    type: "enum"
+    values: ["always", "never", "on-failure"]
+    default: "always"
+  gracefulShutdownTimeoutSeconds:
+    type: "integer"
+    default: 0
+  ephemeralStorageGib:
+    type: "integer"
+    default: 15

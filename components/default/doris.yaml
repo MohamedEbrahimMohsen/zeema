@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apache Doris: MPP columnar analytical database. "Table type overview": Duplicate Key is the
+# default table type storing raw records, while Unique Key tables keep only the latest row per key
+# and support UPDATE, so upserts are opt-in through the table model chosen at creation.
+schemaVersion: "1"
+type: "component"
+id: "doris"
+kind: "data-warehouse"
+provider: "default"
+defaults:
+  realtime: true
+  upsert: false
+  format: "columnar"
+  managed: false
+properties:
+  tableModel:
+    type: "enum"
+    values: ["duplicate-key", "aggregate-key", "unique-key"]
+    default: "duplicate-key"
+  deployment:
+    type: "enum"
+    values: ["storage-compute-coupled", "storage-compute-decoupled"]
+    default: "storage-compute-coupled"

@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Sits in the MX or mailbox-API path and carries a delivery mode, per-disposition actions and a quarantine retention that firewall, waf and notification-service cannot express. deploymentMode and the disposition actions have no default so a rule can flag a gateway that inspects mail but never says what it does with a bad verdict.
+schemaVersion: "1"
+type: "kind"
+id: "email-security-gateway"
+category: "security"
+properties:
+  deliveryMode:
+    type: "enum"
+    values: ["inline-mx", "journaling", "api"]
+  phishingAction:
+    type: "enum"
+    values: ["reject", "quarantine", "tag", "deliver"]
+  spamAction:
+    type: "enum"
+    values: ["reject", "quarantine", "tag", "deliver"]
+  linkRewriting:
+    type: "boolean"
+  attachmentDetonation:
+    type: "boolean"
+  dmarcEnforcement:
+    type: "boolean"
+  quarantineRetentionDays:
+    type: "integer"
+  managed:
+    type: "boolean"
+    default: false

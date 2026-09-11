@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenYurt, a non-intrusive extension of upstream Kubernetes for edge sites. Per "What is OpenYurt" a
+# per-node YurtHub proxy caches API server state locally so kubelet, kube-proxy and user pods keep reading it
+# and pods are not evicted while the cloud control plane is unreachable.
+schemaVersion: "1"
+type: "component"
+id: "openyurt"
+kind: "edge-appliance"
+provider: "default"
+defaults:
+  managed: false
+  cloudManaged: true
+  connectivity: "intermittent"
+  offlineMode: true
+properties:
+  yurtHubProxy:
+    type: "boolean"
+    default: true
+  nodePools:
+    type: "boolean"
+    default: true
+  crossPoolNetworking:
+    type: "boolean"
+    default: false

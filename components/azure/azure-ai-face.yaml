@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure AI Face: face detection, liveness, verification and identification against person groups.
+# "What is the Azure Face service?" states access is limited and granted only through the Face Recognition intake form, that liveness SDKs are gated, that input images must be 6 MB or less, and that a person group holds up to 1,000,000 persons with up to 248 faces each.
+schemaVersion: "1"
+type: "component"
+id: "azure-ai-face"
+kind: "ai-service"
+provider: "azure"
+defaults:
+  managed: true
+  modality: "vision"
+  publicEndpoint: true
+  customerManagedKeys: false
+properties:
+  limitedAccessApproval:
+    type: "boolean"
+    default: true
+  livenessDetection:
+    type: "boolean"
+    default: false
+  recognitionOperations:
+    type: "enum"
+    values: ["detect-only", "verify", "identify"]
+    default: "detect-only"
+  maxImageSizeMb:
+    type: "integer"
+    default: 6

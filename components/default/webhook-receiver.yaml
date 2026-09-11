@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Generic HTTP endpoint you expose for third-party callbacks (payment provider, SaaS events).
+# Nothing is verified, deduplicated or persisted unless the design says so.
+schemaVersion: "1"
+type: "component"
+id: "webhook-receiver"
+kind: "webhook-endpoint"
+provider: "default"
+defaults:
+  signatureVerified: false
+  idempotent: false
+  retriedByCaller: true
+properties:
+  persistBeforeAck:
+    type: "boolean"
+    default: false

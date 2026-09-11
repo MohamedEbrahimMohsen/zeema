@@ -1,0 +1,43 @@
+source:
+  file: "source/chat-system.md"
+  format: "book-figure"
+  figures: ["12-8"]
+  counts: { nodes: 9, edges: 13, groups: 2 }
+nodes:
+  - { source: "User", node: "user", component: "user-device", confidence: "close", note: "rounded box holding a laptop icon and a phone icon; the generic user-device component, platform multi" }
+  - { source: "Load balancer", node: "load-balancer", component: "load-balancer-tier", confidence: "close", note: "unbranded load balancer icon, no product named." }
+  - { source: "Chat servers", node: "chat-servers", component: "container-service", confidence: "close", note: "purple server cluster inside the Real time service boundary; no product named. stateless: false because the high-level design section states the chat service is the only stateful service, each client holding a persistent connection to a chat server." }
+  - { source: "Presence servers", node: "presence-servers", component: "container-service", confidence: "close", note: "purple server cluster inside the Real time service boundary; no product named. Left stateless because the chapter names the chat service as the only stateful service." }
+  - { source: "Notification servers", node: "notification-servers", component: "container-service", confidence: "close", note: "green server cluster; the paragraph after the figure says notification servers send push notifications. No product named and no third-party push provider drawn." }
+  - { source: "API servers", node: "api-servers", component: "container-service", confidence: "close", note: "green server cluster handling login, signup and profile changes; no product named." }
+  - { source: "KV store", node: "kv-store", component: "nosql-store", confidence: "close", note: "left-hand of the three cylinder boxes inside the unlabelled dashed boundary. The chapter recommends key-value stores, which is the nosql-store default model, so no props." }
+  - { source: "KV store", node: "kv-store-2", component: "nosql-store", confidence: "close", note: "centre of the three cylinder boxes; a separate box with the same caption, so a separate node." }
+  - { source: "KV store", node: "kv-store-3", component: "nosql-store", confidence: "close", note: "right-hand of the three cylinder boxes; a separate box with the same caption, so a separate node." }
+groups:
+  - { source: "Real time service", group: "real-time-service", kind: "system", note: "dashed rounded boundary holding Chat servers and Presence servers; a logical service grouping, so a system group." }
+  - { source: "(unlabelled dashed box around the three KV store boxes)", group: "kv-tier", kind: "system", note: "no text on the boundary; a storage tier, so a system group without a label." }
+edges:
+  - { source: "User -> Load balancer (http)", from: "user", to: "load-balancer", note: "arrow 1. The arrow text is the protocol, so it became protocol http rather than a label." }
+  - { source: "User <-> Real time service (ws), User to boundary", from: "user", to: "chat-servers", note: "arrow 2, first head. The line lands on the top edge of the Real time service boundary in the gap between Chat servers and Presence servers; attached to Chat servers because the paragraph explaining Figure 12-8 says the client maintains a persistent WebSocket connection to a chat server." }
+  - { source: "User <-> Real time service (ws), boundary to User", from: "chat-servers", to: "user", note: "arrow 2, second head (the arrowhead pointing into the User box). Modelled async: the chapter chooses WebSocket precisely to push server-initiated updates to the client." }
+  - { source: "Load balancer -> API servers", from: "load-balancer", to: "api-servers", note: "arrow 3." }
+  - { source: "API servers -> Notification servers", from: "api-servers", to: "notification-servers", note: "arrow 4." }
+  - { source: "API servers <-> Real time service under Chat servers, API to boundary", from: "api-servers", to: "chat-servers", note: "arrow 5, head at the boundary. The elbow leaves the boundary directly under the Chat servers box." }
+  - { source: "API servers <-> Real time service under Chat servers, boundary to API", from: "chat-servers", to: "api-servers", note: "arrow 5, head at API servers." }
+  - { source: "API servers <-> Real time service under Presence servers, API to boundary", from: "api-servers", to: "presence-servers", note: "arrow 6, head at the boundary. The elbow leaves the boundary directly under the Presence servers box; Figure 12-17 draws the same call as API servers -> Presence servers." }
+  - { source: "API servers <-> Real time service under Presence servers, boundary to API", from: "presence-servers", to: "api-servers", note: "arrow 6, head at API servers." }
+  - { source: "Notification servers -> KV store boundary", from: "notification-servers", to: "kv-store", note: "arrow 9. The head lands on the boundary; attached to the nearest KV store box, the left-hand one, which the line ends directly above." }
+  - { source: "API servers -> KV store boundary", from: "api-servers", to: "kv-store-2", note: "arrow 10. The head lands on the boundary between the left and centre boxes; attached to the nearer one, the centre box." }
+  - { source: "Chat servers -> KV store boundary", from: "chat-servers", to: "kv-store-3", note: "arrow 7. Leaves the Real time service boundary under Chat servers and lands on the KV boundary between the centre and right boxes; attached to the nearer one, the right box. The chapter says the key-value store holds chat history." }
+  - { source: "Presence servers -> KV store boundary", from: "presence-servers", to: "kv-store-3", note: "arrow 8. Leaves the Real time service boundary under Presence servers and lands on the KV boundary just right of the right-hand box, so attached to it; Figures 12-16 and 12-17 draw the same write as Presence servers -> KV store." }
+ignored:
+  - { source: "Figure 12-8", reason: "figure caption" }
+  - { source: "http / ws", reason: "arrow labels naming the protocol; carried as the edge protocol, not as a box" }
+unmapped: []
+gaps:
+  - "Five arrow ends in the figure land on a boundary (the Real time service dashed box) and four on the unlabelled KV boundary, not on a box. An edge's from and to must be node ids, so each was attached to the box it is drawn under or nearest to; the drawing's own intent, an arrow to a whole tier, cannot be expressed."
+  - "The chapter states 50 million daily active users, 1M concurrent connections, a 100-member group cap and a 100,000-character message limit; requirements has no path for user counts, connection counts, fan-out size or payload size, so only the 1:1 read/write ratio survives."
+  - "Chat history is stored forever. There is no retention or capacity requirement path."
+  - "The User box is drawn with a laptop and a phone and the chapter designs for both, but the client kind takes a single required platform, so one of the two had to be chosen."
+  - "The presence heartbeat (a client event every 5 seconds, offline after 30 seconds without one) is a stated number about the Presence servers box, but no kind property or requirement path expresses a liveness interval."
+  - "WebSocket is one bidirectional persistent connection drawn as one double-headed arrow; the format models it as two directed edges with different modes (sync up, async down) and cannot say the two share a connection."

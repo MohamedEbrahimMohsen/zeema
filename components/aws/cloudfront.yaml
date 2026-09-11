@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon CloudFront: managed CDN. Origin Shield and edge functions are opt-in.
+schemaVersion: "1"
+type: "component"
+id: "cloudfront"
+kind: "cdn"
+provider: "aws"
+defaults:
+  managed: true
+  edgeCompute: false
+  originShield: false
+properties:
+  signedUrls:
+    type: "boolean"
+    default: false

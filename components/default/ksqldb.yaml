@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# ksqlDB: SQL streaming engine over Kafka Streams. "The processing semantics to use for persistent
+# queries. The default is at_least_once", the commit interval defaults to 2000 ms, auto.offset.reset
+# defaults to latest and Confluent Platform runs 4 stream threads
+# ("Confluent Platform, ksqlDB Server configuration parameters"). State stores are RocksDB backed.
+schemaVersion: "1"
+type: "component"
+id: "ksqldb"
+kind: "stream-processor"
+provider: "default"
+defaults:
+  managed: false
+  windowing: "event-time"
+  checkpointIntervalSeconds: 2
+  exactlyOnce: false
+  stateBackend: "rocksdb"
+properties:
+  autoOffsetReset:
+    type: "enum"
+    values: ["earliest", "latest"]
+    default: "latest"
+  streamThreads:
+    type: "integer"
+    default: 4
+  deploymentMode:
+    type: "enum"
+    values: ["interactive", "headless"]
+    default: "interactive"

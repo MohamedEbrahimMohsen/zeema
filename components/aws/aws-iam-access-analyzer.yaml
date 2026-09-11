@@ -1,0 +1,38 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IAM Access Analyzer: reasons over resource-based and identity policies and reports findings; it
+# reports, it does not block. "Using AWS Identity and Access Management Access Analyzer": you create
+# an analyzer whose zone of trust is one account or the organization, an added or changed policy is
+# re-analyzed within about 30 minutes and everything else on a periodic scan within 24 hours, and an
+# external access analyzer only covers resources in the Region where it was created. Policy
+# validation against grammar and AWS best practices comes with the service.
+# "Create an IAM Access Analyzer unused access analyzer": the tracking period is 1 to 365 days.
+schemaVersion: "1"
+type: "component"
+id: "aws-iam-access-analyzer"
+kind: "policy-engine"
+provider: "aws"
+defaults:
+  effect: "audit"
+  enforcementMode: "enforced"
+  scope: "account"
+  remediation: false
+  managed: true
+properties:
+  analyzerType:
+    type: "enum"
+    values: ["external-access", "internal-access", "unused-access"]
+    default: "external-access"
+  policyValidation:
+    type: "boolean"
+    default: true
+  policyGeneration:
+    type: "boolean"
+    default: false
+  regionScoped:
+    type: "boolean"
+    default: true
+  unusedAccessTrackingPeriodDays:
+    type: "integer"
+  policyReanalysisMinutes:
+    type: "integer"
+    default: 30

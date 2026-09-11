@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Arroyo: Rust stream processing engine with SQL pipelines. pipeline.default-checkpoint-interval is
+# 10s ("Arroyo, Configuration"), state is held in memory on worker nodes and checkpoints are written
+# to remote object storage - S3, GCS, Azure Blob or an S3-compatible store - so pipelines can recover
+# ("Arroyo, Architecture"). Watermarks use a fixed offset from the last event timestamp.
+schemaVersion: "1"
+type: "component"
+id: "arroyo"
+kind: "stream-processor"
+provider: "default"
+defaults:
+  managed: false
+  windowing: "event-time"
+  checkpointIntervalSeconds: 10
+  stateBackend: "memory"
+properties:
+  checkpointStore:
+    type: "enum"
+    values: ["local", "s3", "gcs", "azure-blob"]
+    default: "local"
+  configDatabase:
+    type: "enum"
+    values: ["sqlite", "postgres"]
+    default: "sqlite"

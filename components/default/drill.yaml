@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apache Drill: low-latency distributed SQL engine for structured and semi-structured data.
+# "Architecture introduction": schemas are discovered dynamically so no schema definition is
+# required, metadata comes from storage plugins, and Drill queries sources without storing data.
+schemaVersion: "1"
+type: "component"
+id: "drill"
+kind: "data-warehouse"
+provider: "default"
+defaults:
+  realtime: false
+  upsert: false
+  managed: false
+properties:
+  storesData:
+    type: "boolean"
+    default: false
+  schemaFree:
+    type: "boolean"
+    default: true

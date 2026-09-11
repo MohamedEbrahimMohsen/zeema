@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Firebase Realtime Database ("Firebase Realtime Database" overview, "Automated Backups" and
+# "Firebase Privacy and Security"): a single-region JSON tree synchronised to clients in realtime.
+# Data is encrypted at rest and in transit; automated daily backups are a Blaze-plan opt-in, and a
+# new instance starts in locked mode where all reads and writes are denied.
+schemaVersion: "1"
+type: "component"
+id: "google-firebase-realtime-database"
+kind: "nosql-database"
+provider: "gcp"
+defaults:
+  model: "document"
+  consistency: "strong"
+  replication: "single-region"
+  conflictResolution: "none"
+  encryptionAtRest: true
+  backupEnabled: false
+  managed: true
+properties:
+  securityRulesMode:
+    type: "enum"
+    values: ["locked", "test"]
+    default: "locked"
+  realtimeSync:
+    type: "boolean"
+    default: true
+  multipleInstances:
+    type: "boolean"
+    default: false

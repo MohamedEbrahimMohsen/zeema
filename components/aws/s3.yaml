@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon S3: managed object store spread over three zones with eleven nines of durability,
+# strong read-after-write, default encryption and opt-in versioning.
+schemaVersion: "1"
+type: "component"
+id: "s3"
+kind: "object-store"
+provider: "aws"
+defaults:
+  zones: 3
+  durabilityNines: 11
+  replication: "erasure-coded"
+  strongReadAfterWrite: true
+  checksumOnWrite: true
+  encryptionAtRest: true
+  versioning: false
+  managed: true
+properties:
+  storageClass:
+    type: "enum"
+    values: ["standard", "intelligent-tiering", "standard-ia", "one-zone-ia", "glacier", "deep-archive"]
+    default: "standard"
+  crossRegionReplication:
+    type: "boolean"
+    default: false

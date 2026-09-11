@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Logpush job: continuously batches a Cloudflare dataset out to storage, a SIEM or a log provider.
+# "Log output options" gives ndjson as the default record format; the API configuration page gives
+# an unsampled default (sample 1), unixnano timestamps and 100,000 records per upload.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-logpush"
+kind: "stream-processor"
+provider: "cloudflare"
+defaults:
+  managed: true
+properties:
+  outputFormat:
+    type: "enum"
+    values: ["ndjson", "csv"]
+    default: "ndjson"
+  timestampFormat:
+    type: "enum"
+    values: ["unixnano", "unix", "rfc3339"]
+    default: "unixnano"
+  sampled:
+    type: "boolean"
+    default: false
+  maxUploadRecords:
+    type: "integer"
+    default: 100000

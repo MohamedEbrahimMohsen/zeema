@@ -1,0 +1,3443 @@
+{
+ "designs/reference/doordash-delivery/design.yaml": {
+  "structural": [],
+  "rules": [],
+  "positions": {
+   "consumer-app": [
+    570,
+    46
+   ],
+   "bff": [
+    60,
+    374
+   ],
+   "order-service": [
+    408,
+    374
+   ],
+   "delivery-service": [
+    220,
+    374
+   ],
+   "legacy-monolith": [
+    579,
+    374
+   ],
+   "aperture": [
+    759,
+    374
+   ],
+   "orders-db": [
+    919,
+    374
+   ],
+   "merchant-pos": [
+    570,
+    210
+   ],
+   "order-events": [
+    1079,
+    374
+   ],
+   "delivery-workflows": [
+    124,
+    538
+   ],
+   "event-processor": [
+    327,
+    538
+   ],
+   "events-buffer": [
+    507,
+    538
+   ],
+   "warehouse": [
+    672,
+    538
+   ],
+   "feature-store": [
+    832,
+    538
+   ],
+   "dispatch-model": [
+    997,
+    538
+   ]
+  },
+  "sizes": {
+   "consumer-app": [
+    126,
+    78
+   ],
+   "bff": [
+    126,
+    78
+   ],
+   "order-service": [
+    137,
+    78
+   ],
+   "delivery-service": [
+    154,
+    78
+   ],
+   "legacy-monolith": [
+    146,
+    78
+   ],
+   "aperture": [
+    126,
+    78
+   ],
+   "orders-db": [
+    126,
+    78
+   ],
+   "merchant-pos": [
+    126,
+    78
+   ],
+   "order-events": [
+    126,
+    78
+   ],
+   "delivery-workflows": [
+    169,
+    78
+   ],
+   "event-processor": [
+    146,
+    78
+   ],
+   "events-buffer": [
+    131,
+    78
+   ],
+   "warehouse": [
+    126,
+    78
+   ],
+   "feature-store": [
+    131,
+    78
+   ],
+   "dispatch-model": [
+    144,
+    78
+   ]
+  }
+ },
+ "designs/reference/doordash-delivery/design.broken.yaml": {
+  "structural": [],
+  "rules": [
+   {
+    "id": "external-call-inline-without-durable-path",
+    "severity": "warning",
+    "message": "Service 'delivery-service' calls a third party inline with no queue or workflow engine to fall back to when that call fails."
+   },
+   {
+    "id": "read-replica-as-sole-scaling",
+    "severity": "warning",
+    "message": "Database 'orders-db' relies on async read replicas as its only scaling above 5000 rps. Replicas do not scale writes."
+   },
+   {
+    "id": "retry-without-adaptive-shedding",
+    "severity": "error",
+    "message": "Edge 'bff' -> 'order-service' retries without a circuit breaker, and 'order-service' has no rate limiter in front of it. Retry storms will cascade."
+   },
+   {
+    "id": "single-writer-primary-at-peak-qps",
+    "severity": "error",
+    "message": "Database 'orders-db' is a single unsharded writer declared at more than 5000 rps. Shard it or move to a multi-writer distributed store."
+   },
+   {
+    "id": "stateful-node-without-zone-redundancy",
+    "severity": "error",
+    "message": "Stateful node 'legacy-monolith' lives in exactly one availability zone. A zone outage takes its state with it."
+   },
+   {
+    "id": "windowed-aggregation-without-watermark",
+    "severity": "warning",
+    "message": "Stream processor 'event-processor' windows by event time but declares no watermark. Late data handling is undefined."
+   }
+  ],
+  "positions": {
+   "consumer-app": [
+    572,
+    46
+   ],
+   "bff": [
+    60,
+    374
+   ],
+   "order-service": [
+    220,
+    374
+   ],
+   "delivery-service": [
+    391,
+    374
+   ],
+   "legacy-monolith": [
+    402,
+    210
+   ],
+   "orders-db": [
+    582,
+    210
+   ],
+   "merchant-pos": [
+    742,
+    210
+   ],
+   "order-events": [
+    579,
+    374
+   ],
+   "event-processor": [
+    739,
+    374
+   ],
+   "events-buffer": [
+    919,
+    374
+   ],
+   "warehouse": [
+    1084,
+    374
+   ],
+   "feature-store": [
+    480,
+    538
+   ],
+   "dispatch-model": [
+    646,
+    538
+   ]
+  },
+  "sizes": {
+   "consumer-app": [
+    126,
+    78
+   ],
+   "bff": [
+    126,
+    78
+   ],
+   "order-service": [
+    137,
+    78
+   ],
+   "delivery-service": [
+    154,
+    78
+   ],
+   "legacy-monolith": [
+    146,
+    78
+   ],
+   "orders-db": [
+    126,
+    78
+   ],
+   "merchant-pos": [
+    126,
+    78
+   ],
+   "order-events": [
+    126,
+    78
+   ],
+   "event-processor": [
+    146,
+    78
+   ],
+   "events-buffer": [
+    131,
+    78
+   ],
+   "warehouse": [
+    126,
+    78
+   ],
+   "feature-store": [
+    131,
+    78
+   ],
+   "dispatch-model": [
+    144,
+    78
+   ]
+  }
+ },
+ "designs/reference/multi-region-web/design.yaml": {
+  "structural": [],
+  "rules": [],
+  "positions": {
+   "api-us": [
+    82,
+    46
+   ],
+   "web-app-us": [
+    242,
+    46
+   ],
+   "session-cache-us": [
+    412,
+    46
+   ],
+   "catalog-db": [
+    600,
+    46
+   ],
+   "api-eu": [
+    60,
+    210
+   ],
+   "web-app-eu": [
+    408,
+    210
+   ],
+   "session-cache-eu": [
+    220,
+    210
+   ],
+   "catalog-db-replica": [
+    579,
+    210
+   ]
+  },
+  "sizes": {
+   "api-us": [
+    126,
+    78
+   ],
+   "web-app-us": [
+    137,
+    78
+   ],
+   "session-cache-us": [
+    154,
+    78
+   ],
+   "catalog-db": [
+    126,
+    78
+   ],
+   "api-eu": [
+    126,
+    78
+   ],
+   "web-app-eu": [
+    137,
+    78
+   ],
+   "session-cache-eu": [
+    154,
+    78
+   ],
+   "catalog-db-replica": [
+    169,
+    78
+   ]
+  }
+ },
+ "designs/reference/multi-region-web/design.broken.yaml": {
+  "structural": [],
+  "rules": [
+   {
+    "id": "cache-missing-eviction-policy",
+    "severity": "warning",
+    "message": "Cache 'session-cache' has no eviction policy. Declare lru, lfu or ttl, or justify none explicitly."
+   },
+   {
+    "id": "datastore-missing-backup",
+    "severity": "error",
+    "message": "Datastore 'catalog-db' has no backup or no retention policy declared."
+   },
+   {
+    "id": "datastore-single-region",
+    "severity": "error",
+    "message": "Datastore 'catalog-db' is single-region with no replication, but the design requires multi-region availability."
+   }
+  ],
+  "positions": {
+   "api-us": [
+    60,
+    210
+   ],
+   "web-app-us": [
+    220,
+    210
+   ],
+   "session-cache": [
+    391,
+    210
+   ],
+   "catalog-db": [
+    556,
+    210
+   ],
+   "api-eu": [
+    222,
+    46
+   ],
+   "web-app-eu": [
+    382,
+    46
+   ]
+  },
+  "sizes": {
+   "api-us": [
+    126,
+    78
+   ],
+   "web-app-us": [
+    137,
+    78
+   ],
+   "session-cache": [
+    131,
+    78
+   ],
+   "catalog-db": [
+    126,
+    78
+   ],
+   "api-eu": [
+    126,
+    78
+   ],
+   "web-app-eu": [
+    137,
+    78
+   ]
+  }
+ },
+ "designs/reference/object-storage/design.yaml": {
+  "structural": [],
+  "rules": [],
+  "positions": {
+   "sdk-client": [
+    478,
+    46
+   ],
+   "edge-dns": [
+    558,
+    210
+   ],
+   "api-gateway": [
+    60,
+    702
+   ],
+   "api-service": [
+    220,
+    702
+   ],
+   "iam": [
+    558,
+    374
+   ],
+   "metadata-cache": [
+    883,
+    702
+   ],
+   "metadata-db": [
+    1055,
+    702
+   ],
+   "placement": [
+    391,
+    702
+   ],
+   "data-router": [
+    552,
+    866
+   ],
+   "data-nodes-hot": [
+    551,
+    702
+   ],
+   "warm-tier": [
+    723,
+    702
+   ],
+   "repair-worker": [
+    555,
+    538
+   ],
+   "auditor": [
+    638,
+    46
+   ]
+  },
+  "sizes": {
+   "sdk-client": [
+    126,
+    78
+   ],
+   "edge-dns": [
+    126,
+    78
+   ],
+   "api-gateway": [
+    126,
+    78
+   ],
+   "api-service": [
+    137,
+    78
+   ],
+   "iam": [
+    126,
+    78
+   ],
+   "metadata-cache": [
+    138,
+    78
+   ],
+   "metadata-db": [
+    126,
+    78
+   ],
+   "placement": [
+    126,
+    78
+   ],
+   "data-router": [
+    137,
+    78
+   ],
+   "data-nodes-hot": [
+    138,
+    78
+   ],
+   "warm-tier": [
+    126,
+    78
+   ],
+   "repair-worker": [
+    131,
+    78
+   ],
+   "auditor": [
+    126,
+    78
+   ]
+  }
+ },
+ "designs/reference/object-storage/design.broken.yaml": {
+  "structural": [],
+  "rules": [
+   {
+    "id": "multi-leader-store-without-conflict-policy",
+    "severity": "warning",
+    "message": "Store 'metadata-db' is multi-leader across regions with no conflict resolution policy. Declare last-writer-wins, vector-clock or app-merge."
+   },
+   {
+    "id": "object-store-single-zone-with-durability-target",
+    "severity": "error",
+    "message": "Object store 'data-nodes-hot' spans fewer than 3 zones (or declares none) while the design targets more than 10 nines of durability."
+   },
+   {
+    "id": "read-heavy-path-without-cache",
+    "severity": "warning",
+    "message": "Datastore 'metadata-db' serves a read-heavy workload directly from application servers and the design has no cache."
+   },
+   {
+    "id": "shared-dependency-without-redundancy",
+    "severity": "error",
+    "message": "Shared dependency 'edge-dns' is not redundant, but the design requires redundant discovery."
+   },
+   {
+    "id": "shared-dependency-without-redundancy",
+    "severity": "error",
+    "message": "Shared dependency 'placement' is not redundant, but the design requires redundant discovery."
+   },
+   {
+    "id": "stateful-engine-pinned-to-single-zone",
+    "severity": "error",
+    "message": "'placement' is pinned to a single availability zone with no failover or replication."
+   }
+  ],
+  "positions": {
+   "sdk-client": [
+    311,
+    46
+   ],
+   "edge-dns": [
+    391,
+    210
+   ],
+   "api-gateway": [
+    60,
+    866
+   ],
+   "api-service": [
+    220,
+    866
+   ],
+   "iam": [
+    391,
+    374
+   ],
+   "metadata-db": [
+    722,
+    866
+   ],
+   "placement": [
+    305,
+    702
+   ],
+   "data-router": [
+    391,
+    866
+   ],
+   "data-nodes-hot": [
+    465,
+    702
+   ],
+   "warm-tier": [
+    562,
+    866
+   ],
+   "repair-worker": [
+    388,
+    538
+   ],
+   "auditor": [
+    471,
+    46
+   ]
+  },
+  "sizes": {
+   "sdk-client": [
+    126,
+    78
+   ],
+   "edge-dns": [
+    126,
+    78
+   ],
+   "api-gateway": [
+    126,
+    78
+   ],
+   "api-service": [
+    137,
+    78
+   ],
+   "iam": [
+    126,
+    78
+   ],
+   "metadata-db": [
+    126,
+    78
+   ],
+   "placement": [
+    126,
+    78
+   ],
+   "data-router": [
+    137,
+    78
+   ],
+   "data-nodes-hot": [
+    138,
+    78
+   ],
+   "warm-tier": [
+    126,
+    78
+   ],
+   "repair-worker": [
+    131,
+    78
+   ],
+   "auditor": [
+    126,
+    78
+   ]
+  }
+ },
+ "designs/reference/order-processing/design.yaml": {
+  "structural": [],
+  "rules": [],
+  "positions": {
+   "api": [
+    60,
+    46
+   ],
+   "order-service": [
+    220,
+    46
+   ],
+   "payment-service": [
+    391,
+    46
+   ],
+   "reservation-queue": [
+    571,
+    46
+   ],
+   "inventory-service": [
+    766,
+    46
+   ],
+   "orders-queue": [
+    961,
+    46
+   ],
+   "fulfilment-worker": [
+    333,
+    210
+   ],
+   "orders-db": [
+    528,
+    210
+   ],
+   "order-events": [
+    688,
+    210
+   ]
+  },
+  "sizes": {
+   "api": [
+    126,
+    78
+   ],
+   "order-service": [
+    137,
+    78
+   ],
+   "payment-service": [
+    146,
+    78
+   ],
+   "reservation-queue": [
+    161,
+    78
+   ],
+   "inventory-service": [
+    161,
+    78
+   ],
+   "orders-queue": [
+    126,
+    78
+   ],
+   "fulfilment-worker": [
+    161,
+    78
+   ],
+   "orders-db": [
+    126,
+    78
+   ],
+   "order-events": [
+    126,
+    78
+   ]
+  }
+ },
+ "designs/reference/order-processing/design.broken.yaml": {
+  "structural": [],
+  "rules": [
+   {
+    "id": "pubsub-replay-required",
+    "severity": "error",
+    "message": "Topic 'order-events' cannot replay messages, but the design requires replay. Use a stream or a replayable queue."
+   },
+   {
+    "id": "queue-missing-dlq",
+    "severity": "error",
+    "message": "Queue 'orders-queue' receives async traffic but has no dead-letter queue."
+   },
+   {
+    "id": "sync-chain-too-deep",
+    "severity": "warning",
+    "message": "Entry point 'api' starts a synchronous call chain deeper than 3 hops while the design states a p95 latency target."
+   }
+  ],
+  "positions": {
+   "api": [
+    60,
+    46
+   ],
+   "order-service": [
+    220,
+    46
+   ],
+   "payment-service": [
+    391,
+    46
+   ],
+   "inventory-service": [
+    571,
+    46
+   ],
+   "orders-queue": [
+    766,
+    46
+   ],
+   "fulfilment-worker": [
+    926,
+    46
+   ],
+   "orders-db": [
+    430,
+    210
+   ],
+   "order-events": [
+    590,
+    210
+   ]
+  },
+  "sizes": {
+   "api": [
+    126,
+    78
+   ],
+   "order-service": [
+    137,
+    78
+   ],
+   "payment-service": [
+    146,
+    78
+   ],
+   "inventory-service": [
+    161,
+    78
+   ],
+   "orders-queue": [
+    126,
+    78
+   ],
+   "fulfilment-worker": [
+    161,
+    78
+   ],
+   "orders-db": [
+    126,
+    78
+   ],
+   "order-events": [
+    126,
+    78
+   ]
+  }
+ },
+ "designs/reference/payment-system/design.yaml": {
+  "structural": [],
+  "rules": [],
+  "positions": {
+   "checkout-client": [
+    498,
+    46
+   ],
+   "api": [
+    60,
+    538
+   ],
+   "payment-service": [
+    776,
+    538
+   ],
+   "payments-db": [
+    956,
+    538
+   ],
+   "payment-workflow": [
+    76,
+    702
+   ],
+   "payment-executor": [
+    220,
+    538
+   ],
+   "psp": [
+    508,
+    374
+   ],
+   "psp-webhook": [
+    408,
+    538
+   ],
+   "wallet-db": [
+    264,
+    702
+   ],
+   "ledger": [
+    424,
+    702
+   ],
+   "payment-events": [
+    608,
+    702
+   ],
+   "retry-queue": [
+    780,
+    702
+   ],
+   "reconciliation-job": [
+    573,
+    538
+   ],
+   "settlement-bank": [
+    498,
+    210
+   ],
+   "kms": [
+    940,
+    702
+   ]
+  },
+  "sizes": {
+   "checkout-client": [
+    146,
+    78
+   ],
+   "api": [
+    126,
+    78
+   ],
+   "payment-service": [
+    146,
+    78
+   ],
+   "payments-db": [
+    126,
+    78
+   ],
+   "payment-workflow": [
+    154,
+    78
+   ],
+   "payment-executor": [
+    154,
+    78
+   ],
+   "psp": [
+    126,
+    78
+   ],
+   "psp-webhook": [
+    131,
+    78
+   ],
+   "wallet-db": [
+    126,
+    78
+   ],
+   "ledger": [
+    150,
+    78
+   ],
+   "payment-events": [
+    138,
+    78
+   ],
+   "retry-queue": [
+    126,
+    78
+   ],
+   "reconciliation-job": [
+    169,
+    78
+   ],
+   "settlement-bank": [
+    146,
+    78
+   ],
+   "kms": [
+    126,
+    78
+   ]
+  }
+ },
+ "designs/reference/payment-system/design.broken.yaml": {
+  "structural": [],
+  "rules": [
+   {
+    "id": "credentials-without-rotation",
+    "severity": "warning",
+    "message": "Design 'payment-system' holds data but declares no credential rotation period and has no key-management node."
+   },
+   {
+    "id": "exactly-once-with-external-side-effects",
+    "severity": "warning",
+    "message": "Edge 'payment-service' -> 'payment-executor' claims exactly-once delivery, but 'payment-executor' calls a third party synchronously. Exactly-once cannot cover that side effect; make the external call idempotent instead."
+   },
+   {
+    "id": "money-mutation-without-idempotency-key",
+    "severity": "error",
+    "message": "Edge 'payment-executor' -> 'psp' moves money but does not declare idempotent, while the design requires exactly-once effect. Add an idempotency key to this hop."
+   },
+   {
+    "id": "money-store-without-double-entry-ledger",
+    "severity": "error",
+    "message": "Design 'payment-system' requires zero-sum money movement but has no ledger node. Record money in an append-only double-entry ledger."
+   },
+   {
+    "id": "queue-missing-dlq",
+    "severity": "error",
+    "message": "Queue 'retry-queue' receives async traffic but has no dead-letter queue."
+   },
+   {
+    "id": "retry-queue-without-dlq",
+    "severity": "error",
+    "message": "Retry queue 'retry-queue' has no dead-letter queue. Messages that keep failing must be parked for manual investigation."
+   },
+   {
+    "id": "retry-without-backoff",
+    "severity": "warning",
+    "message": "Retry queue 'retry-queue' declares no backoff. Retries without backoff amplify the outage they are retrying through."
+   },
+   {
+    "id": "webhook-without-signature-or-idempotency",
+    "severity": "error",
+    "message": "Webhook 'psp-webhook' does not verify signatures or is not idempotent. Verify the caller's signature and deduplicate by event id."
+   }
+  ],
+  "positions": {
+   "checkout-client": [
+    498,
+    46
+   ],
+   "api": [
+    60,
+    538
+   ],
+   "payment-service": [
+    776,
+    538
+   ],
+   "payments-db": [
+    956,
+    538
+   ],
+   "payment-executor": [
+    220,
+    538
+   ],
+   "psp": [
+    508,
+    374
+   ],
+   "psp-webhook": [
+    408,
+    538
+   ],
+   "wallet-db": [
+    262,
+    702
+   ],
+   "ledger-db": [
+    422,
+    702
+   ],
+   "payment-events": [
+    582,
+    702
+   ],
+   "retry-queue": [
+    754,
+    702
+   ],
+   "reconciliation-job": [
+    573,
+    538
+   ],
+   "settlement-bank": [
+    498,
+    210
+   ]
+  },
+  "sizes": {
+   "checkout-client": [
+    146,
+    78
+   ],
+   "api": [
+    126,
+    78
+   ],
+   "payment-service": [
+    146,
+    78
+   ],
+   "payments-db": [
+    126,
+    78
+   ],
+   "payment-executor": [
+    154,
+    78
+   ],
+   "psp": [
+    126,
+    78
+   ],
+   "psp-webhook": [
+    131,
+    78
+   ],
+   "wallet-db": [
+    126,
+    78
+   ],
+   "ledger-db": [
+    126,
+    78
+   ],
+   "payment-events": [
+    138,
+    78
+   ],
+   "retry-queue": [
+    126,
+    78
+   ],
+   "reconciliation-job": [
+    169,
+    78
+   ],
+   "settlement-bank": [
+    146,
+    78
+   ]
+  }
+ },
+ "designs/reference/slack-messaging/design.yaml": {
+  "structural": [],
+  "rules": [],
+  "positions": {
+   "slack-client": [
+    60,
+    210
+   ],
+   "edge-envoy": [
+    220,
+    210
+   ],
+   "gateway-server-a": [
+    540,
+    210
+   ],
+   "channel-server-a": [
+    728,
+    210
+   ],
+   "admin-server-a": [
+    916,
+    210
+   ],
+   "channel-server-b": [
+    652,
+    46
+   ],
+   "admin-server-b": [
+    480,
+    46
+   ],
+   "webapp": [
+    1088,
+    210
+   ],
+   "consul": [
+    94,
+    374
+   ],
+   "ring-manager": [
+    380,
+    210
+   ],
+   "messages-db": [
+    254,
+    374
+   ],
+   "object-cache": [
+    414,
+    374
+   ],
+   "job-log": [
+    574,
+    374
+   ],
+   "jq-relay": [
+    734,
+    374
+   ],
+   "jobs-redis": [
+    900,
+    374
+   ],
+   "job-workers": [
+    1060,
+    374
+   ]
+  },
+  "sizes": {
+   "slack-client": [
+    126,
+    78
+   ],
+   "edge-envoy": [
+    126,
+    78
+   ],
+   "gateway-server-a": [
+    154,
+    78
+   ],
+   "channel-server-a": [
+    154,
+    78
+   ],
+   "admin-server-a": [
+    138,
+    78
+   ],
+   "channel-server-b": [
+    154,
+    78
+   ],
+   "admin-server-b": [
+    138,
+    78
+   ],
+   "webapp": [
+    137,
+    78
+   ],
+   "consul": [
+    126,
+    78
+   ],
+   "ring-manager": [
+    126,
+    78
+   ],
+   "messages-db": [
+    126,
+    78
+   ],
+   "object-cache": [
+    126,
+    78
+   ],
+   "job-log": [
+    126,
+    78
+   ],
+   "jq-relay": [
+    131,
+    78
+   ],
+   "jobs-redis": [
+    126,
+    78
+   ],
+   "job-workers": [
+    131,
+    78
+   ]
+  }
+ },
+ "designs/reference/slack-messaging/design.broken.yaml": {
+  "structural": [],
+  "rules": [
+   {
+    "id": "cross-cell-call",
+    "severity": "error",
+    "message": "Synchronous edge 'admin-server-a' -> 'channel-server-b' crosses a cell boundary while the design requires cell isolation."
+   },
+   {
+    "id": "reconnect-stampede-without-guard",
+    "severity": "error",
+    "message": "Realtime gateway 'gateway-server-a' calls a coordination service synchronously on connect but has no reconnect stampede guard."
+   },
+   {
+    "id": "shared-host-per-channel-without-isolation",
+    "severity": "error",
+    "message": "Realtime gateway 'gateway-server-a' assigns channels randomly while the design declares heavy-tail traffic. Hot channels will degrade unrelated tenants on the same host."
+   },
+   {
+    "id": "shared-worker-pool-across-queues",
+    "severity": "warning",
+    "message": "Worker 'job-workers' consumes more than one queue while the design requires per-queue isolation. Give each queue its own worker pool."
+   },
+   {
+    "id": "stateful-hash-ring-without-ring-manager",
+    "severity": "warning",
+    "message": "Service 'channel-server-a' is on a consistent hash ring but is not connected to a coordination service that manages the ring."
+   },
+   {
+    "id": "stateful-hash-ring-without-ring-manager",
+    "severity": "warning",
+    "message": "Service 'channel-server-b' is on a consistent hash ring but is not connected to a coordination service that manages the ring."
+   },
+   {
+    "id": "stateful-websocket-scale-in-without-drain",
+    "severity": "warning",
+    "message": "Realtime gateway 'gateway-server-a' autoscales but does not drain connections on scale-in. Every scale-down becomes a reconnect storm."
+   }
+  ],
+  "positions": {
+   "slack-client": [
+    580,
+    210
+   ],
+   "edge-envoy": [
+    60,
+    374
+   ],
+   "gateway-server-a": [
+    220,
+    374
+   ],
+   "channel-server-a": [
+    580,
+    374
+   ],
+   "admin-server-a": [
+    408,
+    374
+   ],
+   "channel-server-b": [
+    566,
+    46
+   ],
+   "webapp": [
+    768,
+    374
+   ],
+   "consul": [
+    939,
+    374
+   ],
+   "messages-db": [
+    1099,
+    374
+   ],
+   "object-cache": [
+    158,
+    538
+   ],
+   "job-log": [
+    318,
+    538
+   ],
+   "jq-relay": [
+    478,
+    538
+   ],
+   "jobs-redis-high": [
+    644,
+    538
+   ],
+   "jobs-redis-low": [
+    824,
+    538
+   ],
+   "job-workers": [
+    996,
+    538
+   ]
+  },
+  "sizes": {
+   "slack-client": [
+    126,
+    78
+   ],
+   "edge-envoy": [
+    126,
+    78
+   ],
+   "gateway-server-a": [
+    154,
+    78
+   ],
+   "channel-server-a": [
+    154,
+    78
+   ],
+   "admin-server-a": [
+    138,
+    78
+   ],
+   "channel-server-b": [
+    154,
+    78
+   ],
+   "webapp": [
+    137,
+    78
+   ],
+   "consul": [
+    126,
+    78
+   ],
+   "messages-db": [
+    126,
+    78
+   ],
+   "object-cache": [
+    126,
+    78
+   ],
+   "job-log": [
+    126,
+    78
+   ],
+   "jq-relay": [
+    131,
+    78
+   ],
+   "jobs-redis-high": [
+    146,
+    78
+   ],
+   "jobs-redis-low": [
+    138,
+    78
+   ],
+   "job-workers": [
+    131,
+    78
+   ]
+  }
+ },
+ "designs/reference/twitter-timeline/design.yaml": {
+  "structural": [],
+  "rules": [],
+  "positions": {
+   "web-client": [
+    568,
+    46
+   ],
+   "tfe": [
+    482,
+    210
+   ],
+   "write-api": [
+    60,
+    374
+   ],
+   "timeline-service": [
+    231,
+    374
+   ],
+   "search-service": [
+    419,
+    374
+   ],
+   "tweet-store": [
+    751,
+    374
+   ],
+   "tweet-cdc": [
+    911,
+    374
+   ],
+   "tweet-events": [
+    591,
+    374
+   ],
+   "fanout-daemon": [
+    1071,
+    374
+   ],
+   "social-graph": [
+    220,
+    538
+   ],
+   "home-timeline-cache": [
+    380,
+    538
+   ],
+   "tweet-cache": [
+    590,
+    538
+   ],
+   "ingester": [
+    750,
+    538
+   ],
+   "search-index": [
+    916,
+    538
+   ],
+   "firehose": [
+    642,
+    210
+   ]
+  },
+  "sizes": {
+   "web-client": [
+    126,
+    78
+   ],
+   "tfe": [
+    126,
+    78
+   ],
+   "write-api": [
+    137,
+    78
+   ],
+   "timeline-service": [
+    154,
+    78
+   ],
+   "search-service": [
+    138,
+    78
+   ],
+   "tweet-store": [
+    126,
+    78
+   ],
+   "tweet-cdc": [
+    126,
+    78
+   ],
+   "tweet-events": [
+    126,
+    78
+   ],
+   "fanout-daemon": [
+    131,
+    78
+   ],
+   "social-graph": [
+    126,
+    78
+   ],
+   "home-timeline-cache": [
+    176,
+    78
+   ],
+   "tweet-cache": [
+    126,
+    78
+   ],
+   "ingester": [
+    131,
+    78
+   ],
+   "search-index": [
+    126,
+    78
+   ],
+   "firehose": [
+    137,
+    78
+   ]
+  }
+ },
+ "designs/reference/twitter-timeline/design.broken.yaml": {
+  "structural": [],
+  "rules": [
+   {
+    "id": "business-updates-without-index-propagation",
+    "severity": "warning",
+    "message": "Database 'tweet-store' is written by application servers and the design has a search index, but no change-data-capture propagates its updates. Index writes rely on dual writes."
+   },
+   {
+    "id": "cache-as-primary-store-without-persistence",
+    "severity": "error",
+    "message": "Cache 'home-timeline-cache' is the primary store for its data but has persistence disabled."
+   },
+   {
+    "id": "derived-store-without-cdc-or-rebuild",
+    "severity": "error",
+    "message": "Search index 'search-index' has no asynchronous feed from a stream, change data capture or worker. It cannot be rebuilt or kept in sync independently of the write path."
+   },
+   {
+    "id": "fanout-inline-in-request-path",
+    "severity": "warning",
+    "message": "Service 'write-api' calls a worker synchronously. Hand the job to a queue or stream so the request path does not wait for fan-out."
+   },
+   {
+    "id": "materialised-cache-without-rebuild-path",
+    "severity": "error",
+    "message": "Cache 'home-timeline-cache' holds materialised data but nothing durable or no worker feeds it. It cannot be rebuilt after loss."
+   },
+   {
+    "id": "push-fanout-without-celebrity-path",
+    "severity": "warning",
+    "message": "Worker 'fanout-daemon' pushes fan-out over a social graph with no fanoutThreshold. Declare a follower threshold above which timelines are merged at read time."
+   }
+  ],
+  "positions": {
+   "web-client": [
+    513,
+    46
+   ],
+   "tfe": [
+    598,
+    210
+   ],
+   "write-api": [
+    60,
+    374
+   ],
+   "timeline-service": [
+    231,
+    374
+   ],
+   "search-service": [
+    419,
+    374
+   ],
+   "fanout-daemon": [
+    591,
+    374
+   ],
+   "social-graph": [
+    756,
+    374
+   ],
+   "home-timeline-cache": [
+    916,
+    374
+   ],
+   "tweet-cache": [
+    353,
+    538
+   ],
+   "tweet-store": [
+    513,
+    538
+   ],
+   "search-index": [
+    673,
+    538
+   ],
+   "firehose": [
+    428,
+    210
+   ]
+  },
+  "sizes": {
+   "web-client": [
+    126,
+    78
+   ],
+   "tfe": [
+    126,
+    78
+   ],
+   "write-api": [
+    137,
+    78
+   ],
+   "timeline-service": [
+    154,
+    78
+   ],
+   "search-service": [
+    138,
+    78
+   ],
+   "fanout-daemon": [
+    131,
+    78
+   ],
+   "social-graph": [
+    126,
+    78
+   ],
+   "home-timeline-cache": [
+    176,
+    78
+   ],
+   "tweet-cache": [
+    126,
+    78
+   ],
+   "tweet-store": [
+    126,
+    78
+   ],
+   "search-index": [
+    126,
+    78
+   ],
+   "firehose": [
+    137,
+    78
+   ]
+  }
+ },
+ "designs/imported/chat-system/design.yaml": {
+  "structural": [],
+  "rules": [
+   {
+    "id": "credentials-without-rotation",
+    "severity": "warning",
+    "message": "Design 'chat-system' holds data but declares no credential rotation period and has no key-management node."
+   }
+  ],
+  "positions": {
+   "user": [
+    268,
+    46
+   ],
+   "load-balancer": [
+    260,
+    210
+   ],
+   "chat-servers": [
+    278,
+    538
+   ],
+   "presence-servers": [
+    449,
+    538
+   ],
+   "notification-servers": [
+    60,
+    538
+   ],
+   "api-servers": [
+    263,
+    374
+   ],
+   "kv-store": [
+    108,
+    702
+   ],
+   "kv-store-2": [
+    268,
+    702
+   ],
+   "kv-store-3": [
+    428,
+    702
+   ]
+  },
+  "sizes": {
+   "user": [
+    126,
+    78
+   ],
+   "load-balancer": [
+    144,
+    78
+   ],
+   "chat-servers": [
+    137,
+    78
+   ],
+   "presence-servers": [
+    154,
+    78
+   ],
+   "notification-servers": [
+    184,
+    78
+   ],
+   "api-servers": [
+    137,
+    78
+   ],
+   "kv-store": [
+    126,
+    78
+   ],
+   "kv-store-2": [
+    126,
+    78
+   ],
+   "kv-store-3": [
+    126,
+    78
+   ]
+  }
+ },
+ "designs/imported/google-drive/design.yaml": {
+  "structural": [],
+  "rules": [
+   {
+    "id": "cache-missing-eviction-policy",
+    "severity": "warning",
+    "message": "Cache 'metadata-cache' has no eviction policy. Declare lru, lfu or ttl, or justify none explicitly."
+   },
+   {
+    "id": "credentials-without-rotation",
+    "severity": "warning",
+    "message": "Design 'google-drive' holds data but declares no credential rotation period and has no key-management node."
+   },
+   {
+    "id": "datastore-missing-backup",
+    "severity": "error",
+    "message": "Datastore 'metadata-db' has no backup or no retention policy declared."
+   },
+   {
+    "id": "queue-missing-dlq",
+    "severity": "error",
+    "message": "Queue 'offline-backup-queue' receives async traffic but has no dead-letter queue."
+   }
+  ],
+  "positions": {
+   "user": [
+    267,
+    46
+   ],
+   "block-servers": [
+    262,
+    210
+   ],
+   "cloud-storage": [
+    264,
+    374
+   ],
+   "cold-storage": [
+    178,
+    538
+   ],
+   "load-balancer": [
+    338,
+    538
+   ],
+   "api-servers": [
+    262,
+    702
+   ],
+   "metadata-cache": [
+    60,
+    866
+   ],
+   "metadata-db": [
+    232,
+    866
+   ],
+   "notification-service": [
+    416,
+    866
+   ],
+   "offline-backup-queue": [
+    238,
+    1030
+   ]
+  },
+  "sizes": {
+   "user": [
+    126,
+    78
+   ],
+   "block-servers": [
+    137,
+    78
+   ],
+   "cloud-storage": [
+    131,
+    78
+   ],
+   "cold-storage": [
+    126,
+    78
+   ],
+   "load-balancer": [
+    144,
+    78
+   ],
+   "api-servers": [
+    137,
+    78
+   ],
+   "metadata-cache": [
+    138,
+    78
+   ],
+   "metadata-db": [
+    150,
+    78
+   ],
+   "notification-service": [
+    184,
+    78
+   ],
+   "offline-backup-queue": [
+    184,
+    78
+   ]
+  }
+ },
+ "designs/imported/key-value-store/design.yaml": {
+  "structural": [],
+  "rules": [
+   {
+    "id": "credentials-without-rotation",
+    "severity": "warning",
+    "message": "Design 'key-value-store' holds data but declares no credential rotation period and has no key-management node."
+   }
+  ],
+  "positions": {
+   "client": [
+    540,
+    46
+   ],
+   "n6": [
+    60,
+    210
+   ],
+   "n0": [
+    220,
+    210
+   ],
+   "n1": [
+    380,
+    210
+   ],
+   "n2": [
+    540,
+    210
+   ],
+   "n3": [
+    700,
+    210
+   ],
+   "n4": [
+    860,
+    210
+   ],
+   "n5": [
+    1020,
+    210
+   ],
+   "n7": [
+    540,
+    374
+   ]
+  },
+  "sizes": {
+   "client": [
+    126,
+    78
+   ],
+   "n6": [
+    126,
+    78
+   ],
+   "n0": [
+    126,
+    78
+   ],
+   "n1": [
+    126,
+    78
+   ],
+   "n2": [
+    126,
+    78
+   ],
+   "n3": [
+    126,
+    78
+   ],
+   "n4": [
+    126,
+    78
+   ],
+   "n5": [
+    126,
+    78
+   ],
+   "n7": [
+    126,
+    78
+   ]
+  }
+ },
+ "designs/imported/news-feed/design.yaml": {
+  "structural": [],
+  "rules": [
+   {
+    "id": "cache-missing-eviction-policy",
+    "severity": "warning",
+    "message": "Cache 'news-feed-cache' has no eviction policy. Declare lru, lfu or ttl, or justify none explicitly."
+   },
+   {
+    "id": "cache-missing-eviction-policy",
+    "severity": "warning",
+    "message": "Cache 'post-cache' has no eviction policy. Declare lru, lfu or ttl, or justify none explicitly."
+   },
+   {
+    "id": "cache-missing-eviction-policy",
+    "severity": "warning",
+    "message": "Cache 'user-cache' has no eviction policy. Declare lru, lfu or ttl, or justify none explicitly."
+   },
+   {
+    "id": "credentials-without-rotation",
+    "severity": "warning",
+    "message": "Design 'news-feed' holds data but declares no credential rotation period and has no key-management node."
+   },
+   {
+    "id": "datastore-missing-backup",
+    "severity": "error",
+    "message": "Datastore 'post-db' has no backup or no retention policy declared."
+   },
+   {
+    "id": "datastore-missing-backup",
+    "severity": "error",
+    "message": "Datastore 'user-db' has no backup or no retention policy declared."
+   },
+   {
+    "id": "queue-missing-dlq",
+    "severity": "error",
+    "message": "Queue 'message-queue' receives async traffic but has no dead-letter queue."
+   }
+  ],
+  "positions": {
+   "web-browser": [
+    134,
+    46
+   ],
+   "mobile-app": [
+    294,
+    46
+   ],
+   "dns": [
+    454,
+    46
+   ],
+   "cdn": [
+    614,
+    46
+   ],
+   "load-balancer": [
+    830,
+    46
+   ],
+   "web-servers": [
+    1008,
+    46
+   ],
+   "authentication": [
+    115,
+    210
+   ],
+   "rate-limiting": [
+    287,
+    210
+   ],
+   "post-service": [
+    465,
+    210
+   ],
+   "post-cache": [
+    636,
+    210
+   ],
+   "post-db": [
+    796,
+    210
+   ],
+   "notification-service": [
+    980,
+    210
+   ],
+   "fanout-service": [
+    60,
+    374
+   ],
+   "graph-db": [
+    232,
+    374
+   ],
+   "message-queue": [
+    392,
+    374
+   ],
+   "user-cache": [
+    557,
+    374
+   ],
+   "user-db": [
+    717,
+    374
+   ],
+   "fanout-workers": [
+    901,
+    374
+   ],
+   "news-feed-cache": [
+    1073,
+    374
+   ],
+   "news-feed-service": [
+    559,
+    538
+   ]
+  },
+  "sizes": {
+   "web-browser": [
+    126,
+    78
+   ],
+   "mobile-app": [
+    126,
+    78
+   ],
+   "dns": [
+    126,
+    78
+   ],
+   "cdn": [
+    181,
+    78
+   ],
+   "load-balancer": [
+    144,
+    78
+   ],
+   "web-servers": [
+    137,
+    78
+   ],
+   "authentication": [
+    138,
+    78
+   ],
+   "rate-limiting": [
+    144,
+    78
+   ],
+   "post-service": [
+    137,
+    78
+   ],
+   "post-cache": [
+    126,
+    78
+   ],
+   "post-db": [
+    150,
+    78
+   ],
+   "notification-service": [
+    184,
+    78
+   ],
+   "fanout-service": [
+    138,
+    78
+   ],
+   "graph-db": [
+    126,
+    78
+   ],
+   "message-queue": [
+    131,
+    78
+   ],
+   "user-cache": [
+    126,
+    78
+   ],
+   "user-db": [
+    150,
+    78
+   ],
+   "fanout-workers": [
+    138,
+    78
+   ],
+   "news-feed-cache": [
+    146,
+    78
+   ],
+   "news-feed-service": [
+    161,
+    78
+   ]
+  }
+ },
+ "designs/imported/notification-system/design.yaml": {
+  "structural": [],
+  "rules": [
+   {
+    "id": "cache-missing-eviction-policy",
+    "severity": "warning",
+    "message": "Cache 'cache' has no eviction policy. Declare lru, lfu or ttl, or justify none explicitly."
+   },
+   {
+    "id": "credentials-without-rotation",
+    "severity": "warning",
+    "message": "Design 'notification-system' holds data but declares no credential rotation period and has no key-management node."
+   },
+   {
+    "id": "datastore-missing-backup",
+    "severity": "error",
+    "message": "Datastore 'db' has no backup or no retention policy declared."
+   },
+   {
+    "id": "datastore-missing-backup",
+    "severity": "error",
+    "message": "Datastore 'notification-log' has no backup or no retention policy declared."
+   },
+   {
+    "id": "datastore-missing-backup",
+    "severity": "error",
+    "message": "Datastore 'notification-template' has no backup or no retention policy declared."
+   },
+   {
+    "id": "queue-missing-dlq",
+    "severity": "error",
+    "message": "Queue 'android-pn' receives async traffic but has no dead-letter queue."
+   },
+   {
+    "id": "queue-missing-dlq",
+    "severity": "error",
+    "message": "Queue 'email-queue' receives async traffic but has no dead-letter queue."
+   },
+   {
+    "id": "queue-missing-dlq",
+    "severity": "error",
+    "message": "Queue 'ios-pn' receives async traffic but has no dead-letter queue."
+   },
+   {
+    "id": "queue-missing-dlq",
+    "severity": "error",
+    "message": "Queue 'sms-queue' receives async traffic but has no dead-letter queue."
+   }
+  ],
+  "positions": {
+   "service-1": [
+    333,
+    46
+   ],
+   "service-2": [
+    504,
+    46
+   ],
+   "service-n": [
+    675,
+    46
+   ],
+   "notification-servers": [
+    478,
+    210
+   ],
+   "authentication": [
+    306,
+    210
+   ],
+   "rate-limit": [
+    696,
+    210
+   ],
+   "analytics-service": [
+    492,
+    1030
+   ],
+   "cache": [
+    190,
+    374
+   ],
+   "db": [
+    168,
+    538
+   ],
+   "ios-pn": [
+    510,
+    374
+   ],
+   "android-pn": [
+    350,
+    374
+   ],
+   "sms-queue": [
+    670,
+    374
+   ],
+   "email-queue": [
+    830,
+    374
+   ],
+   "ios-workers": [
+    516,
+    538
+   ],
+   "android-workers": [
+    352,
+    538
+   ],
+   "sms-workers": [
+    682,
+    538
+   ],
+   "email-workers": [
+    846,
+    538
+   ],
+   "apns": [
+    60,
+    702
+   ],
+   "fcm": [
+    220,
+    702
+   ],
+   "sms-service": [
+    380,
+    702
+   ],
+   "email-service": [
+    540,
+    702
+   ],
+   "ios": [
+    270,
+    866
+   ],
+   "android": [
+    430,
+    866
+   ],
+   "sms": [
+    590,
+    866
+   ],
+   "email": [
+    750,
+    866
+   ],
+   "notification-template": [
+    705,
+    702
+   ],
+   "notification-log": [
+    931,
+    702
+   ]
+  },
+  "sizes": {
+   "service-1": [
+    137,
+    78
+   ],
+   "service-2": [
+    137,
+    78
+   ],
+   "service-n": [
+    137,
+    78
+   ],
+   "notification-servers": [
+    184,
+    78
+   ],
+   "authentication": [
+    138,
+    78
+   ],
+   "rate-limit": [
+    144,
+    78
+   ],
+   "analytics-service": [
+    161,
+    78
+   ],
+   "cache": [
+    126,
+    78
+   ],
+   "db": [
+    150,
+    78
+   ],
+   "ios-pn": [
+    126,
+    78
+   ],
+   "android-pn": [
+    126,
+    78
+   ],
+   "sms-queue": [
+    126,
+    78
+   ],
+   "email-queue": [
+    126,
+    78
+   ],
+   "ios-workers": [
+    131,
+    78
+   ],
+   "android-workers": [
+    131,
+    78
+   ],
+   "sms-workers": [
+    131,
+    78
+   ],
+   "email-workers": [
+    131,
+    78
+   ],
+   "apns": [
+    126,
+    78
+   ],
+   "fcm": [
+    126,
+    78
+   ],
+   "sms-service": [
+    126,
+    78
+   ],
+   "email-service": [
+    131,
+    78
+   ],
+   "ios": [
+    126,
+    78
+   ],
+   "android": [
+    126,
+    78
+   ],
+   "sms": [
+    126,
+    78
+   ],
+   "email": [
+    126,
+    78
+   ],
+   "notification-template": [
+    192,
+    78
+   ],
+   "notification-log": [
+    154,
+    78
+   ]
+  }
+ },
+ "designs/imported/notification-system-design/design.yaml": {
+  "structural": [],
+  "rules": [
+   {
+    "id": "cache-missing-eviction-policy",
+    "severity": "warning",
+    "message": "Cache 'cache' has no eviction policy. Declare lru, lfu or ttl, or justify none explicitly."
+   },
+   {
+    "id": "credentials-without-rotation",
+    "severity": "warning",
+    "message": "Design 'notification-system-design' holds data but declares no credential rotation period and has no key-management node."
+   },
+   {
+    "id": "datastore-missing-backup",
+    "severity": "error",
+    "message": "Datastore 'db' has no backup or no retention policy declared."
+   },
+   {
+    "id": "datastore-missing-backup",
+    "severity": "error",
+    "message": "Datastore 'notification-log' has no backup or no retention policy declared."
+   },
+   {
+    "id": "datastore-missing-backup",
+    "severity": "error",
+    "message": "Datastore 'notification-template' has no backup or no retention policy declared."
+   },
+   {
+    "id": "queue-missing-dlq",
+    "severity": "error",
+    "message": "Queue 'ios-pn' receives async traffic but has no dead-letter queue."
+   }
+  ],
+  "positions": {
+   "service-n": [
+    262,
+    46
+   ],
+   "notification-servers": [
+    63,
+    210
+   ],
+   "authentication": [
+    281,
+    210
+   ],
+   "rate-limit": [
+    453,
+    210
+   ],
+   "analytics-service": [
+    250,
+    1030
+   ],
+   "ios-pn": [
+    187,
+    374
+   ],
+   "workers": [
+    172,
+    538
+   ],
+   "apns": [
+    60,
+    702
+   ],
+   "ios": [
+    267,
+    866
+   ],
+   "cache": [
+    347,
+    374
+   ],
+   "db": [
+    338,
+    538
+   ],
+   "notification-template": [
+    220,
+    702
+   ],
+   "notification-log": [
+    446,
+    702
+   ]
+  },
+  "sizes": {
+   "service-n": [
+    137,
+    78
+   ],
+   "notification-servers": [
+    184,
+    78
+   ],
+   "authentication": [
+    138,
+    78
+   ],
+   "rate-limit": [
+    144,
+    78
+   ],
+   "analytics-service": [
+    161,
+    78
+   ],
+   "ios-pn": [
+    126,
+    78
+   ],
+   "workers": [
+    131,
+    78
+   ],
+   "apns": [
+    126,
+    78
+   ],
+   "ios": [
+    126,
+    78
+   ],
+   "cache": [
+    126,
+    78
+   ],
+   "db": [
+    150,
+    78
+   ],
+   "notification-template": [
+    192,
+    78
+   ],
+   "notification-log": [
+    154,
+    78
+   ]
+  }
+ },
+ "designs/imported/rate-limiter/design.yaml": {
+  "structural": [],
+  "rules": [
+   {
+    "id": "cache-missing-eviction-policy",
+    "severity": "warning",
+    "message": "Cache 'cached-rules' has no eviction policy. Declare lru, lfu or ttl, or justify none explicitly."
+   },
+   {
+    "id": "cache-missing-eviction-policy",
+    "severity": "warning",
+    "message": "Cache 'redis' has no eviction policy. Declare lru, lfu or ttl, or justify none explicitly."
+   },
+   {
+    "id": "credentials-without-rotation",
+    "severity": "warning",
+    "message": "Design 'rate-limiter' holds data but declares no credential rotation period and has no key-management node."
+   },
+   {
+    "id": "queue-missing-dlq",
+    "severity": "error",
+    "message": "Queue 'message-queue' receives async traffic but has no dead-letter queue."
+   }
+  ],
+  "positions": {
+   "client": [
+    390,
+    46
+   ],
+   "rate-limiter-middleware": [
+    348,
+    210
+   ],
+   "cached-rules": [
+    60,
+    374
+   ],
+   "rules": [
+    188,
+    210
+   ],
+   "workers": [
+    226,
+    46
+   ],
+   "api-servers": [
+    220,
+    374
+   ],
+   "redis": [
+    391,
+    374
+   ],
+   "message-queue": [
+    551,
+    374
+   ]
+  },
+  "sizes": {
+   "client": [
+    126,
+    78
+   ],
+   "rate-limiter-middleware": [
+    207,
+    78
+   ],
+   "cached-rules": [
+    126,
+    78
+   ],
+   "rules": [
+    126,
+    78
+   ],
+   "workers": [
+    131,
+    78
+   ],
+   "api-servers": [
+    137,
+    78
+   ],
+   "redis": [
+    126,
+    78
+   ],
+   "message-queue": [
+    131,
+    78
+   ]
+  }
+ },
+ "designs/imported/scale-to-millions/design.yaml": {
+  "structural": [],
+  "rules": [
+   {
+    "id": "cache-missing-eviction-policy",
+    "severity": "warning",
+    "message": "Cache 'caches' has no eviction policy. Declare lru, lfu or ttl, or justify none explicitly."
+   },
+   {
+    "id": "credentials-without-rotation",
+    "severity": "warning",
+    "message": "Design 'scale-to-millions' holds data but declares no credential rotation period and has no key-management node."
+   },
+   {
+    "id": "datastore-missing-backup",
+    "severity": "error",
+    "message": "Datastore 'databases' has no backup or no retention policy declared."
+   },
+   {
+    "id": "datastore-single-region",
+    "severity": "error",
+    "message": "Datastore 'databases' is single-region with no replication, but the design requires multi-region availability."
+   },
+   {
+    "id": "queue-missing-dlq",
+    "severity": "error",
+    "message": "Queue 'message-queue' receives async traffic but has no dead-letter queue."
+   }
+  ],
+  "positions": {
+   "dns": [
+    312,
+    210
+   ],
+   "web-browser": [
+    796,
+    46
+   ],
+   "mobile-app": [
+    956,
+    46
+   ],
+   "cdn": [
+    472,
+    210
+   ],
+   "load-balancer": [
+    686,
+    210
+   ],
+   "web-servers": [
+    166,
+    538
+   ],
+   "message-queue": [
+    336,
+    538
+   ],
+   "databases": [
+    502,
+    538
+   ],
+   "caches": [
+    686,
+    538
+   ],
+   "workers": [
+    846,
+    538
+   ],
+   "nosql": [
+    508,
+    374
+   ],
+   "logging": [
+    244,
+    46
+   ],
+   "metrics": [
+    428,
+    46
+   ],
+   "monitoring": [
+    60,
+    46
+   ],
+   "automation": [
+    612,
+    46
+   ]
+  },
+  "sizes": {
+   "dns": [
+    126,
+    78
+   ],
+   "web-browser": [
+    126,
+    78
+   ],
+   "mobile-app": [
+    126,
+    78
+   ],
+   "cdn": [
+    181,
+    78
+   ],
+   "load-balancer": [
+    144,
+    78
+   ],
+   "web-servers": [
+    137,
+    78
+   ],
+   "message-queue": [
+    131,
+    78
+   ],
+   "databases": [
+    150,
+    78
+   ],
+   "caches": [
+    126,
+    78
+   ],
+   "workers": [
+    131,
+    78
+   ],
+   "nosql": [
+    126,
+    78
+   ],
+   "logging": [
+    150,
+    78
+   ],
+   "metrics": [
+    150,
+    78
+   ],
+   "monitoring": [
+    150,
+    78
+   ],
+   "automation": [
+    150,
+    78
+   ]
+  }
+ },
+ "designs/imported/search-autocomplete/design.yaml": {
+  "structural": [],
+  "rules": [
+   {
+    "id": "cache-missing-eviction-policy",
+    "severity": "warning",
+    "message": "Cache 'trie-cache' has no eviction policy. Declare lru, lfu or ttl, or justify none explicitly."
+   },
+   {
+    "id": "credentials-without-rotation",
+    "severity": "warning",
+    "message": "Design 'search-autocomplete' holds data but declares no credential rotation period and has no key-management node."
+   },
+   {
+    "id": "datastore-missing-backup",
+    "severity": "error",
+    "message": "Datastore 'aggregated-data' has no backup or no retention policy declared."
+   }
+  ],
+  "positions": {
+   "web-browser": [
+    60,
+    46
+   ],
+   "mobile-app": [
+    220,
+    46
+   ],
+   "load-balancer": [
+    140,
+    210
+   ],
+   "api-servers": [
+    134,
+    374
+   ],
+   "trie-cache": [
+    150,
+    538
+   ],
+   "trie-db": [
+    232,
+    702
+   ],
+   "analytics-logs": [
+    380,
+    46
+   ],
+   "aggregators": [
+    318,
+    210
+   ],
+   "aggregated-data": [
+    306,
+    374
+   ],
+   "workers": [
+    310,
+    538
+   ]
+  },
+  "sizes": {
+   "web-browser": [
+    126,
+    78
+   ],
+   "mobile-app": [
+    126,
+    78
+   ],
+   "load-balancer": [
+    144,
+    78
+   ],
+   "api-servers": [
+    137,
+    78
+   ],
+   "trie-cache": [
+    126,
+    78
+   ],
+   "trie-db": [
+    126,
+    78
+   ],
+   "analytics-logs": [
+    150,
+    78
+   ],
+   "aggregators": [
+    131,
+    78
+   ],
+   "aggregated-data": [
+    150,
+    78
+   ],
+   "workers": [
+    131,
+    78
+   ]
+  }
+ },
+ "designs/imported/url-shortener/design.yaml": {
+  "structural": [],
+  "rules": [
+   {
+    "id": "cache-missing-eviction-policy",
+    "severity": "warning",
+    "message": "Cache 'cache' has no eviction policy. Declare lru, lfu or ttl, or justify none explicitly."
+   },
+   {
+    "id": "credentials-without-rotation",
+    "severity": "warning",
+    "message": "Design 'url-shortener' holds data but declares no credential rotation period and has no key-management node."
+   },
+   {
+    "id": "datastore-missing-backup",
+    "severity": "error",
+    "message": "Datastore 'database' has no backup or no retention policy declared."
+   }
+  ],
+  "positions": {
+   "user": [
+    152,
+    46
+   ],
+   "load-balancer": [
+    143,
+    210
+   ],
+   "web-servers": [
+    146,
+    374
+   ],
+   "cache": [
+    60,
+    538
+   ],
+   "database": [
+    220,
+    538
+   ]
+  },
+  "sizes": {
+   "user": [
+    126,
+    78
+   ],
+   "load-balancer": [
+    144,
+    78
+   ],
+   "web-servers": [
+    137,
+    78
+   ],
+   "cache": [
+    126,
+    78
+   ],
+   "database": [
+    150,
+    78
+   ]
+  }
+ },
+ "designs/imported/web-crawler/design.yaml": {
+  "structural": [],
+  "rules": [
+   {
+    "id": "credentials-without-rotation",
+    "severity": "warning",
+    "message": "Design 'web-crawler' holds data but declares no credential rotation period and has no key-management node."
+   },
+   {
+    "id": "queue-missing-dlq",
+    "severity": "error",
+    "message": "Queue 'url-frontier' receives async traffic but has no dead-letter queue."
+   }
+  ],
+  "positions": {
+   "seed-urls": [
+    578,
+    46
+   ],
+   "url-frontier": [
+    60,
+    210
+   ],
+   "html-downloader": [
+    220,
+    210
+   ],
+   "dns-resolver": [
+    400,
+    210
+   ],
+   "content-parser": [
+    560,
+    210
+   ],
+   "content-seen": [
+    732,
+    210
+   ],
+   "content-storage": [
+    903,
+    210
+   ],
+   "link-extractor": [
+    1083,
+    210
+   ],
+   "url-filter": [
+    406,
+    374
+   ],
+   "url-seen": [
+    578,
+    374
+   ],
+   "url-storage": [
+    748,
+    374
+   ]
+  },
+  "sizes": {
+   "seed-urls": [
+    126,
+    78
+   ],
+   "url-frontier": [
+    126,
+    78
+   ],
+   "html-downloader": [
+    146,
+    78
+   ],
+   "dns-resolver": [
+    126,
+    78
+   ],
+   "content-parser": [
+    138,
+    78
+   ],
+   "content-seen": [
+    137,
+    78
+   ],
+   "content-storage": [
+    146,
+    78
+   ],
+   "link-extractor": [
+    138,
+    78
+   ],
+   "url-filter": [
+    137,
+    78
+   ],
+   "url-seen": [
+    137,
+    78
+   ],
+   "url-storage": [
+    126,
+    78
+   ]
+  }
+ },
+ "designs/imported/youtube/design.yaml": {
+  "structural": [],
+  "rules": [
+   {
+    "id": "cache-missing-eviction-policy",
+    "severity": "warning",
+    "message": "Cache 'metadata-cache' has no eviction policy. Declare lru, lfu or ttl, or justify none explicitly."
+   },
+   {
+    "id": "credentials-without-rotation",
+    "severity": "warning",
+    "message": "Design 'youtube' holds data but declares no credential rotation period and has no key-management node."
+   },
+   {
+    "id": "datastore-missing-backup",
+    "severity": "error",
+    "message": "Datastore 'metadata-db' has no backup or no retention policy declared."
+   },
+   {
+    "id": "fanout-inline-in-request-path",
+    "severity": "warning",
+    "message": "Service 'resource-manager' calls a worker synchronously. Hand the job to a queue or stream so the request path does not wait for fan-out."
+   },
+   {
+    "id": "queue-missing-dlq",
+    "severity": "error",
+    "message": "Queue 'completion-queue' receives async traffic but has no dead-letter queue."
+   }
+  ],
+  "positions": {
+   "user": [
+    171,
+    374
+   ],
+   "load-balancer": [
+    170,
+    210
+   ],
+   "api-servers": [
+    174,
+    46
+   ],
+   "metadata-cache": [
+    167,
+    1194
+   ],
+   "metadata-db": [
+    339,
+    1194
+   ],
+   "original-storage": [
+    168,
+    538
+   ],
+   "transcoding-servers": [
+    60,
+    702
+   ],
+   "transcoded-storage": [
+    150,
+    866
+   ],
+   "cdn": [
+    136,
+    1030
+   ],
+   "completion-queue": [
+    352,
+    866
+   ],
+   "completion-handler": [
+    351,
+    1030
+   ],
+   "preprocessor": [
+    345,
+    46
+   ],
+   "dag-scheduler": [
+    348,
+    210
+   ],
+   "resource-manager": [
+    331,
+    374
+   ],
+   "task-workers": [
+    356,
+    538
+   ],
+   "temporary-storage": [
+    270,
+    702
+   ],
+   "encoded-video": [
+    465,
+    702
+   ]
+  },
+  "sizes": {
+   "user": [
+    126,
+    78
+   ],
+   "load-balancer": [
+    144,
+    78
+   ],
+   "api-servers": [
+    137,
+    78
+   ],
+   "metadata-cache": [
+    138,
+    78
+   ],
+   "metadata-db": [
+    150,
+    78
+   ],
+   "original-storage": [
+    154,
+    78
+   ],
+   "transcoding-servers": [
+    176,
+    78
+   ],
+   "transcoded-storage": [
+    169,
+    78
+   ],
+   "cdn": [
+    181,
+    78
+   ],
+   "completion-queue": [
+    154,
+    78
+   ],
+   "completion-handler": [
+    169,
+    78
+   ],
+   "preprocessor": [
+    137,
+    78
+   ],
+   "dag-scheduler": [
+    137,
+    78
+   ],
+   "resource-manager": [
+    154,
+    78
+   ],
+   "task-workers": [
+    131,
+    78
+   ],
+   "temporary-storage": [
+    161,
+    78
+   ],
+   "encoded-video": [
+    131,
+    78
+   ]
+  }
+ },
+ "designs/authored/chat-system-fy71a1u1/design.yaml": {
+  "structural": [],
+  "rules": [
+   {
+    "id": "credentials-without-rotation",
+    "severity": "warning",
+    "message": "Design 'chat-system-fy71a1u1' holds data but declares no credential rotation period and has no key-management node."
+   }
+  ],
+  "positions": {
+   "user": [
+    268,
+    46
+   ],
+   "load-balancer": [
+    260,
+    210
+   ],
+   "chat-servers": [
+    278,
+    538
+   ],
+   "presence-servers": [
+    449,
+    538
+   ],
+   "notification-servers": [
+    60,
+    538
+   ],
+   "api-servers": [
+    263,
+    374
+   ],
+   "kv-store": [
+    108,
+    702
+   ],
+   "kv-store-2": [
+    268,
+    702
+   ],
+   "kv-store-3": [
+    428,
+    702
+   ]
+  },
+  "sizes": {
+   "user": [
+    126,
+    78
+   ],
+   "load-balancer": [
+    144,
+    78
+   ],
+   "chat-servers": [
+    137,
+    78
+   ],
+   "presence-servers": [
+    154,
+    78
+   ],
+   "notification-servers": [
+    184,
+    78
+   ],
+   "api-servers": [
+    137,
+    78
+   ],
+   "kv-store": [
+    126,
+    78
+   ],
+   "kv-store-2": [
+    126,
+    78
+   ],
+   "kv-store-3": [
+    126,
+    78
+   ]
+  }
+ },
+ "designs/authored/flowsaga/design.yaml": {
+  "structural": [],
+  "rules": [
+   {
+    "id": "retry-without-adaptive-shedding",
+    "severity": "error",
+    "message": "Edge 'abc' -> 'azure-functions-6' retries without a circuit breaker, and 'azure-functions-6' has no rate limiter in front of it. Retry storms will cascade."
+   },
+   {
+    "id": "retry-without-adaptive-shedding",
+    "severity": "error",
+    "message": "Edge 'sdk-client-2' -> 'azure-functions' retries without a circuit breaker, and 'azure-functions' has no rate limiter in front of it. Retry storms will cascade."
+   }
+  ],
+  "positions": {
+   "abc": [
+    60,
+    46
+   ],
+   "azure-functions-6": [
+    410,
+    210
+   ],
+   "sdk-client-2": [
+    606,
+    210
+   ],
+   "azure-functions": [
+    498,
+    374
+   ],
+   "sdk-client": [
+    220,
+    46
+   ],
+   "sdk-client-3": [
+    380,
+    46
+   ],
+   "gatling": [
+    540,
+    46
+   ],
+   "aws-bedrock": [
+    700,
+    46
+   ],
+   "azure-aks-edge-essentials": [
+    860,
+    46
+   ]
+  },
+  "sizes": {
+   "abc": [
+    126,
+    78
+   ],
+   "azure-functions-6": [
+    161,
+    78
+   ],
+   "sdk-client-2": [
+    126,
+    78
+   ],
+   "azure-functions": [
+    146,
+    78
+   ],
+   "sdk-client": [
+    126,
+    78
+   ],
+   "sdk-client-3": [
+    126,
+    78
+   ],
+   "gatling": [
+    126,
+    78
+   ],
+   "aws-bedrock": [
+    126,
+    78
+   ],
+   "azure-aks-edge-essentials": [
+    222,
+    78
+   ]
+  }
+ }
+}

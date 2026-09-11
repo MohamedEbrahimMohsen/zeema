@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Chime SDK: real-time audio, video, screen share and messaging components for your own
+# applications ("What is the Amazon Chime SDK?"). The media service acts as a Selective Forwarding
+# Unit with publish/subscribe, up to 25 simultaneous videos per meeting, Opus audio at a default
+# bitrate of 32 kbps, data messages up to 2 KB, and clients signal over secure WebSockets and DTLS
+# ("Using the Amazon Chime SDK": Architecture).
+schemaVersion: "1"
+type: "component"
+id: "aws-chime-sdk"
+kind: "media-router"
+provider: "aws"
+defaults:
+  managed: true
+  mode: "sfu"
+properties:
+  maxVideoStreams:
+    type: "integer"
+    default: 25
+  simulcast:
+    type: "boolean"
+    default: false
+  audioBitrateKbps:
+    type: "integer"
+    default: 32
+  maxDataMessageKb:
+    type: "integer"
+    default: 2

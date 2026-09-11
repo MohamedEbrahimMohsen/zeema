@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# JanusGraph: graph layer over a pluggable wide-column backend with an optional search index.
+schemaVersion: "1"
+type: "component"
+id: "janusgraph"
+kind: "graph-database"
+provider: "default"
+defaults:
+  inMemory: false
+  crossRegionConsistency: "none"
+  managed: false
+properties:
+  storageBackend:
+    type: "enum"
+    values: ["cassandra", "hbase", "bigtable", "berkeleydb", "in-memory"]
+    default: "cassandra"
+  indexBackend:
+    type: "enum"
+    values: ["none", "elasticsearch", "solr", "lucene"]
+    default: "none"

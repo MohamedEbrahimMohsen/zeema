@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Envoy proxy used as a front load balancer: self-managed L7, round-robin, no active health checks unless configured.
+schemaVersion: "1"
+type: "component"
+id: "envoy"
+kind: "load-balancer"
+provider: "default"
+defaults:
+  layer: "l7"
+  managed: false
+  hashing: "round-robin"
+  healthChecks: false
+properties:
+  xds:
+    type: "boolean"
+    default: false

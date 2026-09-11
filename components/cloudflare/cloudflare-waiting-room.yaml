@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare Waiting Room: edge queue that admits a fixed number of new users per minute to an origin.
+# "Waiting Room configuration settings": session duration defaults to 5 minutes, the queueing status
+# code to 200, and total active users has a minimum of 200. FIFO is the queueing method for all plans.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-waiting-room"
+kind: "rate-limiter"
+provider: "cloudflare"
+defaults:
+  managed: true
+  algorithm: "fixed-window"
+  placement: "edge"
+  distributed: true
+properties:
+  queueingMethod:
+    type: "enum"
+    values: ["fifo", "random", "passthrough", "reject"]
+    default: "fifo"
+  sessionDurationMinutes:
+    type: "integer"
+    default: 5
+  queueingStatusCode:
+    type: "integer"
+    default: 200
+  jsonResponseEnabled:
+    type: "boolean"
+    default: false

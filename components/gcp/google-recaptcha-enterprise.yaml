@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# reCAPTCHA Enterprise: bot, account and transaction abuse detection for websites and mobile apps, part of Google Cloud Fraud Defense.
+# Defaults from "Fraud Defense overview": it returns a risk score from 0.0 to 1.0 with reason codes and does not block the request itself, so the application decides what to do with the verdict.
+schemaVersion: "1"
+type: "component"
+id: "google-recaptcha-enterprise"
+kind: "waf"
+provider: "gcp"
+defaults:
+  managed: true
+  mode: "detection"
+  botProtection: true
+properties:
+  keyType:
+    type: "enum"
+    values: ["score-based", "checkbox", "mobile-app"]
+    default: "score-based"
+  tier:
+    type: "enum"
+    values: ["essentials", "premium", "enterprise"]
+  accountDefender:
+    type: "boolean"
+    default: false

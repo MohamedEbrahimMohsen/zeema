@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI Resource Analytics: "an inventory of OCI resources, their relationships, and configuration metadata"
+# served through SQL, graph visualisations and dashboards ("Resource Analytics overview"). Enabling it
+# provisions an enhanced Autonomous Data Warehouse that holds the relational model and property graph and
+# continuously ingests resource updates across the regions and tenancies you specify; the Oracle Analytics
+# Cloud instance that carries the prebuilt dashboards is optional.
+schemaVersion: "1"
+type: "component"
+id: "oci-resource-analytics"
+kind: "bi-service"
+provider: "oci"
+defaults:
+  managed: true
+  capacityMode: "dedicated"
+  publicSharing: false
+properties:
+  warehouse:
+    type: "enum"
+    values: ["autonomous-data-warehouse"]
+    default: "autonomous-data-warehouse"
+  analyticsCloudInstance:
+    type: "boolean"
+    default: false
+  graphStudio:
+    type: "boolean"
+    default: true
+  multiTenancyScope:
+    type: "boolean"
+    default: false

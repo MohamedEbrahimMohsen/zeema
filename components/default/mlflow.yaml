@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# MLflow: self-hosted tracking server and UI for experiment runs, parameters, metrics and artifacts.
+# Defaults from "MLflow Tracking": local ./mlruns file backend and artifact store out of the box;
+# the Model Registry needs a database-backed store, so it is not available on the default store.
+schemaVersion: "1"
+type: "component"
+id: "mlflow"
+kind: "ml-platform"
+provider: "default"
+defaults:
+  experimentTracking: true
+  modelRegistry: false
+  managed: false
+properties:
+  backendStore:
+    type: "enum"
+    values: ["file", "sqlite", "postgresql", "mysql", "mssql"]
+    default: "file"
+  artifactStore:
+    type: "enum"
+    values: ["local", "s3", "azure-blob", "gcs"]
+    default: "local"

@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apache Kylin: open-source OLAP engine answering queries from precomputed indexes over big data.
+# "Overview": sub-second latency on trillions of records, Gluten MergeTree as the default storage
+# format of internal tables, and Kafka as a streaming source for fusion models from Kylin 5.0 on.
+schemaVersion: "1"
+type: "component"
+id: "kylin"
+kind: "data-warehouse"
+provider: "default"
+defaults:
+  realtime: false
+  upsert: false
+  format: "columnar"
+  managed: false
+properties:
+  precomputedIndexes:
+    type: "boolean"
+    default: true
+  streamingSource:
+    type: "boolean"
+    default: false

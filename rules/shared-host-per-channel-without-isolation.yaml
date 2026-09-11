@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../schema/rule.schema.json
+# With heavy-tail traffic a few channels carry most of the load. Random channel
+# assignment lands those hot channels on arbitrary hosts and every tenant sharing that
+# host suffers. Assign channels by hash or sticky placement so hot spots are predictable
+# and movable.
+# Tripped by: designs/slack-messaging.broken.yaml
+schemaVersion: "1"
+type: "rule"
+id: "shared-host-per-channel-without-isolation"
+severity: "error"
+select:
+  node:
+    kind: "realtime-gateway"
+when:
+  all:
+    - prop: "channelAssignment"
+      equals: "random"
+    - requirement: "traffic.skew"
+      equals: "heavy-tail"
+message: "Realtime gateway '{{node.id}}' assigns channels randomly while the design declares heavy-tail traffic. Hot channels will degrade unrelated tenants on the same host."

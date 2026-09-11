@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Ceph RADOS Gateway: S3/Swift front end over Ceph; pools are three-way replicated by default.
+schemaVersion: "1"
+type: "component"
+id: "ceph-rgw"
+kind: "object-store"
+provider: "default"
+defaults:
+  replication: "quorum"
+  strongReadAfterWrite: true
+  versioning: false
+  managed: false
+properties:
+  poolReplicas:
+    type: "integer"
+    default: 3
+  multisite:
+    type: "boolean"
+    default: false

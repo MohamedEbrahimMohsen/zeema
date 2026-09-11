@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI Connector Hub (formerly Service Connector Hub): managed source-task-target message bus that
+# moves logs, metrics, streams and queue messages between OCI services, with optional log filtering
+# and function tasks in between. Facts from "Connector Hub" service documentation home.
+schemaVersion: "1"
+type: "component"
+id: "oci-connector-hub"
+kind: "stream-processor"
+provider: "oci"
+defaults:
+  managed: true
+  windowing: "none"
+  exactlyOnce: false
+properties:
+  source:
+    type: "enum"
+    values: ["logging", "monitoring", "streaming", "queue"]
+  target:
+    type: "enum"
+    values: ["object-storage", "streaming", "monitoring", "logging-analytics", "notifications", "functions"]
+  taskFilter:
+    type: "boolean"
+    default: false
+  taskFunction:
+    type: "boolean"
+    default: false

@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Personalize: managed recommendation service that trains on interaction, user and item datasets and serves recommendations from a campaign, a domain recommender or a batch inference job.
+# "Amazon Personalize endpoints and quotas" gives the defaults: 5 active dataset groups per Region, 10 solutions, 5 campaigns and 5 recommenders per dataset group, 500 GetRecommendations requests per second per campaign, 1,000 PutEvents per second per dataset group and a 1,000-interaction minimum before training.
+schemaVersion: "1"
+type: "component"
+id: "aws-personalize"
+kind: "ai-service"
+provider: "aws"
+defaults:
+  modality: "structured"
+  managed: true
+  publicEndpoint: true
+  customerManagedKeys: false
+properties:
+  servingMode:
+    type: "enum"
+    values: ["campaign", "recommender", "batch-inference"]
+    default: "campaign"
+  requestsPerSecondPerCampaign:
+    type: "integer"
+    default: 500
+  campaignsPerDatasetGroup:
+    type: "integer"
+    default: 5
+  putEventsPerSecond:
+    type: "integer"
+    default: 1000
+  realTimeEventIngestion:
+    type: "boolean"
+    default: false

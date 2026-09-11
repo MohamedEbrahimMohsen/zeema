@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Signer: managed code signing for Lambda packages, IoT firmware and container images.
+# "What is AWS Signer?": AWS manages the code-signing certificate's public and private keys.
+# PutSigningProfile: an unspecified signatureValidityPeriod defaults to 135 months.
+schemaVersion: "1"
+type: "component"
+id: "aws-signer"
+kind: "key-management"
+provider: "aws"
+defaults:
+  managed: true
+  rotationAutomated: false
+  envelopeEncryption: false
+properties:
+  signingPlatform:
+    type: "enum"
+    values: ["lambda", "freertos", "iot-device-management", "container-image-notation"]
+  signatureValidityMonths:
+    type: "integer"
+    default: 135
+  awsManagedSigningKey:
+    type: "boolean"
+    default: true

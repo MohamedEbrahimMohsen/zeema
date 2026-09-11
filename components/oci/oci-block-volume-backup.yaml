@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI Block Volume backup policy: scheduled backups of block and boot volumes, encrypted and
+# stored regionally in Object Storage, up to 100,000 backups ("Overview of Block Volume Backups";
+# Oracle-defined policies have contained only incremental backups since November 2021).
+# "Scheduling Volume Backups": Bronze keeps monthly backups 12 months and yearly 5 years, Silver
+# adds weekly for 4 weeks, Gold adds daily for 7 days; no policy is assigned to a new volume.
+schemaVersion: "1"
+type: "component"
+id: "oci-block-volume-backup"
+kind: "backup-service"
+provider: "oci"
+defaults:
+  managed: true
+  redundancy: "regional"
+  crossRegionRestore: false
+properties:
+  policy:
+    type: "enum"
+    values: ["bronze", "silver", "gold", "user-defined"]
+  backupType:
+    type: "enum"
+    values: ["incremental", "full"]
+    default: "incremental"
+  monthlyRetentionMonths:
+    type: "integer"
+    default: 12
+  yearlyRetentionYears:
+    type: "integer"
+    default: 5
+  maxBackups:
+    type: "integer"
+    default: 100000

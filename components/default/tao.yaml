@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# TAO-style in-house graph cache: write-through cache tiers per shard in front of a sharded
+# relational store, with a single leader region per shard.
+schemaVersion: "1"
+type: "component"
+id: "tao"
+kind: "graph-database"
+provider: "default"
+defaults:
+  inMemory: true
+  masterPerShard: true
+  crossRegionConsistency: "single-leader"
+  managed: false
+properties:
+  writeThrough:
+    type: "boolean"
+    default: true
+  followerTiers:
+    type: "integer"
+    default: 1

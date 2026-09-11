@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Dataproc cluster (Managed Service for Apache Spark on Compute Engine): managed Hadoop and Spark
+# cluster. "Create a Dataproc cluster" and the gcloud reference: the standard mode is one master and
+# two workers in a single zone, the image version defaults to the latest, secondary workers are
+# preemptible, and autoscaling applies only when an autoscaling policy is attached.
+schemaVersion: "1"
+type: "component"
+id: "google-dataproc"
+kind: "big-data-cluster"
+provider: "gcp"
+defaults:
+  managed: true
+  engine: "spark"
+  workerNodes: 2
+  autoscaling: false
+  spotInstances: false
+  zoneRedundant: false
+properties:
+  clusterMode:
+    type: "enum"
+    values: ["standard", "single-node", "high-availability"]
+    default: "standard"
+  masterNodes:
+    type: "integer"
+    default: 1
+  secondaryWorkerType:
+    type: "enum"
+    values: ["preemptible", "non-preemptible", "spot"]
+    default: "preemptible"

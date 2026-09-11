@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Elemental MediaTailor: manifest-level server-side ad insertion and channel assembly in front
+# of an origin ("What is AWS Elemental MediaTailor?"). The same page states ad insertion supports
+# HLS and DASH for live and VOD, that channel assembly never touches content segments, and that
+# origins are reachable only on port 80 (HTTP) or 443 (HTTPS).
+schemaVersion: "1"
+type: "component"
+id: "aws-mediatailor"
+kind: "media-router"
+provider: "aws"
+defaults:
+  managed: true
+  mode: "ingest"
+  transport: "tcp"
+properties:
+  feature:
+    type: "enum"
+    values: ["ad-insertion", "channel-assembly"]
+  streamingFormat:
+    type: "enum"
+    values: ["hls", "dash"]
+  originProtocol:
+    type: "enum"
+    values: ["http", "https"]

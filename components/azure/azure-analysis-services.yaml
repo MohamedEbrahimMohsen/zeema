@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Analysis Services: fully managed PaaS tabular semantic models. "What is Azure Analysis
+# Services" states in-memory mode is the default storage mode, firewall protection is not enabled for
+# new servers, and query-replica scale-out is opt-in (up to seven extra replicas, Standard tier only).
+schemaVersion: "1"
+type: "component"
+id: "azure-analysis-services"
+kind: "data-warehouse"
+provider: "azure"
+defaults:
+  realtime: false
+  upsert: false
+  format: "columnar"
+  managed: true
+properties:
+  tier:
+    type: "enum"
+    values: ["developer", "basic", "standard"]
+  storageMode:
+    type: "enum"
+    values: ["in-memory", "direct-query"]
+    default: "in-memory"
+  queryReplicas:
+    type: "integer"
+    default: 0
+  firewallEnabled:
+    type: "boolean"
+    default: false

@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Managed Lustre: managed Lustre parallel file system for HPC, mounted with the Lustre
+# client rather than NFS or SMB. Durable file systems sit on Premium SSD managed disks configured
+# as LRS, data is encrypted at rest with Microsoft-managed keys, and blob integration is opt-in at
+# creation ("What is Azure Managed Lustre?", "Create an Azure Managed Lustre file system").
+schemaVersion: "1"
+type: "component"
+id: "azure-managed-lustre"
+kind: "file-storage"
+provider: "azure"
+defaults:
+  protocol: "lustre"
+  redundancy: "local"
+  backupEnabled: false
+  managed: true
+properties:
+  fileSystemType:
+    type: "enum"
+    values: ["durable-ssd"]
+    default: "durable-ssd"
+  throughputPerTibMbps:
+    type: "integer"
+  blobIntegration:
+    type: "boolean"
+    default: false

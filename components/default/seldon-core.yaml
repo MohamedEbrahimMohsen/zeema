@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Seldon Core 2: Kubernetes-native framework serving Model, Pipeline and Experiment resources.
+# Facts from "Seldon Core 2 Architecture": scheduler and controller control plane, Envoy data plane
+# routing to MLServer or Triton pods, Kafka as the backbone for Pipelines.
+schemaVersion: "1"
+type: "component"
+id: "seldon-core"
+kind: "ml-inference"
+provider: "default"
+defaults:
+  training: "batch"
+  inputs: "live"
+  managed: false
+properties:
+  inferenceServer:
+    type: "enum"
+    values: ["mlserver", "triton"]
+    default: "mlserver"
+  pipelines:
+    type: "boolean"
+    default: false
+  kafkaBackbone:
+    type: "boolean"
+    default: true
+  experiments:
+    type: "boolean"
+    default: false

@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Backblaze B2 Cloud Storage: S3-compatible SaaS object store billed per GB with no minimum object size.
+# Per "File versions", a bucket keeps a history of every previous version of a file unless a lifecycle rule
+# expires them; per "Object Lock", uploaded files are not protected by Object Lock unless default retention
+# is configured on the bucket. Buckets are created private and hold data in one region.
+schemaVersion: "1"
+type: "component"
+id: "backblaze-b2"
+kind: "object-store"
+provider: "default"
+defaults:
+  managed: true
+  tier: "hot"
+  versioning: true
+  objectLock: false
+  zones: 1
+properties:
+  bucketType:
+    type: "enum"
+    values: ["all-private", "all-public"]
+    default: "all-private"
+  lifecycleRules:
+    type: "boolean"
+    default: false
+  serverSideEncryption:
+    type: "enum"
+    values: ["none", "sse-b2", "sse-c"]
+    default: "none"
+  cloudReplication:
+    type: "boolean"
+    default: false

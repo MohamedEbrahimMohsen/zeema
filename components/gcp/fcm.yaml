@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Firebase Cloud Messaging: fire-and-forget push, no idempotency, messages not collapsible unless keyed.
+schemaVersion: "1"
+type: "component"
+id: "fcm"
+kind: "third-party-api"
+provider: "gcp"
+defaults:
+  idempotent: false
+  callbackStyle: "none"
+properties:
+  collapsible:
+    type: "boolean"
+    default: false

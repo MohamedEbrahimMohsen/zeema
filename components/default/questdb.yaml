@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# QuestDB: SQL time-series database with a WAL write path and columnar reads. Per "QuestDB
+# Storage Engine" data is stored uncompressed in native column files, and per "Time To Live
+# (TTL)" a table has no TTL by default, so rows are kept indefinitely.
+schemaVersion: "1"
+type: "component"
+id: "questdb"
+kind: "timeseries-database"
+provider: "default"
+defaults:
+  downsampling: false
+  tiers: "single"
+  labelIndex: false
+  compression: "none"
+  managed: false
+properties:
+  partitionBy:
+    type: "enum"
+    values: ["none", "hour", "day", "week", "month", "year"]
+    default: "day"
+  walEnabled:
+    type: "boolean"
+    default: true
+  partitionFormat:
+    type: "enum"
+    values: ["native", "parquet"]
+    default: "native"

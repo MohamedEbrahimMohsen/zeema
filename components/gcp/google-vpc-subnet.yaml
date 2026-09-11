@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# A VPC subnet: a regional IPv4 range inside a Google Cloud VPC network.
+# Defaults from "Subnets" (regular PRIVATE purpose, IPv4-only single stack) and "VPC Flow Logs" (not enabled by default).
+schemaVersion: "1"
+type: "component"
+id: "google-vpc-subnet"
+kind: "network-fabric"
+provider: "gcp"
+defaults:
+  managed: true
+  overlay: true
+  interconnect: "cloud-backbone"
+properties:
+  purpose:
+    type: "enum"
+    values: ["private", "regional-managed-proxy", "global-managed-proxy", "private-service-connect"]
+    default: "private"
+  stackType:
+    type: "enum"
+    values: ["ipv4-only", "ipv4-ipv6"]
+    default: "ipv4-only"
+  flowLogs:
+    type: "boolean"
+    default: false

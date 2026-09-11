@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloud VPN gateway: IPsec tunnels between a VPC network and a peer network over the public internet.
+# Defaults from "Cloud VPN overview": HA VPN has two interfaces, requires dynamic routing (BGP) through a Cloud Router and carries a 99.99% SLA; Classic VPN is single-interface, static routing, 99.9%.
+schemaVersion: "1"
+type: "component"
+id: "google-cloud-vpn"
+kind: "vpn-gateway"
+provider: "gcp"
+defaults:
+  managed: true
+  tunnelType: "ipsec"
+  peerType: "site-to-site"
+  bgp: true
+  activeActive: true
+properties:
+  gatewayType:
+    type: "enum"
+    values: ["ha-vpn", "classic-vpn"]
+    default: "ha-vpn"
+  ikeVersion:
+    type: "enum"
+    values: ["ikev1", "ikev2"]
+  interfaces:
+    type: "integer"
+    default: 2
+  slaPercent:
+    type: "enum"
+    values: ["99.9", "99.99"]
+    default: "99.99"

@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Resource Access Manager: resource shares that grant principals in other accounts, OUs or the
+# whole organization access to a resource you own, under a managed permission. "Sharing your AWS
+# resources": enabling sharing with AWS Organizations is an optional step that must be turned on
+# explicitly, a new resource share is created with "Allow sharing with anyone" selected
+# (allowExternalPrincipals true), sharing outside the organization requires the consumer to accept
+# an invitation that expires after 12 hours for most resource types, and RetainSharingOnAccountLeave
+# Organization is off so a consumer loses access when it leaves the organization.
+schemaVersion: "1"
+type: "component"
+id: "aws-ram"
+kind: "policy-engine"
+provider: "aws"
+defaults:
+  enforcementMode: "enforced"
+  scope: "account"
+  remediation: false
+  managed: true
+properties:
+  allowExternalPrincipals:
+    type: "boolean"
+    default: true
+  sharingWithOrganizationsEnabled:
+    type: "boolean"
+    default: false
+  managedPermissionType:
+    type: "enum"
+    values: ["aws-managed", "customer-managed"]
+    default: "aws-managed"
+  retainSharingOnAccountLeaveOrganization:
+    type: "boolean"
+    default: false
+  invitationExpiryHours:
+    type: "integer"
+    default: 12

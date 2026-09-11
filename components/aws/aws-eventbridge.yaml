@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon EventBridge event bus: serverless router that matches events against rules and fans them
+# out to up to five targets per rule. "Troubleshooting Amazon EventBridge" states delivery is
+# retried for up to 24 hours and that a rule can run more than once for a single event
+# (at-least-once); archives, which are what makes replay possible, are not created by default.
+schemaVersion: "1"
+type: "component"
+id: "aws-eventbridge"
+kind: "pubsub-topic"
+provider: "aws"
+defaults:
+  managed: true
+  delivery: "at-least-once"
+  ordering: "none"
+  replay: false
+  topicPerEventType: false
+properties:
+  busType:
+    type: "enum"
+    values: ["default", "custom", "partner"]
+    default: "default"
+  archiveEnabled:
+    type: "boolean"
+    default: false
+  customerManagedKey:
+    type: "boolean"
+    default: false
+  maxDeliveryDurationHours:
+    type: "integer"
+    default: 24
+  targetsPerRule:
+    type: "integer"
+    default: 5

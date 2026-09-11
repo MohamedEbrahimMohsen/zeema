@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Firebase Authentication ("Firebase Authentication" overview): managed sign-in with email,
+# phone and OAuth 2.0 federated providers. No roles - authorization is custom claims read by
+# Security Rules; SAML/OIDC, MFA and multi-tenancy only arrive with the Identity Platform upgrade.
+schemaVersion: "1"
+type: "component"
+id: "google-firebase-auth"
+kind: "identity-provider"
+provider: "gcp"
+defaults:
+  protocol: "oauth2"
+  authorizationModel: "none"
+  centralised: true
+  mfa: false
+  managed: true
+properties:
+  identityPlatformUpgrade:
+    type: "boolean"
+    default: false
+  anonymousSignIn:
+    type: "boolean"
+    default: false
+  multiTenancy:
+    type: "boolean"
+    default: false
+  blockingFunctions:
+    type: "boolean"
+    default: false

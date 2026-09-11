@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# On-premises spine-leaf data-centre fabric: private, redundant spines; multicast and kernel bypass are design choices.
+schemaVersion: "1"
+type: "component"
+id: "spine-leaf-fabric"
+kind: "network-fabric"
+provider: "default"
+defaults:
+  interconnect: "private"
+  overlay: false
+properties:
+  oversubscriptionRatio:
+    type: "string"
+  redundantSpines:
+    type: "boolean"
+    default: true

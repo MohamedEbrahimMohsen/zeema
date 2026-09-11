@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI Internet of Things Platform: managed IoT domains that authenticate devices on a per-domain
+# endpoint (MQTTS or HTTPS with basic auth, MQTTS over WebSocket with mTLS) and normalise telemetry
+# into digital twin instances. Retention and payload limits from "Overview of Internet of Things Platform".
+schemaVersion: "1"
+type: "component"
+id: "oci-iot"
+kind: "iot-hub"
+provider: "oci"
+defaults:
+  managed: true
+  protocol: "multi"
+  perDeviceIdentity: true
+  deviceTwin: true
+properties:
+  rawDataRetentionDays:
+    type: "integer"
+    default: 16
+  historizedDataRetentionDays:
+    type: "integer"
+    default: 30
+  maxPayloadKb:
+    type: "integer"
+    default: 256
+  deviceAuthentication:
+    type: "enum"
+    values: ["basic", "mtls"]
+  flowRuntime:
+    type: "boolean"
+    default: false

@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Cloud Site-to-Site VPN: IPSec connection to a DRG made of two redundant tunnels, tunnel
+# mode only, with static routing the default per tunnel unless BGP is configured explicitly
+# ("Site-to-Site VPN Overview"). IPSec encrypts and authenticates every packet.
+schemaVersion: "1"
+type: "component"
+id: "oci-site-to-site-vpn"
+kind: "vpn-gateway"
+provider: "oci"
+defaults:
+  managed: true
+  peerType: "site-to-site"
+  tunnelType: "ipsec"
+  bgp: false
+  activeActive: true
+properties:
+  tunnelsPerConnection:
+    type: "integer"
+    default: 2
+  routingType:
+    type: "enum"
+    values: ["static", "bgp", "policy-based"]
+    default: "static"
+  ikeVersion:
+    type: "enum"
+    values: ["ikev1", "ikev2"]
+  encapsulationMode:
+    type: "enum"
+    values: ["tunnel"]
+    default: "tunnel"

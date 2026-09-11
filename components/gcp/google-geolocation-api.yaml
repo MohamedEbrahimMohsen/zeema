@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Geolocation API: returns a location and accuracy radius from cell tower and Wi-Fi access point data.
+# "Geolocation Request and Response": considerIp defaults to true, so the service falls back to IP geolocation
+# when the supplied radio signals are insufficient. The usage page publishes no fixed per-minute quota.
+schemaVersion: "1"
+type: "component"
+id: "google-geolocation-api"
+kind: "third-party-api"
+provider: "gcp"
+defaults:
+  managed: true
+  idempotent: true
+  callbackStyle: "none"
+  hostedPage: false
+  handlesMoney: false
+  slaPercent: "99.9"
+properties:
+  considerIp:
+    type: "boolean"
+    default: true
+  requestMethod:
+    type: "enum"
+    values: ["post"]
+    default: "post"

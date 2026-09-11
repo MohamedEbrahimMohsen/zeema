@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Grafana Pyroscope: self-hosted multi-tenant continuous profiling; profiles are pushed to the
+# distributor and stored on the filesystem backend by default ("Pyroscope configuration parameters").
+schemaVersion: "1"
+type: "component"
+id: "pyroscope"
+kind: "monitoring"
+provider: "default"
+defaults:
+  signal: "metrics"
+  collectorMode: "push"
+  managed: false
+properties:
+  storageBackend:
+    type: "enum"
+    values: ["filesystem", "s3", "gcs", "azure"]
+    default: "filesystem"

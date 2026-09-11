@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Memorystore for Valkey: managed Valkey, single-shard or cluster mode enabled. "Valkey
+# product overview" states each shard has one primary and 0 to 5 replicas, distributed evenly
+# across zones; the gcloud reference states --replica-count defaults to 0 replicas.
+schemaVersion: "1"
+type: "component"
+id: "google-memorystore-valkey"
+kind: "cache"
+provider: "gcp"
+defaults:
+  replication: "none"
+  persistence: false
+  hashing: "consistent"
+  structure: "key-value"
+  managed: true
+properties:
+  clusterMode:
+    type: "enum"
+    values: ["cluster-enabled", "cluster-disabled"]
+  shardCount:
+    type: "integer"
+  replicaCount:
+    type: "integer"
+    default: 0

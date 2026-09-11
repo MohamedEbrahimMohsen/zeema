@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon FSx for Windows File Server: managed Windows file system served over SMB 2.0-3.1.1.
+# "What is FSx for Windows File Server?": data at rest is automatically encrypted with AWS KMS keys and
+# data in transit with SMB Kerberos session keys, automatic daily backups are on by default;
+# "Protecting your data with backups": console default automatic daily backup retention is 30 days.
+schemaVersion: "1"
+type: "component"
+id: "aws-fsx-windows"
+kind: "file-storage"
+provider: "aws"
+defaults:
+  protocol: "smb"
+  encryptionInTransit: true
+  publicAccess: false
+  backupEnabled: true
+  managed: true
+properties:
+  deploymentType:
+    type: "enum"
+    values: ["single-az", "multi-az"]
+  storageType:
+    type: "enum"
+    values: ["ssd", "hdd"]
+    default: "ssd"
+  encryptionAtRest:
+    type: "boolean"
+    default: true
+  backupRetentionDays:
+    type: "integer"
+    default: 30
+  activeDirectoryJoined:
+    type: "boolean"
+    default: true

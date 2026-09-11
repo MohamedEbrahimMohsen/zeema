@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS CodeArtifact: managed package repository for npm, PyPI, Maven, NuGet, Ruby, Swift, Cargo and
+# generic packages, grouped under a domain. Per "What is AWS CodeArtifact?" packages "cannot be made
+# publicly available" and authentication is always required, an external connection to a public
+# repository is something you configure, and upstream repositories are opt-in relationships.
+schemaVersion: "1"
+type: "component"
+id: "aws-codeartifact"
+kind: "artifact-repository"
+provider: "aws"
+defaults:
+  artifactType: "package"
+  visibility: "private"
+  upstreamProxy: false
+  managed: true
+properties:
+  packageFormat:
+    type: "enum"
+    values: ["npm", "pypi", "maven", "nuget", "ruby", "swift", "cargo", "generic"]
+  externalConnection:
+    type: "boolean"
+    default: false
+  domainScoped:
+    type: "boolean"
+    default: true
+  packageOriginControls:
+    type: "boolean"

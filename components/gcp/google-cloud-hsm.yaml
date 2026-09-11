@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloud HSM: the HSM protection level of Cloud KMS, keys hosted in a FIPS 140-2 Level 3
+# certified HSM cluster; key material never leaves the HSM ("Cloud HSM overview").
+schemaVersion: "1"
+type: "component"
+id: "google-cloud-hsm"
+kind: "key-management"
+provider: "gcp"
+defaults:
+  managed: true
+  hsm: true
+  rotationAutomated: false
+  envelopeEncryption: true
+properties:
+  keyMaterialExportable:
+    type: "boolean"
+    default: false
+  singleTenantHsm:
+    type: "boolean"
+    default: false

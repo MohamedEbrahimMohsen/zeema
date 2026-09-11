@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Migration Hub: single place that aggregates migration status pushed by Application Migration Service
+# and AWS DMS and tracks it per application ("What Is AWS Migration Hub?"). Tracking data is stored only in
+# the home Region you pick. In maintenance and closed to new customers since 7 November 2025.
+schemaVersion: "1"
+type: "component"
+id: "aws-migration-hub"
+kind: "monitoring"
+provider: "aws"
+defaults:
+  managed: true
+  collectorMode: "push"
+  independentOfMonitored: true
+  alertGrouping: false
+properties:
+  homeRegionRequired:
+    type: "boolean"
+    default: true
+  openToNewCustomers:
+    type: "boolean"
+    default: false

@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# BentoML: Python framework packaging models as Services served over HTTP.
+# Defaults from "Hello world": `bentoml serve` listens on http://localhost:3000; adaptive batching
+# is a per-API opt-in and BentoCloud is the separate managed deployment target.
+schemaVersion: "1"
+type: "component"
+id: "bentoml"
+kind: "ml-inference"
+provider: "default"
+defaults:
+  training: "batch"
+  inputs: "live"
+  managed: false
+properties:
+  port:
+    type: "integer"
+    default: 3000
+  adaptiveBatching:
+    type: "boolean"
+  deploymentTarget:
+    type: "enum"
+    values: ["self-hosted", "bentocloud"]
+    default: "self-hosted"

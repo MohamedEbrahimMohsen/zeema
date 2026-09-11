@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Chef Infra: self-hosted Chef Infra Server with Chef Infra Client agents on every node. The
+# platform overview describes a pull model in which the agent, not the server, starts the run, and
+# gives a 1800 second (30 minute) interval when the client runs as a background service; secrets
+# are held in Chef Vault or in data bags rather than a vault the client reads at run time.
+schemaVersion: "1"
+type: "component"
+id: "chef"
+kind: "ci-pipeline"
+provider: "default"
+defaults:
+  trigger: "schedule"
+  approvalRequired: false
+  selfHostedRunners: true
+  secretsFromVault: false
+  managed: false
+properties:
+  clientIntervalSeconds:
+    type: "integer"
+    default: 1800
+  runMode:
+    type: "enum"
+    values: ["service", "cron", "on-demand", "local-mode"]
+    default: "service"
+  secretsStore:
+    type: "enum"
+    values: ["data-bag", "chef-vault", "external"]
+    default: "data-bag"

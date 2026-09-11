@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# mongos: MongoDB sharded-cluster router; targets shards by shard key and scatters otherwise.
+schemaVersion: "1"
+type: "component"
+id: "mongos"
+kind: "database-proxy"
+provider: "default"
+defaults:
+  pooling: true
+  poolSharded: true
+  routing: "shard-key"
+  scatterGather: true
+properties:
+  configServers:
+    type: "integer"
+    default: 3

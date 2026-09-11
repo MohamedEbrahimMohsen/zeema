@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Security Operations (Chronicle): SIEM and SOAR over ingested telemetry, with YARA-L
+# detection rules. Per "Configure SIEM data retention" Google retains 12 months of data by default
+# and the period can be extended to five years; per the SecOps overview data arrives through
+# forwarders, push APIs, cloud feeds and SOAR connectors.
+schemaVersion: "1"
+type: "component"
+id: "google-security-operations"
+kind: "monitoring"
+provider: "gcp"
+defaults:
+  signal: "all"
+  collectorMode: "push"
+  retentionDays: 365
+  managed: true
+properties:
+  detectionRuleLanguage:
+    type: "enum"
+    values: ["yara-l"]
+    default: "yara-l"
+  ingestionMethod:
+    type: "enum"
+    values: ["forwarder", "api-push", "feed", "soar-connector"]
+  maxRetentionDays:
+    type: "integer"
+    default: 1825
+  soar:
+    type: "boolean"
+    default: true

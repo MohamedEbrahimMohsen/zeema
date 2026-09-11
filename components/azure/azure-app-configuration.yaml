@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure App Configuration: managed config and feature flags with percentage and targeting filters, 30 s refresh.
+schemaVersion: "1"
+type: "component"
+id: "azure-app-configuration"
+kind: "feature-flag-service"
+provider: "azure"
+defaults:
+  stagedRollout: true
+  managed: true
+properties:
+  refreshIntervalSeconds:
+    type: "integer"
+    default: 30

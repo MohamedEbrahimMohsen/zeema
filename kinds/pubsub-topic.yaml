@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Abstract kind: Fan-out topic. Every subscriber receives every message. Contrast with queue (one consumer) and stream (replayable log).
+schemaVersion: "1"
+type: "kind"
+id: "pubsub-topic"
+category: "messaging"
+properties:
+  delivery:
+    type: "enum"
+    values: ["at-most-once", "at-least-once", "exactly-once"]
+    required: true
+  replay:
+    type: "boolean"
+    default: false
+  ordering:
+    type: "enum"
+    values: ["none", "per-key"]
+    default: "none"
+  topicPerEventType:
+    type: "boolean"
+    default: true
+  managed:
+    type: "boolean"
+    default: false

@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Load Balancer: managed L4 5-tuple hash balancer. Standard SKU is the default and is zone-redundant.
+schemaVersion: "1"
+type: "component"
+id: "azure-load-balancer"
+kind: "load-balancer"
+provider: "azure"
+defaults:
+  layer: "l4"
+  managed: true
+  hashing: "consistent"
+properties:
+  sku:
+    type: "enum"
+    values: ["basic", "standard"]
+    default: "standard"

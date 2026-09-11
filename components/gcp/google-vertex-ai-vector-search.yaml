@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Vertex AI Vector Search: managed nearest-neighbour service built on the ScaNN tree-AH algorithm,
+# with brute force available for recall measurement ("Vector Search overview"). Restricts give
+# namespaced boolean and numeric filtering, and hybrid dense-plus-sparse search is supported.
+schemaVersion: "1"
+type: "component"
+id: "google-vertex-ai-vector-search"
+kind: "vector-database"
+provider: "gcp"
+defaults:
+  managed: true
+  metadataFiltering: true
+  hybridSearch: true
+  namespaces: true
+properties:
+  algorithm:
+    type: "enum"
+    values: ["tree-ah", "brute-force"]
+    default: "tree-ah"
+  shardSize:
+    type: "enum"
+    values: ["small", "medium", "large"]
+  indexUpdateMethod:
+    type: "enum"
+    values: ["batch-update", "stream-update"]
+  privateServiceConnect:
+    type: "boolean"
+    default: false

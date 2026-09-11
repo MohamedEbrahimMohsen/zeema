@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Milvus: open-source vector database, self-hosted as standalone or distributed cluster.
+# "create_collection": metric_type defaults to COSINE, one shard, dynamic field enabled and
+# Bounded consistency. "Index vector fields": FLAT, IVF, HNSW and DISKANN indexes, plus a sparse
+# inverted index that makes dense-and-sparse hybrid search possible.
+schemaVersion: "1"
+type: "component"
+id: "milvus"
+kind: "vector-database"
+provider: "default"
+defaults:
+  distanceMetric: "cosine"
+  quantization: "none"
+  metadataFiltering: true
+  hybridSearch: true
+  managed: false
+properties:
+  deploymentMode:
+    type: "enum"
+    values: ["standalone", "cluster"]
+    default: "standalone"
+  consistencyLevel:
+    type: "enum"
+    values: ["strong", "session", "bounded", "eventually"]
+    default: "bounded"
+  shards:
+    type: "integer"
+    default: 1
+  dynamicField:
+    type: "boolean"
+    default: true

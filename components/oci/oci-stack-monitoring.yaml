@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI Stack Monitoring: discovers hosts, application servers and databases and monitors them as a stack.
+# Defaults from "Stack Monitoring Introduction": status and performance metrics are stored in the OCI Monitoring service and alarms are raised there;
+# collection is agent based. Oracle retires the Stack Monitoring SKUs on 2027-01-23 and folds the features into OCI Monitoring.
+schemaVersion: "1"
+type: "component"
+id: "oci-stack-monitoring"
+kind: "monitoring"
+provider: "oci"
+defaults:
+  managed: true
+  signal: "metrics"
+  collectorMode: "push"
+  independentOfMonitored: false
+properties:
+  agentBased:
+    type: "boolean"
+    default: true
+  resourceType:
+    type: "enum"
+    values: ["host", "application-server", "database", "prometheus", "telegraf", "collectd", "oci-resource"]
+    default: "host"

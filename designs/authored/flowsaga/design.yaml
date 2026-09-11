@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Authored in the Arkore canvas.
+schemaVersion: "1"
+type: "design"
+id: "flowsaga"
+
+nodes:
+  - { id: "abc", component: "sdk-client", label: "ABC" }
+  - { id: "azure-functions-6", component: "azure-functions" }
+  - { id: "sdk-client-2", component: "sdk-client" }
+  - { id: "azure-functions", component: "azure-functions" }
+  - { id: "sdk-client", component: "sdk-client" }
+  - { id: "sdk-client-3", component: "sdk-client" }
+  - { id: "gatling", component: "gatling" }
+  - { id: "aws-bedrock", component: "aws-bedrock" }
+  - { id: "azure-aks-edge-essentials", component: "azure-aks-edge-essentials" }
+edges:
+  - from: "abc"
+    to: "azure-functions-6"
+    protocol: "http"
+    mode: "sync"
+    delivery: "exactly-once"
+    label: "Hello"
+    retryPolicy: "fixed"
+  - { from: "abc", to: "azure-functions-6", protocol: "http", mode: "sync" }
+  - from: "sdk-client-2"
+    to: "azure-functions"
+    protocol: "http"
+    mode: "sync"
+    delivery: "exactly-once"
+    label: "Hello"
+    retryPolicy: "fixed"
+  - { from: "sdk-client-2", to: "azure-functions", protocol: "http", mode: "sync" }
+  - { from: "sdk-client-3", to: "sdk-client-2", protocol: "http", mode: "sync" }

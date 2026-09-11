@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Cloud Security Zones: a compartment bound to a recipe of policies that resource operations must satisfy.
+# Defaults from "Security Zones": a zone covers a compartment and its subcompartments, enforcement is automatic,
+# and an operation that violates any policy in the recipe is denied rather than merely reported.
+schemaVersion: "1"
+type: "component"
+id: "oci-security-zone"
+kind: "policy-engine"
+provider: "oci"
+defaults:
+  managed: true
+  effect: "deny"
+  enforcementMode: "enforced"
+  scope: "group"
+  remediation: false
+properties:
+  recipe:
+    type: "enum"
+    values: ["maximum-security", "custom"]
+    default: "maximum-security"
+  coversSubcompartments:
+    type: "boolean"
+    default: true
+  requiresCloudGuard:
+    type: "boolean"
+    default: true

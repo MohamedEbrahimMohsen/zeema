@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Images are pulled by name and tag, which object-store cannot express, and the registry carries its own exposure and retention settings. visibility, adminUser, imageScanning and immutableTags are left open so supply-chain rules can test for absence.
+schemaVersion: "1"
+type: "kind"
+id: "container-registry"
+category: "data"
+properties:
+  visibility:
+    type: "enum"
+    values: ["private", "public"]
+  imageScanning:
+    type: "boolean"
+  geoReplicated:
+    type: "boolean"
+    default: false
+  immutableTags:
+    type: "boolean"
+  retentionDays:
+    type: "integer"
+  staticCredentials:
+    type: "boolean"
+  managed:
+    type: "boolean"
+    default: false

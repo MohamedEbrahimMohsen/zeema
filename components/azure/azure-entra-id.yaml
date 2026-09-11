@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Microsoft Entra ID: OIDC/SAML with app roles; security defaults enforce MFA on new tenants; Conditional Access opt-in.
+schemaVersion: "1"
+type: "component"
+id: "azure-entra-id"
+kind: "identity-provider"
+provider: "azure"
+defaults:
+  protocol: "oidc"
+  authorizationModel: "rbac"
+  managed: true
+  mfa: true
+properties:
+  conditionalAccess:
+    type: "boolean"
+    default: false

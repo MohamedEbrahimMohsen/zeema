@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Private CA: hosted root and subordinate private certificate authorities issuing X.509
+# certificates. "What is AWS Private CA?" and the CreateCertificateAuthority API: CA keys default
+# to the FIPS 140-2 Level 3 or higher storage standard, UsageMode defaults to GENERAL_PURPOSE, and
+# both revocation mechanisms (CRL and OCSP) are disabled by default.
+schemaVersion: "1"
+type: "component"
+id: "aws-private-ca"
+kind: "key-management"
+provider: "aws"
+defaults:
+  managed: true
+  hsm: true
+  rotationAutomated: false
+  envelopeEncryption: false
+properties:
+  caType:
+    type: "enum"
+    values: ["root", "subordinate"]
+  usageMode:
+    type: "enum"
+    values: ["general-purpose", "short-lived-certificate"]
+    default: "general-purpose"
+  keyStorageSecurityStandard:
+    type: "enum"
+    values: ["fips-140-2-level-2-or-higher", "fips-140-2-level-3-or-higher", "ccpc-level-1-or-higher"]
+    default: "fips-140-2-level-3-or-higher"
+  crlEnabled:
+    type: "boolean"
+    default: false
+  ocspEnabled:
+    type: "boolean"
+    default: false

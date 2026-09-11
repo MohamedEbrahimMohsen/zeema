@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# A terminating gateway with a tunnel type and a peer, not the connectivity plane network-fabric describes. throughputMbps and bgp stay open so capacity and routing rules can test for absence.
+schemaVersion: "1"
+type: "kind"
+id: "vpn-gateway"
+category: "edge"
+properties:
+  peerType:
+    type: "enum"
+    values: ["site-to-site", "point-to-site", "cloud-to-cloud"]
+  tunnelType:
+    type: "enum"
+    values: ["ipsec", "ssl", "wireguard"]
+  bgp:
+    type: "boolean"
+    default: false
+  activeActive:
+    type: "boolean"
+    default: false
+  throughputMbps:
+    type: "integer"
+  managed:
+    type: "boolean"
+    default: false

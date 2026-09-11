@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Abstract kind: Serves model predictions online (ranking, dispatch, fraud, spam, TTL prediction).
+schemaVersion: "1"
+type: "kind"
+id: "ml-inference"
+category: "compute"
+properties:
+  training:
+    type: "enum"
+    values: ["batch", "online"]
+    default: "batch"
+  inputs:
+    type: "enum"
+    values: ["live", "historical", "both"]
+    default: "live"
+  embeddingSyncMinutes:
+    type: "integer"
+  snapshotToObjectStore:
+    type: "boolean"
+    default: false
+  accelerator:
+    type: "enum"
+    values: ["none", "gpu", "asic"]
+    default: "none"
+  instances:
+    type: "integer"
+  managed:
+    type: "boolean"
+    default: false

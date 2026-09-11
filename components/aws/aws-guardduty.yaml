@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon GuardDuty: continuous threat detection over AWS logs. "What is Amazon GuardDuty?": on
+# enablement it automatically ingests the foundational data sources (CloudTrail management events,
+# VPC flow logs, DNS logs), Extended Threat Detection is on at no cost, and every protection plan
+# except Runtime Monitoring is enabled on first activation. "Processing GuardDuty findings with
+# Amazon EventBridge": findings are stored for 90 days and repeat occurrences are aggregated into
+# one event per 6-hour interval by default.
+schemaVersion: "1"
+type: "component"
+id: "aws-guardduty"
+kind: "monitoring"
+provider: "aws"
+defaults:
+  signal: "alerts"
+  collectorMode: "pull"
+  alertGrouping: true
+  retentionDays: 90
+  independentOfMonitored: false
+  managed: true
+properties:
+  foundationalDataSources:
+    type: "boolean"
+    default: true
+  extendedThreatDetection:
+    type: "boolean"
+    default: true
+  findingAggregationHours:
+    type: "integer"
+    default: 6
+  runtimeMonitoring:
+    type: "boolean"
+    default: false
+  organizationWide:
+    type: "boolean"
+    default: false

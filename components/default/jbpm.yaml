@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# jBPM: embeddable Java BPMN 2.0 engine. Runtime persistence is an optional pluggable service based on
+# JPA/JTA, so state is not saved out of the box; the WS-HumanTask service makes user tasks first class
+# ("jBPM documentation": core engine, runtime state persistence).
+schemaVersion: "1"
+type: "component"
+id: "jbpm"
+kind: "workflow-engine"
+provider: "default"
+defaults:
+  durable: false
+  pattern: "dag"
+  humanReview: true
+  managed: false
+properties:
+  persistence:
+    type: "enum"
+    values: ["none", "jpa"]
+    default: "none"

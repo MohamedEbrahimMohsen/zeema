@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# R2 SQL: Cloudflare's serverless distributed analytics query engine over Apache Iceberg tables held
+# in R2 Data Catalog, per "R2 SQL". It reads columnar Iceberg data with file pruning; the engine
+# issues SELECT queries and does not ingest or update rows itself. Currently open beta.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-r2-sql"
+kind: "data-warehouse"
+provider: "cloudflare"
+defaults:
+  managed: true
+  format: "columnar"
+  realtime: false
+  upsert: false
+properties:
+  tableFormat:
+    type: "enum"
+    values: ["apache-iceberg"]
+    default: "apache-iceberg"
+  readOnly:
+    type: "boolean"
+    default: true
+  serverless:
+    type: "boolean"
+    default: true

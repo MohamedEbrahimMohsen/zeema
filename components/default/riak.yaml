@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Riak KV: leaderless key-value store with n/r/w quorums and dotted version vectors.
+schemaVersion: "1"
+type: "component"
+id: "riak"
+kind: "nosql-database"
+provider: "default"
+defaults:
+  model: "key-value"
+  consistency: "tunable"
+  replication: "single-region"
+  replicationFactor: 3
+  conflictResolution: "vector-clock"
+properties:
+  version:
+    type: "string"
+  allowSiblings:
+    type: "boolean"
+    default: false

@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# D1: a serverless SQLite database for Workers. "D1 - Limits" gives 10 GB per database and 30 days of
+# Time Travel point-in-time recovery on paid plans, which is on without configuration; "Read
+# replication" is off until it is turned on, and gives sequential consistency through the Sessions API.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-d1"
+kind: "sql-database"
+provider: "cloudflare"
+defaults:
+  managed: true
+  backupEnabled: true
+  backupRetentionDays: 30
+  replication: "none"
+  sharded: false
+  multiWriter: false
+  distributed: false
+properties:
+  readReplication:
+    type: "boolean"
+    default: false
+  maxDatabaseSizeGb:
+    type: "integer"
+    default: 10
+  maxColumnsPerTable:
+    type: "integer"
+    default: 100
+  locationHint:
+    type: "enum"
+    values: ["enam", "wnam", "weur", "eeur", "apac", "oc"]
+  maxDatabasesPerAccount:
+    type: "integer"
+    default: 50000

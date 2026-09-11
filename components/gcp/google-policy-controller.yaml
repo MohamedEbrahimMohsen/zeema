@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud Policy Controller: Open Policy Agent Gatekeeper for GKE fleets. Per "Policy Controller
+# overview" and "Install Policy Controller" only the constraint template library is installed
+# automatically; policy bundles, mutation, referential constraints and deny logging are all opt-in, so a
+# fresh installation enforces no policies.
+schemaVersion: "1"
+type: "component"
+id: "google-policy-controller"
+kind: "policy-engine"
+provider: "gcp"
+defaults:
+  managed: true
+  remediation: false
+  policyCount: 0
+properties:
+  constraintTemplateLibrary:
+    type: "boolean"
+    default: true
+  policyBundles:
+    type: "boolean"
+    default: false
+  referentialRules:
+    type: "boolean"
+    default: false
+  mutation:
+    type: "boolean"
+    default: false
+  logDenies:
+    type: "boolean"
+    default: false

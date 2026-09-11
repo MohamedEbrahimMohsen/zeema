@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# App Engine flexible environment service: the application runs in containers on Compute Engine VMs
+# that App Engine health-checks, heals and may restart weekly for updates ("App Engine flexible
+# environment"). app.yaml defaults are min_num_instances 2, max_num_instances 20, target CPU
+# utilization 0.5, 1 core, 0.6 GB of memory and a 13 GB disk ("app.yaml reference").
+schemaVersion: "1"
+type: "component"
+id: "google-app-engine-flexible"
+kind: "app-server"
+provider: "gcp"
+defaults:
+  managed: true
+  stateless: true
+  autoscaling: true
+  instances: 2
+properties:
+  maxInstances:
+    type: "integer"
+    default: 20
+  cpuCores:
+    type: "integer"
+    default: 1
+  diskSizeGb:
+    type: "integer"
+    default: 13
+  weeklyInstanceRestart:
+    type: "boolean"
+    default: true

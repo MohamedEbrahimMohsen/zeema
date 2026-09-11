@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Firebird: multi-generational (MVCC) relational database. Built-in logical replication exists
+# from Firebird 4 but is off until replication.conf is configured (Firebird 5.0 Release Notes).
+schemaVersion: "1"
+type: "component"
+id: "firebird"
+kind: "sql-database"
+provider: "default"
+defaults:
+  replication: "none"
+  encryptionAtRest: false
+properties:
+  version:
+    type: "string"
+  serverMode:
+    type: "enum"
+    values: ["superserver", "superclassic", "classic"]
+    default: "superserver"

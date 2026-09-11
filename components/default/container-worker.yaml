@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Generic containerised background worker: consumes a queue or stream, or runs on a schedule.
+# Not idempotent unless the design says so, which the retry rules check.
+schemaVersion: "1"
+type: "component"
+id: "container-worker"
+kind: "worker"
+provider: "default"
+defaults:
+  trigger: "queue"
+  idempotent: false
+properties:
+  orchestrator:
+    type: "enum"
+    values: ["none", "kubernetes", "ecs", "nomad"]
+    default: "none"

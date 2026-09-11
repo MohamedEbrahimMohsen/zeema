@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Elasticsearch: inverted index sharded by routing hash; documents become searchable on the
+# one-second refresh, one replica per shard by default.
+schemaVersion: "1"
+type: "component"
+id: "elasticsearch"
+kind: "search-index"
+provider: "default"
+defaults:
+  structure: "inverted"
+  shardingStrategy: "hash"
+  indexing: "async"
+  replicas: 1
+properties:
+  shards:
+    type: "integer"
+    default: 1
+  refreshIntervalSeconds:
+    type: "integer"
+    default: 1

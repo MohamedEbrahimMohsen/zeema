@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# YDB: distributed database whose data is held by tablets over a fault-tolerant distributed storage
+# layer, with strict consistency and cross-tablet distributed transactions (YDB "Glossary").
+schemaVersion: "1"
+type: "component"
+id: "ydb"
+kind: "nosql-database"
+provider: "default"
+defaults:
+  model: "key-value"
+  consistency: "strong"
+  replication: "single-region"
+properties:
+  version:
+    type: "string"
+  erasureMode:
+    type: "enum"
+    values: ["none", "block-4-2", "mirror-3-dc"]

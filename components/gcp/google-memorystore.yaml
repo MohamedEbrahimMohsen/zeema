@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Memorystore for Redis: a single managed Redis instance. "Redis overview" states the Basic
+# tier has no replication and that RDB snapshots are not on by default; "Supported Redis
+# configurations" gives volatile-lru as the default maxmemory policy, and the gcloud
+# reference defaults --tier to basic and --size to 1 GiB.
+schemaVersion: "1"
+type: "component"
+id: "google-memorystore"
+kind: "cache"
+provider: "gcp"
+defaults:
+  evictionPolicy: "lru"
+  replication: "none"
+  persistence: false
+  structure: "key-value"
+  managed: true
+properties:
+  serviceTier:
+    type: "enum"
+    values: ["basic", "standard-ha"]
+    default: "basic"
+  memorySizeGb:
+    type: "integer"
+    default: 1
+  transitEncryption:
+    type: "boolean"
+    default: false

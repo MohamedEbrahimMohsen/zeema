@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Polly: managed text to speech that returns an audio stream synchronously or writes long audio to Amazon S3 as a speech synthesis task.
+# "Quotas in Amazon Polly" gives the defaults: standard voices at 80 SynthesizeSpeech transactions per second (4,800 per minute) against 8 for neural, long-form and generative voices, 3,000 billed characters per synchronous request, a 10-minute output stream and 100 pronunciation lexicons per account.
+schemaVersion: "1"
+type: "component"
+id: "aws-polly"
+kind: "ai-service"
+provider: "aws"
+defaults:
+  managed: true
+  modality: "speech"
+  publicEndpoint: true
+  customerManagedKeys: false
+  quotaUnitsPerMinute: 4800
+properties:
+  engine:
+    type: "enum"
+    values: ["standard", "neural", "long-form", "generative"]
+    default: "standard"
+  synthesisMode:
+    type: "enum"
+    values: ["synchronous", "asynchronous-task"]
+    default: "synchronous"
+  maxBilledCharactersPerRequest:
+    type: "integer"
+    default: 3000
+  maxOutputStreamMinutes:
+    type: "integer"
+    default: 10
+  lexiconsPerAccount:
+    type: "integer"
+    default: 100

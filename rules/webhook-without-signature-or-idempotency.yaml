@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../schema/rule.schema.json
+# A webhook is a public endpoint that the caller retries. Without signature verification
+# anyone can post a fake "payment succeeded"; without idempotency the provider's own
+# retries apply the same event twice.
+# Tripped by: designs/payment-system.broken.yaml
+schemaVersion: "1"
+type: "rule"
+id: "webhook-without-signature-or-idempotency"
+severity: "error"
+select:
+  node:
+    kind: "webhook-endpoint"
+when:
+  any:
+    - prop: "signatureVerified"
+      equals: false
+    - prop: "idempotent"
+      equals: false
+message: "Webhook '{{node.id}}' does not verify signatures or is not idempotent. Verify the caller's signature and deduplicate by event id."

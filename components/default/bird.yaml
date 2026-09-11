@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Bird (formerly MessageBird): omnichannel messaging API. The Bird API reference states mutating
+# endpoints accept an Idempotency-Key header, and covers email, SMS, voice, WhatsApp and verify.
+schemaVersion: "1"
+type: "component"
+id: "bird"
+kind: "third-party-api"
+provider: "default"
+defaults:
+  managed: true
+  idempotent: true
+  callbackStyle: "webhook"
+properties:
+  channel:
+    type: "enum"
+    values: ["sms", "email", "voice", "whatsapp", "verify"]
+    default: "sms"

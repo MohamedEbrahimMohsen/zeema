@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure VM Image Builder: a managed image build service built on HashiCorp Packer that runs when you
+# invoke Run on the template ("Azure VM Image Builder overview"). Builds use a Standard_D1_v2 build
+# VM for Gen1 images and get a public IP unless an existing virtual network is supplied.
+schemaVersion: "1"
+type: "component"
+id: "azure-vm-image-builder"
+kind: "ci-pipeline"
+provider: "azure"
+defaults:
+  managed: true
+  trigger: "manual"
+properties:
+  buildVmSize:
+    type: "string"
+    default: "Standard_D1_v2"
+  distributionTarget:
+    type: "enum"
+    values: ["managed-image", "compute-gallery", "vhd"]
+  buildVmPublicIp:
+    type: "boolean"
+    default: true

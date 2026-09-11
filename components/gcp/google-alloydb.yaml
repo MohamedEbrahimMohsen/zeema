@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AlloyDB for PostgreSQL: managed PostgreSQL-compatible cluster. "AlloyDB overview" states a
+# primary instance runs an active and a standby node in different zones and that all data is
+# encrypted at rest; "Data backup and recovery overview" states continuous backup is enabled
+# on every cluster by default with a 14-day recovery window, scheduled backups being opt-in.
+schemaVersion: "1"
+type: "component"
+id: "google-alloydb"
+kind: "sql-database"
+provider: "gcp"
+defaults:
+  replication: "sync"
+  backupEnabled: true
+  backupRetentionDays: 14
+  encryptionAtRest: true
+  managed: true
+properties:
+  automatedBackupSchedule:
+    type: "boolean"
+    default: false
+  crossRegionReplication:
+    type: "boolean"
+    default: false
+  readPool:
+    type: "boolean"
+    default: false

@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# RavenDB: document store whose cluster runs Raft but whose document replication is multi-master,
+# accepting writes on any node and resolving conflicts to the latest modified variant by default
+# ("Cluster topology", "Replication conflicts").
+schemaVersion: "1"
+type: "component"
+id: "ravendb"
+kind: "nosql-database"
+provider: "default"
+defaults:
+  model: "document"
+  consistency: "eventual"
+  replication: "single-region"
+  conflictResolution: "last-writer-wins"
+properties:
+  version:
+    type: "string"
+  nodeRole:
+    type: "enum"
+    values: ["member", "watcher"]
+    default: "member"

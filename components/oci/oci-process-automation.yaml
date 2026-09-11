@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI Process Automation: managed BPMN/CMMN process service with a Designer and a Workspace runtime.
+# Structured processes model defined flows of human or automated tasks and dynamic processes model
+# flows driven by human action and data, so human review is part of the product. Decision models follow
+# DMN. Facts from "Using Oracle Cloud Infrastructure Process Automation".
+schemaVersion: "1"
+type: "component"
+id: "oci-process-automation"
+kind: "workflow-engine"
+provider: "oci"
+defaults:
+  managed: true
+  durable: true
+  pattern: "dag"
+  humanReview: true
+properties:
+  processType:
+    type: "enum"
+    values: ["structured", "dynamic"]
+  notationStandard:
+    type: "enum"
+    values: ["bpmn", "cmmn", "dmn"]
+  decisionModel:
+    type: "boolean"
+    default: false

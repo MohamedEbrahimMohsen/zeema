@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Workers for Platforms dispatch namespace: an unlimited container of customer-written user Workers
+# reached through a dynamic dispatch Worker. "How Workers for Platforms works" states user Workers
+# run in untrusted mode, never share a cache, and only get an outbound Worker when one is attached.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-workers-for-platforms"
+kind: "app-server"
+provider: "cloudflare"
+defaults:
+  managed: true
+  stateless: true
+  autoscaling: true
+  ownsData: false
+  runtime: "javascript"
+properties:
+  untrustedMode:
+    type: "boolean"
+    default: true
+  sharedCache:
+    type: "boolean"
+    default: false
+  outboundWorker:
+    type: "boolean"
+    default: false
+  dynamicDispatch:
+    type: "boolean"
+    default: true

@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare Web Analytics: privacy-first client-side analytics collected by a JS beacon.
+# "Get started" states that for proxied zones the beacon is injected by automatic setup, which is
+# enabled by default, and that non-proxied sites must paste the snippet by hand.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-web-analytics"
+kind: "monitoring"
+provider: "cloudflare"
+defaults:
+  managed: true
+  signal: "metrics"
+  collectorMode: "push"
+properties:
+  setupMode:
+    type: "enum"
+    values: ["automatic", "manual"]
+    default: "automatic"
+  beaconRequired:
+    type: "boolean"
+    default: true
+  excludeEuVisitors:
+    type: "boolean"
+    default: false

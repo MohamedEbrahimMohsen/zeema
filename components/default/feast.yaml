@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Feast: open source feature store serving the same features to training and to online inference.
+# Defaults from "Feast quickstart": `feast init` writes provider local, a SQLite online store and a
+# file (parquet) offline store, with the registry in a local file.
+schemaVersion: "1"
+type: "component"
+id: "feast"
+kind: "ml-platform"
+provider: "default"
+defaults:
+  experimentTracking: false
+  modelRegistry: false
+  managed: false
+properties:
+  provider:
+    type: "enum"
+    values: ["local", "aws", "gcp", "azure"]
+    default: "local"
+  onlineStore:
+    type: "enum"
+    values: ["sqlite", "redis", "dynamodb", "datastore", "postgres"]
+    default: "sqlite"
+  offlineStore:
+    type: "enum"
+    values: ["file", "bigquery", "redshift", "snowflake", "spark"]
+    default: "file"
+  registryBackend:
+    type: "enum"
+    values: ["file", "sql"]
+    default: "file"

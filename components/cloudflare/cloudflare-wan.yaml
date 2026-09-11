@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare WAN (formerly Magic WAN): a WAN-as-a-service overlay that joins sites, data centres and
+# clouds over the Cloudflare backbone through IPsec or GRE tunnels, the Cloudflare One Appliance or
+# CNI; Cloudflare Network Firewall is included with it ("Cloudflare WAN overview").
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-wan"
+kind: "network-fabric"
+provider: "cloudflare"
+defaults:
+  managed: true
+  overlay: true
+  interconnect: "cloud-backbone"
+properties:
+  onRamp:
+    type: "enum"
+    values: ["ipsec", "gre", "appliance", "cni", "cloud"]
+    default: "ipsec"
+  networkFirewallIncluded:
+    type: "boolean"
+    default: true
+  trafficSteering:
+    type: "boolean"
+    default: true

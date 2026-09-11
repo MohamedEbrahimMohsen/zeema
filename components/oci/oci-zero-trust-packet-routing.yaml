@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Cloud Zero Trust Packet Routing: intent-based policies over security attributes attached to endpoints.
+# Defaults from "Overview of Zero Trust Packet Routing" and "Security Rules": attaching a security attribute blocks
+# all traffic to the endpoint until a ZPR policy allows it, and a packet must also pass route tables, NSGs and
+# security lists, so ZPR is an added layer rather than a replacement.
+schemaVersion: "1"
+type: "component"
+id: "oci-zero-trust-packet-routing"
+kind: "policy-engine"
+provider: "oci"
+defaults:
+  managed: true
+  effect: "deny"
+  enforcementMode: "enforced"
+  scope: "resource"
+  remediation: false
+properties:
+  defaultDeny:
+    type: "boolean"
+    default: true
+  evaluatedWithNetworkSecurityGroups:
+    type: "boolean"
+    default: true
+  attributeDriven:
+    type: "boolean"
+    default: true

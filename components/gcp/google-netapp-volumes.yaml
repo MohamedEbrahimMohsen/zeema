@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud NetApp Volumes: managed NetApp ONTAP file service serving NFS and SMB from a
+# storage pool. "Storage pools overview" states Standard, Premium and Extreme pools are
+# zonal, regional two-zone replication is an opt-in Flex choice, and volumes are encrypted
+# at rest with a Google-managed key by default.
+schemaVersion: "1"
+type: "component"
+id: "google-netapp-volumes"
+kind: "file-storage"
+provider: "gcp"
+defaults:
+  protocol: "multi"
+  redundancy: "zonal"
+  backupEnabled: false
+  managed: true
+properties:
+  serviceLevel:
+    type: "enum"
+    values: ["flex-unified", "flex-file", "standard", "premium", "extreme"]
+  volumeReplication:
+    type: "boolean"
+    default: false

@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Tableau Server: self-hosted publishing platform for Tableau workbooks and data sources.
+# "Guest User": the guest user, which lets anyone view or embed a view without signing in, comes
+# enabled only with a core-based licence, not with role-based licensing. "Row-Level Security
+# Options": entitlement tables, user filters or data policies on a virtual connection, each built
+# by an author; extract refresh runs on a schedule an administrator sets.
+schemaVersion: "1"
+type: "component"
+id: "tableau"
+kind: "bi-service"
+provider: "default"
+defaults:
+  managed: false
+  publicSharing: false
+  rowLevelSecurity: false
+  embeddedReports: true
+properties:
+  licenseModel:
+    type: "enum"
+    values: ["role-based", "core-based"]
+    default: "role-based"
+  guestUser:
+    type: "boolean"
+    default: false
+  rowLevelSecurityMethod:
+    type: "enum"
+    values: ["user-filter", "entitlement-table", "virtual-connection-policy"]
+  dataSourceMode:
+    type: "enum"
+    values: ["extract", "live"]

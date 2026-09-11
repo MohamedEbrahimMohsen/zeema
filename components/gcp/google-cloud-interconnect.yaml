@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloud Interconnect: physical connectivity between an on-premises network and a VPC network that does not traverse the public internet.
+# Defaults from "Cloud Interconnect overview": Dedicated links are 10 or 100 Gbps, Partner VLAN attachments 50 Mbps to 50 Gbps, and traffic is not encrypted by default.
+schemaVersion: "1"
+type: "component"
+id: "google-cloud-interconnect"
+kind: "network-fabric"
+provider: "gcp"
+defaults:
+  managed: true
+  interconnect: "private"
+properties:
+  connectionType:
+    type: "enum"
+    values: ["dedicated", "partner"]
+    default: "dedicated"
+  portSpeed:
+    type: "enum"
+    values: ["10-gbps", "100-gbps"]
+  encryption:
+    type: "enum"
+    values: ["none", "macsec", "ha-vpn"]
+    default: "none"
+  slaPercent:
+    type: "enum"
+    values: ["none", "99.9", "99.99"]

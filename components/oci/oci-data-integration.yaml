@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI Data Integration: "a fully managed, multi-tenant service ... Powered by Spark ETL or ELT processes"
+# ("Data Integration overview"). Work is organised in a workspace holding data assets, visual data flows and
+# tasks; a task runs on demand or on a schedule, so nothing runs until a schedule is attached.
+schemaVersion: "1"
+type: "component"
+id: "oci-data-integration"
+kind: "worker"
+provider: "oci"
+defaults:
+  managed: true
+  trigger: "schedule"
+properties:
+  taskType:
+    type: "enum"
+    values: ["integration", "data-loader", "sql", "rest", "pipeline", "data-flow"]
+  processingEngine:
+    type: "enum"
+    values: ["spark"]
+    default: "spark"
+  workspaceScoped:
+    type: "boolean"
+    default: true

@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI Batch: a managed service that queues, schedules and runs batch workloads on OCI Compute
+# ("How Batch Objects Work Together"). A batch context holds the network, fleets and job
+# prioritization rules; jobs live in job pools and their tasks are matched to a fleet through a
+# task profile that states the minimum OCPUs, memory and disk a task needs.
+schemaVersion: "1"
+type: "component"
+id: "oci-batch"
+kind: "worker"
+provider: "oci"
+defaults:
+  managed: true
+  trigger: "batch"
+properties:
+  taskProfileRequired:
+    type: "boolean"
+    default: true
+  priorityScheduling:
+    type: "boolean"
+    default: true

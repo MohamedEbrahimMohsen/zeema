@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Abstract kind: Edge cache and delivery network for static and streamed content (CloudFront, Cloudflare, Fastly, Open Connect).
+schemaVersion: "1"
+type: "kind"
+id: "cdn"
+category: "edge"
+properties:
+  caching:
+    type: "boolean"
+    default: true
+  edgeCompute:
+    type: "boolean"
+    default: false
+  originShield:
+    type: "boolean"
+    default: false
+  tls:
+    type: "boolean"
+    default: true
+  managed:
+    type: "boolean"
+    default: true

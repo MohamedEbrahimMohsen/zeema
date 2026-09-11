@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Twilio Video: managed rooms. Group rooms are SFU; P2P rooms bypass the media server.
+schemaVersion: "1"
+type: "component"
+id: "twilio-video"
+kind: "media-router"
+provider: "default"
+defaults:
+  managed: true
+  mode: "sfu"
+  transport: "both"
+  rerouteOnFailure: true
+properties:
+  roomType:
+    type: "enum"
+    values: ["go", "p2p", "group"]
+    default: "group"

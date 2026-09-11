@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Postmark: transactional email API. "Postmark API overview" documents no idempotency and a
+# 500-message batch cap; "Webhooks overview" states HMAC signature verification is not supported.
+schemaVersion: "1"
+type: "component"
+id: "postmark"
+kind: "third-party-api"
+provider: "default"
+defaults:
+  managed: true
+  idempotent: false
+  callbackStyle: "webhook"
+properties:
+  signedCallbacks:
+    type: "boolean"
+    default: false
+  batchMaxMessages:
+    type: "integer"
+    default: 500

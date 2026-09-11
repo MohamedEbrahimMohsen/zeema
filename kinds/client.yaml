@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Abstract kind: Software that talks to the system from outside the trust boundary. platform merges web, mobile, desktop and SDK client candidates.
+schemaVersion: "1"
+type: "kind"
+id: "client"
+category: "client"
+properties:
+  platform:
+    type: "enum"
+    values: ["web", "mobile", "desktop", "sdk", "tv", "embedded", "multi"]
+    required: true
+  localCache:
+    type: "boolean"
+    default: false
+  resendPolicy:
+    type: "enum"
+    values: ["none", "retry", "store-and-forward"]
+    default: "none"
+  offlineCapable:
+    type: "boolean"
+    default: false
+  persistentConnection:
+    type: "boolean"
+    default: false
+  managed:
+    type: "boolean"
+    default: false

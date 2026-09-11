@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare Images: managed storage, optimization and delivery for images, served through
+# named variants. A hosted image is at most 10 MB and 12,000 pixels on a side, 100 MP in
+# area ("Limits and formats"); images are served by the public variant unless a signed-URL
+# token is required ("Serve private images").
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-images"
+kind: "object-store"
+provider: "cloudflare"
+defaults:
+  managed: true
+  tier: "hot"
+properties:
+  maxImageSizeMb:
+    type: "integer"
+    default: 10
+  maxDimensionPixels:
+    type: "integer"
+    default: 12000
+  requireSignedUrls:
+    type: "boolean"
+    default: false

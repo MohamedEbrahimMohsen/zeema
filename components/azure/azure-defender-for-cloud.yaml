@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Microsoft Defender for Cloud: CNAPP that raises security recommendations and alerts across Azure,
+# AWS, GCP and on-premises. Foundational CSPM (policy management, secure score, multicloud coverage)
+# is free once the solution is enabled; Defender CSPM and the workload protection plans are separate
+# paid opt-ins ("Microsoft Defender for Cloud Overview").
+schemaVersion: "1"
+type: "component"
+id: "azure-defender-for-cloud"
+kind: "monitoring"
+provider: "azure"
+defaults:
+  managed: true
+  signal: "alerts"
+properties:
+  foundationalCspm:
+    type: "boolean"
+    default: true
+  defenderCspmPlan:
+    type: "boolean"
+    default: false
+  workloadProtectionPlans:
+    type: "boolean"
+    default: false
+  regulatoryCompliance:
+    type: "boolean"
+    default: false
+  multicloudCoverage:
+    type: "boolean"
+    default: true

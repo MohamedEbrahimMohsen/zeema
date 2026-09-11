@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Routes API: computes routes, ETAs and route matrices; supersedes the Directions and Distance Matrix APIs.
+# "Routes API Usage and Billing": Compute Routes has a rate limit of 3,000 QPM, Compute Route Matrix 3,000 elements
+# per minute, and a route request accepts at most 25 intermediate waypoints.
+schemaVersion: "1"
+type: "component"
+id: "google-routes-api"
+kind: "third-party-api"
+provider: "gcp"
+defaults:
+  managed: true
+  idempotent: true
+  callbackStyle: "none"
+  hostedPage: false
+  handlesMoney: false
+  slaPercent: "99.9"
+properties:
+  computeRoutesQueriesPerMinute:
+    type: "integer"
+    default: 3000
+  routeMatrixElementsPerMinute:
+    type: "integer"
+    default: 3000
+  maxIntermediateWaypoints:
+    type: "integer"
+    default: 25

@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare Health Checks: standalone origin monitoring that probes servers from Cloudflare's network.
+# "Health Checks": checks run from one to thirteen chosen regions over HTTP, HTTPS or TCP and raise
+# notifications; the probe port defaults to 80 for HTTP and 443 for HTTPS.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-health-checks"
+kind: "monitoring"
+provider: "cloudflare"
+defaults:
+  managed: true
+  signal: "alerts"
+  collectorMode: "pull"
+  independentOfMonitored: true
+properties:
+  protocol:
+    type: "enum"
+    values: ["http", "https", "tcp"]
+  checkRegions:
+    type: "integer"

@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apache APISIX: self-hosted gateway storing its configuration in etcd. Per the "Admin API" upstream
+# object the load balancing type defaults to roundrobin and scheme defaults to http; per "Upstream"
+# health checks and plugins such as limit-req are opt-in, so nothing is throttled out of the box.
+schemaVersion: "1"
+type: "component"
+id: "apisix"
+kind: "api-gateway"
+provider: "default"
+defaults:
+  managed: false
+  rateLimiting: false
+  protocol: "http"
+properties:
+  loadBalancing:
+    type: "enum"
+    values: ["round-robin", "chash", "ewma", "least-conn"]
+    default: "round-robin"
+  etcdBacked:
+    type: "boolean"
+    default: true

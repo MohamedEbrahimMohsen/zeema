@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# TDengine: time-series database with one table per device and tag-indexed supertables.
+# Per "Databases" (SQL manual) CREATE DATABASE defaults to KEEP 3650 days, REPLICA 1 and
+# COMP 2, so data is compressed, kept ten years and not replicated out of the box.
+schemaVersion: "1"
+type: "component"
+id: "tdengine"
+kind: "timeseries-database"
+provider: "default"
+defaults:
+  retentionRawDays: 3650
+  downsampling: false
+  tiers: "single"
+  labelIndex: true
+  compression: "other"
+  managed: false
+properties:
+  replica:
+    type: "integer"
+    default: 1
+  compressionLevel:
+    type: "integer"
+    default: 2
+  streamComputing:
+    type: "boolean"
+    default: false

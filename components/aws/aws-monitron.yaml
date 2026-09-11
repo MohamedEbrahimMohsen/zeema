@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Monitron: end-to-end condition monitoring where paired Bluetooth sensors on an asset send vibration and temperature readings through a Wi-Fi or Ethernet gateway to the AWS Cloud for ISO and ML analysis. In maintenance since 31 October 2024 and closed to new customers; placeable until end of support.
+# "Amazon Monitron components" gives the device facts: Bluetooth Low Energy 5 sensors with a default data capture of once an hour and an estimated five-year battery, up to 20 sensors per asset, and Ethernet (PoE) or 2.4 GHz Wi-Fi gateways, with Ethernet described as the global standard; "Accessing your Amazon Monitron data" makes export to Amazon Kinesis or Amazon S3 an opt-in step.
+schemaVersion: "1"
+type: "component"
+id: "aws-monitron"
+kind: "iot-hub"
+provider: "aws"
+defaults:
+  perDeviceIdentity: true
+  deviceProvisioning: true
+  managed: true
+properties:
+  sensorWirelessProtocol:
+    type: "enum"
+    values: ["bluetooth-low-energy-5"]
+    default: "bluetooth-low-energy-5"
+  gatewayConnectivity:
+    type: "enum"
+    values: ["ethernet", "wifi"]
+    default: "ethernet"
+  measurementsPerSensorPerDay:
+    type: "integer"
+    default: 24
+  maxSensorsPerAsset:
+    type: "integer"
+    default: 20
+  dataExport:
+    type: "boolean"
+    default: false

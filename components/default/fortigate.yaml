@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Fortinet FortiGate (FortiOS): NGFW appliance. The "Implicit rule" and "Firewall policy"
+# guides state traffic matching no policy hits the implicit deny policy and is dropped;
+# inspection is stateful and the per-policy inspection mode defaults to flow-based.
+# IPS is a separate security profile that must be attached to a policy.
+schemaVersion: "1"
+type: "component"
+id: "fortigate"
+kind: "firewall"
+provider: "default"
+defaults:
+  managed: false
+  defaultAction: "deny"
+  stateful: true
+  intrusionPrevention: false
+properties:
+  inspectionMode:
+    type: "enum"
+    values: ["flow-based", "proxy-based"]
+    default: "flow-based"
+  formFactor:
+    type: "enum"
+    values: ["hardware", "virtual-machine", "cloud"]
+    default: "hardware"
+  securityProfiles:
+    type: "boolean"
+    default: false
+  haCluster:
+    type: "boolean"
+    default: false

@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Checkout.com: card acquiring API. "Idempotency" documents the Cko-Idempotency-Key header with
+# keys expiring after 24 hours; webhooks carry an HMAC-SHA256 Cko-Signature header.
+schemaVersion: "1"
+type: "component"
+id: "checkout-com"
+kind: "third-party-api"
+provider: "default"
+defaults:
+  managed: true
+  idempotent: true
+  handlesMoney: true
+  callbackStyle: "webhook"
+properties:
+  idempotencyWindowHours:
+    type: "integer"
+    default: 24
+  signedCallbacks:
+    type: "boolean"
+    default: true

@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Managed Service for Prometheus: serverless Prometheus-compatible metric workspace queried with PromQL.
+# "What is Amazon Managed Service for Prometheus?": ingested metrics are stored 150 days by default (adjustable
+# up to 1095) and data in a workspace is replicated across three Availability Zones in the Region.
+schemaVersion: "1"
+type: "component"
+id: "aws-managed-prometheus"
+kind: "monitoring"
+provider: "aws"
+defaults:
+  signal: "metrics"
+  collectorMode: "push"
+  retentionDays: 150
+  managed: true
+properties:
+  availabilityZones:
+    type: "integer"
+    default: 3
+  alertManager:
+    type: "boolean"
+    default: false
+  managedScraper:
+    type: "boolean"
+    default: false

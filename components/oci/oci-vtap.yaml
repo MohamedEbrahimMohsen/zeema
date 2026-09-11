@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Cloud Virtual Test Access Point: mirrors full traffic from a VNIC, load balancer, database
+# system or network firewall to a network load balancer target ("Virtual Test Access Points").
+# A VTAP is created stopped, and its capture filter holds between one and ten ordered rules.
+schemaVersion: "1"
+type: "component"
+id: "oci-vtap"
+kind: "monitoring"
+provider: "oci"
+defaults:
+  managed: true
+  signal: "logs"
+  collectorMode: "push"
+  independentOfMonitored: false
+properties:
+  lifecycleStateOnCreate:
+    type: "enum"
+    values: ["stopped", "running"]
+    default: "stopped"
+  targetType:
+    type: "enum"
+    values: ["network-load-balancer"]
+    default: "network-load-balancer"
+  maxCaptureFilterRules:
+    type: "integer"
+    default: 10
+  packetTruncation:
+    type: "boolean"
+    default: false

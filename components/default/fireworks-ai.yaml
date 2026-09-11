@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Fireworks AI: hosted inference for open-source text, vision, audio, image and embedding models.
+# Per "Introduction", serverless endpoints are pay-per-token and shared, while on-demand deployments run
+# the same model on dedicated autoscaling GPUs; serverless is the default way a model is reached.
+schemaVersion: "1"
+type: "component"
+id: "fireworks-ai"
+kind: "ai-service"
+provider: "default"
+defaults:
+  managed: true
+  modality: "multimodal"
+  publicEndpoint: true
+properties:
+  serving:
+    type: "enum"
+    values: ["serverless", "on-demand", "enterprise-reserved"]
+    default: "serverless"
+  autoscaling:
+    type: "boolean"
+    default: true
+  fineTuning:
+    type: "boolean"
+    default: false

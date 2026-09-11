@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Application Gateway: managed L7 balancer. WAF is a separate SKU and off by default.
+schemaVersion: "1"
+type: "component"
+id: "azure-application-gateway"
+kind: "load-balancer"
+provider: "azure"
+defaults:
+  layer: "l7"
+  managed: true
+properties:
+  waf:
+    type: "boolean"
+    default: false

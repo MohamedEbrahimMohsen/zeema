@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Redpanda Connect: single-binary stream processor (formerly Benthos). Its transaction model means
+# "a message from an input is not acknowledged ... until that message has been processed and either
+# intentionally deleted or successfully delivered to all outputs"; buffers are an optional component
+# and "are able to modify (or disable) the transaction model" ("Redpanda Connect, Buffers").
+schemaVersion: "1"
+type: "component"
+id: "redpanda-connect"
+kind: "stream-processor"
+provider: "default"
+defaults:
+  managed: false
+  windowing: "none"
+  exactlyOnce: false
+  stateBackend: "memory"
+properties:
+  buffer:
+    type: "enum"
+    values: ["none", "memory", "sqlite", "system-window"]
+    default: "none"
+  deployment:
+    type: "enum"
+    values: ["self-hosted", "cloud"]
+    default: "self-hosted"

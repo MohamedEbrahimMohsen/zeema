@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Dokku, a single-host PaaS driven by git push. Per "Application Deployment" Herokuish buildpacks are the
+# default build method, per "Process Management" an initial deploy starts a single web process, and per the
+# same docs Let's Encrypt is an optional plugin rather than built-in.
+schemaVersion: "1"
+type: "component"
+id: "dokku"
+kind: "app-server"
+provider: "default"
+defaults:
+  managed: false
+  stateless: true
+  autoscaling: false
+  instances: 1
+  ownsData: false
+properties:
+  builder:
+    type: "enum"
+    values: ["herokuish", "dockerfile", "docker-image", "pack"]
+    default: "herokuish"
+  automaticTls:
+    type: "boolean"
+    default: false
+  singleHost:
+    type: "boolean"
+    default: true

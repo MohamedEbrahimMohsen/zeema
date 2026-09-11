@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle WebCenter Portal on Marketplace: a stack that provisions a customer-administered WebCenter
+# Portal WebLogic domain (2 portal nodes of 2 OCPUs by default) together with a WebCenter Content
+# domain, a flexible load balancer and a database. Content is stored in the database, OCI File Storage
+# or Object Storage. Facts from "Using Oracle WebCenter Portal 14c (14.1.2) on Marketplace in OCI".
+schemaVersion: "1"
+type: "component"
+id: "oci-webcenter"
+kind: "app-server"
+provider: "oci"
+defaults:
+  managed: false
+  runtime: "weblogic"
+  instances: 2
+properties:
+  ocpuPerNode:
+    type: "integer"
+    default: 2
+  contentStorage:
+    type: "enum"
+    values: ["database", "file-system", "object-storage"]
+  webcenterContentIncluded:
+    type: "boolean"
+    default: true
+  quickStart:
+    type: "boolean"
+    default: false

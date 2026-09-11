@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Zendesk API: REST interface to Zendesk Support tickets, users and help centre. "Rate limits":
+# the Support API allows 200 requests per minute on the entry Suite Team plan, 400 on Growth and
+# Professional, 700 on Enterprise and 2500 on Enterprise Plus, and the High Volume API add-on
+# raises a qualifying plan to 2500. Ticket writes have no idempotency key.
+schemaVersion: "1"
+type: "component"
+id: "zendesk"
+kind: "third-party-api"
+provider: "default"
+defaults:
+  managed: true
+  idempotent: false
+  callbackStyle: "webhook"
+  hostedPage: false
+  handlesMoney: false
+properties:
+  plan:
+    type: "enum"
+    values: ["team", "growth", "professional", "enterprise", "enterprise-plus"]
+    default: "team"
+  requestsPerMinute:
+    type: "integer"
+    default: 200
+  highVolumeApiAddOn:
+    type: "boolean"
+    default: false

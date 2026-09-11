@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Cloud Functions: Fn-based serverless functions, stateless and autoscaled.
+schemaVersion: "1"
+type: "component"
+id: "oci-functions"
+kind: "app-server"
+provider: "oci"
+defaults:
+  managed: true
+  stateless: true
+  autoscaling: true
+properties:
+  timeoutSeconds:
+    type: "integer"
+    default: 30
+  memoryMb:
+    type: "integer"
+    default: 128

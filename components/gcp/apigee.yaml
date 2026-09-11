@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Apigee: managed API platform. Quota and spike-arrest policies are opt-in per proxy.
+schemaVersion: "1"
+type: "component"
+id: "apigee"
+kind: "api-gateway"
+provider: "gcp"
+defaults:
+  managed: true
+  tls: true
+  rateLimiting: false
+properties:
+  deployment:
+    type: "enum"
+    values: ["saas", "hybrid"]
+    default: "saas"

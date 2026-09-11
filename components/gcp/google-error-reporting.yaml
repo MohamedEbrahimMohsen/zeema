@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud Error Reporting: aggregates errors reported through Cloud Logging or the Error Reporting API
+# into error groups. Per "Error Reporting quotas and limits" data is retained 30 days, a project holds at
+# most 10,000 deployment/error-group pairs and accepts 6,000 error reports per minute.
+schemaVersion: "1"
+type: "component"
+id: "google-error-reporting"
+kind: "monitoring"
+provider: "gcp"
+defaults:
+  managed: true
+  signal: "logs"
+  collectorMode: "push"
+  alertGrouping: true
+  retentionDays: 30
+properties:
+  errorGroupPairLimit:
+    type: "integer"
+    default: 10000
+  reportsPerMinute:
+    type: "integer"
+    default: 6000

@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Abstract kind: Managed entry point that routes, authenticates and throttles inbound calls.
+schemaVersion: "1"
+type: "kind"
+id: "api-gateway"
+category: "edge"
+properties:
+  auth:
+    type: "enum"
+    values: ["none", "api-key", "jwt", "oauth2", "mtls"]
+    default: "none"
+  rateLimiting:
+    type: "boolean"
+    default: false
+  tls:
+    type: "boolean"
+    default: true
+  idempotencyKeys:
+    type: "boolean"
+    default: false
+  keyTtlHours:
+    type: "integer"
+  protocol:
+    type: "enum"
+    values: ["http", "grpc", "websocket", "fix", "ouch"]
+    default: "http"
+  concurrencyLimit:
+    type: "boolean"
+    default: false
+  managed:
+    type: "boolean"
+    default: false

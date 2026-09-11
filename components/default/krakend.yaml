@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# KrakenD: self-hosted stateless API gateway whose core job is aggregating several backend responses
+# into one endpoint. Per "Backends" the host array is the egress load balancing list and rate limiting
+# and JWT/OAuth2 validation are optional components declared per endpoint.
+schemaVersion: "1"
+type: "component"
+id: "krakend"
+kind: "api-gateway"
+provider: "default"
+defaults:
+  managed: false
+  rateLimiting: false
+properties:
+  stateless:
+    type: "boolean"
+    default: true
+  responseAggregation:
+    type: "boolean"
+    default: true

@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# MySQL HeatWave cluster: the in-memory query accelerator added to a MySQL HeatWave DB system.
+# "Features of MySQL HeatWave Service" describes it as a distributed, scalable, shared-nothing,
+# in-memory, hybrid columnar query processing engine loaded from InnoDB, so analytics run on the
+# transactional data with no ETL copy; it is added to a DB system, not created on its own.
+schemaVersion: "1"
+type: "component"
+id: "oci-mysql-heatwave-cluster"
+kind: "data-warehouse"
+provider: "oci"
+defaults:
+  managed: true
+  realtime: true
+  format: "columnar"
+  upsert: true
+properties:
+  lakehouse:
+    type: "boolean"
+  autoMl:
+    type: "boolean"

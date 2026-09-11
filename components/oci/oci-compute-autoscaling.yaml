@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI autoscaling configuration for an instance pool: metric-based or schedule-based rules that
+# resize the pool ("Autoscaling"). That page evaluates Monitoring metrics aggregated into
+# one-minute periods and needs three consecutive periods over the threshold to act; the cooldown
+# between scaling actions is 300 seconds, which is both the default and the minimum.
+schemaVersion: "1"
+type: "component"
+id: "oci-compute-autoscaling"
+kind: "virtual-machine"
+provider: "oci"
+defaults:
+  managed: true
+properties:
+  policyType:
+    type: "enum"
+    values: ["metric-based", "schedule-based"]
+  metric:
+    type: "enum"
+    values: ["cpu-utilization", "memory-utilization"]
+  coolDownSeconds:
+    type: "integer"
+    default: 300
+  evaluationPeriods:
+    type: "integer"
+    default: 3

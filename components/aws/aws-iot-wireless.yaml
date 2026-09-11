@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS IoT Core for LoRaWAN: managed LoRaWAN network server for LoRaWAN gateways and end devices.
+# "What is AWS IoT Core for LoRaWAN?" states it replaces a private LoRaWAN network server, secures
+# device communication with X.509 certificates, and routes device messages through AWS IoT rules
+# destinations; devices run in class A or class B mode for battery life.
+schemaVersion: "1"
+type: "component"
+id: "aws-iot-wireless"
+kind: "iot-hub"
+provider: "aws"
+defaults:
+  protocol: "lorawan"
+  perDeviceIdentity: true
+  deviceTwin: false
+  managed: true
+properties:
+  networkServerManaged:
+    type: "boolean"
+    default: true
+  rulesEngineDestination:
+    type: "boolean"
+    default: true
+  deviceClass:
+    type: "enum"
+    values: ["class-a", "class-b", "class-c"]

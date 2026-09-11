@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Location Service: fully managed maps, places, routes, trackers and geofences API
+# ("What is Amazon Location Service"). Queries sent to data providers are anonymised by removing customer
+# metadata and account information, and tracker and geofence data never leaves the AWS account.
+schemaVersion: "1"
+type: "component"
+id: "aws-location-service"
+kind: "third-party-api"
+provider: "aws"
+defaults:
+  managed: true
+  callbackStyle: "none"
+  hostedPage: false
+  handlesMoney: false
+properties:
+  capability:
+    type: "enum"
+    values: ["maps", "places", "routes", "trackers", "geofences"]
+  queryAnonymization:
+    type: "boolean"
+    default: true

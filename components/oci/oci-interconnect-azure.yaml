@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Interconnect for Microsoft Azure: a FastConnect private virtual circuit paired with an Azure ExpressRoute circuit.
+# Defaults from "Access to Microsoft Azure": traffic uses private IP addresses and never crosses the internet, the
+# connection has built-in redundancy so a single virtual circuit and a single ExpressRoute circuit suffice, and the
+# bandwidth is whatever the ExpressRoute circuit is set to.
+schemaVersion: "1"
+type: "component"
+id: "oci-interconnect-azure"
+kind: "network-fabric"
+provider: "oci"
+defaults:
+  managed: true
+  interconnect: "private"
+  multicast: false
+  kernelBypass: false
+  overlay: false
+properties:
+  peerCloud:
+    type: "enum"
+    values: ["azure"]
+    default: "azure"
+  builtInRedundancy:
+    type: "boolean"
+    default: true
+  bandwidthFollowsPeerCircuit:
+    type: "boolean"
+    default: true
+  requiresBgp:
+    type: "boolean"
+    default: true

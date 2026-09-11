@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Address Validation API: validates and standardises a postal address and reports what it corrected or inferred.
+# "Address Validation API Usage and Billing": maximum request limit of 6,000 queries per minute for the validation
+# methods and a separate 6,000 QPM limit for feedback methods. Covered by the Google Maps Platform SLA (99.9%).
+schemaVersion: "1"
+type: "component"
+id: "google-address-validation-api"
+kind: "third-party-api"
+provider: "gcp"
+defaults:
+  managed: true
+  idempotent: true
+  callbackStyle: "none"
+  hostedPage: false
+  handlesMoney: false
+  slaPercent: "99.9"
+properties:
+  validationQueriesPerMinute:
+    type: "integer"
+    default: 6000
+  feedbackQueriesPerMinute:
+    type: "integer"
+    default: 6000

@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Grafana Loki: self-hosted log aggregation that indexes labels only and receives logs by push.
+# Retention is off by default (compactor.retention-enabled unset, retention_period 0s = kept forever)
+# per "Log retention" in the Loki documentation.
+schemaVersion: "1"
+type: "component"
+id: "loki"
+kind: "monitoring"
+provider: "default"
+defaults:
+  signal: "logs"
+  collectorMode: "push"
+  managed: false
+properties:
+  retentionEnabled:
+    type: "boolean"
+    default: false
+  deploymentMode:
+    type: "enum"
+    values: ["single-binary", "monolithic-ha", "microservices"]
+    default: "single-binary"

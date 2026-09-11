@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Elastic VMware Service: a VMware Cloud Foundation environment on EC2 bare metal inside your
+# own VPC, which you self-manage ("What is Amazon Elastic VMware Service?"). vSAN datastores sit on
+# ephemeral NVMe instance store, and the default quota is five hosts per environment
+# ("Amazon Elastic VMware Service endpoints and quotas").
+schemaVersion: "1"
+type: "component"
+id: "aws-evs"
+kind: "virtual-machine"
+provider: "aws"
+defaults:
+  managed: false
+properties:
+  hostInstanceType:
+    type: "enum"
+    values: ["i4i-metal"]
+    default: "i4i-metal"
+  maxHostsPerEnvironment:
+    type: "integer"
+    default: 5
+  vsanOnInstanceStore:
+    type: "boolean"
+    default: true
+  nsxEdgeActiveStandby:
+    type: "boolean"
+    default: true

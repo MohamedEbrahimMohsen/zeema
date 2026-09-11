@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# SGLang: GPU LLM serving runtime with an OpenAI-compatible HTTP API.
+# Defaults from "Server Arguments": host 127.0.0.1, port 30000, tp-size 1 and mem-fraction-static
+# derived from detected GPU memory (about 0.88).
+schemaVersion: "1"
+type: "component"
+id: "sglang"
+kind: "ml-inference"
+provider: "default"
+defaults:
+  training: "batch"
+  inputs: "live"
+  accelerator: "gpu"
+  managed: false
+properties:
+  port:
+    type: "integer"
+    default: 30000
+  bindAddress:
+    type: "string"
+    default: "127.0.0.1"
+  tensorParallelSize:
+    type: "integer"
+    default: 1

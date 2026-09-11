@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Video Stitcher API: a managed manifest service that sits between the player and the origin or CDN and
+# stitches re-encoded ads into CMAF-compliant HLS and DASH streams, tracking ad events server-side
+# ("Video Stitcher API overview"). CDN keys for URL signing are registered per CDN, none by default.
+schemaVersion: "1"
+type: "component"
+id: "google-video-stitcher-api"
+kind: "media-router"
+provider: "gcp"
+defaults:
+  managed: true
+  mode: "ingest"
+  transport: "tcp"
+  cascading: false
+  rerouteOnFailure: false
+properties:
+  adTracking:
+    type: "enum"
+    values: ["server", "client"]
+    default: "server"
+  contentType:
+    type: "enum"
+    values: ["vod", "live"]
+  cdnKey:
+    type: "enum"
+    values: ["none", "media-cdn", "cloud-cdn", "akamai"]
+    default: "none"

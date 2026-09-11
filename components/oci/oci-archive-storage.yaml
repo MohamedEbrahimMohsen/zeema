@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI Archive Storage bucket: the Object Storage archive tier for data kept and rarely read
+# ("Overview of Archive Storage"), with a 90 day minimum retention, up to one hour to first byte
+# after a restore and a 24 hour download window by default (1 to 240 hours). "Overview of Object
+# Storage": buckets are private and encrypted with AES-256 at rest, and reads are strongly consistent.
+schemaVersion: "1"
+type: "component"
+id: "oci-archive-storage"
+kind: "object-store"
+provider: "oci"
+defaults:
+  managed: true
+  tier: "cold"
+  versioning: false
+  strongReadAfterWrite: true
+  encryptionAtRest: true
+properties:
+  minimumRetentionDays:
+    type: "integer"
+    default: 90
+  restoreTimeToFirstByteHours:
+    type: "integer"
+    default: 1
+  restoreWindowHours:
+    type: "integer"
+    default: 24
+  maxObjectSizeTib:
+    type: "integer"
+    default: 10

@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS AppConfig: managed config and flags rolled out via deployment strategies.
+schemaVersion: "1"
+type: "component"
+id: "aws-appconfig"
+kind: "feature-flag-service"
+provider: "aws"
+defaults:
+  stagedRollout: true
+  managed: true
+properties:
+  deploymentStrategy:
+    type: "enum"
+    values: ["all-at-once", "linear", "canary"]

@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Classic Load Balancer: previous-generation Elastic Load Balancing device with HTTP/HTTPS and
+# TCP/SSL listeners over EC2 instances ("What is a Classic Load Balancer?"). Previous generation,
+# AWS recommends migrating; no end-of-support date is published.
+# Traffic is spread evenly across enabled Availability Zones only until cross-zone is enabled; the
+# idle timeout is 60 seconds and connection draining is on with 300 seconds ("Configure the idle connection timeout").
+schemaVersion: "1"
+type: "component"
+id: "aws-classic-load-balancer"
+kind: "load-balancer"
+provider: "aws"
+defaults:
+  managed: true
+  layer: "l7"
+  hashing: "round-robin"
+  healthChecks: true
+  global: false
+properties:
+  listenerProtocol:
+    type: "enum"
+    values: ["http", "https", "tcp", "ssl"]
+    default: "http"
+  crossZone:
+    type: "boolean"
+    default: false
+  idleTimeoutSeconds:
+    type: "integer"
+    default: 60
+  connectionDraining:
+    type: "boolean"
+    default: true
+  stickySessions:
+    type: "boolean"
+    default: false

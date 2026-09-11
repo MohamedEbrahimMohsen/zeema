@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# HandBrake: desktop and CLI video transcoder. Per "Official Presets", the default preset is
+# Fast 1080p30: one H.264 output in an MP4 container, AAC stereo audio, no packaging and no
+# burned-in subtitles, so it produces a single rendition file rather than a ladder.
+schemaVersion: "1"
+type: "component"
+id: "handbrake"
+kind: "media-transcoder"
+provider: "default"
+defaults:
+  managed: false
+  mode: "file"
+  videoCodec: "h264"
+  renditions: 1
+  packaging: "none"
+  drm: false
+  captions: false
+properties:
+  preset:
+    type: "enum"
+    values: ["fast-1080p30", "very-fast-1080p30", "hq-1080p30-surround", "production-standard"]
+    default: "fast-1080p30"
+  container:
+    type: "enum"
+    values: ["mp4", "mkv", "webm"]
+    default: "mp4"

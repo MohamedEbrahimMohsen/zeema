@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Prometheus Alertmanager: self-hosted receiver for alerts pushed by Prometheus; it deduplicates, groups
+# and silences them, waiting 30s before the first notification and repeating every 4h ("Configuration").
+schemaVersion: "1"
+type: "component"
+id: "alertmanager"
+kind: "notification-service"
+provider: "default"
+defaults:
+  managed: false
+  channelPush: false
+  channelEmail: true
+  channelSms: false
+  dedupKey: true
+  templateStore: true
+properties:
+  groupWaitSeconds:
+    type: "integer"
+    default: 30
+  groupIntervalSeconds:
+    type: "integer"
+    default: 300
+  repeatIntervalHours:
+    type: "integer"
+    default: 4

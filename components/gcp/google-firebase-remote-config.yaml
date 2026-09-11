@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Firebase Remote Config ("Firebase Remote Config" overview and "Get started with Remote Config on
+# Android"): server-side parameters with conditions and percentage rollouts, backed by in-app
+# default values. Clients cache for a default minimum fetch interval of 12 hours, real-time
+# propagation is opt-in code you add, and up to 300 lifetime template versions are kept for rollback.
+schemaVersion: "1"
+type: "component"
+id: "google-firebase-remote-config"
+kind: "feature-flag-service"
+provider: "gcp"
+defaults:
+  stagedRollout: true
+  killSwitches: true
+  managed: true
+properties:
+  minimumFetchIntervalSeconds:
+    type: "integer"
+    default: 43200
+  realtimeUpdates:
+    type: "boolean"
+    default: false
+  conditionalTargeting:
+    type: "boolean"
+    default: true
+  versionHistoryLimit:
+    type: "integer"
+    default: 300

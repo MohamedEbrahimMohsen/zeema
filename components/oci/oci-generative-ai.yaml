@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle OCI Generative AI: fully managed chat, embedding and rerank models reached over a
+# public regional endpoint, with OpenAI-compatible APIs. "Generative AI Overview" and
+# "On-Demand and Dedicated Modes": on-demand serving is throttled dynamically, not by a
+# published per-minute quota, so quotaUnitsPerMinute is left absent.
+schemaVersion: "1"
+type: "component"
+id: "oci-generative-ai"
+kind: "ai-service"
+provider: "oci"
+defaults:
+  modality: "text"
+  publicEndpoint: true
+  managed: true
+properties:
+  servingMode:
+    type: "enum"
+    values: ["on-demand", "dedicated"]
+    default: "on-demand"
+  capability:
+    type: "enum"
+    values: ["chat", "embedding", "rerank"]
+    default: "chat"
+  openAiCompatibleApi:
+    type: "boolean"
+    default: true
+  dynamicThrottling:
+    type: "boolean"
+    default: true

@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Snowplow: event pipeline that collects, validates and enriches behavioural events before loading
+# them into a warehouse, lake or stream. The Stream Collector "receives raw Snowplow events sent
+# over HTTP by trackers or webhooks ... and writes them to a sink" - Kinesis, Pub/Sub, Kafka, NSQ
+# or SQS - and sets a first-party tracking cookie with a one year expiry ("Stream Collector").
+# Enrichment is per event, not windowed; Community Edition is deployed and run by you ("Get started").
+schemaVersion: "1"
+type: "component"
+id: "snowplow"
+kind: "stream-processor"
+provider: "default"
+defaults:
+  managed: false
+  windowing: "none"
+properties:
+  edition:
+    type: "enum"
+    values: ["community-edition", "self-hosted-production", "private-managed-cloud", "cdi-cloud"]
+    default: "community-edition"
+  streamBackend:
+    type: "enum"
+    values: ["kinesis", "pubsub", "kafka", "nsq", "sqs"]
+  failedEventStream:
+    type: "boolean"
+    default: true
+  cookieExpiryDays:
+    type: "integer"
+    default: 365

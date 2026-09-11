@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Atlassian Bamboo: self-hosted Data Center build and deployment server. "Bamboo agents" separates
+# local agents, which run "in the same JVM as the server", from remote agents, each of which "runs
+# in its own process" on another machine, and elastic agents, which are remote agents started from
+# an AMI in Amazon EC2; every agent runs only jobs whose requirements match its capabilities.
+schemaVersion: "1"
+type: "component"
+id: "bamboo"
+kind: "ci-pipeline"
+provider: "default"
+defaults:
+  selfHostedRunners: true
+  approvalRequired: false
+  managed: false
+properties:
+  agentType:
+    type: "enum"
+    values: ["local", "remote", "elastic"]
+    default: "local"
+  capabilityMatching:
+    type: "boolean"
+    default: true
+  deploymentProjects:
+    type: "boolean"
+    default: false

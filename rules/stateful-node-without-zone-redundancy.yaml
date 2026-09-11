@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../schema/rule.schema.json
+# A stateful compute node pinned to exactly one availability zone disappears with that
+# zone, and its state with it. Nodes inside a cell group are exempt: in a cell
+# architecture the cell is deliberately single-zone and redundancy comes from the other
+# cells.
+# Tripped by: designs/doordash-delivery.broken.yaml
+schemaVersion: "1"
+type: "rule"
+id: "stateful-node-without-zone-redundancy"
+severity: "error"
+select:
+  node:
+    category: "compute"
+when:
+  all:
+    - prop: "stateless"
+      equals: false
+    - inGroup:
+        kind: "availability-zone"
+        count:
+          eq: 1
+    - not:
+        inGroup:
+          kind: "cell"
+message: "Stateful node '{{node.id}}' lives in exactly one availability zone. A zone outage takes its state with it."

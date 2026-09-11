@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# HashiCorp Consul: Raft-backed service discovery and KV; ACLs off by default.
+schemaVersion: "1"
+type: "component"
+id: "consul"
+kind: "coordination-service"
+provider: "default"
+defaults:
+  role: "discovery"
+  consensus: "raft"
+  managed: false
+properties:
+  aclEnabled:
+    type: "boolean"
+    default: false

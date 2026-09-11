@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM MQ: queue-manager based messaging with assured once-only delivery for persistent messages sent
+# under transactions; persistent messages are logged to disk ("IBM MQ Technical overview").
+schemaVersion: "1"
+type: "component"
+id: "ibm-mq"
+kind: "queue"
+provider: "default"
+defaults:
+  delivery: "at-least-once"
+  ordering: "none"
+  persistence: true
+  deadLetterQueue: false
+  replay: false
+  managed: false
+properties:
+  transactional:
+    type: "boolean"
+    default: true
+  highAvailability:
+    type: "enum"
+    values: ["none", "multi-instance", "native-ha", "rdqm"]
+    default: "none"
+  clustered:
+    type: "boolean"
+    default: false

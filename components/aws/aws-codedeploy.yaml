@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS CodeDeploy: automates application deployments to EC2/on-premises instances, Lambda functions and
+# ECS services. Per "What is CodeDeploy?" EC2/On-Premises deployments are in-place or blue/green while
+# "All AWS Lambda and Amazon ECS deployments are blue/green"; per "Working with deployment configurations
+# in CodeDeploy", if no deployment configuration is specified CodeDeployDefault.OneAtATime is used.
+schemaVersion: "1"
+type: "component"
+id: "aws-codedeploy"
+kind: "ci-pipeline"
+provider: "aws"
+defaults:
+  trigger: "manual"
+  managed: true
+properties:
+  computePlatform:
+    type: "enum"
+    values: ["server", "lambda", "ecs"]
+    default: "server"
+  deploymentType:
+    type: "enum"
+    values: ["in-place", "blue-green"]
+    default: "in-place"
+  deploymentConfiguration:
+    type: "enum"
+    values: ["one-at-a-time", "half-at-a-time", "all-at-once", "canary", "linear"]
+    default: "one-at-a-time"
+  agentRequired:
+    type: "boolean"
+    default: true
+  automaticRollback:
+    type: "boolean"

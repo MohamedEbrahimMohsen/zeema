@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Prometheus local TSDB: single-node, Gorilla-compressed, fifteen days of raw retention,
+# no downsampling.
+schemaVersion: "1"
+type: "component"
+id: "prometheus-tsdb"
+kind: "timeseries-database"
+provider: "default"
+defaults:
+  retentionRawDays: 15
+  downsampling: false
+  tiers: "single"
+  labelIndex: true
+  compression: "gorilla"
+  managed: false
+properties:
+  remoteWrite:
+    type: "boolean"
+    default: false

@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle OCI Vision: managed image analysis endpoint (object detection, image classification,
+# text detection) with pretrained and custom models. "Vision Limits": 5 requests per second in
+# most regions and 10 in Ashburn, Phoenix and London; one image per synchronous request; 5 MB
+# per image; up to 2,000 images per asynchronous batch job.
+schemaVersion: "1"
+type: "component"
+id: "oci-ai-vision"
+kind: "ai-service"
+provider: "oci"
+defaults:
+  modality: "vision"
+  publicEndpoint: true
+  quotaUnitsPerMinute: 300
+  managed: true
+properties:
+  processing:
+    type: "enum"
+    values: ["sync", "async-batch"]
+    default: "sync"
+  modelType:
+    type: "enum"
+    values: ["pretrained", "custom"]
+    default: "pretrained"
+  imagesPerRequest:
+    type: "integer"
+    default: 1
+  maxImageMb:
+    type: "integer"
+    default: 5
+  maxImagesPerBatchJob:
+    type: "integer"
+    default: 2000

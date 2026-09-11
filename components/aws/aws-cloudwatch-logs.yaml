@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon CloudWatch Logs: managed log ingestion, storage and querying, pushed from agents and AWS services.
+# "What is Amazon CloudWatch Logs?": logs are kept indefinitely and never expire by default (so no retentionDays),
+# the Standard log class is the default, deletion protection is off, and data is encrypted in transit and at rest.
+schemaVersion: "1"
+type: "component"
+id: "aws-cloudwatch-logs"
+kind: "monitoring"
+provider: "aws"
+defaults:
+  signal: "logs"
+  collectorMode: "push"
+  managed: true
+properties:
+  logClass:
+    type: "enum"
+    values: ["standard", "infrequent-access"]
+    default: "standard"
+  deletionProtection:
+    type: "boolean"
+    default: false
+  dataProtectionPolicy:
+    type: "boolean"
+    default: false

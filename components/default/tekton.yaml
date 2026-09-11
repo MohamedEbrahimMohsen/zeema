@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Tekton Pipelines: Kubernetes-native CI/CD, installed as controllers in your own cluster, where a
+# TaskRun becomes a pod and secrets reach steps through Kubernetes Secrets bound to the run's
+# ServiceAccount. Runs are created by applying a PipelineRun; event-driven starts need the separate
+# Tekton Triggers EventListener, so nothing is wired to a commit out of the box.
+schemaVersion: "1"
+type: "component"
+id: "tekton"
+kind: "ci-pipeline"
+provider: "default"
+defaults:
+  trigger: "manual"
+  selfHostedRunners: true
+  approvalRequired: false
+  managed: false
+properties:
+  triggersInstalled:
+    type: "boolean"
+    default: false
+  workspaceBacking:
+    type: "enum"
+    values: ["empty-dir", "persistent-volume-claim", "config-map", "secret"]
+    default: "empty-dir"
+  chainsSigning:
+    type: "boolean"
+    default: false

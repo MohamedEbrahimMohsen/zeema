@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Asterisk: self-hosted open source telephony toolkit and IP PBX written in C, speaking SIP and
+# connecting to PSTN/POTS as well as VoIP phones ("Beginning Asterisk"). Callers wait in app_queue
+# in arrival order and the member-selection strategy defaults to ringall, which rings every
+# available member until one answers (queues.conf sample). Recording is not automatic: a dialplan
+# has to invoke MixMonitor, so nothing is recorded out of the box.
+schemaVersion: "1"
+type: "component"
+id: "asterisk"
+kind: "contact-center"
+provider: "default"
+defaults:
+  managed: false
+  channelVoice: true
+  channelChat: false
+  routing: "fifo"
+  callRecording: false
+  outboundDialing: false
+properties:
+  queueStrategy:
+    type: "enum"
+    values: ["ringall", "leastrecent", "fewestcalls", "random", "rrmemory", "linear", "wrandom"]
+    default: "ringall"
+  channelDriver:
+    type: "enum"
+    values: ["pjsip", "iax2", "dahdi", "websocket"]
+    default: "pjsip"
+  pstnInterconnect:
+    type: "boolean"
+    default: false

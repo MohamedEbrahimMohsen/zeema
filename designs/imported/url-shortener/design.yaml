@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Imported 2026-09-08 from source/url-shortener.md, a transcription of Figures 8-7 and 8-8 of
+# "System Design Interview - An Insider's Guide" (Alex Xu), Chapter 8: Design A URL Shortener,
+# pages 119-131. The book is copyrighted; source/ holds the citation and the transcription only.
+# Decisions, all recorded in mapping.yaml and notes.md:
+#   - The design is the union of the write path (Figure 8-7) and the read path (Figure 8-8).
+#     Figure 8-7 is a flow chart of the shortening procedure; its six boxes are numbered steps,
+#     not runtime elements, and the only store it draws ("DB") is Figure 8-8's Database. Each
+#     distinct box is counted once, so the runtime picture is Figure 8-8's five boxes.
+#   - The book draws unbranded boxes: Load balancer, Web servers, Cache and Database are the
+#     generic default-provider components, never a product the source does not name.
+#   - The dashed border around the web servers holds only the "Web servers" box and its own
+#     caption, so it is that box's border and not a boundary; the design has no groups.
+#   - requirements.traffic.readWriteRatio comes from the estimation section, which states the
+#     read to write ratio as 10:1.
+schemaVersion: "1"
+type: "design"
+id: "url-shortener"
+
+requirements:
+  traffic:
+    readWriteRatio: 10
+
+nodes:
+  - { id: "user", component: "web-browser", label: "User" }
+  - { id: "load-balancer", component: "load-balancer-tier", label: "Load balancer" }
+  - { id: "web-servers", component: "container-service", label: "Web servers" }
+  - { id: "cache", component: "cache-cluster", label: "Cache" }
+  - { id: "database", component: "relational-database", label: "Database" }
+
+edges:
+  - { from: "user", to: "load-balancer", protocol: "https", mode: "sync", label: "GET https://tinyurl.com/zn9edcu" }
+  - { from: "load-balancer", to: "web-servers", protocol: "https", mode: "sync" }
+  - { from: "web-servers", to: "cache", protocol: "cache", mode: "sync" }
+  - { from: "web-servers", to: "database", protocol: "sql", mode: "sync" }
+  - { from: "load-balancer", to: "user", protocol: "https", mode: "sync", label: "Return long URL: https://en.wikipedia.org/wiki/Systems_design" }

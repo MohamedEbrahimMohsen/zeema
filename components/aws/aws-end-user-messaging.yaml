@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS End User Messaging: application-to-person SMS, MMS, RCS and voice messaging (the SMS, MMS
+# and voice features formerly in Amazon Pinpoint). "SMS/MMS and Voice sandbox" says new accounts
+# start in the sandbox with a $1.00 USD monthly SMS spending limit and up to 10 verified
+# destination numbers; the v2 API emits no event data until you add an event destination.
+schemaVersion: "1"
+type: "component"
+id: "aws-end-user-messaging"
+kind: "notification-service"
+provider: "aws"
+defaults:
+  managed: true
+  channelSms: true
+  channelPush: false
+  channelEmail: false
+  templateStore: false
+  dedupKey: false
+  queuePerChannel: false
+properties:
+  sandbox:
+    type: "boolean"
+    default: true
+  sandboxMonthlySpendUsd:
+    type: "integer"
+    default: 1
+  verifiedDestinationLimit:
+    type: "integer"
+    default: 10
+  eventDestinationConfigured:
+    type: "boolean"
+    default: false
+  originationIdentityRequired:
+    type: "boolean"
+    default: true

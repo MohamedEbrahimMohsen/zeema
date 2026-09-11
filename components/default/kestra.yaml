@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Kestra: declarative YAML flows executed by an executor that persists execution state in the backend
+# ("Architecture"). The JDBC backend on a relational database is the default and serves as both queue
+# and repository; Kafka with Elasticsearch is an Enterprise option.
+schemaVersion: "1"
+type: "component"
+id: "kestra"
+kind: "workflow-engine"
+provider: "default"
+defaults:
+  durable: true
+  pattern: "dag"
+  compensation: false
+  managed: false
+properties:
+  backend:
+    type: "enum"
+    values: ["jdbc", "kafka"]
+    default: "jdbc"
+  database:
+    type: "enum"
+    values: ["h2", "postgres", "mysql"]
+    default: "postgres"

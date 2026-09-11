@@ -1,0 +1,12 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Language SDK embedded in a customer's service: no cache or resend unless the SDK implements it.
+schemaVersion: "1"
+type: "component"
+id: "sdk-client"
+kind: "client"
+provider: "default"
+defaults:
+  platform: "sdk"
+properties:
+  language:
+    type: "string"

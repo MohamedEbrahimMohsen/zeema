@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Cloud private endpoint / Private Service Access endpoint: a VNIC with a private IP and an
+# FQDN in a customer subnet fronting one OCI service resource ("Private Access to Oracle Services").
+# It is an additional path, the service keeps its public endpoint, and DNS must be arranged.
+schemaVersion: "1"
+type: "component"
+id: "oci-private-endpoint"
+kind: "private-link"
+provider: "oci"
+defaults:
+  managed: true
+  approvalRequired: false
+  crossRegion: false
+  publicAccessDisabled: false
+  privateDnsIntegration: false
+properties:
+  endpointType:
+    type: "enum"
+    values: ["private-endpoint", "psa-endpoint"]
+    default: "private-endpoint"
+  securityRulesApply:
+    type: "boolean"
+    default: true

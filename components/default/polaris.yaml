@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apache Polaris: open-source Iceberg REST catalog serving Spark, Trino, Flink and others.
+# "Access control": RBAC over principals, principal roles and catalog roles; TABLE_READ_DATA and
+# TABLE_WRITE_DATA hand out short-lived storage credentials scoped to the table location, so the
+# object store itself is what enforces the grant. Grants are catalog-level, not fine-grained.
+schemaVersion: "1"
+type: "component"
+id: "polaris"
+kind: "data-catalog"
+provider: "default"
+defaults:
+  managed: false
+  accessPolicyEnforcement: true
+  classification: false
+  lineage: false
+properties:
+  credentialVending:
+    type: "boolean"
+    default: true
+  catalogType:
+    type: "enum"
+    values: ["internal", "external"]
+    default: "internal"
+  tableFormat:
+    type: "enum"
+    values: ["iceberg"]
+    default: "iceberg"
+  fineGrainedAccess:
+    type: "boolean"
+    default: false

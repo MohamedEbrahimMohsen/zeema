@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Argo CD: "a declarative, GitOps continuous delivery tool for Kubernetes" running as a controller
+# in the cluster it deploys to. "Automated Sync Policy" makes automated sync opt-in and states that
+# "as a safety mechanism" it neither prunes removed resources nor self-heals drift by default; the
+# FAQ gives a 120 second timeout.reconciliation poll plus up to 60 seconds of jitter.
+schemaVersion: "1"
+type: "component"
+id: "argo-cd"
+kind: "ci-pipeline"
+provider: "default"
+defaults:
+  trigger: "manual"
+  approvalRequired: false
+  selfHostedRunners: true
+  managed: false
+properties:
+  automatedSync:
+    type: "boolean"
+    default: false
+  prune:
+    type: "boolean"
+    default: false
+  selfHeal:
+    type: "boolean"
+    default: false
+  reconciliationSeconds:
+    type: "integer"
+    default: 120
+  syncWaveHooks:
+    type: "boolean"
+    default: false

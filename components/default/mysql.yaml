@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# MySQL: single-primary relational database; replication is asynchronous and opt-in.
+schemaVersion: "1"
+type: "component"
+id: "mysql"
+kind: "sql-database"
+provider: "default"
+defaults:
+  replication: "none"
+  concurrencyControl: "pessimistic"
+properties:
+  version:
+    type: "string"
+  storageEngine:
+    type: "enum"
+    values: ["innodb", "myisam"]
+    default: "innodb"

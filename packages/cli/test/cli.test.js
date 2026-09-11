@@ -1,0 +1,152 @@
+// The command line against the committed designs: exit codes, every output format, render,
+// catalogue queries and init, all in a temporary directory so nothing touches the repository.
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { main } from "../src/index.js";
+
+const here = path.dirname(fileURLToPath(import.meta.url));
+const ROOT = path.resolve(here, "..", "..", "..");
+const clean = "designs/reference/order-processing/design.yaml";
+const broken = "designs/reference/order-processing/design.broken.yaml";
+
+let tmp;
+beforeAll(() => {
+  tmp = fs.mkdtempSync(path.join(os.tmpdir(), "arkore-cli-"));
+});
+afterAll(() => {
+  fs.rmSync(tmp, { recursive: true, force: true });
+});
+
+const run = async (args, cwd = ROOT) => {
+  let out = "";
+  let err = "";
+  const code = await main(args, { stdout: (s) => (out += s), stderr: (s) => (err += s), cwd });
+  return { code, out, err };
+};
+
+describe("lint", () => {
+  it("exits 0 on a clean reference design", async () => {
+    const r = await run(["lint", clean]);
+    expect(r.code).toBe(0);
+    expect(r.out).toContain(`ok    ${clean}`);
+  });
+
+  it("exits 1 on its broken twin and names the rules", async () => {
+    const r = await run(["lint", broken]);
+    expect(r.code).toBe(1);
+    expect(r.out).toMatch(/queue-missing-dlq|pubsub-replay-required|datastore/);
+    expect(r.out).toMatch(/\d+ errors?, \d+ warnings?/);
+  });
+
+  it("json output is structured", async () => {
+    const r = await run(["lint", broken, "--format", "json"]);
+    const j = JSON.parse(r.out);
+    expect(j.version).toBe(1);
+    expect(j.files[0].file).toBe(broken);
+    expect(j.files[0].findings.length).toBeGreaterThan(0);
+    for (const f of j.files[0].findings) {
+      expect(f).toMatchObject({
+        id: expect.any(String),
+        severity: expect.stringMatching(/^(error|warning|info)$/),
+        message: expect.any(String),
+        line: expect.any(Number),
+      });
+    }
+  });
+
+  it("sarif output validates its basic shape", async () => {
+    const r = await run(["lint", broken, "--format", "sarif"]);
+    const s = JSON.parse(r.out);
+    expect(s.version).toBe("2.1.0");
+    expect(s.runs[0].tool.driver.name).toBe("arkore");
+    expect(s.runs[0].results.length).toBeGreaterThan(0);
+    expect(s.runs[0].results[0].locations[0].physicalLocation.artifactLocation.uri).toBe(broken);
+  });
+
+  it("--fail-on never returns 0 despite rule findings, but structure still fails", async () => {
+    expect((await run(["lint", broken, "--fail-on", "never"])).code).toBe(0);
+    const bad = path.join(tmp, "bad.arkore.yaml");
+    fs.writeFileSync(
+      bad,
+      'schemaVersion: "1"\ntype: "design"\nid: "bad"\nnodes:\n  - { id: "a", component: "no-such-component" }\nedges: []\n',
+    );
+    const r = await run(["lint", bad, "--fail-on", "never"]);
+    expect(r.code).toBe(1);
+    expect(r.out).toContain("structure");
+  });
+
+  it("a YAML refusal is a finding with a line, not a crash", async () => {
+    const bad = path.join(tmp, "tabs.arkore.yaml");
+    fs.writeFileSync(
+      bad,
+      'schemaVersion: "1"\ntype: "design"\nid: "bad"\nnodes:\n\t- { id: "a", component: "kafka" }\nedges: []\n',
+    );
+    const r = await run(["lint", bad]);
+    expect(r.code).toBe(1);
+    expect(r.out).toMatch(/yaml.*tab.*line 5/);
+  });
+
+  it("lints a whole directory and writes to --out", async () => {
+    const out = path.join(tmp, "report.json");
+    const r = await run(["lint", "designs/reference", "--format", "json", "--out", out]);
+    expect(r.code).toBe(1);
+    const j = JSON.parse(fs.readFileSync(out, "utf8"));
+    expect(j.counts.files).toBe(14);
+  });
+
+  it("usage errors exit 2", async () => {
+    expect((await run(["lint", "no/such/path"])).code).toBe(2);
+    expect((await run(["frobnicate"])).code).toBe(2);
+    expect((await run(["lint", clean, "--format", "xml"])).code).toBe(2);
+  });
+});
+
+describe("render", () => {
+  it("svg", async () => {
+    const r = await run(["render", clean]);
+    expect(r.code).toBe(0);
+    expect(r.out).toMatch(/^<svg xmlns/);
+    expect(r.out).toContain("</svg>");
+    expect(r.out).toContain('class="ic"');
+  });
+  it("mermaid", async () => {
+    const r = await run(["render", clean, "--format", "mermaid"]);
+    expect(r.code).toBe(0);
+    expect(r.out).toMatch(/^flowchart TD/);
+    expect(r.out).toMatch(/-->|-\.->/);
+  });
+});
+
+describe("catalogue", () => {
+  it("finds, describes and lists", async () => {
+    expect((await run(["catalogue", "find", "kafka"])).out).toContain("kafka");
+    expect((await run(["catalogue", "component", "kafka"])).out).toContain("effective properties");
+    expect((await run(["catalogue", "kind", "queue"])).out).toContain("components:");
+    expect((await run(["catalogue", "kinds"])).out).toContain("queue");
+    expect((await run(["catalogue", "providers", "queue"])).out).toContain("aws");
+    expect((await run(["catalogue", "find", "zzz-nothing-here"])).code).toBe(1);
+    expect((await run(["catalogue"])).code).toBe(2);
+  });
+});
+
+describe("init and validate", () => {
+  it("init writes a starter that lints clean", async () => {
+    const dir = path.join(tmp, "proj");
+    const r = await run(["init", dir]);
+    expect(r.code).toBe(0);
+    expect(fs.existsSync(path.join(dir, "architecture", "checkout.arkore.yaml"))).toBe(true);
+    expect(fs.existsSync(path.join(dir, ".github", "workflows", "arkore.yml"))).toBe(true);
+    const lint = await run(["lint", "--root", ROOT], dir);
+    expect(lint.out).toContain("pubsub-replay-required");
+    expect(lint.code).toBe(1);
+  });
+
+  it("validate passes on the repository", async () => {
+    const r = await run(["validate"]);
+    expect(r.code).toBe(0);
+    expect(r.out).toContain("all checks passed");
+  }, 120_000);
+});

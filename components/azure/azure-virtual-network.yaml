@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Virtual Network: the software-defined private network in Azure ("What is Azure Virtual Network?").
+# VNets and subnets span every availability zone in a region; encryption is an opt-in feature that only
+# supports AllowUnencrypted enforcement, and new VNets no longer get default outbound internet access.
+schemaVersion: "1"
+type: "component"
+id: "azure-virtual-network"
+kind: "network-fabric"
+provider: "azure"
+defaults:
+  managed: true
+  overlay: true
+  interconnect: "private"
+  multicast: false
+properties:
+  encryptionEnabled:
+    type: "boolean"
+    default: false
+  encryptionEnforcement:
+    type: "enum"
+    values: ["allow-unencrypted", "drop-unencrypted"]
+    default: "allow-unencrypted"
+  defaultOutboundAccess:
+    type: "boolean"
+    default: false

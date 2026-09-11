@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Kubeflow: open source AI platform toolkit installed on a Kubernetes cluster.
+# Facts from the Kubeflow project README: composable subprojects plus a community and a packaged
+# distribution, self-managed by the team that deploys it.
+schemaVersion: "1"
+type: "component"
+id: "kubeflow"
+kind: "ml-platform"
+provider: "default"
+defaults:
+  experimentTracking: true
+  modelRegistry: true
+  managed: false
+properties:
+  distribution:
+    type: "enum"
+    values: ["subproject", "community-distribution", "packaged-distribution"]
+  pipelines:
+    type: "boolean"
+  notebooks:
+    type: "boolean"
+  hyperparameterTuning:
+    type: "boolean"

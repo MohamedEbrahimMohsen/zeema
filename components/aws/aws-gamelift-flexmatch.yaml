@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon GameLift FlexMatch: rule-set driven matchmaker that forms teams from a ticket pool and
+# either returns the match or starts a game session through a game session queue. Matches are formed
+# by rule sets rather than a price-time order book, so the kind's order-book defaults are overridden.
+# The CreateMatchmakingConfiguration API reference makes AcceptanceRequired and
+# RequestTimeoutSeconds (max 43200) required with no default, caps AcceptanceTimeoutSeconds at 600,
+# and defines FlexMatchMode STANDALONE or WITH_QUEUE and BackfillMode AUTOMATIC or MANUAL.
+schemaVersion: "1"
+type: "component"
+id: "aws-gamelift-flexmatch"
+kind: "matching-engine"
+provider: "aws"
+defaults:
+  managed: true
+  singleThreaded: false
+  deterministic: false
+properties:
+  flexMatchMode:
+    type: "enum"
+    values: ["standalone", "with-queue"]
+  backfillMode:
+    type: "enum"
+    values: ["automatic", "manual"]
+  acceptanceRequired:
+    type: "boolean"
+  maxRequestTimeoutSeconds:
+    type: "integer"
+    default: 43200
+  maxAcceptanceTimeoutSeconds:
+    type: "integer"
+    default: 600

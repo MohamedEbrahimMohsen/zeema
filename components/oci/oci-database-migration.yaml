@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI Database Migration: fully managed, self-service migration jobs driven by Zero Downtime
+# Migration. "Using Oracle Cloud Infrastructure Database Migration Service": ONLINE_LOGICAL uses a
+# GoldenGate hub for continuous replication, OFFLINE_LOGICAL is a one-off Data Pump transfer; the
+# service sets optimal Data Pump parameters itself. A migration is started per job, not scheduled.
+schemaVersion: "1"
+type: "component"
+id: "oci-database-migration"
+kind: "worker"
+provider: "oci"
+defaults:
+  managed: true
+  trigger: "manual"
+properties:
+  migrationType:
+    type: "enum"
+    values: ["online-logical", "offline-logical"]
+  initialLoadMethod:
+    type: "enum"
+    values: ["data-pump-via-object-storage", "data-pump-direct"]
+  goldenGateHub:
+    type: "boolean"
+    default: false
+  automaticDataPumpTuning:
+    type: "boolean"
+    default: true

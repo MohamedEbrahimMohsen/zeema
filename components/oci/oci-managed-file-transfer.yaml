@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Managed File Transfer on OCI: the MFT Cluster service type of the SOA Suite on Marketplace
+# stack. A customer-administered file gateway with embedded FTP and sFTP servers, transfer scheduling,
+# prioritisation and payload encryption. Closed to new Oracle MFT Cloud Service accounts; provisioned
+# through the marketplace stack. Facts from "Using Oracle SOA Suite on Marketplace" and "Understanding
+# Oracle Managed File Transfer".
+schemaVersion: "1"
+type: "component"
+id: "oci-managed-file-transfer"
+kind: "worker"
+provider: "oci"
+defaults:
+  managed: false
+  trigger: "schedule"
+properties:
+  transferProtocol:
+    type: "enum"
+    values: ["sftp", "ftp", "ftps", "file", "https"]
+  embeddedSftpServer:
+    type: "boolean"
+    default: true
+  payloadEncryption:
+    type: "boolean"
+    default: false
+  transferPriority:
+    type: "boolean"
+    default: false

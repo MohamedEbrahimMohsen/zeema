@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Cloud Vault, virtual private vault type: an isolated partition on an HSM rather than shared partitions.
+# Defaults from "Overview of Vaults and Key Management": automatic key rotation is available only for virtual
+# private vaults, the interval is 60 to 365 days, and the vault includes 1000 key versions and supports backup.
+schemaVersion: "1"
+type: "component"
+id: "oci-virtual-private-vault"
+kind: "key-management"
+provider: "oci"
+defaults:
+  managed: true
+  hsm: true
+  rotationAutomated: false
+  envelopeEncryption: true
+properties:
+  dedicatedHsmPartition:
+    type: "boolean"
+    default: true
+  includedKeyVersions:
+    type: "integer"
+    default: 1000
+  backupSupported:
+    type: "boolean"
+    default: true
+  protectionMode:
+    type: "enum"
+    values: ["hsm", "software"]
+    default: "hsm"

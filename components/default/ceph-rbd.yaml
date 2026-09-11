@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Ceph RADOS Block Device: thin-provisioned, snapshottable block volumes striped over OSDs ("RBD - Ceph Block Device").
+# Pools are three-way replicated out of the box (osd_pool_default_size = 3, "Pool, PG and CRUSH Config Reference"); image encryption is an explicit format step.
+schemaVersion: "1"
+type: "component"
+id: "ceph-rbd"
+kind: "block-storage"
+provider: "default"
+defaults:
+  managed: false
+  snapshots: true
+  encryptionAtRest: false
+  redundancy: "local"
+properties:
+  poolReplicas:
+    type: "integer"
+    default: 3
+  poolType:
+    type: "enum"
+    values: ["replicated", "erasure-coded"]
+    default: "replicated"
+  thinProvisioned:
+    type: "boolean"
+    default: true

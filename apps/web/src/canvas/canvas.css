@@ -1,0 +1,426 @@
+/* The canvas page. Colours are the site tokens plus a per-category fill set; every fill on the
+   scene is a variable so an export can resolve them to whatever theme is showing. */
+.arkore-canvas {
+  --frame: #b4b4ae;
+  --f-blue-fill: #eaf1fd;
+  --f-blue-line: #9cc0f0;
+  --f-teal-fill: #e6f5f2;
+  --f-teal-line: #8fcfc2;
+  --f-amber-fill: #fbf1e0;
+  --f-amber-line: #dcb473;
+  --f-violet-fill: #f0edfc;
+  --f-violet-line: #b6a8ee;
+  --f-purple-fill: #f6ecf9;
+  --f-purple-line: #cda3dc;
+  --f-green-fill: #e9f5ea;
+  --f-green-line: #96c99b;
+  --f-rose-fill: #fceceb;
+  --f-rose-line: #e5a7a1;
+  --f-red-fill: #fbe9e9;
+  --f-red-line: #e09b98;
+  --f-grey-fill: #f0f0ef;
+  --f-grey-line: #c2c2bf;
+  --line: #8a8a85;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: calc(100vh - 53px);
+  min-height: 480px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .arkore-canvas {
+    --frame: #55555c;
+    --f-blue-fill: #1b2a3f;
+    --f-blue-line: #3f6698;
+    --f-teal-fill: #152e2b;
+    --f-teal-line: #3c7d72;
+    --f-amber-fill: #33280f;
+    --f-amber-line: #8a6a2b;
+    --f-violet-fill: #241f3d;
+    --f-violet-line: #5b4f9c;
+    --f-purple-fill: #2d1c34;
+    --f-purple-line: #7a4d8c;
+    --f-green-fill: #162b18;
+    --f-green-line: #417a47;
+    --f-rose-fill: #33191a;
+    --f-rose-line: #8f4c48;
+    --f-red-fill: #341a1a;
+    --f-red-line: #8d4340;
+    --f-grey-fill: #26262a;
+    --f-grey-line: #5a5a60;
+    --line: #7e7e88;
+  }
+}
+html[data-theme="dark"] .arkore-canvas {
+  --frame: #55555c;
+  --line: #7e7e88;
+}
+
+.arkore-canvas .toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  border-bottom: 1px solid var(--line-soft, var(--line));
+  background: var(--panel);
+  font-size: 0.85rem;
+  flex-wrap: wrap;
+}
+.arkore-canvas .toolbar .btn {
+  padding: 0.3rem 0.6rem;
+  font-size: 0.82rem;
+}
+.arkore-canvas .body {
+  display: grid;
+  grid-template-columns: 260px 1fr 320px;
+  min-height: 0;
+}
+.arkore-canvas .pane {
+  background: var(--panel);
+  overflow: auto;
+  min-height: 0;
+  font-size: 0.85rem;
+}
+.arkore-canvas .pane-left {
+  border-right: 1px solid var(--line-soft, #e4e4df);
+  display: flex;
+  flex-direction: column;
+}
+.arkore-canvas .pane-right {
+  border-left: 1px solid var(--line-soft, #e4e4df);
+  padding: 0.75rem;
+}
+.arkore-canvas .scene-wrap {
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(circle, color-mix(in srgb, var(--ink) 12%, transparent) 1px, transparent 1px) 0
+    0 / 24px 24px,
+    var(--bg);
+}
+.arkore-canvas svg.scene {
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+  user-select: none;
+}
+.arkore-canvas svg.scene.hand {
+  cursor: grab;
+}
+.arkore-canvas svg.scene.panning {
+  cursor: grabbing;
+}
+
+.arkore-canvas .node-box {
+  cursor: grab;
+}
+.arkore-canvas .node-box rect.body {
+  stroke-width: 1;
+}
+.arkore-canvas .node-box.selected rect.body {
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+.arkore-canvas .node-box.primary rect.body {
+  stroke-width: 2.4;
+}
+.arkore-canvas .node-box.wire-target rect.body {
+  stroke: var(--accent);
+  stroke-width: 2.5;
+  filter: drop-shadow(0 0 5px var(--accent));
+}
+.arkore-canvas .node-box.wire-source rect.body {
+  stroke-dasharray: 4 3;
+}
+.arkore-canvas .node-box text.name {
+  font-size: 14px;
+  font-weight: 500;
+  fill: var(--ink);
+}
+.arkore-canvas .node-box text.comp {
+  font-size: 12px;
+  fill: var(--muted);
+}
+.arkore-canvas .node-box .glyph {
+  color: var(--ink);
+}
+.arkore-canvas .frame {
+  fill: none;
+  stroke: var(--frame);
+  stroke-width: 1;
+  stroke-dasharray: 5 4;
+}
+.arkore-canvas .frame.selected {
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-dasharray: 6 3;
+}
+.arkore-canvas .frame-hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 16;
+  pointer-events: stroke;
+  cursor: move;
+}
+.arkore-canvas .frame-label {
+  font-size: 12px;
+  fill: var(--muted);
+  cursor: move;
+}
+.arkore-canvas .edge {
+  stroke: var(--line);
+  stroke-width: 1.2;
+  fill: none;
+}
+.arkore-canvas .edge.async {
+  stroke-dasharray: 6 4;
+}
+.arkore-canvas .edge.selected {
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+.arkore-canvas .edge-hit {
+  stroke: transparent;
+  stroke-width: 12;
+  fill: none;
+  cursor: pointer;
+}
+.arkore-canvas .edge-label {
+  font-size: 12px;
+  fill: var(--muted);
+  paint-order: stroke;
+  stroke: var(--bg);
+  stroke-width: 3px;
+  cursor: pointer;
+}
+.arkore-canvas .handle {
+  fill: var(--panel);
+  stroke: var(--accent);
+  stroke-width: 1.5;
+  cursor: crosshair;
+}
+.arkore-canvas .badge-error {
+  fill: var(--err);
+}
+.arkore-canvas .badge-warn {
+  fill: var(--warn);
+}
+.arkore-canvas .marquee {
+  fill: var(--accent);
+  fill-opacity: 0.07;
+  stroke: var(--accent);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+}
+.arkore-canvas .wire {
+  stroke: var(--line);
+  stroke-width: 1.4;
+  fill: none;
+  stroke-dasharray: 4 4;
+  pointer-events: none;
+}
+.arkore-canvas .wire.live {
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-dasharray: none;
+}
+.arkore-canvas .inline-edit {
+  position: absolute;
+  z-index: 5;
+  padding: 3px 6px;
+  font:
+    14px ui-sans-serif,
+    system-ui,
+    sans-serif;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--ink);
+  outline: none;
+}
+.arkore-canvas .empty-state {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  color: var(--muted);
+  text-align: center;
+  padding: 2rem;
+}
+
+/* palette */
+.arkore-canvas .pal-search {
+  margin: 0.6rem;
+}
+.arkore-canvas .pal-results {
+  overflow: auto;
+  padding: 0 0.4rem 0.6rem;
+  flex: 1;
+}
+.arkore-canvas .pal-group {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  margin: 0.6rem 0.3rem 0.2rem;
+}
+.arkore-canvas .pal-row {
+  width: 100%;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  display: grid;
+  grid-template-columns: 22px 1fr auto;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.4rem;
+  border-radius: 6px;
+  cursor: grab;
+}
+.arkore-canvas .pal-row:hover {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+.arkore-canvas .pal-row svg {
+  width: 20px;
+  height: 20px;
+  color: var(--ink);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.arkore-canvas .pal-row .kind {
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+.arkore-canvas .pal-row .name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* inspector */
+.arkore-canvas .field {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  align-items: center;
+  gap: 0.25rem 0.5rem;
+  margin: 0.3rem 0;
+}
+.arkore-canvas .field .field-name {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+.arkore-canvas .field.set .field-name {
+  color: var(--ink);
+  font-weight: 500;
+}
+.arkore-canvas .field .resolved {
+  grid-column: 2;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+.arkore-canvas .field input,
+.arkore-canvas .field select {
+  width: 100%;
+  padding: 0.25rem 0.4rem;
+  border: 1px solid var(--line-soft, #e4e4df);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 0.82rem;
+}
+.arkore-canvas h2 {
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin: 0.8rem 0 0.3rem;
+}
+.arkore-canvas h2:first-child {
+  margin-top: 0;
+}
+
+/* findings */
+.arkore-canvas .finding {
+  width: 100%;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  display: grid;
+  grid-template-columns: 8px 1fr;
+  gap: 0.5rem;
+  padding: 0.35rem 0.2rem;
+  cursor: pointer;
+  border-radius: 6px;
+}
+.arkore-canvas .finding:hover {
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+.arkore-canvas .finding .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-top: 6px;
+  background: var(--muted);
+}
+.arkore-canvas .finding.error .dot {
+  background: var(--err);
+}
+.arkore-canvas .finding.warning .dot {
+  background: var(--warn);
+}
+.arkore-canvas .finding .rule {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+/* context menu */
+.arkore-menu {
+  position: fixed;
+  z-index: 50;
+  min-width: 190px;
+  padding: 4px;
+  background: var(--panel);
+  border: 1px solid var(--line-soft, #e4e4df);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  font-size: 0.85rem;
+}
+.arkore-menu button {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.35rem 0.6rem;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  border-radius: 5px;
+  cursor: pointer;
+  text-align: left;
+}
+.arkore-menu button:hover:not([disabled]) {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.arkore-menu button[disabled] {
+  opacity: 0.45;
+  cursor: default;
+}
+.arkore-menu button.danger {
+  color: var(--err);
+}
+.arkore-menu .hint {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+.arkore-menu .sep {
+  height: 1px;
+  margin: 4px 2px;
+  background: var(--line-soft, #e4e4df);
+}

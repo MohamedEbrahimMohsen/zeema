@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Microsoft SQL Server: single-primary relational database; Always On availability groups are opt-in.
+schemaVersion: "1"
+type: "component"
+id: "sql-server"
+kind: "sql-database"
+provider: "default"
+defaults:
+  replication: "none"
+  concurrencyControl: "pessimistic"
+properties:
+  version:
+    type: "string"
+  alwaysOn:
+    type: "boolean"
+    default: false

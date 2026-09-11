@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Email Sending (beta, Workers Paid): transactional outbound email through a Worker binding,
+# the REST API or authenticated SMTP ("Email Service overview"). A message is at most 5 MiB
+# including attachments and 50 recipients across to, cc and bcc; the daily quota starts low
+# for a new account and grows with deliverability ("Limits").
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-email-sending"
+kind: "notification-service"
+provider: "cloudflare"
+defaults:
+  managed: true
+  channelEmail: true
+  channelPush: false
+  channelSms: false
+properties:
+  maxMessageSizeMib:
+    type: "integer"
+    default: 5
+  maxRecipientsPerMessage:
+    type: "integer"
+    default: 50
+  transport:
+    type: "enum"
+    values: ["worker-binding", "rest-api", "smtp"]
+    default: "worker-binding"
+  releaseStage:
+    type: "enum"
+    values: ["beta", "ga"]
+    default: "beta"

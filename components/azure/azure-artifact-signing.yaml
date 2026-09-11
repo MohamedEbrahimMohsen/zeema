@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Artifact Signing (formerly Trusted Signing): fully managed code and artifact signing with
+# zero-touch certificate lifecycle management inside FIPS 140-3 Level 3 HSMs, and digest signing
+# that keeps the file on the caller's endpoint ("What is Artifact Signing?"). Accounts default
+# to the Basic SKU ("Quickstart: Set up Artifact Signing").
+schemaVersion: "1"
+type: "component"
+id: "azure-artifact-signing"
+kind: "key-management"
+provider: "azure"
+defaults:
+  managed: true
+  hsm: true
+  rotationAutomated: true
+properties:
+  sku:
+    type: "enum"
+    values: ["basic", "premium"]
+    default: "basic"
+  certificateProfileType:
+    type: "enum"
+    values: ["public-trust", "public-trust-test", "private-trust", "private-trust-ci-policy", "vbs-enclave"]
+  contentConfidentialSigning:
+    type: "boolean"
+    default: true
+  identityValidationRequired:
+    type: "boolean"
+    default: true

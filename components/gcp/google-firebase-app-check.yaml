@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Firebase App Check ("Firebase App Check" overview and "Monitor App Check request metrics"):
+# attests that a request comes from your genuine app before a Firebase backend serves it. After the
+# SDK is added requests are only monitored - App Check does not reject anything until enforcement is
+# turned on per product, and limited-use (replay-protected) tokens are opted into separately.
+schemaVersion: "1"
+type: "component"
+id: "google-firebase-app-check"
+kind: "policy-engine"
+provider: "gcp"
+defaults:
+  effect: "audit"
+  enforcementMode: "disabled"
+  scope: "resource"
+  remediation: false
+  managed: true
+properties:
+  attestationProvider:
+    type: "enum"
+    values: ["play-integrity", "app-attest", "device-check", "recaptcha-enterprise", "custom"]
+  monitoringOnly:
+    type: "boolean"
+    default: true
+  replayProtection:
+    type: "boolean"
+    default: false

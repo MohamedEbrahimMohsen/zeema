@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure SignalR Service: managed connection broker. Units scale manually except on Premium autoscale.
+schemaVersion: "1"
+type: "component"
+id: "azure-signalr"
+kind: "realtime-gateway"
+provider: "azure"
+defaults:
+  managed: true
+  protocol: "websocket"
+  stateful: true
+  autoscaling: false
+  drainOnScaleIn: true
+properties:
+  mode:
+    type: "enum"
+    values: ["default", "serverless", "classic"]
+    default: "default"

@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Privacy Gateway: a managed Oblivious HTTP relay on Cloudflare's network. The relay forwards
+# encrypted requests without learning the application data, and the backend never sees the client
+# IP. It is in closed beta for privacy-oriented companies and partners ("Privacy Gateway overview").
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-privacy-gateway"
+kind: "api-gateway"
+provider: "cloudflare"
+defaults:
+  managed: true
+  tls: true
+  protocol: "http"
+properties:
+  obliviousHttp:
+    type: "boolean"
+    default: true
+  clientIpVisibleToBackend:
+    type: "boolean"
+    default: false
+  closedBeta:
+    type: "boolean"
+    default: true

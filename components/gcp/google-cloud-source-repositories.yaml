@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud Source Repositories: fully featured private Git repositories hosted on Google Cloud. Per
+# "Cloud Source Repositories documentation" the service has not been available to new customers since
+# 17 June 2024; existing projects keep using it and Secure Source Manager is the named successor.
+schemaVersion: "1"
+type: "component"
+id: "google-cloud-source-repositories"
+kind: "artifact-repository"
+provider: "gcp"
+defaults:
+  managed: true
+  artifactType: "source"
+  visibility: "private"
+properties:
+  closedToNewCustomers:
+    type: "boolean"
+    default: true
+  mirroring:
+    type: "boolean"
+    default: false

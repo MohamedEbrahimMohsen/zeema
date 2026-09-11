@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Durable Objects: named single-threaded objects that serialise access to their own storage, used as
+# the coordination and locking primitive of the Workers platform. "Durable Objects - Limits" states
+# new namespaces use the SQLite backend, each object is single-threaded, with 10 GB and ~1,000 rps.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-durable-objects"
+kind: "coordination-service"
+provider: "cloudflare"
+defaults:
+  managed: true
+  role: "lock"
+  consensus: "none"
+properties:
+  storageBackend:
+    type: "enum"
+    values: ["sqlite", "key-value"]
+    default: "sqlite"
+  singleThreaded:
+    type: "boolean"
+    default: true
+  maxStorageGb:
+    type: "integer"
+    default: 10
+  requestsPerSecondSoftLimit:
+    type: "integer"
+    default: 1000

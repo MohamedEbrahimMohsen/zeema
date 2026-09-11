@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Chrome Enterprise Premium (formerly BeyondCorp Enterprise): zero-trust access to applications through the browser, with context-aware access, data-loss prevention and threat protection.
+# Defaults from "Chrome Enterprise Premium overview": a managed Google Cloud service whose core use case is reaching a web application without a VPN; DLP and threat protection are configured policies, Core is the no-cost tier and Premium the upgrade.
+schemaVersion: "1"
+type: "component"
+id: "google-chrome-enterprise-premium"
+kind: "bastion-host"
+provider: "gcp"
+defaults:
+  managed: true
+properties:
+  tier:
+    type: "enum"
+    values: ["core", "premium"]
+    default: "premium"
+  vpnless:
+    type: "boolean"
+    default: true
+  dataLossPrevention:
+    type: "boolean"
+    default: false
+  threatProtection:
+    type: "boolean"
+    default: false

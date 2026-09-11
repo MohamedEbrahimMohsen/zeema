@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Glue crawler: managed job that classifies a data store, infers a schema and writes tables and partitions
+# into the Data Catalog ("Using crawlers to populate the Data Catalog"). It runs on demand unless a cron schedule
+# is added ("Scheduling a crawler"); incremental crawls and Amazon S3 event acceleration are opt-in while
+# partition indexes are created by default ("Customizing crawler behavior").
+schemaVersion: "1"
+type: "component"
+id: "aws-glue-crawler"
+kind: "worker"
+provider: "aws"
+defaults:
+  managed: true
+  trigger: "manual"
+  accelerator: "none"
+  rateControl: "none"
+  fanoutStrategy: "none"
+properties:
+  incrementalCrawl:
+    type: "boolean"
+    default: false
+  s3EventNotifications:
+    type: "boolean"
+    default: false
+  partitionIndexes:
+    type: "boolean"
+    default: true
+  lakeFormationCredentials:
+    type: "boolean"
+    default: false

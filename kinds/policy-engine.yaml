@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Governance, not observation: monitoring reports, a policy engine decides. effect and enforcementMode have no default because an assignment left in audit, or disabled, is exactly what a rule should surface.
+schemaVersion: "1"
+type: "kind"
+id: "policy-engine"
+category: "ops"
+properties:
+  effect:
+    type: "enum"
+    values: ["audit", "deny", "modify", "deploy-if-not-exists"]
+  enforcementMode:
+    type: "enum"
+    values: ["enforced", "disabled"]
+  scope:
+    type: "enum"
+    values: ["resource", "group", "account", "organization"]
+  remediation:
+    type: "boolean"
+    default: false
+  policyCount:
+    type: "integer"
+  managed:
+    type: "boolean"
+    default: false

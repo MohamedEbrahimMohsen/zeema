@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Roving Edge Classic: the earlier Roving Edge generation, whose device family adds the
+# backpack-sized Roving Edge Ultra and on-device Functions alongside the Roving Edge Device.
+# "Roving Edge Classic" and "Roving Edge Infrastructure Device Specifications": devices run
+# IAM, Compute, Object Storage, Block Volumes, Networking and Functions locally with no
+# connectivity and sync object data to the tenancy afterwards; the Ultra
+# (ULTRA.USB.1.RX2.12) has 8 OCPUs, 64 GB of memory and 7 TB of shared usable storage on ISE
+# self-encrypting drives unlocked by a removable NVMe ignition key.
+schemaVersion: "1"
+type: "component"
+id: "oci-roving-edge-classic"
+kind: "edge-appliance"
+provider: "oci"
+defaults:
+  formFactor: "ruggedized"
+  connectivity: "intermittent"
+  offlineMode: true
+  cloudManaged: false
+  managed: false
+properties:
+  deviceType:
+    type: "enum"
+    values: ["roving-edge-device", "roving-edge-ultra"]
+  ultraUsableStorageTb:
+    type: "integer"
+    default: 7
+  encryptionAtRest:
+    type: "boolean"
+    default: true
+  onDeviceFunctions:
+    type: "boolean"
+    default: true
+  dataSyncToObjectStorage:
+    type: "boolean"
+    default: true

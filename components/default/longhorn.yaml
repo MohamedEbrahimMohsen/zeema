@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Longhorn: distributed block storage for Kubernetes, one engine per volume with synchronous replicas ("Longhorn Concepts").
+# Default Replica Count is 3 and Default Data Locality is disabled ("Longhorn Settings Reference"); encryption needs a dedicated StorageClass.
+schemaVersion: "1"
+type: "component"
+id: "longhorn"
+kind: "block-storage"
+provider: "default"
+defaults:
+  managed: false
+  snapshots: true
+  encryptionAtRest: false
+  redundancy: "local"
+properties:
+  replicaCount:
+    type: "integer"
+    default: 3
+  dataLocality:
+    type: "enum"
+    values: ["disabled", "best-effort", "strict-local"]
+    default: "disabled"
+  accessMode:
+    type: "enum"
+    values: ["read-write-once", "read-write-many"]
+    default: "read-write-once"

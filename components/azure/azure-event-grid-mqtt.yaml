@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Event Grid MQTT broker (namespace): MQTT v3.1.1 / v5 pub-sub over topic filters, QoS 0 and 1 only
+# (QoS 2 is not supported), retained messages hold the last value but there is no message replay.
+# Facts from "MQTT (PubSub) Broker - Azure Event Grid".
+schemaVersion: "1"
+type: "component"
+id: "azure-event-grid-mqtt"
+kind: "pubsub-topic"
+provider: "azure"
+defaults:
+  managed: true
+  delivery: "at-least-once"
+  ordering: "none"
+  replay: false
+  topicPerEventType: false
+properties:
+  mqttVersion:
+    type: "enum"
+    values: ["v3-1-1", "v5"]
+    default: "v5"
+  retainedMessages:
+    type: "boolean"
+    default: true
+  sharedSubscriptions:
+    type: "boolean"
+    default: false
+  clientAuthentication:
+    type: "enum"
+    values: ["x509", "entra-id", "oauth-jwt", "webhook"]
+    default: "x509"
+  routingToTopic:
+    type: "boolean"
+    default: false

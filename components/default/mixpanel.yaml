@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Mixpanel: hosted product analytics over an event stream, with boards, funnels and retention
+# reports. "Import Events": a batch holds at most 2,000 events in a 10MB uncompressed payload,
+# ingestion is capped at "2GB of uncompressed JSON/minute or ~30k events per second", and events
+# with identical (event, time, distinct_id, $insert_id) are duplicates of which only the latest
+# ingested one is queried, which makes a retried import safe.
+schemaVersion: "1"
+type: "component"
+id: "mixpanel"
+kind: "bi-service"
+provider: "default"
+defaults:
+  managed: true
+  capacityMode: "shared"
+properties:
+  importEventsPerSecond:
+    type: "integer"
+    default: 30000
+  maxEventsPerBatch:
+    type: "integer"
+    default: 2000
+  maxPayloadSizeMb:
+    type: "integer"
+    default: 10
+  deduplicationKey:
+    type: "enum"
+    values: ["insert-id", "none"]
+    default: "insert-id"

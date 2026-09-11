@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# The cluster itself: control plane, node pools and cluster-wide network and access settings. privateControlPlane, rbac and networkPolicy have no default so hardening rules can flag a cluster that left them unstated.
+schemaVersion: "1"
+type: "kind"
+id: "container-orchestrator"
+category: "compute"
+properties:
+  nodeCount:
+    type: "integer"
+  version:
+    type: "string"
+  autoscaling:
+    type: "boolean"
+    default: false
+  privateControlPlane:
+    type: "boolean"
+  rbac:
+    type: "boolean"
+  networkPolicy:
+    type: "boolean"
+  managed:
+    type: "boolean"
+    default: false

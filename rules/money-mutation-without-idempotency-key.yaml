@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../schema/rule.schema.json
+# A call that moves money (to a third party that handles money, or into a double-entry
+# ledger) will be retried after a lost response. Without an idempotency key on that hop
+# the retry becomes a double charge, which the design promises never happens.
+# Tripped by: designs/payment-system.broken.yaml
+schemaVersion: "1"
+type: "rule"
+id: "money-mutation-without-idempotency-key"
+severity: "error"
+select:
+  edge: {}
+when:
+  all:
+    - to:
+        any:
+          - prop: "handlesMoney"
+            equals: true
+          - prop: "doubleEntry"
+            exists: true
+    - field: "idempotent"
+      exists: false
+    - requirement: "correctness.exactlyOnceEffect"
+      equals: true
+message: "Edge '{{edge.from}}' -> '{{edge.to}}' moves money but does not declare idempotent, while the design requires exactly-once effect. Add an idempotency key to this hop."

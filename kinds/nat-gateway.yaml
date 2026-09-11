@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Egress translation with its own address pool and idle timeout, which load-balancer (inbound) and network-fabric do not carry. staticIpCount and zoneRedundant have no default so egress-address and resilience rules can catch what was never declared.
+schemaVersion: "1"
+type: "kind"
+id: "nat-gateway"
+category: "edge"
+properties:
+  staticIpCount:
+    type: "integer"
+  idleTimeoutMinutes:
+    type: "integer"
+  zoneRedundant:
+    type: "boolean"
+  logging:
+    type: "boolean"
+    default: false
+  managed:
+    type: "boolean"
+    default: false

@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# dnsmasq: lightweight self-hosted DNS forwarder and cache that also serves DHCP, TFTP and router
+# advertisements. Per the dnsmasq man page the cache holds 150 names by default, replies from
+# /etc/hosts and DHCP leases carry a TTL of zero, and DNSSEC validation is off unless --dnssec is set.
+schemaVersion: "1"
+type: "component"
+id: "dnsmasq"
+kind: "dns"
+provider: "default"
+defaults:
+  managed: false
+  anycast: false
+  ttlSeconds: 0
+properties:
+  cacheSize:
+    type: "integer"
+    default: 150
+  dnssecValidation:
+    type: "boolean"
+    default: false
+  dhcpServer:
+    type: "boolean"
+    default: false

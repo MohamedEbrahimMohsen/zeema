@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS IoT Core: managed device gateway and message broker. "What is AWS IoT?" lists MQTT, MQTT over
+# WSS and HTTPS on the broker; "AWS IoT security" states all traffic runs over TLS and each device
+# carries its own credential; "AWS IoT Core endpoints and quotas" gives the 128 KB MQTT payload,
+# the 500,000 concurrent connections per account and the 3600 s persistent session expiry.
+schemaVersion: "1"
+type: "component"
+id: "aws-iot-core"
+kind: "iot-hub"
+provider: "aws"
+defaults:
+  protocol: "multi"
+  perDeviceIdentity: true
+  deviceTwin: true
+  deviceProvisioning: true
+  managed: true
+properties:
+  deviceCredential:
+    type: "enum"
+    values: ["x509-certificate", "amazon-cognito", "iam", "custom-authorizer"]
+    default: "x509-certificate"
+  maxPayloadKb:
+    type: "integer"
+    default: 128
+  concurrentConnectionsPerAccount:
+    type: "integer"
+    default: 500000
+  persistentSessionExpirySeconds:
+    type: "integer"
+    default: 3600

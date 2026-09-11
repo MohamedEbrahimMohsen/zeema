@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud VMware Engine private cloud: Google runs the bare metal infrastructure and the VMware
+# platform deployments and upgrades ("VMware Engine overview"). A production private cloud starts at
+# 3 nodes in its first cluster and holds at most 128 nodes; a single-node private cloud is for pilots,
+# carries no SLA and has no vSAN encryption by default ("Private clouds").
+schemaVersion: "1"
+type: "component"
+id: "google-vmware-engine"
+kind: "virtual-machine"
+provider: "gcp"
+defaults:
+  managed: true
+  zoneRedundant: false
+properties:
+  topology:
+    type: "enum"
+    values: ["standard", "single-node", "stretched"]
+    default: "standard"
+  nodeCount:
+    type: "integer"
+    default: 3
+  maxNodes:
+    type: "integer"
+    default: 128

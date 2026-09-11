@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# TigerBeetle: financial accounting database of debits and credits. Strict serializability on a single
+# core, Viewstamped Replication for failover, Direct I/O and hash-chained checksums over immutable data
+# ("TigerBeetle Concepts", "Safety").
+schemaVersion: "1"
+type: "component"
+id: "tigerbeetle"
+kind: "ledger"
+provider: "default"
+defaults:
+  doubleEntry: true
+  appendOnly: true
+  tamperEvident: true
+  indexConsistency: "strong"
+  managed: false
+properties:
+  replicaCount:
+    type: "integer"
+  strictSerializability:
+    type: "boolean"
+    default: true
+  directIo:
+    type: "boolean"
+    default: true

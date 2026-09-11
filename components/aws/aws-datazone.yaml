@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon DataZone domain: managed business data catalog and governance portal that publishes assets from the Glue
+# Data Catalog and Amazon Redshift and grants access through approved subscription requests, fulfilled by Lake
+# Formation ("What is Amazon DataZone?"). Domain metadata is encrypted with an AWS owned KMS key unless another
+# key is chosen ("Create Amazon DataZone domains"); lineage import is a blueprint opt-in ("Data lineage").
+schemaVersion: "1"
+type: "component"
+id: "aws-datazone"
+kind: "data-catalog"
+provider: "aws"
+defaults:
+  managed: true
+  scanSchedule: "manual"
+  lineage: false
+  accessPolicyEnforcement: true
+properties:
+  encryptionKey:
+    type: "enum"
+    values: ["aws-owned", "customer-managed"]
+    default: "aws-owned"
+  businessGlossary:
+    type: "boolean"
+    default: true
+  subscriptionApproval:
+    type: "boolean"
+    default: true
+  quickSetup:
+    type: "boolean"
+    default: false

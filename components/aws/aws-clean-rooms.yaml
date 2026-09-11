@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Clean Rooms collaboration: managed multi-party analysis workspace that "reads data from that data's original
+# location and applies built-in analysis rules", running SQL queries or PySpark jobs over configured tables
+# ("What is AWS Clean Rooms?"). The basic collaboration is the query-only form; cryptographic computing and
+# differential privacy are controls a member configures, not defaults ("Creating a collaboration").
+schemaVersion: "1"
+type: "component"
+id: "aws-clean-rooms"
+kind: "big-data-cluster"
+provider: "aws"
+defaults:
+  managed: true
+  autoscaling: true
+  spotInstances: false
+properties:
+  collaborationType:
+    type: "enum"
+    values: ["queries", "queries-and-jobs", "ml-modeling"]
+    default: "queries"
+  cryptographicComputing:
+    type: "boolean"
+    default: false
+  differentialPrivacy:
+    type: "boolean"
+    default: false

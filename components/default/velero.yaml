@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Velero: backs up Kubernetes cluster resources and persistent volumes to object storage and restores them ("How Velero Works").
+# Backup API type: ttl defaults to 30 days and the gc-controller reconciles hourly; no schedule exists until one is created.
+schemaVersion: "1"
+type: "component"
+id: "velero"
+kind: "backup-service"
+provider: "default"
+defaults:
+  managed: false
+  retentionDays: 30
+  crossRegionRestore: false
+properties:
+  garbageCollectionFrequencyHours:
+    type: "integer"
+    default: 1
+  volumeBackupMethod:
+    type: "enum"
+    values: ["csi-snapshot", "native-snapshot", "file-system-backup"]
+  scheduled:
+    type: "boolean"
+    default: false

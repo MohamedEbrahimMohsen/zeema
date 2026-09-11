@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon FSx for OpenZFS: managed OpenZFS file system served over NFS v3/v4.0/v4.1/v4.2.
+# "What is Amazon FSx for OpenZFS?": file system data and backups are automatically encrypted at rest with
+# AWS KMS keys, in-transit encryption is automatic from supported EC2 instances, the service performs
+# automatic daily backups, and there are Multi-AZ (HA), Single-AZ (HA) and Single-AZ (non-HA) deployments.
+schemaVersion: "1"
+type: "component"
+id: "aws-fsx-openzfs"
+kind: "file-storage"
+provider: "aws"
+defaults:
+  protocol: "nfs"
+  encryptionInTransit: true
+  publicAccess: false
+  backupEnabled: true
+  managed: true
+properties:
+  deploymentType:
+    type: "enum"
+    values: ["single-az-1", "single-az-2", "single-az-ha", "multi-az-ha"]
+  storageClass:
+    type: "enum"
+    values: ["ssd", "intelligent-tiering"]
+  encryptionAtRest:
+    type: "boolean"
+    default: true
+  snapshots:
+    type: "boolean"
+    default: false
+  dataCompression:
+    type: "boolean"
+    default: false

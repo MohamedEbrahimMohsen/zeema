@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Graphite: carbon plus the fixed-size Whisper database. Per "Configuring Carbon" a metric
+# that matches no schema falls back to two hours of minutely data, and per "The Whisper
+# Database" older points roll up into lower-precision archives, averaged by default.
+schemaVersion: "1"
+type: "component"
+id: "graphite"
+kind: "timeseries-database"
+provider: "default"
+defaults:
+  downsampling: true
+  tiers: "single"
+  labelIndex: false
+  compression: "none"
+  managed: false
+properties:
+  aggregationMethod:
+    type: "enum"
+    values: ["average", "sum", "last", "max", "min"]
+    default: "average"
+  xFilesFactor:
+    type: "string"
+    default: "0.5"
+  taggedSeries:
+    type: "boolean"
+    default: false

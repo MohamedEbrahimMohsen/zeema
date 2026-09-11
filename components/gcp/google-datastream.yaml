@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Datastream: serverless change data capture and replication. "Datastream overview" and "Datastream
+# behavior and limitations": CDC reads the source write-ahead log (LogMiner for Oracle), the service
+# scales up and down on its own, and a new stream is created without starting unless the create and
+# start action is used.
+schemaVersion: "1"
+type: "component"
+id: "google-datastream"
+kind: "change-data-capture"
+provider: "gcp"
+defaults:
+  managed: true
+  mode: "log-based"
+properties:
+  sourceEngine:
+    type: "enum"
+    values: ["mysql", "oracle", "postgresql", "sqlserver", "mongodb", "spanner"]
+  backfillMode:
+    type: "enum"
+    values: ["automatic", "manual"]
+  startOnCreate:
+    type: "boolean"
+    default: false

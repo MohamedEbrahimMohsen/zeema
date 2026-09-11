@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Coolify, an open source self-hosted PaaS that deploys Docker workloads onto servers connected over SSH.
+# Per "Introduction" the self-hosted edition is free and open source (a managed Coolify Cloud exists), and it
+# sets up and renews Let's Encrypt certificates for custom domains automatically behind its Traefik proxy.
+schemaVersion: "1"
+type: "component"
+id: "coolify"
+kind: "app-server"
+provider: "default"
+defaults:
+  managed: false
+  stateless: true
+  autoscaling: false
+  instances: 1
+  ownsData: false
+properties:
+  proxy:
+    type: "enum"
+    values: ["traefik", "caddy", "none"]
+    default: "traefik"
+  automaticTls:
+    type: "boolean"
+    default: true
+  deploymentTarget:
+    type: "enum"
+    values: ["docker", "docker-compose", "docker-swarm"]
+    default: "docker"
+  gitAutoDeploy:
+    type: "boolean"
+    default: true

@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Elastic SAN: pooled SAN whose volumes are mounted over iSCSI. Every SAN is stored three
+# times in one storage cluster (LRS) or across three zones (ZRS), encryption at rest with
+# Microsoft-managed keys is always on and cannot be disabled, and encryption in transit is not
+# supported ("Introduction to Azure Elastic SAN", "Plan for an Azure Elastic SAN deployment").
+schemaVersion: "1"
+type: "component"
+id: "azure-elastic-san"
+kind: "block-storage"
+provider: "azure"
+defaults:
+  mediaType: "ssd"
+  redundancy: "local"
+  encryptionAtRest: true
+  snapshots: true
+  managed: true
+properties:
+  blockProtocol:
+    type: "enum"
+    values: ["iscsi"]
+    default: "iscsi"
+  redundancySku:
+    type: "enum"
+    values: ["premium-lrs", "premium-zrs"]
+  maxVolumeIops:
+    type: "integer"
+    default: 80000
+  maxVolumeTib:
+    type: "integer"
+    default: 64
+  encryptionInTransit:
+    type: "boolean"
+    default: false

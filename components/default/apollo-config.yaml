@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apollo Config: self-hosted configuration centre for microservices, Java plus MySQL.
+# "Apollo project README": configuration changes reach clients in about one second, grayscale
+# release lets a change go to selected instances first, and clients cache config locally.
+schemaVersion: "1"
+type: "component"
+id: "apollo-config"
+kind: "feature-flag-service"
+provider: "default"
+defaults:
+  stagedRollout: true
+  managed: false
+properties:
+  localFileCache:
+    type: "boolean"
+    default: true
+  pushPropagationSeconds:
+    type: "integer"
+    default: 1
+  releaseApproval:
+    type: "boolean"
+    default: false

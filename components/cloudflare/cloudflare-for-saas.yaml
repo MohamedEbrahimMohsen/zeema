@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare for SaaS: proxies a provider's customers' own custom hostnames through Cloudflare.
+# "Cloudflare for SaaS" and "Issue certificates": custom hostnames route to a fallback origin and
+# Cloudflare issues two certificates per hostname (ECDSA P-256 and RSA 2048) from a default CA.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-for-saas"
+kind: "cdn"
+provider: "cloudflare"
+defaults:
+  managed: true
+  caching: true
+  tls: true
+  edgeCompute: false
+properties:
+  fallbackOrigin:
+    type: "boolean"
+    default: true
+  dualAlgorithmCertificates:
+    type: "boolean"
+    default: true
+  certificateAuthority:
+    type: "enum"
+    values: ["lets-encrypt", "google-trust-services", "ssl-com"]
+  validationMethod:
+    type: "enum"
+    values: ["txt", "http", "email"]

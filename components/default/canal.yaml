@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Alibaba Canal: MySQL CDC that disguises itself as a MySQL slave, sends the dump protocol to the
+# master and parses binlog events, so capture is log-based and in binlog order ("Canal wiki, Home").
+# Self-hosted: canal-deployer server plus optional canal-adapter and canal-admin.
+schemaVersion: "1"
+type: "component"
+id: "canal"
+kind: "change-data-capture"
+provider: "default"
+defaults:
+  managed: false
+  mode: "log-based"
+  ordered: true
+properties:
+  deployment:
+    type: "enum"
+    values: ["deployer", "adapter", "admin"]
+    default: "deployer"
+  haCoordination:
+    type: "enum"
+    values: ["none", "zookeeper"]
+    default: "none"

@@ -1,0 +1,42 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon MSK provisioned cluster: managed Apache Kafka brokers spread over the subnets you give it.
+# "Default Amazon MSK configuration" gives default.replication.factor 3 and min.insync.replicas 2
+# for three-AZ clusters, num.partitions 1, auto.create.topics.enable false and unclean leader
+# election true; "Amazon MSK encryption" says data at rest is always encrypted and TLS is the
+# default for both inter-broker and client traffic.
+schemaVersion: "1"
+type: "component"
+id: "aws-msk"
+kind: "stream"
+provider: "aws"
+defaults:
+  managed: true
+  delivery: "at-least-once"
+  ordering: "per-key"
+  partitions: 1
+  replicationFactor: 3
+  minInsyncReplicas: 2
+  storage: "persistent"
+  compaction: false
+  schemaEnforced: false
+properties:
+  brokerType:
+    type: "enum"
+    values: ["standard", "express"]
+    default: "standard"
+  clientEncryptionInTransit:
+    type: "enum"
+    values: ["tls", "tls-plaintext", "plaintext"]
+    default: "tls"
+  encryptionAtRest:
+    type: "boolean"
+    default: true
+  tieredStorage:
+    type: "boolean"
+    default: false
+  uncleanLeaderElection:
+    type: "boolean"
+    default: true
+  autoCreateTopics:
+    type: "boolean"
+    default: false

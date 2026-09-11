@@ -1,0 +1,39 @@
+{
+  "name": "@arkore/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "predev": "node ../../packages/catalogue/src/build.js --out public/catalogue",
+    "dev": "next dev",
+    "prebuild": "node ../../packages/catalogue/src/build.js --out public/catalogue",
+    "build": "next build",
+    "start": "next start",
+    "db:generate": "drizzle-kit generate",
+    "seed": "node --import tsx/esm src/db/seed.ts",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@arkore/catalogue": "workspace:*",
+    "@arkore/core": "workspace:*",
+    "@electric-sql/pglite": "^0.5.8",
+    "arctic": "^3.7.0",
+    "drizzle-orm": "^0.45.2",
+    "next": "^16.3.4",
+    "postgres": "^3.4.7",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "yaml": "2.8.2"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.0",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "drizzle-kit": "^0.31.0",
+    "tailwindcss": "^4.1.0",
+    "tsx": "^4.20.0",
+    "typescript": "5.9.3",
+    "vitest": "5.0.0"
+  }
+}

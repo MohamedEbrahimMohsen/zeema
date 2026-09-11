@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# In-house prefix trie for typeahead; rebuilt offline in batches and served from memory.
+schemaVersion: "1"
+type: "component"
+id: "trie-index"
+kind: "search-index"
+provider: "default"
+defaults:
+  structure: "trie"
+  shardingStrategy: "prefix-range"
+  indexing: "batch"
+properties:
+  inMemory:
+    type: "boolean"
+    default: true
+  maxPrefixLength:
+    type: "integer"

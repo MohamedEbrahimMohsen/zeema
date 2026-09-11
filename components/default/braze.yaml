@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Braze: SaaS customer engagement platform. "API overview" documents a default limit of 250,000
+# requests per hour and messaging endpoints for push, email, SMS, WhatsApp and Content Cards.
+schemaVersion: "1"
+type: "component"
+id: "braze"
+kind: "notification-service"
+provider: "default"
+defaults:
+  managed: true
+  channelPush: true
+  channelEmail: true
+  channelSms: true
+  templateStore: true
+properties:
+  requestsPerHourQuota:
+    type: "integer"
+    default: 250000
+  contentCards:
+    type: "boolean"
+    default: true

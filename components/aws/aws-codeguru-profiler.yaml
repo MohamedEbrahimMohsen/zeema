@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon CodeGuru Profiler: continuous runtime profiler for live applications. Per "What is Amazon
+# CodeGuru Profiler?" it supports all JVM languages and Python 3.6 or later, and heap summary
+# visualization is a Java/JVM-only feature; per "Setting up CodeGuru Profiler" a profiling agent runs
+# inside the application and pushes runtime data, which is analysed into flame graphs and hourly reports.
+schemaVersion: "1"
+type: "component"
+id: "aws-codeguru-profiler"
+kind: "monitoring"
+provider: "aws"
+defaults:
+  signal: "metrics"
+  collectorMode: "push"
+  independentOfMonitored: false
+  managed: true
+properties:
+  profiledRuntime:
+    type: "enum"
+    values: ["jvm", "python"]
+  computePlatform:
+    type: "enum"
+    values: ["default", "aws-lambda"]
+    default: "default"
+  agentInApplication:
+    type: "boolean"
+    default: true
+  heapSummary:
+    type: "boolean"
+    default: false
+  recommendationReports:
+    type: "boolean"
+    default: true

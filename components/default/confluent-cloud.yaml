@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Confluent Cloud: managed Kafka. Topics default to 6 partitions, replication factor 3, two in-sync
+# replicas, 7-day delete retention; every cluster type has encryption at rest and TLS in transit
+# ("Manage Topics in Confluent Cloud", "Cluster Types").
+schemaVersion: "1"
+type: "component"
+id: "confluent-cloud"
+kind: "stream"
+provider: "default"
+defaults:
+  delivery: "at-least-once"
+  ordering: "per-key"
+  partitions: 6
+  replicationFactor: 3
+  minInsyncReplicas: 2
+  retentionHours: 168
+  compaction: false
+  storage: "persistent"
+  managed: true
+properties:
+  clusterType:
+    type: "enum"
+    values: ["basic", "standard", "enterprise", "dedicated", "freight"]
+  availability:
+    type: "enum"
+    values: ["single-zone", "multi-zone"]
+  encryptionAtRest:
+    type: "boolean"
+    default: true

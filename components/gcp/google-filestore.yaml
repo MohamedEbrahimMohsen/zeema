@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Filestore: managed NFS file share. "gcloud filestore instances create" defaults --tier to
+# BASIC_HDD and --protocol to NFS_V3; "Filestore overview" states data is encrypted at rest
+# by default and that basic and zonal tiers are zonal, only the regional tier spans zones.
+schemaVersion: "1"
+type: "component"
+id: "google-filestore"
+kind: "file-storage"
+provider: "gcp"
+defaults:
+  protocol: "nfs"
+  redundancy: "zonal"
+  backupEnabled: false
+  managed: true
+properties:
+  serviceTier:
+    type: "enum"
+    values: ["basic-hdd", "basic-ssd", "zonal", "regional", "enterprise"]
+    default: "basic-hdd"
+  nfsVersion:
+    type: "enum"
+    values: ["nfs-v3", "nfs-v4-1"]
+    default: "nfs-v3"

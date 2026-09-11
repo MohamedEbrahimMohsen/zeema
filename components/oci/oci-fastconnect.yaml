@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Cloud FastConnect virtual circuit: dedicated private connectivity that bypasses the public
+# internet, at 1, 10, 100 or 400 Gbps port speeds, always running BGP ("FastConnect Overview").
+# Private virtual circuits terminate on a DRG; public peering reaches public OCI service endpoints.
+schemaVersion: "1"
+type: "component"
+id: "oci-fastconnect"
+kind: "network-fabric"
+provider: "oci"
+defaults:
+  managed: true
+  overlay: false
+  interconnect: "cloud-backbone"
+  multicast: false
+properties:
+  circuitType:
+    type: "enum"
+    values: ["private", "public"]
+    default: "private"
+  connectivityModel:
+    type: "enum"
+    values: ["oracle-partner", "third-party-provider", "colocation"]
+  portSpeedGbps:
+    type: "integer"
+  bgp:
+    type: "boolean"
+    default: true
+  redundantCircuit:
+    type: "boolean"
+    default: false

@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenZFS: copy-on-write pooled storage; zvols are the block devices, datasets the file systems ("OpenZFS Basic Concepts").
+# zfsprops(7) gives compression=off, checksum=on and encryption off unless selected at dataset creation.
+schemaVersion: "1"
+type: "component"
+id: "openzfs"
+kind: "block-storage"
+provider: "default"
+defaults:
+  managed: false
+  snapshots: true
+  encryptionAtRest: false
+  redundancy: "local"
+properties:
+  compression:
+    type: "enum"
+    values: ["off", "lz4", "zstd", "gzip"]
+    default: "off"
+  checksums:
+    type: "boolean"
+    default: true
+  vdevLayout:
+    type: "enum"
+    values: ["stripe", "mirror", "raidz1", "raidz2", "raidz3", "draid"]

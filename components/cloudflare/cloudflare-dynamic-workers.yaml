@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Dynamic Workers: Workers created at runtime inside a sandbox, with the parent choosing bindings,
+# network access and limits. Per "Dynamic Workers" the outbound interception, custom limits and
+# Durable Object facet storage are things the caller opts into, so they are off out of the box.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-dynamic-workers"
+kind: "app-server"
+provider: "cloudflare"
+defaults:
+  managed: true
+  stateless: true
+  autoscaling: true
+  ownsData: false
+  runtime: "javascript"
+properties:
+  outboundInterception:
+    type: "boolean"
+    default: false
+  customLimits:
+    type: "boolean"
+    default: false
+  facetStorage:
+    type: "boolean"
+    default: false

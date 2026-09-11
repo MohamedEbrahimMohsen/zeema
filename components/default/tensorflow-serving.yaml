@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# TensorFlow Serving: self-hosted gRPC/REST model server; request batching is disabled by default.
+schemaVersion: "1"
+type: "component"
+id: "tensorflow-serving"
+kind: "ml-inference"
+provider: "default"
+defaults:
+  training: "batch"
+  inputs: "live"
+properties:
+  batching:
+    type: "boolean"
+    default: false

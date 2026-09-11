@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Cognito Sync: per-identity key-value datasets synchronised across a user's devices.
+# "Synchronizing data across clients": a dataset holds at most 1 MB and an identity at most 20
+# datasets; the client keeps a local cache. "Handling event callbacks": with no conflict handler
+# Amazon Cognito defaults to choosing the most recent update.
+# Maintenance since 30 June 2026 (no end-of-support date announced).
+schemaVersion: "1"
+type: "component"
+id: "aws-cognito-sync"
+kind: "nosql-database"
+provider: "aws"
+defaults:
+  model: "key-value"
+  consistency: "eventual"
+  replication: "single-region"
+  conflictResolution: "last-writer-wins"
+  managed: true
+properties:
+  maxDatasetSizeMb:
+    type: "integer"
+    default: 1
+  maxDatasetsPerIdentity:
+    type: "integer"
+    default: 20
+  localCache:
+    type: "boolean"
+    default: true
+  pushSync:
+    type: "boolean"
+    default: false
+  streams:
+    type: "boolean"
+    default: false

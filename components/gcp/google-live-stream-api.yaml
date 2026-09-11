@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Live Stream API channel: a managed live encoder that ingests an RTMP or SRT push and publishes
+# H.264/AAC renditions as Apple HLS and MPEG-DASH ("Live Stream API overview"). A backup input for
+# redundancy, DRM encryption and caption handling are configured per channel, so they are off by default.
+schemaVersion: "1"
+type: "component"
+id: "google-live-stream-api"
+kind: "media-transcoder"
+provider: "gcp"
+defaults:
+  managed: true
+  mode: "live"
+  videoCodec: "h264"
+  packaging: "hls"
+  drm: false
+  captions: false
+  redundantPipeline: false
+properties:
+  ingestProtocol:
+    type: "enum"
+    values: ["rtmp", "srt"]
+  dashManifest:
+    type: "boolean"
+    default: true
+  backupInput:
+    type: "boolean"
+    default: false

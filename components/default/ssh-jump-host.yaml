@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenSSH jump host: an sshd relay reached with ProxyJump. sshd_config defaults are
+# Port 22, PubkeyAuthentication yes, PasswordAuthentication yes, PermitRootLogin
+# prohibit-password and AllowTcpForwarding yes; there is no session recording or MFA.
+schemaVersion: "1"
+type: "component"
+id: "ssh-jump-host"
+kind: "bastion-host"
+provider: "default"
+defaults:
+  managed: false
+  protocols: "ssh"
+  sessionRecording: false
+  mfaRequired: false
+  justInTimeAccess: false
+properties:
+  listenPort:
+    type: "integer"
+    default: 22
+  passwordAuthentication:
+    type: "boolean"
+    default: true
+  tcpForwarding:
+    type: "boolean"
+    default: true
+  permitRootLogin:
+    type: "enum"
+    values: ["yes", "prohibit-password", "forced-commands-only", "no"]
+    default: "prohibit-password"

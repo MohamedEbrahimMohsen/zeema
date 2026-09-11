@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Microsoft Foundry: one Azure resource with projects that group agents, models and tools, with built-in tracing, evaluations and a model catalog.
+# "What is Microsoft Foundry?" lists tracing, monitoring, evaluations and the Foundry Models catalog as platform capabilities; "Configure Virtual Networks for Foundry Tools" states the resource accepts connections from any network until network rules are set.
+schemaVersion: "1"
+type: "component"
+id: "azure-ai-foundry"
+kind: "ml-platform"
+provider: "azure"
+defaults:
+  managed: true
+  modelRegistry: true
+  experimentTracking: true
+  publicAccess: true
+properties:
+  resourceModel:
+    type: "enum"
+    values: ["foundry-project", "hub-based-project"]
+    default: "foundry-project"
+  agentService:
+    type: "boolean"
+    default: true
+  guardrails:
+    type: "boolean"
+    default: true
+  bringYourOwnResources:
+    type: "boolean"
+    default: false

@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI GoldenGate deployment: fully managed real-time log-based replication, no compute to allocate.
+# "Create a deployment": production deployments default to 4 OCPUs with auto scaling enabled (up to
+# three times the OCPU count, 24 maximum); the deployment gets a private endpoint in a chosen subnet
+# and public console access is an extra opt-in load balancer.
+schemaVersion: "1"
+type: "component"
+id: "oci-goldengate"
+kind: "change-data-capture"
+provider: "oci"
+defaults:
+  managed: true
+  mode: "log-based"
+  ordered: true
+properties:
+  ocpuCount:
+    type: "integer"
+    default: 4
+  autoScaling:
+    type: "boolean"
+    default: true
+  publicConsoleAccess:
+    type: "boolean"
+    default: false
+  technology:
+    type: "enum"
+    values: ["oracle", "big-data", "mysql", "postgresql", "sql-server", "db2-for-i", "db2-for-zos"]
+    default: "oracle"
+  licenseType:
+    type: "enum"
+    values: ["license-included", "bring-your-own-license"]
+  credentialStore:
+    type: "enum"
+    values: ["oci-iam", "goldengate"]

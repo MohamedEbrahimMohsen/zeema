@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Structured content and assets with a preview/published split and one or more delivery channels (Oracle Content Management, Contentful, Sanity, Strapi, WordPress, Drupal, AEM, Sitecore). artifact-repository holds build artifacts and object-store opaque blobs; neither has a content model, a publishing workflow or a delivery cache.
+schemaVersion: "1"
+type: "kind"
+id: "content-repository"
+category: "data"
+properties:
+  deliveryMode:
+    type: "enum"
+    values: ["headless-api", "rendered", "hybrid"]
+    required: true
+  previewEnvironment:
+    type: "boolean"
+    default: true
+  deliveryCacheTtlSeconds:
+    type: "integer"
+  localization:
+    type: "boolean"
+  assetQuotaGb:
+    type: "integer"
+  publishingWorkflow:
+    type: "boolean"
+  versioning:
+    type: "boolean"
+  managed:
+    type: "boolean"
+    default: false

@@ -1,0 +1,11 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Generic logging, metrics and alerting tier drawn as one box. Signal is all three; nothing is
+# assumed about independence from the systems it watches.
+schemaVersion: "1"
+type: "component"
+id: "observability-stack"
+kind: "monitoring"
+provider: "default"
+defaults:
+  signal: "all"
+  managed: false

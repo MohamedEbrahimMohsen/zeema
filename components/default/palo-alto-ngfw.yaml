@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Palo Alto Networks NGFW (PAN-OS): App-ID based next-generation firewall. The predefined
+# security rules allow intrazone traffic and deny interzone traffic, with logging disabled
+# on both until overridden ("Security Policy Rules"). Threat Prevention is a licensed profile.
+schemaVersion: "1"
+type: "component"
+id: "palo-alto-ngfw"
+kind: "firewall"
+provider: "default"
+defaults:
+  managed: false
+  defaultAction: "deny"
+  stateful: true
+  logging: false
+  intrusionPrevention: false
+properties:
+  formFactor:
+    type: "enum"
+    values: ["hardware", "vm-series", "cn-series", "cloud-ngfw"]
+    default: "hardware"
+  appIdEnabled:
+    type: "boolean"
+    default: true
+  threatPreventionLicensed:
+    type: "boolean"
+    default: false
+  sslDecryption:
+    type: "boolean"
+    default: false

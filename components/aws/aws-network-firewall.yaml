@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Network Firewall: managed stateful firewall and intrusion prevention service for a VPC, with
+# firewall endpoints per Availability Zone and Suricata-compatible stateful rules; it runs in
+# source-preservation mode by default ("What is AWS Network Firewall?"). Logging is opt-in, TLS
+# inspection is optional, resources are encrypted with AWS owned keys and the TCP idle timeout is
+# 350 seconds ("Firewall policy settings in AWS Network Firewall").
+schemaVersion: "1"
+type: "component"
+id: "aws-network-firewall"
+kind: "firewall"
+provider: "aws"
+defaults:
+  managed: true
+  stateful: true
+  intrusionPrevention: true
+  logging: false
+properties:
+  deploymentMode:
+    type: "enum"
+    values: ["source-preservation", "no-source-preservation"]
+    default: "source-preservation"
+  ruleOrder:
+    type: "enum"
+    values: ["default-action-order", "strict-order"]
+  tlsInspection:
+    type: "boolean"
+    default: false
+  tcpIdleTimeoutSeconds:
+    type: "integer"
+    default: 350
+  customerManagedKey:
+    type: "boolean"
+    default: false

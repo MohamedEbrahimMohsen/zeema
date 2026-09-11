@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Fault Injection Service: managed chaos experiments run from an experiment template of actions and
+# targets. Per "What is AWS Fault Injection Service?" experiments are started on demand, actions run
+# sequentially or in parallel, and targets are in the experiment's own account unless multi-account is used.
+schemaVersion: "1"
+type: "component"
+id: "aws-fis"
+kind: "worker"
+provider: "aws"
+defaults:
+  trigger: "manual"
+  managed: true
+properties:
+  stopConditions:
+    type: "boolean"
+  actionMode:
+    type: "enum"
+    values: ["sequential", "parallel"]
+  multiAccount:
+    type: "boolean"
+    default: false

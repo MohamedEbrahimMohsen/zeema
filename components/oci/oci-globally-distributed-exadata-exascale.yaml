@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Globally Distributed Exadata Database on Exascale Infrastructure: fully managed sharded Oracle on
+# Exascale storage vaults. "Overview of Oracle Globally Distributed Exadata Database on Exascale
+# Infrastructure": nodes replicate by Raft with automatic replication-factor maintenance, and the
+# catalog standby is deployed automatically with Data Guard during service creation.
+schemaVersion: "1"
+type: "component"
+id: "oci-globally-distributed-exadata-exascale"
+kind: "sql-database"
+provider: "oci"
+defaults:
+  managed: true
+  sharded: true
+  distributed: true
+  multiWriter: true
+  commitProtocol: "two-phase"
+  encryptionAtRest: true
+  concurrencyControl: "pessimistic"
+properties:
+  replicationMethod:
+    type: "enum"
+    values: ["raft", "data-guard"]
+    default: "raft"
+  replicationFactor:
+    type: "integer"
+    default: 3
+  catalogStandby:
+    type: "boolean"
+    default: true
+  storageVault:
+    type: "boolean"
+    default: true

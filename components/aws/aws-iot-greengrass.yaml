@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS IoT Greengrass V2 core device: the Greengrass Core software running on the customer's own
+# Linux or Windows edge hardware, deployed and updated from the cloud service. "How AWS IoT
+# Greengrass works" describes local component execution, local pub/sub and OTA updates from the
+# cloud; "Manage data streams on Greengrass core devices" states stream manager works with
+# intermittent or limited connectivity and does not encrypt stream data at rest on the device.
+schemaVersion: "1"
+type: "component"
+id: "aws-iot-greengrass"
+kind: "edge-appliance"
+provider: "aws"
+defaults:
+  connectivity: "intermittent"
+  offlineMode: true
+  cloudManaged: true
+  managed: false
+properties:
+  streamManager:
+    type: "boolean"
+    default: false
+  localMqttBroker:
+    type: "boolean"
+    default: false
+  localDataEncryptedAtRest:
+    type: "boolean"
+    default: false
+  otaUpdates:
+    type: "boolean"
+    default: true

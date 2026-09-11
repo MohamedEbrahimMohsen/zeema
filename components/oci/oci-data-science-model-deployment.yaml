@@ -1,0 +1,37 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle OCI Data Science model deployment: an HTTP predict endpoint serving a model from the
+# model catalog behind a load balancer. "Creating a Model Deployment": the load balancer
+# bandwidth defaults to 10 Mbps, the endpoint type defaults to a public endpoint on
+# service-managed default networking, autoscaling and logging are off unless enabled, and the
+# model artifact may be up to 400 GB. No instance count is defaulted; it must be entered.
+schemaVersion: "1"
+type: "component"
+id: "oci-data-science-model-deployment"
+kind: "ml-inference"
+provider: "oci"
+defaults:
+  training: "batch"
+  inputs: "live"
+  accelerator: "none"
+  managed: true
+properties:
+  endpointType:
+    type: "enum"
+    values: ["public", "private"]
+    default: "public"
+  networking:
+    type: "enum"
+    values: ["default-networking", "custom-vcn"]
+    default: "default-networking"
+  loadBalancerBandwidthMbps:
+    type: "integer"
+    default: 10
+  autoscaling:
+    type: "boolean"
+    default: false
+  logging:
+    type: "boolean"
+    default: false
+  maxModelSizeGb:
+    type: "integer"
+    default: 400

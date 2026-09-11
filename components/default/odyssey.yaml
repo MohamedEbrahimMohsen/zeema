@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Odyssey: multi-threaded PostgreSQL connection pooler and request router from Yandex.
+# Rules configuration: `pool` is required with no default, pool_size and client_max
+# default to 0 (unlimited), target_session_attrs picks primary or standby storage hosts.
+schemaVersion: "1"
+type: "component"
+id: "odyssey"
+kind: "database-proxy"
+provider: "default"
+defaults:
+  pooling: true
+  routing: "none"
+properties:
+  poolMode:
+    type: "enum"
+    values: ["session", "transaction"]
+    required: true
+  poolSize:
+    type: "integer"
+    default: 0
+  clientMax:
+    type: "integer"
+    default: 0
+  targetSessionAttrs:
+    type: "enum"
+    values: ["any", "read-write", "read-only", "prefer-standby"]
+  workers:
+    type: "integer"

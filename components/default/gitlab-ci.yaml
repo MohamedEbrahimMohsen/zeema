@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# GitLab CI/CD: pipelines defined in .gitlab-ci.yml. "CI/CD pipelines" says pipelines run "when
+# pushing to a branch, creating a merge request, or on a schedule" and that manual jobs are an
+# opt-in addition; "Pipeline settings" gives a 60 minute default job timeout, pending jobs dropped
+# after 24 hours. "Runners" calls GitLab-hosted instance runners "Fully managed by GitLab".
+schemaVersion: "1"
+type: "component"
+id: "gitlab-ci"
+kind: "ci-pipeline"
+provider: "default"
+defaults:
+  trigger: "commit"
+  approvalRequired: false
+  selfHostedRunners: false
+  managed: true
+properties:
+  runnerScope:
+    type: "enum"
+    values: ["instance", "group", "project"]
+    default: "instance"
+  jobTimeoutMinutes:
+    type: "integer"
+    default: 60
+  pendingJobDropHours:
+    type: "integer"
+    default: 24
+  protectedVariables:
+    type: "boolean"
+    default: false

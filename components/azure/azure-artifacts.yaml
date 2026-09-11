@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Artifacts: package feeds for NuGet, npm, Maven, Python, Cargo and Universal Packages.
+# "What is Azure Artifacts" states upstream sources are a checkbox chosen at feed creation and that
+# each organization gets 2 GiB of free storage.
+schemaVersion: "1"
+type: "component"
+id: "azure-artifacts"
+kind: "artifact-repository"
+provider: "azure"
+defaults:
+  artifactType: "package"
+  upstreamProxy: false
+  managed: true
+properties:
+  packageType:
+    type: "enum"
+    values: ["nuget", "npm", "maven", "python", "cargo", "universal"]
+  scope:
+    type: "enum"
+    values: ["project", "organization"]
+  freeStorageGib:
+    type: "integer"
+    default: 2

@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Clerk: hosted authentication and user management with a multi-tenant organizations model.
+# "Roles and Permissions": organization roles and permissions are RBAC. "Sign-up and sign-in
+# options": MFA (OTP, TOTP, passkeys) is an option an instance enables, not a default.
+schemaVersion: "1"
+type: "component"
+id: "clerk"
+kind: "identity-provider"
+provider: "default"
+defaults:
+  protocol: "oidc"
+  authorizationModel: "rbac"
+  centralised: true
+  managed: true
+  mfa: false
+properties:
+  organizationsEnabled:
+    type: "boolean"
+    default: false
+  enterpriseSso:
+    type: "enum"
+    values: ["none", "saml", "oidc"]
+    default: "none"

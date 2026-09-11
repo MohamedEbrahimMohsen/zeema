@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare Queues: a global message queue consumed by Workers. "Delivery guarantees" states at
+# least once delivery; "Queues - Limits" gives the 24 hour default retention (up to 14 days) and the
+# 100 message batch, and "Dead letter queues" states no DLQ is attached until one is configured.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-queues"
+kind: "queue"
+provider: "cloudflare"
+defaults:
+  managed: true
+  delivery: "at-least-once"
+  ordering: "none"
+  deadLetterQueue: false
+  replay: false
+  persistence: true
+  retentionDays: 1
+  maxAttempts: 3
+  role: "work"
+properties:
+  maxBatchSize:
+    type: "integer"
+    default: 100
+  maxMessageSizeKb:
+    type: "integer"
+    default: 128
+  maxConsumerConcurrency:
+    type: "integer"
+    default: 250
+  consumerType:
+    type: "enum"
+    values: ["push", "pull"]
+    default: "push"
+  maxRetentionDays:
+    type: "integer"
+    default: 14

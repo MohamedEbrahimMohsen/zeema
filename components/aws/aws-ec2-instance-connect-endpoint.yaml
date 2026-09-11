@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# EC2 Instance Connect Endpoint: a jump point inside a VPC subnet that tunnels SSH and RDP to
+# instances that have no public IPv4 address ("Connect to an Amazon EC2 instance using EC2 Instance
+# Connect Endpoint"). Every connection needs an IAM permission, and client IP preservation is off by
+# default, so the endpoint's network interface is the client IP ("Create an EC2 Instance Connect Endpoint").
+schemaVersion: "1"
+type: "component"
+id: "aws-ec2-instance-connect-endpoint"
+kind: "bastion-host"
+provider: "aws"
+defaults:
+  managed: true
+  protocols: "both"
+  publicIp: false
+properties:
+  clientIpPreservation:
+    type: "boolean"
+    default: false
+  ipAddressType:
+    type: "enum"
+    values: ["ipv4", "dualstack", "ipv6"]
+  internetGatewayRequired:
+    type: "boolean"
+    default: false
+  iamAuthorized:
+    type: "boolean"
+    default: true

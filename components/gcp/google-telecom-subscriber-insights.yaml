@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Telecom Subscriber Insights: forecasts churn and upgrade propensity and recommends next
+# best offers for a carrier's subscriber base. "Telecom Subscriber Insights documentation":
+# usage records, billing, CRM and app data are ingested into BigQuery and normalised to
+# predefined data models; the product ships as a Google Cloud project that is built and
+# transferred to the customer, who then hosts and operates it.
+schemaVersion: "1"
+type: "component"
+id: "google-telecom-subscriber-insights"
+kind: "ai-service"
+provider: "gcp"
+defaults:
+  modality: "structured"
+  publicEndpoint: false
+  managed: false
+properties:
+  deployment:
+    type: "enum"
+    values: ["customer-hosted"]
+    default: "customer-hosted"
+  ingestion:
+    type: "enum"
+    values: ["batch", "streaming"]
+    default: "batch"
+  output:
+    type: "enum"
+    values: ["churn-propensity", "upgrade-propensity", "next-best-offer", "segment"]
+    default: "churn-propensity"

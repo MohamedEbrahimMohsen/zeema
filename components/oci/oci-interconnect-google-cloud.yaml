@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Interconnect for Google Cloud: a FastConnect private virtual circuit paired with a Google Cloud Partner Interconnect VLAN attachment.
+# Defaults from "Oracle Interconnect for Google Cloud": traffic between the clouds stays off the internet on private
+# IP addresses, the connection has no built-in redundancy so a second one is needed for resilience, and IPSec over
+# FastConnect, BGP MD5 and BFD are optional additions.
+schemaVersion: "1"
+type: "component"
+id: "oci-interconnect-google-cloud"
+kind: "network-fabric"
+provider: "oci"
+defaults:
+  managed: true
+  interconnect: "private"
+  multicast: false
+  kernelBypass: false
+  overlay: false
+properties:
+  peerCloud:
+    type: "enum"
+    values: ["google-cloud"]
+    default: "google-cloud"
+  builtInRedundancy:
+    type: "boolean"
+    default: false
+  ipsecOverFastConnect:
+    type: "boolean"
+    default: false
+  bgpMd5Authentication:
+    type: "boolean"
+    default: false

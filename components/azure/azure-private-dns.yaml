@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Private DNS: private zones resolved inside linked virtual networks ("Azure Private DNS").
+# Zone data is stored as a global resource, independent of any single virtual network or region;
+# autoregistration of virtual machine records is a per-link opt-in.
+schemaVersion: "1"
+type: "component"
+id: "azure-private-dns"
+kind: "dns"
+provider: "azure"
+defaults:
+  managed: true
+  anycast: false
+properties:
+  autoRegistration:
+    type: "boolean"
+    default: false
+  globalZoneData:
+    type: "boolean"
+    default: true

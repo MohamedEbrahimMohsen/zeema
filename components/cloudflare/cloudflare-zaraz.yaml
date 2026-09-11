@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare Zaraz: loads third-party tags on Cloudflare's edge instead of the browser.
+# "Zaraz settings": the script is auto-injected, SPA support and automatic pageview tracking are on;
+# a newly added tool is assigned no consent purpose and so skips consent by default.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-zaraz"
+kind: "worker"
+provider: "cloudflare"
+defaults:
+  managed: true
+  trigger: "manual"
+properties:
+  autoInjectScript:
+    type: "boolean"
+    default: true
+  singlePageApplicationSupport:
+    type: "boolean"
+    default: true
+  automaticPageviewTracking:
+    type: "boolean"
+    default: true
+  consentRequired:
+    type: "boolean"
+    default: false

@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Formance Ledger: programmable double-entry ledger with an immutable append-only transaction log,
+# Numscript transactions and idempotency keys, stored in PostgreSQL ("Formance Ledger").
+schemaVersion: "1"
+type: "component"
+id: "formance"
+kind: "ledger"
+provider: "default"
+defaults:
+  doubleEntry: true
+  appendOnly: true
+  indexConsistency: "strong"
+  managed: false
+properties:
+  hosting:
+    type: "enum"
+    values: ["self-hosted", "formance-cloud"]
+    default: "self-hosted"
+  backingStore:
+    type: "ref"
+    refKind: "sql-database"
+  idempotencyKeys:
+    type: "boolean"
+    default: true

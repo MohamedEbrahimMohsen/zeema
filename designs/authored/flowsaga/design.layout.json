@@ -1,0 +1,45 @@
+{
+  "version": 2,
+  "nodes": {
+    "abc": [
+      60,
+      46
+    ],
+    "azure-functions-6": [
+      122,
+      210
+    ],
+    "sdk-client-2": [
+      318,
+      210
+    ],
+    "azure-functions": [
+      210,
+      374
+    ],
+    "sdk-client": [
+      220,
+      46
+    ],
+    "sdk-client-3": [
+      380,
+      46
+    ],
+    "gatling": [
+      -15,
+      204
+    ],
+    "aws-bedrock": [
+      36,
+      337
+    ],
+    "azure-aks-edge-essentials": [
+      -3,
+      138
+    ]
+  },
+  "edges": {
+    "abc>azure-functions-6": -277,
+    "sdk-client-3>sdk-client-2": -227
+  }
+}

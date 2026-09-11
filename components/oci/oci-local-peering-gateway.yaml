@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Cloud local peering gateway: private connection between two VCNs in the same region over
+# the Oracle network, one LPG per peering and at most ten per VCN ("Local VCN Peering using Local
+# Peering Gateways"). Peering is not transitive and both sides must grant IAM policy.
+schemaVersion: "1"
+type: "component"
+id: "oci-local-peering-gateway"
+kind: "network-fabric"
+provider: "oci"
+defaults:
+  managed: true
+  overlay: true
+  interconnect: "private"
+  multicast: false
+properties:
+  crossRegion:
+    type: "boolean"
+    default: false
+  transitiveRouting:
+    type: "boolean"
+    default: false
+  maxPeeringsPerVcn:
+    type: "integer"
+    default: 10
+  mutualPolicyRequired:
+    type: "boolean"
+    default: true

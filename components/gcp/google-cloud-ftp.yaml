@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloud FTP: managed SFTP server fronting Cloud Storage buckets. "Cloud FTP overview" states
+# transfers run over an encrypted SSH channel with Google-managed host keys, users
+# authenticate with public keys and are mapped to service accounts, and a server is either
+# external (internet, restricted to listed IP ranges) or internal (Private Service Connect).
+schemaVersion: "1"
+type: "component"
+id: "google-cloud-ftp"
+kind: "app-server"
+provider: "gcp"
+defaults:
+  managed: true
+  stateless: true
+  ownsData: false
+properties:
+  serverType:
+    type: "enum"
+    values: ["external", "internal"]
+  hostKeysManaged:
+    type: "boolean"
+    default: true
+  authentication:
+    type: "enum"
+    values: ["ssh-public-key"]
+    default: "ssh-public-key"

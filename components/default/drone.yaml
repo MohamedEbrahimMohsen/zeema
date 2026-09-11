@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Drone: self-hosted server plus runners. "Pipelines" states "A change in code triggers a webhook to
+# Drone which runs the corresponding pipeline" and lists docker, kubernetes, exec, ssh and cloud
+# pipeline types; "DRONE_RUNNER_CAPACITY" limits concurrent pipelines per runner and defaults to 2.
+schemaVersion: "1"
+type: "component"
+id: "drone"
+kind: "ci-pipeline"
+provider: "default"
+defaults:
+  trigger: "commit"
+  selfHostedRunners: true
+  approvalRequired: false
+  concurrency: 2
+  managed: false
+properties:
+  runnerType:
+    type: "enum"
+    values: ["docker", "kubernetes", "exec", "ssh", "digitalocean", "macstadium"]
+    default: "docker"
+  promotions:
+    type: "boolean"
+    default: false

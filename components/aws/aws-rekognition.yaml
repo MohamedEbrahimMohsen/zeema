@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Rekognition: managed image and video analysis (labels, faces, text, moderation) over regional API endpoints, with face collections and stored or streaming video jobs.
+# "Guidelines and quotas in Amazon Rekognition" gives the set quotas: 15 MB for an image read from Amazon S3, 5 MB for raw image bytes, 20 million face vectors per collection, stored videos up to 10 GB and 6 hours, and 20 concurrent stored-video jobs per account; "AI services opt-out policies" states content may be stored for service improvement unless an Organizations opt-out policy is set.
+schemaVersion: "1"
+type: "component"
+id: "aws-rekognition"
+kind: "ai-service"
+provider: "aws"
+defaults:
+  managed: true
+  modality: "vision"
+  publicEndpoint: true
+  customerManagedKeys: false
+properties:
+  analysisTarget:
+    type: "enum"
+    values: ["image", "stored-video", "streaming-video"]
+    default: "image"
+  maxImageSizeMb:
+    type: "integer"
+    default: 15
+  maxFaceVectorsPerCollection:
+    type: "integer"
+    default: 20000000
+  concurrentStoredVideoJobs:
+    type: "integer"
+    default: 20
+  contentModeration:
+    type: "boolean"
+    default: false

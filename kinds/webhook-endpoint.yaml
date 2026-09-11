@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Abstract kind: An HTTP endpoint you expose to receive callbacks from a third party (PSP, SaaS, provider).
+schemaVersion: "1"
+type: "kind"
+id: "webhook-endpoint"
+category: "messaging"
+properties:
+  signatureVerified:
+    type: "boolean"
+    default: false
+  idempotent:
+    type: "boolean"
+    default: false
+  retriedByCaller:
+    type: "boolean"
+    default: true
+  managed:
+    type: "boolean"
+    default: false

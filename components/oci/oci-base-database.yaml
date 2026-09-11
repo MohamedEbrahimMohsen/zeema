@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Base Database Service: Oracle Database on OCI virtual machines, single-node or 2-node RAC.
+# "Create a DB System" defaults: automatic backups on, Recovery Service destination with the Silver
+# policy (35 days), one node, Logical Volume Manager storage and Oracle-managed encryption keys;
+# new tablespaces are TDE-encrypted by default on OCI database services.
+schemaVersion: "1"
+type: "component"
+id: "oci-base-database"
+kind: "sql-database"
+provider: "oci"
+defaults:
+  managed: true
+  backupEnabled: true
+  backupRetentionDays: 35
+  replication: "none"
+  encryptionAtRest: true
+  concurrencyControl: "pessimistic"
+properties:
+  edition:
+    type: "enum"
+    values: ["standard-edition", "enterprise-edition", "enterprise-edition-high-performance", "enterprise-edition-extreme-performance", "enterprise-edition-developer"]
+  nodeCount:
+    type: "integer"
+    default: 1
+  storageManagement:
+    type: "enum"
+    values: ["lvm", "asm"]
+    default: "lvm"
+  backupDestination:
+    type: "enum"
+    values: ["recovery-service", "object-storage", "local"]
+    default: "recovery-service"
+  dataGuard:
+    type: "boolean"
+    default: false

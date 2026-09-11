@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Generic payment service provider: moves money, confirms via webhook, offers a hosted payment page.
+schemaVersion: "1"
+type: "component"
+id: "payment-service-provider"
+kind: "third-party-api"
+provider: "default"
+defaults:
+  handlesMoney: true
+  callbackStyle: "webhook"
+  hostedPage: true
+properties:
+  signedCallbacks:
+    type: "boolean"
+    default: false

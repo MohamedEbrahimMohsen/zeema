@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Data Firehose: fully managed buffer-and-deliver pipeline to S3, Redshift, OpenSearch,
+# Splunk, Iceberg and HTTP endpoints. "Understand data delivery in Amazon Data Firehose" states
+# at-least-once semantics; "Configure buffering hints" gives the S3 default 5 MiB / 300 seconds.
+schemaVersion: "1"
+type: "component"
+id: "aws-firehose"
+kind: "stream-processor"
+provider: "aws"
+defaults:
+  managed: true
+  windowing: "none"
+  exactlyOnce: false
+  stateBackend: "memory"
+properties:
+  destination:
+    type: "enum"
+    values: ["s3", "redshift", "opensearch", "splunk", "iceberg", "snowflake", "http-endpoint"]
+    default: "s3"
+  bufferSizeMb:
+    type: "integer"
+    default: 5
+  bufferIntervalSeconds:
+    type: "integer"
+    default: 300
+  dataTransformation:
+    type: "boolean"
+    default: false
+  serverSideEncryption:
+    type: "boolean"
+    default: false

@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Device identity and twin state that stream (partitions and retention) and pubsub-topic do not carry. deviceTwin, deviceProvisioning and messagesPerDayLimit have no default so fleet and quota rules can catch their absence.
+schemaVersion: "1"
+type: "kind"
+id: "iot-hub"
+category: "messaging"
+properties:
+  protocol:
+    type: "enum"
+    values: ["mqtt", "amqp", "http", "multi", "lorawan"]
+  deviceCount:
+    type: "integer"
+  perDeviceIdentity:
+    type: "boolean"
+    default: true
+  deviceTwin:
+    type: "boolean"
+  deviceProvisioning:
+    type: "boolean"
+  messagesPerDayLimit:
+    type: "integer"
+  managed:
+    type: "boolean"
+    default: false

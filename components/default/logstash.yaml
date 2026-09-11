@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Logstash: pipeline for ingest, transform and ship. logstash.yml defaults are queue.type memory
+# (so events in flight are lost on restart), pipeline.batch.size 125, pipeline.batch.delay 50 ms,
+# pipeline.workers equal to the host's CPU cores and dead_letter_queue.enable false
+# ("Logstash Reference, logstash.yml settings file").
+schemaVersion: "1"
+type: "component"
+id: "logstash"
+kind: "stream-processor"
+provider: "default"
+defaults:
+  managed: false
+  windowing: "none"
+  exactlyOnce: false
+  stateBackend: "memory"
+properties:
+  queueType:
+    type: "enum"
+    values: ["memory", "persisted"]
+    default: "memory"
+  batchSize:
+    type: "integer"
+    default: 125
+  batchDelayMs:
+    type: "integer"
+    default: 50
+  deadLetterQueue:
+    type: "boolean"
+    default: false

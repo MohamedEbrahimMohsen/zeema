@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Schema Registry (Event Hubs): managed registry; schema groups are created with no
+# compatibility mode unless one is chosen.
+schemaVersion: "1"
+type: "component"
+id: "azure-schema-registry"
+kind: "schema-registry"
+provider: "azure"
+defaults:
+  compatibility: "none"
+  enforced: false
+  managed: true
+properties:
+  schemaFormat:
+    type: "enum"
+    values: ["avro", "json-schema", "custom"]
+    default: "avro"

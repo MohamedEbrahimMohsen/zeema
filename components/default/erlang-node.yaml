@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# BEAM (Erlang/Elixir) node: one lightweight process per entity (session, channel, device) holding its
+# state in memory, nodes clustered with distributed Erlang. Stateful by construction.
+schemaVersion: "1"
+type: "component"
+id: "erlang-node"
+kind: "app-server"
+provider: "default"
+defaults:
+  stateless: false
+  runtime: "beam"
+  instancePerEntity: true
+properties:
+  clustered:
+    type: "boolean"
+    default: true

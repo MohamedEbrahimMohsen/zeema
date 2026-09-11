@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# EVCache: Netflix's memcached-based cache that writes every key to all zones and reads locally.
+schemaVersion: "1"
+type: "component"
+id: "evcache"
+kind: "cache"
+provider: "default"
+defaults:
+  persistence: false
+  hashing: "consistent"
+  replication: "multi-az"
+  evictionPolicy: "lru"
+properties:
+  crossRegionReplication:
+    type: "boolean"
+    default: false

@@ -1,0 +1,10 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Generic in-memory cache tier whose product the design does not name. No eviction policy,
+# no persistence and no replication are assumed; the lint rules ask for them.
+schemaVersion: "1"
+type: "component"
+id: "cache-cluster"
+kind: "cache"
+provider: "default"
+defaults:
+  managed: false

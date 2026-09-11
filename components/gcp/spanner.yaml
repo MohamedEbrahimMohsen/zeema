@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud Spanner: globally distributed, synchronously replicated SQL database with
+# external consistency; backups are opt-in.
+schemaVersion: "1"
+type: "component"
+id: "spanner"
+kind: "sql-database"
+provider: "gcp"
+defaults:
+  managed: true
+  distributed: true
+  multiWriter: true
+  sharded: true
+  replication: "sync"
+  commitProtocol: "two-phase"
+  concurrencyControl: "pessimistic"
+  encryptionAtRest: true
+properties:
+  multiRegionConfig:
+    type: "boolean"
+    default: false
+  nodes:
+    type: "integer"

@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# A disk with attachment semantics and per-volume performance, unlike object-store which is keyed and shared. encryptionAtRest, redundancy and iops carry no default so capacity and compliance rules can catch a volume that never declared them.
+schemaVersion: "1"
+type: "kind"
+id: "block-storage"
+category: "data"
+properties:
+  sizeGib:
+    type: "integer"
+  mediaType:
+    type: "enum"
+    values: ["ssd", "hdd"]
+  iops:
+    type: "integer"
+  encryptionAtRest:
+    type: "boolean"
+  redundancy:
+    type: "enum"
+    values: ["local", "zonal", "regional"]
+  snapshots:
+    type: "boolean"
+    default: false
+  managed:
+    type: "boolean"
+    default: false

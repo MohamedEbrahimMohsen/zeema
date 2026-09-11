@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Content Management: managed content hub that both serves assets headlessly through the
+# delivery REST API and renders sites it builds, so delivery is hybrid. Public assets sit behind a CDN
+# with a 15-minute default cache age (assets in secure channels are never cached); custom renditions
+# cap at 20 per asset and video tokens expire after 8 hours. Facts from "Configure Asset Settings" and
+# "Manage Publishing Channels".
+schemaVersion: "1"
+type: "component"
+id: "oci-content-management"
+kind: "content-repository"
+provider: "oci"
+defaults:
+  managed: true
+  deliveryMode: "hybrid"
+  deliveryCacheTtlSeconds: 900
+properties:
+  edition:
+    type: "enum"
+    values: ["starter", "premium"]
+  channelAccess:
+    type: "enum"
+    values: ["public", "secure"]
+  maxCustomRenditionsPerAsset:
+    type: "integer"
+    default: 20
+  videoTokenExpiryHours:
+    type: "integer"
+    default: 8

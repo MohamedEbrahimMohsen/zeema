@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare Internal DNS: private zones grouped into DNS views for a private network.
+# "Internal DNS": internal zones get no Cloudflare nameservers and can only be queried
+# through the Cloudflare Gateway resolver, so they are never publicly resolvable.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-internal-dns"
+kind: "dns"
+provider: "cloudflare"
+defaults:
+  managed: true
+properties:
+  nameserversAssigned:
+    type: "boolean"
+    default: false
+  gatewayResolverOnly:
+    type: "boolean"
+    default: true

@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Pgpool-II: PostgreSQL middleware doing connection pooling, load balancing and failover.
+# "Connection Pooling" and "Load Balancing" runtime config: connection_cache is on,
+# max_pool is 4, load_balance_mode is on and memory_cache_enabled is off by default.
+schemaVersion: "1"
+type: "component"
+id: "pgpool"
+kind: "database-proxy"
+provider: "default"
+defaults:
+  pooling: true
+  routing: "none"
+properties:
+  loadBalanceMode:
+    type: "boolean"
+    default: true
+  maxPool:
+    type: "integer"
+    default: 4
+  memoryCacheEnabled:
+    type: "boolean"
+    default: false
+  statementLevelLoadBalance:
+    type: "boolean"
+    default: false

@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Dremio: lakehouse platform querying data in its sources instead of storing it. "Get started":
+# Dremio Cloud is the hosted edition and Dremio Software the self-managed one, with a Community
+# Edition container for a single node. "Apache Iceberg tables": INSERT, UPDATE, DELETE and MERGE.
+schemaVersion: "1"
+type: "component"
+id: "dremio"
+kind: "data-warehouse"
+provider: "default"
+defaults:
+  realtime: false
+  upsert: true
+  format: "columnar"
+  managed: false
+properties:
+  edition:
+    type: "enum"
+    values: ["community", "enterprise", "cloud"]
+    default: "community"
+  tableFormat:
+    type: "enum"
+    values: ["iceberg", "delta"]
+    default: "iceberg"
+  storesData:
+    type: "boolean"
+    default: false

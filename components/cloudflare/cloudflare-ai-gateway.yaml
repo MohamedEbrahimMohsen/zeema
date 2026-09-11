@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AI Gateway: proxy in front of model providers that adds analytics, logging, caching,
+# rate limiting, retries and fallbacks ("AI Gateway overview"). Caching is off until
+# configured ("Caching": "Caching is disabled by default"); rate limiting is opt-in too.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-ai-gateway"
+kind: "api-gateway"
+provider: "cloudflare"
+defaults:
+  managed: true
+  protocol: "http"
+  tls: true
+  auth: "none"
+  rateLimiting: false
+properties:
+  caching:
+    type: "boolean"
+    default: false
+  cacheTtlSeconds:
+    type: "integer"
+    default: 300
+  logging:
+    type: "boolean"
+    default: true
+  fallbackModel:
+    type: "boolean"
+    default: false

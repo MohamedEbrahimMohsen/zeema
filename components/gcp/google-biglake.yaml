@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google BigLake: BigQuery tables over Cloud Storage, S3 and Blob Storage with access delegation.
+# "BigLake Overview": tables are read-only, enforce row-level and column-level security through the
+# Storage API, and metadata caching is not enabled unless a staleness interval is set.
+schemaVersion: "1"
+type: "component"
+id: "google-biglake"
+kind: "data-catalog"
+provider: "gcp"
+defaults:
+  managed: true
+  accessPolicyEnforcement: true
+properties:
+  tableFormat:
+    type: "enum"
+    values: ["avro", "csv", "delta-lake", "iceberg", "json", "orc", "parquet"]
+  metadataCaching:
+    type: "boolean"
+    default: false
+  accessDelegation:
+    type: "boolean"
+    default: true
+  readOnly:
+    type: "boolean"
+    default: true

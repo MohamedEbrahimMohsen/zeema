@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# MongoDB Atlas: MongoDB's managed service. Deployments are three-node replica sets spread over
+# availability zones of one region, and Atlas encrypts storage and snapshots with AES-256 and
+# requires TLS ("FAQ: Security", "MongoDB Atlas FAQ").
+schemaVersion: "1"
+type: "component"
+id: "mongodb-atlas"
+kind: "nosql-database"
+provider: "default"
+defaults:
+  model: "document"
+  consistency: "strong"
+  replication: "single-region"
+  replicationFactor: 3
+  conflictResolution: "none"
+  encryptionAtRest: true
+  managed: true
+properties:
+  clusterTier:
+    type: "enum"
+    values: ["free", "flex", "dedicated"]
+  multiCloud:
+    type: "boolean"
+    default: false
+  cloudBackup:
+    type: "boolean"

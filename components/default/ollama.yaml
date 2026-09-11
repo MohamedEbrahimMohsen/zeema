@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Ollama: local LLM runtime serving models over an HTTP API, on CPU or GPU.
+# Defaults from the Ollama FAQ: binds 127.0.0.1:11434, context window 4096 tokens, models kept
+# in memory for 5 minutes after the last request.
+schemaVersion: "1"
+type: "component"
+id: "ollama"
+kind: "ml-inference"
+provider: "default"
+defaults:
+  training: "batch"
+  inputs: "live"
+  managed: false
+properties:
+  port:
+    type: "integer"
+    default: 11434
+  bindAddress:
+    type: "string"
+    default: "127.0.0.1"
+  contextLength:
+    type: "integer"
+    default: 4096
+  keepAliveMinutes:
+    type: "integer"
+    default: 5

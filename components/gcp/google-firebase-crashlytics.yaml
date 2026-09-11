@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Firebase Crashlytics ("Firebase Crashlytics" overview and "Customize your crash reports"): the SDK
+# collects crash reports for all users as soon as it is added, uploads them to Google's managed
+# backend, groups them into issues and raises realtime alerts for new, regressed and growing issues.
+schemaVersion: "1"
+type: "component"
+id: "google-firebase-crashlytics"
+kind: "monitoring"
+provider: "gcp"
+defaults:
+  signal: "logs"
+  collectorMode: "push"
+  independentOfMonitored: true
+  alertGrouping: true
+  managed: true
+properties:
+  automaticCollection:
+    type: "boolean"
+    default: true
+  realtimeAlerts:
+    type: "boolean"
+    default: true
+  nonFatalEvents:
+    type: "boolean"
+    default: false

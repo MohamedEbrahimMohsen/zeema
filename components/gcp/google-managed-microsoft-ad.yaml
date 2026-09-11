@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Managed Service for Microsoft Active Directory: real Microsoft AD domain controllers run by Google.
+# Per "Managed Microsoft AD overview" two domain controllers are deployed in non-overlapping zones in
+# each region, a domain can span up to four regions without VPC peering, Google patches, backs up and
+# monitors the controllers, and LDAPS is an optional feature you turn on.
+schemaVersion: "1"
+type: "component"
+id: "google-managed-microsoft-ad"
+kind: "identity-provider"
+provider: "gcp"
+defaults:
+  protocol: "custom"
+  centralised: true
+  mfa: false
+  managed: true
+properties:
+  domainControllersPerRegion:
+    type: "integer"
+    default: 2
+  maxRegions:
+    type: "integer"
+    default: 4
+  ldaps:
+    type: "boolean"
+    default: false
+  automaticBackups:
+    type: "boolean"
+    default: true

@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Postfix: self-hosted mail transfer agent. "Postfix architecture overview" states TLS runs only
+# when it is turned on in the smtp client or smtpd server, and postscreen is an optional guard.
+schemaVersion: "1"
+type: "component"
+id: "postfix"
+kind: "third-party-api"
+provider: "default"
+defaults:
+  managed: false
+  idempotent: false
+  callbackStyle: "none"
+properties:
+  tlsEnabled:
+    type: "boolean"
+    default: false
+  postscreenEnabled:
+    type: "boolean"
+    default: false

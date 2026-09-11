@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Slurm: open source HPC workload manager, slurmctld plus per-node slurmd, jobs queued in partitions.
+# Defaults from "Slurm Workload Manager Overview" and "Scheduling Configuration Guide":
+# backfill scheduling plugin loaded by default, backup controller optional.
+schemaVersion: "1"
+type: "component"
+id: "slurm"
+kind: "big-data-cluster"
+provider: "default"
+defaults:
+  engine: "hpc"
+  autoscaling: false
+  spotInstances: false
+  managed: false
+properties:
+  schedulerType:
+    type: "enum"
+    values: ["backfill", "builtin"]
+    default: "backfill"
+  backupController:
+    type: "boolean"
+    default: false
+  accountingStorage:
+    type: "boolean"
+    default: false
+  partitions:
+    type: "integer"

@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Telecom Network Automation: "a managed cloud implementation of Nephio" that deploys
+# telecom network functions from blueprints. "Telecom Network Automation overview": it
+# "adopts the GitOps approach that provides continuous reconciliation", runs Kubernetes
+# operators on a GKE orchestration cluster, supports presubmit validation of configuration
+# and zero-touch provisioning of cloud infrastructure.
+schemaVersion: "1"
+type: "component"
+id: "google-telecom-network-automation"
+kind: "ci-pipeline"
+provider: "gcp"
+defaults:
+  trigger: "commit"
+  managed: true
+properties:
+  reconciliation:
+    type: "enum"
+    values: ["continuous", "on-demand"]
+    default: "continuous"
+  presubmitValidation:
+    type: "boolean"
+    default: true
+  zeroTouchProvisioning:
+    type: "boolean"
+    default: true
+  blueprintSource:
+    type: "enum"
+    values: ["git-repository", "oci-registry"]
+    default: "git-repository"

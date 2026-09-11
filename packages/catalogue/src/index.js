@@ -1,0 +1,190 @@
+// The catalogue as data: read kinds/, components/, rules/, locales/, schema/ and designs/ from a
+// repository root and hand back the same shape the compiled bundle has, so every consumer sees one
+// catalogue whether it loaded the files or the bundle.
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import YAML from "yaml";
+
+export const DEFAULT_ROOT = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "..",
+  "..",
+  "..",
+);
+export const TIERS = ["reference", "imported", "authored"];
+export const PROVIDERS = ["aws", "azure", "gcp", "oci", "cloudflare", "default"];
+
+export const resolveRoot = (root) => path.resolve(root ?? process.env.ARKORE_ROOT ?? DEFAULT_ROOT);
+
+/** Recursive walk returning root-relative POSIX paths with the extension, sorted. */
+export function walk(root, dir, ext) {
+  const abs = path.join(root, dir);
+  if (!fs.existsSync(abs)) return [];
+  return fs
+    .readdirSync(abs, { withFileTypes: true })
+    .flatMap((d) =>
+      d.isDirectory()
+        ? walk(root, `${dir}/${d.name}`, ext)
+        : d.name.endsWith(ext)
+          ? [`${dir}/${d.name}`]
+          : [],
+    )
+    .sort();
+}
+
+/** Deep key sort; arrays keep their order (enum value order is load-bearing). */
+export function sorted(v) {
+  if (Array.isArray(v)) return v.map(sorted);
+  if (v && typeof v === "object") {
+    const out = {};
+    for (const k of Object.keys(v).sort()) out[k] = sorted(v[k]);
+    return out;
+  }
+  return v;
+}
+
+export function readYaml(root, rel) {
+  return YAML.parse(fs.readFileSync(path.join(root, rel), "utf8"));
+}
+
+/** Every design file on disk, as the index the canvas and the platform seed from. */
+export function designIndex(root) {
+  const out = [];
+  for (const tier of TIERS) {
+    const dir = path.join(root, "designs", tier);
+    if (!fs.existsSync(dir)) continue;
+    for (const id of fs.readdirSync(dir).sort()) {
+      if (!fs.statSync(path.join(dir, id)).isDirectory()) continue;
+      for (const file of ["design.yaml", "design.broken.yaml"]) {
+        const rel = `designs/${tier}/${id}/${file}`;
+        if (!fs.existsSync(path.join(root, rel))) continue;
+        out.push({
+          path: rel,
+          tier,
+          id,
+          broken: file.includes(".broken."),
+          editable: tier === "authored" && file === "design.yaml",
+          layout: rel.replace(/\.yaml$/, ".layout.json"),
+        });
+      }
+    }
+  }
+  return out;
+}
+
+/**
+ * Load the catalogue from source files. Returns the bundle shape plus `files` (the raw documents
+ * with their relative paths) for the validator's file-level checks, and `root`.
+ */
+export function loadCatalogue(rootArg) {
+  const root = resolveRoot(rootArg);
+  const files = { kinds: [], components: [], rules: [] };
+  const kinds = {};
+  for (const rel of walk(root, "kinds", ".yaml")) {
+    const doc = readYaml(root, rel);
+    files.kinds.push({ rel, doc });
+    kinds[doc.id] = {
+      id: doc.id,
+      category: doc.category,
+      properties: sorted(doc.properties ?? {}),
+    };
+  }
+  const components = {};
+  for (const rel of walk(root, "components", ".yaml")) {
+    const doc = readYaml(root, rel);
+    files.components.push({ rel, doc });
+    components[doc.id] = {
+      id: doc.id,
+      kind: doc.kind,
+      provider: doc.provider,
+      defaults: sorted(doc.defaults ?? {}),
+      properties: sorted(doc.properties ?? {}),
+    };
+  }
+  const rules = [];
+  for (const rel of walk(root, "rules", ".yaml")) {
+    const doc = readYaml(root, rel);
+    files.rules.push({ rel, doc });
+    rules.push({
+      id: doc.id,
+      severity: doc.severity,
+      select: sorted(doc.select),
+      when: sorted(doc.when),
+      message: doc.message,
+    });
+  }
+  rules.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  const en = readYaml(root, "locales/en.yaml");
+  const locale = sorted({
+    categories: en.categories ?? {},
+    kinds: en.kinds ?? {},
+    components: en.components ?? {},
+    rules: en.rules ?? {},
+  });
+  const schema = sorted(
+    JSON.parse(fs.readFileSync(path.join(root, "schema", "design.schema.json"), "utf8")),
+  );
+  return {
+    root,
+    kinds: sorted(kinds),
+    components: sorted(components),
+    rules,
+    locale,
+    schema,
+    files,
+  };
+}
+
+/** The bundle a client loads: the catalogue without `files` and `root`. */
+export function toBundle(cat) {
+  const { kinds, components, rules, locale, schema } = cat;
+  return { kinds, components, rules, locale, schema };
+}
+
+/** One search row per component: [id, name, kind, category, provider, haystack]. */
+export function searchRows(cat) {
+  return Object.keys(cat.components)
+    .sort()
+    .map((id) => {
+      const c = cat.components[id];
+      const text = cat.locale.components[id] ?? {};
+      const name = text.name ?? "";
+      const description = text.description ?? "";
+      const category = cat.kinds[c.kind] ? cat.kinds[c.kind].category : "";
+      return [id, name, c.kind, category, c.provider, `${id} ${name} ${description}`.toLowerCase()];
+    });
+}
+
+const inner = (raw, rel) => {
+  const open = raw.indexOf("<svg");
+  const gt = open < 0 ? -1 : raw.indexOf(">", open);
+  const close = raw.lastIndexOf("</svg>");
+  if (gt < 0 || close < 0 || close < gt) throw new Error(`${rel}: not an svg`);
+  return raw.slice(gt + 1, close);
+};
+
+/** Icon inner markup keyed by component id and `kind:<id>`; `missing` lists absent files. */
+export function iconMap(cat) {
+  const icons = {};
+  const missing = [];
+  for (const id of Object.keys(cat.components).sort()) {
+    const rel = `icons/components/${cat.components[id].provider}/${id}.svg`;
+    const abs = path.join(cat.root, rel);
+    if (!fs.existsSync(abs)) {
+      missing.push(rel);
+      continue;
+    }
+    icons[id] = inner(fs.readFileSync(abs, "utf8"), rel);
+  }
+  for (const id of Object.keys(cat.kinds).sort()) {
+    const rel = `icons/kinds/${id}.svg`;
+    const abs = path.join(cat.root, rel);
+    if (!fs.existsSync(abs)) {
+      missing.push(rel);
+      continue;
+    }
+    icons[`kind:${id}`] = inner(fs.readFileSync(abs, "utf8"), rel);
+  }
+  return { icons: sorted(icons), missing };
+}

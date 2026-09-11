@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Uptime Kuma: self-hosted uptime monitor that probes endpoints on an interval; it stores data in an
+# embedded SQLite database and serves the UI on port 3001 ("Environment Variables" wiki).
+schemaVersion: "1"
+type: "component"
+id: "uptime-kuma"
+kind: "monitoring"
+provider: "default"
+defaults:
+  signal: "alerts"
+  collectorMode: "pull"
+  managed: false
+properties:
+  database:
+    type: "enum"
+    values: ["sqlite", "mariadb"]
+    default: "sqlite"
+  httpPort:
+    type: "integer"
+    default: 3001

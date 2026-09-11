@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Cloud Guard: a target scopes compartments that Oracle-managed detector recipes examine for problems.
+# Defaults from "Cloud Guard Overview" and "About OCI Responder Recipes": four Oracle-managed detector recipes
+# ship with the service, and a responder rule only remediates by itself once set to execute automatically.
+schemaVersion: "1"
+type: "component"
+id: "oci-cloud-guard"
+kind: "monitoring"
+provider: "oci"
+defaults:
+  managed: true
+  signal: "alerts"
+  collectorMode: "pull"
+  independentOfMonitored: false
+properties:
+  configurationDetector:
+    type: "boolean"
+    default: true
+  activityDetector:
+    type: "boolean"
+    default: true
+  threatDetector:
+    type: "boolean"
+    default: true
+  instanceSecurityDetector:
+    type: "boolean"
+    default: true
+  automaticRemediation:
+    type: "boolean"
+    default: false

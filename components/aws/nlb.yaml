@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Network Load Balancer: managed L4 flow-hash balancer. Cross-zone is off by default; preserves client source IP and long-lived TCP flows.
+schemaVersion: "1"
+type: "component"
+id: "nlb"
+kind: "load-balancer"
+provider: "aws"
+defaults:
+  layer: "l4"
+  managed: true
+  hashing: "consistent"
+  connectionPreserving: true
+properties:
+  crossZone:
+    type: "boolean"
+    default: false

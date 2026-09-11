@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Content Delivery Network: cached delivery from POP edge servers. "What is a content
+# delivery network? - Azure": if the origin server does not specify a TTL, the default TTL is
+# seven days; dynamic site acceleration, compression and geo-filtering are opt-in features.
+schemaVersion: "1"
+type: "component"
+id: "azure-cdn"
+kind: "cdn"
+provider: "azure"
+defaults:
+  managed: true
+  caching: true
+properties:
+  defaultTtlDays:
+    type: "integer"
+    default: 7
+  dynamicSiteAcceleration:
+    type: "boolean"
+    default: false
+  compression:
+    type: "boolean"
+    default: false
+  geoFiltering:
+    type: "boolean"
+    default: false

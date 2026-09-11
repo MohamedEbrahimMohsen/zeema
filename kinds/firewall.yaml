@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Carries the allow/deny rule set a policy check reads, which load-balancer and network-fabric do not. defaultAction and logging have no default so a rule can flag a filter that never declared its posture.
+schemaVersion: "1"
+type: "kind"
+id: "firewall"
+category: "security"
+properties:
+  defaultAction:
+    type: "enum"
+    values: ["allow", "deny"]
+  stateful:
+    type: "boolean"
+  ruleCount:
+    type: "integer"
+  logging:
+    type: "boolean"
+  intrusionPrevention:
+    type: "boolean"
+  managed:
+    type: "boolean"
+    default: false

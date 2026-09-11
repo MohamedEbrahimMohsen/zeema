@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Grafana k6: load generator that runs JavaScript test scripts on a Go engine from the CLI. Local
+# execution is the default; distributed and Grafana Cloud k6 runs are opt-in. A k6 run with no options
+# uses 1 virtual user and 1 iteration ("Grafana k6 documentation").
+schemaVersion: "1"
+type: "component"
+id: "k6"
+kind: "client"
+provider: "default"
+defaults:
+  platform: "desktop"
+  localCache: false
+  managed: false
+properties:
+  executionMode:
+    type: "enum"
+    values: ["local", "distributed", "cloud"]
+    default: "local"
+  virtualUsers:
+    type: "integer"
+    default: 1
+  protocol:
+    type: "enum"
+    values: ["http", "grpc", "websocket", "browser"]
+    default: "http"

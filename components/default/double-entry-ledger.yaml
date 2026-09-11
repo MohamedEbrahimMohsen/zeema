@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Generic in-house double-entry ledger: append-only postings over a relational store, balances
+# derived from postings.
+schemaVersion: "1"
+type: "component"
+id: "double-entry-ledger"
+kind: "ledger"
+provider: "default"
+defaults:
+  doubleEntry: true
+  appendOnly: true
+  tamperEvident: false
+  sealed: false
+  indexConsistency: "strong"
+properties:
+  backingStore:
+    type: "ref"
+    refKind: "sql-database"
+  multiCurrency:
+    type: "boolean"
+    default: false

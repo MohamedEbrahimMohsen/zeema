@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Compute Cloud@Customer: an Oracle-managed rack in the customer data centre, driven by
+# the OCI control plane. "Overview of Compute Cloud@Customer": the rack keeps a persistent
+# connection to the OCI tenancy; when that connection is lost instance and network lifecycle
+# operations keep working against cached IAM data while IAM changes, monitoring, patching and
+# upgrades are suspended. It offers Compute, VCN, Block Volume, File Storage, Object Storage
+# and OKE.
+schemaVersion: "1"
+type: "component"
+id: "oci-compute-cloud-at-customer"
+kind: "edge-appliance"
+provider: "oci"
+defaults:
+  formFactor: "rack"
+  connectivity: "connected"
+  offlineMode: true
+  cloudManaged: true
+  managed: true
+properties:
+  controlPlane:
+    type: "enum"
+    values: ["oci-regional", "local"]
+    default: "oci-regional"
+  oracleOperated:
+    type: "boolean"
+    default: true
+  lifecycleOperationsWhenDisconnected:
+    type: "boolean"
+    default: true
+  identityCachedLocally:
+    type: "boolean"
+    default: true

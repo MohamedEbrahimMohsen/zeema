@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# A multi-attach mount point with a protocol and a quota, which neither object-store nor block-storage models. protocol is required because a share is meaningless without one; publicAccess and encryptionInTransit stay open for exposure rules.
+schemaVersion: "1"
+type: "kind"
+id: "file-storage"
+category: "data"
+properties:
+  protocol:
+    type: "enum"
+    values: ["nfs", "smb", "multi", "lustre", "native"]
+    required: true
+  quotaGib:
+    type: "integer"
+  encryptionInTransit:
+    type: "boolean"
+  publicAccess:
+    type: "boolean"
+  redundancy:
+    type: "enum"
+    values: ["local", "zonal", "regional"]
+  backupEnabled:
+    type: "boolean"
+    default: false
+  managed:
+    type: "boolean"
+    default: false

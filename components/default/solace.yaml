@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Solace PubSub+ Event Broker: direct messaging is the default delivery system and is reliable but not
+# guaranteed; guaranteed messaging spools to disk and only then uses a dead message queue, which does
+# not pre-exist ("Direct Messages", "Configuring Queues").
+schemaVersion: "1"
+type: "component"
+id: "solace"
+kind: "queue"
+provider: "default"
+defaults:
+  delivery: "at-most-once"
+  ordering: "none"
+  persistence: false
+  deadLetterQueue: false
+  replay: false
+  managed: false
+properties:
+  deliveryMode:
+    type: "enum"
+    values: ["direct", "persistent", "non-persistent"]
+    default: "direct"
+  redundancy:
+    type: "boolean"
+    default: false
+  replication:
+    type: "boolean"
+    default: false

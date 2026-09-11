@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Estuary Flow: hosted real-time data movement platform. The web app is "backed by secure,
+# cloud-hosted infrastructure that Estuary manages", with BYOC deployments where Estuary still
+# manages the control plane ("Estuary Documentation, Core concepts"). Materializations are exactly-once
+# against transactional destinations and at-least-once against non-transactional ones.
+schemaVersion: "1"
+type: "component"
+id: "estuary"
+kind: "change-data-capture"
+provider: "default"
+defaults:
+  managed: true
+  mode: "log-based"
+  ordered: true
+properties:
+  deploymentModel:
+    type: "enum"
+    values: ["public-cloud", "byoc", "private"]
+    default: "public-cloud"
+  destinationTransactional:
+    type: "boolean"

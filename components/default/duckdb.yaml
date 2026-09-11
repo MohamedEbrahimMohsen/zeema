@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# DuckDB: MIT-licensed analytical database embedded in the host process. "Why DuckDB": a
+# columnar-vectorized execution engine and bulk-optimised MVCC. "Connect": omitting the database
+# file starts an in-memory database whose data is lost when the process finishes.
+schemaVersion: "1"
+type: "component"
+id: "duckdb"
+kind: "data-warehouse"
+provider: "default"
+defaults:
+  realtime: false
+  format: "columnar"
+  managed: false
+properties:
+  storageMode:
+    type: "enum"
+    values: ["in-memory", "persistent-file"]
+    default: "in-memory"
+  embedded:
+    type: "boolean"
+    default: true

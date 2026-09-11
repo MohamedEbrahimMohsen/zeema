@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM WebSphere Liberty: "a lightweight Java runtime" built on Open Liberty, supporting Jakarta EE and
+# MicroProfile ("WebSphere Liberty overview"). Features are the units of functionality loaded into the
+# runtime and an administrator enables only the ones the application needs in server.xml, so the runtime
+# composition is explicit rather than a fixed profile.
+schemaVersion: "1"
+type: "component"
+id: "websphere-liberty"
+kind: "app-server"
+provider: "default"
+defaults:
+  managed: false
+  runtime: "jvm"
+properties:
+  modularFeatures:
+    type: "boolean"
+    default: true
+  microProfileSupport:
+    type: "boolean"
+    default: true
+  builtOnOpenLiberty:
+    type: "boolean"
+    default: true

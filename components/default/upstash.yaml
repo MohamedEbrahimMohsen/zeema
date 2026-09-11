@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Upstash Redis: serverless managed Redis with durable storage and TLS on every connection.
+# Eviction is disabled by default — writes are rejected at the size limit — so evictionPolicy is
+# left undefaulted ("Get started", "Eviction").
+schemaVersion: "1"
+type: "component"
+id: "upstash"
+kind: "cache"
+provider: "default"
+defaults:
+  managed: true
+  persistence: true
+properties:
+  global:
+    type: "boolean"
+    default: false
+  restApi:
+    type: "boolean"
+    default: true

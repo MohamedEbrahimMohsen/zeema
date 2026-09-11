@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AI Crawl Control: reports which AI crawlers reach a zone and enforces per-crawler policy.
+# It "works automatically on all Cloudflare plans" with zero configuration and only observes
+# until a crawler is blocked, at which point a WAF custom rule is created ("Manage AI
+# crawlers"). Detection is user-agent based without Bot Management ("Get started").
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-ai-crawl-control"
+kind: "bot-management"
+provider: "cloudflare"
+defaults:
+  managed: true
+  challengeAction: "log"
+  verifiedBotsAllowed: true
+properties:
+  detectionMethod:
+    type: "enum"
+    values: ["user-agent", "bot-score"]
+    default: "user-agent"
+  robotsTxtTracking:
+    type: "boolean"
+    default: true
+  payPerCrawl:
+    type: "boolean"
+    default: false

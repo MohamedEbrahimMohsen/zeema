@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Agent Registry: the Agent Platform catalogue that records deployed agents so they can be governed
+# and discovered across an organization ("Agent Engine overview"). Agents are registered when they are
+# deployed rather than crawled on a schedule, and the registry classifies no data and traces no lineage.
+schemaVersion: "1"
+type: "component"
+id: "google-agent-registry"
+kind: "data-catalog"
+provider: "gcp"
+defaults:
+  managed: true
+  scanSchedule: "manual"
+  classification: false
+  lineage: false
+properties:
+  discovery:
+    type: "boolean"
+    default: true
+  scope:
+    type: "enum"
+    values: ["project", "organization"]
+    default: "project"

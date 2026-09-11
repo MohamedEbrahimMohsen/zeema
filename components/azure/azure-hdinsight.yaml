@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure HDInsight: managed open-source big-data clusters. "What is Azure HDInsight" lists the cluster
+# types (Hadoop, Spark, HBase, Interactive Query, Kafka), states compute and storage are decoupled,
+# that the built-in Hive metastore is deleted with the cluster, and that Autoscale is opt-in.
+schemaVersion: "1"
+type: "component"
+id: "azure-hdinsight"
+kind: "big-data-cluster"
+provider: "azure"
+defaults:
+  autoscaling: false
+  managed: true
+properties:
+  clusterType:
+    type: "enum"
+    values: ["hadoop", "spark", "hbase", "interactive-query", "kafka"]
+  decoupledStorage:
+    type: "boolean"
+    default: true
+  externalMetastore:
+    type: "boolean"
+    default: false

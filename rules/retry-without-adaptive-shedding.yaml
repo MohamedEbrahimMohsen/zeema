@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../schema/rule.schema.json
+# Retries into a service that cannot shed load or open a circuit are the recipe for a
+# metastable failure: the retries keep the dependency saturated after the original
+# fault is gone. Either break the circuit on the caller or put an adaptive limiter in
+# front of the callee.
+# Tripped by: designs/doordash-delivery.broken.yaml
+schemaVersion: "1"
+type: "rule"
+id: "retry-without-adaptive-shedding"
+severity: "error"
+select:
+  edge: {}
+when:
+  all:
+    - field: "retryPolicy"
+      in: ["fixed", "exponential", "exponential-jitter"]
+    - not:
+        field: "circuitBreaker"
+        equals: true
+    - to:
+        not:
+          hasEdge:
+            direction: "in"
+            peerKind: "rate-limiter"
+message: "Edge '{{edge.from}}' -> '{{edge.to}}' retries without a circuit breaker, and '{{edge.to}}' has no rate limiter in front of it. Retry storms will cascade."

@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apache Ozone: self-hosted scalable object store for Hadoop with S3 and ofs interfaces.
+# Per "Ozone Erasure Coding", RATIS/THREE is the default replication scheme and writes every block to
+# three datanodes for a 200% storage overhead; erasure coding (RS-3-2-1024k, RS-6-3-1024k, RS-10-4-1024k)
+# is opt-in and configured per bucket, and new keys inherit the bucket's replication config.
+schemaVersion: "1"
+type: "component"
+id: "ozone"
+kind: "object-store"
+provider: "default"
+defaults:
+  managed: false
+  replication: "quorum"
+  strongReadAfterWrite: true
+  versioning: false
+  encryptionAtRest: false
+properties:
+  replicationConfig:
+    type: "enum"
+    values: ["ratis-three", "rs-3-2-1024k", "rs-6-3-1024k", "rs-10-4-1024k"]
+    default: "ratis-three"
+  datanodeReplicas:
+    type: "integer"
+    default: 3
+  s3Gateway:
+    type: "boolean"
+    default: false
+  transparentEncryption:
+    type: "boolean"
+    default: false

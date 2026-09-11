@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Grafana Mimir: multi-tenant Prometheus backend on object storage. Per the configuration
+# parameters reference the ingester ring replication_factor defaults to 3, and per "Grafana
+# Mimir compactor" block retention is disabled by default; the compactor does not downsample.
+schemaVersion: "1"
+type: "component"
+id: "mimir"
+kind: "timeseries-database"
+provider: "default"
+defaults:
+  downsampling: false
+  tiers: "hot-cold"
+  labelIndex: true
+  compression: "gorilla"
+  managed: false
+properties:
+  replicationFactor:
+    type: "integer"
+    default: 3
+  multiTenant:
+    type: "boolean"
+    default: true
+  querySharding:
+    type: "boolean"
+    default: true

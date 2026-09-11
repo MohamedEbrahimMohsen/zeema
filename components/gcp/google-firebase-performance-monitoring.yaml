@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Firebase Performance Monitoring ("Firebase Performance Monitoring" overview): the client SDK
+# pushes traces to Google's managed backend. App start, foreground/background, screen rendering,
+# web page load and HTTP/S network request traces are collected automatically once the SDK is
+# added; code traces are the ones you have to write yourself.
+schemaVersion: "1"
+type: "component"
+id: "google-firebase-performance-monitoring"
+kind: "monitoring"
+provider: "gcp"
+defaults:
+  signal: "traces"
+  collectorMode: "push"
+  independentOfMonitored: true
+  managed: true
+properties:
+  automaticTraces:
+    type: "boolean"
+    default: true
+  networkRequestTraces:
+    type: "boolean"
+    default: true
+  customCodeTraces:
+    type: "boolean"
+    default: false

@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apache Tomcat: open source Jakarta Servlet 6.1 / Pages 4.0 container ("Apache Tomcat 11 Overview").
+# "The HTTP Connector" gives the shipped defaults: HTTP/1.1 over the Java NIO connector, maxThreads 200,
+# SSLEnabled false. Clustering and session replication are a separate opt-in ("Clustering/Session Replication How-To").
+schemaVersion: "1"
+type: "component"
+id: "tomcat"
+kind: "app-server"
+provider: "default"
+defaults:
+  managed: false
+  runtime: "jvm"
+properties:
+  connectorProtocol:
+    type: "enum"
+    values: ["nio", "nio2", "apr"]
+    default: "nio"
+  maxThreads:
+    type: "integer"
+    default: 200
+  tlsEnabled:
+    type: "boolean"
+    default: false
+  sessionReplication:
+    type: "boolean"
+    default: false

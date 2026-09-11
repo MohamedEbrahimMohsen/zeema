@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS B2B Data Interchange: managed, pay-as-you-go transformation of X12 EDI documents to and from
+# JSON or XML, reading and writing Amazon S3 buckets. "Transforming and generating EDI" describes
+# inbound and outbound directions and optional JSONata or XSLT mappings over the service-defined
+# document structure.
+schemaVersion: "1"
+type: "component"
+id: "aws-b2b-data-interchange"
+kind: "worker"
+provider: "aws"
+defaults:
+  managed: true
+  trigger: "batch"
+  idempotent: false
+  rateControl: "none"
+  accelerator: "none"
+properties:
+  direction:
+    type: "enum"
+    values: ["inbound", "outbound"]
+    default: "inbound"
+  ediStandard:
+    type: "enum"
+    values: ["x12"]
+    default: "x12"
+  dataFormat:
+    type: "enum"
+    values: ["json", "xml"]
+    default: "json"
+  mappingLanguage:
+    type: "enum"
+    values: ["none", "jsonata", "xslt"]
+    default: "none"

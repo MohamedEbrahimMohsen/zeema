@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Eclipse Jetty 12: servlet container and HTTP server, usable standalone or embedded in an application.
+# Per the "Operations Guide" quick start the enabled modules are server, http and ee10-deploy, so the server
+# listens on port 8080 for clear-text HTTP/1.1 and https is a module you add; EE8, EE9 and EE10 web
+# applications can be deployed side by side.
+schemaVersion: "1"
+type: "component"
+id: "jetty"
+kind: "app-server"
+provider: "default"
+defaults:
+  managed: false
+  runtime: "jvm"
+properties:
+  httpPort:
+    type: "integer"
+    default: 8080
+  tlsEnabled:
+    type: "boolean"
+    default: false
+  eeEnvironment:
+    type: "enum"
+    values: ["core", "ee8", "ee9", "ee10"]
+    default: "ee10"
+  embedded:
+    type: "boolean"
+    default: false

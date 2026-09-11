@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Comprehend: managed NLP over UTF-8 text (entities, key phrases, language, sentiment, PII) with optional custom classifiers and entity recognizers.
+# "Guidelines and quotas" gives the built-in synchronous limits: 100 KB per document for entity, key-phrase and language detection, 25 documents per batch request, 10 active asynchronous jobs per operation, and dynamic throttling instead of a fixed request rate; "AI services opt-out policies" states content may be stored for service improvement unless an Organizations opt-out policy is set.
+schemaVersion: "1"
+type: "component"
+id: "aws-comprehend"
+kind: "ai-service"
+provider: "aws"
+defaults:
+  managed: true
+  modality: "text"
+  publicEndpoint: true
+  customerManagedKeys: false
+properties:
+  analysisMode:
+    type: "enum"
+    values: ["synchronous", "batch", "asynchronous"]
+    default: "synchronous"
+  maxDocumentSizeKb:
+    type: "integer"
+    default: 100
+  maxDocumentsPerBatch:
+    type: "integer"
+    default: 25
+  maxActiveAsyncJobs:
+    type: "integer"
+    default: 10
+  customModels:
+    type: "boolean"
+    default: false

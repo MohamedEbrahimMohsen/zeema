@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloud SQL Auth Proxy: a connector binary you run beside your application. "About the Cloud
+# SQL Auth Proxy" states it encrypts traffic with TLS 1.3 and verifies both identities with
+# certificates, authorises connections through IAM, and does not provide connection pooling.
+schemaVersion: "1"
+type: "component"
+id: "google-cloud-sql-auth-proxy"
+kind: "database-proxy"
+provider: "gcp"
+defaults:
+  pooling: false
+  routing: "none"
+  managed: false
+properties:
+  mutualTls:
+    type: "boolean"
+    default: true
+  iamAuthorization:
+    type: "boolean"
+    default: true
+  automaticIamDatabaseAuthentication:
+    type: "boolean"
+    default: false

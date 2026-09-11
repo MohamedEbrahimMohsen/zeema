@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# The Linux kernel NFS server (nfs-utils / knfsd) exporting local file systems over NFS.
+# exports(5) states the export defaults: ro, sync, root_squash and secure; RPCSEC_GSS and RPC-with-TLS are opt-in.
+schemaVersion: "1"
+type: "component"
+id: "nfs-server"
+kind: "file-storage"
+provider: "default"
+defaults:
+  protocol: "nfs"
+  managed: false
+  publicAccess: false
+  encryptionInTransit: false
+  backupEnabled: false
+  redundancy: "local"
+properties:
+  writeMode:
+    type: "enum"
+    values: ["sync", "async"]
+    default: "sync"
+  rootSquash:
+    type: "boolean"
+    default: true
+  readOnlyExport:
+    type: "boolean"
+    default: true

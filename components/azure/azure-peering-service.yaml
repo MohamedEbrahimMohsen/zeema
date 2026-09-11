@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Peering Service: partner-delivered optimal public routing into the Microsoft global network
+# ("Azure Peering Service Overview"). It is an IP service over the public internet, explicitly not a
+# private connectivity product; local and geo redundancy are inherent, telemetry is an opt-in.
+schemaVersion: "1"
+type: "component"
+id: "azure-peering-service"
+kind: "network-fabric"
+provider: "azure"
+defaults:
+  managed: true
+  interconnect: "public"
+properties:
+  telemetry:
+    type: "boolean"
+    default: false
+  coldPotatoRouting:
+    type: "boolean"
+    default: true
+  geoRedundant:
+    type: "boolean"
+    default: true

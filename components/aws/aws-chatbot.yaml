@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Chatbot, now Amazon Q Developer in chat applications: forwards AWS notifications from SNS topics into Slack,
+# Microsoft Teams and Amazon Chime channels. "What is Amazon Q Developer in chat applications?": every
+# notification arrives through an SNS topic, CLI commands are gated by IAM channel roles and guardrail policies,
+# and custom actions are defined by the user. It delivers to chat channels only, not push, email or SMS.
+schemaVersion: "1"
+type: "component"
+id: "aws-chatbot"
+kind: "notification-service"
+provider: "aws"
+defaults:
+  channelPush: false
+  channelEmail: false
+  channelSms: false
+  templateStore: false
+  managed: true
+properties:
+  chatClient:
+    type: "enum"
+    values: ["slack", "microsoft-teams", "amazon-chime"]
+  cliCommands:
+    type: "boolean"
+    default: false
+  customActions:
+    type: "boolean"
+    default: false

@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare Security Center: available on all plans, it scans account and zone settings for
+# security insights and inventories the domains and IPs attached to the account; scans run
+# automatically every 7 days, every 3 days on Enterprise ("Security Center overview").
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-security-center"
+kind: "monitoring"
+provider: "cloudflare"
+defaults:
+  managed: true
+  signal: "alerts"
+  collectorMode: "pull"
+  independentOfMonitored: true
+properties:
+  scanIntervalDays:
+    type: "integer"
+    default: 7
+  securityInsights:
+    type: "boolean"
+    default: true
+  attackSurfaceInventory:
+    type: "boolean"
+    default: true
+  brandProtection:
+    type: "boolean"
+    default: false

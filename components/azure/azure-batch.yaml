@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Batch: a managed scheduler that creates pools of compute nodes and runs job tasks on them,
+# with no scheduler software to install ("Azure Batch runs large parallel jobs in the cloud").
+# Spot nodes, pool autoscale and tightly coupled MPI jobs are all opt-in pool configuration.
+schemaVersion: "1"
+type: "component"
+id: "azure-batch"
+kind: "worker"
+provider: "azure"
+defaults:
+  managed: true
+  trigger: "batch"
+  accelerator: "none"
+properties:
+  spotNodes:
+    type: "boolean"
+    default: false
+  autoscalePool:
+    type: "boolean"
+    default: false
+  tightlyCoupled:
+    type: "boolean"
+    default: false

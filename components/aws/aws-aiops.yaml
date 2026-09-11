@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon CloudWatch investigations (AI Operations): an investigation group that CloudWatch alarms start, which
+# gathers telemetry and suggests hypotheses during an incident. CreateInvestigationGroup API reference:
+# retentionInDays defaults to 90 (range 7-90), investigation data is encrypted with an AWS key unless a customer
+# managed KMS key is given, and isCloudTrailEventHistoryEnabled defaults to true.
+schemaVersion: "1"
+type: "component"
+id: "aws-aiops"
+kind: "monitoring"
+provider: "aws"
+defaults:
+  signal: "alerts"
+  collectorMode: "pull"
+  retentionDays: 90
+  managed: true
+properties:
+  encryptionKey:
+    type: "enum"
+    values: ["aws-owned-key", "customer-managed-key"]
+    default: "aws-owned-key"
+  cloudTrailEventHistory:
+    type: "boolean"
+    default: true
+  chatNotificationChannel:
+    type: "boolean"
+    default: false

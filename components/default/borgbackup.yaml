@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# BorgBackup: deduplicating backup program with optional compression and authenticated encryption ("Borg Documentation").
+# borg init requires --encryption explicitly - there is no default mode ("borg init") - and prunes only when a retention policy is passed.
+schemaVersion: "1"
+type: "component"
+id: "borgbackup"
+kind: "backup-service"
+provider: "default"
+defaults:
+  managed: false
+  crossRegionRestore: false
+properties:
+  encryptionMode:
+    type: "enum"
+    values: ["none", "authenticated", "authenticated-blake2", "repokey", "repokey-blake2", "keyfile", "keyfile-blake2"]
+  deduplication:
+    type: "boolean"
+    default: true
+  appendOnlyRepository:
+    type: "boolean"
+    default: false

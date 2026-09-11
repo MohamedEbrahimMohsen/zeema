@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# reCAPTCHA fraud prevention: transaction and account defense scored through the CreateAssessment
+# call. Per "Detect payment fraud with transaction defense" the assessment returns a transactionRisk
+# score between 0 and 1 plus risk reason codes in the same synchronous response, and it needs a
+# reCAPTCHA token from the page together with the transaction data.
+schemaVersion: "1"
+type: "component"
+id: "google-fraud-defense"
+kind: "third-party-api"
+provider: "gcp"
+defaults:
+  callbackStyle: "none"
+  hostedPage: false
+  handlesMoney: false
+  managed: true
+properties:
+  defenseType:
+    type: "enum"
+    values: ["transaction", "account"]
+  integration:
+    type: "enum"
+    values: ["frontend-token", "api-only"]
+    default: "frontend-token"
+  riskScoreReturned:
+    type: "boolean"
+    default: true

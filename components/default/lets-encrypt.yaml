@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Let's Encrypt: free public ACME certificate authority reached by an ACME client.
+# "Rate Limits": 50 certificates per registered domain per week and 5 duplicate certificates
+# per week; issuance is automated over ACME with no hosted page and no callbacks.
+schemaVersion: "1"
+type: "component"
+id: "lets-encrypt"
+kind: "third-party-api"
+provider: "default"
+defaults:
+  idempotent: false
+  callbackStyle: "none"
+  hostedPage: false
+  handlesMoney: false
+properties:
+  certificatesPerDomainPerWeek:
+    type: "integer"
+    default: 50
+  duplicateCertificatesPerWeek:
+    type: "integer"
+    default: 5
+  wildcardSupported:
+    type: "boolean"
+    default: true

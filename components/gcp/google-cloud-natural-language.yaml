@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud Natural Language API: entity, sentiment, syntax and classification over
+# text. "Quotas and limits": 600 requests per minute, 800,000 requests per day,
+# 1,000,000 bytes of text content and 100,000 tokens per request.
+schemaVersion: "1"
+type: "component"
+id: "google-cloud-natural-language"
+kind: "ai-service"
+provider: "gcp"
+defaults:
+  modality: "text"
+  publicEndpoint: true
+  quotaUnitsPerMinute: 600
+  managed: true
+properties:
+  analysis:
+    type: "enum"
+    values: ["entities", "sentiment", "syntax", "classification", "moderation"]
+    default: "entities"
+  maxContentBytes:
+    type: "integer"
+    default: 1000000
+  requestsPerDay:
+    type: "integer"
+    default: 800000

@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Origin CA certificates: Cloudflare-issued certificates for the Cloudflare-to-origin hop.
+# "Origin CA": they are not publicly trusted and only work for traffic proxied through Cloudflare;
+# a certificate holds up to 200 SANs, with the zone apex and first-level wildcard filled in by default.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-origin-ca"
+kind: "key-management"
+provider: "cloudflare"
+defaults:
+  managed: true
+properties:
+  publiclyTrusted:
+    type: "boolean"
+    default: false
+  keyType:
+    type: "enum"
+    values: ["rsa", "ecc"]
+  maxSans:
+    type: "integer"
+    default: 200

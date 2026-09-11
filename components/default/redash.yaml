@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Redash: open-source query editor, visualisations, dashboards and alerts over SQL sources.
+# "Sharing Dashboards": a dashboard is private until Publish, and a secret link can be generated
+# for people outside the organisation unless an admin sets REDASH_DISABLE_PUBLIC_URLS.
+# Dashboards render stored query results, refreshed on the schedule set per query.
+schemaVersion: "1"
+type: "component"
+id: "redash"
+kind: "bi-service"
+provider: "default"
+defaults:
+  managed: false
+  publicSharing: true
+  rowLevelSecurity: false
+  embeddedReports: false
+properties:
+  publicUrlsDisabled:
+    type: "boolean"
+    default: false
+  cachedQueryResults:
+    type: "boolean"
+    default: true
+  alerts:
+    type: "boolean"
+    default: true

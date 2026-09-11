@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Weights & Biases: hosted experiment tracking, artifacts, sweeps and model registry.
+# Defaults from "Deployment options": Multi-tenant Cloud is the W&B-hosted default deployment,
+# with Dedicated Cloud and Self-Managed as alternatives.
+schemaVersion: "1"
+type: "component"
+id: "weights-and-biases"
+kind: "ml-platform"
+provider: "default"
+defaults:
+  experimentTracking: true
+  modelRegistry: true
+  publicAccess: true
+  managed: true
+properties:
+  deployment:
+    type: "enum"
+    values: ["multi-tenant-cloud", "dedicated-cloud", "self-managed"]
+    default: "multi-tenant-cloud"

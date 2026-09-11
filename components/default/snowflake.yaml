@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Snowflake: managed columnar warehouse with separated storage and compute; one day of time
+# travel by default.
+schemaVersion: "1"
+type: "component"
+id: "snowflake"
+kind: "data-warehouse"
+provider: "default"
+defaults:
+  realtime: false
+  upsert: false
+  format: "columnar"
+  managed: true
+properties:
+  warehouseSize:
+    type: "enum"
+    values: ["x-small", "small", "medium", "large", "x-large"]
+    default: "x-small"
+  timeTravelDays:
+    type: "integer"
+    default: 1

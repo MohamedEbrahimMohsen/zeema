@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Direct Connect: private dedicated circuit; a single circuit unless a second is ordered.
+schemaVersion: "1"
+type: "component"
+id: "aws-direct-connect"
+kind: "network-fabric"
+provider: "aws"
+defaults:
+  interconnect: "private"
+properties:
+  redundantCircuits:
+    type: "boolean"
+    default: false
+  bandwidthGbps:
+    type: "integer"

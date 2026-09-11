@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# PayU: hosted payment page PSP. "Notifications" documents that PayU posts order status changes only
+# when notifyUrl is set on the order, and every notification carries an OpenPayu-Signature header.
+schemaVersion: "1"
+type: "component"
+id: "payu"
+kind: "third-party-api"
+provider: "default"
+defaults:
+  managed: true
+  idempotent: false
+  handlesMoney: true
+  callbackStyle: "webhook"
+  hostedPage: true
+properties:
+  signedCallbacks:
+    type: "boolean"
+    default: true
+  notifyUrlConfigured:
+    type: "boolean"
+    default: false

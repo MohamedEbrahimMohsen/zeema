@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Autonomous AI JSON Database: the JSON workload type of Autonomous AI Database Serverless, SODA
+# collections over native binary JSON. "About Autonomous AI Database Workload Types" caps non-JSON
+# objects at 20 GB; serverless defaults give 60-day automatic backups and Oracle-managed TDE keys.
+schemaVersion: "1"
+type: "component"
+id: "oci-autonomous-json-database"
+kind: "nosql-database"
+provider: "oci"
+defaults:
+  managed: true
+  model: "document"
+  consistency: "strong"
+  replication: "single-region"
+  backupEnabled: true
+  backupRetentionDays: 60
+  encryptionAtRest: true
+properties:
+  ecpuCount:
+    type: "integer"
+    default: 2
+  computeAutoScaling:
+    type: "boolean"
+    default: true
+  autonomousDataGuard:
+    type: "boolean"
+    default: false
+  networkAccess:
+    type: "enum"
+    values: ["secure-access-everywhere", "allowed-ips-and-vcns", "private-endpoint"]
+    default: "secure-access-everywhere"
+  nonJsonStorageLimitGb:
+    type: "integer"
+    default: 20

@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Logic Apps: designer-built workflows of a trigger plus actions. The platform delivers a message
+# "at least once" and states the workflow must implement idempotence itself; the default Consumption
+# resource is fully managed, holds one stateful workflow and is billed per execution.
+# Facts from "Workflow Integration and Automation - Azure Logic Apps" and
+# "Differences between Standard and Consumption logic apps".
+schemaVersion: "1"
+type: "component"
+id: "azure-logic-apps"
+kind: "workflow-engine"
+provider: "azure"
+defaults:
+  managed: true
+  durable: true
+  pattern: "dag"
+  stepsIdempotent: false
+  compensation: false
+properties:
+  hostingPlan:
+    type: "enum"
+    values: ["consumption", "standard", "app-service-environment", "hybrid"]
+    default: "consumption"
+  stateful:
+    type: "boolean"
+    default: true
+  vnetIntegration:
+    type: "boolean"
+    default: false
+  integrationAccount:
+    type: "boolean"
+    default: false

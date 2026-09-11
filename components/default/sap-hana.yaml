@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# SAP HANA: in-memory relational database whose column store is the default storage for tables.
+# System replication is registered explicitly between two systems (SAP HANA "Memory Management in the Column Store",
+# "Configuring SAP HANA System Replication").
+schemaVersion: "1"
+type: "component"
+id: "sap-hana"
+kind: "sql-database"
+provider: "default"
+defaults:
+  replication: "none"
+properties:
+  version:
+    type: "string"
+  defaultTableType:
+    type: "enum"
+    values: ["column", "row"]
+    default: "column"
+  systemReplication:
+    type: "boolean"
+    default: false

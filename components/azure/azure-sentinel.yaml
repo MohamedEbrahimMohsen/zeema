@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Microsoft Sentinel: cloud-native SIEM and SOAR on a Log Analytics workspace. Analytics group
+# alerts into incidents, and the log platform is append-only and tamper-proof ("What is Microsoft
+# Sentinel SIEM?"). All data ingested is retained free for the first 90 days and pay-as-you-go is
+# the default pricing model ("Plan costs and understand pricing and billing").
+schemaVersion: "1"
+type: "component"
+id: "azure-sentinel"
+kind: "monitoring"
+provider: "azure"
+defaults:
+  managed: true
+  signal: "all"
+  collectorMode: "push"
+  alertGrouping: true
+  retentionDays: 90
+properties:
+  pricingModel:
+    type: "enum"
+    values: ["pay-as-you-go", "commitment-tier"]
+    default: "pay-as-you-go"
+  logAnalyticsWorkspaceRequired:
+    type: "boolean"
+    default: true
+  appendOnlyLogs:
+    type: "boolean"
+    default: true
+  automationPlaybooks:
+    type: "boolean"
+    default: false
+  dataLakeTier:
+    type: "boolean"
+    default: false

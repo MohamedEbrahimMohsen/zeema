@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# TimescaleDB: PostgreSQL extension with hypertables; compression and continuous aggregates
+# are opt-in, only the time column is indexed by default.
+schemaVersion: "1"
+type: "component"
+id: "timescaledb"
+kind: "timeseries-database"
+provider: "default"
+defaults:
+  downsampling: false
+  tiers: "single"
+  labelIndex: false
+  compression: "none"
+  managed: false
+properties:
+  chunkIntervalDays:
+    type: "integer"
+    default: 7
+  continuousAggregates:
+    type: "boolean"
+    default: false

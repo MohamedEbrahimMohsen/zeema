@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# NGINX as a reverse proxy: self-managed L7, round-robin, passive health checks only unless NGINX Plus.
+schemaVersion: "1"
+type: "component"
+id: "nginx"
+kind: "load-balancer"
+provider: "default"
+defaults:
+  layer: "l7"
+  managed: false
+  hashing: "round-robin"
+properties:
+  plus:
+    type: "boolean"
+    default: false

@@ -1,0 +1,78 @@
+source:
+  file: "source/news-feed.md"
+  format: "book-figure"
+  figures: ["11-4", "11-7"]
+  counts: { nodes: 20, edges: 26, groups: 2 }
+  note: >-
+    Union of Figure 11-4 (feed publishing, page 171) and Figure 11-7 (news feed retrieval,
+    page 174): one system, two flows. Each distinct box is counted once, so the caches, the
+    databases and the web tier, drawn in both figures, are one node each. The two figures draw
+    21 distinct arrows; five of them are drawn at the "User" boundary and are modelled once per
+    client inside that boundary (Web browser and Mobile app), which makes 26 edges.
+nodes:
+  - { source: "Web browser", node: "web-browser", component: "web-browser", confidence: "close", note: "laptop icon inside the User box; generic browser client" }
+  - { source: "Mobile app", node: "mobile-app", component: "mobile-app", confidence: "close", note: "phone icon inside the User box; no OS named, component default os both" }
+  - { source: "DNS", node: "dns", component: "dns-resolver", confidence: "close", note: "unbranded DNS globe" }
+  - { source: "CDN", node: "cdn", component: "content-delivery-network", confidence: "close", note: "unbranded CDN cloud; Figure 11-7 only, stores media content" }
+  - { source: "Load balancer", node: "load-balancer", component: "load-balancer-tier", confidence: "close", note: "unbranded load balancer" }
+  - { source: "Web servers", node: "web-servers", component: "container-service", confidence: "close", note: "green server stack inside the dashed web tier; no product named" }
+  - { source: "Authentication", node: "authentication", component: "container-service", confidence: "close", note: "box inside the web tier; auth is enforced by the web servers, no identity product named" }
+  - { source: "Rate Limiting", node: "rate-limiting", component: "in-process-limiter", confidence: "close", note: "box inside the web tier, so limiting happens in the web server process; no product named" }
+  - { source: "Post Service", node: "post-service", component: "container-service", confidence: "close", note: "generic service box" }
+  - { source: "Post Cache", node: "post-cache", component: "cache-cluster", confidence: "close", note: "unbranded CACHE tiles; drawn in both figures" }
+  - { source: "Post DB", node: "post-db", component: "relational-database", confidence: "close", note: "unbranded cylinders; drawn in both figures" }
+  - { source: "Notification Service", node: "notification-service", component: "container-service", confidence: "close", note: "generic service box" }
+  - { source: "Fanout Service", node: "fanout-service", component: "container-service", confidence: "close", note: "generic service box; the hybrid push/pull logic is prose, not a box" }
+  - { source: "Graph DB", node: "graph-db", component: "graph-store", confidence: "close", note: "graph cylinder, no engine named; the generic graph store" }
+  - { source: "Message Queue", node: "message-queue", component: "message-queue", confidence: "close", note: "unbranded envelope chevron" }
+  - { source: "User Cache", node: "user-cache", component: "cache-cluster", confidence: "close", note: "unbranded CACHE tiles; drawn in both figures" }
+  - { source: "User DB", node: "user-db", component: "relational-database", confidence: "close", note: "unbranded cylinders; drawn in both figures" }
+  - { source: "Fanout Workers", node: "fanout-workers", component: "container-worker", confidence: "close", note: "green server stack inside its own dashed box, consumes the message queue" }
+  - { source: "News Feed Cache", node: "news-feed-cache", component: "cache-cluster", confidence: "close", note: "unbranded CACHE tiles; written in Figure 11-4, read in Figure 11-7" }
+  - { source: "News Feed Service", node: "news-feed-service", component: "container-service", confidence: "close", note: "generic service box; Figure 11-7 only" }
+groups:
+  - { source: "User", group: "user", kind: "trust-zone", note: "labelled box holding Web browser and Mobile app; the client zone" }
+  - { source: "(unlabelled dashed box around Web servers, Authentication, Rate Limiting)", group: "web-tier", kind: "system", note: "no text on the boundary; the same boundary is drawn in both figures" }
+edges:
+  - { source: "User -> DNS", from: "web-browser", to: "dns", note: "drawn once at the User boundary, modelled per client inside it; same arrow in both figures" }
+  - { source: "User -> DNS", from: "mobile-app", to: "dns", note: "drawn once at the User boundary, modelled per client inside it; same arrow in both figures" }
+  - { source: "User -> Load balancer (v1/me/feed?content=Hello&auth_token={auth_token})", from: "web-browser", to: "load-balancer", note: "Figure 11-4 publish request; drawn at the User boundary, modelled per client" }
+  - { source: "User -> Load balancer (v1/me/feed?content=Hello&auth_token={auth_token})", from: "mobile-app", to: "load-balancer", note: "Figure 11-4 publish request; drawn at the User boundary, modelled per client" }
+  - { source: "Load balancer -> Web servers", from: "load-balancer", to: "web-servers", note: "drawn in both figures, one arrow; enters the dashed web tier, attributed to the Web servers node" }
+  - { source: "Web servers -> Post Service", from: "web-servers", to: "post-service" }
+  - { source: "Web servers -> Fanout Service", from: "web-servers", to: "fanout-service" }
+  - { source: "Web servers -> Notification Service", from: "web-servers", to: "notification-service" }
+  - { source: "Post Service -> Post Cache", from: "post-service", to: "post-cache" }
+  - { source: "Post Cache -> Post DB", from: "post-cache", to: "post-db", note: "drawn in both figures, one arrow" }
+  - { source: "Fanout Service -> Graph DB (get friend ids)", from: "fanout-service", to: "graph-db" }
+  - { source: "Fanout Service -> User Cache (get friends data)", from: "fanout-service", to: "user-cache" }
+  - { source: "Fanout Service -> Message Queue", from: "fanout-service", to: "message-queue" }
+  - { source: "User Cache -> User DB", from: "user-cache", to: "user-db", note: "drawn in both figures, one arrow" }
+  - { source: "Message Queue -> Fanout Workers", from: "message-queue", to: "fanout-workers" }
+  - { source: "Fanout Workers -> News Feed Cache", from: "fanout-workers", to: "news-feed-cache" }
+  - { source: "User -> CDN", from: "web-browser", to: "cdn", note: "Figure 11-7; drawn at the User boundary, modelled per client" }
+  - { source: "User -> CDN", from: "mobile-app", to: "cdn", note: "Figure 11-7; drawn at the User boundary, modelled per client" }
+  - { source: "User -> Load balancer (/v1/me/feed)", from: "web-browser", to: "load-balancer", note: "Figure 11-7 retrieval request, a second arrow between the same pair with its own label" }
+  - { source: "User -> Load balancer (/v1/me/feed)", from: "mobile-app", to: "load-balancer", note: "Figure 11-7 retrieval request, a second arrow between the same pair with its own label" }
+  - { source: "Web servers -> News Feed Service", from: "web-servers", to: "news-feed-service", note: "Figure 11-7" }
+  - { source: "News Feed Service -> News Feed Cache", from: "news-feed-service", to: "news-feed-cache", note: "Figure 11-7" }
+  - { source: "News Feed Service -> User Cache", from: "news-feed-service", to: "user-cache", note: "Figure 11-7" }
+  - { source: "News Feed Service -> Post Cache", from: "news-feed-service", to: "post-cache", note: "Figure 11-7" }
+  - { source: "Web servers -> User", from: "web-servers", to: "web-browser", note: "Figure 11-7 arrow 6, the hydrated feed back to the client; drawn to the User boundary, modelled per client" }
+  - { source: "Web servers -> User", from: "web-servers", to: "mobile-app", note: "Figure 11-7 arrow 6, the hydrated feed back to the client; drawn to the User boundary, modelled per client" }
+ignored:
+  - { source: "(dashed border around Fanout Workers)", reason: "a border enclosing one box is that box's cluster styling (several instances), not a boundary" }
+
+  - { source: "circled step numbers 1..5 in Figure 11-4 and 1..6 in Figure 11-7", reason: "reading order of the flow, not arrow text" }
+  - { source: "Figure 11-1", reason: "chapter title illustration, not an architecture" }
+  - { source: "Figures 11-2 and 11-3", reason: "high-level versions of the same two flows; every box of theirs is in 11-4 / 11-7" }
+  - { source: "Figure 11-5", reason: "zoom on the fanout service; every box of it is in 11-4" }
+  - { source: "Figure 11-6 (post_id / user_id table)", reason: "the news feed cache content, a table, not a system element" }
+  - { source: "Figure 11-8 (News Feed, Content, Social Graph, Action, Counters)", reason: "the five logical cache layers listed in prose; the figures draw no box for them" }
+unmapped: []
+gaps:
+  - "An arrow drawn at a boundary has no single node to attach to: the five arrows at the User boundary (to DNS, to CDN, the two requests to the Load balancer, the response from the Web servers) were modelled once per client inside the group, which is why 21 drawn arrows become 26 edges."
+  - "Arrows that enter or leave the unlabelled dashed web tier had to be attributed to the Web servers node; the format cannot make a group an edge endpoint."
+  - "No engine-less generic graph store exists in the catalogue, so the unbranded Graph DB box had to be mapped to a named product (neo4j, confidence assumed)."
+  - "The design cannot say that a node belongs to one flow rather than the other: the union of Figure 11-4 and Figure 11-7 is one flat design, and the publishing and retrieval paths are only distinguishable from the edge labels."
+  - "The five-layer cache architecture of Figure 11-8 (News Feed, Content, Social Graph, Action, Counters) is a decomposition of the cache tier that the architecture figures do not draw; there is no way to attach it to the cache nodes."

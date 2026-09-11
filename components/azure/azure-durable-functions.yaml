@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Durable Functions: orchestrator functions checkpointed to Azure Storage by default;
+# activities are not retried unless CallActivityWithRetry is used.
+schemaVersion: "1"
+type: "component"
+id: "azure-durable-functions"
+kind: "workflow-engine"
+provider: "azure"
+defaults:
+  durable: true
+  pattern: "dag"
+  compensation: false
+  managed: true
+properties:
+  storageProvider:
+    type: "enum"
+    values: ["azure-storage", "netherite", "mssql"]
+    default: "azure-storage"
+  activityRetry:
+    type: "boolean"
+    default: false

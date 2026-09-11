@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../schema/rule.schema.json
+# Autoscaling down a gateway that holds live WebSockets kills every connection on the
+# removed instance at once. Without a drain step the clients all reconnect together.
+# Tripped by: designs/slack-messaging.broken.yaml
+schemaVersion: "1"
+type: "rule"
+id: "stateful-websocket-scale-in-without-drain"
+severity: "warning"
+select:
+  node:
+    kind: "realtime-gateway"
+when:
+  all:
+    - prop: "autoscaling"
+      equals: true
+    - prop: "drainOnScaleIn"
+      equals: false
+message: "Realtime gateway '{{node.id}}' autoscales but does not drain connections on scale-in. Every scale-down becomes a reconnect storm."

@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon SNS: managed fan-out topic, at-least-once, unordered, no replay. FIFO topics are opt-in.
+schemaVersion: "1"
+type: "component"
+id: "sns"
+kind: "pubsub-topic"
+provider: "aws"
+defaults:
+  managed: true
+  delivery: "at-least-once"
+  ordering: "none"
+  replay: false
+properties:
+  fifo:
+    type: "boolean"
+    default: false

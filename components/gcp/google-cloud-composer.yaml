@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloud Composer, renamed Managed Service for Apache Airflow: fully managed Airflow environment that
+# runs DAGs. "Managed Airflow overview": standard environments have a zonal Airflow database and a
+# multi-zonal execution layer; the highly resilient mode is opt-in and recommended for production.
+schemaVersion: "1"
+type: "component"
+id: "google-cloud-composer"
+kind: "workflow-engine"
+provider: "gcp"
+defaults:
+  managed: true
+  pattern: "dag"
+properties:
+  generation:
+    type: "enum"
+    values: ["gen-1", "gen-2", "gen-3"]
+  resilienceMode:
+    type: "enum"
+    values: ["standard", "highly-resilient"]
+    default: "standard"
+  zonalDatabase:
+    type: "boolean"
+    default: true

@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud Text-to-Speech: metered speech synthesis endpoint. "Quotas and limits":
+# 1,000 standard requests per minute, 5,000 bytes of input text per request,
+# 100 concurrent streaming sessions.
+schemaVersion: "1"
+type: "component"
+id: "google-text-to-speech"
+kind: "ai-service"
+provider: "gcp"
+defaults:
+  modality: "speech"
+  publicEndpoint: true
+  quotaUnitsPerMinute: 1000
+  managed: true
+properties:
+  voiceTier:
+    type: "enum"
+    values: ["standard", "wavenet", "neural2", "chirp3", "gemini-tts"]
+    default: "standard"
+  maxInputBytes:
+    type: "integer"
+    default: 5000
+  longAudioSynthesis:
+    type: "boolean"
+    default: false
+  streaming:
+    type: "boolean"
+    default: false

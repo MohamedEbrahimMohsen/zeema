@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# HAProxy: self-managed. Default mode is tcp (L4); set layer l7 for http mode. Backend checks are off until 'check' is set.
+schemaVersion: "1"
+type: "component"
+id: "haproxy"
+kind: "load-balancer"
+provider: "default"
+defaults:
+  layer: "l4"
+  managed: false
+  hashing: "round-robin"
+  healthChecks: false
+properties:
+  stickTables:
+    type: "boolean"
+    default: false

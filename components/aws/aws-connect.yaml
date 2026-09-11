@@ -1,0 +1,38 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Connect: managed omnichannel contact center; agents serve queues through routing profiles
+# ("What is Connect Customer?"). Creating an instance makes S3 buckets for call recordings, chat
+# transcripts, reports, flow logs and email, so call recording and chat transcription are enabled at
+# instance level, chat is enabled by default, and screen recording and live media streaming are not
+# ("Create a Connect Customer instance"). Concurrent active calls per instance default to 10, chats
+# to 500 ("Connect Customer service quotas").
+schemaVersion: "1"
+type: "component"
+id: "aws-connect"
+kind: "contact-center"
+provider: "aws"
+defaults:
+  managed: true
+  channelVoice: true
+  channelChat: true
+  routing: "skills-based"
+  callRecording: true
+  maxConcurrentContacts: 10
+properties:
+  identityManagement:
+    type: "enum"
+    values: ["connect-managed", "directory-service", "saml-2.0"]
+  emailChannel:
+    type: "boolean"
+    default: true
+  screenRecording:
+    type: "boolean"
+    default: false
+  liveMediaStreaming:
+    type: "boolean"
+    default: false
+  customerProfiles:
+    type: "boolean"
+    default: true
+  maxConcurrentChats:
+    type: "integer"
+    default: 500

@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Neptune Analytics: memory-optimized graph analytics engine that keeps the graph in memory and
+# runs openCypher queries, graph algorithms and vector search ("What is Neptune Analytics?").
+# "CreateGraph" requires provisioned memory in m-NCUs and defaults a graph to 1 replica in another AZ.
+schemaVersion: "1"
+type: "component"
+id: "aws-neptune-analytics"
+kind: "graph-database"
+provider: "aws"
+defaults:
+  managed: true
+  inMemory: true
+  crossRegionConsistency: "none"
+properties:
+  provisionedMemoryNcu:
+    type: "integer"
+  replicaCount:
+    type: "integer"
+    default: 1
+  vectorSearch:
+    type: "boolean"
+    default: false
+  publicConnectivity:
+    type: "boolean"

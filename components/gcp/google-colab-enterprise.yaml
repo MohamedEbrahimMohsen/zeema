@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Colab Enterprise runtime: a managed notebook runtime provisioned from a runtime template, with no
+# infrastructure to run ("Colab Enterprise introduction"). Idle shutdown is on by default and settable
+# from 10 to 1440 minutes; the environment version defaults to Latest.
+schemaVersion: "1"
+type: "component"
+id: "google-colab-enterprise"
+kind: "ml-platform"
+provider: "gcp"
+defaults:
+  managed: true
+  gpuEnabled: false
+  modelRegistry: false
+  experimentTracking: false
+properties:
+  idleShutdown:
+    type: "boolean"
+    default: true
+  idleShutdownMinutes:
+    type: "integer"
+  runtimeTemplate:
+    type: "boolean"
+    default: true

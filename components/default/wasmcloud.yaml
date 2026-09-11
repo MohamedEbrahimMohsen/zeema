@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# wasmCloud, a distributed platform running WebAssembly components on hosts joined by a NATS lattice. Per
+# "wasmCloud Components" components are stateless sandboxed Wasm binaries that leave storage to capability
+# providers, and per "wadm" instance counts come from a declarative spreadscaler trait, not from a live autoscaler.
+schemaVersion: "1"
+type: "component"
+id: "wasmcloud"
+kind: "app-server"
+provider: "default"
+defaults:
+  managed: false
+  stateless: true
+  autoscaling: false
+  ownsData: false
+  runtime: "webassembly"
+properties:
+  latticeTransport:
+    type: "enum"
+    values: ["nats"]
+    default: "nats"
+  declarativeScaler:
+    type: "boolean"
+    default: true
+  capabilityProviders:
+    type: "boolean"
+    default: true

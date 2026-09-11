@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Blob Storage: managed object store; the default LRS keeps three synchronous copies
+# in one datacenter, zone and geo redundancy are opt-in.
+schemaVersion: "1"
+type: "component"
+id: "azure-blob-storage"
+kind: "object-store"
+provider: "azure"
+defaults:
+  zones: 1
+  durabilityNines: 11
+  replication: "quorum"
+  strongReadAfterWrite: true
+  encryptionAtRest: true
+  versioning: false
+  managed: true
+properties:
+  redundancy:
+    type: "enum"
+    values: ["lrs", "zrs", "grs", "gzrs", "ra-grs", "ra-gzrs"]
+    default: "lrs"
+  hierarchicalNamespace:
+    type: "boolean"
+    default: false

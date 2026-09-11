@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# GKE Autopilot cluster: Google manages the worker nodes, provisions them as Pods demand capacity and
+# applies security patches ("Autopilot overview"). New Autopilot clusters are regional and have a
+# publicly accessible control plane IP address, ship a hardened default configuration with GKE
+# Dataplane V2 enforcing network policy, and carry an SLA covering the control plane and Pod compute.
+schemaVersion: "1"
+type: "component"
+id: "google-gke-autopilot"
+kind: "container-orchestrator"
+provider: "gcp"
+defaults:
+  managed: true
+  autoscaling: true
+  privateControlPlane: false
+  networkPolicy: true
+properties:
+  locationType:
+    type: "enum"
+    values: ["regional"]
+    default: "regional"
+  nodeAutoUpgrade:
+    type: "boolean"
+    default: true
+  hardenedDefaults:
+    type: "boolean"
+    default: true
+  slaCoversWorkloadCompute:
+    type: "boolean"
+    default: true

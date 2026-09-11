@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# A machine you lease and boot from an image, as opposed to app-server which is the process running on it. publicIp, zoneRedundant and diskEncryption carry no default so exposure and resilience rules can catch a machine that never declared them.
+schemaVersion: "1"
+type: "kind"
+id: "virtual-machine"
+category: "compute"
+properties:
+  os:
+    type: "enum"
+    values: ["linux", "windows"]
+    default: "linux"
+  sizeVcpu:
+    type: "integer"
+  memoryGib:
+    type: "integer"
+  publicIp:
+    type: "boolean"
+  zoneRedundant:
+    type: "boolean"
+  diskEncryption:
+    type: "boolean"
+  managed:
+    type: "boolean"
+    default: false

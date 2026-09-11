@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Foundry Agent Service: managed runtime that hosts prompt agents and container-based hosted agents, with tool calling and conversation state.
+# "What is Microsoft Foundry Agent Service?" states agents run on a Foundry-managed autoscaling endpoint with integrated content filters, a dedicated Entra identity, and Microsoft-managed conversation state unless you bring your own resources.
+schemaVersion: "1"
+type: "component"
+id: "azure-foundry-agent-service"
+kind: "ai-service"
+provider: "azure"
+defaults:
+  managed: true
+  modality: "multimodal"
+  contentFiltering: true
+  publicEndpoint: true
+  customerManagedKeys: false
+properties:
+  agentType:
+    type: "enum"
+    values: ["prompt-agent", "hosted-agent"]
+    default: "prompt-agent"
+  autoscaling:
+    type: "boolean"
+    default: true
+  conversationStateStore:
+    type: "enum"
+    values: ["microsoft-managed", "customer-cosmos-db"]
+    default: "microsoft-managed"
+  agentIdentity:
+    type: "boolean"
+    default: true

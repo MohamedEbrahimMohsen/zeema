@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Repos: hosted source control offering standard Git and Team Foundation Version Control.
+# "Collaborate on code - Azure Repos" states branch protection comes from branch policies a team adds
+# explicitly; new public projects can no longer be created, so repositories are private.
+schemaVersion: "1"
+type: "component"
+id: "azure-repos"
+kind: "artifact-repository"
+provider: "azure"
+defaults:
+  artifactType: "source"
+  visibility: "private"
+  upstreamProxy: false
+  managed: true
+properties:
+  versionControl:
+    type: "enum"
+    values: ["git", "tfvc"]
+    default: "git"
+  branchPolicies:
+    type: "boolean"
+    default: false

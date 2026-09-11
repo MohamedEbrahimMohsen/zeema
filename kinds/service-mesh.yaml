@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Abstract kind: Sidecar or library layer for service-to-service traffic: mTLS, retries, circuit breaking, client-side balancing (Envoy, Istio, Hyperbahn).
+schemaVersion: "1"
+type: "kind"
+id: "service-mesh"
+category: "ops"
+properties:
+  sidecar:
+    type: "boolean"
+    default: true
+  mtls:
+    type: "boolean"
+    default: false
+  retries:
+    type: "boolean"
+    default: false
+  circuitBreaking:
+    type: "boolean"
+    default: false
+  controlPlanes:
+    type: "integer"
+  managed:
+    type: "boolean"
+    default: false

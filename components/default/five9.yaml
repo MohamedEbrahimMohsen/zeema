@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Five9: vendor-run "Cloud Contact Center Software" whose omnichannel engagement covers voice,
+# email, chat, SMS, social messaging, video and mobile, routing interactions to "the right agent
+# every time" on skills and business rules ("Five9 products"). Outbound campaigns run through
+# Advanced Campaign Manager and quality management monitors voice and digital channels, so both
+# are platform capabilities rather than separate systems.
+schemaVersion: "1"
+type: "component"
+id: "five9"
+kind: "contact-center"
+provider: "default"
+defaults:
+  managed: true
+  channelVoice: true
+  channelChat: true
+  routing: "skills-based"
+  outboundDialing: true
+properties:
+  dialerMode:
+    type: "enum"
+    values: ["predictive", "power", "progressive", "preview", "manual"]
+  digitalChannels:
+    type: "enum"
+    values: ["email", "chat", "sms", "social", "video"]
+  qualityManagement:
+    type: "boolean"
+    default: false
+  workforceManagement:
+    type: "boolean"
+    default: false

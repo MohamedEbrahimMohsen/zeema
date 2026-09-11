@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# CNCF Distribution, the reference OCI registry implementation shipped as the registry image.
+# Per "Configuration": storage is the one required section, auth and tls are optional so a registry with
+# the sample configuration accepts anonymous clear-text traffic on localhost:5000, and the delete
+# structure "defaults to false", so manifests cannot be removed until it is switched on.
+schemaVersion: "1"
+type: "component"
+id: "docker-registry"
+kind: "container-registry"
+provider: "default"
+defaults:
+  managed: false
+  imageScanning: false
+  geoReplicated: false
+properties:
+  httpPort:
+    type: "integer"
+    default: 5000
+  storageDriver:
+    type: "enum"
+    values: ["filesystem", "s3", "azure", "gcs", "swift", "oss"]
+  authenticationConfigured:
+    type: "boolean"
+    default: false
+  tlsConfigured:
+    type: "boolean"
+    default: false
+  deleteEnabled:
+    type: "boolean"
+    default: false

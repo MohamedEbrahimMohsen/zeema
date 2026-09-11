@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Microsoft Entra External ID: CIAM for consumers and B2B guests, in a workforce or an external tenant.
+# "Microsoft Entra External ID Overview": external tenants start with neutral branding, social identity
+# providers are ones "that you enable", and MFA for customers comes from an opt-in Conditional Access policy.
+schemaVersion: "1"
+type: "component"
+id: "azure-entra-external-id"
+kind: "identity-provider"
+provider: "azure"
+defaults:
+  protocol: "oidc"
+  authorizationModel: "rbac"
+  centralised: true
+  managed: true
+  mfa: false
+properties:
+  tenantConfiguration:
+    type: "enum"
+    values: ["workforce", "external"]
+  socialIdentityProviders:
+    type: "boolean"
+    default: false
+  customBranding:
+    type: "boolean"
+    default: false
+  conditionalAccess:
+    type: "boolean"
+    default: false

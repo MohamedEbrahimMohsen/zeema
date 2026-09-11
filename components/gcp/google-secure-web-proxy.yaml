@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Secure Web Proxy: a managed regional explicit forward proxy that filters outbound web traffic from a VPC network.
+# Defaults from "Secure Web Proxy overview": a gateway security policy denies all outbound traffic until a rule allows it, TLS inspection is a separate opt-in configuration, and clients outside the region need global access enabled.
+schemaVersion: "1"
+type: "component"
+id: "google-secure-web-proxy"
+kind: "firewall"
+provider: "gcp"
+defaults:
+  managed: true
+  defaultAction: "deny"
+properties:
+  tlsInspection:
+    type: "boolean"
+    default: false
+  globalAccess:
+    type: "boolean"
+    default: false
+  serviceExtensions:
+    type: "boolean"
+    default: false

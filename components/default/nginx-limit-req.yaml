@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# NGINX limit_req: leaky-bucket per key (typically client IP), shared memory per instance, no burst unless configured.
+schemaVersion: "1"
+type: "component"
+id: "nginx-limit-req"
+kind: "rate-limiter"
+provider: "default"
+defaults:
+  algorithm: "leaky-bucket"
+  scope: "ip"
+  placement: "gateway"
+  distributed: false
+properties:
+  burst:
+    type: "integer"
+    default: 0

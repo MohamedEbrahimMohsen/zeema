@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Web Application Firewall: layer-7 policy running on Application Gateway, Front Door or
+# Azure CDN. "Create WAF policies for Application Gateway": a new WAF policy is in Detection mode
+# by default and the Azure-managed OWASP rules are enabled; anomaly scoring blocks at a score of 5.
+schemaVersion: "1"
+type: "component"
+id: "azure-web-application-firewall"
+kind: "waf"
+provider: "azure"
+defaults:
+  managed: true
+  mode: "detection"
+  managedRuleSet: "owasp-crs"
+  botProtection: false
+properties:
+  platform:
+    type: "enum"
+    values: ["application-gateway", "application-gateway-for-containers", "front-door", "cdn"]
+  anomalyScoring:
+    type: "boolean"
+    default: true
+  anomalyScoreThreshold:
+    type: "integer"
+    default: 5
+  sitesPerInstanceLimit:
+    type: "integer"
+    default: 40

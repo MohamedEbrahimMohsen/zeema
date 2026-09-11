@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Abstract kind: Encodes or transcodes audio and video into a rendition ladder, as batch jobs or as a live channel (ffmpeg, AWS Elemental MediaConvert and MediaLive, Azure Media Services, GCP Transcoder API).
+schemaVersion: "1"
+type: "kind"
+id: "media-transcoder"
+category: "compute"
+properties:
+  mode:
+    type: "enum"
+    values: ["file", "live"]
+  videoCodec:
+    type: "enum"
+    values: ["h264", "h265", "av1", "vp9", "prores"]
+  renditions:
+    type: "integer"
+  maxBitrateKbps:
+    type: "integer"
+  packaging:
+    type: "enum"
+    values: ["none", "hls", "dash", "cmaf", "smooth"]
+    default: "none"
+  drm:
+    type: "boolean"
+    default: false
+  captions:
+    type: "boolean"
+    default: false
+  redundantPipeline:
+    type: "boolean"
+    default: false
+  managed:
+    type: "boolean"
+    default: false

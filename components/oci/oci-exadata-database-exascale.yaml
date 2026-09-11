@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Exadata Database Service on Exascale Infrastructure: VM clusters on Oracle-managed shared
+# Exadata hardware with Exascale storage vaults. "Oracle Exadata Database Service on Exascale
+# Infrastructure Overview": 8 ECPUs minimum per VM, scaling in increments of 4, redirect-on-write
+# thin cloning of PDBs; new tablespaces are TDE-encrypted by default.
+schemaVersion: "1"
+type: "component"
+id: "oci-exadata-database-exascale"
+kind: "sql-database"
+provider: "oci"
+defaults:
+  managed: true
+  multiWriter: true
+  replication: "none"
+  encryptionAtRest: true
+  concurrencyControl: "pessimistic"
+properties:
+  ecpuPerVm:
+    type: "integer"
+    default: 8
+  ecpuIncrement:
+    type: "integer"
+    default: 4
+  storageArchitecture:
+    type: "enum"
+    values: ["exascale-smart-storage", "exascale-block-storage"]
+  thinCloning:
+    type: "boolean"
+    default: true
+  licenseType:
+    type: "enum"
+    values: ["license-included", "bring-your-own-license"]

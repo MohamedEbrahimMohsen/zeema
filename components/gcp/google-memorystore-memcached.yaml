@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Memorystore for Memcached: a regional instance of up to 20 nodes. "Memcached overview"
+# states keys are divided across nodes and are not replicated, nodes are distributed within
+# the chosen region, and the service is deprecated with shutdown on 31 January 2029.
+schemaVersion: "1"
+type: "component"
+id: "google-memorystore-memcached"
+kind: "cache"
+provider: "gcp"
+defaults:
+  replication: "none"
+  persistence: false
+  hashing: "consistent"
+  structure: "key-value"
+  managed: true
+properties:
+  nodeCount:
+    type: "integer"
+  autoDiscovery:
+    type: "boolean"
+    default: true
+  zoneSelection:
+    type: "enum"
+    values: ["automatic", "specified"]
+    default: "automatic"

@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon WorkSpaces Applications (AppStream 2.0): fully managed application and desktop streaming
+# ("What Is Amazon WorkSpaces Applications?"). A streaming instance is given to a single user and
+# is terminated when the session completes, so sessions are pooled and non-persistent; fleets are
+# Always-On, On-Demand or Elastic, and multi-session is Windows Always-On/On-Demand only
+# ("Key Concepts", "WorkSpaces Applications Fleet Types").
+schemaVersion: "1"
+type: "component"
+id: "aws-appstream"
+kind: "virtual-desktop"
+provider: "aws"
+defaults:
+  managed: true
+  sessionMode: "pooled"
+  maxSessionsPerHost: 1
+  persistentProfiles: false
+properties:
+  fleetType:
+    type: "enum"
+    values: ["always-on", "on-demand", "elastic"]
+  multiSession:
+    type: "boolean"
+    default: false
+  autoScaling:
+    type: "boolean"
+    default: false
+  agentAccess:
+    type: "boolean"
+    default: false

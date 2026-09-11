@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# TileServer GL: self-hosted map tile server for MBTiles, serving vector tiles, GL styles, WMTS and
+# server-side raster rendering through MapLibre GL Native ("tileserver-gl, README"). It listens on
+# port 8080, serveStaticMaps "is enabled" by default and allowedHosts defaults to "*", so the front
+# page and the static map endpoints are public unless the config file turns them off ("Configuration file").
+schemaVersion: "1"
+type: "component"
+id: "tileserver-gl"
+kind: "third-party-api"
+provider: "default"
+defaults:
+  managed: false
+  idempotent: true
+  callbackStyle: "none"
+  hostedPage: false
+  handlesMoney: false
+properties:
+  httpPort:
+    type: "integer"
+    default: 8080
+  rendering:
+    type: "enum"
+    values: ["native", "light"]
+    default: "native"
+  serveStaticMaps:
+    type: "boolean"
+    default: true
+  hostsRestricted:
+    type: "boolean"
+    default: false

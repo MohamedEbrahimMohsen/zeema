@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Mercure: pub/sub hub pushing updates to clients over Server-Sent Events. The Mercure specification
+# requires subscribers to reconnect with `Last-Event-ID`, on which the hub replays the updates
+# published after that identifier, and requires a JWT for private updates. Topic matchers are
+# `exact` by default, with `urlpattern` as the wildcard alternative.
+schemaVersion: "1"
+type: "component"
+id: "mercure"
+kind: "realtime-gateway"
+provider: "default"
+defaults:
+  protocol: "sse"
+  stateful: true
+  sequenceNumbers: true
+  managed: false
+properties:
+  jwtAuthorization:
+    type: "boolean"
+    default: true
+  topicMatcher:
+    type: "enum"
+    values: ["exact", "urlpattern"]
+    default: "exact"

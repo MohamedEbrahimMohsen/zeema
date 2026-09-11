@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure AI Immersive Reader: a hosted reading surface embedded in your web app as an iframe, with read-aloud, translation, syllabification and parts of speech.
+# "What is Azure AI Immersive Reader?" states it is a standalone web application rendered in an iframe by the client library and that "Immersive reader doesn't store any customer data".
+schemaVersion: "1"
+type: "component"
+id: "azure-immersive-reader"
+kind: "ai-service"
+provider: "azure"
+defaults:
+  managed: true
+  modality: "text"
+  publicEndpoint: true
+  customerManagedKeys: false
+  dataRetentionDays: 0
+properties:
+  embedding:
+    type: "enum"
+    values: ["iframe"]
+    default: "iframe"
+  readAloud:
+    type: "boolean"
+    default: true
+  translation:
+    type: "boolean"
+    default: true
+  pictureDictionary:
+    type: "boolean"
+    default: true

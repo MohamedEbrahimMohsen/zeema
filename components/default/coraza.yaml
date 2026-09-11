@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Coraza: Go WAF library with partial ModSecurity SecLang compatibility, embedded as a
+# middleware or proxy plugin. Per "Introduction" it ships no rules of its own; the OWASP
+# Core Rule Set is loaded separately, so nothing is inspected until rules are supplied.
+schemaVersion: "1"
+type: "component"
+id: "coraza"
+kind: "waf"
+provider: "default"
+defaults:
+  mode: "off"
+  managed: false
+  botProtection: false
+  rateLimiting: false
+properties:
+  deployment:
+    type: "enum"
+    values: ["library", "caddy", "envoy", "nginx", "proxy-wasm"]
+    default: "library"
+  ruleEngine:
+    type: "enum"
+    values: ["off", "detection-only", "on"]
+    default: "off"
+  coreRuleSetInstalled:
+    type: "boolean"
+    default: false

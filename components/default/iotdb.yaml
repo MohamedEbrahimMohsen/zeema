@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apache IoTDB: IoT time-series database storing data in TsFile. Per the "Common Config
+# Manual" schema_replication_factor and data_replication_factor both default to 1 and the
+# default compressor is LZ4, with GORILLA encoding for float and double values.
+schemaVersion: "1"
+type: "component"
+id: "iotdb"
+kind: "timeseries-database"
+provider: "default"
+defaults:
+  downsampling: false
+  tiers: "single"
+  compression: "other"
+  managed: false
+properties:
+  dataReplicationFactor:
+    type: "integer"
+    default: 1
+  schemaReplicationFactor:
+    type: "integer"
+    default: 1
+  compressor:
+    type: "enum"
+    values: ["uncompressed", "snappy", "lz4", "gzip", "zstd"]
+    default: "lz4"

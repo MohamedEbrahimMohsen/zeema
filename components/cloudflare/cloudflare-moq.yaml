@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare MoQ relay (beta): "a protocol for delivering live media content using QUIC
+# transport". Each relay is an isolated scope for namespaces, tracks and objects, and
+# publish and subscribe access is granted by token. Cloudflare supports MoQ Transport
+# draft-14 and draft-16 ("MoQ overview").
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-moq"
+kind: "media-router"
+provider: "cloudflare"
+defaults:
+  managed: true
+  mode: "ingest"
+  transport: "udp"
+properties:
+  tokenAuth:
+    type: "boolean"
+    default: true
+  moqTransportDraft:
+    type: "string"
+    default: "draft-16"
+  releaseStage:
+    type: "enum"
+    values: ["beta", "ga"]
+    default: "beta"

@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Braket: fully managed quantum computing service giving on-demand access to third-party QPUs
+# (AQT, IonQ, IQM, Rigetti, QuEra) and to managed circuit simulators ("What is Amazon Braket?").
+# Quantum tasks are submitted asynchronously and polled; CreateQuantumTask is capped at 20 requests
+# per second, a task action at 5 MB, SV1/DM1/Rigetti at 50,000 shots per task, and hybrid jobs at
+# 3 concurrent jobs running at most 5 days ("Amazon Braket Quotas").
+schemaVersion: "1"
+type: "component"
+id: "aws-braket"
+kind: "third-party-api"
+provider: "aws"
+defaults:
+  managed: true
+  callbackStyle: "poll"
+  hostedPage: false
+  handlesMoney: false
+  qpsQuota: 20
+properties:
+  deviceType:
+    type: "enum"
+    values: ["simulator", "qpu"]
+  maxShotsPerTask:
+    type: "integer"
+    default: 50000
+  maxTaskActionSizeMb:
+    type: "integer"
+    default: 5
+  concurrentHybridJobs:
+    type: "integer"
+    default: 3
+  hybridJobRuntimeLimitDays:
+    type: "integer"
+    default: 5

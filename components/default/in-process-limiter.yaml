@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# In-process rate limiter (library): per-replica state, so quotas are not shared across instances.
+schemaVersion: "1"
+type: "component"
+id: "in-process-limiter"
+kind: "rate-limiter"
+provider: "default"
+defaults:
+  placement: "in-process"
+  distributed: false
+  atomicOps: true
+properties:
+  perReplicaQuotaDivision:
+    type: "boolean"
+    default: false

@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenSearch Dashboards for an OCI Search with OpenSearch cluster: dedicated dashboard nodes created with the
+# cluster ("About Search with OpenSearch" gives 1-3 dashboard nodes with a minimum of 8 GB memory each).
+# The service sets up a separate private endpoint for the Dashboards; "Connecting to a Search with OpenSearch
+# Cluster" reaches it on TCP port 5601 from inside the cluster's VCN, so nothing is published publicly.
+schemaVersion: "1"
+type: "component"
+id: "oci-opensearch-dashboards"
+kind: "bi-service"
+provider: "oci"
+defaults:
+  managed: true
+  capacityMode: "dedicated"
+  publicSharing: false
+properties:
+  dashboardNodes:
+    type: "integer"
+  port:
+    type: "integer"
+    default: 5601
+  privateEndpointOnly:
+    type: "boolean"
+    default: true

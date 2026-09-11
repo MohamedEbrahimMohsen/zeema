@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# NETSCOUT Arbor Edge Defense: inline, always-on stateless DDoS appliance placed between
+# the internet router and the firewall, fed by the ATLAS Intelligence Feed, with Cloud
+# Signaling that diverts volumetric attacks to Arbor Cloud scrubbing centres.
+schemaVersion: "1"
+type: "component"
+id: "netscout-arbor"
+kind: "ddos-protection"
+provider: "default"
+defaults:
+  managed: false
+  scope: "both"
+  alwaysOn: true
+  adaptiveThresholds: true
+  telemetry: true
+properties:
+  deployment:
+    type: "enum"
+    values: ["inline", "out-of-band", "hybrid"]
+    default: "inline"
+  cloudSignaling:
+    type: "boolean"
+    default: false
+  threatIntelligenceFeed:
+    type: "boolean"
+    default: true

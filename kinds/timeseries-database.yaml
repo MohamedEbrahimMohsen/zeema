@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Abstract kind: Metrics and time-stamped samples with downsampling and tiered retention (Prometheus TSDB, M3DB, InfluxDB, Goku).
+schemaVersion: "1"
+type: "kind"
+id: "timeseries-database"
+category: "data"
+properties:
+  retentionRawDays:
+    type: "integer"
+  downsampling:
+    type: "boolean"
+    default: false
+  tiers:
+    type: "enum"
+    values: ["single", "hot-cold", "hot-warm-cold"]
+    default: "single"
+  labelIndex:
+    type: "boolean"
+    default: true
+  compression:
+    type: "enum"
+    values: ["none", "gorilla", "other"]
+    default: "other"
+  managed:
+    type: "boolean"
+    default: false

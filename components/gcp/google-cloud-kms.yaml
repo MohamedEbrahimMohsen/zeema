@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud KMS: SOFTWARE protection level by default, rotation period optional, external key manager opt-in.
+schemaVersion: "1"
+type: "component"
+id: "google-cloud-kms"
+kind: "key-management"
+provider: "gcp"
+defaults:
+  managed: true
+  hsm: false
+  rotationAutomated: false
+  envelopeEncryption: true
+properties:
+  externalKeyManager:
+    type: "boolean"
+    default: false

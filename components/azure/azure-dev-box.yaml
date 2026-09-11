@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Microsoft Dev Box: self-service cloud development workstations, one dev box per developer.
+# The overview states dev boxes automatically enrol in Microsoft Intune, run on Azure VMs with Premium
+# SSD storage, use Microsoft-hosted networks unless a network connection is configured, and that
+# autostop schedules and hibernation are cost controls a project admin turns on. Now in maintenance mode.
+schemaVersion: "1"
+type: "component"
+id: "azure-dev-box"
+kind: "virtual-desktop"
+provider: "azure"
+defaults:
+  sessionMode: "personal"
+  maxSessionsPerHost: 1
+  managed: true
+properties:
+  intuneEnrolled:
+    type: "boolean"
+    default: true
+  networkType:
+    type: "enum"
+    values: ["microsoft-hosted", "customer-managed"]
+    default: "microsoft-hosted"
+  autoStopSchedule:
+    type: "boolean"
+    default: false
+  hibernation:
+    type: "boolean"
+    default: false

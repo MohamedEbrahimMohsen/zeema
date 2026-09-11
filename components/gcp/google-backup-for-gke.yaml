@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Backup for GKE backup plan: a managed service that backs up Kubernetes resource manifests and
+# PersistentVolumeClaim volumes of a GKE cluster, stored with regional redundancy across zones
+# ("Backup for GKE overview"). Cluster-level settings such as node pools are not captured. The
+# retention policy defaults to backupRetainDays 0 (no automatic deletion) and backupDeleteLockDays 0
+# (no delete blocking), with maxima of 365 and 90 days ("BackupPlan REST reference").
+schemaVersion: "1"
+type: "component"
+id: "google-backup-for-gke"
+kind: "backup-service"
+provider: "gcp"
+defaults:
+  managed: true
+  redundancy: "regional"
+  retentionDays: 0
+  immutable: false
+  crossRegionRestore: false
+properties:
+  backupDeleteLockDays:
+    type: "integer"
+    default: 0
+  maxRetainDays:
+    type: "integer"
+    default: 365
+  scheduleMode:
+    type: "enum"
+    values: ["manual", "cron", "rpo"]
+    default: "manual"
+  backsUpClusterSettings:
+    type: "boolean"
+    default: false

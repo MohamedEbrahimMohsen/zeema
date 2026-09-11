@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cube: open-source semantic layer serving BI tools, apps and agents from one data model.
+# "Introduction" and "Caching Overview": models are YAML or JavaScript in version control,
+# queried over Semantic SQL, REST and GraphQL; the in-memory result cache is on by default while
+# pre-aggregations are rollups a developer declares per cube, and access policies are declared too.
+schemaVersion: "1"
+type: "component"
+id: "cube"
+kind: "bi-service"
+provider: "default"
+defaults:
+  managed: false
+  embeddedReports: true
+  rowLevelSecurity: false
+  publicSharing: false
+properties:
+  inMemoryCache:
+    type: "boolean"
+    default: true
+  preAggregations:
+    type: "boolean"
+    default: false
+  queryApi:
+    type: "enum"
+    values: ["sql", "rest", "graphql"]
+    default: "sql"
+  deployment:
+    type: "enum"
+    values: ["core", "cloud"]
+    default: "core"

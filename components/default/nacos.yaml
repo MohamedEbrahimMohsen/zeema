@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Nacos: dynamic service discovery and configuration service. Registered instances are
+# ephemeral by default (Distro/AP path, not Raft) and "System Parameters" documents
+# nacos.core.auth.enabled defaulting to false.
+schemaVersion: "1"
+type: "component"
+id: "nacos"
+kind: "coordination-service"
+provider: "default"
+defaults:
+  role: "discovery"
+  managed: false
+properties:
+  consistencyMode:
+    type: "enum"
+    values: ["ephemeral", "persistent"]
+    default: "ephemeral"
+  configManagement:
+    type: "boolean"
+    default: true
+  authEnabled:
+    type: "boolean"
+    default: false

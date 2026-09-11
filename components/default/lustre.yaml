@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Lustre: POSIX parallel file system of MGS, MDT and OST servers with striped file layouts ("Lustre Operations Manual").
+# File Level Redundancy (ch. 22) and client encryption (sec. 30.5) are opt-in features, so a plain file is unmirrored and unencrypted.
+schemaVersion: "1"
+type: "component"
+id: "lustre"
+kind: "file-storage"
+provider: "default"
+defaults:
+  protocol: "lustre"
+  managed: false
+  publicAccess: false
+  backupEnabled: false
+  redundancy: "local"
+properties:
+  fileLevelRedundancy:
+    type: "boolean"
+    default: false
+  stripeCount:
+    type: "integer"
+  stripeSizeKib:
+    type: "integer"

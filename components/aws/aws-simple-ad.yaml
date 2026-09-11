@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Directory Service Simple AD: standalone managed directory powered by a Samba 4 Active
+# Directory compatible server. "Simple AD": two sizes (Small up to 500 users, Large up to 5,000),
+# daily automated snapshots for point-in-time recovery, and no support for MFA, LDAPS, trusts or
+# schema extensions. Maintenance since 30 June 2026 (no end-of-support date announced).
+schemaVersion: "1"
+type: "component"
+id: "aws-simple-ad"
+kind: "identity-provider"
+provider: "aws"
+defaults:
+  protocol: "custom"
+  authorizationModel: "rbac"
+  centralised: false
+  mfa: false
+  managed: true
+properties:
+  size:
+    type: "enum"
+    values: ["small", "large"]
+  dailySnapshots:
+    type: "boolean"
+    default: true
+  trustRelationships:
+    type: "boolean"
+    default: false
+  secureLdap:
+    type: "boolean"
+    default: false

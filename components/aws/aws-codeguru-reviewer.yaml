@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon CodeGuru Reviewer: program analysis and machine learning over associated Java and Python
+# repositories. Per "What is Amazon CodeGuru Reviewer?" it detects defects and "offers suggestions",
+# surfacing recommendations in the console and inside pull requests for incremental reviews, and it
+# integrates with Secrets Manager for a secrets detector; nothing is fixed automatically.
+# Maintenance announced 7 October 2025; since 7 November 2025 no new repository associations can be created.
+schemaVersion: "1"
+type: "component"
+id: "aws-codeguru-reviewer"
+kind: "policy-engine"
+provider: "aws"
+defaults:
+  effect: "audit"
+  scope: "resource"
+  remediation: false
+  managed: true
+properties:
+  analysedLanguage:
+    type: "enum"
+    values: ["java", "python"]
+  reviewType:
+    type: "enum"
+    values: ["full-repository-analysis", "incremental-pull-request"]
+  secretsDetection:
+    type: "boolean"
+    default: true
+  sourceProvider:
+    type: "enum"
+    values: ["codecommit", "github", "github-enterprise", "bitbucket", "s3"]

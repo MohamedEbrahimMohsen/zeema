@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Data Factory pipeline: managed data-movement and orchestration. Pipelines run manually until a trigger is attached.
+schemaVersion: "1"
+type: "component"
+id: "azure-data-factory"
+kind: "worker"
+provider: "azure"
+defaults:
+  managed: true
+  trigger: "manual"
+properties:
+  integrationRuntime:
+    type: "enum"
+    values: ["azure", "self-hosted", "azure-ssis"]
+    default: "azure"

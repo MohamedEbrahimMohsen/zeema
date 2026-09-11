@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Databricks SQL: managed lakehouse warehouse over Delta tables, which support MERGE upserts.
+schemaVersion: "1"
+type: "component"
+id: "databricks-sql"
+kind: "data-warehouse"
+provider: "default"
+defaults:
+  realtime: false
+  upsert: true
+  format: "columnar"
+  managed: true
+properties:
+  serverless:
+    type: "boolean"
+    default: true
+  photon:
+    type: "boolean"
+    default: true

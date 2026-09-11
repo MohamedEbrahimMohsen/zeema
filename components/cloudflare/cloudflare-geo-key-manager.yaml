@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Geo Key Manager: restricts where the private keys of a custom certificate are stored.
+# "Geo Key Manager": regions are United States, European Union or highest-security data centers;
+# it applies to custom certificates only and is configured through the Cloudflare API.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-geo-key-manager"
+kind: "key-management"
+provider: "cloudflare"
+defaults:
+  managed: true
+properties:
+  keyRegion:
+    type: "enum"
+    values: ["us", "eu", "highest-security"]
+  apiOnly:
+    type: "boolean"
+    default: true

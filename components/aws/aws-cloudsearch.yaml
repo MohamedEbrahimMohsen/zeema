@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon CloudSearch search domain: fully managed text search over uploaded document batches ("What Is Amazon
+# CloudSearch?"). Maintenance: no longer available to new customers since 25 July 2024, transition to Amazon
+# OpenSearch Service; existing domains stay placeable until end of support. "When you create a search domain, a
+# single instance is deployed" and CloudSearch adds instances on its own as data and traffic grow ("Automatic
+# Scaling"); upload, search and suggest requests must be signed unless anonymous access is configured.
+schemaVersion: "1"
+type: "component"
+id: "aws-cloudsearch"
+kind: "search-index"
+provider: "aws"
+defaults:
+  managed: true
+  structure: "inverted"
+  shardingStrategy: "none"
+  indexing: "batch"
+  replicas: 1
+properties:
+  apiVersion:
+    type: "string"
+    default: "2013-01-01"
+  autoScaling:
+    type: "boolean"
+    default: true
+  requestAccess:
+    type: "enum"
+    values: ["signed", "anonymous"]
+    default: "signed"

@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Doppler: hosted SecretOps platform that stores secrets per project/config and syncs them.
+# "Rotated Secrets": rotation is an opt-in Team/Enterprise feature configured per secret,
+# on a two-key scheme, so nothing rotates until a cadence is set.
+schemaVersion: "1"
+type: "component"
+id: "doppler"
+kind: "key-management"
+provider: "default"
+defaults:
+  managed: true
+  rotationAutomated: false
+properties:
+  rotatedSecrets:
+    type: "boolean"
+    default: false
+  dynamicSecrets:
+    type: "boolean"
+    default: false

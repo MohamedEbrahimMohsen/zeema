@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Name resolution and traffic steering (Route 53, Cloud DNS, anycast DNS, internal service DNS).
+# redundantProviders defaults false so shared-dependency-without-redundancy can fire.
+schemaVersion: "1"
+type: "kind"
+id: "dns"
+category: "edge"
+properties:
+  anycast:
+    type: "boolean"
+    default: false
+  geoRouting:
+    type: "boolean"
+    default: false
+  healthChecked:
+    type: "boolean"
+    default: false
+  ttlSeconds:
+    type: "integer"
+  redundantProviders:
+    type: "boolean"
+    default: false
+  managed:
+    type: "boolean"
+    default: true

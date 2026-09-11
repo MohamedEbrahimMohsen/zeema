@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OceanBase Database: distributed relational database. Each partition is its own Multi-Paxos group
+# of three replicas, one leader and two followers, committed on a majority (OceanBase "Paxos protocol").
+schemaVersion: "1"
+type: "component"
+id: "oceanbase"
+kind: "sql-database"
+provider: "default"
+defaults:
+  distributed: true
+  sharded: true
+  multiWriter: true
+  replication: "sync"
+  replicaFanout: 3
+  commitProtocol: "two-phase"
+properties:
+  version:
+    type: "string"
+  tenantMode:
+    type: "enum"
+    values: ["mysql", "oracle"]
+    default: "mysql"

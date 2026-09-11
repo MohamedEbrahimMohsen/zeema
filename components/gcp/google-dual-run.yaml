@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Dual Run: runs a mainframe workload and its modernized Google Cloud counterpart side by side and
+# compares the outputs. "Dual Run overview": live production events are replayed onto the modernized
+# application by automation; batch workloads are supported and online transactions are in preview.
+schemaVersion: "1"
+type: "component"
+id: "google-dual-run"
+kind: "worker"
+provider: "gcp"
+defaults:
+  managed: true
+  trigger: "batch"
+properties:
+  workloadType:
+    type: "enum"
+    values: ["batch", "online"]
+    default: "batch"
+  eventReplay:
+    type: "boolean"
+    default: true
+  outputComparison:
+    type: "boolean"
+    default: true

@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Vertex AI Neural Architecture Search: a managed search over model architectures that runs trials as
+# Vertex AI training jobs ("Neural architecture search overview"). It produces architectures rather
+# than registering models or tracking experiments itself.
+schemaVersion: "1"
+type: "component"
+id: "google-neural-architecture-search"
+kind: "ml-platform"
+provider: "gcp"
+defaults:
+  managed: true
+  modelRegistry: false
+  experimentTracking: false
+properties:
+  stage:
+    type: "enum"
+    values: ["search", "train"]
+    default: "search"
+  parallelTrials:
+    type: "integer"
+  proxyTask:
+    type: "boolean"
+    default: false

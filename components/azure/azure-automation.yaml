@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Automation: runbook-based process automation, triggered by a schedule, webhook or alert.
+# "Azure Automation overview": Automation accounts are created with a Basic SKU where the first 500
+# job run time minutes are free per subscription, runbooks are graphical, PowerShell or Python, and
+# Hybrid Runbook Workers and source control integration are opted into.
+schemaVersion: "1"
+type: "component"
+id: "azure-automation"
+kind: "worker"
+provider: "azure"
+defaults:
+  managed: true
+  trigger: "schedule"
+properties:
+  sku:
+    type: "enum"
+    values: ["free", "basic"]
+    default: "basic"
+  freeJobRunTimeMinutes:
+    type: "integer"
+    default: 500
+  runbookType:
+    type: "enum"
+    values: ["powershell", "python", "graphical"]
+  hybridRunbookWorker:
+    type: "boolean"
+    default: false
+  sourceControlIntegration:
+    type: "boolean"
+    default: false

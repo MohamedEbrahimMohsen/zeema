@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Citus: PostgreSQL extension that shards distributed tables across worker nodes behind a coordinator.
+# citus.shard_count defaults to 32 and citus.shard_replication_factor to 1 (Citus "Configuration Reference").
+schemaVersion: "1"
+type: "component"
+id: "citus"
+kind: "sql-database"
+provider: "default"
+defaults:
+  distributed: true
+  sharded: true
+  replication: "none"
+  concurrencyControl: "pessimistic"
+  commitProtocol: "two-phase"
+properties:
+  version:
+    type: "string"
+  shardCount:
+    type: "integer"
+    default: 32
+  shardReplicationFactor:
+    type: "integer"
+    default: 1

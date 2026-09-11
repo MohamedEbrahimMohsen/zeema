@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Nutanix Cloud Clusters (NC2) on Azure: Nutanix AOS and the AHV hypervisor on Azure BareMetal
+# hosts, operated through Prism exactly as on-premises ("About Nutanix Cloud Clusters on Azure").
+# A cluster needs at least three nodes, and Azure Hybrid Benefit cannot be declared on it today.
+schemaVersion: "1"
+type: "component"
+id: "azure-nutanix-cloud-clusters"
+kind: "virtual-machine"
+provider: "azure"
+defaults:
+  managed: false
+properties:
+  hypervisor:
+    type: "enum"
+    values: ["ahv"]
+    default: "ahv"
+  minimumNodes:
+    type: "integer"
+    default: 3
+  dedicatedBareMetal:
+    type: "boolean"
+    default: true
+  azureHybridBenefit:
+    type: "boolean"
+    default: false

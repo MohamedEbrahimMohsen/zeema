@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Spring Cloud Config Server: self-hosted HTTP API serving externalized application configuration.
+# "Spring Cloud Config Server reference": the default backend is a Git repository and the server
+# never pushes; clients pick up changes through /actuator/refresh or Spring Cloud Bus.
+schemaVersion: "1"
+type: "component"
+id: "spring-cloud-config"
+kind: "feature-flag-service"
+provider: "default"
+defaults:
+  stagedRollout: false
+  killSwitches: false
+  managed: false
+properties:
+  backend:
+    type: "enum"
+    values: ["git", "filesystem", "jdbc", "vault", "redis", "aws-s3"]
+    default: "git"
+  propertyEncryption:
+    type: "boolean"
+    default: false
+  pushNotifications:
+    type: "boolean"
+    default: false

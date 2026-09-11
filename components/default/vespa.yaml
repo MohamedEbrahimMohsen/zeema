@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Vespa: stateless container clusters over content clusters that distribute documents into
+# buckets. Per "Vespa Overview" writes are visible in all queries a few milliseconds after
+# the ack, and per "services.xml - content" self-managed searchable-copies defaults to 2.
+schemaVersion: "1"
+type: "component"
+id: "vespa"
+kind: "search-index"
+provider: "default"
+defaults:
+  structure: "inverted"
+  shardingStrategy: "hash"
+  indexing: "sync"
+  managed: false
+properties:
+  searchableCopies:
+    type: "integer"
+    default: 2
+  vectorSearch:
+    type: "boolean"
+    default: true
+  rankingInference:
+    type: "boolean"
+    default: true

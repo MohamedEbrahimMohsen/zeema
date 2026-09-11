@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# GKE Enterprise fleet: the logical grouping of clusters anchored in a fleet host project, which can
+# hold at most one fleet; member clusters may run in Google Cloud, other clouds or on-premises, and
+# namespaces of the same name across members are treated as the same thing ("Fleet management").
+# Lifecycle: GKE editions were retired on 23 September 2025 and clusters no longer carry a tier, so
+# the former Enterprise features are separate products enabled on the fleet ("GKE editions").
+schemaVersion: "1"
+type: "component"
+id: "google-gke-enterprise"
+kind: "container-orchestrator"
+provider: "gcp"
+defaults:
+  managed: true
+properties:
+  multiCloudMembers:
+    type: "boolean"
+    default: true
+  configSync:
+    type: "boolean"
+    default: false
+  policyController:
+    type: "boolean"
+    default: false
+  serviceMesh:
+    type: "boolean"
+    default: false

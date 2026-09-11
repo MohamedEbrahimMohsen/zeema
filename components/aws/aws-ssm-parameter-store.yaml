@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Systems Manager Parameter Store: hierarchical configuration and secret store. Per "AWS Systems Manager
+# Parameter Store" the standard tier is the default, encryption is optional via the SecureString type and
+# KMS, credential rotation is none, and the 100 most recent versions of each parameter are retained.
+schemaVersion: "1"
+type: "component"
+id: "aws-ssm-parameter-store"
+kind: "key-management"
+provider: "aws"
+defaults:
+  rotationAutomated: false
+  managed: true
+properties:
+  tier:
+    type: "enum"
+    values: ["standard", "advanced"]
+    default: "standard"
+  parameterType:
+    type: "enum"
+    values: ["string", "string-list", "secure-string"]
+    default: "string"
+  highThroughput:
+    type: "boolean"
+    default: false
+  versionsRetained:
+    type: "integer"
+    default: 100

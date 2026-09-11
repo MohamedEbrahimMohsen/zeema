@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Storage Transfer Service transfer job: managed copy of objects or files into Cloud Storage.
+# "Create transfers" states a job runs once by default, deletion of source and of extra
+# destination objects both default to Never, and objects are overwritten only "if different";
+# "Storage Transfer Service overview" states all HTTPS traffic uses TLS 1.3.
+schemaVersion: "1"
+type: "component"
+id: "google-storage-transfer-service"
+kind: "worker"
+provider: "gcp"
+defaults:
+  trigger: "batch"
+  idempotent: true
+  managed: true
+properties:
+  transferMode:
+    type: "enum"
+    values: ["agentless", "agent-based"]
+    default: "agentless"
+  scheduleMode:
+    type: "enum"
+    values: ["run-once", "recurring"]
+    default: "run-once"
+  overwriteBehavior:
+    type: "enum"
+    values: ["if-different", "always", "never"]
+    default: "if-different"
+  deleteSourceAfterTransfer:
+    type: "boolean"
+    default: false

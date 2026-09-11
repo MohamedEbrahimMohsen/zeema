@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Red Hat OpenShift Service on AWS: OpenShift clusters installed, maintained and upgraded by Red Hat SRE
+# ("What is Red Hat OpenShift Service on AWS?"). The Kubernetes control plane runs across multiple
+# Availability Zones and the service carries a 99.95% uptime SLA.
+schemaVersion: "1"
+type: "component"
+id: "aws-rosa"
+kind: "container-orchestrator"
+provider: "aws"
+defaults:
+  managed: true
+  autoscaling: false
+properties:
+  deploymentModel:
+    type: "enum"
+    values: ["hosted-control-plane", "classic"]
+  multiAzControlPlane:
+    type: "boolean"
+    default: true
+  slaPercent:
+    type: "string"
+    default: "99.95"

@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# NVIDIA Triton Inference Server: GPU model server for multiple frameworks; dynamic batching is per-model opt-in.
+schemaVersion: "1"
+type: "component"
+id: "triton"
+kind: "ml-inference"
+provider: "default"
+defaults:
+  training: "batch"
+  inputs: "live"
+  accelerator: "gpu"
+properties:
+  dynamicBatching:
+    type: "boolean"
+    default: false

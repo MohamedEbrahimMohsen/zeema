@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Backup: vault-based backup service. Geo-redundant storage is the default replication of a
+# vault, soft delete is enforced with a 14-day retention that can be raised to 180 days, and vault
+# immutability starts disabled ("What is Azure Backup?", "Secure by Default with Soft Delete for
+# Azure Backup", "Concept of Immutable Vault for Azure Backup").
+schemaVersion: "1"
+type: "component"
+id: "azure-backup"
+kind: "backup-service"
+provider: "azure"
+defaults:
+  redundancy: "geo"
+  softDeleteDays: 14
+  immutable: false
+  crossRegionRestore: false
+  managed: true
+properties:
+  vaultType:
+    type: "enum"
+    values: ["recovery-services", "backup"]
+    default: "recovery-services"
+  storageReplication:
+    type: "enum"
+    values: ["lrs", "zrs", "grs"]
+    default: "grs"
+  softDeleteEnforced:
+    type: "boolean"
+    default: true
+  maxSoftDeleteDays:
+    type: "integer"
+    default: 180
+  immutabilityState:
+    type: "enum"
+    values: ["disabled", "enabled", "enabled-and-locked"]
+    default: "disabled"

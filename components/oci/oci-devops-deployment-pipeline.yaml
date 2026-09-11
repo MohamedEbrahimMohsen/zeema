@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI DevOps deployment pipeline: managed release pipeline with serial or parallel stages that deploy
+# artifacts to OKE clusters, compute instance groups or function applications, with optional
+# blue-green, canary and manual approval stages. Limits from "What is DevOps".
+schemaVersion: "1"
+type: "component"
+id: "oci-devops-deployment-pipeline"
+kind: "ci-pipeline"
+provider: "oci"
+defaults:
+  managed: true
+  selfHostedRunners: false
+  approvalRequired: false
+properties:
+  deploymentStrategy:
+    type: "enum"
+    values: ["rolling", "blue-green", "canary"]
+  targetEnvironment:
+    type: "enum"
+    values: ["oke-cluster", "instance-group", "function"]
+  maxStages:
+    type: "integer"
+    default: 100
+  maxConcurrentDeployments:
+    type: "integer"
+    default: 100

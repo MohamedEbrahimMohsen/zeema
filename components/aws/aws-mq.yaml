@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon MQ: managed Apache ActiveMQ Classic or RabbitMQ broker; AWS runs maintenance and version
+# upgrades in a scheduled window. "Data protection in Amazon MQ" says data is always encrypted at
+# rest (Amazon MQ owned KMS key by default) and TLS is required for all client connections;
+# "Deployment options" shows a broker is one instance in one AZ unless you pick active/standby.
+schemaVersion: "1"
+type: "component"
+id: "aws-mq"
+kind: "queue"
+provider: "aws"
+defaults:
+  managed: true
+  delivery: "at-least-once"
+  persistence: true
+  replay: false
+  role: "work"
+properties:
+  engine:
+    type: "enum"
+    values: ["activemq", "rabbitmq"]
+    default: "activemq"
+  deploymentMode:
+    type: "enum"
+    values: ["single-instance", "active-standby-multi-az", "cluster-multi-az"]
+  storageType:
+    type: "enum"
+    values: ["efs", "ebs"]
+  encryptionAtRest:
+    type: "boolean"
+    default: true
+  tlsRequired:
+    type: "boolean"
+    default: true

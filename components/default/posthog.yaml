@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# PostHog: product analytics on an event stream, run as PostHog Cloud (US or EU) or self-hosted.
+# "Sharing": dashboards and insights are private to the project's members until a share link is
+# turned on, and embedding reuses that same public link. "API": authenticated analytics endpoints
+# are limited to 240 requests per minute and 1200 per hour per organization, while the public
+# event capture endpoints have no request-level rate limit.
+schemaVersion: "1"
+type: "component"
+id: "posthog"
+kind: "bi-service"
+provider: "default"
+defaults:
+  managed: true
+  capacityMode: "shared"
+  publicSharing: false
+  rowLevelSecurity: false
+  embeddedReports: false
+properties:
+  deployment:
+    type: "enum"
+    values: ["cloud-us", "cloud-eu", "self-hosted"]
+    default: "cloud-us"
+  apiRequestsPerMinute:
+    type: "integer"
+    default: 240
+  apiRequestsPerHour:
+    type: "integer"
+    default: 1200

@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Soketi: self-hosted, Pusher-protocol-v7-compatible WebSocket server built on uWebSockets.js.
+# The project README states the default adapter is local (single instance, in-memory) with Redis and
+# NATS adapters for horizontal scaling, and apps are declared through an app manager that defaults to
+# a static array.
+schemaVersion: "1"
+type: "component"
+id: "soketi"
+kind: "realtime-gateway"
+provider: "default"
+defaults:
+  protocol: "websocket"
+  stateful: true
+  autoscaling: false
+  managed: false
+properties:
+  adapter:
+    type: "enum"
+    values: ["local", "redis", "nats"]
+    default: "local"
+  appManager:
+    type: "enum"
+    values: ["array", "dynamodb", "sql"]
+    default: "array"
+  pusherProtocolCompatible:
+    type: "boolean"
+    default: true

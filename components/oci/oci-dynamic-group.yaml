@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Cloud IAM dynamic group: resources such as compute instances act as principals through matching rules.
+# Defaults from "Managing Dynamic Groups": membership follows matching rules as resources are launched and
+# terminated, and membership alone grants nothing until an IAM policy names the group.
+schemaVersion: "1"
+type: "component"
+id: "oci-dynamic-group"
+kind: "identity-provider"
+provider: "oci"
+defaults:
+  managed: true
+  protocol: "iam"
+  authorizationModel: "abac"
+  centralised: true
+  mfa: false
+properties:
+  principalType:
+    type: "enum"
+    values: ["instance-principal", "resource-principal", "workload-principal"]
+    default: "instance-principal"
+  membershipFromRules:
+    type: "boolean"
+    default: true
+  grantsWithoutPolicy:
+    type: "boolean"
+    default: false

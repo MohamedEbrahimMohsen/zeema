@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI Container Registry (OCIR) repository: an OCI-compliant registry for Docker images, manifest
+# lists and Helm charts ("Overview of Container Registry"), limited per enabled region to 500
+# repositories, 500 GB and 100,000 images per repository. "Retaining and Deleting Images Using
+# Retention Policies": each region has a global policy whose criteria retain every image.
+schemaVersion: "1"
+type: "component"
+id: "oci-container-registry"
+kind: "container-registry"
+provider: "oci"
+defaults:
+  managed: true
+  geoReplicated: false
+properties:
+  retentionPolicy:
+    type: "enum"
+    values: ["global", "custom"]
+    default: "global"
+  maxRepositoriesPerRegion:
+    type: "integer"
+    default: 500
+  maxStorageGbPerRegion:
+    type: "integer"
+    default: 500
+  maxImagesPerRepository:
+    type: "integer"
+    default: 100000
+  helmCharts:
+    type: "boolean"
+    default: true

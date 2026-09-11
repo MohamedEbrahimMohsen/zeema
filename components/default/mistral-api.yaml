@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Mistral AI La Plateforme: hosted Mistral model endpoints for text, vision, OCR, audio and embeddings.
+# Per "Usage and limits", completion limits are per model in tokens per minute and requests per second,
+# and a workspace starts in Free mode until pay-as-you-go unlocks Tier 1 and above; per "AI in abundance",
+# La Plateforme offers full data isolation with a free zero-retention option. Moderation is a separate model.
+schemaVersion: "1"
+type: "component"
+id: "mistral-api"
+kind: "ai-service"
+provider: "default"
+defaults:
+  managed: true
+  modality: "multimodal"
+  publicEndpoint: true
+  contentFiltering: false
+properties:
+  tier:
+    type: "enum"
+    values: ["free", "tier-1", "tier-2", "tier-3", "tier-4"]
+    default: "free"
+  zeroDataRetention:
+    type: "boolean"
+    default: false
+  priorityTier:
+    type: "boolean"
+    default: false
+  moderationModel:
+    type: "boolean"
+    default: false

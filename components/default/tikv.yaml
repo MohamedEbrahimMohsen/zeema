@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# TiKV: distributed transactional key-value store. Data is split into Regions, each a Raft group
+# whose default replica count (PD max-replicas) is 3; transactions follow the Percolator model (TiKV "Architecture", "PD Config").
+schemaVersion: "1"
+type: "component"
+id: "tikv"
+kind: "nosql-database"
+provider: "default"
+defaults:
+  model: "key-value"
+  consistency: "strong"
+  replication: "single-region"
+  replicationFactor: 3
+  encryptionAtRest: false
+properties:
+  version:
+    type: "string"
+  api:
+    type: "enum"
+    values: ["raw", "transactional"]

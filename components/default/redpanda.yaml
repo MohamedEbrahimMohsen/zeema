@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Redpanda: Kafka-API-compatible broker without ZooKeeper or JVM. Ships with 1 partition, 1 replica
+# and 7-day retention per topic; writes are fsynced before ack.
+schemaVersion: "1"
+type: "component"
+id: "redpanda"
+kind: "stream"
+provider: "default"
+defaults:
+  delivery: "at-least-once"
+  ordering: "per-key"
+  partitions: 1
+  replicationFactor: 1
+  acks: "leader"
+  retentionHours: 168
+  storage: "persistent"
+  managed: false
+properties:
+  tieredStorage:
+    type: "boolean"
+    default: false

@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../schema/rule.schema.json
+# The design requires redundant discovery, but a DNS or coordination service that every
+# component depends on has a single provider or a single replica.
+# Tripped by: designs/object-storage.broken.yaml
+schemaVersion: "1"
+type: "rule"
+id: "shared-dependency-without-redundancy"
+severity: "error"
+select:
+  node:
+    kind: ["dns", "coordination-service"]
+when:
+  all:
+    - requirement: "availability.discoveryRedundant"
+      equals: true
+    - any:
+        - prop: "redundantProviders"
+          equals: false
+        - prop: "replicated"
+          equals: false
+message: "Shared dependency '{{node.id}}' is not redundant, but the design requires redundant discovery."

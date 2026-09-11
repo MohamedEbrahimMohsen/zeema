@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Migrate to Containers: converts VM workloads into container images and deployment artifacts.
+# "Migrate to Containers overview": the CLI is a lightweight tool run on your own machine, so the
+# migration itself is not a hosted service; an offline mode runs entirely on a local network.
+schemaVersion: "1"
+type: "component"
+id: "google-migrate-to-containers"
+kind: "worker"
+provider: "gcp"
+defaults:
+  managed: false
+  trigger: "manual"
+properties:
+  sourceType:
+    type: "enum"
+    values: ["vmware", "compute-engine", "aws-ec2"]
+  target:
+    type: "enum"
+    values: ["gke", "gke-autopilot", "cloud-run"]
+  offlineMode:
+    type: "boolean"
+    default: false

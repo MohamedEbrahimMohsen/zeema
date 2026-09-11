@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenMetadata: open-source metadata platform with connector-driven ingestion workflows.
+# "Ingestion Workflows" ships metadata, usage, lineage, dbt and profiler workflows, plus an
+# Auto Classification agent that PII-tags columns; a default Docker deployment runs the server,
+# MySQL or PostgreSQL, Elasticsearch and an Airflow ingestion container.
+schemaVersion: "1"
+type: "component"
+id: "openmetadata"
+kind: "data-catalog"
+provider: "default"
+defaults:
+  managed: false
+  lineage: true
+  classification: true
+  accessPolicyEnforcement: false
+properties:
+  metadataStore:
+    type: "enum"
+    values: ["mysql", "postgres"]
+    default: "mysql"
+  searchIndex:
+    type: "enum"
+    values: ["elasticsearch", "opensearch"]
+    default: "elasticsearch"
+  ingestionScheduler:
+    type: "enum"
+    values: ["airflow", "external"]
+    default: "airflow"
+  dataProfiler:
+    type: "boolean"
+    default: false

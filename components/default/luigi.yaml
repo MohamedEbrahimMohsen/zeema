@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Luigi: Python batch pipelines resolved as a task dependency graph by a central scheduler that keeps
+# state in memory. Tasks are not retried automatically; retry-count is zero unless configured ("Luigi").
+schemaVersion: "1"
+type: "component"
+id: "luigi"
+kind: "workflow-engine"
+provider: "default"
+defaults:
+  durable: false
+  pattern: "dag"
+  compensation: false
+  managed: false
+properties:
+  retryCount:
+    type: "integer"
+    default: 0

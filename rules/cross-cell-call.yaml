@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../schema/rule.schema.json
+# In a cell architecture each cell must be able to fail alone. A synchronous call that
+# leaves the cell couples the fate of both cells and defeats the drain button.
+# Tripped by: designs/slack-messaging.broken.yaml
+schemaVersion: "1"
+type: "rule"
+id: "cross-cell-call"
+severity: "error"
+select:
+  edge:
+    mode: "sync"
+when:
+  all:
+    - crossesGroup:
+        kind: "cell"
+    - requirement: "isolation.tenancy"
+      equals: "cell"
+message: "Synchronous edge '{{edge.from}}' -> '{{edge.to}}' crosses a cell boundary while the design requires cell isolation."

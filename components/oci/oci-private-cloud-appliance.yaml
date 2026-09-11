@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Private Cloud Appliance: a self-contained rack running an OCI-compatible cloud in the
+# customer data centre, administered locally rather than from an OCI region. "Base
+# Configuration of Private Cloud Appliance": the base rack holds three compute nodes, three
+# management nodes and two ZFS storage controllers, and grows to twelve compute nodes on X10
+# and X11 (twenty on X9-2) by filling the flex bays.
+schemaVersion: "1"
+type: "component"
+id: "oci-private-cloud-appliance"
+kind: "edge-appliance"
+provider: "oci"
+defaults:
+  formFactor: "rack"
+  cloudManaged: false
+  managed: false
+properties:
+  hardwareGeneration:
+    type: "enum"
+    values: ["x9-2", "x10", "x11"]
+    default: "x11"
+  computeNodes:
+    type: "integer"
+    default: 3
+  maxComputeNodes:
+    type: "integer"
+    default: 12
+  managementNodes:
+    type: "integer"
+    default: 3
+  storageControllers:
+    type: "integer"
+    default: 2

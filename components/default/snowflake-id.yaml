@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Twitter Snowflake-style id: timestamp, worker id and sequence packed into 64 bits, generated
+# locally on each worker; refuses to issue ids when the clock moves backwards.
+schemaVersion: "1"
+type: "component"
+id: "snowflake-id"
+kind: "id-generator"
+provider: "default"
+defaults:
+  strategy: "snowflake"
+  central: false
+  replicated: false
+  timeSortable: true
+  clockRollbackGuard: true
+properties:
+  workerIdBits:
+    type: "integer"
+    default: 10
+  sequenceBits:
+    type: "integer"
+    default: 12

@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Honeycomb: SaaS event and trace store; telemetry is pushed over TLS to the Honeycomb API and data is
+# deleted once it passes the 60-day retention window ("Security & Data Protection").
+schemaVersion: "1"
+type: "component"
+id: "honeycomb"
+kind: "monitoring"
+provider: "default"
+defaults:
+  signal: "traces"
+  collectorMode: "push"
+  managed: true
+  independentOfMonitored: true
+  retentionDays: 60
+properties:
+  refinerySampling:
+    type: "boolean"
+    default: false

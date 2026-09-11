@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI dedicated virtual machine host: a single-tenant server that runs only your VM instances
+# ("Dedicated Virtual Machine Hosts"). The same page states the host does not support live
+# migration, autoscaling, instance pools, burstable instances or capacity reservations, and is
+# billed from creation whether or not instances run on it.
+schemaVersion: "1"
+type: "component"
+id: "oci-dedicated-vm-host"
+kind: "virtual-machine"
+provider: "oci"
+defaults:
+  managed: false
+  diskEncryption: true
+  zoneRedundant: false
+properties:
+  hostShape:
+    type: "enum"
+    values: ["dvh-standard2-52", "dvh-standard-e4-128", "dvh-standard-e5-192"]
+  singleTenant:
+    type: "boolean"
+    default: true
+  liveMigration:
+    type: "boolean"
+    default: false
+  instancePoolSupported:
+    type: "boolean"
+    default: false

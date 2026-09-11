@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apache Accumulo: sorted wide-column store on HDFS. Each tablet is owned by exactly one tablet
+# server, so reads are consistent, and every cell carries a visibility label
+# ("Accumulo Design", "Security overview").
+schemaVersion: "1"
+type: "component"
+id: "accumulo"
+kind: "nosql-database"
+provider: "default"
+defaults:
+  model: "wide-column"
+  consistency: "strong"
+  replication: "single-region"
+  conflictResolution: "none"
+properties:
+  version:
+    type: "string"
+  visibilityLabels:
+    type: "boolean"
+    default: true
+  tabletServers:
+    type: "integer"

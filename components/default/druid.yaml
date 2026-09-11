@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apache Druid: real-time analytics database with column-oriented segments. "Design": realtime or
+# batch ingestion, a copy of every segment kept in deep storage, and streaming inserts but no
+# streaming updates. "Using rules": loadForever is the default rule and loads 2 replicas per segment.
+schemaVersion: "1"
+type: "component"
+id: "druid"
+kind: "data-warehouse"
+provider: "default"
+defaults:
+  realtime: true
+  upsert: false
+  format: "columnar"
+  managed: false
+properties:
+  segmentReplicants:
+    type: "integer"
+    default: 2
+  streamingIngestion:
+    type: "boolean"
+    default: true
+  deepStorage:
+    type: "boolean"
+    default: true

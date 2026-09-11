@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Cloud Traffic Management steering policy: DNS-level steering over the Oracle edge network,
+# available for public DNS only, in five policy types ("Traffic Management Steering Policies
+# Overview"). Failover and load balancer policies read Health Checks monitors and probes.
+schemaVersion: "1"
+type: "component"
+id: "oci-traffic-management"
+kind: "dns"
+provider: "oci"
+defaults:
+  managed: true
+  anycast: true
+  redundantProviders: false
+properties:
+  policyType:
+    type: "enum"
+    values: ["failover", "load-balancer", "geolocation", "asn", "ip-prefix"]
+  healthChecksIntegrated:
+    type: "boolean"
+    default: true
+  publicDnsOnly:
+    type: "boolean"
+    default: true

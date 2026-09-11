@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Deployment Environments: self-service infrastructure deployed from curated IaC environment
+# definitions. The overview states every environment is created in its own resource group by default
+# and project members get contributor access to those resources by default. The service is in
+# maintenance mode with no additional features planned.
+schemaVersion: "1"
+type: "component"
+id: "azure-deployment-environments"
+kind: "ci-pipeline"
+provider: "azure"
+defaults:
+  trigger: "manual"
+  managed: true
+properties:
+  isolatedResourceGroup:
+    type: "boolean"
+    default: true
+  developerAccess:
+    type: "enum"
+    values: ["reader", "contributor"]
+    default: "contributor"
+  environmentType:
+    type: "enum"
+    values: ["sandbox", "dev", "test", "staging", "production"]

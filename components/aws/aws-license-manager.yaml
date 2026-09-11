@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS License Manager: tracks software entitlements against deployed resources. Per "What is AWS License
+# Manager?" self-managed licenses are scoped to a single account (license asset groups widen that to an
+# organization), limits can be hard or soft, and counting is by vCPU, core, socket or machine.
+schemaVersion: "1"
+type: "component"
+id: "aws-license-manager"
+kind: "policy-engine"
+provider: "aws"
+defaults:
+  scope: "account"
+  remediation: false
+  managed: true
+properties:
+  licenseCountingType:
+    type: "enum"
+    values: ["vcpu", "core", "socket", "instance"]
+  enforceLicenseLimit:
+    type: "boolean"
+  crossAccount:
+    type: "boolean"
+    default: false

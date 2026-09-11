@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon SQS: standard queue, at-least-once, unordered, 4-day retention; FIFO is an opt-in flag.
+# managed is a component property because the queue kind has none.
+schemaVersion: "1"
+type: "component"
+id: "sqs"
+kind: "queue"
+provider: "aws"
+defaults:
+  managed: true
+  delivery: "at-least-once"
+  ordering: "none"
+  replay: false
+  retentionDays: 4
+properties:
+  fifo:
+    type: "boolean"
+    default: false
+  visibilityTimeoutSeconds:
+    type: "integer"
+    default: 30

@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Square: payments and commerce API. "Idempotency" documents idempotency keys on API operations;
+# "Validate an event notification" states all webhooks carry x-square-hmacsha256-signature.
+schemaVersion: "1"
+type: "component"
+id: "square"
+kind: "third-party-api"
+provider: "default"
+defaults:
+  managed: true
+  idempotent: true
+  handlesMoney: true
+  callbackStyle: "webhook"
+properties:
+  signedCallbacks:
+    type: "boolean"
+    default: true

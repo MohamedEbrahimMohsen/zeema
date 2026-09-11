@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Evidence: BI-as-code framework where reports are markdown pages with embedded SQL.
+# Evidence docs: Core builds the reports into a static site deployed to Vercel, Netlify, Docker or
+# your own host, so pages are rendered at build time; Core ships no authentication, and access
+# rules and page-level access control belong to the hosted Studio.
+schemaVersion: "1"
+type: "component"
+id: "evidence"
+kind: "bi-service"
+provider: "default"
+defaults:
+  managed: false
+  publicSharing: true
+  rowLevelSecurity: false
+  embeddedReports: false
+properties:
+  buildMode:
+    type: "enum"
+    values: ["static-site", "hosted-studio"]
+    default: "static-site"
+  authentication:
+    type: "boolean"
+    default: false
+  pageLevelAccessControl:
+    type: "boolean"
+    default: false

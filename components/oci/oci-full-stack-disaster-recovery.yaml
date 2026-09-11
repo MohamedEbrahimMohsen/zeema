@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle OCI Full Stack Disaster Recovery: a DR protection group that holds the members of one
+# application stack (compute instances, volume groups, databases) and runs switchover, failover
+# and drill plans over them. "Overview of Disaster Recovery Protection Groups": a group is
+# region-bound, takes a primary or standby role, and is paired with exactly one peer group —
+# typically in another region, though pairing across availability domains in one region is also
+# supported. The service orchestrates recovery; it does not itself store backups, so no
+# frequency, retention or immutability default is set.
+schemaVersion: "1"
+type: "component"
+id: "oci-full-stack-disaster-recovery"
+kind: "backup-service"
+provider: "oci"
+defaults:
+  crossRegionRestore: true
+  managed: true
+properties:
+  role:
+    type: "enum"
+    values: ["primary", "standby"]
+  scope:
+    type: "enum"
+    values: ["cross-region", "cross-availability-domain"]
+    default: "cross-region"
+  peerGroups:
+    type: "integer"
+    default: 1
+  orchestratesExistingReplication:
+    type: "boolean"
+    default: true

@@ -1,0 +1,76 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Imported 2026-09-08 from source/news-feed.md, a transcription of Figure 11-4 (feed
+# publishing, page 171) and Figure 11-7 (news feed retrieval, page 174) of chapter 11 of
+# "System Design Interview - An Insider's Guide" (Alex Xu). The two figures are the write and
+# read path of one system; this design is their union, each distinct box counted once.
+# Assumptions, all recorded in mapping.yaml and notes.md:
+#   - Every box is unbranded, so the generic default components are used (cache-cluster,
+#     relational-database, message-queue, load-balancer-tier, dns-resolver,
+#     content-delivery-network, container-service, container-worker).
+#   - "Graph DB" has no engine-less component in the catalogue; neo4j is used (the chapter's
+#     own reference [2] is a Neo4j article). Only assumed mapping in the design.
+#   - "User" is the labelled box holding Web browser and Mobile app, so a trust-zone group.
+#     The five arrows drawn at that boundary are modelled once per client inside it.
+#   - The two dashed boxes (web tier, fanout workers) carry no text; they are system groups
+#     without a label.
+#   - No requirements block: the chapter states 10M DAU and 5000 friends but no SLA, latency
+#     target, region count or replay promise.
+schemaVersion: "1"
+type: "design"
+id: "news-feed"
+
+groups:
+  - { id: "user", kind: "trust-zone", label: "User" }
+  - { id: "web-tier", kind: "system" }
+
+nodes:
+  - { id: "web-browser", component: "web-browser", label: "Web browser", group: "user" }
+  - { id: "mobile-app", component: "mobile-app", label: "Mobile app", group: "user" }
+  - { id: "dns", component: "dns-resolver", label: "DNS" }
+  - { id: "cdn", component: "content-delivery-network", label: "CDN" }
+  - { id: "load-balancer", component: "load-balancer-tier", label: "Load balancer" }
+  - { id: "web-servers", component: "container-service", label: "Web servers", group: "web-tier" }
+  - { id: "authentication", component: "container-service", label: "Authentication", group: "web-tier" }
+  - { id: "rate-limiting", component: "in-process-limiter", label: "Rate Limiting", group: "web-tier" }
+  - { id: "post-service", component: "container-service", label: "Post Service" }
+  - { id: "post-cache", component: "cache-cluster", label: "Post Cache" }
+  - { id: "post-db", component: "relational-database", label: "Post DB" }
+  - { id: "notification-service", component: "container-service", label: "Notification Service" }
+  - { id: "fanout-service", component: "container-service", label: "Fanout Service" }
+  - { id: "graph-db", component: "graph-store", label: "Graph DB" }
+  - { id: "message-queue", component: "message-queue", label: "Message Queue" }
+  - { id: "user-cache", component: "cache-cluster", label: "User Cache" }
+  - { id: "user-db", component: "relational-database", label: "User DB" }
+  - { id: "fanout-workers", component: "container-worker", label: "Fanout Workers" }
+  - { id: "news-feed-cache", component: "cache-cluster", label: "News Feed Cache" }
+  - { id: "news-feed-service", component: "container-service", label: "News Feed Service" }
+
+edges:
+  # Figure 11-4, feed publishing
+  - { from: "web-browser", to: "dns", protocol: "dns", mode: "sync" }
+  - { from: "mobile-app", to: "dns", protocol: "dns", mode: "sync" }
+  - { from: "web-browser", to: "load-balancer", protocol: "https", mode: "sync", label: "v1/me/feed?content=Hello&auth_token={auth_token}" }
+  - { from: "mobile-app", to: "load-balancer", protocol: "https", mode: "sync", label: "v1/me/feed?content=Hello&auth_token={auth_token}" }
+  - { from: "load-balancer", to: "web-servers", protocol: "http", mode: "sync" }
+  - { from: "web-servers", to: "post-service", protocol: "http", mode: "sync" }
+  - { from: "web-servers", to: "fanout-service", protocol: "http", mode: "sync" }
+  - { from: "web-servers", to: "notification-service", protocol: "http", mode: "sync" }
+  - { from: "post-service", to: "post-cache", protocol: "cache", mode: "sync" }
+  - { from: "post-cache", to: "post-db", protocol: "sql", mode: "sync" }
+  - { from: "fanout-service", to: "graph-db", protocol: "graph", mode: "sync", label: "get friend ids" }
+  - { from: "fanout-service", to: "user-cache", protocol: "cache", mode: "sync", label: "get friends data" }
+  - { from: "fanout-service", to: "message-queue", protocol: "queue", mode: "async", delivery: "at-least-once" }
+  - { from: "user-cache", to: "user-db", protocol: "sql", mode: "sync" }
+  - { from: "message-queue", to: "fanout-workers", protocol: "queue", mode: "async", delivery: "at-least-once" }
+  - { from: "fanout-workers", to: "news-feed-cache", protocol: "cache", mode: "sync" }
+  # Figure 11-7, news feed retrieval
+  - { from: "web-browser", to: "cdn", protocol: "https", mode: "sync" }
+  - { from: "mobile-app", to: "cdn", protocol: "https", mode: "sync" }
+  - { from: "web-browser", to: "load-balancer", protocol: "https", mode: "sync", label: "/v1/me/feed" }
+  - { from: "mobile-app", to: "load-balancer", protocol: "https", mode: "sync", label: "/v1/me/feed" }
+  - { from: "web-servers", to: "news-feed-service", protocol: "http", mode: "sync" }
+  - { from: "news-feed-service", to: "news-feed-cache", protocol: "cache", mode: "sync" }
+  - { from: "news-feed-service", to: "user-cache", protocol: "cache", mode: "sync" }
+  - { from: "news-feed-service", to: "post-cache", protocol: "cache", mode: "sync" }
+  - { from: "web-servers", to: "web-browser", protocol: "https", mode: "sync" }
+  - { from: "web-servers", to: "mobile-app", protocol: "https", mode: "sync" }

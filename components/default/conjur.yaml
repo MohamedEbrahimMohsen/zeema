@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# CyberArk Conjur Open Source: self-hosted secret store and RBAC engine for machine identities.
+# "CyberArk Conjur": server plus built-in authenticators for Kubernetes, OpenShift, AWS IAM
+# and OIDC; workloads authenticate with a Conjur API key unless another authenticator is enabled.
+schemaVersion: "1"
+type: "component"
+id: "conjur"
+kind: "key-management"
+provider: "default"
+defaults:
+  managed: false
+  hsm: false
+  rotationAutomated: false
+properties:
+  authenticator:
+    type: "enum"
+    values: ["api-key", "kubernetes", "aws-iam", "oidc", "azure"]
+    default: "api-key"
+  secretlessBroker:
+    type: "boolean"
+    default: false

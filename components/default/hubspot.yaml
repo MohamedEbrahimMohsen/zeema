@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# HubSpot API: REST interface to the HubSpot CRM objects, called with a private app token or OAuth.
+# "API usage guidelines and limits": a Professional subscription allows 650,000 requests per day and
+# a burst of 190 requests per 10 seconds, Enterprise 1,000,000 per day at the same burst; the daily
+# limit is shared by every app in the account while the burst limit is per app. Object changes are
+# delivered to the integrator through webhook subscriptions; writes carry no idempotency key.
+schemaVersion: "1"
+type: "component"
+id: "hubspot"
+kind: "third-party-api"
+provider: "default"
+defaults:
+  managed: true
+  idempotent: false
+  callbackStyle: "webhook"
+  hostedPage: false
+  handlesMoney: false
+properties:
+  subscriptionTier:
+    type: "enum"
+    values: ["free", "starter", "professional", "enterprise"]
+    default: "professional"
+  requestsPerTenSeconds:
+    type: "integer"
+    default: 190
+  dailyRequestQuota:
+    type: "integer"
+    default: 650000

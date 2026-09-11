@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# PlanetScale: managed MySQL (and Postgres) built on Vitess. Databases start as a single unsharded
+# keyspace; horizontal sharding is opted into per keyspace (PlanetScale "Sharding").
+schemaVersion: "1"
+type: "component"
+id: "planetscale"
+kind: "sql-database"
+provider: "default"
+defaults:
+  managed: true
+  sharded: false
+properties:
+  engine:
+    type: "enum"
+    values: ["mysql", "postgres"]
+    default: "mysql"
+  version:
+    type: "string"

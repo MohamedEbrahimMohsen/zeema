@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Supavisor: scalable cloud-native Postgres connection pooler from Supabase, run as a
+# distributed multi-node cluster. README: transaction pooling is what ships today,
+# session pooling is on the roadmap; tenants are held in a highly available Postgres.
+schemaVersion: "1"
+type: "component"
+id: "supavisor"
+kind: "database-proxy"
+provider: "default"
+defaults:
+  pooling: true
+  routing: "none"
+properties:
+  poolMode:
+    type: "enum"
+    values: ["transaction", "session"]
+    default: "transaction"
+  multiTenant:
+    type: "boolean"
+    default: true
+  clustered:
+    type: "boolean"
+    default: true

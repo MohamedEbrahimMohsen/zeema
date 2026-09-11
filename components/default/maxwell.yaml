@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Maxwell daemon: MySQL binlog to JSON. Tracks schema in its own table; producer defaults to stdout.
+schemaVersion: "1"
+type: "component"
+id: "maxwell"
+kind: "change-data-capture"
+provider: "default"
+defaults:
+  mode: "log-based"
+  ordered: true
+  schemaEvolution: true
+properties:
+  producer:
+    type: "enum"
+    values: ["stdout", "kafka", "kinesis", "sqs", "pubsub", "rabbitmq", "redis"]
+    default: "stdout"

@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Managed Workflows for Apache Airflow: managed Airflow environment whose schedulers and workers run as
+# Fargate containers in an Amazon MWAA VPC, with data "automatically encrypted using AWS Key Management Service"
+# ("What Is Amazon Managed Workflows for Apache Airflow?"). Scheduler count defaults to 2 on every class above
+# mw1.micro ("Configuring the Amazon MWAA environment class") and Maximum worker count defaults to 10
+# ("Configuring Amazon MWAA worker automatic scaling").
+schemaVersion: "1"
+type: "component"
+id: "aws-mwaa"
+kind: "workflow-engine"
+provider: "aws"
+defaults:
+  managed: true
+  durable: true
+  pattern: "dag"
+  stepsIdempotent: false
+  compensation: false
+  humanReview: false
+properties:
+  environmentClass:
+    type: "enum"
+    values: ["mw1-micro", "mw1-small", "mw1-medium", "mw1-large", "mw1-xlarge", "mw1-2xlarge"]
+  schedulerCount:
+    type: "integer"
+    default: 2
+  maxWorkers:
+    type: "integer"
+    default: 10
+  webserverAccessMode:
+    type: "enum"
+    values: ["public", "private"]

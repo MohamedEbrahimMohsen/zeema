@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI Compute virtual machine instance: a leased VM you boot from an image and patch yourself
+# ("Creating an Instance": an Oracle Linux image and an Oracle shape are selected by default, and
+# the system picks a fault domain when you don't; boot volumes are encrypted by default, while
+# in-transit encryption and Shielded Instances are opt-in for VMs).
+schemaVersion: "1"
+type: "component"
+id: "oci-compute"
+kind: "virtual-machine"
+provider: "oci"
+defaults:
+  managed: false
+  os: "linux"
+  diskEncryption: true
+  zoneRedundant: false
+properties:
+  shapeType:
+    type: "enum"
+    values: ["flexible", "fixed"]
+    default: "flexible"
+  faultDomainSelection:
+    type: "enum"
+    values: ["automatic", "explicit"]
+    default: "automatic"
+  inTransitEncryption:
+    type: "boolean"
+    default: false
+  shieldedInstance:
+    type: "boolean"
+    default: false

@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Stardog: RDF/SPARQL knowledge graph platform with reasoning and virtual graphs.
+# Per "Managing Databases" all data files, indexes and metadata live on disk under
+# STARDOG_HOME; a single node has no replication, HA clustering is a separate feature.
+schemaVersion: "1"
+type: "component"
+id: "stardog"
+kind: "graph-database"
+provider: "default"
+defaults:
+  inMemory: false
+  masterPerShard: false
+  crossRegionConsistency: "none"
+  managed: false
+properties:
+  dataModel:
+    type: "enum"
+    values: ["rdf", "property-graph"]
+    default: "rdf"
+  clusterMode:
+    type: "boolean"
+    default: false
+  reasoning:
+    type: "boolean"
+    default: false
+  virtualGraphs:
+    type: "boolean"
+    default: false

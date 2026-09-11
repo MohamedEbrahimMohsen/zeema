@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OCI Resource Scheduler: a schedule starts, stops or backs up compute and database resources at recurring times.
+# Defaults from "Create and Manage Schedules": recurrence is ICAL (RFC-5545) or UNIX cron, times are UTC only with no daylight-saving
+# adjustment, and a schedule cannot trigger more often than once an hour.
+schemaVersion: "1"
+type: "component"
+id: "oci-resource-scheduler"
+kind: "worker"
+provider: "oci"
+defaults:
+  managed: true
+  trigger: "schedule"
+properties:
+  action:
+    type: "enum"
+    values: ["start", "stop", "backup"]
+  recurrenceType:
+    type: "enum"
+    values: ["ical", "cron"]
+  timeZone:
+    type: "string"
+    default: "UTC"
+  minimumIntervalMinutes:
+    type: "integer"
+    default: 60

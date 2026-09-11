@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Infinispan: distributed in-memory key-value store. Entries are immortal with no eviction, cache
+# stores are off, and a distributed cache keeps two owners per entry
+# ("Configuring Infinispan caches", "Embedding Infinispan").
+schemaVersion: "1"
+type: "component"
+id: "infinispan"
+kind: "cache"
+provider: "default"
+defaults:
+  persistence: false
+  hashing: "consistent"
+properties:
+  cacheMode:
+    type: "enum"
+    values: ["local", "replicated", "distributed", "invalidation"]
+  owners:
+    type: "integer"
+    default: 2
+  crossSiteReplication:
+    type: "boolean"
+    default: false

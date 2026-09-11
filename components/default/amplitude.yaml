@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amplitude: hosted product analytics over an event stream, with charts, funnels and cohorts.
+# "HTTP V2 API": ingestion is throttled above 30 events per second for a single device, a project
+# tops out at 50,000 events per second, requests must stay under 1 MB, and Amplitude "ignores
+# subsequent events sent with the same insert_id on the same device_id ... within the past 7 days".
+schemaVersion: "1"
+type: "component"
+id: "amplitude"
+kind: "bi-service"
+provider: "default"
+defaults:
+  managed: true
+  capacityMode: "shared"
+properties:
+  eventsPerSecondPerDevice:
+    type: "integer"
+    default: 30
+  projectEventsPerSecond:
+    type: "integer"
+    default: 50000
+  insertIdDedupDays:
+    type: "integer"
+    default: 7
+  maxRequestSizeMb:
+    type: "integer"
+    default: 1

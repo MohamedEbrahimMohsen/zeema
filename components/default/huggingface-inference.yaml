@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Hugging Face Inference Endpoints: managed service that deploys a Hub model on dedicated CPU or GPU
+# replicas behind a private endpoint. Per "Inference Endpoints" the infrastructure is fully managed and
+# replicas autoscale; per "Autoscaling", scale-to-zero idles the endpoint after 1 hour of inactivity,
+# utilisation scaling triggers at 80% CPU or GPU and at 1.5 pending requests per replica.
+schemaVersion: "1"
+type: "component"
+id: "huggingface-inference"
+kind: "ml-inference"
+provider: "default"
+defaults:
+  managed: true
+  inputs: "live"
+  training: "batch"
+  snapshotToObjectStore: false
+properties:
+  scaleToZero:
+    type: "boolean"
+    default: false
+  scaleToZeroIdleMinutes:
+    type: "integer"
+    default: 60
+  utilizationThresholdPercent:
+    type: "integer"
+    default: 80
+  pendingRequestsPerReplica:
+    type: "boolean"
+    default: false
+  inferenceEngine:
+    type: "enum"
+    values: ["tgi", "vllm", "custom-container"]
+    default: "tgi"

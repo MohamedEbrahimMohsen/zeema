@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure VMware Solution: vSphere clusters on dedicated bare-metal hosts that Microsoft patches and
+# maintains ("Introduction - Azure VMware Solution"). vSAN data-at-rest encryption is on by default,
+# internet access is disabled for new private clouds, and a cluster is three to sixteen hosts.
+schemaVersion: "1"
+type: "component"
+id: "azure-vmware-solution"
+kind: "virtual-machine"
+provider: "azure"
+defaults:
+  managed: true
+  diskEncryption: true
+  publicIp: false
+  zoneRedundant: false
+properties:
+  hostSku:
+    type: "enum"
+    values: ["av36", "av36p", "av48", "av52", "av64"]
+  clusterHosts:
+    type: "integer"
+    default: 3
+  vsanRaidConfiguration:
+    type: "enum"
+    values: ["raid-1", "raid-5", "raid-6"]
+    default: "raid-1"
+  stretchedCluster:
+    type: "boolean"
+    default: false

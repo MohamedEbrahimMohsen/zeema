@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Emissary-ingress: CNCF open source Kubernetes-native API gateway and L7 load balancer built on Envoy,
+# configured with CRDs (Mapping) or Service annotations. Authentication and rate limiting are delegated
+# to external AuthService and RateLimitService resources, so neither is active by default.
+schemaVersion: "1"
+type: "component"
+id: "emissary"
+kind: "api-gateway"
+provider: "default"
+defaults:
+  managed: false
+  rateLimiting: false
+properties:
+  configApi:
+    type: "enum"
+    values: ["mapping-crd", "ingress", "service-annotation"]
+    default: "mapping-crd"
+  externalAuthService:
+    type: "boolean"
+    default: false

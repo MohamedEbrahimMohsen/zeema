@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS WAF Classic: the pre-November-2019 AWS WAF, a web ACL of conditions and rules in front of a
+# CloudFront distribution, Application Load Balancer or API Gateway REST API ("AWS WAF Classic").
+# The web ACL default action is allow or block and rate-based rules count requests over a 5-minute
+# period ("Creating and configuring a Web Access Control List (Web ACL)").
+# Sunset: end of support 7 October 2026 (AWS service lifecycle, sunset services); placeable until then.
+schemaVersion: "1"
+type: "component"
+id: "aws-waf-classic"
+kind: "waf"
+provider: "aws"
+defaults:
+  managed: true
+  mode: "prevention"
+  botProtection: false
+  rateLimiting: false
+properties:
+  defaultAction:
+    type: "enum"
+    values: ["allow", "block"]
+  protectedResource:
+    type: "enum"
+    values: ["cloudfront", "application-load-balancer", "api-gateway"]
+  rateBasedRuleWindowMinutes:
+    type: "integer"
+    default: 5
+  logging:
+    type: "boolean"
+    default: false

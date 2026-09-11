@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle WebLogic Server for OCI: a Resource Manager stack that provisions a WebLogic domain on
+# compute instances (admin plus first managed server on one instance, one instance per further managed
+# server, optional bastion and load balancer). Oracle provisions and patches the OS; the customer
+# administers the domain and applications. The basic domain is one admin server and one managed server
+# with Secured Production Mode on. Facts from "About the Components of Oracle WebLogic Server for OCI".
+schemaVersion: "1"
+type: "component"
+id: "oci-weblogic-server"
+kind: "app-server"
+provider: "oci"
+defaults:
+  managed: false
+  runtime: "weblogic"
+  instances: 1
+  autoscaling: false
+properties:
+  edition:
+    type: "enum"
+    values: ["standard", "enterprise", "suite"]
+  weblogicVersion:
+    type: "enum"
+    values: ["12.2.1.4", "14.1.1.0", "14.1.2.0", "15.1.1.0"]
+  jrfDomain:
+    type: "boolean"
+    default: false
+  loadBalancer:
+    type: "boolean"
+    default: false
+  securedProductionMode:
+    type: "boolean"
+    default: true

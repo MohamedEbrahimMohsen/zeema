@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure IoT Hub: managed device message hub with a per-device identity registry, device twins
+# and TLS-only endpoints over MQTT, AMQP and HTTPS ("What is Azure IoT Hub?").
+# A size-1 unit carries a 400,000 message per day quota ("Azure IoT Hub scaling").
+schemaVersion: "1"
+type: "component"
+id: "azure-iot-hub"
+kind: "iot-hub"
+provider: "azure"
+defaults:
+  managed: true
+  protocol: "multi"
+  perDeviceIdentity: true
+  deviceTwin: true
+  deviceProvisioning: false
+  messagesPerDayLimit: 400000
+properties:
+  edition:
+    type: "enum"
+    values: ["f1", "b1", "b2", "b3", "s1", "s2", "s3"]
+  deviceAuthentication:
+    type: "enum"
+    values: ["sas-token", "x509"]
+    default: "sas-token"
+  partitions:
+    type: "integer"
+  maxDeviceIdentities:
+    type: "integer"
+    default: 1000000

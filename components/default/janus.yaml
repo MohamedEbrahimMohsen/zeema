@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Janus WebRTC server: plugin-based SFU. ICE-TCP is off by default so transport is UDP.
+schemaVersion: "1"
+type: "component"
+id: "janus"
+kind: "media-router"
+provider: "default"
+defaults:
+  managed: false
+  mode: "sfu"
+  transport: "udp"
+properties:
+  plugin:
+    type: "enum"
+    values: ["videoroom", "streaming", "sip", "audiobridge"]
+    default: "videoroom"

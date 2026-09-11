@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenFGA: Zanzibar-inspired relationship-based authorization service.
+# "Configure OpenFGA": the memory storage engine is the default and authentication is "none" unless configured.
+schemaVersion: "1"
+type: "component"
+id: "openfga"
+kind: "identity-provider"
+provider: "default"
+defaults:
+  protocol: "custom"
+  authorizationModel: "rebac"
+  managed: false
+  mfa: false
+properties:
+  datastore:
+    type: "enum"
+    values: ["memory", "postgres", "mysql", "sqlite"]
+    default: "memory"
+  authenticationMethod:
+    type: "enum"
+    values: ["none", "preshared-key", "oidc"]
+    default: "none"

@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Lightsail instance: a virtual private server sold as a fixed monthly bundle with an image,
+# SSD storage and a data-transfer allowance ("What is Amazon Lightsail?"). A new instance reaches the
+# internet through its own firewall, which opens SSH 22 and HTTP 80 to all addresses and lets all
+# outbound traffic through ("Control instance traffic with firewalls in Lightsail").
+schemaVersion: "1"
+type: "component"
+id: "aws-lightsail"
+kind: "virtual-machine"
+provider: "aws"
+defaults:
+  managed: false
+  publicIp: true
+  zoneRedundant: false
+properties:
+  defaultInboundPorts:
+    type: "string"
+    default: "22,80"
+  outboundTrafficUnrestricted:
+    type: "boolean"
+    default: true
+  staticIpAttached:
+    type: "boolean"
+    default: false
+  bundledDataTransfer:
+    type: "boolean"
+    default: true

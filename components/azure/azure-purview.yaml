@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Microsoft Purview: unified data governance catalog over a Data Map. "Learn about Microsoft Purview
+# Data Map" states the map stays current through a built-in scanning and classification system, holds
+# lineage relationships, starts at one capacity unit and elastically autoscales, with a default
+# operations throughput limit of ten capacity units.
+schemaVersion: "1"
+type: "component"
+id: "azure-purview"
+kind: "data-catalog"
+provider: "azure"
+defaults:
+  classification: true
+  lineage: true
+  managed: true
+properties:
+  capacityUnits:
+    type: "integer"
+    default: 1
+  maxCapacityUnits:
+    type: "integer"
+    default: 10
+  elasticAutoscale:
+    type: "boolean"
+    default: true

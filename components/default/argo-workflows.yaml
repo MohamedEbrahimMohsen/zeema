@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Argo Workflows: container-native engine where each step is a pod and the workflow is a Kubernetes
+# CRD ("Argo Workflows overview"). Steps are not retried unless a retryStrategy is supplied, and the
+# retryPolicy of a supplied strategy is OnFailure ("Retries"). Archiving to a database is opt-in.
+schemaVersion: "1"
+type: "component"
+id: "argo-workflows"
+kind: "workflow-engine"
+provider: "default"
+defaults:
+  durable: true
+  pattern: "dag"
+  compensation: false
+  managed: false
+properties:
+  retryStrategy:
+    type: "boolean"
+    default: false
+  workflowArchive:
+    type: "boolean"
+    default: false

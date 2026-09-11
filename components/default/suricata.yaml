@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Suricata: network IDS/IPS and network security monitoring engine. It runs passively in
+# IDS mode unless explicitly set up inline (NFQUEUE or af-packet IPS), so nothing is
+# dropped out of the box; rules are fetched separately with suricata-update (ET Open).
+schemaVersion: "1"
+type: "component"
+id: "suricata"
+kind: "firewall"
+provider: "default"
+defaults:
+  managed: false
+  defaultAction: "allow"
+  stateful: true
+  logging: true
+  intrusionPrevention: false
+properties:
+  mode:
+    type: "enum"
+    values: ["ids", "ips"]
+    default: "ids"
+  captureMethod:
+    type: "enum"
+    values: ["af-packet", "pcap", "nfqueue", "netmap", "dpdk"]
+    default: "af-packet"
+  ruleSource:
+    type: "string"
+    default: "et-open"
+  eveJsonOutput:
+    type: "boolean"
+    default: true

@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Hazelcast: in-memory data grid; one synchronous backup per partition by default.
+schemaVersion: "1"
+type: "component"
+id: "hazelcast"
+kind: "cache"
+provider: "default"
+defaults:
+  persistence: false
+  hashing: "consistent"
+  replication: "single-az"
+properties:
+  backupCount:
+    type: "integer"
+    default: 1
+  nearCache:
+    type: "boolean"
+    default: false

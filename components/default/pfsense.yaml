@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# pfSense: FreeBSD/pf firewall distribution. "Firewall Fundamentals" states pfSense is a
+# stateful firewall and traffic not matched by a rule hits the default deny rule.
+# IDS/IPS (Snort, Suricata) are optional add-on packages, not part of the base install.
+schemaVersion: "1"
+type: "component"
+id: "pfsense"
+kind: "firewall"
+provider: "default"
+defaults:
+  managed: false
+  defaultAction: "deny"
+  stateful: true
+  intrusionPrevention: false
+properties:
+  haMode:
+    type: "enum"
+    values: ["none", "carp"]
+    default: "none"
+  vpnServer:
+    type: "boolean"
+    default: false
+  idsPackage:
+    type: "enum"
+    values: ["none", "snort", "suricata"]
+    default: "none"

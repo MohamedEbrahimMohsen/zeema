@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Cloud Migrations: discovers VMware and EC2 assets through a remote agent appliance, plans
+# the target shapes and replicates the workloads into OCI compute. "Oracle Cloud Migrations":
+# a migration plan produces a Resource Manager stack that is deployed to launch the instances, so
+# the migration runs when the plan is executed rather than on a schedule.
+schemaVersion: "1"
+type: "component"
+id: "oci-cloud-migrations"
+kind: "worker"
+provider: "oci"
+defaults:
+  managed: true
+  trigger: "manual"
+properties:
+  sourceEnvironment:
+    type: "enum"
+    values: ["vmware", "aws-ec2"]
+  remoteAgentAppliance:
+    type: "boolean"
+    default: true
+  discoveryMethod:
+    type: "enum"
+    values: ["automated", "csv-import"]
+    default: "automated"
+  resourceManagerStack:
+    type: "boolean"
+    default: true
+  replicationSchedule:
+    type: "boolean"
+    default: false

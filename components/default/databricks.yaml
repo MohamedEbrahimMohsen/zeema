@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Databricks: managed lakehouse platform whose classic compute is a Spark cluster of driver and workers.
+# Defaults from "Compute" and "Configure compute": access mode Auto, multi-node, autoscaling and
+# spot instances off until enabled, Photon on from Databricks Runtime 9.1 LTS.
+schemaVersion: "1"
+type: "component"
+id: "databricks"
+kind: "big-data-cluster"
+provider: "default"
+defaults:
+  engine: "spark"
+  autoscaling: false
+  spotInstances: false
+  managed: true
+properties:
+  computeType:
+    type: "enum"
+    values: ["all-purpose", "job", "serverless"]
+  accessMode:
+    type: "enum"
+    values: ["auto", "standard", "dedicated"]
+    default: "auto"
+  photon:
+    type: "boolean"
+    default: true
+  singleNode:
+    type: "boolean"
+    default: false

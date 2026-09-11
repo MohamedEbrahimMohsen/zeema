@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure HorizonDB: PostgreSQL-compatible cluster with disaggregated compute and storage.
+# "What Is Azure HorizonDB?": every write is acknowledged only after the WAL lands in the durable
+# log service and all storage is zone resilient by default; backup retention is fixed at seven days
+# and encryption at rest uses service-managed keys only (preview).
+schemaVersion: "1"
+type: "component"
+id: "azure-horizondb"
+kind: "sql-database"
+provider: "azure"
+defaults:
+  managed: true
+  replication: "sync"
+  backupEnabled: true
+  backupRetentionDays: 7
+  encryptionAtRest: true
+properties:
+  zoneResilientStorage:
+    type: "boolean"
+    default: true
+  computeReplicas:
+    type: "integer"
+  customerManagedKeys:
+    type: "boolean"
+    default: false

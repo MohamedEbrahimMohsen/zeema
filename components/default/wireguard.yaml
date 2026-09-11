@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# WireGuard: kernel VPN that encapsulates IP packets in UDP using the Noise framework,
+# Curve25519 and ChaCha20. Peers are configured by public key (cryptokey routing) with a
+# default listening port of 51820 and full IP roaming; there is no BGP or HA layer.
+schemaVersion: "1"
+type: "component"
+id: "wireguard"
+kind: "vpn-gateway"
+provider: "default"
+defaults:
+  managed: false
+  tunnelType: "wireguard"
+  peerType: "site-to-site"
+  bgp: false
+  activeActive: false
+properties:
+  listenPort:
+    type: "integer"
+    default: 51820
+  transport:
+    type: "enum"
+    values: ["udp"]
+    default: "udp"
+  roaming:
+    type: "boolean"
+    default: true
+  preSharedKey:
+    type: "boolean"
+    default: false

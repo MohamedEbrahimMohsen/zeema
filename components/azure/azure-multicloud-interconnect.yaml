@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Multicloud Interconnect (preview): managed private connectivity from Azure to another cloud
+# provider, built on ExpressRoute ("Azure Multicloud Interconnect Preview FAQ"). Traffic does not
+# traverse the public internet, MACsec is on by default, and one logical link runs on redundant devices.
+schemaVersion: "1"
+type: "component"
+id: "azure-multicloud-interconnect"
+kind: "network-fabric"
+provider: "azure"
+defaults:
+  managed: true
+  interconnect: "private"
+properties:
+  cloudProvider:
+    type: "enum"
+    values: ["aws"]
+    default: "aws"
+  bandwidthGbps:
+    type: "integer"
+    default: 1
+  macsec:
+    type: "boolean"
+    default: true
+  redundantInfrastructure:
+    type: "boolean"
+    default: true

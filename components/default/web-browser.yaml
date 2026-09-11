@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Web browser client: HTTP cache on, no offline capability unless a service worker is added.
+schemaVersion: "1"
+type: "component"
+id: "web-browser"
+kind: "client"
+provider: "default"
+defaults:
+  platform: "web"
+  localCache: true
+properties:
+  serviceWorker:
+    type: "boolean"
+    default: false

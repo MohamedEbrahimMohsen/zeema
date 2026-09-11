@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# k0s, the zero-friction Kubernetes distribution shipped as a single binary. Per "Networking (CNI)"
+# kube-router is built in and used for network provisioning by default, and k0s deploys Konnectivity so the
+# control plane stays isolated from the pod network.
+schemaVersion: "1"
+type: "component"
+id: "k0s"
+kind: "container-orchestrator"
+provider: "default"
+defaults:
+  managed: false
+  autoscaling: false
+  privateControlPlane: true
+properties:
+  cniPlugin:
+    type: "enum"
+    values: ["kube-router", "calico", "custom"]
+    default: "kube-router"
+  datastore:
+    type: "enum"
+    values: ["kine-sqlite", "embedded-etcd", "external"]
+    default: "kine-sqlite"
+  controllerRunsWorkloads:
+    type: "boolean"
+    default: false

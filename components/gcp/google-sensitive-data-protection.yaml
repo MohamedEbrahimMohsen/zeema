@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Sensitive Data Protection (Cloud DLP): discovery profiles, deep inspection and de-identification of
+# sensitive data. Per "Sensitive Data Protection overview" nothing is scanned until a discovery scan
+# configuration or an inspection job exists, discovery runs on the schedule of that configuration,
+# and inspection works either inline through the API or asynchronously as a job that stores results.
+schemaVersion: "1"
+type: "component"
+id: "google-sensitive-data-protection"
+kind: "monitoring"
+provider: "gcp"
+defaults:
+  signal: "alerts"
+  collectorMode: "pull"
+  managed: true
+properties:
+  service:
+    type: "enum"
+    values: ["discovery", "inspection", "de-identification"]
+  inspectionMode:
+    type: "enum"
+    values: ["inline-api", "job"]
+  scanConfigurationRequired:
+    type: "boolean"
+    default: true

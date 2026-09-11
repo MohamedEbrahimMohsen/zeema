@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# PHP-FPM: the FastCGI Process Manager, PHP's primary FastCGI implementation, sitting behind a web server
+# ("FastCGI Process Manager (FPM)"). Per that page and "Configuration", listen, pm and pm.max_children are
+# mandatory per pool with no default, workers spawn static, ondemand or dynamic, daemonize defaults to yes,
+# and FPM "must not be reachable from untrusted networks".
+schemaVersion: "1"
+type: "component"
+id: "php-fpm"
+kind: "app-server"
+provider: "default"
+defaults:
+  managed: false
+  runtime: "php"
+properties:
+  processManager:
+    type: "enum"
+    values: ["static", "dynamic", "ondemand"]
+  daemonize:
+    type: "boolean"
+    default: true
+  pools:
+    type: "integer"
+    default: 1

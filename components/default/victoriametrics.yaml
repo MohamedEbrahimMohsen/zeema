@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# VictoriaMetrics: Prometheus-compatible TSDB with one month of retention by default;
+# downsampling is an enterprise option.
+schemaVersion: "1"
+type: "component"
+id: "victoriametrics"
+kind: "timeseries-database"
+provider: "default"
+defaults:
+  retentionRawDays: 30
+  downsampling: false
+  tiers: "single"
+  labelIndex: true
+  compression: "gorilla"
+  managed: false
+properties:
+  clusterMode:
+    type: "boolean"
+    default: false

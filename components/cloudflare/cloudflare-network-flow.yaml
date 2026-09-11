@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Network Flow (formerly Magic Network Monitoring): routers and cloud environments export flow data
+# to Cloudflare, which analyses it for volumetric attacks and can trigger Magic Transit on demand.
+# It accepts NetFlow v5/v9, IPFIX, sFlow and AWS VPC flow logs ("Network Flow overview").
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-network-flow"
+kind: "monitoring"
+provider: "cloudflare"
+defaults:
+  managed: true
+  signal: "metrics"
+  collectorMode: "push"
+  independentOfMonitored: true
+properties:
+  flowProtocol:
+    type: "enum"
+    values: ["netflow-v5", "netflow-v9", "ipfix", "sflow", "aws-vpc-flow-logs"]
+  magicTransitOnDemand:
+    type: "boolean"
+    default: false

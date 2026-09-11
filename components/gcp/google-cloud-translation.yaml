@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud Translation API: metered machine translation. "Quotas and limits":
+# 6,000 v3 requests per minute, 6 million characters per minute on the general model,
+# 100,000 characters per minute on custom (AutoML) models, 2,400 document pages per minute.
+schemaVersion: "1"
+type: "component"
+id: "google-cloud-translation"
+kind: "ai-service"
+provider: "gcp"
+defaults:
+  modality: "text"
+  publicEndpoint: true
+  quotaUnitsPerMinute: 6000
+  managed: true
+properties:
+  edition:
+    type: "enum"
+    values: ["basic", "advanced"]
+    default: "advanced"
+  model:
+    type: "enum"
+    values: ["general", "custom-automl", "adaptive"]
+    default: "general"
+  charactersPerMinute:
+    type: "integer"
+    default: 6000000
+  glossary:
+    type: "boolean"
+    default: false
+  batchTranslation:
+    type: "boolean"
+    default: false

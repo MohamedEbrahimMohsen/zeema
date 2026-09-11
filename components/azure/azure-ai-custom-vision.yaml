@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure AI Custom Vision: train and host your own image classification and object detection models from labelled images.
+# "Limits and quotas - Custom Vision Service" gives the S0 defaults: prediction images stored 30 days, 10 prediction transactions per second with storage, 100 projects and 500 tags per project.
+schemaVersion: "1"
+type: "component"
+id: "azure-ai-custom-vision"
+kind: "ai-service"
+provider: "azure"
+defaults:
+  managed: true
+  modality: "vision"
+  publicEndpoint: true
+  customerManagedKeys: false
+  dataRetentionDays: 30
+properties:
+  tier:
+    type: "enum"
+    values: ["f0", "s0"]
+  projectType:
+    type: "enum"
+    values: ["classification", "object-detection"]
+  predictionTransactionsPerSecond:
+    type: "integer"
+    default: 10
+  maxProjects:
+    type: "integer"
+    default: 100

@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# GlusterFS: POSIX-compatible scale-out file system over bricks, reachable natively and over NFS and SMB ("GlusterFS Introduction").
+# "gluster volume create" with no options makes a plain distributed volume over tcp, no replication and no SSL ("Setting Up Volumes").
+schemaVersion: "1"
+type: "component"
+id: "glusterfs"
+kind: "file-storage"
+provider: "default"
+defaults:
+  protocol: "multi"
+  managed: false
+  publicAccess: false
+  backupEnabled: false
+  encryptionInTransit: false
+  redundancy: "local"
+properties:
+  volumeType:
+    type: "enum"
+    values: ["distributed", "replicated", "distributed-replicated", "dispersed", "distributed-dispersed"]
+    default: "distributed"
+  replicaCount:
+    type: "integer"
+  transport:
+    type: "enum"
+    values: ["tcp", "rdma"]
+    default: "tcp"

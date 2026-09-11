@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Artifact Registry repository: one store for container images and language packages, access governed
+# by IAM ("Artifact Registry overview"). A repository is created in a single region unless a
+# multi-region is chosen ("Repository locations"), and content is encrypted at rest with Google-owned
+# and Google-managed keys without any action, called Google default encryption ("CMEK").
+schemaVersion: "1"
+type: "component"
+id: "google-artifact-registry"
+kind: "container-registry"
+provider: "gcp"
+defaults:
+  managed: true
+  geoReplicated: false
+properties:
+  format:
+    type: "enum"
+    values: ["docker", "maven", "npm", "python", "go", "helm", "apt", "yum", "generic"]
+    default: "docker"
+  locationType:
+    type: "enum"
+    values: ["region", "multi-region"]
+    default: "region"
+  encryption:
+    type: "enum"
+    values: ["google-default", "cmek"]
+    default: "google-default"
+  mode:
+    type: "enum"
+    values: ["standard", "remote", "virtual"]
+    default: "standard"

@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Advanced Certificate Manager: ordered edge certificates with a chosen CA, validity and validation method.
+# "Advanced Certificate Manager": one certificate covers up to 50 hostnames and a wildcard covers only
+# one subdomain level; Cloudflare renews the certificate automatically.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-advanced-certificate-manager"
+kind: "key-management"
+provider: "cloudflare"
+defaults:
+  managed: true
+  rotationAutomated: true
+properties:
+  certificateAuthority:
+    type: "enum"
+    values: ["lets-encrypt", "google-trust-services", "ssl-com"]
+  validationMethod:
+    type: "enum"
+    values: ["txt", "http", "email"]
+  maxHostnames:
+    type: "integer"
+    default: 50
+  wildcard:
+    type: "boolean"
+    default: false

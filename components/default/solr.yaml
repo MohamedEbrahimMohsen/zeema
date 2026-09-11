@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apache Solr: Lucene-based inverted index; starts standalone, SolrCloud hash sharding is opt-in.
+schemaVersion: "1"
+type: "component"
+id: "solr"
+kind: "search-index"
+provider: "default"
+defaults:
+  structure: "inverted"
+  shardingStrategy: "none"
+  indexing: "async"
+  replicas: 1
+properties:
+  cloudMode:
+    type: "boolean"
+    default: false
+  shards:
+    type: "integer"
+    default: 1

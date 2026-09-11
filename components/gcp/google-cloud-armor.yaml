@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud Armor security policy: request filtering, WAF and rate limiting in front of load balancers and CDN.
+# Defaults from "Security policy overview" and "Configure security policies": every policy carries a default rule at priority 2147483647 whose action is deny, and rules are not in preview mode unless --preview is passed, so the policy enforces.
+schemaVersion: "1"
+type: "component"
+id: "google-cloud-armor"
+kind: "waf"
+provider: "gcp"
+defaults:
+  managed: true
+  mode: "prevention"
+properties:
+  policyType:
+    type: "enum"
+    values: ["backend", "edge", "network-edge", "internal-service"]
+    default: "backend"
+  defaultRuleAction:
+    type: "enum"
+    values: ["allow", "deny"]
+    default: "deny"
+  preconfiguredWafRules:
+    type: "boolean"
+    default: false
+  adaptiveProtection:
+    type: "boolean"

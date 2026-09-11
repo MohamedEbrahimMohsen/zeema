@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Service Extensions: custom code inserted into the data path of Cloud Load Balancing, Media CDN and Secure Web Proxy.
+# Defaults from "Service Extensions overview": plugins are Wasm modules on Google-managed sandbox infrastructure, callouts are gRPC services the user runs on VMs, GKE pods or on-premises and must scale themselves.
+schemaVersion: "1"
+type: "component"
+id: "google-service-extensions"
+kind: "app-server"
+provider: "gcp"
+defaults:
+  managed: true
+  stateless: true
+  ownsData: false
+  runtime: "wasm"
+properties:
+  extensionType:
+    type: "enum"
+    values: ["plugin", "callout"]
+    default: "plugin"
+  attachedTo:
+    type: "enum"
+    values: ["application-load-balancer", "media-cdn", "secure-web-proxy"]

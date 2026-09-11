@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Sumo Logic: SaaS cloud data analytics platform for logs, metrics and traces; installed or hosted
+# collectors push data to the service ("Get started with Sumo Logic").
+schemaVersion: "1"
+type: "component"
+id: "sumo-logic"
+kind: "monitoring"
+provider: "default"
+defaults:
+  signal: "all"
+  collectorMode: "push"
+  managed: true
+  independentOfMonitored: true
+properties:
+  collectorType:
+    type: "enum"
+    values: ["installed", "hosted"]
+    default: "installed"

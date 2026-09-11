@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Nominatim: open-source geocoder over OpenStreetMap data, exposing read-only /search, /reverse,
+# /lookup and /status endpoints ("Nominatim Manual, API Overview"). Self-hosted on PostgreSQL with
+# PostGIS behind a Python ASGI frontend; "a minimum of 2GB of RAM is required or installation will
+# fail" and a full planet import needs at least 1TB of disk ("Installation").
+schemaVersion: "1"
+type: "component"
+id: "nominatim"
+kind: "third-party-api"
+provider: "default"
+defaults:
+  managed: false
+  idempotent: true
+  callbackStyle: "none"
+  hostedPage: false
+  handlesMoney: false
+properties:
+  apiFramework:
+    type: "enum"
+    values: ["falcon", "starlette"]
+    default: "falcon"
+  minimumRamGb:
+    type: "integer"
+    default: 2

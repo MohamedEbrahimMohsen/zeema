@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apache Ignite: in-memory data grid. Caches are PARTITIONED over rendezvous-hashed nodes with
+# backups disabled and native persistence off, so a stock node loses its data on shutdown
+# ("Data partitioning", "Ignite persistence").
+schemaVersion: "1"
+type: "component"
+id: "ignite"
+kind: "cache"
+provider: "default"
+defaults:
+  persistence: false
+  hashing: "consistent"
+  replication: "none"
+properties:
+  cacheMode:
+    type: "enum"
+    values: ["partitioned", "replicated"]
+    default: "partitioned"
+  backups:
+    type: "integer"
+    default: 0

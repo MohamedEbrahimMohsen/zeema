@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Container Storage: volume orchestration for Kubernetes persistent volumes on AKS
+# ("Introduction to Azure Container Storage"). Version 2 backs volumes with local NVMe disks or
+# Elastic SAN; local NVMe volumes are generic ephemeral by default and have no replication or
+# snapshots, while Elastic SAN volumes carry LRS or ZRS redundancy and snapshots.
+schemaVersion: "1"
+type: "component"
+id: "azure-container-storage"
+kind: "block-storage"
+provider: "azure"
+defaults:
+  managed: true
+  mediaType: "ssd"
+properties:
+  backingStorage:
+    type: "enum"
+    values: ["local-nvme", "elastic-san"]
+  volumeLifecycle:
+    type: "enum"
+    values: ["ephemeral", "persistent"]
+    default: "ephemeral"
+  elasticSanRedundancy:
+    type: "enum"
+    values: ["lrs", "zrs"]

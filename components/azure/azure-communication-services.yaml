@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Communication Services: multichannel APIs for voice and video calling, chat, SMS, email and
+# WhatsApp, with PSTN numbers acquired from Azure or brought over direct routing. Device push
+# notifications are not one of its channels. Facts from "What is Azure Communication Services?".
+schemaVersion: "1"
+type: "component"
+id: "azure-communication-services"
+kind: "notification-service"
+provider: "azure"
+defaults:
+  managed: true
+  channelPush: false
+  channelEmail: true
+  channelSms: true
+properties:
+  channelChat:
+    type: "boolean"
+    default: true
+  channelVoice:
+    type: "boolean"
+    default: true
+  channelVideo:
+    type: "boolean"
+    default: true
+  channelWhatsapp:
+    type: "boolean"
+    default: false
+  pstnConnectivity:
+    type: "enum"
+    values: ["azure-phone-numbers", "direct-routing"]
+    default: "azure-phone-numbers"

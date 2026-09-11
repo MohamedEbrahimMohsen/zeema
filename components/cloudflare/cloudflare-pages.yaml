@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare Pages: static-first site hosting on the edge with optional Functions for dynamic routes.
+# "Pages - Limits" gives 500 builds a month and one concurrent build on Free, a 25 MiB asset cap and
+# unlimited preview deployments.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-pages"
+kind: "app-server"
+provider: "cloudflare"
+defaults:
+  managed: true
+  stateless: true
+  autoscaling: true
+  ownsData: false
+properties:
+  functionsEnabled:
+    type: "boolean"
+    default: false
+  previewDeployments:
+    type: "boolean"
+    default: true
+  maxAssetSizeMib:
+    type: "integer"
+    default: 25
+  buildsPerMonth:
+    type: "integer"
+    default: 500
+  concurrentBuilds:
+    type: "integer"
+    default: 1

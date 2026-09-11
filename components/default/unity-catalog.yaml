@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Unity Catalog: open-source multimodal catalog for tables, volumes, functions and AI models.
+# unitycatalog.io: it serves Delta, Iceberg and Hudi (via UniForm), Parquet, JSON and CSV, and
+# since 0.2 it vends short-lived, location-scoped storage credentials, which is how it controls
+# access to the underlying data. Server authorization is switched on in server.properties.
+schemaVersion: "1"
+type: "component"
+id: "unity-catalog"
+kind: "data-catalog"
+provider: "default"
+defaults:
+  managed: false
+  accessPolicyEnforcement: true
+  classification: false
+  lineage: false
+properties:
+  credentialVending:
+    type: "boolean"
+    default: true
+  tableFormats:
+    type: "enum"
+    values: ["delta", "iceberg", "hudi", "parquet", "csv", "json"]
+    default: "delta"
+  assetTypes:
+    type: "enum"
+    values: ["tables", "volumes", "functions", "models"]
+    default: "tables"
+  serverAuthorization:
+    type: "boolean"
+    default: false

@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Microsoft Hyper-V, the Windows Server type-1 hypervisor. Per "Should I create a generation 1 or 2 virtual
+# machine in Hyper-V?" Secure Boot is enabled by default for generation 2 virtual machines and a machine's
+# generation cannot be changed after it is created.
+schemaVersion: "1"
+type: "component"
+id: "hyper-v"
+kind: "virtual-machine"
+provider: "default"
+defaults:
+  managed: false
+properties:
+  generation:
+    type: "enum"
+    values: ["generation-1", "generation-2"]
+    default: "generation-2"
+  secureBoot:
+    type: "boolean"
+    default: true
+  failoverClustering:
+    type: "boolean"
+    default: false
+  nestedVirtualization:
+    type: "boolean"
+    default: false

@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon EC2 Dedicated Host: a physical server fully dedicated to one account, with visibility of
+# sockets and cores and BYOL support ("Amazon EC2 Dedicated Hosts"). Auto-placement is off for new
+# hosts ("auto-placement and host affinity") and host recovery is switched on at allocation.
+schemaVersion: "1"
+type: "component"
+id: "aws-ec2-dedicated-host"
+kind: "virtual-machine"
+provider: "aws"
+defaults:
+  managed: false
+  zoneRedundant: false
+properties:
+  autoPlacement:
+    type: "boolean"
+    default: false
+  hostRecovery:
+    type: "boolean"
+    default: false
+  hostAffinity:
+    type: "enum"
+    values: ["default", "host"]
+    default: "default"
+  capacitySharedAcrossAccounts:
+    type: "boolean"
+    default: false

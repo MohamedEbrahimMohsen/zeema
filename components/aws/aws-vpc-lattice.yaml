@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon VPC Lattice service network: fully managed application networking across VPCs and accounts.
+# "What is Amazon VPC Lattice?" + "Control access to VPC Lattice services using auth policies": no sidecars,
+# DNS-based discovery through the Route 53 Resolver, AZ affinity on, and auth type NONE until set to AWS_IAM.
+schemaVersion: "1"
+type: "component"
+id: "aws-vpc-lattice"
+kind: "service-mesh"
+provider: "aws"
+defaults:
+  managed: true
+  sidecar: false
+properties:
+  authType:
+    type: "enum"
+    values: ["none", "aws-iam"]
+    default: "none"
+  dnsServiceDiscovery:
+    type: "boolean"
+    default: true
+  availabilityZoneAffinity:
+    type: "boolean"
+    default: true
+  accessLogging:
+    type: "boolean"
+    default: false
+  overlappingCidrSupport:
+    type: "boolean"
+    default: true

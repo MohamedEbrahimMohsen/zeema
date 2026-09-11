@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Hookdeck: managed event gateway that receives inbound webhooks, queues them and delivers them to a
+# destination. The introduction lists automatic and manual retries of previous deliveries, incoming
+# webhook signature verification and deduplication "based on matching strategies" as features
+# configured per connection, so none of them is on until the connection turns them on.
+schemaVersion: "1"
+type: "component"
+id: "hookdeck"
+kind: "webhook-endpoint"
+provider: "default"
+defaults:
+  managed: true
+  retriedByCaller: true
+  signatureVerified: false
+  idempotent: false
+properties:
+  sourceVerification:
+    type: "boolean"
+    default: false
+  automaticRetry:
+    type: "boolean"
+    default: true
+  deduplication:
+    type: "boolean"
+    default: false
+  queued:
+    type: "boolean"
+    default: true

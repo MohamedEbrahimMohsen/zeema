@@ -1,0 +1,12 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Generic NoSQL store whose product the design does not name. The kind requires a data model;
+# key-value is the default and a design overrides it with document or wide-column when the
+# source says so.
+schemaVersion: "1"
+type: "component"
+id: "nosql-store"
+kind: "nosql-database"
+provider: "default"
+defaults:
+  model: "key-value"
+  managed: false

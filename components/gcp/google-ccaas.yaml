@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud CCaaS (CCAI Platform): full-stack contact centre that queues and routes
+# customer interactions. "Setting up and assigning agents to channels and queues": IVR
+# voice, web and mobile chat, SMS and email channels, agents assigned to queues, and
+# preview, progressive or predictive outbound campaigns configured per queue.
+schemaVersion: "1"
+type: "component"
+id: "google-ccaas"
+kind: "contact-center"
+provider: "gcp"
+defaults:
+  channelVoice: true
+  channelChat: true
+  managed: true
+properties:
+  channelSms:
+    type: "boolean"
+    default: true
+  channelEmail:
+    type: "boolean"
+    default: true
+  outboundCampaign:
+    type: "enum"
+    values: ["none", "preview", "progressive", "predictive"]
+    default: "none"
+  voiceTransport:
+    type: "enum"
+    values: ["pstn", "webrtc"]
+    default: "pstn"
+  virtualAgentIntegration:
+    type: "boolean"
+    default: false

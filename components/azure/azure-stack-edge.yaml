@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Stack Edge Pro with GPU: a Microsoft-supplied 1U rack-mounted appliance managed as an
+# Azure resource, acting as a network storage gateway with local compute
+# ("Microsoft Azure Stack Edge Pro with GPU overview"): BitLocker at rest, offline upload mode.
+schemaVersion: "1"
+type: "component"
+id: "azure-stack-edge"
+kind: "edge-appliance"
+provider: "azure"
+defaults:
+  connectivity: "connected"
+  offlineMode: true
+  formFactor: "rack"
+  cloudManaged: true
+properties:
+  localEncryption:
+    type: "boolean"
+    default: true
+  cloudStorageGateway:
+    type: "boolean"
+    default: true
+  bandwidthThrottling:
+    type: "boolean"
+    default: false

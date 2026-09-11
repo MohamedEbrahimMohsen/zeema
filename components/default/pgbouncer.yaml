@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# PgBouncer: lightweight PostgreSQL connection pooler; session pooling by default, no routing.
+schemaVersion: "1"
+type: "component"
+id: "pgbouncer"
+kind: "database-proxy"
+provider: "default"
+defaults:
+  pooling: true
+  routing: "none"
+properties:
+  poolMode:
+    type: "enum"
+    values: ["session", "transaction", "statement"]
+    default: "session"
+  maxClientConn:
+    type: "integer"
+    default: 100
+  defaultPoolSize:
+    type: "integer"
+    default: 20

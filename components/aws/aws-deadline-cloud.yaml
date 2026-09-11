@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Deadline Cloud: managed render and batch farm that schedules jobs from queues onto fleets of
+# workers ("What is AWS Deadline Cloud?"). "Concepts and terminology for Deadline Cloud" states that
+# service-managed fleets include built-in autoscaling, licensing and software access while
+# customer-managed fleets run on your own EC2 or on-premises hosts, that fleets use On-Demand and
+# Spot instances, and that job priority runs from 0 to 100.
+schemaVersion: "1"
+type: "component"
+id: "aws-deadline-cloud"
+kind: "worker"
+provider: "aws"
+defaults:
+  managed: true
+  trigger: "batch"
+properties:
+  fleetType:
+    type: "enum"
+    values: ["service-managed", "customer-managed"]
+  instanceMarket:
+    type: "enum"
+    values: ["on-demand", "spot", "wait-and-save"]
+  jobAttachments:
+    type: "boolean"
+    default: false
+  usageBasedLicensing:
+    type: "boolean"
+    default: false

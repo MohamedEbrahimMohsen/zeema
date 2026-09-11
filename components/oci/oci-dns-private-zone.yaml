@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Cloud private DNS zone and VCN-dedicated resolver: creating a VCN also creates a dedicated
+# resolver with a protected default view, listening on 169.254.169.254 ("Private DNS"). Zones answer
+# only clients reaching them through a VCN whose resolver has the view attached; endpoints are opt-in.
+schemaVersion: "1"
+type: "component"
+id: "oci-dns-private-zone"
+kind: "dns"
+provider: "oci"
+defaults:
+  managed: true
+  anycast: false
+  geoRouting: false
+  healthChecked: false
+  redundantProviders: false
+properties:
+  resolverCreatedWithVcn:
+    type: "boolean"
+    default: true
+  defaultViewProtected:
+    type: "boolean"
+    default: true
+  resolverListenAddress:
+    type: "string"
+    default: "169.254.169.254"
+  listeningEndpoint:
+    type: "boolean"
+    default: false
+  forwardingEndpoint:
+    type: "boolean"
+    default: false

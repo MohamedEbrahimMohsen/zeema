@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# M3: self-managed distributed metrics store fed by Prometheus remote write; aggregation tier opt-in.
+schemaVersion: "1"
+type: "component"
+id: "m3"
+kind: "monitoring"
+provider: "default"
+defaults:
+  signal: "metrics"
+  collectorMode: "push"
+  managed: false
+properties:
+  aggregation:
+    type: "boolean"
+    default: false

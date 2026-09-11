@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Global Accelerator: global service that fronts endpoints in several Regions with anycast static
+# IP addresses and routes over the AWS backbone by endpoint health and client location
+# ("What is AWS Global Accelerator?"). IPv4 gives two static addresses by default and listener client
+# affinity defaults to NONE, a consistent 5-tuple flow hash ("AWS Global Accelerator components", "Listener").
+schemaVersion: "1"
+type: "component"
+id: "aws-global-accelerator"
+kind: "load-balancer"
+provider: "aws"
+defaults:
+  managed: true
+  layer: "l4"
+  hashing: "consistent"
+  healthChecks: true
+  global: true
+properties:
+  acceleratorType:
+    type: "enum"
+    values: ["standard", "custom-routing"]
+    default: "standard"
+  ipAddressType:
+    type: "enum"
+    values: ["ipv4", "dual-stack"]
+    default: "ipv4"
+  listenerProtocol:
+    type: "enum"
+    values: ["tcp", "udp"]
+    default: "tcp"
+  clientAffinity:
+    type: "enum"
+    values: ["none", "source-ip"]
+    default: "none"
+  bringYourOwnIp:
+    type: "boolean"
+    default: false

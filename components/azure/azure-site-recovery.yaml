@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Site Recovery: replication, failover and failback of machines into a Recovery Services
+# vault; "About Azure Site Recovery" states continuous replication for Azure and VMware VMs.
+# "Configure replication for Azure VMs in Azure Site Recovery": Site Recovery creates a replication
+# policy with default settings of 24 hours of recovery point retention, Normal Churn is selected by
+# default, a target resource group with an asr suffix is created, and multi-VM consistency is opt-in.
+schemaVersion: "1"
+type: "component"
+id: "azure-site-recovery"
+kind: "backup-service"
+provider: "azure"
+defaults:
+  managed: true
+  retentionDays: 1
+  crossRegionRestore: true
+properties:
+  replicationScope:
+    type: "enum"
+    values: ["cross-region", "cross-zone"]
+  churnMode:
+    type: "enum"
+    values: ["normal", "high"]
+    default: "normal"
+  multiVmConsistency:
+    type: "boolean"
+    default: false
+  autoCreateTargetResourceGroup:
+    type: "boolean"
+    default: true

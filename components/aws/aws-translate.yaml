@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Translate: managed neural machine translation, synchronously per request or as an asynchronous batch job over documents in Amazon S3.
+# "Guidelines and quotas" gives the defaults: 10,000 bytes of input text per synchronous TranslateText call, 100,000 bytes per document, 10 concurrent batch translation jobs with 1,000 queued, 100 custom terminology files per account, and a statement that Amazon Translate may store customer data to improve its models unless deletion is requested; profanity masking and formality are opt-in request settings.
+schemaVersion: "1"
+type: "component"
+id: "aws-translate"
+kind: "ai-service"
+provider: "aws"
+defaults:
+  managed: true
+  modality: "text"
+  publicEndpoint: true
+  customerManagedKeys: false
+  contentFiltering: false
+properties:
+  translationMode:
+    type: "enum"
+    values: ["synchronous", "batch"]
+    default: "synchronous"
+  maxInputBytesPerRequest:
+    type: "integer"
+    default: 10000
+  concurrentBatchJobs:
+    type: "integer"
+    default: 10
+  customTerminology:
+    type: "boolean"
+    default: false
+  activeCustomTranslation:
+    type: "boolean"
+    default: false

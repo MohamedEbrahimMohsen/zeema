@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Sandbox SDK: untrusted code run in a full Linux container addressed by a sandbox id. The "Sandbox
+# SDK" overview states each sandbox gets its own isolated container and that Durable Objects keep the
+# environment persistent with strong consistency, so it is a per-entity, stateful instance.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-sandbox"
+kind: "app-server"
+provider: "cloudflare"
+defaults:
+  managed: true
+  stateless: false
+  instancePerEntity: true
+  singleWriter: true
+  autoscaling: true
+properties:
+  containerBacked:
+    type: "boolean"
+    default: true
+  persistentFilesystem:
+    type: "boolean"
+    default: true
+  sessionScoped:
+    type: "boolean"
+    default: true

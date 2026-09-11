@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud Bigtable: managed wide-column store; a single cluster is strongly consistent,
+# replication to more clusters is opt-in and eventually consistent.
+schemaVersion: "1"
+type: "component"
+id: "bigtable"
+kind: "nosql-database"
+provider: "gcp"
+defaults:
+  model: "wide-column"
+  consistency: "strong"
+  replication: "single-region"
+  conflictResolution: "last-writer-wins"
+  encryptionAtRest: true
+  managed: true
+properties:
+  nodes:
+    type: "integer"
+  appProfileRouting:
+    type: "enum"
+    values: ["single-cluster", "multi-cluster"]
+    default: "single-cluster"

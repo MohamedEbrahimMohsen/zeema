@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Config: managed recorder of resource configuration items in one account and Region, with rules
+# that flag noncompliant resources. Per "What Is AWS Config?" it detects and notifies; remediation is a
+# separate opt-in action, and aggregators are what widen the view past the account.
+schemaVersion: "1"
+type: "component"
+id: "aws-config"
+kind: "policy-engine"
+provider: "aws"
+defaults:
+  effect: "audit"
+  scope: "account"
+  remediation: false
+  managed: true
+properties:
+  recordingStrategy:
+    type: "enum"
+    values: ["all-supported", "inclusion-by-resource-types", "exclusion-by-resource-types"]
+  recordingFrequency:
+    type: "enum"
+    values: ["continuous", "daily"]
+  aggregator:
+    type: "boolean"
+    default: false
+  conformancePacks:
+    type: "boolean"
+    default: false

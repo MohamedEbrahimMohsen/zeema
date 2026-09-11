@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Policy: evaluates resources against business rules and applies an effect at a management
+# group, subscription, resource group or resource scope. "Overview of Azure Policy": the standard
+# compliance evaluation cycle occurs once every 24 hours, all Azure Policy data and objects are
+# encrypted at rest, and a scope holds at most 500 policy definitions and 200 assignments. "Details
+# of the policy assignment structure": when enforcementMode is not specified, Default is used.
+schemaVersion: "1"
+type: "component"
+id: "azure-policy"
+kind: "policy-engine"
+provider: "azure"
+defaults:
+  managed: true
+  enforcementMode: "enforced"
+properties:
+  evaluationCycleHours:
+    type: "integer"
+    default: 24
+  definitionVersionMode:
+    type: "enum"
+    values: ["latest-major", "pinned-minor"]
+    default: "latest-major"
+  encryptedAtRest:
+    type: "boolean"
+    default: true
+  maxDefinitionsPerScope:
+    type: "integer"
+    default: 500
+  maxAssignmentsPerScope:
+    type: "integer"
+    default: 200

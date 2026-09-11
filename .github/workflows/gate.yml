@@ -1,0 +1,25 @@
+name: gate
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm validate
+      - run: pnpm lint
+      - run: pnpm test
+      - run: pnpm --filter @arkore/web exec tsc --noEmit
+      - run: pnpm --filter @arkore/web build
+        env:
+          AUTO_SEED: "0"

@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon WorkMail: managed business email and calendaring for Outlook, the web client, IMAP and
+# Exchange ActiveSync clients, integrated with AWS KMS for encryption of customer data and sending
+# outbound mail through Amazon SES ("What is Amazon WorkMail?"). Quotas: 50 GB per mailbox, 29 MB
+# per message, 500 recipients per message, 1,000 users per organization ("Amazon WorkMail quotas").
+# Id and kind assigned 2026-09-07 (row kept for placement until end of support on 31 March 2027).
+schemaVersion: "1"
+type: "component"
+id: "aws-workmail"
+kind: "notification-service"
+provider: "aws"
+defaults:
+  managed: true
+  channelPush: false
+  channelEmail: true
+  channelSms: false
+properties:
+  mailboxSizeGb:
+    type: "integer"
+    default: 50
+  maxMessageSizeMb:
+    type: "integer"
+    default: 29
+  maxRecipientsPerMessage:
+    type: "integer"
+    default: 500
+  usersPerOrganization:
+    type: "integer"
+    default: 1000
+  encryptedAtRest:
+    type: "boolean"
+    default: true

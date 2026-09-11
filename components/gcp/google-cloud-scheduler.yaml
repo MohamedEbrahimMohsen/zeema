@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud Scheduler job: managed cron. Per "Cron job schedules" the default time zone is UTC, and per
+# the jobs REST reference an HTTP target has a 3-minute attempt deadline, retryCount defaults to 0 (a failed
+# attempt is not retried, it just runs again on schedule) with 5s to 1h backoff and 5 maximum doublings.
+schemaVersion: "1"
+type: "component"
+id: "google-cloud-scheduler"
+kind: "worker"
+provider: "gcp"
+defaults:
+  managed: true
+  trigger: "schedule"
+  rateControl: "none"
+properties:
+  timeZone:
+    type: "string"
+    default: "UTC"
+  attemptDeadlineMinutes:
+    type: "integer"
+    default: 3
+  retryCount:
+    type: "integer"
+    default: 0
+  minBackoffSeconds:
+    type: "integer"
+    default: 5
+  maxBackoffSeconds:
+    type: "integer"
+    default: 3600
+  maxDoublings:
+    type: "integer"
+    default: 5

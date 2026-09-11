@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon RDS Proxy: managed connection pool in front of RDS and Aurora; no routing.
+schemaVersion: "1"
+type: "component"
+id: "rds-proxy"
+kind: "database-proxy"
+provider: "aws"
+defaults:
+  managed: true
+  pooling: true
+  routing: "none"
+properties:
+  readOnlyEndpoint:
+    type: "boolean"
+    default: false

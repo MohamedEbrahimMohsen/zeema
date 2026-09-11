@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Traffic Manager: DNS-based global traffic load balancer with per-profile endpoint
+# monitoring. "Azure Traffic Manager endpoint monitoring": monitoring is enabled by default,
+# probing interval defaults to 30 seconds, tolerated failures to 3 and probe timeout to 10 seconds.
+schemaVersion: "1"
+type: "component"
+id: "azure-traffic-manager"
+kind: "dns"
+provider: "azure"
+defaults:
+  managed: true
+  healthChecked: true
+properties:
+  routingMethod:
+    type: "enum"
+    values: ["priority", "weighted", "performance", "geographic", "multivalue", "subnet"]
+  monitorProtocol:
+    type: "enum"
+    values: ["http", "https", "tcp"]
+  probingIntervalSeconds:
+    type: "integer"
+    default: 30
+  toleratedFailures:
+    type: "integer"
+    default: 3
+  probeTimeoutSeconds:
+    type: "integer"
+    default: 10

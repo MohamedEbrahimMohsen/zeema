@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# TiDB: MySQL-compatible distributed SQL database over TiKV; pessimistic transactions by default.
+schemaVersion: "1"
+type: "component"
+id: "tidb"
+kind: "sql-database"
+provider: "default"
+defaults:
+  distributed: true
+  multiWriter: true
+  sharded: true
+  replication: "sync"
+  commitProtocol: "two-phase"
+  concurrencyControl: "pessimistic"
+  replicaFanout: 3
+properties:
+  version:
+    type: "string"
+  tiflashReplicas:
+    type: "integer"
+    default: 0

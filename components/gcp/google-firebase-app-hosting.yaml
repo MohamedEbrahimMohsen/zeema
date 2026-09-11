@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Firebase App Hosting ("Firebase App Hosting" overview and "Configure a backend"): git-triggered
+# builds on Cloud Build serving from Cloud Run behind Cloud CDN. Backend runConfig defaults are
+# minInstances 0, maxInstances 100, concurrency 80 and 512 MiB, and a new backend rolls out to
+# 100% of traffic as soon as a change lands on the target branch.
+schemaVersion: "1"
+type: "component"
+id: "google-firebase-app-hosting"
+kind: "app-server"
+provider: "gcp"
+defaults:
+  stateless: true
+  autoscaling: true
+  managed: true
+properties:
+  minInstances:
+    type: "integer"
+    default: 0
+  maxInstances:
+    type: "integer"
+    default: 100
+  concurrency:
+    type: "integer"
+    default: 80
+  memoryMib:
+    type: "integer"
+    default: 512
+  automaticRollout:
+    type: "boolean"
+    default: true

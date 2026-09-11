@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud Dataflow: managed Apache Beam runner. Streaming pipelines are exactly-once with
+# event-time windowing and zero allowed lateness (late data dropped) by default; state is service-managed.
+schemaVersion: "1"
+type: "component"
+id: "google-dataflow"
+kind: "stream-processor"
+provider: "gcp"
+defaults:
+  managed: true
+  windowing: "event-time"
+  exactlyOnce: true
+  stateBackend: "external"
+  lateDataPolicy: "drop"
+properties:
+  streamingEngine:
+    type: "boolean"
+    default: true

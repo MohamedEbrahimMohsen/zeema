@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Replicate: hosted API that runs packaged open-source models (text, image, audio, video) by name.
+# Per "Data retention", input parameters, output values, output files and logs of predictions created
+# through the API are removed automatically after one hour, while predictions created in the web
+# interface are kept indefinitely.
+schemaVersion: "1"
+type: "component"
+id: "replicate"
+kind: "ai-service"
+provider: "default"
+defaults:
+  managed: true
+  modality: "multimodal"
+  publicEndpoint: true
+properties:
+  execution:
+    type: "enum"
+    values: ["public-model", "private-model", "deployment"]
+    default: "public-model"
+  asyncPredictions:
+    type: "boolean"
+    default: false
+  webhooks:
+    type: "boolean"
+    default: false
+  outputRetentionHours:
+    type: "integer"
+    default: 1

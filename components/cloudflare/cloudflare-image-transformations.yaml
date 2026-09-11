@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Image Transformations: resizes and transcodes images from an origin on request and caches
+# the result at the edge. The feature is enabled per zone, and "Cloudflare only accepts
+# source images from the same zone where transformations are served" until extra origins
+# are allowed ("Transform images").
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-image-transformations"
+kind: "media-transcoder"
+provider: "cloudflare"
+defaults:
+  managed: true
+  mode: "file"
+properties:
+  sameZoneSourcesOnly:
+    type: "boolean"
+    default: true
+  edgeCached:
+    type: "boolean"
+    default: true

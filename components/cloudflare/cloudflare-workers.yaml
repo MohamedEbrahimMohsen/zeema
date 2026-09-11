@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare Workers: serverless V8 isolates deployed to the whole network, scaled by the platform.
+# "Workers - Limits" gives the 30 s CPU default on paid plans; "Smart Placement" states requests run
+# in the data center nearest the client unless placement is configured.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-workers"
+kind: "app-server"
+provider: "cloudflare"
+defaults:
+  managed: true
+  stateless: true
+  autoscaling: true
+  ownsData: false
+  runtime: "javascript"
+properties:
+  plan:
+    type: "enum"
+    values: ["free", "paid"]
+    default: "free"
+  cpuTimeLimitMs:
+    type: "integer"
+    default: 30000
+  smartPlacement:
+    type: "boolean"
+    default: false
+  memoryLimitMb:
+    type: "integer"
+    default: 128

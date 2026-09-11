@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon EMR Serverless application: serverless Spark or Hive runtime that "automatically scales workers up or
+# down" and is "a Regional service that simplifies how workloads run across multiple Availability Zones"
+# ("What is Amazon EMR Serverless?"). An application auto-starts on job submission and auto-stops after 15 idle
+# minutes; pre-initialized capacity is opt-in ("Understanding application behavior in EMR Serverless").
+schemaVersion: "1"
+type: "component"
+id: "aws-emr-serverless"
+kind: "big-data-cluster"
+provider: "aws"
+defaults:
+  managed: true
+  autoscaling: true
+  spotInstances: false
+  zoneRedundant: true
+properties:
+  runtime:
+    type: "enum"
+    values: ["spark", "hive"]
+    default: "spark"
+  preInitializedCapacity:
+    type: "boolean"
+    default: false
+  autoStop:
+    type: "boolean"
+    default: true
+  autoStopIdleMinutes:
+    type: "integer"
+    default: 15

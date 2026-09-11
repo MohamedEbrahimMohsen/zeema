@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Stack Hub: an integrated system of 4 to 16 servers (a scale unit) run in the customer's
+# datacenter, connected to Azure or fully disconnected ("Azure Stack Hub Overview").
+# The customer owns and operates the appliance through its own admin portal, not Azure.
+schemaVersion: "1"
+type: "component"
+id: "azure-stack-hub"
+kind: "edge-appliance"
+provider: "azure"
+defaults:
+  formFactor: "rack"
+  cloudManaged: false
+properties:
+  deploymentModel:
+    type: "enum"
+    values: ["connected", "disconnected"]
+  identityProvider:
+    type: "enum"
+    values: ["entra-id", "ad-fs"]
+  scaleUnitMinServers:
+    type: "integer"
+    default: 4
+  scaleUnitMaxServers:
+    type: "integer"
+    default: 16

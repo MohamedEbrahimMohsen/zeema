@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Vertica: self-managed columnar analytics database. "Architecture": data is stored in column
+# format and physically laid out as projections that are distributed and replicated across nodes;
+# Enterprise Mode keeps data on the nodes while Eon Mode separates compute from communal object storage.
+schemaVersion: "1"
+type: "component"
+id: "vertica"
+kind: "data-warehouse"
+provider: "default"
+defaults:
+  realtime: false
+  format: "columnar"
+  managed: false
+properties:
+  mode:
+    type: "enum"
+    values: ["enterprise", "eon"]
+    default: "enterprise"
+  communalStorage:
+    type: "boolean"
+    default: false

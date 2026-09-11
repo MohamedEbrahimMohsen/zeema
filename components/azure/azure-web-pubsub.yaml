@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Web PubSub: managed WebSocket connection broker with groups, users and upstream event handlers.
+# Autoscale, zone redundancy and geo-replication are Premium-tier only, and message sequence numbers
+# with acks arrive only if the client selects the reliable subprotocol. Facts from "What is Azure Web
+# PubSub service?" and the "json.reliable.webpubsub.azure.v1" subprotocol reference.
+schemaVersion: "1"
+type: "component"
+id: "azure-web-pubsub"
+kind: "realtime-gateway"
+provider: "azure"
+defaults:
+  managed: true
+  protocol: "websocket"
+  stateful: true
+  autoscaling: false
+  sequenceNumbers: false
+properties:
+  tier:
+    type: "enum"
+    values: ["free", "standard", "premium"]
+  capability:
+    type: "enum"
+    values: ["base", "socket-io", "mqtt", "chat"]
+    default: "base"
+  reliableSubprotocol:
+    type: "boolean"
+    default: false
+  geoReplication:
+    type: "boolean"
+    default: false
+  privateEndpoint:
+    type: "boolean"
+    default: false

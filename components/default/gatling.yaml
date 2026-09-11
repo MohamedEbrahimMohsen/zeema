@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Gatling: JVM load testing tool whose simulations are written in Scala, Java, Kotlin or JavaScript
+# and run by the open-source local runner; Gatling Enterprise is the managed cloud runner
+# ("Simulation"). HTTP is the primary protocol.
+schemaVersion: "1"
+type: "component"
+id: "gatling"
+kind: "client"
+provider: "default"
+defaults:
+  platform: "desktop"
+  localCache: false
+  managed: false
+properties:
+  edition:
+    type: "enum"
+    values: ["open-source", "enterprise"]
+    default: "open-source"
+  protocol:
+    type: "enum"
+    values: ["http", "websocket", "jms"]
+    default: "http"

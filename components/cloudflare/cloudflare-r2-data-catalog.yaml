@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# R2 Data Catalog: a managed Apache Iceberg catalog exposing the standard Iceberg REST interface on
+# an R2 bucket, per "R2 Data Catalog". It is enabled per bucket rather than being on by default, and
+# it catalogues Iceberg tables only, so it has no scanning, classification or lineage of its own.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-r2-data-catalog"
+kind: "data-catalog"
+provider: "cloudflare"
+defaults:
+  managed: true
+  sourceCount: 1
+properties:
+  tableFormat:
+    type: "enum"
+    values: ["apache-iceberg"]
+    default: "apache-iceberg"
+  restCatalogInterface:
+    type: "boolean"
+    default: true
+  enabledOnBucket:
+    type: "boolean"
+    default: false

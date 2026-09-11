@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Cognito identity pool: exchanges a user pool, OIDC, SAML or social token for temporary
+# AWS credentials through an IAM role. "Amazon Cognito identity pools" and "Identity pools
+# authentication flow": enhanced flow is the shipped path (basic is not activated by default) and
+# its credentials are valid for one hour.
+schemaVersion: "1"
+type: "component"
+id: "aws-cognito-identity-pool"
+kind: "identity-provider"
+provider: "aws"
+defaults:
+  protocol: "iam"
+  authorizationModel: "rbac"
+  mfa: false
+  managed: true
+properties:
+  authFlow:
+    type: "enum"
+    values: ["enhanced", "basic"]
+    default: "enhanced"
+  credentialDurationSeconds:
+    type: "integer"
+    default: 3600
+  guestAccess:
+    type: "boolean"
+  roleSelection:
+    type: "enum"
+    values: ["default-role", "rules", "token-claim"]
+    default: "default-role"

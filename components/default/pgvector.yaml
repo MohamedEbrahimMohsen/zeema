@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# pgvector: PostgreSQL extension storing vectors in ordinary tables. README: exact nearest neighbour
+# search with perfect recall is the default, HNSW and IVFFlat indexes are opt-in; L2, inner product,
+# cosine, L1, Hamming and Jaccard operators; vector and halfvec hold up to 16000 dimensions.
+schemaVersion: "1"
+type: "component"
+id: "pgvector"
+kind: "vector-database"
+provider: "default"
+defaults:
+  indexType: "flat"
+  quantization: "none"
+  metadataFiltering: true
+  managed: false
+properties:
+  annIndex:
+    type: "enum"
+    values: ["none", "hnsw", "ivfflat"]
+    default: "none"
+  vectorType:
+    type: "enum"
+    values: ["vector", "halfvec", "bit", "sparsevec"]
+    default: "vector"
+  maxDimensions:
+    type: "integer"
+    default: 16000

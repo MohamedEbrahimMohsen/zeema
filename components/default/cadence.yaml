@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Uber Cadence: predecessor of Temporal. Same durable workflow model, but activities do not retry
+# unless a RetryPolicy is supplied.
+schemaVersion: "1"
+type: "component"
+id: "cadence"
+kind: "workflow-engine"
+provider: "default"
+defaults:
+  durable: true
+  pattern: "saga"
+  compensation: false
+  managed: false
+properties:
+  activityRetry:
+    type: "boolean"
+    default: false

@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Vertex AI Search (Agent Search) data store: a managed index over websites, unstructured documents,
+# structured records, media or FHIR data, with out-of-the-box natural language understanding and
+# semantic search ("AI Applications introduction"). Documents are indexed after import, so indexing is async.
+schemaVersion: "1"
+type: "component"
+id: "google-vertex-ai-search"
+kind: "search-index"
+provider: "gcp"
+defaults:
+  managed: true
+  structure: "vector"
+  indexing: "async"
+  shardingStrategy: "none"
+  geoScheme: "none"
+properties:
+  dataStoreType:
+    type: "enum"
+    values: ["website", "unstructured", "structured", "media", "healthcare"]
+  semanticSearch:
+    type: "boolean"
+    default: true
+  edition:
+    type: "enum"
+    values: ["standard", "enterprise"]
+  customerManagedKeys:
+    type: "boolean"
+    default: false

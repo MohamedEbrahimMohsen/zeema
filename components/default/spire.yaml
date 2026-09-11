@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# SPIRE: SPIFFE runtime environment issuing workload identities, not human logins.
+# "SPIRE Concepts": node and workload attestation, X.509-SVID and JWT-SVID, self-hosted;
+# the SPIRE server datastore plugin uses SQLite 3 by default.
+schemaVersion: "1"
+type: "component"
+id: "spire"
+kind: "identity-provider"
+provider: "default"
+defaults:
+  protocol: "custom"
+  authorizationModel: "none"
+  centralised: true
+  managed: false
+  mfa: false
+properties:
+  svidFormat:
+    type: "enum"
+    values: ["x509", "jwt"]
+    default: "x509"
+  datastore:
+    type: "enum"
+    values: ["sqlite3", "postgres", "mysql"]
+    default: "sqlite3"
+  nodeAttestor:
+    type: "string"

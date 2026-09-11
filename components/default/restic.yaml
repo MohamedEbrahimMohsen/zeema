@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# restic: snapshot-based backup program writing to a local, SFTP, REST or object-storage repository ("restic Introduction").
+# Every repository is encrypted: files are AES-256-CTR with a Poly1305-AES MAC, and content-defined chunking deduplicates blobs ("References / Design").
+# No forget policy runs unless one is configured, so snapshots are kept indefinitely.
+schemaVersion: "1"
+type: "component"
+id: "restic"
+kind: "backup-service"
+provider: "default"
+defaults:
+  managed: false
+  crossRegionRestore: false
+properties:
+  encryptedRepository:
+    type: "boolean"
+    default: true
+  deduplication:
+    type: "boolean"
+    default: true
+  repositoryBackend:
+    type: "enum"
+    values: ["local", "sftp", "rest", "s3", "azure", "gcs", "swift"]

@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# JuiceFS: POSIX file system that keeps data chunks in object storage and metadata in a separate engine, also served over S3 and the HDFS API ("JuiceFS Introduction").
+# "juicefs format" defaults: block size 4M, compression none, trash 1 day, capacity 0 (no limit); --encrypt-rsa-key is optional ("Command Reference").
+schemaVersion: "1"
+type: "component"
+id: "juicefs"
+kind: "file-storage"
+provider: "default"
+defaults:
+  protocol: "multi"
+  managed: false
+  publicAccess: false
+  backupEnabled: false
+properties:
+  blockSizeKib:
+    type: "integer"
+    default: 4096
+  compression:
+    type: "enum"
+    values: ["none", "lz4", "zstd"]
+    default: "none"
+  trashDays:
+    type: "integer"
+    default: 1
+  metadataEngine:
+    type: "enum"
+    values: ["redis", "mysql", "postgres", "tikv", "sqlite"]

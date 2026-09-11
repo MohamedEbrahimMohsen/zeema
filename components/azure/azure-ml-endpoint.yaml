@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Machine Learning online endpoint: managed model hosting on Azure-managed compute by default.
+schemaVersion: "1"
+type: "component"
+id: "azure-ml-endpoint"
+kind: "ml-inference"
+provider: "azure"
+defaults:
+  managed: true
+  training: "batch"
+  inputs: "live"
+properties:
+  endpointType:
+    type: "enum"
+    values: ["managed-online", "kubernetes"]
+    default: "managed-online"

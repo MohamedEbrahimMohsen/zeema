@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# RethinkDB: JSON document store. Every shard has one authoritative primary replica that orders all
+# reads and writes, so queries are up to date unless out-of-date reads are asked for
+# ("Architecture and data model").
+schemaVersion: "1"
+type: "component"
+id: "rethinkdb"
+kind: "nosql-database"
+provider: "default"
+defaults:
+  model: "document"
+  consistency: "strong"
+  replication: "single-region"
+  conflictResolution: "none"
+properties:
+  version:
+    type: "string"
+  outdatedReads:
+    type: "boolean"
+    default: false

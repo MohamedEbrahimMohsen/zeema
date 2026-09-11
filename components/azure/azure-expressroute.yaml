@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure ExpressRoute: private circuit; redundancy requires a second circuit in another peering location.
+schemaVersion: "1"
+type: "component"
+id: "azure-expressroute"
+kind: "network-fabric"
+provider: "azure"
+defaults:
+  interconnect: "private"
+properties:
+  redundantCircuits:
+    type: "boolean"
+    default: false
+  bandwidthGbps:
+    type: "integer"

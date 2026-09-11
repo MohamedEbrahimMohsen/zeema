@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# ConfigCat: hosted feature flag service whose SDKs read a config JSON from a CDN.
+# "ConfigCat JS SDK reference": the default polling mode is auto poll on a 60 second
+# interval, and flags are evaluated locally from the cached config.
+schemaVersion: "1"
+type: "component"
+id: "configcat"
+kind: "feature-flag-service"
+provider: "default"
+defaults:
+  stagedRollout: true
+  managed: true
+properties:
+  pollingMode:
+    type: "enum"
+    values: ["auto-poll", "lazy-load", "manual-poll"]
+    default: "auto-poll"
+  pollIntervalSeconds:
+    type: "integer"
+    default: 60
+  selfHostedProxy:
+    type: "boolean"
+    default: false

@@ -1,0 +1,38 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Background process with no request path: queue consumer, scheduled job, batch or ETL job, fan-out daemon.
+# trigger replaces the separate scheduled-job and etl-job candidates.
+schemaVersion: "1"
+type: "kind"
+id: "worker"
+category: "compute"
+properties:
+  trigger:
+    type: "enum"
+    values: ["queue", "stream", "schedule", "batch", "manual"]
+    required: true
+  instances:
+    type: "integer"
+  idempotent:
+    type: "boolean"
+    default: false
+  concurrency:
+    type: "integer"
+  schedule:
+    type: "string"
+  accelerator:
+    type: "enum"
+    values: ["none", "gpu", "asic"]
+    default: "none"
+  rateControl:
+    type: "enum"
+    values: ["none", "fixed", "aimd"]
+    default: "none"
+  fanoutStrategy:
+    type: "enum"
+    values: ["none", "push", "pull", "hybrid"]
+    default: "none"
+  fanoutThreshold:
+    type: "integer"
+  managed:
+    type: "boolean"
+    default: false

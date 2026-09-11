@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Foundry IQ: a knowledge base over enterprise knowledge sources that agents query through agentic retrieval, built on Azure AI Search indexing.
+# "What is Foundry IQ?" states indexed sources are chunked, embedded and refreshed by scheduled indexer runs, that results are semantically reranked and returned with citations, and that permissions are enforced at query time under the caller's Entra identity.
+schemaVersion: "1"
+type: "component"
+id: "azure-foundry-iq"
+kind: "search-index"
+provider: "azure"
+defaults:
+  managed: true
+  indexing: "batch"
+properties:
+  knowledgeSourceType:
+    type: "enum"
+    values: ["azure-blob", "sharepoint", "onelake", "web", "search-index"]
+  retrievalReasoningEffort:
+    type: "enum"
+    values: ["minimal", "low", "medium"]
+  permissionEnforcement:
+    type: "boolean"
+    default: true
+  semanticReranking:
+    type: "boolean"
+    default: true
+  citations:
+    type: "boolean"
+    default: true

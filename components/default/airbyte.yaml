@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Airbyte: connector-based EL platform run as scheduled syncs. Connections are scheduled, cron or
+# manual, with preset intervals from every 15 minutes to every 24 hours; reliability rests on
+# checkpointing and automatic retries, so a resumed sync can repeat records
+# ("Airbyte, Sync schedules" and "Core concepts"). Self-managed by default, Airbyte Cloud is the SaaS.
+schemaVersion: "1"
+type: "component"
+id: "airbyte"
+kind: "worker"
+provider: "default"
+defaults:
+  managed: false
+  trigger: "schedule"
+  idempotent: false
+properties:
+  edition:
+    type: "enum"
+    values: ["self-managed", "cloud"]
+    default: "self-managed"
+  scheduleType:
+    type: "enum"
+    values: ["scheduled", "cron", "manual"]
+    default: "scheduled"
+  schemaPropagation:
+    type: "enum"
+    values: ["propagate-fields", "propagate-all", "approve-manually", "stop-syncs"]

@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# KeyCDN: managed CDN configured as Pull Zones (origin fetch) or Push Zones (upload). Per the
+# "Features" page every account gets Let's Encrypt TLS, HTTP/2, Instant Purge and a RESTful API;
+# Origin Shield is an explicit zone setting and there is no edge compute runtime.
+schemaVersion: "1"
+type: "component"
+id: "keycdn"
+kind: "cdn"
+provider: "default"
+defaults:
+  managed: true
+  originShield: false
+  edgeCompute: false
+properties:
+  zoneType:
+    type: "enum"
+    values: ["pull", "push"]
+    default: "pull"
+  instantPurge:
+    type: "boolean"
+    default: true

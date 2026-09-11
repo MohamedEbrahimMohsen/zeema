@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# CubeFS: CNCF distributed storage serving the same data over POSIX, S3 and HDFS interfaces ("CubeFS Introduction").
+# createVol defaults: volType 0 (replica), replicaNum 3, followerRead false, crossZone false ("Volume Management API").
+schemaVersion: "1"
+type: "component"
+id: "cubefs"
+kind: "file-storage"
+provider: "default"
+defaults:
+  protocol: "multi"
+  managed: false
+  publicAccess: false
+  backupEnabled: false
+  redundancy: "local"
+properties:
+  volumeType:
+    type: "enum"
+    values: ["replica", "erasure-coding"]
+    default: "replica"
+  replicaNum:
+    type: "integer"
+    default: 3
+  followerRead:
+    type: "boolean"
+    default: false
+  crossZone:
+    type: "boolean"
+    default: false

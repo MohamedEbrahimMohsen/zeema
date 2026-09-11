@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud Personalized Service Health: per-project feed of Google Cloud incidents. Per "Personalized
+# Service Health overview" it surfaces relevant events in a dashboard and raises alerts through Cloud
+# Logging alerting policies; Google operates it outside the workloads it reports on.
+schemaVersion: "1"
+type: "component"
+id: "google-service-health"
+kind: "monitoring"
+provider: "gcp"
+defaults:
+  managed: true
+  signal: "alerts"
+  collectorMode: "push"
+  independentOfMonitored: true
+properties:
+  alertingViaLogging:
+    type: "boolean"
+    default: true
+  organizationView:
+    type: "boolean"
+    default: false

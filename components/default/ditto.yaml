@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Eclipse Ditto: digital twin backend. "Ditto in a nutshell" describes Things holding the last-known
+# device state with a policy controlling read and write access, twin and live channels, and protocol
+# bindings for HTTP, WebSocket, MQTT, AMQP and Kafka. Ditto does not connect or provision devices
+# itself, so device provisioning and per-device identity are false.
+schemaVersion: "1"
+type: "component"
+id: "ditto"
+kind: "iot-hub"
+provider: "default"
+defaults:
+  protocol: "multi"
+  deviceTwin: true
+  deviceProvisioning: false
+  perDeviceIdentity: false
+  managed: false
+properties:
+  channel:
+    type: "enum"
+    values: ["twin", "live"]
+    default: "twin"
+  policyEnforcement:
+    type: "boolean"
+    default: true
+  thingsSearch:
+    type: "boolean"
+    default: true

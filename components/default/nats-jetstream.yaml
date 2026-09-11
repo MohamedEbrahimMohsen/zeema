@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# NATS JetStream: persistence layer on NATS. A stream is a single globally ordered sequence (no partitions),
+# file storage and 1 replica by default, Raft-replicated when replicas > 1; retention unlimited unless limits set.
+schemaVersion: "1"
+type: "component"
+id: "nats-jetstream"
+kind: "stream"
+provider: "default"
+defaults:
+  delivery: "at-least-once"
+  ordering: "global"
+  replicationFactor: 1
+  acks: "quorum"
+  storage: "persistent"
+  managed: false
+properties:
+  retentionPolicy:
+    type: "enum"
+    values: ["limits", "interest", "work-queue"]
+    default: "limits"

@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare Gateway: managed secure web gateway filtering DNS, network and HTTP traffic.
+# "Order of enforcement" states unmatched traffic is allowed ("Gateway follows a permissive model");
+# "Gateway logs" states Gateway logs all events by default; TLS decryption is turned on separately.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-gateway"
+kind: "firewall"
+provider: "cloudflare"
+defaults:
+  managed: true
+  defaultAction: "allow"
+  logging: true
+properties:
+  policyLayer:
+    type: "enum"
+    values: ["dns", "resolver", "network", "http", "egress"]
+    default: "dns"
+  tlsDecryption:
+    type: "boolean"
+    default: false

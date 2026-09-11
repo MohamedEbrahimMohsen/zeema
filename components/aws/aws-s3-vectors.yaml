@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon S3 Vectors vector bucket: S3 bucket type storing vector embeddings and answering similarity
+# queries. "Working with S3 Vectors and vector buckets": strongly consistent writes, all metadata
+# filterable by default, Block Public Access always on. "Limitations and restrictions": dimension 1-4096,
+# up to 2 billion vectors per index, 10,000 indexes per bucket.
+schemaVersion: "1"
+type: "component"
+id: "aws-s3-vectors"
+kind: "vector-database"
+provider: "aws"
+defaults:
+  metadataFiltering: true
+  hybridSearch: false
+  managed: true
+properties:
+  dataType:
+    type: "enum"
+    values: ["float32"]
+    default: "float32"
+  maxDimensions:
+    type: "integer"
+    default: 4096
+  encryptionType:
+    type: "enum"
+    values: ["sse-s3", "sse-kms"]
+    default: "sse-s3"
+  blockPublicAccess:
+    type: "boolean"
+    default: true
+  maxVectorsPerIndex:
+    type: "integer"
+    default: 2000000000

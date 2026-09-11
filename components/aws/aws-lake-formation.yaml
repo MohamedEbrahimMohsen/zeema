@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Lake Formation: managed permission layer over the Glue Data Catalog and its Amazon S3 locations, granting
+# and revoking access "at the database, table, column, row, and cell levels" and auditing access through
+# CloudTrail ("What is AWS Lake Formation?"). Permissions are enforced on locations registered with Lake
+# Formation; hybrid access mode, LF-Tags and cross-account sharing are opted into ("Hybrid access mode").
+schemaVersion: "1"
+type: "component"
+id: "aws-lake-formation"
+kind: "policy-engine"
+provider: "aws"
+defaults:
+  managed: true
+  enforcementMode: "enforced"
+  scope: "account"
+  remediation: false
+properties:
+  hybridAccessMode:
+    type: "boolean"
+    default: false
+  tagBasedAccessControl:
+    type: "boolean"
+    default: false
+  dataFilters:
+    type: "boolean"
+    default: false
+  crossAccountSharing:
+    type: "boolean"
+    default: false

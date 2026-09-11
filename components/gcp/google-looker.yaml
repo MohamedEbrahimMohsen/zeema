@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Looker (Google Cloud core): Google-hosted Looker instance provisioned from the Cloud console.
+# "Looker (Google Cloud core) overview": instances are fully managed and reachable over a public IP;
+# private connectivity and signed embedding are edition-gated.
+schemaVersion: "1"
+type: "component"
+id: "google-looker"
+kind: "bi-service"
+provider: "gcp"
+defaults:
+  managed: true
+  capacityMode: "dedicated"
+properties:
+  edition:
+    type: "enum"
+    values: ["standard", "enterprise", "embed"]
+  publicIp:
+    type: "boolean"
+    default: true
+  privateServiceConnect:
+    type: "boolean"
+    default: false
+  signedEmbedding:
+    type: "boolean"
+    default: false

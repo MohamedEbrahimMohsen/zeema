@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure CycleCloud: an HPC cluster orchestrator you install yourself on a VM, which then autoscales
+# a scheduler's compute nodes as jobs arrive ("Overview - Azure CycleCloud"). CycleCloud is not a
+# scheduler: it deploys Slurm, PBS Pro, LSF, Grid Engine or HTCondor and adds autoscaling plugins.
+schemaVersion: "1"
+type: "component"
+id: "azure-cyclecloud"
+kind: "big-data-cluster"
+provider: "azure"
+defaults:
+  managed: false
+  engine: "hpc"
+  autoscaling: true
+properties:
+  scheduler:
+    type: "enum"
+    values: ["slurm", "pbs-pro", "lsf", "grid-engine", "htcondor"]
+  selfHosted:
+    type: "boolean"
+    default: true

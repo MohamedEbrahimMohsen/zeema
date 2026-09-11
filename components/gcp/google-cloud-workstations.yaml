@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloud Workstations workstation: a managed development environment created from a workstation
+# configuration inside a regional workstation cluster ("Cloud Workstations overview"). Configuration
+# defaults are e2-standard-4, a 1200s idle timeout, a 43200s running timeout, a 200 GB pd-standard
+# persistent home disk, a 50 GB boot disk and a quick-start pool of 0 ("Customize the environment").
+schemaVersion: "1"
+type: "component"
+id: "google-cloud-workstations"
+kind: "virtual-desktop"
+provider: "gcp"
+defaults:
+  managed: true
+  sessionMode: "personal"
+  maxSessionsPerHost: 1
+  persistentProfiles: true
+properties:
+  machineType:
+    type: "string"
+    default: "e2-standard-4"
+  idleTimeoutSeconds:
+    type: "integer"
+    default: 1200
+  runningTimeoutSeconds:
+    type: "integer"
+    default: 43200
+  homeDiskGb:
+    type: "integer"
+    default: 200
+  bootDiskGb:
+    type: "integer"
+    default: 50
+  quickStartPoolSize:
+    type: "integer"
+    default: 0

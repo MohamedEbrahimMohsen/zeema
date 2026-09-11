@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Workers KV namespace: a central key-value store cached at every edge location. "How KV works"
+# states reads are eventually consistent with writes and a change can take up to 60 seconds to be
+# visible elsewhere; "KV - Limits" gives 512 byte keys, 25 MiB values and a 30 second minimum cacheTtl.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-workers-kv"
+kind: "nosql-database"
+provider: "cloudflare"
+defaults:
+  managed: true
+  model: "key-value"
+  consistency: "eventual"
+  replication: "multi-region-single-leader"
+properties:
+  propagationDelaySeconds:
+    type: "integer"
+    default: 60
+  minCacheTtlSeconds:
+    type: "integer"
+    default: 30
+  maxKeySizeBytes:
+    type: "integer"
+    default: 512
+  maxValueSizeMib:
+    type: "integer"
+    default: 25
+  maxNamespacesPerAccount:
+    type: "integer"
+    default: 1000

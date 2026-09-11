@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# A metered vendor endpoint with quota, content filtering and data-handling settings, unlike ml-inference which is a model you deploy on replicas you size. contentFiltering, publicEndpoint and dataRetentionDays have no default so governance rules can catch what was never declared.
+schemaVersion: "1"
+type: "kind"
+id: "ai-service"
+category: "compute"
+properties:
+  modality:
+    type: "enum"
+    values: ["text", "vision", "speech", "multimodal", "structured"]
+  contentFiltering:
+    type: "boolean"
+  publicEndpoint:
+    type: "boolean"
+  dataRetentionDays:
+    type: "integer"
+  customerManagedKeys:
+    type: "boolean"
+  quotaUnitsPerMinute:
+    type: "integer"
+  managed:
+    type: "boolean"
+    default: false

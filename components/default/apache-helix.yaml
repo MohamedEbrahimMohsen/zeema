@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apache Helix: partition placement and state management on top of ZooKeeper.
+schemaVersion: "1"
+type: "component"
+id: "apache-helix"
+kind: "coordination-service"
+provider: "default"
+defaults:
+  role: "placement"
+  consensus: "none"
+  managed: false
+properties:
+  stateModel:
+    type: "enum"
+    values: ["master-slave", "online-offline", "leader-standby", "custom"]
+    default: "online-offline"

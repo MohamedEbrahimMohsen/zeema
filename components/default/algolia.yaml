@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Algolia: hosted search API; every index lives on a three-server cluster and updates are
+# applied asynchronously.
+schemaVersion: "1"
+type: "component"
+id: "algolia"
+kind: "search-index"
+provider: "default"
+defaults:
+  structure: "inverted"
+  indexing: "async"
+  replicas: 3
+  managed: true
+properties:
+  distributedSearchNetwork:
+    type: "boolean"
+    default: false

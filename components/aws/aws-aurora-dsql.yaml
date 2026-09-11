@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Aurora DSQL: serverless distributed PostgreSQL-compatible cluster. "What is Amazon Aurora DSQL?"
+# describes synchronous replication and redundancy across three Availability Zones, an active-active
+# design with strong consistency and snapshot isolation; "Data encryption for Amazon Aurora DSQL" says
+# all clusters are encrypted at rest by default with an AWS owned key and encryption cannot be disabled.
+schemaVersion: "1"
+type: "component"
+id: "aws-aurora-dsql"
+kind: "sql-database"
+provider: "aws"
+defaults:
+  managed: true
+  distributed: true
+  multiWriter: true
+  replication: "sync"
+  encryptionAtRest: true
+  concurrencyControl: "optimistic"
+properties:
+  deployment:
+    type: "enum"
+    values: ["single-region", "multi-region"]
+    default: "single-region"
+  encryptionKeyType:
+    type: "enum"
+    values: ["aws-owned", "customer-managed"]
+    default: "aws-owned"
+  postgresCompatibility:
+    type: "integer"
+    default: 16

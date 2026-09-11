@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../schema/rule.schema.json
+# One worker pool consuming several queues means a slow or poisoned queue starves the
+# others, which is exactly what the per-queue isolation requirement forbids.
+# Tripped by: designs/slack-messaging.broken.yaml
+schemaVersion: "1"
+type: "rule"
+id: "shared-worker-pool-across-queues"
+severity: "warning"
+select:
+  node:
+    kind: "worker"
+when:
+  all:
+    - hasEdge:
+        direction: "in"
+        peerKind: "queue"
+        count:
+          gt: 1
+    - requirement: "isolation.perQueue"
+      equals: true
+message: "Worker '{{node.id}}' consumes more than one queue while the design requires per-queue isolation. Give each queue its own worker pool."

@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Envoy Gateway: Kubernetes Gateway API implementation on Envoy. Rate limiting requires the global rate-limit service.
+schemaVersion: "1"
+type: "component"
+id: "envoy-gateway"
+kind: "api-gateway"
+provider: "default"
+defaults:
+  managed: false
+  rateLimiting: false
+properties:
+  gatewayApi:
+    type: "boolean"
+    default: true

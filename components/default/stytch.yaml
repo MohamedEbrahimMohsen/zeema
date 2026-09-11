@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Stytch: authentication platform APIs for consumer and B2B apps.
+# "Authentication and authorization": passwordless, passkeys and passwords; the B2B product adds
+# multi-tenant organizations with SSO (SAML and OIDC), SCIM and RBAC, configured per organization.
+schemaVersion: "1"
+type: "component"
+id: "stytch"
+kind: "identity-provider"
+provider: "default"
+defaults:
+  protocol: "oidc"
+  authorizationModel: "rbac"
+  centralised: true
+  managed: true
+  mfa: false
+properties:
+  productLine:
+    type: "enum"
+    values: ["consumer", "b2b"]
+    default: "consumer"
+  primaryFactor:
+    type: "enum"
+    values: ["email-magic-link", "password", "passkey", "oauth", "sso"]
+    default: "email-magic-link"
+  scimProvisioning:
+    type: "boolean"
+    default: false

@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# CloudFront Functions: lightweight JavaScript that runs in the CloudFront edge location itself on
+# viewer events, with submillisecond startup ("Customize at the edge with CloudFront Functions").
+# The runtime blocks network, file system and environment access ("Restrictions on CloudFront
+# Functions"); a function is capped at 10 KB and 2 MB of memory ("Quotas on CloudFront Functions").
+schemaVersion: "1"
+type: "component"
+id: "aws-cloudfront-functions"
+kind: "app-server"
+provider: "aws"
+defaults:
+  managed: true
+  stateless: true
+  autoscaling: true
+  ownsData: false
+properties:
+  trigger:
+    type: "enum"
+    values: ["viewer-request", "viewer-response", "connection-request"]
+    default: "viewer-request"
+  maxFunctionSizeKb:
+    type: "integer"
+    default: 10
+  maxFunctionMemoryMb:
+    type: "integer"
+    default: 2
+  networkAccess:
+    type: "boolean"
+    default: false
+  keyValueStore:
+    type: "boolean"
+    default: false

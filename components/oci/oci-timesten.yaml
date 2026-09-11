@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# TimesTen Database for OKE: the Oracle TimesTen In-Memory Database deployed into a customer's Kubernetes
+# Engine cluster through the TimesTen Kubernetes Operator from Marketplace, so the customer owns the cluster
+# and the operator owns the databases. The operator's unit of deployment is an active standby pair; if the
+# active database fails it automatically promotes the standby and reconnects applications.
+schemaVersion: "1"
+type: "component"
+id: "oci-timesten"
+kind: "sql-database"
+provider: "oci"
+defaults:
+  replication: "async"
+  concurrencyControl: "pessimistic"
+properties:
+  topology:
+    type: "enum"
+    values: ["active-standby-pair", "standalone"]
+    default: "active-standby-pair"
+  automaticFailover:
+    type: "boolean"
+    default: true
+  cacheOfOracleDatabase:
+    type: "boolean"
+    default: false

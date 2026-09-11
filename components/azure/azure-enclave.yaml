@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Enclave (preview): managed isolated zero-trust environments — a community, which is a managed
+# Virtual WAN hub with Azure Firewall, fronting one or more enclave virtual networks ("What is Azure
+# Enclave?"). Logging is enabled for all enclaves by default; policy guardrails and deny assignments ship.
+schemaVersion: "1"
+type: "component"
+id: "azure-enclave"
+kind: "network-fabric"
+provider: "azure"
+defaults:
+  managed: true
+  overlay: true
+  interconnect: "cloud-backbone"
+properties:
+  flowLogging:
+    type: "boolean"
+    default: true
+  managedFirewall:
+    type: "boolean"
+    default: true
+  policyGuardrails:
+    type: "boolean"
+    default: true
+  denyAssignments:
+    type: "boolean"
+    default: true

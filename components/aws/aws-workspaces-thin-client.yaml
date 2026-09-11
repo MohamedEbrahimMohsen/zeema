@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon WorkSpaces Thin Client: a managed endpoint device that streams one virtual desktop
+# provider - Amazon WorkSpaces, WorkSpaces Applications or WorkSpaces Secure Browser - and is
+# enrolled into an environment created in the Thin Client console ("Architecture"). CreateEnvironment
+# takes softwareSetUpdateMode (USE_LATEST or USE_DESIRED) and softwareSetUpdateSchedule
+# (USE_MAINTENANCE_WINDOW or APPLY_IMMEDIATELY), neither with a stated default ("CreateEnvironment").
+# Id and kind assigned 2026-09-07 (row kept for placement until end of support on 31 March 2027).
+schemaVersion: "1"
+type: "component"
+id: "aws-workspaces-thin-client"
+kind: "client"
+provider: "aws"
+defaults:
+  managed: true
+  platform: "embedded"
+properties:
+  vdiProvider:
+    type: "enum"
+    values: ["workspaces", "workspaces-applications", "workspaces-secure-browser"]
+  softwareSetUpdateMode:
+    type: "enum"
+    values: ["use-latest", "use-desired"]
+  softwareSetUpdateSchedule:
+    type: "enum"
+    values: ["use-maintenance-window", "apply-immediately"]

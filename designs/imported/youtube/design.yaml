@@ -1,0 +1,73 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Imported 2026-09-08 from source/youtube.md, a transcription of Figures 14-3, 14-4, 14-5,
+# 14-6, 14-7 and 14-10 of "System Design Interview - An Insider's Guide" (Alex Xu),
+# Chapter 14: Design YouTube, pages 220-243. The book is copyrighted; source/ holds the
+# citation and the transcription only.
+# Decisions, all recorded in mapping.yaml and notes.md:
+#   - The design is the union of one system drawn as three complementary pictures: the video
+#     uploading flow (Figures 14-4, 14-5, 14-6), the video streaming flow (Figures 14-3, 14-7)
+#     and the video transcoding architecture (Figure 14-10). Each distinct box is counted once:
+#     "Client" of Figures 14-3 and 14-7 is the "User" box of Figure 14-4, and the CDN and API
+#     servers of Figure 14-3 are the same boxes as Figure 14-4's.
+#   - Figure 14-10 is the inside of the Transcoding servers box; the book draws no arrow
+#     between the two pictures, so none is invented.
+#   - The book draws unbranded boxes: every box is the generic default-provider component of
+#     its kind, never a product the source does not name. No figure in this chapter labels a
+#     box with a product.
+#   - The dashed rounded borders around API servers, Transcoding servers, Completion handler
+#     and CDN each hold one box and its own caption, so they are that box's border and not a
+#     boundary; the design has no groups.
+#   - Metadata DB props come from the sentence under Figure 14-4 ("sharded and replicated");
+#     the replication flavour is not stated, and async is assumed from the master/slave
+#     promotion described in the error-handling playbook.
+#   - latency.geoDistributed is the chapter's stated promise: international users everywhere,
+#     served from the CDN edge closest to them and uploading to upload centres across the globe.
+schemaVersion: "1"
+type: "design"
+id: "youtube"
+
+requirements:
+  latency:
+    geoDistributed: true
+
+nodes:
+  - { id: "user", component: "user-device", label: "User" }
+  - { id: "load-balancer", component: "load-balancer-tier", label: "Load balancer" }
+  - { id: "api-servers", component: "container-service", label: "API servers" }
+  - { id: "metadata-cache", component: "cache-cluster", label: "Metadata Cache" }
+  - { id: "metadata-db", component: "relational-database", label: "Metadata DB", props: { sharded: true, replication: "async" } }
+  - { id: "original-storage", component: "blob-store", label: "Original storage" }
+  - { id: "transcoding-servers", component: "container-service", label: "Transcoding servers" }
+  - { id: "transcoded-storage", component: "blob-store", label: "Transcoded storage" }
+  - { id: "cdn", component: "content-delivery-network", label: "CDN" }
+  - { id: "completion-queue", component: "message-queue", label: "Completion queue" }
+  - { id: "completion-handler", component: "container-worker", label: "Completion handler" }
+  - { id: "preprocessor", component: "container-service", label: "Preprocessor" }
+  - { id: "dag-scheduler", component: "container-service", label: "DAG scheduler" }
+  - { id: "resource-manager", component: "container-service", label: "Resource manager" }
+  - { id: "task-workers", component: "container-worker", label: "Task workers" }
+  - { id: "temporary-storage", component: "blob-store", label: "Temporary storage" }
+  - { id: "encoded-video", component: "blob-store", label: "Encoded video" }
+
+edges:
+  - { from: "user", to: "original-storage", protocol: "https", mode: "sync" }
+  - { from: "original-storage", to: "transcoding-servers", protocol: "https", mode: "sync" }
+  - { from: "transcoding-servers", to: "transcoded-storage", protocol: "https", mode: "sync" }
+  - { from: "transcoding-servers", to: "completion-queue", protocol: "amqp", mode: "async", delivery: "at-least-once", label: "transcoding complete" }
+  - { from: "transcoded-storage", to: "cdn", protocol: "https", mode: "sync" }
+  - { from: "completion-queue", to: "completion-handler", protocol: "amqp", mode: "async", delivery: "at-least-once" }
+  - { from: "completion-handler", to: "metadata-db", protocol: "sql", mode: "sync" }
+  - { from: "completion-handler", to: "metadata-cache", protocol: "cache", mode: "sync" }
+  - { from: "api-servers", to: "metadata-cache", protocol: "cache", mode: "sync" }
+  - { from: "api-servers", to: "metadata-db", protocol: "sql", mode: "sync" }
+  - { from: "api-servers", to: "load-balancer", protocol: "https", mode: "sync" }
+  - { from: "load-balancer", to: "user", protocol: "https", mode: "sync" }
+  - { from: "user", to: "load-balancer", protocol: "https", mode: "sync", label: "Update metadata" }
+  - { from: "load-balancer", to: "api-servers", protocol: "https", mode: "sync" }
+  - { from: "user", to: "cdn", protocol: "https", mode: "sync", label: "streaming video" }
+  - { from: "preprocessor", to: "dag-scheduler", protocol: "https", mode: "sync" }
+  - { from: "preprocessor", to: "temporary-storage", protocol: "https", mode: "sync" }
+  - { from: "dag-scheduler", to: "resource-manager", protocol: "https", mode: "sync" }
+  - { from: "resource-manager", to: "task-workers", protocol: "https", mode: "sync" }
+  - { from: "task-workers", to: "temporary-storage", protocol: "https", mode: "sync" }
+  - { from: "task-workers", to: "encoded-video", protocol: "https", mode: "sync" }

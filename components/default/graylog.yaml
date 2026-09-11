@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Graylog Open: self-hosted log management; inputs receive pushed syslog, GELF and Beats data and the
+# Default index set rotates every 20,000,000 messages keeping 20 indices before deleting ("Index Model").
+schemaVersion: "1"
+type: "component"
+id: "graylog"
+kind: "monitoring"
+provider: "default"
+defaults:
+  signal: "logs"
+  collectorMode: "push"
+  managed: false
+properties:
+  rotationMessages:
+    type: "integer"
+    default: 20000000
+  indicesRetained:
+    type: "integer"
+    default: 20

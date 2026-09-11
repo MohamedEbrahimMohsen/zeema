@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# turbopuffer: managed search engine keeping state in object storage with an NVMe and memory cache.
+# Docs: namespaces are created implicitly on first write, filters run against an inverted index and
+# BM25 full-text search combines with vector queries; multi-tenant is the default deployment.
+schemaVersion: "1"
+type: "component"
+id: "turbopuffer"
+kind: "vector-database"
+provider: "default"
+defaults:
+  metadataFiltering: true
+  hybridSearch: true
+  namespaces: true
+  managed: true
+properties:
+  deployment:
+    type: "enum"
+    values: ["multi-tenant", "single-tenant", "byoc"]
+    default: "multi-tenant"
+  storageBackend:
+    type: "enum"
+    values: ["object-storage"]
+    default: "object-storage"
+  distanceFunction:
+    type: "enum"
+    values: ["cosine-distance", "euclidean-squared"]

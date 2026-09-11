@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Fluentd: open source unified logging layer that receives events through input plugins and forwards
+# them. The bare output buffer defaults to @type memory, where "when Fluentd is shut down, buffered
+# logs that cannot be written quickly are deleted"; flush_interval defaults to 60s, chunk_limit_size
+# to 8MB for memory buffers and retry_timeout to 72h ("Fluentd, Buffer Section" and "Buffer Plugins").
+schemaVersion: "1"
+type: "component"
+id: "fluentd"
+kind: "monitoring"
+provider: "default"
+defaults:
+  managed: false
+  signal: "logs"
+  collectorMode: "push"
+  alertGrouping: false
+properties:
+  bufferType:
+    type: "enum"
+    values: ["memory", "file"]
+    default: "memory"
+  flushIntervalSeconds:
+    type: "integer"
+    default: 60
+  retryTimeoutHours:
+    type: "integer"
+    default: 72

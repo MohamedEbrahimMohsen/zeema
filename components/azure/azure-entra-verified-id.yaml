@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Microsoft Entra Verified ID: issuance and verification of W3C Verifiable Credentials signed with a
+# decentralized identifier. "Introduction to Microsoft Entra Verified ID": did:web is the trust system
+# Microsoft supports; "Advanced Microsoft Entra Verified ID setup": signing keys live in Azure Key Vault
+# and domain ownership is verified during setup, so the credential is not an authorization decision.
+schemaVersion: "1"
+type: "component"
+id: "azure-entra-verified-id"
+kind: "identity-provider"
+provider: "azure"
+defaults:
+  protocol: "custom"
+  authorizationModel: "none"
+  centralised: false
+  managed: true
+  mfa: false
+properties:
+  trustSystem:
+    type: "enum"
+    values: ["did-web"]
+    default: "did-web"
+  keyStorage:
+    type: "enum"
+    values: ["key-vault"]
+    default: "key-vault"
+  domainBindingVerified:
+    type: "boolean"
+    default: true
+  role:
+    type: "enum"
+    values: ["issuer", "verifier", "both"]
+    default: "both"

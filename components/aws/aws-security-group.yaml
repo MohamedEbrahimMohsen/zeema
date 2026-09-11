@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS VPC security group: stateful allow-list filter attached to network interfaces.
+# "Control traffic to your AWS resources using security groups" + "Default security groups for your VPCs":
+# stateful, implicit deny for anything not allowed, a new group has no inbound rules and allow-all egress.
+schemaVersion: "1"
+type: "component"
+id: "aws-security-group"
+kind: "firewall"
+provider: "aws"
+defaults:
+  managed: true
+  stateful: true
+  defaultAction: "deny"
+  logging: false
+  intrusionPrevention: false
+properties:
+  defaultInboundRules:
+    type: "enum"
+    values: ["none", "self-referencing"]
+    default: "none"
+  defaultOutboundAllowAll:
+    type: "boolean"
+    default: true
+  rulesPerGroupQuota:
+    type: "integer"
+    default: 60
+  groupsPerNetworkInterfaceQuota:
+    type: "integer"
+    default: 5

@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Data Safe target: security posture, user risk, sensitive data discovery, masking, activity
+# auditing, alerts and SQL Firewall for a registered database. "Oracle Data Safe Overview" and
+# "Manage Security Assessments": a dedicated Data Safe database per tenancy and region, security
+# assessments scheduled weekly on their own, and audit data kept online for one month at a minimum.
+schemaVersion: "1"
+type: "component"
+id: "oci-data-safe"
+kind: "policy-engine"
+provider: "oci"
+defaults:
+  managed: true
+  effect: "audit"
+  scope: "resource"
+  remediation: false
+properties:
+  securityAssessmentSchedule:
+    type: "enum"
+    values: ["weekly"]
+    default: "weekly"
+  onlineAuditRetentionMonths:
+    type: "integer"
+    default: 1
+  activityAuditing:
+    type: "boolean"
+    default: false
+  sqlFirewall:
+    type: "boolean"
+    default: false
+  dataMasking:
+    type: "boolean"
+    default: false

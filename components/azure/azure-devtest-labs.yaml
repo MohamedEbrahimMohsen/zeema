@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure DevTest Labs: self-service dev and test VMs inside a lab with cost policies. The overview
+# states lab users claim a preconfigured VM or create their own, and that lab owners set policies for
+# the number and size of VMs per user plus autoshutdown and autostartup schedules.
+schemaVersion: "1"
+type: "component"
+id: "azure-devtest-labs"
+kind: "virtual-desktop"
+provider: "azure"
+defaults:
+  sessionMode: "personal"
+  maxSessionsPerHost: 1
+  managed: true
+properties:
+  claimableVms:
+    type: "boolean"
+  vmsPerUserLimit:
+    type: "integer"
+  autoShutdown:
+    type: "boolean"
+  artifactRepository:
+    type: "boolean"
+    default: false

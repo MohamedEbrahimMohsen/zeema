@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Abstract kind: Reads a datastore's change log and publishes row-level events (Debezium, Brooklin, SpinalTap).
+schemaVersion: "1"
+type: "kind"
+id: "change-data-capture"
+category: "messaging"
+properties:
+  mode:
+    type: "enum"
+    values: ["log-based", "trigger", "polling"]
+    default: "log-based"
+  ordered:
+    type: "boolean"
+    default: true
+  schemaEvolution:
+    type: "boolean"
+    default: false
+  managed:
+    type: "boolean"
+    default: false

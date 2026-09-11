@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Service Catalog: versioned, pre-approved product templates grouped into portfolios. Per "Overview of
+# Service Catalog" a product is created by importing a CloudFormation template (Terraform Open Source and
+# Terraform Cloud are also supported), access is granted through IAM so a portfolio is not shared until you
+# share it, and a new product version is automatically distributed to everyone with access.
+schemaVersion: "1"
+type: "component"
+id: "aws-service-catalog"
+kind: "artifact-repository"
+provider: "aws"
+defaults:
+  artifactType: "generic"
+  visibility: "private"
+  managed: true
+properties:
+  productType:
+    type: "enum"
+    values: ["cloudformation", "terraform-open-source", "terraform-cloud"]
+    default: "cloudformation"
+  launchConstraint:
+    type: "boolean"
+  portfolioSharing:
+    type: "boolean"
+    default: false
+  versionAutoDistributed:
+    type: "boolean"
+    default: true

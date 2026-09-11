@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloudflare Universal SSL: free DV edge certificates issued and renewed automatically for every zone.
+# "SSL/TLS encryption modes" and "TLS protocols": new zones default to Automatic SSL/TLS and to a
+# minimum TLS version of 1.0; Universal SSL covers the apex and first-level subdomains only.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-ssl-tls"
+kind: "key-management"
+provider: "cloudflare"
+defaults:
+  managed: true
+  rotationAutomated: true
+properties:
+  encryptionMode:
+    type: "enum"
+    values: ["automatic", "off", "flexible", "full", "full-strict", "strict-origin-pull"]
+    default: "automatic"
+  minimumTlsVersion:
+    type: "enum"
+    values: ["1.0", "1.1", "1.2", "1.3"]
+    default: "1.0"
+  validationLevel:
+    type: "enum"
+    values: ["dv", "ov", "ev"]
+    default: "dv"
+  hostnameCoverage:
+    type: "enum"
+    values: ["apex-and-first-level", "all-subdomains"]
+    default: "apex-and-first-level"

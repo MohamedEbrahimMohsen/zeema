@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Cloud Map: fully managed service registry mapping logical names to backend resources.
+# "What Is AWS Cloud Map?": a namespace fixes the discovery method (DiscoverInstances API, private DNS or
+# public DNS), health checking is optional per service, and only healthy instances are returned when it is on.
+schemaVersion: "1"
+type: "component"
+id: "aws-cloud-map"
+kind: "coordination-service"
+provider: "aws"
+defaults:
+  managed: true
+  role: "discovery"
+properties:
+  discoveryMethod:
+    type: "enum"
+    values: ["api", "dns-private", "dns-public"]
+  healthChecking:
+    type: "boolean"
+    default: false
+  servesOnlyHealthyInstances:
+    type: "boolean"
+    default: true
+  healthCheckProvider:
+    type: "enum"
+    values: ["route53", "third-party"]

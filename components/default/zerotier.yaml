@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# ZeroTier: end-to-end encrypted layer 2 virtual Ethernet overlay. Devices carry unique
+# cryptographic IDs and must be authorized onto a network; the controller is hosted in
+# ZeroTier Central by default, with self-hosted and air-gapped controllers as an option.
+schemaVersion: "1"
+type: "component"
+id: "zerotier"
+kind: "vpn-gateway"
+provider: "default"
+defaults:
+  managed: true
+  peerType: "point-to-site"
+  bgp: false
+  activeActive: false
+properties:
+  networkLayer:
+    type: "enum"
+    values: ["layer-2", "layer-3"]
+    default: "layer-2"
+  controllerHosting:
+    type: "enum"
+    values: ["zerotier-central", "self-hosted"]
+    default: "zerotier-central"
+  privateNetwork:
+    type: "boolean"
+    default: true
+  bridgingEnabled:
+    type: "boolean"
+    default: false

@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Batch job: a fully managed batch scheduler that creates and deletes Compute Engine VMs in a regional
+# managed instance group for the life of the job ("Get started with Batch"). Unset job fields default
+# to taskCount 1, parallelism 1, maxRetryCount 0, 2 vCPU and 2 GB per task; boot disks default to the
+# Batch Debian image (COS for container-only jobs) on pd-balanced ("VM OS environment overview").
+schemaVersion: "1"
+type: "component"
+id: "google-batch"
+kind: "worker"
+provider: "gcp"
+defaults:
+  managed: true
+  trigger: "batch"
+  concurrency: 1
+  accelerator: "none"
+  rateControl: "none"
+properties:
+  taskCount:
+    type: "integer"
+    default: 1
+  maxRetryCount:
+    type: "integer"
+    default: 0
+  provisioningModel:
+    type: "enum"
+    values: ["standard", "spot"]
+    default: "standard"
+  bootDiskType:
+    type: "enum"
+    values: ["pd-balanced", "pd-standard", "pd-ssd"]
+    default: "pd-balanced"

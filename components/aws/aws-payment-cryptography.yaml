@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Payment Cryptography: managed PIN, EMV and card-data key management and cryptographic
+# operations. "Data protection in AWS Payment Cryptography": key material is generated in PCI PTS
+# listed HSMs, never leaves them in plaintext, and encryption of key material is handled entirely
+# by the service. CreateKey: a key is enabled by default and Exportable must be stated explicitly.
+schemaVersion: "1"
+type: "component"
+id: "aws-payment-cryptography"
+kind: "key-management"
+provider: "aws"
+defaults:
+  managed: true
+  hsm: true
+  rotationAutomated: false
+  envelopeEncryption: true
+properties:
+  keyClass:
+    type: "enum"
+    values: ["symmetric-key", "asymmetric-key-pair", "public-key", "private-key"]
+  keyAlgorithm:
+    type: "enum"
+    values: ["tdes-2key", "tdes-3key", "aes-128", "aes-192", "aes-256", "rsa-2048", "rsa-3072", "rsa-4096", "ecc-nist-p256", "ecc-nist-p384", "ecc-nist-p521"]
+  exportable:
+    type: "boolean"
+  enabledOnCreate:
+    type: "boolean"
+    default: true
+  multiRegionReplication:
+    type: "boolean"
+    default: false

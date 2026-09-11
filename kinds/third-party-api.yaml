@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# A service outside your control that you call: PSPs, banks, push providers, suppliers, exchanges.
+# idempotent is optional with no default so money rules can catch the missing declaration.
+schemaVersion: "1"
+type: "kind"
+id: "third-party-api"
+category: "external"
+properties:
+  idempotent:
+    type: "boolean"
+  qpsQuota:
+    type: "integer"
+  callbackStyle:
+    type: "enum"
+    values: ["none", "webhook", "poll"]
+    default: "none"
+  hostedPage:
+    type: "boolean"
+    default: false
+  slaPercent:
+    type: "string"
+  handlesMoney:
+    type: "boolean"
+    default: false
+  managed:
+    type: "boolean"
+    default: false

@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IoT / embedded device: power constrained, intermittent connectivity, no store-and-forward unless firmware implements it.
+schemaVersion: "1"
+type: "component"
+id: "iot-device"
+kind: "client"
+provider: "default"
+defaults:
+  platform: "embedded"
+properties:
+  connectivity:
+    type: "enum"
+    values: ["wifi", "cellular", "lorawan", "ethernet", "ble"]
+    default: "wifi"
+  powerConstrained:
+    type: "boolean"
+    default: true

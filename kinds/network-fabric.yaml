@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Abstract kind: Physical or overlay network you depend on: backbone, interconnect, multicast domain, kernel-bypass NICs.
+schemaVersion: "1"
+type: "kind"
+id: "network-fabric"
+category: "ops"
+properties:
+  multicast:
+    type: "boolean"
+    default: false
+  kernelBypass:
+    type: "boolean"
+    default: false
+  overlay:
+    type: "boolean"
+    default: false
+  interconnect:
+    type: "enum"
+    values: ["public", "private", "cloud-backbone"]
+    default: "public"
+  managed:
+    type: "boolean"
+    default: false

@@ -1,0 +1,37 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle OCI Document Understanding: managed endpoint that turns documents into structured
+# output (OCR, key-value extraction, table extraction, document classification).
+# "Document Understanding Limits": 300 asynchronous transactions per minute per tenancy,
+# 8 MB and 5 pages per synchronous request, 500 MB and 2,000 pages per document read from
+# Object Storage, 2,000 documents per batch job.
+schemaVersion: "1"
+type: "component"
+id: "oci-document-understanding"
+kind: "ai-service"
+provider: "oci"
+defaults:
+  modality: "structured"
+  publicEndpoint: true
+  quotaUnitsPerMinute: 300
+  managed: true
+properties:
+  processing:
+    type: "enum"
+    values: ["sync", "async"]
+    default: "sync"
+  modelType:
+    type: "enum"
+    values: ["pretrained", "custom"]
+    default: "pretrained"
+  maxSyncPages:
+    type: "integer"
+    default: 5
+  maxSyncFileMb:
+    type: "integer"
+    default: 8
+  maxAsyncPagesPerDocument:
+    type: "integer"
+    default: 2000
+  maxDocumentsPerJob:
+    type: "integer"
+    default: 2000

@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Google Cloud Infrastructure Manager deployment: managed Terraform. Per "Infrastructure Manager overview"
+# a deployment is created explicitly through the API or console, runs terraform in an ephemeral
+# Google-managed Cloud Build environment, and stores its state and metadata in a Cloud Storage bucket
+# Infra Manager creates; Git-driven automation is an opt-in pattern.
+schemaVersion: "1"
+type: "component"
+id: "google-infrastructure-manager"
+kind: "ci-pipeline"
+provider: "gcp"
+defaults:
+  managed: true
+  trigger: "manual"
+  selfHostedRunners: false
+properties:
+  terraformStateBucket:
+    type: "boolean"
+    default: true
+  gitTriggered:
+    type: "boolean"
+    default: false

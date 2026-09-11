@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Application Discovery Service: inventories on-premises servers and databases and their utilisation and
+# network connections ("What is AWS Application Discovery Service?"). Discovery is agentless, agent-based or
+# file import; all data is stored in the Migration Hub home Region. Maintenance mode since 7 October 2025.
+schemaVersion: "1"
+type: "component"
+id: "aws-application-discovery-service"
+kind: "data-catalog"
+provider: "aws"
+defaults:
+  managed: true
+properties:
+  discoveryMode:
+    type: "enum"
+    values: ["agentless-collector", "agent-based", "file-import"]
+  homeRegionRequired:
+    type: "boolean"
+    default: true
+  openToNewCustomers:
+    type: "boolean"
+    default: false

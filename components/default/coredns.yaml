@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# CoreDNS: self-managed plugin-based DNS server, the Kubernetes cluster DNS by default.
+schemaVersion: "1"
+type: "component"
+id: "coredns"
+kind: "dns"
+provider: "default"
+defaults:
+  managed: false
+  anycast: false
+properties:
+  role:
+    type: "enum"
+    values: ["cluster", "authoritative", "forwarder"]
+    default: "cluster"

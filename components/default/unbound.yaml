@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Unbound: self-hosted validating, recursive, caching DNS resolver. Per "unbound.conf" the default
+# module-config is "validator iterator" (DNSSEC validation on), cache-max-ttl is 86400, cache-min-ttl
+# is 0 (disabled), prefetch is no and harden-dnssec-stripped is yes.
+schemaVersion: "1"
+type: "component"
+id: "unbound"
+kind: "dns"
+provider: "default"
+defaults:
+  managed: false
+  anycast: false
+properties:
+  dnssecValidation:
+    type: "boolean"
+    default: true
+  cacheMaxTtlSeconds:
+    type: "integer"
+    default: 86400
+  cacheMinTtlSeconds:
+    type: "integer"
+    default: 0
+  prefetch:
+    type: "boolean"
+    default: false

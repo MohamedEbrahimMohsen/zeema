@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Slack Web API: chat delivery for alerts and approvals. "Rate limits" documents tiered per-minute
+# quotas (most methods Tier 2, 20+/min) and one chat.postMessage per second per channel.
+schemaVersion: "1"
+type: "component"
+id: "slack"
+kind: "third-party-api"
+provider: "default"
+defaults:
+  managed: true
+  idempotent: false
+  callbackStyle: "webhook"
+properties:
+  rateLimitTier:
+    type: "enum"
+    values: ["tier-1", "tier-2", "tier-3", "tier-4", "special"]
+    default: "tier-2"
+  postMessagePerSecondPerChannel:
+    type: "integer"
+    default: 1

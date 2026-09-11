@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Veeam Backup & Replication: self-hosted backup and disaster recovery for VMware and Hyper-V VMs, physical machines and cloud workloads ("Veeam Backup & Replication User Guide").
+# Retention, job encryption and repository immutability are per-job settings the guide documents as configurable, not as shipped defaults.
+schemaVersion: "1"
+type: "component"
+id: "veeam"
+kind: "backup-service"
+provider: "default"
+defaults:
+  managed: false
+  crossRegionRestore: false
+properties:
+  workloadType:
+    type: "enum"
+    values: ["vmware", "hyper-v", "physical", "cloud", "unstructured-data"]
+  repositoryImmutability:
+    type: "boolean"
+  jobEncryption:
+    type: "boolean"
