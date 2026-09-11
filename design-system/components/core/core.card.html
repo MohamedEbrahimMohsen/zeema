@@ -1,0 +1,45 @@
+<!-- @dsCard group="Components" viewport="700x220" name="Core" subtitle="Buttons, tags, status, section labels, icons" -->
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>Core</title>
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script>/* compiled bundle when it exists; dsReady falls back to source otherwise */
+document.write('<scr'+'ipt src="../../_ds_bundle.js"><\/scr'+'ipt>');</script><script src="../../ds-ns.js"></script>
+<style>body{margin:0;padding:16px;background:var(--bg)}.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.col{display:flex;flex-direction:column;gap:12px}</style></head><body><div id="root"></div>
+<script type="text/x-card-jsx">
+const { Button, Tag, StatusText, SectionLabel, Icon } = window.DS;
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <div className="col">
+    <div className="row">
+      <Button variant="primary">New design</Button>
+      <Button>Clone</Button>
+      <Button variant="danger">Delete</Button>
+      <Button disabled>Save</Button>
+      <Button variant="ghost" size="sm">More</Button>
+    </div>
+    <div className="row">
+      <Tag mono>aws</Tag><Tag mono>azure</Tag><Tag>private</Tag><Tag>reference</Tag><Tag tone="danger">broken twin</Tag>
+      <span style={{width:16}} />
+      <StatusText>saving…</StatusText><StatusText tone="ok">saved</StatusText>
+      <StatusText tone="warn">unsaved</StatusText><StatusText tone="err">conflict</StatusText>
+    </div>
+    <div className="row">
+      <SectionLabel>Findings</SectionLabel><SectionLabel>Component rows · icon first</SectionLabel>
+      <span style={{width:16}} />
+      <Icon src="../../assets/icons/components/aws/sqs.svg" />
+      <Icon src="../../assets/icons/components/default/kafka.svg" kind="provider" />
+      <Icon src="../../assets/icons/kinds/worker.svg" kind="kind" />
+      <Icon src="../../assets/icons/kinds/queue.svg" kind="kind" color="var(--accent)" />
+      <Icon src="../../assets/icons/providers/aws.svg" kind="provider" size="var(--icon-sm)" />
+    </div>
+  </div>
+);
+</script><script>
+window.dsReady("../", ["core/Icon.jsx","core/Button.jsx","core/Tag.jsx","core/StatusText.jsx","core/SectionLabel.jsx"]).then(function (DS) {
+  window.DS = DS;
+  var src = document.querySelector('script[type="text/x-card-jsx"]').textContent;
+  (0, eval)(Babel.transform(src, { presets: ["react"] }).code);
+}).catch(function (e) { console.error("[card] boot failed", e); });
+</script>
+</body></html>

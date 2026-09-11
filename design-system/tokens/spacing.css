@@ -1,0 +1,20 @@
+/* ── Spacing ────────────────────────────────────────────────────────────
+   One scalar, --p, drives every gap and pad via multipliers. Blueprint sets
+   it to 8px. Changing --p alone retunes density across the product.        */
+
+:root {
+  --p: 8px;
+
+  --sp-0-5: calc(var(--p) * 0.5);   /*  4px — kbd gaps, dot offsets        */
+  --sp-1:   calc(var(--p) * 1);     /*  8px — inside a control             */
+  --sp-1-5: calc(var(--p) * 1.5);   /* 12px — stack gap inside a group     */
+  --sp-2:   calc(var(--p) * 2);     /* 16px — between cards                */
+  --sp-3:   calc(var(--p) * 3);     /* 24px — between sections             */
+  --sp-4:   calc(var(--p) * 4);     /* 32px — sheet padding                */
+  --sp-6:   calc(var(--p) * 6);     /* 48px — between explorations         */
+
+  /* icon box — nodes, rows and the catalog all read this one value */
+  --icon: 24px;
+  --icon-sm: 16px;
+  --icon-lg: 32px;
+}

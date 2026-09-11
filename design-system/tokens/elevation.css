@@ -1,0 +1,17 @@
+/* ── Elevation ──────────────────────────────────────────────────────────
+   Arkore is a flat, line-ruled surface. Shadow appears on exactly one class
+   of object: things that float above the canvas (menus, popovers, dialogs).
+   Everything else separates with a 1px --line.                             */
+
+:root {
+  --shadow-none: none;
+  --shadow-float: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --shadow-dialog: 0 16px 48px rgba(0, 0, 0, 0.18);
+
+  --ring-selected: 0 0 0 2px var(--accent);
+  --ring-focus: 0 0 0 2px color-mix(in srgb, var(--accent) 40%, transparent);
+
+  --dur-fast: 90ms; /* @kind other */    /* hover, press                       */
+  --dur: 150ms; /* @kind other */        /* panel open, selection              */
+  --ease: cubic-bezier(0.2, 0, 0.2, 1); /* @kind other */
+}

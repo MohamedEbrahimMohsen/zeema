@@ -1,0 +1,30 @@
+<!-- @dsCard group="Components" viewport="700x230" name="Forms" subtitle="Inspector fields, enums, booleans" -->
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>Forms</title>
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script>/* compiled bundle when it exists; dsReady falls back to source otherwise */
+document.write('<scr'+'ipt src="../../_ds_bundle.js"><\/scr'+'ipt>');</script><script src="../../ds-ns.js"></script>
+<style>body{margin:0;padding:16px;background:var(--bg)}.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.col{display:flex;flex-direction:column;gap:12px}</style></head><body><div id="root"></div>
+<script type="text/x-card-jsx">
+const { Field, Select, TextInput, Checkbox, Radio } = window.DS;
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:24,maxWidth:640}}>
+    <Field label="delivery" hint="enum · required"><Select options={["at-least-once","exactly-once"]} /></Field>
+    <Field label="ordering" hint="enum · inherited from kind" inherited><TextInput placeholder="unset (none)" /></Field>
+    <Field label="name" hint="string · required"><TextInput defaultValue="orders" /></Field>
+    <div className="col" style={{justifyContent:"center"}}>
+      <Checkbox label="deadLetterQueue" defaultChecked />
+      <div className="row"><Radio name="v" label="Private" defaultChecked /><Radio name="v" label="Public" /></div>
+    </div>
+  </div>
+);
+</script><script>
+window.dsReady("../", ["forms/Field.jsx","forms/TextInput.jsx","forms/Select.jsx","forms/Checkbox.jsx","forms/Radio.jsx"]).then(function (DS) {
+  window.DS = DS;
+  var src = document.querySelector('script[type="text/x-card-jsx"]').textContent;
+  (0, eval)(Babel.transform(src, { presets: ["react"] }).code);
+}).catch(function (e) { console.error("[card] boot failed", e); });
+</script>
+</body></html>
