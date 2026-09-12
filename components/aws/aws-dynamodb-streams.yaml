@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon DynamoDB Streams: the item-level change log of a DynamoDB table ("Change data capture for DynamoDB
+# Streams"). That page states a stream is off until you enable it on the table, that records live for 24
+# hours and are then trimmed, that each record appears exactly once and records for a given item appear in
+# the order the item was modified, that encryption at rest encrypts stream data, and that the StreamViewType
+# chosen at enable time cannot be edited afterwards.
+schemaVersion: "1"
+type: "component"
+id: "aws-dynamodb-streams"
+kind: "change-data-capture"
+provider: "aws"
+defaults:
+  mode: "log-based"
+  ordered: true
+  managed: true
+properties:
+  streamEnabled:
+    type: "boolean"
+    default: false
+  retentionHours:
+    type: "integer"
+    default: 24
+  streamViewType:
+    type: "enum"
+    values: ["keys-only", "new-image", "old-image", "new-and-old-images"]
+  encryptionAtRest:
+    type: "boolean"
+    default: true
+  exactlyOnce:
+    type: "boolean"
+    default: true

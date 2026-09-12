@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OUTSCALE Block Storage Unit (BSU) volume: a network block device attached to a VM that
+# persists independently from the VM lifecycle ("About Volumes"). That page states the three
+# types and their documented limits: Magnetic (standard) 1 GiB to 14.55 TiB with about 250
+# read and 150 write IOPS, Performance (gp2) 3 IOPS per GiB bursting to 3000, Enterprise (io1)
+# 4 GiB to 14.55 TiB and up to 300 IOPS per GiB capped at 13,000 per volume; root devices are
+# created with the VM at 10 GiB on Linux and 50 GiB on Windows, up to 40 volumes attach to one
+# VM, and snapshots back a volume up and copy it to another Region.
+schemaVersion: "1"
+type: "component"
+id: "outscale-bsu"
+kind: "block-storage"
+provider: "outscale"
+defaults:
+  managed: true
+  snapshots: true
+properties:
+  volumeType:
+    type: "enum"
+    values: ["standard", "gp2", "io1"]
+  minSizeGib:
+    type: "integer"
+    default: 1
+  maxIopsPerVolume:
+    type: "integer"
+    default: 13000
+  volumesPerVmQuota:
+    type: "integer"
+    default: 40
+  crossRegionSnapshotCopy:
+    type: "boolean"
+    default: true

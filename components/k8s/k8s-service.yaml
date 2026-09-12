@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Kubernetes Service: a stable virtual address in front of the Pods a label selector matches,
+# load balanced at OSI layer 3-4. Per "Service" the type defaults to ClusterIP (reachable only
+# inside the cluster), sessionAffinity defaults to None, internalTrafficPolicy to Cluster and
+# ipFamilyPolicy to SingleStack; kube-proxy in iptables mode picks a backend at random, and
+# traffic goes only to endpoints whose readiness condition is true.
+schemaVersion: "1"
+type: "component"
+id: "k8s-service"
+kind: "load-balancer"
+provider: "k8s"
+defaults:
+  managed: false
+  layer: "l4"
+  hashing: "random"
+  global: false
+properties:
+  serviceType:
+    type: "enum"
+    values: ["cluster-ip", "node-port", "load-balancer", "external-name"]
+    default: "cluster-ip"
+  sessionAffinity:
+    type: "enum"
+    values: ["none", "client-ip"]
+    default: "none"
+  internalTrafficPolicy:
+    type: "enum"
+    values: ["cluster", "local"]
+    default: "cluster"
+  ipFamilyPolicy:
+    type: "enum"
+    values: ["single-stack", "prefer-dual-stack", "require-dual-stack"]
+    default: "single-stack"
+  headless:
+    type: "boolean"
+    default: false

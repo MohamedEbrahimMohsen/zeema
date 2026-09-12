@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cisco switch: on-premises Ethernet switch you own and operate, not a hosted network. "Network
+# Switches - Cisco" lists the portfolio by tier: Catalyst 9200/9300/9400 at the access layer,
+# Catalyst 9500/9600 and C9610 at core and distribution, and Nexus 9000/3000 as cloud-scale data
+# center switches, managed through Cisco Catalyst Center or the Meraki dashboard. No overlay,
+# multicast or link behaviour is stated for the portfolio as a whole, so nothing beyond the
+# customer-owned nature of the fabric is defaulted.
+schemaVersion: "1"
+type: "component"
+id: "cisco-switch"
+kind: "network-fabric"
+provider: "default"
+defaults:
+  managed: false
+  interconnect: "private"
+properties:
+  family:
+    type: "enum"
+    values: ["catalyst-9200", "catalyst-9300", "catalyst-9400", "catalyst-9500", "catalyst-9600", "nexus-9000", "nexus-3000"]
+  tier:
+    type: "enum"
+    values: ["access", "distribution", "core", "data-center"]
+  managementPlatform:
+    type: "enum"
+    values: ["catalyst-center", "meraki-dashboard", "cli"]

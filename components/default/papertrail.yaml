@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# SolarWinds Papertrail: hosted log aggregation that centralizes events into one place no matter
+# where the application runs ("Log management made easy | Papertrail"), so the sending host
+# pushes its logs to the service rather than the service scraping it. "Plans - paid and free log
+# management - Papertrail" states logs stay searchable for 3 to 7 days depending on plan and that
+# older logs become downloadable archive files that can be copied to Amazon S3 for longer
+# retention, so no single retentionDays default is set.
+schemaVersion: "1"
+type: "component"
+id: "papertrail"
+kind: "monitoring"
+provider: "default"
+defaults:
+  managed: true
+  signal: "logs"
+  collectorMode: "push"
+  independentOfMonitored: true
+properties:
+  searchRetentionDays:
+    type: "integer"
+  archiveDownload:
+    type: "boolean"
+    default: true

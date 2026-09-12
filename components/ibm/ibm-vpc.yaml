@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Cloud Virtual Private Cloud: "a secure, isolated virtual network" that gives applications
+# "logical isolation from other networks" and spans the zones of one region ("Overview"). The same
+# page states that external connectivity is deliberate: you "attach a public gateway" for outgoing
+# traffic or "associate the instance with a floating IP", so a VPC has no internet path by default.
+schemaVersion: "1"
+type: "component"
+id: "ibm-vpc"
+kind: "network-fabric"
+provider: "ibm"
+defaults:
+  managed: true
+  overlay: true
+  interconnect: "private"
+properties:
+  regionScoped:
+    type: "boolean"
+    default: true
+  internetAccess:
+    type: "enum"
+    values: ["none", "public-gateway", "floating-ip"]
+    default: "none"

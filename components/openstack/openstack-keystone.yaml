@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenStack Keystone: the Identity service, providing "API client authentication, service discovery, and
+# distributed multi-tenant authorization by implementing OpenStack's Identity API". Per "Keystone" it is the
+# central authority for every other service, offers role-based access control, federation, application
+# credentials and optional MFA; per "Token Provider" the fernet format "now is the default token provider".
+schemaVersion: "1"
+type: "component"
+id: "openstack-keystone"
+kind: "identity-provider"
+provider: "openstack"
+defaults:
+  protocol: "iam"
+  authorizationModel: "rbac"
+  centralised: true
+  mfa: false
+  managed: false
+properties:
+  tokenProvider:
+    type: "enum"
+    values: ["fernet", "jws"]
+    default: "fernet"
+  identityBackend:
+    type: "enum"
+    values: ["sql", "ldap"]
+  federation:
+    type: "boolean"
+    default: false
+  applicationCredentials:
+    type: "boolean"
+    default: true

@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Alibaba Cloud CDN: edge cache and delivery network for static and streamed content.
+# "What is Alibaba Cloud CDN" states that Alibaba Cloud operates 3,200+ points of presence globally
+# with 180 Tbps of total bandwidth capacity, that HTTP, HTTPS and QUIC are supported, that the
+# hierarchical caching architecture has L1 (edge) and L2 (aggregation) node tiers to improve cache hit
+# rates and reduce origin bandwidth, and that EdgeScript provides programmable CDN logic.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-cdn"
+kind: "cdn"
+provider: "alibabacloud"
+defaults:
+  managed: true
+  caching: true
+  tls: true
+  originShield: true
+  edgeCompute: true
+properties:
+  pointsOfPresence:
+    type: "integer"
+    default: 3200
+  totalBandwidthTbps:
+    type: "integer"
+    default: 180
+  quicSupport:
+    type: "boolean"
+    default: true

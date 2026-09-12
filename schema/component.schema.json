@@ -59,6 +59,12 @@
         "gcp",
         "oci",
         "cloudflare",
+        "ibm",
+        "alibabacloud",
+        "digitalocean",
+        "openstack",
+        "outscale",
+        "k8s",
         "default"
       ]
     }

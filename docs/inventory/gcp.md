@@ -148,6 +148,7 @@ documentation name with the former name in parentheses so an id stays stable acr
 | Cloud Number Registry | — | — | skip: IP address inventory and registry service, not a placeable node | https://cloud.google.com/number-registry/docs |
 | Data Transfer Essentials | — | — | skip: egress billing option | https://cloud.google.com/network-connectivity/docs/data-transfer-essentials |
 | Traffic Director | — | — | skip: renamed Cloud Service Mesh, same resource | https://cloud.google.com/service-mesh/docs/overview |
+| External IP address | google-external-ip-address | network-fabric | done | https://cloud.google.com/vpc/docs/ip-addresses |
 
 ## Networking — delivery and security
 
@@ -501,6 +502,51 @@ Authorization, VPC Service Controls, Organization Policy, Firebase App Check) ar
 `policy-engine`; the Cloud Healthcare API is `nosql-database`, matching `aws-healthlake`;
 notebook and workbench surfaces are `ml-platform`, matching `aws-sagemaker`.
 
+## Mingrammer nodes not catalogued
+
+| resource | id | kind | status | source |
+|---|---|---|---|---|
+| Firebase | — | — | skip: Brand/section logo for the Firebase platform, not a placeable runtime node. | https://diagrams.mingrammer.com/docs/nodes/firebase |
+| ML Kit | — | — | skip: On-device mobile SDK, standalone and outside Firebase since 3 June 2020; its Firebase-hosted counterpart (Firebase ML) is deprecated and shuts down 15 June 2027. | https://diagrams.mingrammer.com/docs/nodes/firebase |
+| Firebase App Indexing | — | — | skip: Retired: the App Indexing API was deprecated in 2019 and replaced by Android App Links; no longer a Firebase product. | https://diagrams.mingrammer.com/docs/nodes/firebase |
+| Firebase Invites | — | — | skip: Retired: deprecated 24 January 2018 in favour of Dynamic Links and shut down two years later; Dynamic Links itself shut down 25 August 2025. | https://diagrams.mingrammer.com/docs/nodes/firebase |
+| Firebase Predictions | — | — | skip: Retired: withdrawn from the Firebase product line and no longer documented or available to new projects. | https://diagrams.mingrammer.com/docs/nodes/firebase |
+| Firebase Crash Reporting | — | — | skip: Retired: deprecated in 2018 and shut down, superseded by Firebase Crashlytics. | https://diagrams.mingrammer.com/docs/nodes/firebase |
+| Cloud Datalab | — | — | skip: retired notebook service, superseded by Vertex AI Workbench | https://cloud.google.com/vertex-ai/docs/workbench/introduction |
+| VM Manager OS configuration management | — | — | skip: patch and configuration management feature over existing VMs | https://cloud.google.com/compute/docs/vm-manager |
+| VM Manager OS inventory management | — | — | skip: patch and configuration management feature over existing VMs | https://cloud.google.com/compute/docs/vm-manager |
+| VM Manager OS patch management | — | — | skip: patch and configuration management feature over existing VMs | https://cloud.google.com/compute/docs/vm-manager |
+| Cloud Code for IntelliJ | — | — | skip: IDE plugin | https://cloud.google.com/code/docs/intellij |
+| Cloud Code | — | — | skip: IDE plugins | https://cloud.google.com/code/docs |
+| Gradle App Engine plugin | — | — | skip: build tool plugin, developer tooling | https://cloud.google.com/appengine/docs/standard/java-gen2/using-gradle |
+| Cloud Tools IDE plugins | — | — | skip: IDE plugins, developer tooling | https://cloud.google.com/code/docs |
+| Maven App Engine plugin | — | — | skip: build tool plugin, developer tooling | https://cloud.google.com/appengine/docs/standard/java-gen2/using-maven |
+| Google Cloud SDK | — | — | skip: command line and language tooling | https://cloud.google.com/sdk/docs |
+| Cloud Tools for Eclipse | — | — | skip: IDE plugin, developer tooling | https://cloud.google.com/eclipse/docs |
+| Cloud Tools for PowerShell | — | — | skip: command line tooling | https://cloud.google.com/powershell/docs |
+| Cloud Tools for Visual Studio | — | — | skip: IDE plugin, developer tooling | https://cloud.google.com/visual-studio/docs |
+| Cloud Billing | — | — | skip: billing and cost management | https://cloud.google.com/billing/docs |
+| Project | — | — | skip: account hierarchy, a container not a resource | https://cloud.google.com/resource-manager/docs/cloud-platform-resource-hierarchy |
+| Cloud Quotas | — | — | skip: quota management tooling | https://cloud.google.com/docs/quotas/overview |
+| Advanced Solutions Lab | — | — | skip: training and consulting engagement, not a resource | https://cloud.google.com/asl |
+| AI Hub | — | — | skip: retired asset catalogue, superseded by Vertex AI Model Garden | https://cloud.google.com/vertex-ai/docs/start/explore-models |
+| AI Platform Data Labeling Service | — | — | skip: retired labelling workflow of the legacy AI Platform | https://cloud.google.com/vertex-ai/docs/datasets/data-labeling-job |
+| AI Platform | — | — | skip: superseded by Vertex AI | https://cloud.google.com/vertex-ai/docs |
+| AutoML Natural Language | — | — | skip: training mode inside Vertex AI, not a separate resource | https://cloud.google.com/vertex-ai/docs/beginner/beginners-guide |
+| AutoML Tables | — | — | skip: training mode inside Vertex AI, not a separate resource | https://cloud.google.com/vertex-ai/docs/beginner/beginners-guide |
+| AutoML Translation | — | — | skip: training mode inside Vertex AI, not a separate resource | https://cloud.google.com/vertex-ai/docs/beginner/beginners-guide |
+| AutoML Video Intelligence | — | — | skip: training mode inside Vertex AI, not a separate resource | https://cloud.google.com/vertex-ai/docs/beginner/beginners-guide |
+| AutoML Vision | — | — | skip: training mode inside Vertex AI, not a separate resource | https://cloud.google.com/vertex-ai/docs/beginner/beginners-guide |
+| Network security | — | — | skip: product-family icon; Cloud NGFW, Cloud Armor and Cloud IDS are the placed nodes | https://cloud.google.com/security/products/network-security |
+| Network Service Tiers | — | — | skip: routing tier setting on an IP address | https://cloud.google.com/network-tiers/docs/overview |
+| Network Topology | — | — | skip: visualization module of Network Intelligence Center | https://cloud.google.com/network-intelligence-center/docs/network-topology/concepts/overview |
+| Networking | — | — | skip: section icon for the networking family, not a product | https://cloud.google.com/products/networking |
+| Premium Network Service Tier | — | — | skip: routing tier setting on an IP address | https://cloud.google.com/network-tiers/docs/overview |
+| VPC routes | — | — | skip: routing configuration of a VPC network | https://cloud.google.com/vpc/docs/routes |
+| Standard Network Service Tier | — | — | skip: routing tier setting on an IP address | https://cloud.google.com/network-tiers/docs/overview |
+| Resource Manager | — | — | skip: account hierarchy, a container not a resource | https://cloud.google.com/resource-manager/docs/cloud-platform-resource-hierarchy |
+| Security Health Analytics | — | — | skip: built-in scanning service of Security Command Center, not a separate node | https://cloud.google.com/security-command-center/docs/concepts-vulnerabilities-findings |
+
 ## Counts
 
-total 359, todo 0, done 227, skip 132.
+total 400, todo 0, done 228, skip 172.

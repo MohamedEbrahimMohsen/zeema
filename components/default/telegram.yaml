@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Telegram Bot API: hosted HTTP API a bot calls and is called back by. "Telegram Bot API"
+# documents two mutually exclusive ways to receive updates: getUpdates long polling, and
+# setWebhook, which pushes updates to a URL and disables getUpdates while it is set. Long polling
+# is what a bot gets until a webhook is registered, so the default callback style is poll. The
+# same page states incoming updates are stored on the server until the bot receives them, but not
+# longer than 24 hours. No idempotency mechanism and no send rate limit are documented.
+schemaVersion: "1"
+type: "component"
+id: "telegram"
+kind: "third-party-api"
+provider: "default"
+defaults:
+  managed: true
+  callbackStyle: "poll"
+  hostedPage: false
+  handlesMoney: false
+properties:
+  updateTransport:
+    type: "enum"
+    values: ["long-polling", "webhook"]
+    default: "long-polling"
+  updateRetentionHours:
+    type: "integer"
+    default: 24

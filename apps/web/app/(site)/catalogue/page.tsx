@@ -54,8 +54,9 @@ export default async function CataloguePage({
         <h1 className="title">Catalogue</h1>
         <p className="small muted">
           {kinds.length} kinds, {Object.keys(cat.components).length.toLocaleString()} components
-          across six providers, {cat.rules.length} rules. A kind is the abstract thing (a queue); a
-          component is the concrete product (Kafka, SQS) with its real defaults.
+          across {new Set(Object.values(cat.components).map((c) => c.provider)).size} providers,{" "}
+          {cat.rules.length} rules. A kind is the abstract thing (a queue); a component is the
+          concrete product (Kafka, SQS) with its real defaults.
         </p>
       </div>
       <form className="flex flex-wrap items-center gap-3" method="get">
@@ -73,7 +74,20 @@ export default async function CataloguePage({
           defaultValue={sp.provider ?? ""}
         >
           <option value="">Any provider</option>
-          {["default", "aws", "azure", "gcp", "oci", "cloudflare"].map((p) => (
+          {[
+            "default",
+            "aws",
+            "azure",
+            "gcp",
+            "oci",
+            "cloudflare",
+            "ibm",
+            "alibabacloud",
+            "digitalocean",
+            "openstack",
+            "outscale",
+            "k8s",
+          ].map((p) => (
             <option key={p} value={p}>
               {p}
             </option>

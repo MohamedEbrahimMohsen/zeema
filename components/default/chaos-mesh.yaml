@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Chaos Mesh: "an open source cloud-native Chaos Engineering platform" built on Kubernetes CRDs, with
+# a Chaos Controller Manager watching the API server and a Chaos Daemon running as a DaemonSet
+# ("Chaos Mesh Overview"). An experiment is a custom resource applied with kubectl or submitted from
+# the Chaos Dashboard and bounded by a duration, so it runs when a human asks for it
+# ("Simulate Pod Faults").
+schemaVersion: "1"
+type: "component"
+id: "chaos-mesh"
+kind: "worker"
+provider: "default"
+defaults:
+  managed: false
+  trigger: "manual"
+  idempotent: false
+properties:
+  podFaultType:
+    type: "enum"
+    values: ["pod-failure", "pod-kill", "container-kill"]
+  experimentInterface:
+    type: "enum"
+    values: ["crd", "dashboard"]
+  durationBounded:
+    type: "boolean"
+    default: true

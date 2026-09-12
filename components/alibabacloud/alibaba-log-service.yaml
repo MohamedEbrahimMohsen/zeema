@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Simple Log Service (SLS): "a cloud-native observability platform designed to collect, process, analyze, and
+# visualize large-scale data" ("What is Simple Log Service?"). That page states it stores and jointly analyses
+# log, metric and trace data in Logstores, Metricstores and Eventstores, collects it by pushing from agents
+# such as Logtail, and provides one-stop alert monitoring, alert management and notification management. It
+# also states data can be retained permanently or for a period you choose, so no retention default is set.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-log-service"
+kind: "monitoring"
+provider: "alibabacloud"
+defaults:
+  managed: true
+  signal: "all"
+  collectorMode: "push"
+properties:
+  storeType:
+    type: "enum"
+    values: ["logstore", "metricstore", "eventstore"]
+    default: "logstore"
+  permanentRetention:
+    type: "boolean"
+    default: false

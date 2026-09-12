@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenStack Zun: API service for running application containers without the need to manage servers or clusters.
+# Per "Zun" kuryr-libnetwork is a required integration while Cinder, Heat and Glance are optional ones; per
+# "Filter Scheduler" the host for a container is chosen by a filter scheduler whose enabled_filters default to
+# RamFilter, CPUFilter, ComputeFilter and RuntimeFilter.
+schemaVersion: "1"
+type: "component"
+id: "openstack-zun"
+kind: "container-orchestrator"
+provider: "openstack"
+defaults:
+  managed: false
+properties:
+  kuryrNetworking:
+    type: "boolean"
+    default: true
+  cinderVolumes:
+    type: "boolean"
+    default: false
+  filterScheduler:
+    type: "boolean"
+    default: true

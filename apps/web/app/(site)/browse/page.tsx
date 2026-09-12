@@ -15,7 +15,19 @@ type Search = {
   page?: string;
 };
 
-const PROVIDERS = ["aws", "azure", "gcp", "oci", "cloudflare"];
+const PROVIDERS = [
+  "aws",
+  "azure",
+  "gcp",
+  "oci",
+  "cloudflare",
+  "ibm",
+  "alibabacloud",
+  "digitalocean",
+  "openstack",
+  "outscale",
+  "k8s",
+];
 
 export default async function Browse({ searchParams }: { searchParams: Promise<Search> }) {
   const sp = await searchParams;

@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Cloud Internet Services: IBM's edge offering built on Cloudflare's network, bundling a
+# "Content Delivery Network (CDN), intelligent caching, and optimized protocols" with DNS, global
+# load balancing, DDoS mitigation and "Web Application Firewall (WAF), rate limiting, and SSL/TLS
+# encryption" on Lite, Standard and Enterprise plans ("Getting started with IBM Cloud Internet
+# Services"). No edge compute runtime is documented, and no plan is named as the default.
+schemaVersion: "1"
+type: "component"
+id: "ibm-internet-services"
+kind: "cdn"
+provider: "ibm"
+defaults:
+  managed: true
+  caching: true
+  tls: true
+  edgeCompute: false
+properties:
+  plan:
+    type: "enum"
+    values: ["lite", "standard", "enterprise"]
+  waf:
+    type: "boolean"
+    default: true
+  ddosProtection:
+    type: "boolean"
+    default: true

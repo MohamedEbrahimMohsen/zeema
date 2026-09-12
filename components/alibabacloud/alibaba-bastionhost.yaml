@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Bastionhost: the audited jump host for operations and maintenance access. The Bastionhost
+# documentation describes an O&M audit system that manages multiple accounts centrally and provides
+# single sign-on to backend server resources, states that O&M sessions are SSH- and RDP-based remote
+# connections, that Bastionhost records asset O&M sessions including session videos and commands and
+# can replay them, that auditors can monitor SSH and RDP sessions in real time and interrupt high-risk
+# sessions, and that high-risk commands are blocked in real time. No default for multi-factor
+# authentication or a public endpoint is stated, so neither is set here.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-bastionhost"
+kind: "bastion-host"
+provider: "alibabacloud"
+defaults:
+  managed: true
+  protocols: "both"
+  sessionRecording: true
+properties:
+  commandBlocking:
+    type: "boolean"
+    default: true
+  realTimeSessionMonitoring:
+    type: "boolean"
+    default: true
+  centralAccountManagement:
+    type: "boolean"
+    default: true

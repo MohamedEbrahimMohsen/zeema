@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenStack Watcher: flexible and scalable resource optimization service for multi-tenant OpenStack clouds.
+# Per "Watcher System Architecture" an Audit runs a Goal through a dynamically loaded Strategy and the Decision
+# Engine "generates a new Action Plan with status RECOMMENDED", which waits for validation from the administrator
+# before the Applier executes it. Audits are ONESHOT, CONTINUOUS or EVENT, with no stated default.
+schemaVersion: "1"
+type: "component"
+id: "openstack-watcher"
+kind: "monitoring"
+provider: "openstack"
+defaults:
+  signal: "metrics"
+  managed: false
+properties:
+  auditType:
+    type: "enum"
+    values: ["oneshot", "continuous", "event"]
+  actionPlanRequiresApproval:
+    type: "boolean"
+    default: true
+  pluggableStrategies:
+    type: "boolean"
+    default: true

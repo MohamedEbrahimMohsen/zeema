@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Pushover: hosted push notification service for scripts and monitoring systems. "Pushover: API"
+# states messages are delivered as push notifications to the Pushover apps on Android, iOS and
+# desktop, with no email or SMS channel; each account may send 10,000 messages per month for free
+# and a team 25,000; messages carry a priority from -2 to 2, where priority 2 is repeated until
+# the user acknowledges it and the API returns a receipt that reports acknowledgement. No
+# deduplication key or template store is documented.
+schemaVersion: "1"
+type: "component"
+id: "pushover"
+kind: "notification-service"
+provider: "default"
+defaults:
+  managed: true
+  channelPush: true
+  channelEmail: false
+  channelSms: false
+  dedupKey: false
+  templateStore: false
+properties:
+  monthlyMessageQuota:
+    type: "integer"
+    default: 10000
+  priority:
+    type: "enum"
+    values: ["lowest", "low", "normal", "high", "emergency"]
+    default: "normal"
+  receiptTracking:
+    type: "boolean"
+    default: false

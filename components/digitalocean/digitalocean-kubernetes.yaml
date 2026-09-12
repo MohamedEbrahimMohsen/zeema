@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# DigitalOcean Kubernetes (DOKS): "a Kubernetes service with a fully managed control plane, high
+# availability, and autoscaling" ("DigitalOcean Kubernetes"). "Kubernetes Features": RBAC "is
+# enabled by default", overlay networking "is preconfigured with Cilium" with network policy
+# support, and clusters "are added to a VPC network for the datacenter region by default"; the API
+# server stays publicly reachable. "How to Create Kubernetes Clusters": the high availability
+# control plane checkbox is selected by default and three worker nodes are preselected, with
+# autoscaling an option you turn on. "Kubernetes Limits": 512 worker nodes per cluster, 110 pods
+# per node.
+schemaVersion: "1"
+type: "component"
+id: "digitalocean-kubernetes"
+kind: "container-orchestrator"
+provider: "digitalocean"
+defaults:
+  managed: true
+  nodeCount: 3
+  autoscaling: false
+  rbac: true
+  privateControlPlane: false
+properties:
+  highAvailabilityControlPlane:
+    type: "boolean"
+    default: true
+  cni:
+    type: "enum"
+    values: ["cilium"]
+    default: "cilium"
+  maxNodesPerCluster:
+    type: "integer"
+    default: 512
+  maxPodsPerNode:
+    type: "integer"
+    default: 110

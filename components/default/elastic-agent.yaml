@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Elastic Agent: "a single, unified way to add monitoring for logs, metrics, and other types of data
+# to a host", shipping to Elasticsearch through integration policies. Fleet, "a web-based UI in Kibana
+# for centrally managing Elastic Agents and their policies", is the normal mode; standalone mode is
+# "recommended for advanced users only" ("Fleet and Elastic Agent overview").
+schemaVersion: "1"
+type: "component"
+id: "elastic-agent"
+kind: "monitoring"
+provider: "default"
+defaults:
+  managed: false
+  signal: "all"
+  collectorMode: "push"
+  alertGrouping: false
+properties:
+  managementMode:
+    type: "enum"
+    values: ["fleet", "standalone"]
+    default: "fleet"
+  integrationPolicies:
+    type: "boolean"
+    default: true

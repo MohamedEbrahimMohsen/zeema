@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Cloud Block Storage for VPC: an SSD-backed volume attached to one instance. "About Block
+# Storage for VPC" states that all volumes are solid-state, that "all block storage volumes are
+# encrypted at rest with IBM-managed encryption by default" with customer-managed keys available,
+# that "volume data is stored redundantly across multiple physical disks in an Availability Zone",
+# and that tiered, custom and SSD Defined Performance profiles set the IOPS. No profile is named
+# as the default, so none is set.
+schemaVersion: "1"
+type: "component"
+id: "ibm-block-storage"
+kind: "block-storage"
+provider: "ibm"
+defaults:
+  managed: true
+  mediaType: "ssd"
+  encryptionAtRest: true
+  redundancy: "zonal"
+properties:
+  profileFamily:
+    type: "enum"
+    values: ["tiered", "custom", "sdp"]
+  keyManagement:
+    type: "enum"
+    values: ["provider-managed", "customer-managed"]
+    default: "provider-managed"

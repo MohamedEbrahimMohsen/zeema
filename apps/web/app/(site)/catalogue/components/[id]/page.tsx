@@ -50,7 +50,7 @@ export default async function ComponentPage({ params }: { params: Promise<{ id: 
       <section className="flex flex-col gap-2">
         <span className="label">Use it in a design</span>
         <pre className="code">{`nodes:
-  - { id: "${id.replace(/^(aws|azure|gcp|oci|cloudflare)-/, "")}", component: "${id}" }`}</pre>
+  - { id: "${id.replace(/^(aws|azure|gcp|google|oci|cloudflare|ibm|alibaba|digitalocean|openstack|outscale|k8s)-/, "")}", component: "${id}" }`}</pre>
       </section>
 
       {siblings.length ? (

@@ -13,7 +13,20 @@ export const DEFAULT_ROOT = path.resolve(
   "..",
 );
 export const TIERS = ["reference", "imported", "authored"];
-export const PROVIDERS = ["aws", "azure", "gcp", "oci", "cloudflare", "default"];
+export const PROVIDERS = [
+  "aws",
+  "azure",
+  "gcp",
+  "oci",
+  "cloudflare",
+  "ibm",
+  "alibabacloud",
+  "digitalocean",
+  "openstack",
+  "outscale",
+  "k8s",
+  "default",
+];
 
 export const resolveRoot = (root) => path.resolve(root ?? process.env.ARKORE_ROOT ?? DEFAULT_ROOT);
 

@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Express Connect: dedicated private circuit between an on-premises data centre and a VPC.
+# "What is Express Connect" states that traffic travels over a dedicated circuit, avoiding
+# Internet-related latency and data exposure, that a virtual border router acts as the forwarding
+# bridge between the data centre and the Alibaba Cloud data centre, and that equal-cost multi-path
+# aggregation over multiple Express Connect circuits is supported for terabit-level bandwidth and
+# high availability — so a single circuit unless a second is ordered.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-express-connect"
+kind: "network-fabric"
+provider: "alibabacloud"
+defaults:
+  managed: true
+  interconnect: "private"
+properties:
+  redundantCircuits:
+    type: "boolean"
+    default: false
+  ecmpAggregation:
+    type: "boolean"
+    default: false
+  bandwidthMbps:
+    type: "integer"

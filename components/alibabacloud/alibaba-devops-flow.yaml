@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Alibaba Cloud DevOps Flow: "an enterprise-level automated R&D and delivery pipeline platform that provides
+# flexible and easy-to-use features of continuous integration, continuous verification, and continuous
+# deployment" ("Automated R&D and delivery pipelines for continuous delivery"). That page states pipelines
+# run code scanning and security scanning, gate on manual or automated verification against red lines, and
+# release with canary and phased policies. No trigger, approval or runner setting is documented as a default.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-devops-flow"
+kind: "ci-pipeline"
+provider: "alibabacloud"
+defaults:
+  managed: true
+properties:
+  codeScanning:
+    type: "boolean"
+  securityScanning:
+    type: "boolean"
+  qualityRedLines:
+    type: "boolean"
+  releaseStrategy:
+    type: "enum"
+    values: ["direct", "canary", "phased"]

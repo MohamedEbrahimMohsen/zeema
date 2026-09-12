@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Graph Database (GDB): managed graph database for highly connected data. The Graph Database product
+# overview describes a real-time and reliable online database service that stores and navigates the
+# relationships between highly connected datasets, supports the Property Graph model and uses Apache
+# TinkerPop Gremlin as the query language.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-graph-database"
+kind: "graph-database"
+provider: "alibabacloud"
+defaults:
+  managed: true
+  inMemory: false
+properties:
+  graphModel:
+    type: "enum"
+    values: ["property-graph"]
+    default: "property-graph"
+  queryLanguage:
+    type: "enum"
+    values: ["gremlin"]
+    default: "gremlin"

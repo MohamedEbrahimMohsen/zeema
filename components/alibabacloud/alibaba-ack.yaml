@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Container Service for Kubernetes (ACK): managed Kubernetes clusters where ACK provisions and manages the
+# master nodes and you create only worker nodes ("What is Container Service for Kubernetes"). That page states
+# managed clusters come as Basic and Pro, the managed control plane runs at least two kube-apiserver
+# instances and three etcd instances across availability zones, access control integrates RAM with Kubernetes
+# RBAC, and the Flannel and Terway plug-ins support network policies. It also records that ACK dedicated
+# clusters can no longer be created since 2024-08-21 except for CloudBox scenarios.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-ack"
+kind: "container-orchestrator"
+provider: "alibabacloud"
+defaults:
+  managed: true
+  rbac: true
+properties:
+  clusterType:
+    type: "enum"
+    values: ["ack-basic", "ack-pro", "ack-serverless", "ack-edge", "ack-dedicated"]
+    default: "ack-pro"
+  networkPlugin:
+    type: "enum"
+    values: ["flannel", "terway"]

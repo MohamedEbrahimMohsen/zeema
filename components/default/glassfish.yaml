@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Eclipse GlassFish: open source Jakarta EE application server maintained at the Eclipse
+# Foundation. "Eclipse GlassFish Guides" gives the current release as 8.0.4, shipped either as a
+# Jakarta EE Platform 10 or a Jakarta EE Web Profile 10 distribution. The default administration
+# values table in the "Eclipse GlassFish Server Quick Start Guide, Release 8" gives domain1 as the
+# domain created at install, 8080 as the HTTP port and 4848 as the administration server port.
+schemaVersion: "1"
+type: "component"
+id: "glassfish"
+kind: "app-server"
+provider: "default"
+defaults:
+  managed: false
+  runtime: "jvm"
+properties:
+  distribution:
+    type: "enum"
+    values: ["platform", "web-profile"]
+  domainName:
+    type: "string"
+    default: "domain1"
+  httpPort:
+    type: "integer"
+    default: 8080
+  adminPort:
+    type: "integer"
+    default: 4848

@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenStack Trove: Database as a Service for OpenStack, running database instances on Nova with deployment,
+# configuration, patching, backups, restores and monitoring handled for the user. Per "Backup and restore a
+# database" backups are created by the user with an explicit command rather than on a schedule, the backup data
+# "is stored in OpenStack Swift", and an incremental backup only exists when a parent backup is named.
+schemaVersion: "1"
+type: "component"
+id: "openstack-trove"
+kind: "sql-database"
+provider: "openstack"
+defaults:
+  backupEnabled: false
+  replication: "none"
+  managed: false
+properties:
+  datastore:
+    type: "enum"
+    values: ["mysql", "mariadb", "postgresql"]
+  backupStorage:
+    type: "enum"
+    values: ["swift"]
+    default: "swift"
+  incrementalBackups:
+    type: "boolean"
+    default: false
+  clustering:
+    type: "boolean"
+    default: false

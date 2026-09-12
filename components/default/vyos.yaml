@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# VyOS: open source router and firewall operating system configured from a single CLI.
+# "IPv4 Firewall Configuration" states that with no default-action configured the base chains
+# (input, forward, output) accept, while a user-defined chain defaults to drop, and that logging
+# is off unless a rule sets log. Connection state matching exists but a state policy has to be
+# written explicitly, so no stateful default is claimed here.
+schemaVersion: "1"
+type: "component"
+id: "vyos"
+kind: "firewall"
+provider: "default"
+defaults:
+  managed: false
+  defaultAction: "allow"
+  logging: false
+properties:
+  customChainDefaultAction:
+    type: "enum"
+    values: ["allow", "drop"]
+    default: "drop"
+  statePolicyConfigured:
+    type: "boolean"
+    default: false

@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Smart Conversation Analysis (SCA): a platform that inspects and analyses large volumes of conversation
+# recordings and text to surface risks and opportunities ("Intelligent dialogue analysis product
+# introduction"). That page states it performs text, audio and image multimodal quality inspection across
+# phone calls, instant messaging and work orders, supports real-time and offline analysis, and compares
+# large-model quality inspection with standard rule-based inspection.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-smart-conversation-analysis"
+kind: "ai-service"
+provider: "alibabacloud"
+defaults:
+  managed: true
+  modality: "multimodal"
+properties:
+  analysisMode:
+    type: "enum"
+    values: ["real-time", "offline"]
+  inspectionEngine:
+    type: "enum"
+    values: ["rule-based", "large-model"]

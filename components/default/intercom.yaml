@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Intercom: hosted customer messaging and support platform called through its REST API.
+# "Rate Limiting | Intercom and Fin Developer Platform" states the default is 10,000 API calls per
+# minute per app, with a workspace ceiling of 25,000 calls per minute across all private apps,
+# enforced in 10-second windows and answered with HTTP 429 plus X-RateLimit-Limit,
+# X-RateLimit-Remaining and X-RateLimit-Reset headers; the same page notes Canvas Kit webhook
+# requests are excluded from that limit. The per-minute figure is kept as its own property rather
+# than converted into qpsQuota, which the docs do not state. No idempotency mechanism is
+# documented.
+schemaVersion: "1"
+type: "component"
+id: "intercom"
+kind: "third-party-api"
+provider: "default"
+defaults:
+  managed: true
+  callbackStyle: "webhook"
+  hostedPage: false
+  handlesMoney: false
+properties:
+  callsPerMinuteQuota:
+    type: "integer"
+    default: 10000
+  workspaceCallsPerMinuteQuota:
+    type: "integer"
+    default: 25000
+  rateLimitWindowSeconds:
+    type: "integer"
+    default: 10

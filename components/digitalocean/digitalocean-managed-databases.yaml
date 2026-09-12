@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# DigitalOcean Managed Databases: "a fully managed, high performance database cluster service"
+# offering PostgreSQL, MySQL, Valkey, MongoDB, Kafka and OpenSearch, with new clusters "placed in a
+# VPC network by default" and a primary node plus optional standby nodes ("Managed Databases").
+# "PostgreSQL Features": daily point-in-time backups restorable over a seven day window, data
+# encrypted at rest with LUKS and in transit with SSL, automated failover only on clusters that
+# have standby nodes. "PostgreSQL Limits": PITR limited to the last 7 days, at most 3 nodes per
+# cluster and 10 clusters per account by default.
+schemaVersion: "1"
+type: "component"
+id: "digitalocean-managed-databases"
+kind: "sql-database"
+provider: "digitalocean"
+defaults:
+  managed: true
+  backupEnabled: true
+  backupRetentionDays: 7
+  encryptionAtRest: true
+  replication: "none"
+properties:
+  engine:
+    type: "enum"
+    values: ["postgresql", "mysql", "valkey", "mongodb", "kafka", "opensearch"]
+  standbyNodes:
+    type: "integer"
+    default: 0
+  maxNodesPerCluster:
+    type: "integer"
+    default: 3
+  maxClustersPerAccount:
+    type: "integer"
+    default: 10

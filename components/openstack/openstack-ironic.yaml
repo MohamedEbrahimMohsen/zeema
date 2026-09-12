@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenStack Ironic: provisions bare metal (as opposed to virtual) machines through remote management protocols.
+# Per "Boot interfaces" the ipxe boot interface is used by default for many hardware types including ipmi; per
+# "Node cleaning" Ironic uses erase_devices_metadata early in cleaning and erase_devices later to securely erase
+# the drive, with erase_devices_express disabled. "Deploy Interfaces" lists the deploy interfaces but names no default.
+schemaVersion: "1"
+type: "component"
+id: "openstack-ironic"
+kind: "virtual-machine"
+provider: "openstack"
+defaults:
+  managed: false
+properties:
+  bareMetal:
+    type: "boolean"
+    default: true
+  bootInterface:
+    type: "enum"
+    values: ["pxe", "ipxe", "http", "http-ipxe", "redfish-virtual-media"]
+    default: "ipxe"
+  deployInterface:
+    type: "enum"
+    values: ["direct", "ansible", "anaconda", "ramdisk", "custom-agent", "bootc", "noop"]
+  secureErase:
+    type: "boolean"
+    default: true

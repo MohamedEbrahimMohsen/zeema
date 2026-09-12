@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Elastic Compute Service (ECS): "an IaaS cloud computing service that provides scalable, on-demand compute
+# resources with high availability and security" ("What is ECS?") - a machine you boot from an image and
+# patch yourself, across hundreds of instance families covering CPU, GPU and bare metal. "Classification and
+# management of IP addresses" states that by default no public IP address is assigned to an instance: it must
+# be requested at creation or attached later as an elastic IP address.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-ecs"
+kind: "virtual-machine"
+provider: "alibabacloud"
+defaults:
+  managed: false
+  publicIp: false
+properties:
+  instanceCategory:
+    type: "enum"
+    values: ["shared", "enterprise", "bare-metal", "gpu"]
+  purchaseOption:
+    type: "enum"
+    values: ["subscription", "pay-as-you-go", "preemptible", "savings-plan"]
+  networkType:
+    type: "enum"
+    values: ["vpc", "classic"]
+    default: "vpc"

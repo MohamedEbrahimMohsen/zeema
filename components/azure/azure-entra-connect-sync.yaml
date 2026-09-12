@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Microsoft Entra Connect Sync: the on-premises synchronization engine that projects Active Directory users,
+# groups and password hashes into Microsoft Entra ID ("What is Microsoft Entra Connect and Connect Health").
+# "Microsoft Entra Connect Sync: Scheduler" states the built-in scheduler runs a synchronization cycle every
+# 30 minutes by default and keeps operation logs for 7 days. The overview page states Microsoft Entra Cloud
+# Sync is the future of synchronization and replaces Microsoft Entra Connect; no retirement date is given.
+schemaVersion: "1"
+type: "component"
+id: "azure-entra-connect-sync"
+kind: "worker"
+provider: "azure"
+defaults:
+  trigger: "schedule"
+  managed: false
+properties:
+  syncIntervalMinutes:
+    type: "integer"
+    default: 30
+  purgeRunHistoryDays:
+    type: "integer"
+    default: 7
+  signInMethod:
+    type: "enum"
+    values: ["password-hash-sync", "pass-through-authentication", "federation"]
+  stagingMode:
+    type: "boolean"

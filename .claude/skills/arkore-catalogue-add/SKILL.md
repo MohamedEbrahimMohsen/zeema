@@ -1,6 +1,6 @@
 ---
 name: arkore-catalogue-add
-description: Add a product that is missing from the Arkore catalogue. Researches the product from official docs, picks an existing kind or installs a new one, writes the component in every provider where the product or an equivalent exists (azure, aws, gcp, oci, cloudflare, default), adds locale, icon and inventory row, and validates. Use when a design import meets an unknown box, or the user says add component, add resource, add kind, missing product, or names a cloud resource that is not in components/.
+description: Add a product that is missing from the Arkore catalogue. Researches the product from official docs, picks an existing kind or installs a new one, writes the component in every provider where the product or an equivalent exists (azure, aws, gcp, oci, cloudflare, ibm, alibabacloud, digitalocean, openstack, outscale, k8s, default), adds locale, icon and inventory row, and validates. Use when a design import meets an unknown box, or the user says add component, add resource, add kind, missing product, or names a cloud resource that is not in components/.
 ---
 
 # Add a component (and its kind if needed) to the catalogue
@@ -45,8 +45,9 @@ header comment.
 
 Owning vendor decides the provider folder: the vendor that sells the product, never where it
 is hosted. Microsoft -> `azure`, Amazon -> `aws`, Google -> `gcp`, Oracle -> `oci`,
-Cloudflare -> `cloudflare`, everyone else (open source, SaaS vendors, generic building blocks)
--> `default`.
+Cloudflare -> `cloudflare`, IBM -> `ibm`, Alibaba -> `alibabacloud`, DigitalOcean -> `digitalocean`,
+an OpenStack project -> `openstack`, Outscale -> `outscale`, a Kubernetes API resource -> `k8s`,
+everyone else (open source, SaaS vendors, generic building blocks) -> `default`.
 
 ### 3. Choose the kind
 

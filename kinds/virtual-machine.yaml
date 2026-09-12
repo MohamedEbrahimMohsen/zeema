@@ -7,7 +7,7 @@ category: "compute"
 properties:
   os:
     type: "enum"
-    values: ["linux", "windows"]
+    values: ["linux", "windows", "aix", "ibm-i"]
     default: "linux"
   sizeVcpu:
     type: "integer"

@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Operation Orchestration Service, documented as CloudOps Orchestration Service (OOS): it automates O&M tasks
+# across Alibaba Cloud services such as ECS, RDS, SLB and VPC, with tasks, execution order, inputs and
+# outputs defined in a template that is then run ("What is CloudOps Orchestration Service (OOS)?"). That page
+# lists automated, semi-automated and interactive execution modes, names approval workflows and scheduled,
+# batch and cross-region operations among the scenarios, and states OOS itself is free of charge.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-oos"
+kind: "workflow-engine"
+provider: "alibabacloud"
+defaults:
+  managed: true
+  pattern: "dag"
+properties:
+  executionMode:
+    type: "enum"
+    values: ["automated", "semi-automated", "interactive"]
+    default: "automated"
+  templateSource:
+    type: "enum"
+    values: ["public", "custom"]
+  approvalStep:
+    type: "boolean"
+    default: false

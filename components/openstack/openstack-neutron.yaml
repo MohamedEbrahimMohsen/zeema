@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenStack Neutron: the networking service that owns networks, subnets and ports. Per "OpenStack Networking"
+# flat, VLAN and the GRE/VXLAN overlay encapsulations are the isolation options and a security group is a
+# stateful, default-deny firewall at the port. Per the "ml2" configuration reference type_drivers default to
+# local, flat, vlan, gre, vxlan and geneve, project_network_types to local, and mechanism_drivers to empty.
+schemaVersion: "1"
+type: "component"
+id: "openstack-neutron"
+kind: "network-fabric"
+provider: "openstack"
+defaults:
+  managed: false
+properties:
+  projectNetworkType:
+    type: "enum"
+    values: ["local", "flat", "vlan", "gre", "vxlan", "geneve"]
+    default: "local"
+  mechanismDriver:
+    type: "enum"
+    values: ["ovs", "ovn", "linuxbridge", "sriov", "macvtap"]
+  securityGroups:
+    type: "boolean"
+    default: true

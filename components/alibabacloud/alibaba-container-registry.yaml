@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Container Registry (ACR): "a fully managed service for storing, securing, and distributing container images
+# and cloud-native artifacts" ("What is Container Registry?"). That page lists a Personal Edition and
+# Enterprise Basic and Advanced Editions, multi-engine image scanning, cross-region replication through
+# global synchronization rules, tag immutability on the Enterprise editions, and image signing and P2P
+# distribution on the Advanced Edition only. None of these is documented as on by default.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-container-registry"
+kind: "container-registry"
+provider: "alibabacloud"
+defaults:
+  managed: true
+properties:
+  edition:
+    type: "enum"
+    values: ["personal", "enterprise-basic", "enterprise-advanced"]
+  imageSigning:
+    type: "boolean"
+  p2pDistribution:
+    type: "boolean"

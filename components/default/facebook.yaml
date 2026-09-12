@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Facebook Graph API: Meta's HTTP API for reading and writing the social graph. "Rate Limits -
+# Graph API - Documentation - Meta for Developers" states the platform rate limit for calls made
+# with an application access token is 200 calls per hour multiplied by the number of unique daily
+# active users, and that current consumption is reported in the X-App-Usage and
+# X-Business-Use-Case-Usage response headers. Because the ceiling is derived from a user count
+# rather than fixed, no qpsQuota is set. No idempotency mechanism is documented.
+schemaVersion: "1"
+type: "component"
+id: "facebook"
+kind: "third-party-api"
+provider: "default"
+defaults:
+  managed: true
+  hostedPage: false
+  handlesMoney: false
+properties:
+  callsPerHourPerUser:
+    type: "integer"
+    default: 200
+  usageHeader:
+    type: "string"
+    default: "X-App-Usage"

@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Elastic High Performance Computing (E-HPC): a computing service that aggregates compute capacity and uses
+# parallel computing for science, engineering and commercial workloads ("What is E-HPC?"). That page states a
+# cluster is built from management, compute and login nodes, that E-HPC configures a job scheduler on the
+# management node, and that the supported schedulers vary by image and include Slurm, PBS, LSF and Open Grid
+# Scheduler. "Create a hybrid cloud cluster in the E-HPC console" documents the hybrid-cloud deployment.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-e-hpc"
+kind: "big-data-cluster"
+provider: "alibabacloud"
+defaults:
+  managed: true
+  engine: "hpc"
+properties:
+  scheduler:
+    type: "enum"
+    values: ["slurm", "pbs", "lsf", "sge"]
+  deployment:
+    type: "enum"
+    values: ["cloud", "hybrid-cloud"]
+    default: "cloud"

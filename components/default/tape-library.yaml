@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Tape library: slots of magnetic tape cartridges, one or more tape drives and a robotic changer that
+# mounts them, used for backup and digital archiving; access takes seconds to minutes because the
+# mount is mechanical ("Tape library"). Frequency and retention are the backup software's, not the
+# library's, so neither is claimed here.
+schemaVersion: "1"
+type: "component"
+id: "tape-library"
+kind: "backup-service"
+provider: "default"
+defaults:
+  managed: false
+  crossRegionRestore: false
+properties:
+  driveCount:
+    type: "integer"
+  slotCount:
+    type: "integer"
+  mediaFormat:
+    type: "enum"
+    values: ["lto", "ibm-3592", "oracle-t10000"]
+  wormMedia:
+    type: "boolean"

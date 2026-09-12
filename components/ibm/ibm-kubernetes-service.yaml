@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Cloud Kubernetes Service: a "fully managed Kubernetes master that is continuously monitored
+# and updated by IBM", provisioned with three replicas for high availability and spread across
+# zones in a multizone metro ("Understanding IBM Cloud Kubernetes Service"). The same page states
+# that cluster access uses "IBM Cloud IAM service access roles, which correspond with Kubernetes
+# RBAC roles", and that clusters run on VPC, classic or Satellite infrastructure. The default
+# service endpoint exposure is not documented, so privateControlPlane is left unset.
+schemaVersion: "1"
+type: "component"
+id: "ibm-kubernetes-service"
+kind: "container-orchestrator"
+provider: "ibm"
+defaults:
+  managed: true
+  rbac: true
+properties:
+  infrastructure:
+    type: "enum"
+    values: ["vpc", "classic", "satellite"]
+  zoneSpread:
+    type: "enum"
+    values: ["single-zone", "multizone"]
+  masterReplicas:
+    type: "integer"
+    default: 3

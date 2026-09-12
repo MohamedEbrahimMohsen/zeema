@@ -25,7 +25,7 @@ The rule `pubsub-replay-required` fires: the design requires replay, and SNS can
 
 | Path | What |
 |---|---|
-| `kinds/` `components/` `rules/` `locales/` `icons/` `schema/` | The catalogue: 71 kinds, 1,623 components across six providers, 36 rules, display text, icons, JSON Schemas |
+| `kinds/` `components/` `rules/` `locales/` `icons/` `schema/` | The catalogue: 71 kinds, 1,855 components across twelve providers, 36 rules, display text, icons, JSON Schemas |
 | `designs/` | Reference designs (each with a deliberately broken twin), imported designs (with fidelity mappings), authored designs |
 | `packages/core` | The engine: span-preserving YAML, document operations, structural checks, rules, layout, geometry, renderers. Zero dependencies, no environment |
 | `packages/catalogue` | Loads the catalogue, builds the client bundle, runs the repository gate |

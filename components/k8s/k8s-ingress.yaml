@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Kubernetes Ingress: layer 7 HTTP and HTTPS routing from outside the cluster to Services, by
+# host and path. Per "Ingress" the object does nothing on its own -- an Ingress controller must be
+# running to fulfil it -- TLS is optional and off unless a tls section names a Secret, and each
+# path must declare a pathType of Prefix, Exact or ImplementationSpecific. The Ingress API is
+# frozen: the project recommends Gateway API for new work, but Ingress remains stable and supported.
+schemaVersion: "1"
+type: "component"
+id: "k8s-ingress"
+kind: "load-balancer"
+provider: "k8s"
+defaults:
+  managed: false
+  layer: "l7"
+  global: false
+properties:
+  tlsEnabled:
+    type: "boolean"
+    default: false
+  pathType:
+    type: "enum"
+    values: ["prefix", "exact", "implementation-specific"]
+  ingressControllerRequired:
+    type: "boolean"
+    default: true

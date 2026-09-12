@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OUTSCALE security group: the rule set attached to VMs that decides which flows reach them
+# ("About Security Groups"). That page states the defaults: a security group allows no inbound
+# flow unless you add a rule, the default group of a Net lets VMs of that group talk to each
+# other in TCP, UDP and ICMP, a group created in a Net starts with one rule allowing all
+# outbound flows, and in a Net both inbound and outbound flows are filtered while in the
+# public Cloud only inbound flows are ("About VMs").
+schemaVersion: "1"
+type: "component"
+id: "outscale-security-group"
+kind: "firewall"
+provider: "outscale"
+defaults:
+  managed: true
+  defaultAction: "deny"
+properties:
+  defaultInboundRules:
+    type: "enum"
+    values: ["none", "self-referencing"]
+    default: "none"
+  defaultOutboundAllowAll:
+    type: "boolean"
+    default: true
+  outboundFiltering:
+    type: "enum"
+    values: ["net-only", "none"]
+    default: "net-only"

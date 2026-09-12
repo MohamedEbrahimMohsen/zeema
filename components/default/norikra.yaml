@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Norikra: "Stream processing with SQL for everybody" - a JRuby/JVM server whose queries are "SQL with
+# window specifier support (It's actually Esper's EPL)", including joins and subqueries. Input and
+# output events are schemaless JSON, and state is memory only: "norikra stores query output events
+# into built-in memory pool" and "norikra does not use disks" ("Norikra: Stream processing with SQL
+# for everybody"). Windowing is per query, so none is claimed here.
+schemaVersion: "1"
+type: "component"
+id: "norikra"
+kind: "stream-processor"
+provider: "default"
+defaults:
+  managed: false
+  stateBackend: "memory"
+  exactlyOnce: false
+properties:
+  schemaless:
+    type: "boolean"
+    default: true
+  persistsToDisk:
+    type: "boolean"
+    default: false
+  queryLanguage:
+    type: "enum"
+    values: ["esper-epl"]
+    default: "esper-epl"

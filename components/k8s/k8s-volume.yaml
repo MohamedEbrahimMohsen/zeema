@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Kubernetes Volume: a directory mounted into a Pod's containers. Per "Volumes" an ephemeral volume
+# lives exactly as long as its Pod and is destroyed with it, while a volume backed by a
+# PersistentVolumeClaim outlives the Pod; data in any volume survives a container crash or restart.
+# An emptyDir is stored on whatever medium backs the node unless emptyDir.medium is set to Memory.
+schemaVersion: "1"
+type: "component"
+id: "k8s-volume"
+kind: "block-storage"
+provider: "k8s"
+defaults:
+  managed: false
+properties:
+  lifetime:
+    type: "enum"
+    values: ["ephemeral", "persistent"]
+    default: "ephemeral"
+  volumeSource:
+    type: "enum"
+    values: ["empty-dir", "host-path", "config-map", "secret", "downward-api", "projected", "persistent-volume-claim", "nfs", "iscsi", "local", "image", "csi"]
+  emptyDirMedium:
+    type: "enum"
+    values: ["node-disk", "memory"]
+    default: "node-disk"
+  survivesContainerRestart:
+    type: "boolean"
+    default: true
+  survivesPodDeletion:
+    type: "boolean"
+    default: false

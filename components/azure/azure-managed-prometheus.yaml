@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Monitor managed service for Prometheus: a fully managed Prometheus-compatible metric store backed by
+# an Azure Monitor workspace ("Overview of Azure Monitor with Prometheus"). That page states data is stored
+# for 18 months at no additional cost, that collection is by scraping AKS and Azure Arc-enabled Kubernetes
+# through the Azure Monitor agent and a data collection rule, that a predefined set of recording rules is
+# deployed automatically, and that remote write from a self-managed Prometheus is an optional integration.
+schemaVersion: "1"
+type: "component"
+id: "azure-managed-prometheus"
+kind: "monitoring"
+provider: "azure"
+defaults:
+  managed: true
+  signal: "metrics"
+  collectorMode: "pull"
+properties:
+  retentionMonths:
+    type: "integer"
+    default: 18
+  queryLanguage:
+    type: "enum"
+    values: ["promql"]
+    default: "promql"
+  recordingRules:
+    type: "boolean"
+    default: true
+  remoteWrite:
+    type: "boolean"
+    default: false

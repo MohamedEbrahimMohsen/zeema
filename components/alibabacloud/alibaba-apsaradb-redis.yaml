@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# ApsaraDB for Redis: managed in-memory key-value store compatible with the Redis protocol.
+# "What is Tair (Redis OSS-compatible)?" describes a fully managed cloud-native database on an
+# active-active high-availability cluster architecture that stores data in both memory and on disk
+# using the AOF and RDB persistence policies, and gives the two editions, Redis Open-Source Edition
+# and Tair (Enterprise Edition), with DRAM, persistent memory and ESSD/SSD storage media. No default
+# eviction policy is stated in the documentation, so none is set here.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-apsaradb-redis"
+kind: "cache"
+provider: "alibabacloud"
+defaults:
+  managed: true
+  persistence: true
+  structure: "key-value"
+  tier: "core"
+properties:
+  edition:
+    type: "enum"
+    values: ["redis-open-source", "tair-enterprise"]
+  storageMedium:
+    type: "enum"
+    values: ["dram", "persistent-memory", "essd"]
+  architecture:
+    type: "enum"
+    values: ["standard", "cluster", "read-write-splitting"]

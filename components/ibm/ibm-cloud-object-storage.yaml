@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Cloud Object Storage: buckets addressed by key, placed as Cross Region, Regional or Single
+# Data Center; Regional spreads data across three data centres in one metro ("Endpoints and
+# storage locations"). "Encrypting your data" states that server-side encryption at rest is on by
+# default using randomly generated keys and an all-or-nothing transform, with SSE-C, Key Protect
+# and Hyper Protect Crypto Services as customer-managed options. A bucket is unversioned by
+# default and a retention policy cannot coexist with versioning ("Versioning objects"); storage
+# classes come from "Using storage classes", which names no default.
+schemaVersion: "1"
+type: "component"
+id: "ibm-cloud-object-storage"
+kind: "object-store"
+provider: "ibm"
+defaults:
+  managed: true
+  encryptionAtRest: true
+  versioning: false
+  objectLock: false
+properties:
+  resiliency:
+    type: "enum"
+    values: ["cross-region", "regional", "single-data-center"]
+  storageClass:
+    type: "enum"
+    values: ["smart-tier", "standard", "vault", "cold-vault"]
+  keyManagement:
+    type: "enum"
+    values: ["provider-managed", "sse-c", "key-protect", "hyper-protect-crypto-services"]
+    default: "provider-managed"

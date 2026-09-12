@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apache Airflow: open source platform for developing, scheduling and monitoring workflows written
+# as Python DAGs ("What is Airflow?"). "Architecture Overview" makes the scheduler, dag processor,
+# dag bundle, API server and metadata database the required parts and the triggerer and workers
+# optional. "Executor" gives LocalExecutor as the shipped executor; "Set up a Database Backend"
+# gives SQLite as the backend on first install and says it must never be used for production.
+# "Configuration Reference" gives parallelism 32, max_active_tasks_per_dag 16 and API port 8080.
+schemaVersion: "1"
+type: "component"
+id: "airflow"
+kind: "workflow-engine"
+provider: "default"
+defaults:
+  durable: true
+  pattern: "dag"
+  compensation: false
+  managed: false
+properties:
+  executor:
+    type: "enum"
+    values: ["local", "celery", "kubernetes", "edge"]
+    default: "local"
+  metadataDatabase:
+    type: "enum"
+    values: ["sqlite", "postgres", "mysql"]
+    default: "sqlite"
+  parallelism:
+    type: "integer"
+    default: 32
+  maxActiveTasksPerDag:
+    type: "integer"
+    default: 16
+  apiPort:
+    type: "integer"
+    default: 8080

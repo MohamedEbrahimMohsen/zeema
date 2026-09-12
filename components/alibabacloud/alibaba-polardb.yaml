@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# PolarDB: cloud-native relational database with decoupled storage and compute. "What is PolarDB"
+# states that a Cluster Edition cluster contains one read/write node and multiple read-only nodes,
+# that multiple compute nodes share a single data copy, that PolarDB supports centralized and
+# distributed deployments, and that the engines are PolarDB for MySQL, PolarDB for PostgreSQL and
+# PolarDB for PostgreSQL (Oracle-compatible).
+schemaVersion: "1"
+type: "component"
+id: "alibaba-polardb"
+kind: "sql-database"
+provider: "alibabacloud"
+defaults:
+  managed: true
+  multiWriter: false
+properties:
+  engine:
+    type: "enum"
+    values: ["mysql", "postgresql", "postgresql-oracle-compatible"]
+  deployment:
+    type: "enum"
+    values: ["centralized", "distributed"]
+  sharedStorage:
+    type: "boolean"
+    default: true

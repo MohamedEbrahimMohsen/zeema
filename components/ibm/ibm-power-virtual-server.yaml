@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Power Virtual Server: a logical partition on IBM Power hardware in IBM Cloud data centres,
+# running AIX, IBM i or Linux ("Getting started with IBM Power Virtual Server"). "Creating an IBM
+# Power Virtual Server instance" lists shared capped, shared uncapped and dedicated processor
+# modes and Tier 1 and Tier 3 storage without naming a default, and states that public networks
+# must be selected explicitly, so no public address is attached by default.
+schemaVersion: "1"
+type: "component"
+id: "ibm-power-virtual-server"
+kind: "virtual-machine"
+provider: "ibm"
+defaults:
+  managed: false
+  publicIp: false
+properties:
+  processorMode:
+    type: "enum"
+    values: ["shared-capped", "shared-uncapped", "dedicated"]
+  storageTier:
+    type: "enum"
+    values: ["tier-1", "tier-3"]
+  machineType:
+    type: "enum"
+    values: ["s922", "e980", "e1080"]

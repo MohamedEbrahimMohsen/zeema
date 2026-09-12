@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenStack Telemetry (Ceilometer): collects and normalises measurement data across OpenStack services.
+# Per "System Architecture" polling agents poll APIs at a regular interval while notification agents listen on
+# the message queue, and Ceilometer "is designed solely to generate and normalise cloud data" - it retains
+# nothing itself, publishing instead to Gnocchi, Aodh, Prometheus, HTTP, UDP, file or Zaqar.
+schemaVersion: "1"
+type: "component"
+id: "openstack-telemetry"
+kind: "monitoring"
+provider: "openstack"
+defaults:
+  signal: "metrics"
+  collectorMode: "pull"
+  managed: false
+properties:
+  pollingAgent:
+    type: "boolean"
+    default: true
+  notificationAgent:
+    type: "boolean"
+    default: true
+  storesData:
+    type: "boolean"
+    default: false
+  publisher:
+    type: "enum"
+    values: ["gnocchi", "aodh", "prometheus", "http", "udp", "file", "zaqar", "notifier"]

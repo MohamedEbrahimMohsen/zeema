@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Data Encryption Service: the hardware-backed key store of Key Management Service. "What is a managed
+# HSM" states that managed HSM gives dedicated, certified hardware security modules on Alibaba Cloud,
+# that plaintext key material is processed and stored only inside HSMs and never crosses the hardware
+# security boundary, that the HSM hardware and firmware have passed FIPS 140-2 Level 3 validation and
+# run in FIPS Approved Level 3 mode, that Bring Your Own Key controls how key material is generated
+# and persisted, and that Alibaba Cloud handles hardware lifecycle, cluster management and availability.
+# "What is Key Management Service" adds that KMS offers shared virtual HSMs and dedicated HSMs and
+# supports automatic and manual key rotation; it states no default rotation state, so none is set here.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-data-encryption-service"
+kind: "key-management"
+provider: "alibabacloud"
+defaults:
+  managed: true
+  hsm: true
+properties:
+  hsmType:
+    type: "enum"
+    values: ["shared-virtual-hsm", "dedicated-hsm"]
+  fipsValidationLevel:
+    type: "enum"
+    values: ["fips-140-2-level-3"]
+    default: "fips-140-2-level-3"
+  bringYourOwnKey:
+    type: "boolean"
+    default: true

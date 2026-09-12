@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Microsoft Entra Private Access: brokered access to private FQDNs and IP ranges that replaces a VPN
+# ("Learn about Microsoft Entra Private Access"). That page states users reach resources through the Global
+# Secure Access Client, that each Quick Access or Global Secure Access app has its own Microsoft Entra
+# private network connector brokering the connection to the internal resource, and that Conditional Access
+# policies control access to the app.
+schemaVersion: "1"
+type: "component"
+id: "azure-entra-private-access"
+kind: "bastion-host"
+provider: "azure"
+defaults:
+  managed: true
+properties:
+  accessModel:
+    type: "enum"
+    values: ["quick-access", "per-app"]
+  connectorRequired:
+    type: "boolean"
+    default: true
+  clientRequired:
+    type: "boolean"
+    default: true

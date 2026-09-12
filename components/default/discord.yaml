@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Discord API: hosted REST and realtime API for bots and integrations ("Discord Developer
+# Platform"). "Rate Limits" states all bots can make up to 50 requests per second to the API on
+# top of the per-route buckets. Events reach a bot over the Gateway WebSocket; an application may
+# instead register an interactions endpoint URL that Discord posts to. No idempotency mechanism
+# is documented, so idempotent is left undeclared.
+schemaVersion: "1"
+type: "component"
+id: "discord"
+kind: "third-party-api"
+provider: "default"
+defaults:
+  managed: true
+  qpsQuota: 50
+  callbackStyle: "webhook"
+  hostedPage: false
+  handlesMoney: false
+properties:
+  eventTransport:
+    type: "enum"
+    values: ["gateway", "interactions-endpoint"]
+    default: "gateway"
+  outgoingWebhooks:
+    type: "boolean"
+    default: false

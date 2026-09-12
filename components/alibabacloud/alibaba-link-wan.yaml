@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Alibaba Cloud Link WAN: managed LoRaWAN network platform. The Link WAN documentation describes
+# gateway management, node management, network maintenance and traffic computing features, states that
+# the node management feature is compatible with the latest LoRaWAN protocol, and that a gateway can be
+# connected in three steps. "Hybrid gateway" describes a LoRaWAN edge solution running Alibaba Cloud
+# IoT firmware that connects to the public cloud Link WAN and also outputs local data to an edge server.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-link-wan"
+kind: "iot-hub"
+provider: "alibabacloud"
+defaults:
+  managed: true
+  protocol: "lorawan"
+properties:
+  gatewayManagement:
+    type: "boolean"
+    default: true
+  nodeManagement:
+    type: "boolean"
+    default: true
+  hybridGateway:
+    type: "boolean"
+    default: false

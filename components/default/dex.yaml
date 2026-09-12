@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Dex: "an identity service that uses OpenID Connect to drive authentication for other apps", acting
+# as "a portal to other identity providers through 'connectors'" - LDAP, SAML, GitHub, Google, Active
+# Directory. It defers authentication rather than owning a user directory, and keeps its state in
+# etcd, Kubernetes, PostgreSQL, MySQL, SQLite or memory ("Documentation"). It issues tokens and leaves
+# authorization to the applications that consume them.
+schemaVersion: "1"
+type: "component"
+id: "dex"
+kind: "identity-provider"
+provider: "default"
+defaults:
+  managed: false
+  protocol: "oidc"
+  authorizationModel: "none"
+  centralised: true
+  mfa: false
+properties:
+  storageBackend:
+    type: "enum"
+    values: ["etcd", "kubernetes", "postgres", "mysql", "sqlite", "memory"]
+  upstreamConnectors:
+    type: "boolean"
+    default: true
+  localPasswordDatabase:
+    type: "boolean"
+    default: false

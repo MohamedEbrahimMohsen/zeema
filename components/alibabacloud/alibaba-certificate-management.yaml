@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Certificate Management Service: Alibaba Cloud's platform for issuing and managing digital
+# certificates. "What is Certificate Management Service?": it covers public SSL certificates,
+# private certificates from Private Certificate Authority and HTTPS Acceleration Gateway, with
+# one-click deployment to Alibaba Cloud products and automatic renewal. "What is Private Certificate
+# Authority (PCA)?": a root CA is the trust anchor and issues only intermediate CA certificates,
+# and each root CA instance ships one root CA, one intermediate CA and a complimentary quota of ten
+# private certificates that are valid for thirty days from issuance.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-certificate-management"
+kind: "key-management"
+provider: "alibabacloud"
+defaults:
+  managed: true
+properties:
+  certificateType:
+    type: "enum"
+    values: ["public-ssl", "private-ca", "acceleration-gateway"]
+    default: "public-ssl"
+  privateCaTier:
+    type: "enum"
+    values: ["root", "intermediate"]
+    default: "root"
+  bundledIntermediateCas:
+    type: "integer"
+    default: 1
+  complimentaryPrivateCertificates:
+    type: "integer"
+    default: 10

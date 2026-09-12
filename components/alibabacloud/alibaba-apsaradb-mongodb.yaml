@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# ApsaraDB for MongoDB: managed MongoDB-compatible document database. "What is ApsaraDB for MongoDB?"
+# describes a document store built on the distributed Apsara system that keeps JSON-like documents and
+# uses a multi-node architecture for high availability within a region; the same page lists transparent
+# data encryption (TDE) among the security features you turn on, alongside RAM authorization, audit
+# logs, network isolation, whitelists and password authentication. "Deploy MongoDB Replica Sets &
+# Sharded Clusters" gives the standalone, replica set and sharded cluster architectures.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-apsaradb-mongodb"
+kind: "nosql-database"
+provider: "alibabacloud"
+defaults:
+  managed: true
+  model: "document"
+  replication: "single-region"
+properties:
+  architecture:
+    type: "enum"
+    values: ["standalone", "replica-set", "sharded-cluster"]
+  transparentDataEncryption:
+    type: "boolean"
+  auditLog:
+    type: "boolean"

@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Mobile Push (Message Push Service, part of Mobile PaaS): a mobile push service that transmits notification
+# data through long-lived TCP connections or third-party vendor channels ("What is Mobile Push Service MPS").
+# That page states iOS devices are reached through APNs, Android devices outside China through Firebase Cloud
+# Messaging, and that vendor channels from Huawei, Xiaomi, OPPO and vivo are integrated to raise the delivery
+# rate. It is a push channel only, so email and SMS are off.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-mobile-push"
+kind: "notification-service"
+provider: "alibabacloud"
+defaults:
+  managed: true
+  channelPush: true
+  channelEmail: false
+  channelSms: false
+properties:
+  transport:
+    type: "enum"
+    values: ["persistent-tcp", "vendor-channel"]
+  vendorChannelIntegration:
+    type: "boolean"
+    default: true

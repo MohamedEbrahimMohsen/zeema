@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Winlogbeat: "ships Windows event logs to Elasticsearch or Logstash". It reads the configured event
+# log channels - application, security, system, hardware - through the Windows APIs, applies filters,
+# runs as a Windows service and persists its read position so a restart resumes where it stopped
+# ("Winlogbeat").
+schemaVersion: "1"
+type: "component"
+id: "winlogbeat"
+kind: "monitoring"
+provider: "default"
+defaults:
+  managed: false
+  signal: "logs"
+  collectorMode: "push"
+properties:
+  channel:
+    type: "enum"
+    values: ["application", "security", "system", "hardware"]
+  runsAsWindowsService:
+    type: "boolean"
+    default: true
+  readPositionPersisted:
+    type: "boolean"
+    default: true

@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Kubernetes CronJob: creates Jobs on a repeating cron schedule. Per "CronJob" the concurrency
+# policy defaults to Allow, so a run may start while the previous one is still going;
+# successfulJobsHistoryLimit defaults to 3 and failedJobsHistoryLimit to 1; suspend defaults to
+# false; and with no startingDeadlineSeconds set the Job occurrences have no deadline.
+schemaVersion: "1"
+type: "component"
+id: "k8s-cronjob"
+kind: "worker"
+provider: "k8s"
+defaults:
+  trigger: "schedule"
+  managed: false
+properties:
+  concurrencyPolicy:
+    type: "enum"
+    values: ["allow", "forbid", "replace"]
+    default: "allow"
+  successfulJobsHistoryLimit:
+    type: "integer"
+    default: 3
+  failedJobsHistoryLimit:
+    type: "integer"
+    default: 1
+  suspend:
+    type: "boolean"
+    default: false

@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Game Shield: DDoS and CC mitigation built for game traffic. The GameShield documentation describes a
+# customisable network security solution for the game industry that defends against TCP CC attacks and
+# Tb-level DDoS attacks, integrates an SDK into the client so genuine users can be separated from
+# attackers by dynamic scheduling, spreads attacks across nodes deployed over the entire network so
+# they are not concentrated on a single point, has game security gateways that automatically intercept
+# empty and slow TCP connection requests, and offers an ISP-level UDP block service on single-ISP-line
+# protection nodes.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-game-shield"
+kind: "ddos-protection"
+provider: "alibabacloud"
+defaults:
+  managed: true
+  scope: "network"
+properties:
+  sdkRequired:
+    type: "boolean"
+    default: true
+  emptyConnectionInterception:
+    type: "boolean"
+    default: true
+  udpBlock:
+    type: "boolean"

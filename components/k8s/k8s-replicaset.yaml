@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Kubernetes ReplicaSet: keeps a stable number of identical Pods running. Per "ReplicaSet" the
+# recommended way to use it is indirectly, through a Deployment that owns it, and a ReplicaSet
+# acquires any existing Pod whose labels match its selector ("Non-Template Pod acquisitions").
+# Per the ReplicaSetSpec reference replicas defaults to 1 and minReadySeconds to 0. A ReplicaSet
+# has no rollout machinery of its own and does not autoscale without a separate HPA.
+schemaVersion: "1"
+type: "component"
+id: "k8s-replicaset"
+kind: "app-server"
+provider: "k8s"
+defaults:
+  managed: false
+  stateless: true
+  instances: 1
+  autoscaling: false
+properties:
+  podAcquisitionByLabel:
+    type: "boolean"
+    default: true
+  minReadySeconds:
+    type: "integer"
+    default: 0

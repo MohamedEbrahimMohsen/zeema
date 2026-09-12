@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloud Enterprise Network (CEN): private backbone that joins VPCs and on-premises networks.
+# "What is Cloud Enterprise Network?" describes a highly available network service that runs on Alibaba
+# Cloud's private global network and uses transit routers as hubs to establish private channels between
+# VPCs across regions and between VPCs and on-premises data centres; a transit router forwards traffic
+# by looking up its route tables, and route association and route learning define connectivity,
+# isolation and traffic steering policies.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-cen"
+kind: "network-fabric"
+provider: "alibabacloud"
+defaults:
+  managed: true
+  interconnect: "cloud-backbone"
+properties:
+  transitRouterEdition:
+    type: "enum"
+    values: ["basic", "enterprise"]
+  routeLearning:
+    type: "boolean"
+    default: true
+  crossRegionConnectivity:
+    type: "boolean"
+    default: true

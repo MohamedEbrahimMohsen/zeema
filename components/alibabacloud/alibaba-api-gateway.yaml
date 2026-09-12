@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# API Gateway: the API hosting front door, sold as a Traditional series and a Cloud-native series ("Product
+# overview"). "What is Cloud-native API Gateway" lists HTTPS certificates, IP blacklists and whitelists and
+# JWT, OIDC and IDaaS authentication under security authentication, throttling under traffic governance, and
+# REST, HTTP and WebSocket as the API types, which is why tls and rateLimiting are on. "What is API Gateway"
+# records that the Traditional series is in maintenance mode: new purchases end 2026-08-23 and the series is
+# discontinued (end of support) 2027-09-21, with migration to the Cloud-native series recommended.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-api-gateway"
+kind: "api-gateway"
+provider: "alibabacloud"
+defaults:
+  managed: true
+  tls: true
+  rateLimiting: true
+  protocol: "http"
+properties:
+  series:
+    type: "enum"
+    values: ["traditional", "cloud-native", "ai"]
+    default: "cloud-native"
+  instanceType:
+    type: "enum"
+    values: ["shared", "dedicated"]
+  ipAccessControl:
+    type: "boolean"

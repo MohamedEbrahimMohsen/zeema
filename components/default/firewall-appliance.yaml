@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Generic firewall appliance whose product the design does not name: a network security system that
+# "monitors and controls incoming and outgoing network traffic based on configurable security rules",
+# deployed as a hardware, software or virtual appliance. Packet filters silently discard what no rule
+# allows, so the default action is deny ("Firewall (computing)").
+schemaVersion: "1"
+type: "component"
+id: "firewall-appliance"
+kind: "firewall"
+provider: "default"
+defaults:
+  managed: false
+  defaultAction: "deny"
+properties:
+  inspection:
+    type: "enum"
+    values: ["packet-filter", "stateful", "application-layer"]

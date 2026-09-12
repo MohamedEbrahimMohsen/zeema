@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure network interface: the NIC that attaches a virtual machine to a subnet of a virtual network
+# ("Create, Change, or Delete Azure Network Interfaces"). That page states IP forwarding is Disabled by
+# default, that the private IP address is assigned by the Azure DHCP server either dynamically or
+# statically, and that the portal gives no option to attach a public IP address when the NIC itself is
+# created.
+schemaVersion: "1"
+type: "component"
+id: "azure-network-interface"
+kind: "network-fabric"
+provider: "azure"
+defaults:
+  managed: true
+  overlay: true
+  interconnect: "private"
+properties:
+  ipForwarding:
+    type: "boolean"
+    default: false
+  publicIp:
+    type: "boolean"
+    default: false
+  privateIpAllocation:
+    type: "enum"
+    values: ["dynamic", "static"]
+  acceleratedNetworking:
+    type: "boolean"

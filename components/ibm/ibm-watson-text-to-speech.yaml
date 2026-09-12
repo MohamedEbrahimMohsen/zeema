@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Watson Text to Speech: a metered IBM Cloud endpoint that synthesises text into a streamed
+# audio response ("About Text to Speech"). "Information security" covers only labelling and
+# deletion of customer data, so no retention period, quota or filtering default is set here.
+schemaVersion: "1"
+type: "component"
+id: "ibm-watson-text-to-speech"
+kind: "ai-service"
+provider: "ibm"
+defaults:
+  managed: true
+  modality: "speech"
+properties:
+  customModel:
+    type: "boolean"
+    default: false

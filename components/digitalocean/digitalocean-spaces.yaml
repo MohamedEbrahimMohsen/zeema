@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# DigitalOcean Spaces Object Storage: "an S3-compatible service for storing and serving large
+# amounts of data" with a built-in CDN ("Spaces Object Storage"). "Spaces Features": Ceph-backed
+# for redundancy and fault tolerance, Standard storage with an optional Cold Storage tier carrying
+# a 99.5% SLA, and CDN and versioning both configured on rather than on by default. "Spaces
+# Limits": 100 buckets and 200 access keys per account, PUT requests up to 5 GB (5 TB via
+# multipart), 100 million unversioned objects per bucket and 800 operations per second.
+schemaVersion: "1"
+type: "component"
+id: "digitalocean-spaces"
+kind: "object-store"
+provider: "digitalocean"
+defaults:
+  managed: true
+  tier: "hot"
+  versioning: false
+properties:
+  s3Compatible:
+    type: "boolean"
+    default: true
+  cdn:
+    type: "boolean"
+    default: false
+  maxBucketsPerAccount:
+    type: "integer"
+    default: 100
+  maxPutSizeGb:
+    type: "integer"
+    default: 5
+  operationsPerSecond:
+    type: "integer"
+    default: 800

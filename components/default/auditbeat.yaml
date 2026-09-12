@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Auditbeat: "a lightweight shipper that you can install on your servers to audit the activities of
+# users and processes on your systems", built on libbeat. It reads events from the Linux Audit
+# Framework and watches critical binaries and configuration files for change, shipping to
+# Elasticsearch or Logstash ("Auditbeat").
+schemaVersion: "1"
+type: "component"
+id: "auditbeat"
+kind: "monitoring"
+provider: "default"
+defaults:
+  managed: false
+  signal: "logs"
+  collectorMode: "push"
+properties:
+  module:
+    type: "enum"
+    values: ["auditd", "file-integrity", "system"]
+  output:
+    type: "enum"
+    values: ["elasticsearch", "logstash"]

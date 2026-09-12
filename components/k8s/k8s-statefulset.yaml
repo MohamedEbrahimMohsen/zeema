@@ -1,0 +1,41 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Kubernetes StatefulSet: manages Pods with stable ordinal identities, stable network names and
+# per-Pod PersistentVolumeClaims. Per "StatefulSets" replicas defaults to 1, minReadySeconds to 0,
+# the Pod management policy is OrderedReady (Pods are created and removed one at a time, in order)
+# and deleting or scaling down a StatefulSet does not delete the associated volumes. Per the
+# StatefulSetSpec reference updateStrategy defaults to RollingUpdate with partition 0 and
+# revisionHistoryLimit 10.
+schemaVersion: "1"
+type: "component"
+id: "k8s-statefulset"
+kind: "app-server"
+provider: "k8s"
+defaults:
+  managed: false
+  stateless: false
+  instances: 1
+  autoscaling: false
+  ownsData: true
+properties:
+  podManagementPolicy:
+    type: "enum"
+    values: ["ordered-ready", "parallel"]
+    default: "ordered-ready"
+  updateStrategy:
+    type: "enum"
+    values: ["rolling-update", "on-delete"]
+    default: "rolling-update"
+  partition:
+    type: "integer"
+    default: 0
+  revisionHistoryLimit:
+    type: "integer"
+    default: 10
+  pvcRetentionWhenDeleted:
+    type: "enum"
+    values: ["retain", "delete"]
+    default: "retain"
+  pvcRetentionWhenScaled:
+    type: "enum"
+    values: ["retain", "delete"]
+    default: "retain"

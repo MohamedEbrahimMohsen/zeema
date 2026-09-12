@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Watson Speech to Text: a metered IBM Cloud endpoint that transcribes audio to text
+# ("About Speech to Text"). "Information security" is the page that states the data handling:
+# customer data is labelled with X-Watson-Metadata and deleted with DELETE /v1/user_data, and
+# data used for custom models must not carry PHI. No retention period or quota is published,
+# so neither is set here.
+schemaVersion: "1"
+type: "component"
+id: "ibm-watson-speech-to-text"
+kind: "ai-service"
+provider: "ibm"
+defaults:
+  managed: true
+  modality: "speech"
+properties:
+  customModel:
+    type: "boolean"
+    default: false

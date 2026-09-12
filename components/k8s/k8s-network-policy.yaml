@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Kubernetes NetworkPolicy: an allow list for pod-to-pod and pod-to-world traffic at OSI layer 3
+# or 4. Per "Network Policies" pods are non-isolated until a policy selects them and accept traffic
+# from any source; once selected, only connections matching a rule are allowed, reply traffic is
+# implicitly allowed, and policies are additive so evaluation order does not matter. If policyTypes
+# is omitted, Ingress is always set and Egress only when egress rules exist. Enforcement requires a
+# network plugin that supports NetworkPolicy; without one the object has no effect.
+schemaVersion: "1"
+type: "component"
+id: "k8s-network-policy"
+kind: "firewall"
+provider: "k8s"
+defaults:
+  managed: false
+  defaultAction: "deny"
+  stateful: true
+properties:
+  policyScope:
+    type: "enum"
+    values: ["ingress", "egress", "ingress-egress"]
+    default: "ingress"
+  pluginEnforcementRequired:
+    type: "boolean"
+    default: true
+  additiveRules:
+    type: "boolean"
+    default: true

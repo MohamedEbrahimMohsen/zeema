@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# ApsaraDB RDS: managed relational database instance. "What is ApsaraDB RDS?" gives the MySQL, SQL
+# Server, PostgreSQL and MariaDB engines, primary/secondary replication with automatic failover and
+# cross-zone disaster recovery behind a 99.99% availability SLA, and lists automatic scheduled backups,
+# cross-region backup and point-in-time recovery among the backup capabilities. The page states no
+# default backup retention period and no default encryption state, so neither is set here.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-rds"
+kind: "sql-database"
+provider: "alibabacloud"
+defaults:
+  managed: true
+properties:
+  engine:
+    type: "enum"
+    values: ["mysql", "sql-server", "postgresql", "mariadb"]
+  primarySecondaryReplication:
+    type: "boolean"
+    default: true
+  automaticFailover:
+    type: "boolean"
+    default: true
+  crossRegionBackup:
+    type: "boolean"

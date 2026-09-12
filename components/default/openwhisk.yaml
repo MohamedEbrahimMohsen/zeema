@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apache OpenWhisk: open source serverless platform that runs actions, "stateless functions (code
+# snippets) that run on the OpenWhisk platform", invoked manually or by rules bound to triggers -
+# "named channels for classes or kinds of events sent from Event Sources". Actions compose into
+# sequences, and languages without an official runtime run as custom Docker actions
+# ("Documentation"). No default action timeout or memory limit is published.
+schemaVersion: "1"
+type: "component"
+id: "openwhisk"
+kind: "app-server"
+provider: "default"
+defaults:
+  managed: false
+  stateless: true
+  ownsData: false
+properties:
+  invocation:
+    type: "enum"
+    values: ["manual", "trigger-rule"]
+  sequences:
+    type: "boolean"
+    default: true
+  customDockerActions:
+    type: "boolean"
+    default: true

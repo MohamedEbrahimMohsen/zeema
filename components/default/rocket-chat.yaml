@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Rocket.Chat: team messaging and collaboration server. "Deploy Rocket.Chat" lists on-premise,
+# air-gapped and Rocket.Chat Cloud deployments, with Docker, Kubernetes and Podman as the
+# self-hosted paths. "System Requirements" gives the runtime as Node.js (22.22.3 for Rocket.Chat
+# 8.8, bundled in the official images) and requires MongoDB 8.0 or later; a three-member replica
+# set is recommended for high availability rather than being the shipped configuration, so
+# mongodbReplicaSet carries no default.
+schemaVersion: "1"
+type: "component"
+id: "rocket-chat"
+kind: "app-server"
+provider: "default"
+defaults:
+  managed: false
+  runtime: "nodejs"
+  ownsData: true
+properties:
+  deployment:
+    type: "enum"
+    values: ["on-premise", "air-gapped", "cloud"]
+  mongodbReplicaSet:
+    type: "boolean"
+  replicaSetMembers:
+    type: "integer"

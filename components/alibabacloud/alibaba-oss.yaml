@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Alibaba Cloud Object Storage Service: regional object store for unstructured data.
+# "What is OSS": a successful PUT is immediately readable, server-side encryption is applied only
+# when configured, and versioning is an opt-in bucket-level protection feature. "What are the
+# storage classes of OSS?" and "Storage redundancy types for OSS": Standard is the storage class of
+# an uploaded object, Standard LRS is designed for eleven nines of durability and ZRS, which spreads
+# data over three availability zones where the region has them, for twelve.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-oss"
+kind: "object-store"
+provider: "alibabacloud"
+defaults:
+  tier: "hot"
+  strongReadAfterWrite: true
+  versioning: false
+  encryptionAtRest: false
+  managed: true
+properties:
+  storageClass:
+    type: "enum"
+    values: ["standard", "infrequent-access", "archive", "cold-archive", "deep-cold-archive"]
+    default: "standard"
+  redundancyType:
+    type: "enum"
+    values: ["lrs", "zrs"]
+  lrsDurabilityNines:
+    type: "integer"
+    default: 11
+  zrsDurabilityNines:
+    type: "integer"
+    default: 12

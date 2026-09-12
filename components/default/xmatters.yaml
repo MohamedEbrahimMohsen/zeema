@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# xMatters: vendor-hosted (On-Demand) alerting and incident notification service. "Manage your
+# devices" and "Device management" list the device types a recipient can register: the xMatters
+# mobile app as a push device, email devices, voice phones, SMS and text devices, pagers, and
+# chat apps such as Microsoft Teams and Slack. The same pages document per-device priority
+# thresholds, contact timeframes, a failsafe flag, and a configured device order with delays
+# between devices, which is how an alert escalates across a recipient's devices.
+schemaVersion: "1"
+type: "component"
+id: "xmatters"
+kind: "notification-service"
+provider: "default"
+defaults:
+  managed: true
+  channelPush: true
+  channelEmail: true
+  channelSms: true
+properties:
+  channelVoice:
+    type: "boolean"
+    default: true
+  deviceOrdering:
+    type: "boolean"
+    default: true
+  failsafeDevice:
+    type: "boolean"
+    default: false
+  chatAppDelivery:
+    type: "boolean"
+    default: true

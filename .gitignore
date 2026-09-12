@@ -9,3 +9,5 @@ dist/
 coverage/
 apps/web/data/*.db
 apps/web/.pglite/
+work/
+__pycache__/

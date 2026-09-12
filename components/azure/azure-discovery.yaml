@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Microsoft Discovery: an agentic research platform built on Azure that combines agent orchestration,
+# reasoning, a graph-based knowledge foundation and high performance computing ("What is Microsoft
+# Discovery?"). That page states the Discovery Engine stores its outcomes in a long-term memory knowledge
+# graph, that agents run in-silico experiments on HPC clusters, that built-in governance controls provide
+# central management and audit trails, and that the product ships as an enterprise cloud service and a
+# desktop app. Microsoft Discovery is in public preview.
+schemaVersion: "1"
+type: "component"
+id: "azure-discovery"
+kind: "ai-service"
+provider: "azure"
+defaults:
+  managed: true
+properties:
+  experience:
+    type: "enum"
+    values: ["cloud-service", "desktop-app"]
+  knowledgeGraph:
+    type: "boolean"
+    default: true
+  hpcIntegration:
+    type: "boolean"
+    default: true
+  governanceControls:
+    type: "boolean"
+    default: true

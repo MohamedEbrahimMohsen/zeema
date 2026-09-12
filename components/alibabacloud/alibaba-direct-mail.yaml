@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# DirectMail: "a simple and efficient email sending service" for transactional, notification and batch email
+# ("What is Direct Mail"). It is an email-only channel: that page splits traffic into triggered emails and
+# batch emails, holds recipient lists and email templates in the console, and exposes three connection types
+# - console, API and SMTP. Push and SMS are therefore off.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-direct-mail"
+kind: "notification-service"
+provider: "alibabacloud"
+defaults:
+  managed: true
+  channelEmail: true
+  channelPush: false
+  channelSms: false
+  templateStore: true
+properties:
+  emailType:
+    type: "enum"
+    values: ["triggered", "batch"]
+  connectionMethod:
+    type: "enum"
+    values: ["console", "api", "smtp"]

@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Monitor for SAP solutions: an Azure-native monitor for SAP landscapes ("What is Azure Monitor for SAP
+# solutions?"). That page states it collects no Azure Monitor metrics or resource logs and instead sends
+# custom logs to a Log Analytics workspace, that an Azure Functions resource in an automatically deployed
+# managed resource group connects out to the configured providers to collect data, and that pinned workbooks
+# refresh at most every 30 minutes. Retention is whatever the Log Analytics workspace is set to, so none is
+# declared here.
+schemaVersion: "1"
+type: "component"
+id: "azure-monitor-for-sap"
+kind: "monitoring"
+provider: "azure"
+defaults:
+  managed: true
+  signal: "logs"
+  collectorMode: "pull"
+properties:
+  providerType:
+    type: "enum"
+    values: ["sap-hana", "sap-netweaver", "sql-server", "ibm-db2", "pacemaker-cluster", "linux-os"]
+  managedResourceGroup:
+    type: "boolean"
+    default: true
+  maxDashboardRefreshMinutes:
+    type: "integer"
+    default: 30

@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenStack Cinder: the Block Storage service, "providing volumes to Nova virtual machines, Ironic bare metal
+# hosts, containers and more". Per "Volume encryption supported by the key manager" encryption is not on by
+# default - a volume is unencrypted unless created from an encrypted volume type whose key lives in Barbican;
+# per "Volume multi-attach" attaching to several servers needs a volume type with multiattach="<is> True".
+schemaVersion: "1"
+type: "component"
+id: "openstack-cinder"
+kind: "block-storage"
+provider: "openstack"
+defaults:
+  encryptionAtRest: false
+  snapshots: true
+  managed: false
+properties:
+  multiAttach:
+    type: "boolean"
+    default: false
+  encryptionProvider:
+    type: "enum"
+    values: ["luks"]
+  volumeGroups:
+    type: "boolean"
+    default: false
+  backupService:
+    type: "boolean"
+    default: false

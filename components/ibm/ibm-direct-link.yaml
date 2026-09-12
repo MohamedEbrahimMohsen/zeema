@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Cloud Direct Link: private connectivity from an on-premises network into IBM Cloud, "keeping
+# traffic within the IBM Cloud network" rather than the public internet. Direct Link Connect rides
+# a service provider already attached to IBM Cloud; Direct Link Dedicated is a single-tenant fibre
+# cross-connect and is the variant that supports MACsec encryption. Bandwidth options are 1, 2, 5
+# and 10 Gbps ("Getting started with IBM Cloud Direct Link").
+schemaVersion: "1"
+type: "component"
+id: "ibm-direct-link"
+kind: "network-fabric"
+provider: "ibm"
+defaults:
+  managed: true
+  interconnect: "private"
+properties:
+  offering:
+    type: "enum"
+    values: ["connect", "dedicated"]
+  portSpeedGbps:
+    type: "integer"
+  macsec:
+    type: "boolean"

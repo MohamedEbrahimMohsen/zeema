@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Data Transmission Service (DTS): moves and replicates data between databases. "What is Data
+# Transmission Service (DTS)" states that it captures ongoing changes using source database logs such
+# as the MySQL binary log and the PostgreSQL write-ahead log, that migration starts with a complete
+# snapshot before capturing changes, that synchronization is continuous and can be unidirectional or
+# bidirectional, and that change tracking captures INSERT, UPDATE and DELETE events in real time and
+# exposes them as structured streams.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-dts"
+kind: "change-data-capture"
+provider: "alibabacloud"
+defaults:
+  managed: true
+  mode: "log-based"
+properties:
+  feature:
+    type: "enum"
+    values: ["data-migration", "data-synchronization", "change-tracking"]
+  topology:
+    type: "enum"
+    values: ["unidirectional", "bidirectional"]
+  initialSnapshot:
+    type: "boolean"
+    default: true

@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Managed DevOps Pools: Azure DevOps agent pools whose virtual machines or containers run in a Microsoft
+# subscription rather than yours ("Managed DevOps Pools Overview"). The same page states pools keep agent
+# state for up to seven days for cache hits, support jobs up to two days long, and take images either from
+# selected marketplace images or from an Azure Compute Gallery.
+schemaVersion: "1"
+type: "component"
+id: "azure-managed-devops-pools"
+kind: "ci-pipeline"
+provider: "azure"
+defaults:
+  managed: true
+  selfHostedRunners: false
+properties:
+  maxAgentStateDays:
+    type: "integer"
+    default: 7
+  maxJobDurationDays:
+    type: "integer"
+    default: 2
+  imageSource:
+    type: "enum"
+    values: ["marketplace", "azure-compute-gallery"]

@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Cloud Virtual Servers for VPC: an IaaS instance inside a VPC ("About virtual server
+# instances for VPC"). Its boot volume is a Block Storage for VPC volume, and "all block storage
+# volumes are encrypted at rest with IBM-managed encryption by default" ("About Block Storage for
+# VPC"). An instance attaches to a subnet, and a subnet is confined to one zone ("About
+# subnets"); it reaches the internet only through a public gateway or a floating IP
+# ("About floating IPs"), so no public address is attached by default.
+schemaVersion: "1"
+type: "component"
+id: "ibm-virtual-server"
+kind: "virtual-machine"
+provider: "ibm"
+defaults:
+  managed: false
+  diskEncryption: true
+  publicIp: false
+  zoneRedundant: false
+properties:
+  bootVolumeKeyManagement:
+    type: "enum"
+    values: ["provider-managed", "customer-managed"]
+    default: "provider-managed"
+  internetAccess:
+    type: "enum"
+    values: ["none", "public-gateway", "floating-ip"]
+    default: "none"

@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# DigitalOcean Load Balancer: a "fully managed, highly available" balancer that spreads traffic
+# over backend resources, regional or global ("Load Balancers"). "Load Balancer Features": HTTP,
+# HTTPS, HTTP/2 and HTTP/3 with SSL termination or passthrough, TCP and UDP on network load
+# balancers, cookie-based sticky sessions as an option, and automatic health monitoring that
+# removes and restores backends; the distribution algorithm spreads connections "as equally as
+# possible" rather than round robin or least connections. "Load Balancer Limits": 40 forwarding
+# rules, 10 backend Droplets added by name, 10,000 requests per second per node.
+schemaVersion: "1"
+type: "component"
+id: "digitalocean-load-balancer"
+kind: "load-balancer"
+provider: "digitalocean"
+defaults:
+  managed: true
+  layer: "l7"
+  healthChecks: true
+  global: false
+properties:
+  scope:
+    type: "enum"
+    values: ["regional", "global"]
+    default: "regional"
+  sslMode:
+    type: "enum"
+    values: ["termination", "passthrough"]
+  maxForwardingRules:
+    type: "integer"
+    default: 40
+  maxBackendDropletsByName:
+    type: "integer"
+    default: 10
+  requestsPerSecondPerNode:
+    type: "integer"
+    default: 10000

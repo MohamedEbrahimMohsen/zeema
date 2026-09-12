@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Atlantis: "A self-hosted golang application that listens for Terraform pull request events via
+# webhooks" from GitHub, GitLab or Bitbucket. It "runs terraform plan, import, apply remotely and
+# comments back on the pull request with the output"; a reviewer drives it by commenting
+# "atlantis plan" or "atlantis apply" on the pull request ("Atlantis").
+schemaVersion: "1"
+type: "component"
+id: "atlantis"
+kind: "ci-pipeline"
+provider: "default"
+defaults:
+  managed: false
+  trigger: "pull-request"
+  selfHostedRunners: true
+properties:
+  vcsProvider:
+    type: "enum"
+    values: ["github", "gitlab", "bitbucket"]
+  planOnPullRequest:
+    type: "boolean"
+    default: true
+  applyViaComment:
+    type: "boolean"
+    default: true

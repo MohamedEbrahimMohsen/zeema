@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Mattermost: self-hosted collaboration and messaging server on an extensible open-core
+# architecture ("Mattermost Product Overview"). The same page documents deployment as a
+# single-node Linux binary or as containerised and Kubernetes-native deployments serving web,
+# desktop and mobile clients, which is the server process a design places. Conversation history
+# lives in the server's own database, so it owns data; no runtime, instance count or autoscaling
+# default is stated.
+schemaVersion: "1"
+type: "component"
+id: "mattermost"
+kind: "app-server"
+provider: "default"
+defaults:
+  managed: false
+  ownsData: true
+properties:
+  edition:
+    type: "enum"
+    values: ["open-source", "enterprise"]
+  deploymentModel:
+    type: "enum"
+    values: ["binary", "container", "kubernetes"]

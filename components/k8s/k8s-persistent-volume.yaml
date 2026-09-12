@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Kubernetes PersistentVolume: a piece of cluster storage with a lifecycle independent of any Pod,
+# provisioned by an administrator or dynamically by a StorageClass. Per "Persistent Volumes"
+# volumeMode defaults to Filesystem, a manually created PV defaults to the Retain reclaim policy
+# while a dynamically provisioned one inherits Delete from its StorageClass, binding to a claim is
+# one-to-one and exclusive, and access mode must be stated explicitly -- there is no default.
+# Durability, encryption and redundancy come from the backing storage, so none of them are set.
+schemaVersion: "1"
+type: "component"
+id: "k8s-persistent-volume"
+kind: "block-storage"
+provider: "k8s"
+defaults:
+  managed: false
+properties:
+  volumeMode:
+    type: "enum"
+    values: ["filesystem", "block"]
+    default: "filesystem"
+  reclaimPolicy:
+    type: "enum"
+    values: ["retain", "delete", "recycle"]
+    default: "retain"
+  accessMode:
+    type: "enum"
+    values: ["read-write-once", "read-only-many", "read-write-many", "read-write-once-pod"]
+  provisioning:
+    type: "enum"
+    values: ["static", "dynamic"]
+  exclusiveBinding:
+    type: "boolean"
+    default: true

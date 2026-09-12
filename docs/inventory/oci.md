@@ -365,6 +365,65 @@ name; ids keep the shorter historical form where a component already exists.
 |---|---|
 | content-repository | A headless content management instance holds content types with a schema, asset and document repositories with a storage quota, publishing channels each bound to a delivery target, a preview-versus-published state, and a delivery cache TTL. `artifact-repository` models build and package artifacts with formats and retention, and has nothing to say about publishing channels or a preview/published split; `object-store` holds opaque blobs with no content model; `app-server` has a runtime and scaling but no repository. A rule that checks a publishing channel is fronted by a CDN, or that a content repository's assets are encrypted with a customer-managed key, needs properties only this kind carries. Used by Oracle Content Management. |
 
+## Mingrammer nodes not catalogued
+
+| resource | id | kind | status | source |
+|---|---|---|---|---|
+| OCI Autoscaling | — | — | skip: white colour variant of the same OCI icon; Autoscale is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| OCI Compute Bare Metal | — | — | skip: white colour variant of the same OCI icon; BM is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| OCI Container Instances | — | — | skip: white colour variant of the same OCI icon; Container is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| OCI Functions | — | — | skip: white colour variant of the same OCI icon; Functions is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| OCI Instance Pool | — | — | skip: white colour variant of the same OCI icon; InstancePools is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| OCI Container Registry | — | — | skip: white colour variant of the same OCI icon; OCIR is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| OCI Kubernetes Engine | — | — | skip: white colour variant of the same OCI icon; OKE is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| OCI Compute | — | — | skip: white colour variant of the same OCI icon; VM is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| Oracle global network backbone | — | — | skip: white colour variant of the same OCI icon; Backbone is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| Web Application Acceleration | — | — | skip: white colour variant of the same OCI icon; CDN is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| Customer data centre | — | — | skip: location illustration for an on-premises site, not a service | https://diagrams.mingrammer.com/docs/nodes/oci |
+| Customer premises | — | — | skip: white colour variant of the same OCI icon; CustomerPremises is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| Disconnected regions | — | — | skip: white colour variant of the same OCI icon; DisconnectedRegions is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| FastConnect | — | — | skip: white colour variant of the same OCI icon; FastConnect is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| Site-to-Site VPN | — | — | skip: white colour variant of the same OCI icon; VPN is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| OCI Autonomous Database | — | — | skip: white colour variant of the same OCI icon; Autonomous is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| OCI Big Data Service | — | — | skip: white colour variant of the same OCI icon; BigdataService is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| Oracle Base Database Service | — | — | skip: white colour variant of the same OCI icon; DatabaseService is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| OCI Data Flow | — | — | skip: white colour variant of the same OCI icon; DataflowApache is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| OCI Data Catalog | — | — | skip: white colour variant of the same OCI icon; Dcat is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| OCI Data Integration | — | — | skip: white colour variant of the same OCI icon; Dis is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| OCI Database Migration | — | — | skip: white colour variant of the same OCI icon; DMS is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| OCI Data Science | — | — | skip: white colour variant of the same OCI icon; Science is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| OCI Streaming | — | — | skip: white colour variant of the same OCI icon; Stream is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| OCI API Gateway | — | — | skip: white colour variant of the same OCI icon; APIGateway is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| OCI Resource Manager | — | — | skip: white colour variant of the same OCI icon; ResourceMgmt is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| OCI Audit | — | — | skip: white colour variant of the same OCI icon; Audit is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| IAM group | — | — | skip: white colour variant of the same OCI icon; Groups is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| OCI Logging | — | — | skip: white colour variant of the same OCI icon; Logging is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| OCID | — | — | skip: white colour variant of the same OCI icon; OCID is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| OCI IAM Policy | — | — | skip: white colour variant of the same OCI icon; Policies is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| Tagging | — | — | skip: white colour variant of the same OCI icon; Tagging is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| OCI Monitoring | — | — | skip: white colour variant of the same OCI icon; Alarm is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| OCI Events | — | — | skip: white colour variant of the same OCI icon; Events is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| Health Checks | — | — | skip: white colour variant of the same OCI icon; HealthCheck is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| OCI Notifications | — | — | skip: white colour variant of the same OCI icon; Notifications is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| OCI Queue | — | — | skip: white colour variant of the same OCI icon; Queue is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| Workflow | — | — | skip: white colour variant of the same OCI icon; Workflow is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| Dynamic Routing Gateway | — | — | skip: white colour variant of the same OCI icon; Drg is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| OCI Load Balancer | — | — | skip: white colour variant of the same OCI icon; LoadBalancer is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| Route table | — | — | skip: white colour variant of the same OCI icon; RouteTable is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| Virtual Cloud Network | — | — | skip: white colour variant of the same OCI icon; Vcn is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| OCI Cloud Guard | — | — | skip: white colour variant of the same OCI icon; CloudGuard is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| Encryption | — | — | skip: white colour variant of the same OCI icon; Encryption is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| OCI IAM with Identity Domains | — | — | skip: white colour variant of the same OCI icon; IDAccess is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| OCI Vault | — | — | skip: white colour variant of the same OCI icon; KeyManagement is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| OCI Security Zones | — | — | skip: white colour variant of the same OCI icon; MaxSecurityZone is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| Web Application Firewall | — | — | skip: white colour variant of the same OCI icon; WAF is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| OCI Block Volume Backup Policy | — | — | skip: white colour variant of the same OCI icon; BackupRestore is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| Volume clone | — | — | skip: white colour variant of the same OCI icon; BlockStorageClone is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| OCI Block Volume | — | — | skip: white colour variant of the same OCI icon; BlockStorage is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| OCI Object Storage | — | — | skip: white colour variant of the same OCI icon; Buckets is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| Block Volume elastic performance | — | — | skip: white colour variant of the same OCI icon; ElasticPerformance is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+| OCI File Storage | — | — | skip: white colour variant of the same OCI icon; FileStorage is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
+
 ## Counts
 
-total 240, todo 0, done 168, skip 72.
+total 296, todo 0, done 168, skip 126.

@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# CrowdStrike Falcon LogScale (formerly Humio): log management platform that "ingests, stores, and
+# queries your log data" without building indexes. Data lands in repositories with views controlling
+# access, retention is a per-repository setting, CQL drives search, and continuous alerts or scheduled
+# searches run queries as data arrives. Archiving moves older data to S3 or Google Cloud Storage for
+# "long-term, lower-cost storage". Sold both as a cloud service and self-hosted
+# ("Falcon LogScale Documentation"). No default retention is published.
+schemaVersion: "1"
+type: "component"
+id: "falcon-logscale"
+kind: "monitoring"
+provider: "default"
+defaults:
+  managed: false
+  signal: "logs"
+  collectorMode: "push"
+properties:
+  deployment:
+    type: "enum"
+    values: ["cloud", "self-hosted"]
+  indexFree:
+    type: "boolean"
+    default: true
+  archiveToObjectStorage:
+    type: "boolean"
+    default: false

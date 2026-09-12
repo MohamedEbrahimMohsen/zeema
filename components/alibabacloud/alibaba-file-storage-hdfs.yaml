@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apsara File Storage for HDFS: cloud file system that exposes the Hadoop Distributed File System
+# interface, so MapReduce, Hive, Spark and Flink jobs read it as their default file system.
+# "Hadoop compatible file storage-Apsara File Storage for HDFS": multiple replicas of every file sit
+# in isolated fault domains for eleven nines of durability, file systems are isolated inside a VPC,
+# and during public preview only the file system SDK is available.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-file-storage-hdfs"
+kind: "file-storage"
+provider: "alibabacloud"
+defaults:
+  protocol: "native"
+  publicAccess: false
+  managed: true
+properties:
+  durabilityNines:
+    type: "integer"
+    default: 11
+  faultDomainIsolatedReplicas:
+    type: "boolean"
+    default: true
+  sdkOnlyAccess:
+    type: "boolean"
+    default: true

@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# ID Verification: metered eKYC endpoint that checks a person against an identity document. The ID
+# Verification product documentation describes an AI-powered eKYC solution that uses intelligent
+# recognition and real-time detection to authenticate user identities in seconds, made up of ID
+# document recognition by OCR that extracts key information and verifies document quality and
+# authenticity, liveness detection combining multi-dimensional facial and image algorithms, facial
+# comparison and identity validation, and states that modules can be combined and integrated through
+# SDKs, HTML5 apps and APIs.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-id-verification"
+kind: "ai-service"
+provider: "alibabacloud"
+defaults:
+  managed: true
+  modality: "vision"
+  publicEndpoint: true
+properties:
+  verificationModule:
+    type: "enum"
+    values: ["id-ocr", "liveness-detection", "face-comparison", "identity-validation"]
+  integrationMethod:
+    type: "enum"
+    values: ["api", "sdk", "h5"]

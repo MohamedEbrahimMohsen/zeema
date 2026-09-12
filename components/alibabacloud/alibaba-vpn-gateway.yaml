@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# VPN Gateway: terminates encrypted tunnels into a VPC. "Introduction to VPN Gateway" organises the
+# documentation around the two connection technologies the gateway offers — IPsec-VPN for site-to-site
+# connections between data centres and VPCs, and SSL-VPN for client-to-VPC remote access — and covers
+# dual-tunnel mode connections, BGP routing mode and active/standby configurations with Express
+# Connect. No default connection type, tunnel type or bandwidth is stated, so none is set here.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-vpn-gateway"
+kind: "vpn-gateway"
+provider: "alibabacloud"
+defaults:
+  managed: true
+properties:
+  connectionType:
+    type: "enum"
+    values: ["ipsec-vpn", "ssl-vpn"]
+  dualTunnel:
+    type: "boolean"

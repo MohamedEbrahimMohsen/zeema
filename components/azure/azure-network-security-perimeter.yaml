@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Network security perimeter: a logical boundary around PaaS resources that sit outside a virtual network
+# ("What is a network security perimeter?"). That page states the perimeter restricts public access to the
+# resources inside it by default, that transition mode (formerly learning mode) is the default access mode
+# and enforced mode must be set by an administrator, that in enforced mode all traffic except intra-perimeter
+# traffic is denied unless an allow rule exists, and that a profile takes at most 200 rule elements in each
+# direction with up to 1,000 associated resources per perimeter.
+schemaVersion: "1"
+type: "component"
+id: "azure-network-security-perimeter"
+kind: "firewall"
+provider: "azure"
+defaults:
+  managed: true
+  defaultAction: "deny"
+properties:
+  accessMode:
+    type: "enum"
+    values: ["transition", "enforced"]
+    default: "transition"
+  intraPerimeterTrafficAllowed:
+    type: "boolean"
+    default: true
+  maxRuleElementsPerDirection:
+    type: "integer"
+    default: 200
+  maxAssociatedResources:
+    type: "integer"
+    default: 1000

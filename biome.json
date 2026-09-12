@@ -18,7 +18,9 @@
       "!packages/catalogue/data",
       "!apps/web/public",
       "!apps/web/drizzle",
-      "!design-system"
+      "!design-system",
+      "!.claude/tools",
+      "!work"
     ]
   },
   "formatter": {

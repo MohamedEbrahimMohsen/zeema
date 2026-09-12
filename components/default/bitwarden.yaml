@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Bitwarden: credential and secrets management platform. The "Bitwarden Help Center" documents a
+# Bitwarden-hosted cloud service alongside a self-hosting path (Self-host Bitwarden, Linux
+# Standard Deployment, Windows Standard Deployment), an end-to-end encrypted vault described
+# under Encryption Protocols and Encryption Key Derivation, and a separate Secrets Manager
+# product with machine accounts and access tokens for CI/CD pipelines. No HSM backing and no
+# automated secret rotation are documented, so both stay off.
+schemaVersion: "1"
+type: "component"
+id: "bitwarden"
+kind: "key-management"
+provider: "default"
+defaults:
+  managed: true
+  hsm: false
+  rotationAutomated: false
+properties:
+  deployment:
+    type: "enum"
+    values: ["cloud", "self-hosted"]
+    default: "cloud"
+  secretsManager:
+    type: "boolean"
+    default: false
+  zeroKnowledge:
+    type: "boolean"
+    default: true

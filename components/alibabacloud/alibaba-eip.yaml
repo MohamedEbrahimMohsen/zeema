@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Elastic IP Address (EIP): a public IPv4 address owned independently of the resource it fronts.
+# "What is EIP" states that an EIP is a public IPv4 address you can purchase independently and
+# associate with ECS instances, Internet NAT gateways, SLB instances, elastic network interfaces and
+# HaVip addresses; that the line types are BGP (Multi-ISP), the default, and BGP (Multi-ISP) Pro; and
+# that each EIP includes basic DDoS protection of up to 5 Gbps by default. Line type and Anti-DDoS
+# settings cannot be changed after the EIP is created.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-eip"
+kind: "network-fabric"
+provider: "alibabacloud"
+defaults:
+  managed: true
+  interconnect: "public"
+properties:
+  lineType:
+    type: "enum"
+    values: ["bgp-multi-isp", "bgp-multi-isp-pro"]
+    default: "bgp-multi-isp"
+  basicDdosProtectionGbps:
+    type: "integer"
+    default: 5
+  ipVersion:
+    type: "enum"
+    values: ["ipv4"]
+    default: "ipv4"

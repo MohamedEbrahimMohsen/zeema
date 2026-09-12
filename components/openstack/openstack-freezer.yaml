@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenStack Freezer: self-hosted backup and restore service for OpenStack and multi-OS hosts.
+# Per "Welcome to Freezer" it backs up to Swift, local filesystems, S3 and SSH targets with client-side
+# AES-256-CFB encryption; per the "Freezer Agent User Guide" the agent runs in --mode fs and uses Swift
+# object storage unless told otherwise. No schedule, retention or redundancy is set out of the box.
+schemaVersion: "1"
+type: "component"
+id: "openstack-freezer"
+kind: "backup-service"
+provider: "openstack"
+defaults:
+  managed: false
+properties:
+  storageBackend:
+    type: "enum"
+    values: ["swift", "local", "ssh", "s3"]
+    default: "swift"
+  backupMode:
+    type: "enum"
+    values: ["fs", "mysql", "mongo", "sqlserver", "cinder", "nova"]
+    default: "fs"
+  clientSideEncryption:
+    type: "boolean"
+    default: false
+  compression:
+    type: "enum"
+    values: ["zlib", "bzip2", "xz"]

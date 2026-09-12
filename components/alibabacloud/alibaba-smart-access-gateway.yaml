@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Smart Access Gateway (SAG): customer-premises equipment that attaches a branch office, data centre
+# or endpoint to Alibaba Cloud. "Service types, components, and architecture of SAG" gives the three
+# service types — SAG CPE devices (SAG-100WM at 50 Mbit/s for branch offices, SAG-1000 at 500 Mbit/s
+# for data centres), SAG vCPE software at 300 Mbit/s and higher, and the SAG app for individual
+# endpoints — all quoted as encrypted private network bandwidth, and states that SAG CPE devices are
+# managed through the SAG console, API and CloudMonitor, the same way as VPCs and ECS instances.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-smart-access-gateway"
+kind: "edge-appliance"
+provider: "alibabacloud"
+defaults:
+  managed: true
+  cloudManaged: true
+  connectivity: "connected"
+properties:
+  model:
+    type: "enum"
+    values: ["sag-100wm", "sag-1000", "sag-vcpe", "sag-app"]
+  encryptedTunnel:
+    type: "boolean"
+    default: true
+  maxEncryptedBandwidthMbps:
+    type: "integer"

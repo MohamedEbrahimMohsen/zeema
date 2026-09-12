@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Auto Scaling (ESS): a scaling group that automatically adjusts the number of compute instances based on
+# policies you define ("What is Auto Scaling?"). That page states a scaling group is a logical grouping of
+# identical instances with minimum and maximum counts and associated load balancers, lists scheduled,
+# event-triggered, custom, health-based and fixed-number modes, and notes Auto Scaling itself is free while
+# you pay for the ECS and ECI instances it creates. Those instances are ones you patch, so managed is false.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-auto-scaling"
+kind: "virtual-machine"
+provider: "alibabacloud"
+defaults:
+  managed: false
+properties:
+  scalingMode:
+    type: "enum"
+    values: ["scheduled", "event-triggered", "custom", "health-based", "fixed-number"]
+  instanceType:
+    type: "enum"
+    values: ["ecs", "eci"]
+    default: "ecs"
+  healthCheck:
+    type: "boolean"
+    default: true

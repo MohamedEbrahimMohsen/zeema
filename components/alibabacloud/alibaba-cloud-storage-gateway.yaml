@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloud Storage Gateway: appliance that presents an OSS bucket to applications over standard storage
+# protocols. "Supported protocols for file and block gateways": a file gateway serves NFSv3, NFSv4
+# and SMB, a block gateway serves iSCSI volumes. "Cloud Storage Gateway specifications": it runs
+# either on an ECS instance in the cloud or as an on-premises virtual machine from an OVA, VHD or
+# QCOW2 image, every specification needs at least 40 GB of cache, and an iSCSI gateway runs in
+# either cache or pass-through mode.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-cloud-storage-gateway"
+kind: "edge-appliance"
+provider: "alibabacloud"
+defaults:
+  connectivity: "connected"
+  formFactor: "virtual"
+  cloudManaged: true
+  managed: false
+properties:
+  gatewayType:
+    type: "enum"
+    values: ["file", "block"]
+    default: "file"
+  fileProtocol:
+    type: "enum"
+    values: ["nfs", "smb"]
+  cacheMode:
+    type: "enum"
+    values: ["cache", "pass-through"]
+  minimumCacheGib:
+    type: "integer"
+    default: 40

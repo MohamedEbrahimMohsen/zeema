@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IoT Platform: managed device connectivity and management hub. "What is IoT Platform - features,
+# benefits, and billing" states that the platform supports multiple protocols (MQTT, CoAP, HTTPS) for
+# device-to-cloud development, and gives the two instance types: a public instance, provided for trial
+# use after activation, and an Enterprise Edition instance with subscription billing that provides
+# device connectivity, management, O&M and data services for production workloads.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-iot-platform"
+kind: "iot-hub"
+provider: "alibabacloud"
+defaults:
+  managed: true
+  protocol: "multi"
+properties:
+  instanceType:
+    type: "enum"
+    values: ["public", "enterprise"]
+    default: "public"

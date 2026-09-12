@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Alibaba Cloud Elasticsearch: "a fully managed Elasticsearch cloud service built on open source
+# Elasticsearch" and 100% compatible with it ("What is Alibaba Cloud Elasticsearch?"). That page states each
+# instance ships Kibana and the commercial X-Pack extension - security, alerting, monitoring, graph,
+# reporting and machine learning - alongside Beats and Logstash for ingestion, and that clusters run the
+# AliES kernel with one-click deployment and Auto Scaling. No shard or replica default is documented.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-elasticsearch"
+kind: "search-index"
+provider: "alibabacloud"
+defaults:
+  managed: true
+  structure: "inverted"
+properties:
+  kibana:
+    type: "boolean"
+    default: true
+  xpack:
+    type: "boolean"
+    default: true
+  kernel:
+    type: "enum"
+    values: ["alies", "open-source"]
+    default: "alies"

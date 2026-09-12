@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Windows Push Notification Service: Microsoft's push channel for Windows apps, addressed through a
+# per-app channel URI and an Azure app registration identity. Raw notifications are consumed by the
+# app itself; app (toast) notifications carry an X-WNS-Type header of toast and an XML payload.
+# Microsoft "reserves the right to disable or revoke apps from using push notifications", and no
+# per-app rate quota is published ("Push notifications overview - Windows apps").
+schemaVersion: "1"
+type: "component"
+id: "wns"
+kind: "third-party-api"
+provider: "default"
+defaults:
+  managed: true
+  idempotent: false
+  callbackStyle: "none"
+  hostedPage: false
+  handlesMoney: false
+properties:
+  notificationType:
+    type: "enum"
+    values: ["raw", "toast"]

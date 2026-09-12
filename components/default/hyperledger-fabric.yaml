@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Hyperledger Fabric: "an open source enterprise-grade permissioned distributed ledger technology
+# (DLT) platform". Participants "are known to each other, rather than anonymous"; channels scope which
+# members see which transactions; chaincode is written in Java, Go or Node.js; the ledger is "an
+# immutable transaction ledger"; and the shipped ordering service is a crash-fault-tolerant Raft
+# implementation ("Introduction"). It is not a double-entry accounting ledger.
+schemaVersion: "1"
+type: "component"
+id: "hyperledger-fabric"
+kind: "ledger"
+provider: "default"
+defaults:
+  managed: false
+  doubleEntry: false
+  appendOnly: true
+  tamperEvident: true
+  sealed: false
+  indexConsistency: "strong"
+properties:
+  ordererConsensus:
+    type: "enum"
+    values: ["raft", "bft"]
+    default: "raft"
+  permissionedMembership:
+    type: "boolean"
+    default: true
+  channels:
+    type: "boolean"
+    default: true
+  chaincodeLanguage:
+    type: "enum"
+    values: ["go", "java", "node"]

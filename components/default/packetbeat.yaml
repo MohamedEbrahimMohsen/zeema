@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Packetbeat: a real-time network packet analyser that "sniffs the traffic between your servers,
+# parses the application-level protocols on the fly, and correlates the messages into transactions".
+# It decodes ICMP, DHCP, DNS, HTTP, AMQP, Cassandra, MySQL, PostgreSQL, Redis, Thrift-RPC, MongoDB,
+# Memcache, NFS and TLS. Run on dedicated servers behind a switch mirror port or a tap "there is zero
+# overhead on the monitored application" ("Packetbeat").
+schemaVersion: "1"
+type: "component"
+id: "packetbeat"
+kind: "monitoring"
+provider: "default"
+defaults:
+  managed: false
+  signal: "logs"
+  collectorMode: "push"
+properties:
+  deployment:
+    type: "enum"
+    values: ["application-host", "dedicated-sniffer"]
+  output:
+    type: "enum"
+    values: ["elasticsearch", "logstash"]

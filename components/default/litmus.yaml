@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Litmus: CNCF cloud-native chaos engineering framework. Chaos intent is declared in Kubernetes custom
+# resources, and a chaos scenario is "much more than a simple chaos experiment" - it also defines the
+# expected result and observes the outcome. Faults come from the prebuilt hub or are written by the
+# team ("What is Litmus?").
+schemaVersion: "1"
+type: "component"
+id: "litmus"
+kind: "worker"
+provider: "default"
+defaults:
+  managed: false
+  trigger: "manual"
+  idempotent: false
+properties:
+  faultSource:
+    type: "enum"
+    values: ["chaos-hub", "custom"]
+  declarativeCustomResources:
+    type: "boolean"
+    default: true

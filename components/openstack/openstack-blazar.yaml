@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenStack Blazar: resource reservation service. Per "Blazar, the OpenStack Reservation Service" users lease
+# cloud capacity in advance - virtual instance, physical host, floating IP and flavor-based instance
+# reservations - so Blazar decides where and when reserved resources are placed. It holds leases, not consensus
+# state, so no replication or quorum behaviour is claimed.
+schemaVersion: "1"
+type: "component"
+id: "openstack-blazar"
+kind: "coordination-service"
+provider: "openstack"
+defaults:
+  role: "placement"
+  managed: false
+properties:
+  reservationType:
+    type: "enum"
+    values: ["virtual-instance", "physical-host", "floating-ip", "flavor-instance"]
+  leaseBased:
+    type: "boolean"
+    default: true

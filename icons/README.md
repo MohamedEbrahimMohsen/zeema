@@ -7,8 +7,8 @@ icon, so the set can grow or be replaced without touching the model.
 | Folder | Files | Contents |
 |---|---|---|
 | `kinds/` | 71 | One generic line glyph per kind. A queue, a cache, a cylinder, a gear. |
-| `providers/` | 217 | Brand marks, used as the badge in the corner of a component icon. |
-| `components/<provider>/` | 1623 | One per component, in the same provider subfolder as the component file. For `aws`, `azure` and `oci` this is the vendor's own product icon (see *Two styles* below); everywhere else it is the kind glyph, plus a provider badge where the component is a cloud service or a branded product. |
+| `providers/` | 229 | Brand marks, used as the badge in the corner of a component icon. |
+| `components/<provider>/` | 1855 | One per component, in the same provider subfolder as the component file. For `aws`, `azure`, `oci` and `k8s` this is the vendor's own product icon (see *Two styles* below); everywhere else it is the kind glyph, plus a provider badge where the component is a cloud service or a branded product. |
 
 ## Naming
 
@@ -17,7 +17,7 @@ icon, so the set can grow or be replaced without touching the model.
 `icons/components/default/kafka.svg`; `components/aws/alb.yaml` maps to `icons/components/aws/alb.svg`. No
 other lookup, no manifest, no aliases. Provider files are named for their
 [Simple Icons](https://simpleicons.org) slug (`apachekafka.svg`, `googlecloud.svg`), except
-`aws.svg`, `azure.svg` and `oci.svg`, which are original artwork (see *Licence* below).
+`aws.svg`, `azure.svg`, `oci.svg`, `ibm.svg` and `outscale.svg`, which are original artwork (see *Licence* below).
 
 ## Fallback chain
 
@@ -28,8 +28,8 @@ A renderer resolves an icon in this order and stops at the first hit:
 3. the category glyph the renderer uses for `messaging`, `compute`, `data`, `edge`,
    `external`, `client`, `ops` or `security`
 
-Step 1 covers every component today. 544 of them — most of `aws`, `azure` and `oci` — are the
-vendor's own product icon; the rest carry a provider badge on the kind glyph, or are the bare
+Step 1 covers every component today. 569 of them — most of `aws`, `azure` and `oci`, and all of
+`k8s` — are the vendor's own product icon; the rest carry a provider badge on the kind glyph, or are the bare
 kind glyph where the component is generic. Step 2 is what makes step 1 optional: a component
 added without an icon still draws correctly as its kind. Step 3 is the renderer's own
 last resort and is not a file in this folder.
@@ -49,11 +49,12 @@ Every file in this folder, whichever style it is in:
 
 ## Two styles
 
-**Line glyphs** — `kinds/` and the components of `default`, `gcp` and `cloudflare`. The glyph
+**Line glyphs** — `kinds/` and the components of `default`, `gcp`, `cloudflare`, `ibm`, `alibabacloud`,
+`digitalocean`, `openstack` and `outscale`. The glyph
 is drawn in `stroke="currentColor"` with `fill="none"`, `stroke-width="1.5"` and round caps
 and joins, so it inherits the surrounding text colour in light and dark.
 
-**Vendor product icons** — the components of `aws`, `azure` and `oci`. These are the vendor's
+**Vendor product icons** — the components of `aws`, `azure`, `oci` and `k8s`. These are the vendor's
 own artwork, in the vendor's own colours, so that a reader recognises the service at a glance
 instead of decoding a generic shape. The original drawing is wrapped in a single
 `<g transform="translate(…) scale(…)">` that fits its native viewBox into the 24 unit box and
@@ -75,7 +76,7 @@ When you add a component:
 
 1. If it is unbranded and generic — `cron-job`, `webhook-receiver`, `mobile-app` — you may
    ship nothing. It falls back to its kind glyph, which is the right picture.
-2. If it is an `aws`, `azure` or `oci` service, take the icon from the vendor's own
+2. If it is an `aws`, `azure`, `oci` or `k8s` resource, take the icon from the vendor's own
    architecture icon pack and fit it to the 24 unit box. Do not hand-draw one: a redrawn
    product icon is worse than the kind glyph, because it looks official and is not.
 3. If it is a branded product on any other provider, ship
@@ -97,14 +98,15 @@ come from [Simple Icons](https://github.com/simple-icons/simple-icons), which is
 under CC0 1.0 Universal. Path precision has been reduced so each file fits the 4 KB
 budget; the artwork is otherwise unchanged.
 
-`aws.svg`, `azure.svg` and `oci.svg` are **not** brand marks. Simple Icons carries no
-Amazon Web Services, Microsoft Azure or Oracle Cloud logo, so these three are original
-neutral glyphs distinguished only by colour, and they are MIT with the repository like the kind
+`aws.svg`, `azure.svg`, `oci.svg`, `ibm.svg` and `outscale.svg` are **not** brand marks. Simple Icons
+carries no Amazon Web Services, Microsoft Azure, Oracle Cloud, IBM or Outscale logo, so these five
+are original neutral glyphs distinguished only by colour, and they are MIT with the repository like the kind
 glyphs.
 
-The `aws`, `azure` and `oci` component icons are the vendors' own artwork, taken from the
+The `aws`, `azure`, `oci` and `k8s` component icons are the vendors' own artwork, taken from the
 packs those vendors publish for architecture diagrams — the AWS Architecture Icons package,
-the Azure Public Service Icons set, and Oracle's OCI diagram toolkit. They are scaled into the
+the Azure Public Service Icons set, Oracle's OCI diagram toolkit, and the Kubernetes community
+icon set (github.com/kubernetes/community, Apache License 2.0). They are scaled into the
 24 unit box and their coordinates are rounded; nothing else about the drawings is changed.
 Each vendor's terms govern its own marks, and they are not MIT with the rest of this
 repository. `_arkore-icons-v2/out/components/<provider>/<id>/source.json` records, per icon,

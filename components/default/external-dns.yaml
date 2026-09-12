@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# ExternalDNS: a Kubernetes controller that "synchronizes exposed Kubernetes Services and Ingresses
+# with DNS providers". It is not a DNS server; it writes records into Route 53, Cloud DNS and the
+# rest. It marks the records it owns with TXT registry entries keyed by --txt-owner-id, and deleting a
+# record needs --policy=sync, so the default upsert-only policy never removes one ("ExternalDNS").
+schemaVersion: "1"
+type: "component"
+id: "external-dns"
+kind: "dns"
+provider: "default"
+defaults:
+  managed: false
+  anycast: false
+  geoRouting: false
+  healthChecked: false
+properties:
+  policy:
+    type: "enum"
+    values: ["upsert-only", "sync"]
+    default: "upsert-only"
+  registry:
+    type: "enum"
+    values: ["txt", "noop"]
+    default: "txt"
+  deletesRecords:
+    type: "boolean"
+    default: false

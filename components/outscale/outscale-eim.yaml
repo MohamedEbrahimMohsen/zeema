@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OUTSCALE Elastic Identity Management (EIM): policy-based authentication and authorization for
+# every resource of the OUTSCALE Cloud ("About IAM"). That page states the root user holds
+# unrestricted permissions while EIM users are created with the permissions their policies and
+# groups grant; "About Authentication" states access keys and login credentials are the two
+# schemes, that multi-factor authentication (WebAuthn, OTP, X.509) is available but not enabled,
+# that authentication can be delegated to an external identity provider, and that Trusted Env
+# forcing two factors and temporary access keys is optional.
+schemaVersion: "1"
+type: "component"
+id: "outscale-eim"
+kind: "identity-provider"
+provider: "outscale"
+defaults:
+  managed: true
+  protocol: "iam"
+  authorizationModel: "rbac"
+  centralised: true
+  mfa: false
+properties:
+  accessKeys:
+    type: "boolean"
+    default: true
+  externalIdentityFederation:
+    type: "boolean"
+    default: false
+  trustedEnv:
+    type: "boolean"
+    default: false
+  objectStorageUserSupport:
+    type: "boolean"
+    default: false

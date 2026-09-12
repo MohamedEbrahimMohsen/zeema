@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenStack Octavia: operator-scale load balancing built on a fleet of amphorae. Per "Introducing Octavia" the
+# reference amphorae are Ubuntu virtual machines running HAProxy, driven by an API controller, controller worker,
+# health manager, housekeeping manager and driver agent. Per the Octavia configuration reference
+# default_provider_driver is amphora and loadbalancer_topology defaults to SINGLE, so there is no standby amphora.
+schemaVersion: "1"
+type: "component"
+id: "openstack-octavia"
+kind: "load-balancer"
+provider: "openstack"
+defaults:
+  global: false
+  managed: false
+properties:
+  providerDriver:
+    type: "enum"
+    values: ["amphora", "ovn"]
+    default: "amphora"
+  topology:
+    type: "enum"
+    values: ["single", "active-standby"]
+    default: "single"
+  haproxyAmphora:
+    type: "boolean"
+    default: true

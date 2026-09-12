@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Microsoft Entra Internet Access: an identity-centric secure web gateway for SaaS and general internet
+# traffic ("Learn about Microsoft Entra Internet Access"). That page states the baseline security profile
+# applies to all internet traffic routed through the service as a catch-all even without a Conditional Access
+# link, and that filtering uses the URL for unencrypted HTTP and the SNI for TLS traffic. No default allow or
+# deny posture is stated, so defaultAction is left unset.
+schemaVersion: "1"
+type: "component"
+id: "azure-entra-internet-access"
+kind: "firewall"
+provider: "azure"
+defaults:
+  managed: true
+properties:
+  baselineProfile:
+    type: "boolean"
+    default: true
+  filteringSignal:
+    type: "enum"
+    values: ["url", "sni"]
+  tlsInspection:
+    type: "boolean"

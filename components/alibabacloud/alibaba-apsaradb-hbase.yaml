@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# ApsaraDB for HBase: "a fully managed, cloud-native NoSQL database service compatible with open source
+# Apache HBase" for petabyte-scale wide-column data at millisecond latency ("What is ApsaraDB for HBase?").
+# "Standard Edition, Performance-enhanced Edition, Serverless Edition" states Standard Edition is 100%
+# compatible with open source HBase V1.1.2 and V2.0.0 while Performance-enhanced Edition is built on Lindorm;
+# both inherit the strongly consistent single-region reads and writes of Apache HBase. No backup or
+# encryption default is documented, so neither is set.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-apsaradb-hbase"
+kind: "nosql-database"
+provider: "alibabacloud"
+defaults:
+  managed: true
+  model: "wide-column"
+  consistency: "strong"
+  replication: "single-region"
+properties:
+  edition:
+    type: "enum"
+    values: ["standard", "performance-enhanced", "serverless"]
+  hbaseVersion:
+    type: "enum"
+    values: ["1-1", "2-0"]
+  coldStorage:
+    type: "boolean"

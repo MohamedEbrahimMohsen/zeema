@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# DigitalOcean DNS: hosted authoritative DNS for a domain added to the account, managed from the
+# control panel and API, integrating with Load Balancers and Spaces for managed Let's Encrypt
+# certificates ("DNS"). "DNS Features": served from ns1, ns2 and ns3.digitalocean.com, with A,
+# AAAA, CAA, CNAME, MX, NS, PTR, TXT and SRV records. "DNS Limits": every record requires a
+# minimum TTL of 30 seconds, and the number of domains is a per-account dynamic limit.
+schemaVersion: "1"
+type: "component"
+id: "digitalocean-dns"
+kind: "dns"
+provider: "digitalocean"
+defaults:
+  managed: true
+properties:
+  nameserverCount:
+    type: "integer"
+    default: 3
+  minTtlSeconds:
+    type: "integer"
+    default: 30
+  letsEncryptIntegration:
+    type: "boolean"
+    default: true

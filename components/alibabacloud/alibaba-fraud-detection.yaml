@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Fraud Detection: metered risk-scoring endpoint for registrations, logons, transactions and
+# marketing. The Fraud Detection documentation states that the service is based on machine learning
+# algorithms and stream computing technologies, that it provides standard API operations that perform
+# real-time threat detection on each request and return the risk status, that it detects threats across
+# dimensions such as phone numbers, device IDs, IP addresses and behaviours and returns quantitative
+# risk scores and fine-grained risk tags, that the API uses HTTPS, and that the overall response time
+# is 200 ms or less. Device risk-control SDKs and a decision engine are separate integrations.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-fraud-detection"
+kind: "ai-service"
+provider: "alibabacloud"
+defaults:
+  managed: true
+  modality: "structured"
+  publicEndpoint: true
+properties:
+  riskScore:
+    type: "boolean"
+    default: true
+  deviceFingerprintSdk:
+    type: "boolean"
+  decisionEngine:
+    type: "boolean"
+  maxResponseTimeMs:
+    type: "integer"
+    default: 200

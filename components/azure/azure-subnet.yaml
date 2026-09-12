@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure subnet: the address range inside a virtual network that resources are actually deployed into
+# ("Add, change, or delete a subnet"). That page states the smallest range you can specify is /29, that Azure
+# reserves the first and last address in each subnet plus three more for Azure service usage, and that a
+# network security group, a route table and a NAT gateway are optional associations. Marking a subnet private
+# prevents the use of default outbound access.
+schemaVersion: "1"
+type: "component"
+id: "azure-subnet"
+kind: "network-fabric"
+provider: "azure"
+defaults:
+  managed: true
+  overlay: true
+  interconnect: "private"
+  multicast: false
+properties:
+  reservedAddresses:
+    type: "integer"
+    default: 5
+  smallestPrefixLength:
+    type: "integer"
+    default: 29
+  networkSecurityGroupAssociated:
+    type: "boolean"
+    default: false
+  routeTableAssociated:
+    type: "boolean"
+    default: false
+  privateSubnet:
+    type: "boolean"
+    default: false

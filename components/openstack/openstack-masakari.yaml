@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenStack Masakari: instance high availability service. Per "Masakari" it ensures high availability of
+# instances and compute processes by detecting instance failures, compute process failures and host failures;
+# per "Masakari System Architecture" masakari-api receives the notification and masakari-engine executes the
+# recovery workflow against Nova. It raises and acts on failure notifications, not metrics.
+schemaVersion: "1"
+type: "component"
+id: "openstack-masakari"
+kind: "monitoring"
+provider: "openstack"
+defaults:
+  signal: "alerts"
+  managed: false
+properties:
+  failureType:
+    type: "enum"
+    values: ["instance", "process", "compute-host"]
+  automatedRecovery:
+    type: "boolean"
+    default: true
+  versionedNotifications:
+    type: "boolean"
+    default: true

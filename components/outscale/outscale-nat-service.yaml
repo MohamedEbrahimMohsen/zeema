@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OUTSCALE NAT Service: outbound-only address translation letting VMs in a Net reach the
+# internet through one shared public IP ("About NAT Services"). That page states the facts
+# behind the defaults: a single public IP per NAT service, creation inside one Subnet that
+# must route to an internet service, several Subnets of the same Net served by one NAT
+# service, and outbound security group rules required on the VMs.
+schemaVersion: "1"
+type: "component"
+id: "outscale-nat-service"
+kind: "nat-gateway"
+provider: "outscale"
+defaults:
+  managed: true
+  staticIpCount: 1
+  zoneRedundant: false
+properties:
+  publicIpRequired:
+    type: "boolean"
+    default: true
+  publicSubnetRequired:
+    type: "boolean"
+    default: true
+  servesMultipleSubnets:
+    type: "boolean"
+    default: true
