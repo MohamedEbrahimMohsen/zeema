@@ -664,33 +664,94 @@ button.finding:hover .msg {
   color: var(--ink);
   font-weight: var(--fw-medium);
 }
-.seg {
+.icon-btn {
   display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
   border: var(--border) solid var(--line);
   border-radius: var(--rc);
-  overflow: hidden;
-}
-.seg button {
-  font: inherit;
-  font-size: var(--fs-meta);
-  font-family: var(--mono);
-  padding: 3px 9px;
-  border: 0;
   background: transparent;
   color: var(--muted);
   cursor: pointer;
 }
-.seg button + button {
-  border-left: var(--border) solid var(--line);
-}
-.seg button.active {
-  background: var(--bg);
+.icon-btn:hover {
   color: var(--ink);
+  background: var(--bg);
 }
 .avatar {
+  display: inline-block;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   border: var(--border) solid var(--line);
   background: var(--line);
+  object-fit: cover;
+}
+.avatar-fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: var(--fs-small);
+  font-weight: var(--fw-medium);
+  color: var(--ink);
+  background: var(--bg);
+}
+.user-menu {
+  position: relative;
+}
+.avatar-btn {
+  display: inline-flex;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+.avatar-btn:hover .avatar,
+.avatar-btn[aria-expanded="true"] .avatar {
+  border-color: var(--muted);
+}
+.menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  min-width: 180px;
+  padding: var(--sp-0-5);
+  background: var(--panel);
+  border: var(--border) solid var(--line);
+  border-radius: var(--rp);
+  box-shadow: var(--shadow-float);
+  z-index: 50;
+}
+.menu-head {
+  padding: 6px 10px 8px;
+  border-bottom: var(--border) solid var(--line);
+  margin-bottom: var(--sp-0-5);
+}
+.menu-name {
+  font-size: var(--fs-small);
+  font-weight: var(--fw-medium);
+  color: var(--ink);
+}
+.menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  font-size: var(--fs-small);
+  padding: 6px 10px;
+  border: 0;
+  border-radius: var(--rc);
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+}
+.menu-item:hover {
+  background: var(--bg);
+  text-decoration: none;
 }
 
 /* ── design cards ─────────────────────────────────────────────────── */

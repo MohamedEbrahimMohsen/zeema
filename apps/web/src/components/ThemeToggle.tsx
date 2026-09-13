@@ -1,48 +1,61 @@
 "use client";
 
-// Three states: system follows the OS, light and dark pin. The choice lives in localStorage
-// under the key the boot script in layout.tsx reads, so a reload paints the right theme first.
+// A single light/dark switch. The stored value is always concrete: the boot script in
+// layout.tsx seeds it from the OS on first visit, and from then on the last choice wins.
 import { useEffect, useState } from "react";
 
-type Pref = "system" | "light" | "dark";
+type Theme = "light" | "dark";
 const KEY = "arkore-theme";
 
-function apply(p: Pref) {
-  const dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-  document.documentElement.setAttribute(
-    "data-theme",
-    p === "system" ? (dark ? "dark" : "light") : p,
-  );
-}
+const SUN = (
+  <svg
+    viewBox="0 0 24 24"
+    width="16"
+    height="16"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    strokeLinecap="round"
+    aria-hidden="true"
+  >
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+  </svg>
+);
+const MOON = (
+  <svg
+    viewBox="0 0 24 24"
+    width="16"
+    height="16"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" />
+  </svg>
+);
 
 export function ThemeToggle() {
-  const [pref, setPref] = useState<Pref>("system");
+  const [theme, setTheme] = useState<Theme>("light");
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(KEY) as Pref | null;
-      if (stored === "light" || stored === "dark") setPref(stored);
-    } catch {}
+    const t = document.documentElement.getAttribute("data-theme");
+    setTheme(t === "dark" ? "dark" : "light");
   }, []);
-  const choose = (p: Pref) => {
-    setPref(p);
+  const flip = () => {
+    const next: Theme = theme === "dark" ? "light" : "dark";
+    setTheme(next);
+    document.documentElement.setAttribute("data-theme", next);
     try {
-      localStorage.setItem(KEY, p);
+      localStorage.setItem(KEY, next);
     } catch {}
-    apply(p);
   };
+  const label = theme === "dark" ? "Switch to light theme" : "Switch to dark theme";
   return (
-    <fieldset className="seg" aria-label="Theme" style={{ border: 0, padding: 0, margin: 0 }}>
-      {(["system", "light", "dark"] as Pref[]).map((p) => (
-        <button
-          key={p}
-          type="button"
-          className={pref === p ? "active" : ""}
-          aria-pressed={pref === p}
-          onClick={() => choose(p)}
-        >
-          {p}
-        </button>
-      ))}
-    </fieldset>
+    <button type="button" className="icon-btn" onClick={flip} aria-label={label} title={label}>
+      {theme === "dark" ? SUN : MOON}
+    </button>
   );
 }

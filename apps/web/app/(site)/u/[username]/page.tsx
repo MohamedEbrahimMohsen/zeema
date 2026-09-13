@@ -20,7 +20,14 @@ export default async function Profile({ params }: { params: Promise<{ username: 
     <div className="flex flex-col gap-6">
       <div className="flex items-center gap-4">
         {user.avatarUrl ? (
-          <img src={user.avatarUrl} alt="" width={56} height={56} className="avatar" />
+          <img
+            src={user.avatarUrl}
+            alt=""
+            width={56}
+            height={56}
+            className="avatar"
+            style={{ width: 56, height: 56 }}
+          />
         ) : (
           <div className="avatar" style={{ width: 56, height: 56 }} />
         )}

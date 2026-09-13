@@ -2,6 +2,7 @@ import Link from "next/link";
 import { currentUser } from "@/lib/auth";
 import { NavTabs } from "./NavTabs";
 import { ThemeToggle } from "./ThemeToggle";
+import { UserMenu } from "./UserMenu";
 
 export async function Nav() {
   const user = await currentUser();
@@ -18,20 +19,11 @@ export async function Nav() {
             <Link href="/new" className="btn btn-primary btn-sm no-underline">
               New design
             </Link>
-            <Link
-              href={`/u/${user.username}`}
-              className="small flex items-center gap-2 no-underline"
-            >
-              {user.avatarUrl ? (
-                <img src={user.avatarUrl} alt="" width={22} height={22} className="avatar" />
-              ) : null}
-              <span className="mono">{user.username}</span>
-            </Link>
-            <form action="/api/auth/logout" method="post">
-              <button type="submit" className="btn btn-ghost btn-sm">
-                Sign out
-              </button>
-            </form>
+            <UserMenu
+              username={user.username}
+              displayName={user.displayName}
+              avatarUrl={user.avatarUrl}
+            />
           </>
         ) : (
           <Link href="/signin" className="btn btn-primary btn-sm no-underline">

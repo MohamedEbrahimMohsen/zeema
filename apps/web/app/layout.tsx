@@ -7,9 +7,9 @@ export const metadata: Metadata = {
   description: "Software architecture as typed, queryable data.",
 };
 
-// Runs before first paint: resolves the stored preference (system | light | dark) to a concrete
-// data-theme so the tokens never flash, and follows the OS while the preference is "system".
-const themeBoot = `(function(){try{var k="arkore-theme",p=localStorage.getItem(k)||"system",m=window.matchMedia("(prefers-color-scheme: dark)"),a=function(){var t=p==="system"?(m.matches?"dark":"light"):p;document.documentElement.setAttribute("data-theme",t)};a();m.addEventListener("change",function(){p=localStorage.getItem(k)||"system";a()})}catch(e){}})();`;
+// Runs before first paint: applies the stored theme so the tokens never flash. A first visit has
+// nothing stored, so the OS preference is resolved once and saved as the user's setting.
+const themeBoot = `(function(){try{var k="arkore-theme",t=localStorage.getItem(k);if(t!=="light"&&t!=="dark"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";localStorage.setItem(k,t)}document.documentElement.setAttribute("data-theme",t)}catch(e){}})();`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
