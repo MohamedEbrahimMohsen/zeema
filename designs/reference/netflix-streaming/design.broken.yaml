@@ -1,0 +1,178 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture: Netflix streaming, broken variant. Same shape as netflix-streaming.yaml
+# with the mistakes the sources warn about: EVCache treated as the only copy of subscriber data
+# (the documented over-reliance incident), a multi-leader Cassandra ring with no conflict policy,
+# a single-region RDS with backups off while the design promises three-region failover, a single
+# non-replicated Eureka that every service depends on, and retrying hops with the Hystrix circuit
+# breakers taken off.
+#
+# This file MUST trip:
+#   - cache-as-primary-store-without-persistence (evcache: usedAsPrimaryStore true, persistence false)
+#   - multi-leader-store-without-conflict-policy (cassandra: multi-region-multi-leader, conflictResolution none)
+#   - datastore-single-region                    (billing-db: replication none while multiRegion true)
+#   - datastore-missing-backup                   (billing-db: backupEnabled false)
+#   - shared-dependency-without-redundancy       (eureka: replicated false, discoveryRedundant required)
+#   - retry-without-adaptive-shedding            (zuul -> api-gateway-service and api-gateway-service -> subscriber-service retry with no circuit breaker)
+# and MUST NOT trip:
+#   - cache-missing-eviction-policy              (evcache declares lru)
+#   - materialised-cache-without-rebuild-path    (evcache is not materialised)
+#   - read-heavy-path-without-cache              (no readWriteRatio requirement, and a cache exists)
+#   - read-replica-as-sole-scaling, single-writer-primary-at-peak-qps (billing-db declares no rps)
+#   - credentials-without-rotation               (security.credentialRotationDays is set)
+#   - sync-chain-too-deep                        (the sources state no p95 latency target, so none is declared)
+#   - fanout-inline-in-request-path              (no app-server calls the encoding worker synchronously)
+#   - stateful-node-without-zone-redundancy, stateful-engine-pinned-to-single-zone (no availability-zone groups)
+#   - queue-missing-dlq, retry-queue-without-dlq, retry-without-backoff, pubsub-replay-required (no queue or topic)
+#   - derived-store-without-cdc-or-rebuild, business-updates-without-index-propagation (no search index)
+#   - object-store-single-zone-with-durability-target (no durability target declared; S3 spans three zones)
+schemaVersion: "1"
+type: "design"
+id: "netflix-streaming"
+
+requirements:
+  availability:
+    multiRegion: true
+    regions: 3
+    degradedModeAllowed: true
+    discoveryRedundant: true
+  consistency:
+    model: "ap"
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "aws-us-east-1", kind: "region", label: "AWS us-east-1 (one of three active regions)" }
+  - { id: "edge", kind: "trust-zone", parent: "aws-us-east-1" }
+  - { id: "control-plane", kind: "trust-zone", parent: "aws-us-east-1" }
+  - { id: "ixp", kind: "point-of-presence", label: "Internet exchange point" }
+  - { id: "isp-network", kind: "point-of-presence", label: "ISP network" }
+
+nodes:
+  - id: "device"
+    component: "user-device"
+    label: "Device clients"
+    props: { platform: "multi" }
+
+  - id: "elb"
+    component: "aws-classic-load-balancer"
+    label: "ELB"
+    group: "edge"
+    props: { listenerProtocol: "https" }
+
+  - id: "zuul"
+    component: "zuul"
+    label: "Zuul"
+    group: "edge"
+    props: { generation: "zuul2", tls: true }
+
+  - id: "api-gateway-service"
+    component: "container-service"
+    label: "API gateway service"
+    group: "control-plane"
+    props: { stateless: true, autoscaling: true, criticality: "high" }
+
+  - id: "playback-service"
+    component: "container-service"
+    label: "Playback service"
+    group: "control-plane"
+    props: { stateless: true, autoscaling: true, criticality: "high" }
+
+  - id: "subscriber-service"
+    component: "container-service"
+    label: "Subscriber service"
+    group: "control-plane"
+    props: { stateless: true, autoscaling: true, criticality: "high" }
+
+  - id: "open-connect-control"
+    component: "container-service"
+    label: "Open Connect control"
+    group: "control-plane"
+    props: { stateless: true, autoscaling: true, criticality: "high" }
+
+  - id: "encoding-pipeline"
+    component: "container-worker"
+    label: "Encoding pipeline"
+    group: "control-plane"
+    props: { trigger: "batch" }
+
+  - id: "eureka"
+    component: "eureka"
+    label: "Eureka"
+    group: "control-plane"
+    props: { role: "discovery", replicated: false, selfPreservation: true }
+
+  - id: "evcache"
+    component: "evcache"
+    label: "EVCache"
+    group: "control-plane"
+    props: { evictionPolicy: "lru", replication: "multi-az", hashing: "consistent", persistence: false, usedAsPrimaryStore: true, materialised: false }
+    nfr: { rps: 30000000 }
+
+  - id: "cassandra"
+    component: "cassandra"
+    label: "Cassandra"
+    group: "control-plane"
+    props: { model: "wide-column", consistency: "tunable", replication: "multi-region-multi-leader", conflictResolution: "none" }
+    nfr: { consistency: "eventual" }
+
+  - id: "billing-db"
+    component: "aws-rds"
+    label: "RDS MySQL"
+    group: "control-plane"
+    props: { engine: "mysql", replication: "none", multiAz: false, backupEnabled: false, publiclyAccessible: false }
+
+  - id: "telemetry-stream"
+    component: "kafka"
+    label: "Kafka"
+    group: "control-plane"
+    props: { delivery: "at-least-once", storage: "persistent" }
+
+  - id: "asset-store"
+    component: "s3"
+    label: "S3"
+    group: "control-plane"
+    props: { storageClass: "standard" }
+
+  - id: "atlas"
+    component: "observability-stack"
+    label: "Atlas"
+    group: "control-plane"
+    props: { signal: "metrics", collectorMode: "push" }
+
+  - id: "storage-oca"
+    component: "content-delivery-network"
+    label: "Open Connect storage OCA"
+    group: "ixp"
+    props: { caching: true, tls: true }
+
+  - id: "edge-oca"
+    component: "content-delivery-network"
+    label: "Open Connect edge OCA"
+    group: "isp-network"
+    props: { caching: true, tls: true }
+
+edges:
+  - { from: "device", to: "elb", protocol: "https", mode: "sync", label: "control plane request" }
+  - { from: "elb", to: "zuul", protocol: "http", mode: "sync" }
+  - { from: "zuul", to: "api-gateway-service", protocol: "http", mode: "sync", retryPolicy: "exponential-jitter", fallback: "none", label: "retry with no circuit breaker" }
+  - { from: "api-gateway-service", to: "subscriber-service", protocol: "http", mode: "sync", retryPolicy: "exponential-jitter", fallback: "none", label: "entitlements, no fallback" }
+  - { from: "api-gateway-service", to: "playback-service", protocol: "http", mode: "sync", circuitBreaker: true, fallback: "degraded", label: "start playback" }
+  - { from: "api-gateway-service", to: "eureka", protocol: "http", mode: "sync", label: "discovery lookup" }
+  - { from: "api-gateway-service", to: "evcache", protocol: "memcached", mode: "sync", fallback: "degraded" }
+  - { from: "api-gateway-service", to: "atlas", protocol: "http", mode: "async", delivery: "at-most-once", label: "metrics push" }
+  - { from: "playback-service", to: "open-connect-control", protocol: "http", mode: "sync", circuitBreaker: true, label: "select OCA, signed url" }
+  - { from: "playback-service", to: "evcache", protocol: "memcached", mode: "sync", fallback: "degraded" }
+  - { from: "playback-service", to: "eureka", protocol: "http", mode: "sync", label: "discovery lookup" }
+  - { from: "playback-service", to: "telemetry-stream", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "playback telemetry" }
+  - { from: "playback-service", to: "atlas", protocol: "http", mode: "async", delivery: "at-most-once", label: "metrics push" }
+  - { from: "subscriber-service", to: "cassandra", protocol: "cql", mode: "sync", label: "profiles and history, local quorum" }
+  - { from: "subscriber-service", to: "evcache", protocol: "memcached", mode: "sync", fallback: "none", label: "only copy of subscriber data" }
+  - { from: "subscriber-service", to: "billing-db", protocol: "mysql", mode: "sync", label: "transactional customer data" }
+  - { from: "subscriber-service", to: "eureka", protocol: "http", mode: "sync", label: "discovery lookup" }
+  - { from: "subscriber-service", to: "atlas", protocol: "http", mode: "async", delivery: "at-most-once", label: "metrics push" }
+  - { from: "device", to: "edge-oca", protocol: "https", mode: "sync", label: "adaptive bitrate segments" }
+  - { from: "edge-oca", to: "storage-oca", protocol: "http", mode: "sync", label: "cache miss fill" }
+  - { from: "encoding-pipeline", to: "asset-store", protocol: "s3", mode: "async", delivery: "at-least-once", label: "encoded bitrate ladders" }
+  - { from: "asset-store", to: "storage-oca", protocol: "http", mode: "async", delivery: "at-least-once", label: "proactive fill in off-peak windows" }
+  - { from: "edge-oca", to: "open-connect-control", protocol: "http", mode: "async", delivery: "at-least-once", label: "health and load reports" }
+  - { from: "storage-oca", to: "open-connect-control", protocol: "http", mode: "async", delivery: "at-least-once", label: "health and load reports" }

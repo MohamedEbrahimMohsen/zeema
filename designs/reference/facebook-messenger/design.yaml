@@ -1,0 +1,213 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture: Facebook Messenger, clean variant - Iris, a per-user totally ordered
+# update queue with independent pointers for the phone and for the storage tier, an MQTT push
+# channel, the 2011 cell backend, the HBase to MyRocks message-store migration, and the 2023
+# Labyrinth encrypted server-side mailbox with its key directory and recovery vault.
+#
+# Fixes relative to facebook-messenger.broken.yaml:
+#   - iris declares the dead-letter parking lot an offline mailbox needs, so an update that can
+#     never be applied stops blocking the pointer behind it
+#   - the mqtt gateway keeps a reconnect stampede guard, so a gateway restart does not turn every
+#     device's discovery lookup into a storm against ZooKeeper
+#   - the mqtt gateway does not autoscale and drains the connections it holds, and sessions are
+#     pinned sticky rather than placed at random, so a business account taking thousands of
+#     messages per second lands predictably
+#   - application-server is attached to the ZooKeeper ensemble that owns its consistent hash ring
+#   - message-store declares backups and a retention period
+# This file MUST trip no rule.
+schemaVersion: "1"
+type: "design"
+id: "facebook-messenger"
+
+requirements:
+  availability:
+    degradedModeAllowed: true
+  messaging:
+    replay: true
+    orderingScope: "partition"
+  traffic:
+    skew: "heavy-tail"
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "user-devices", kind: "trust-zone", label: "User devices (plaintext and keys)" }
+  - { id: "meta-transport", kind: "trust-zone", label: "Meta transport (TLS, QUIC, Noise Pipes)" }
+  - { id: "meta-backend", kind: "trust-zone", label: "Meta backend (untrusted for E2EE content)" }
+  - { id: "messenger-cell", kind: "cell", parent: "meta-backend", label: "Cell (a subset of users)" }
+  - { id: "third-parties", kind: "trust-zone", label: "Third parties" }
+
+nodes:
+  - id: "messenger-app"
+    component: "mobile-app"
+    label: "Messenger app (iOS / Android / web)"
+    group: "user-devices"
+    props: { platform: "multi", os: "both", persistentConnection: true, localCache: true, offlineCapable: true, resendPolicy: "retry" }
+
+  - id: "recipient-device"
+    component: "user-device"
+    label: "Recipient devices"
+    group: "user-devices"
+    props: { platform: "multi", persistentConnection: true, localCache: true, resendPolicy: "retry" }
+
+  - id: "mqtt-gateway"
+    component: "websocket-gateway"
+    label: "MQTT connection"
+    group: "meta-transport"
+    props: { stateful: true, autoscaling: false, drainOnScaleIn: true, stampedeGuard: true, channelAssignment: "sticky", sequenceNumbers: true, pushFallback: true }
+
+  - id: "server-broker"
+    component: "container-service"
+    label: "Server Broker"
+    group: "meta-transport"
+    props: { stateless: true, ownsData: false, criticality: "high" }
+
+  - id: "chat-pipeline"
+    component: "container-service"
+    label: "Chat pipeline"
+    group: "meta-backend"
+    props: { stateless: true, ownsData: false, criticality: "high" }
+
+  - id: "application-server"
+    component: "vm-service"
+    label: "Application servers (cell)"
+    group: "messenger-cell"
+    props: { stateless: false, shardingStrategy: "consistent-hash", criticality: "high", ownsData: true }
+
+  - id: "user-index-service"
+    component: "container-service"
+    label: "User index service"
+    group: "meta-backend"
+    props: { stateless: true, ownsData: false }
+
+  - id: "franking-service"
+    component: "container-service"
+    label: "Franking service"
+    group: "meta-backend"
+    props: { stateless: true, ownsData: false }
+
+  - id: "prekey-server"
+    component: "container-service"
+    label: "Prekey / device key server"
+    group: "meta-backend"
+    props: { stateless: false, ownsData: true, criticality: "high" }
+
+  - id: "backup-key-vault"
+    component: "container-service"
+    label: "Backup Key Vault"
+    group: "meta-backend"
+    props: { stateless: false, ownsData: true, criticality: "high" }
+
+  - id: "zookeeper"
+    component: "zookeeper"
+    label: "ZooKeeper (shard map and discovery)"
+    group: "messenger-cell"
+    props: { role: "sharding", consensus: "zab", replicated: true }
+
+  - id: "iris"
+    component: "message-queue"
+    label: "Iris"
+    group: "meta-backend"
+    props: { delivery: "at-least-once", ordering: "global", role: "offline-mailbox", replay: true, retentionDays: 7, persistence: true, deadLetterQueue: true }
+
+  - id: "iris-backing-store"
+    component: "mysql"
+    label: "Iris backing store (MySQL on flash)"
+    group: "meta-backend"
+    props: { replication: "sync", backupEnabled: true, backupRetentionDays: 30 }
+
+  - id: "hbase-store"
+    component: "hbase"
+    label: "Traditional storage tier (HBase)"
+    group: "meta-backend"
+    props: { model: "wide-column", replicationFactor: 6, consistency: "strong" }
+
+  - id: "message-store"
+    component: "mysql"
+    label: "MyRocks message store"
+    group: "meta-backend"
+    props: { replication: "async", backupEnabled: true, backupRetentionDays: 30 }
+
+  - id: "metadata-store"
+    component: "hbase"
+    label: "Per-cell metadata store (HBase)"
+    group: "messenger-cell"
+    props: { model: "wide-column", replicationFactor: 3 }
+
+  - id: "unread-count-cache"
+    component: "memcached"
+    label: "Memcache unread counts"
+    group: "messenger-cell"
+    props: { evictionPolicy: "lru", invalidation: "event", usedAsPrimaryStore: false }
+
+  - id: "labyrinth-mailbox"
+    component: "relational-database"
+    label: "Labyrinth mailbox"
+    group: "meta-backend"
+    props: { encryptionAtRest: true, backupEnabled: true, backupRetentionDays: 30 }
+
+  - id: "labyrinth-metastore"
+    component: "relational-database"
+    label: "Labyrinth mailbox metastore"
+    group: "meta-backend"
+    props: { backupEnabled: true, backupRetentionDays: 30 }
+
+  - id: "attachment-blob-store"
+    component: "blob-store"
+    label: "Encrypted attachment blob store"
+    group: "meta-backend"
+    props: { tier: "hot", encryptionAtRest: true, checksumOnWrite: true }
+
+  - id: "akd"
+    component: "nosql-store"
+    label: "Auditable Key Directory (AKD)"
+    group: "meta-backend"
+    props: { model: "key-value", consistency: "strong", partitionKey: "device_id" }
+
+  - id: "cloudflare-auditor"
+    component: "supplier-api"
+    label: "Cloudflare key transparency auditor"
+    group: "third-parties"
+    props: { authScheme: "api-key", callbackStyle: "none" }
+
+  - id: "cloud-drive-escrow"
+    component: "supplier-api"
+    label: "iCloud Drive / Google Drive escrow"
+    group: "third-parties"
+    props: { authScheme: "oauth2", callbackStyle: "none" }
+
+edges:
+  - { from: "messenger-app", to: "mqtt-gateway", protocol: "mqtt", mode: "async", delivery: "at-least-once", label: "persistent low-power push channel" }
+  - { from: "mqtt-gateway", to: "chat-pipeline", protocol: "rpc", mode: "async", delivery: "at-least-once", label: "route through the chat pipeline" }
+  - { from: "messenger-app", to: "server-broker", protocol: "thrift", mode: "sync", label: "universal gateway to all server features" }
+  - { from: "chat-pipeline", to: "iris", protocol: "rpc", mode: "sync", idempotent: true, label: "enqueue once, totally ordered per user" }
+  - { from: "iris", to: "iris-backing-store", protocol: "mysql", mode: "sync", label: "queue persisted to MySQL on flash" }
+  - { from: "iris", to: "mqtt-gateway", protocol: "rpc", mode: "async", delivery: "at-least-once", label: "app pointer: push delta, advance only on successful send" }
+  - { from: "mqtt-gateway", to: "messenger-app", protocol: "mqtt", mode: "async", delivery: "at-least-once", label: "push-based snapshot + delta" }
+  - { from: "iris", to: "hbase-store", protocol: "hbase", mode: "async", delivery: "at-least-once", label: "storage pointer, 2010-2018: stays put through a disk outage" }
+  - { from: "iris", to: "message-store", protocol: "mysql", mode: "async", delivery: "at-least-once", label: "storage pointer, 2018+; also the buffer for hot-account migration" }
+  - { from: "messenger-app", to: "iris", protocol: "thrift", mode: "sync", label: "delta request by sequence number, re-snapshot when out of sync" }
+  - { from: "messenger-app", to: "application-server", protocol: "thrift", mode: "sync", label: "the only user-facing interface to the messages service" }
+  - { from: "application-server", to: "message-store", protocol: "mysql", mode: "sync", label: "older history and full inbox snapshots" }
+  - { from: "application-server", to: "hbase-store", protocol: "hbase", mode: "sync", fallback: "degraded", label: "accounts not yet migrated" }
+  - { from: "application-server", to: "metadata-store", protocol: "hbase", mode: "sync", label: "per-cell metadata and message index" }
+  - { from: "application-server", to: "zookeeper", protocol: "zookeeper", mode: "sync", label: "shard ownership on the ring of virtual positions" }
+  - { from: "application-server", to: "unread-count-cache", protocol: "memcached", mode: "async", delivery: "at-most-once", label: "unread-count invalidation" }
+  - { from: "application-server", to: "user-index-service", protocol: "thrift", mode: "sync", label: "social graph lookups" }
+  - { from: "mqtt-gateway", to: "zookeeper", protocol: "rpc", mode: "sync", label: "which cell and application server owns this user" }
+  - { from: "hbase-store", to: "message-store", protocol: "mysql", mode: "async", delivery: "at-least-once", batched: true, label: "migration state machine: not-migrated to done, responses compared" }
+  - { from: "messenger-app", to: "prekey-server", protocol: "https", mode: "sync", label: "upload identity + signed + one-time prekeys, fetch recipient bundles" }
+  - { from: "messenger-app", to: "chat-pipeline", protocol: "mqtt", mode: "async", delivery: "at-least-once", label: "client fan-out: one ciphertext per recipient device" }
+  - { from: "chat-pipeline", to: "recipient-device", protocol: "mqtt", mode: "async", delivery: "at-least-once", label: "push; a device that cannot decrypt sends a retry receipt, honoured 30 days" }
+  - { from: "chat-pipeline", to: "messenger-app", protocol: "mqtt", mode: "async", delivery: "at-least-once", label: "sender side backfill: device-list hash mismatch, refresh and resend" }
+  - { from: "messenger-app", to: "attachment-blob-store", protocol: "https", mode: "async", delivery: "at-least-once", label: "upload AES-CBC attachment, unlinked from the account" }
+  - { from: "recipient-device", to: "attachment-blob-store", protocol: "https", mode: "sync", label: "download, verify SHA-256 and HMAC before decrypting" }
+  - { from: "messenger-app", to: "labyrinth-mailbox", protocol: "https", mode: "async", delivery: "at-least-once", label: "upload ciphertext under the current epoch key" }
+  - { from: "recipient-device", to: "labyrinth-mailbox", protocol: "https", mode: "sync", label: "restore history by thread and timestamp range on a new device" }
+  - { from: "messenger-app", to: "labyrinth-metastore", protocol: "https", mode: "sync", label: "register device keys, open epoch, add or revoke a device" }
+  - { from: "messenger-app", to: "backup-key-vault", protocol: "https", mode: "sync", label: "PIN authentication, 10 guesses, returns the recovery code" }
+  - { from: "messenger-app", to: "cloud-drive-escrow", protocol: "https", mode: "async", delivery: "at-least-once", label: "recovery code in an app-specific hidden folder, inaccessible to Meta" }
+  - { from: "messenger-app", to: "akd", protocol: "https", mode: "sync", label: "contact device key lookup and audit proof verification" }
+  - { from: "akd", to: "cloudflare-auditor", protocol: "https", mode: "async", delivery: "at-least-once", label: "append-only log publication, roughly 2 minute epochs" }
+  - { from: "messenger-app", to: "franking-service", protocol: "https", mode: "async", delivery: "at-least-once", label: "franking tag with each encrypted message" }
+  - { from: "recipient-device", to: "franking-service", protocol: "https", mode: "sync", label: "abuse report: plaintext, T_F, R_F validated with the Meta key" }

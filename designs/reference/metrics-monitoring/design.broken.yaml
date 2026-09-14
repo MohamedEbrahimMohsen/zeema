@@ -1,0 +1,206 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture, broken variant: the same metrics monitoring and alerting system, with
+# the alert path mailing a third party inline from the rule evaluator, blind retries on every
+# outbound notification, an undeclared eviction policy on the dashboard cache, event-time
+# aggregation with no watermark, and an unverified alert webhook.
+#
+# This file MUST trip:
+#   - external-call-inline-without-durable-path  (alert-evaluator calls the SMTP relay synchronously; only a stream, no queue or workflow engine)
+#   - retry-without-adaptive-shedding            (the inline mail edge and the three notification edges retry with no circuit breaker and no rate limiter in front)
+#   - cache-missing-eviction-policy              (query-cache declares no evictionPolicy)
+#   - windowed-aggregation-without-watermark     (aggregation-consumers window by event time with no watermarkSeconds)
+#   - webhook-without-signature-or-idempotency   (alert-webhook verifies no signature and deduplicates nothing)
+# and MUST NOT trip:
+#   - credentials-without-rotation               (security.credentialRotationDays is still 90)
+#   - cache-as-primary-store-without-persistence, materialised-cache-without-rebuild-path
+#                                                (query-cache is neither a primary store nor materialised)
+#   - queue-missing-dlq, retry-queue-without-dlq, retry-without-backoff, pubsub-replay-required
+#                                                (the design has streams, no queue and no pub/sub topic)
+#   - datastore-missing-backup, datastore-single-region, single-writer-primary-at-peak-qps,
+#     read-replica-as-sole-scaling, business-updates-without-index-propagation
+#                                                (no sql-database in this design)
+#   - derived-store-without-cdc-or-rebuild       (no search-index)
+#   - read-heavy-path-without-cache              (write-heavy; traffic.readWriteRatio is not declared, and a cache exists)
+#   - fanout-inline-in-request-path              (no app-server calls a worker synchronously)
+#   - sync-chain-too-deep                        (no api-gateway node and no latency.p95Ms target)
+#   - shared-dependency-without-redundancy, stateful-engine-pinned-to-single-zone
+#                                                (availability.discoveryRedundant is unset and there are no availability-zone groups)
+#   - object-store-single-zone-with-durability-target (no durability.annualNines target)
+#   - exactly-once-with-external-side-effects    (no edge claims exactly-once)
+schemaVersion: "1"
+type: "design"
+id: "metrics-monitoring"
+
+requirements:
+  availability:
+    multiRegion: false
+  consistency:
+    model: "ap"
+  messaging:
+    replay: true
+  correctness:
+    billingGrade: false
+  observability:
+    alertingIndependent: true
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "datacenter", kind: "region", label: "Datacenter" }
+  - { id: "monitored", kind: "trust-zone", parent: "datacenter", label: "Monitored estate" }
+  - { id: "platform", kind: "trust-zone", parent: "datacenter", label: "Monitoring platform" }
+  - { id: "external", kind: "trust-zone", label: "Alert destinations" }
+
+nodes:
+  - id: "grafana-dashboards"
+    component: "grafana"
+    group: "platform"
+    label: "Grafana"
+    props: { signal: "metrics", managed: false }
+
+  - id: "metrics-source"
+    component: "container-service"
+    group: "monitored"
+    label: "Metrics sources / exporters"
+
+  - id: "short-lived-job"
+    component: "container-worker"
+    group: "monitored"
+    label: "Short-lived job with push agent"
+    props: { trigger: "batch" }
+
+  - id: "service-discovery"
+    component: "etcd"
+    group: "platform"
+    label: "Service discovery"
+    props: { role: "discovery", consensus: "raft" }
+
+  - id: "pull-collector"
+    component: "prometheus"
+    group: "platform"
+    label: "Metrics collector (pull)"
+    props: { signal: "metrics", collectorMode: "pull", remoteWrite: true, independentOfMonitored: true }
+
+  - id: "push-gateway"
+    component: "observability-stack"
+    group: "platform"
+    label: "Push gateway"
+    props: { signal: "metrics", collectorMode: "push" }
+
+  - id: "query-service"
+    component: "container-service"
+    group: "platform"
+    label: "Query service (PromQL)"
+    props: { stateless: true, ownsData: false }
+
+  - id: "alert-evaluator"
+    component: "container-service"
+    group: "platform"
+    label: "Alert rule evaluator"
+    props: { stateless: true, ownsData: false, criticality: "high" }
+
+  - id: "alert-manager"
+    component: "alertmanager"
+    group: "platform"
+    label: "Alertmanager"
+    props: { dedupKey: true, channelEmail: true, groupWaitSeconds: 30, repeatIntervalHours: 4 }
+
+  - id: "aggregation-consumers"
+    component: "flink"
+    group: "platform"
+    label: "Stream consumers (aggregate)"
+    props: { windowing: "event-time" }
+
+  - id: "downsampling-job"
+    component: "cron-job"
+    group: "platform"
+    label: "Downsampling jobs"
+    props: { trigger: "schedule", idempotent: true, overlapAllowed: false }
+
+  - id: "notification-consumers"
+    component: "container-worker"
+    group: "platform"
+    label: "Notification consumers"
+    props: { trigger: "stream", idempotent: true }
+
+  - id: "metrics-kafka"
+    component: "kafka"
+    group: "platform"
+    label: "Kafka (metrics)"
+    props: { delivery: "at-least-once", storage: "persistent", consumerGroups: true }
+
+  - id: "alert-kafka"
+    component: "kafka"
+    group: "platform"
+    label: "Kafka (alerts)"
+    props: { delivery: "at-least-once", storage: "persistent", consumerGroups: true }
+
+  - id: "tsdb"
+    component: "influxdb"
+    group: "platform"
+    label: "Time-series database"
+    props: { retentionRawDays: 7, downsampling: true, tiers: "hot-warm-cold", labelIndex: true }
+
+  - id: "query-cache"
+    component: "cache-cluster"
+    group: "platform"
+    label: "Query cache"
+    props: { invalidation: "ttl", usedAsPrimaryStore: false, materialised: false }
+
+  - id: "alert-rules-config"
+    component: "etcd"
+    group: "platform"
+    label: "Alert rules config"
+    props: { role: "config", consensus: "raft" }
+
+  - id: "alert-store"
+    component: "cassandra"
+    group: "platform"
+    label: "Alert store"
+    props: { model: "wide-column", consistency: "tunable", replication: "single-region" }
+
+  - id: "cold-storage"
+    component: "blob-store"
+    group: "platform"
+    label: "Cold storage"
+    props: { tier: "cold" }
+
+  - id: "email-relay"
+    component: "smtp-relay"
+    group: "external"
+    label: "Email"
+
+  - id: "pager"
+    component: "pagerduty"
+    group: "external"
+    label: "PagerDuty"
+
+  - id: "alert-webhook"
+    component: "webhook-receiver"
+    group: "external"
+    label: "Webhook destination"
+    props: { signatureVerified: false, idempotent: false, retriedByCaller: true }
+
+edges:
+  - { from: "pull-collector", to: "service-discovery", protocol: "http", mode: "sync", label: "discover scrape targets" }
+  - { from: "pull-collector", to: "metrics-source", protocol: "http", mode: "sync", label: "scrape /metrics on interval" }
+  - { from: "short-lived-job", to: "push-gateway", protocol: "http", mode: "async", delivery: "at-most-once", label: "push job metrics" }
+  - { from: "pull-collector", to: "push-gateway", protocol: "http", mode: "sync", label: "scrape the gateway" }
+  - { from: "pull-collector", to: "metrics-kafka", protocol: "kafka", mode: "async", delivery: "at-least-once", batched: true, label: "buffer raw points" }
+  - { from: "metrics-kafka", to: "aggregation-consumers", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "aggregate and downsample" }
+  - { from: "aggregation-consumers", to: "tsdb", protocol: "http", mode: "sync", batched: true, label: "write series" }
+  - { from: "downsampling-job", to: "tsdb", protocol: "http", mode: "async", delivery: "at-least-once", idempotent: true, label: "raw to 1-minute to 1-hour rollups" }
+  - { from: "tsdb", to: "cold-storage", protocol: "https", mode: "async", delivery: "at-least-once", label: "archive expired blocks" }
+  - { from: "grafana-dashboards", to: "query-service", protocol: "http", mode: "sync", label: "dashboard query" }
+  - { from: "query-service", to: "query-cache", protocol: "redis", mode: "sync", label: "cached query results" }
+  - { from: "query-service", to: "tsdb", protocol: "http", mode: "sync", label: "range query on miss" }
+  - { from: "alert-evaluator", to: "alert-rules-config", protocol: "grpc", mode: "sync", label: "load alert rules" }
+  - { from: "alert-evaluator", to: "query-service", protocol: "http", mode: "sync", label: "evaluate rule expression" }
+  - { from: "alert-evaluator", to: "alert-store", protocol: "cql", mode: "sync", label: "alert state" }
+  - { from: "alert-evaluator", to: "alert-manager", protocol: "http", mode: "async", delivery: "at-least-once", label: "firing alerts" }
+  - { from: "alert-evaluator", to: "email-relay", protocol: "smtp", mode: "sync", retryPolicy: "exponential", label: "mail the alert inline from the evaluator" }
+  - { from: "alert-manager", to: "alert-kafka", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "grouped, deduplicated notifications" }
+  - { from: "alert-kafka", to: "notification-consumers", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "fan out to channels" }
+  - { from: "notification-consumers", to: "email-relay", protocol: "smtp", mode: "async", delivery: "at-least-once", retryPolicy: "exponential", label: "email" }
+  - { from: "notification-consumers", to: "pager", protocol: "https", mode: "async", delivery: "at-least-once", retryPolicy: "exponential", idempotent: true, label: "page on-call" }
+  - { from: "notification-consumers", to: "alert-webhook", protocol: "https", mode: "async", delivery: "at-least-once", retryPolicy: "exponential", idempotent: true, label: "webhook" }

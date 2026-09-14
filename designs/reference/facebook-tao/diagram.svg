@@ -1,0 +1,176 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1263 990" width="1263" height="990" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif">
+<title>facebook-tao</title>
+<style>:root{--ink:#1b1b19;--muted:#6b6b66;--line:#8a8a85;--frame:#b4b4ae;--bg:#ffffff}@media (prefers-color-scheme: dark){:root{--ink:#ececea;--muted:#a1a19c;--line:#7e7e88;--frame:#55555c;--bg:#17171a}.f-blue{fill:#1b2a3f;stroke:#3f6698}.f-teal{fill:#152e2b;stroke:#3c7d72}.f-amber{fill:#33280f;stroke:#8a6a2b}.f-violet{fill:#241f3d;stroke:#5b4f9c}.f-purple{fill:#2d1c34;stroke:#7a4d8c}.f-green{fill:#162b18;stroke:#417a47}.f-rose{fill:#33191a;stroke:#8f4c48}.f-red{fill:#341a1a;stroke:#8d4340}.f-grey{fill:#26262a;stroke:#5a5a60}}.f-blue{fill:#eaf1fd;stroke:#9cc0f0}.f-teal{fill:#e6f5f2;stroke:#8fcfc2}.f-amber{fill:#fbf1e0;stroke:#dcb473}.f-violet{fill:#f0edfc;stroke:#b6a8ee}.f-purple{fill:#f6ecf9;stroke:#cda3dc}.f-green{fill:#e9f5ea;stroke:#96c99b}.f-rose{fill:#fceceb;stroke:#e5a7a1}.f-red{fill:#fbe9e9;stroke:#e09b98}.f-grey{fill:#f0f0ef;stroke:#c2c2bf}.n{font-size:14px;font-weight:500;fill:var(--ink)}.c{font-size:12px;fill:var(--muted)}.g{font-size:12px;fill:var(--muted)}.e{font-size:12px;fill:var(--muted);paint-order:stroke;stroke:var(--bg);stroke-width:3px}.ic{color:var(--ink)}</style>
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1L9 5L1 9" fill="none" stroke="var(--line)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<rect width="1263" height="990" fill="var(--bg)"/>
+<rect x="206.0" y="310.0" width="999.0" height="650.0" rx="10" fill="none" stroke="var(--frame)" stroke-width="1" stroke-dasharray="5 4"/>
+<text class="g" x="218.0" y="329.0">Region holding the database masters</text>
+<rect x="28.0" y="146.0" width="1191.0" height="650.0" rx="10" fill="none" stroke="var(--frame)" stroke-width="1" stroke-dasharray="5 4"/>
+<text class="g" x="40.0" y="165.0">A slave region</text>
+<rect x="474.0" y="342.0" width="715.0" height="126.0" rx="10" fill="none" stroke="var(--frame)" stroke-width="1" stroke-dasharray="5 4"/>
+<text class="g" x="486.0" y="361.0">Storage cluster</text>
+<rect x="74.0" y="178.0" width="1094.0" height="290.0" rx="10" fill="none" stroke="var(--frame)" stroke-width="1" stroke-dasharray="5 4"/>
+<text class="g" x="86.0" y="197.0">Frontend cluster</text>
+<rect x="44.0" y="506.0" width="361.0" height="126.0" rx="10" fill="none" stroke="var(--frame)" stroke-width="1" stroke-dasharray="5 4"/>
+<text class="g" x="56.0" y="525.0">Storage cluster</text>
+<line x1="460.0" y1="115.5" x2="256.0" y2="214.2" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="358.0" y="160.8" text-anchor="middle">https</text>
+<line x1="256.0" y1="249.0" x2="290.0" y2="249.0" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="273.0" y="245.0" text-anchor="middle">sticky to one frontend cluster</text>
+<path d="M378.5 288.0 Q539.5 363.3 506.5 538.0" fill="none" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="491.0" y="384.2" text-anchor="middle">fetch the Ticket once per request</text>
+<line x1="427.0" y1="249.0" x2="460.0" y2="249.0" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="443.5" y="245.0" text-anchor="middle">hot objects and associations, checked by version</text>
+<path d="M427.0 249.0 Q590.5 425.0 754.0 249.0" fill="none" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="590.5" y="333.0" text-anchor="middle">Ticket-inclusive graph read, shard by consistent hash</text>
+<path d="M408.5 288.0 Q486.3 518.7 729.0 538.0" fill="none" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="527.5" y="461.8" text-anchor="middle">failover tier when the shard's server is marked down</text>
+<path d="M406.1 288.0 Q556.4 619.5 910.9 702.0" fill="none" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="607.5" y="553.2" text-anchor="middle">Ticket-inclusive index read</text>
+<path d="M427.0 249.0 Q726.5 425.0 1026.0 249.0" fill="none" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="726.5" y="333.0" text-anchor="middle">lookaside get/set/delete outside the graph model</text>
+<line x1="754.0" y1="249.0" x2="720.0" y2="249.0" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text class="e" x="737.0" y="245.0" text-anchor="middle">access-rate feedback fills and versions the client cache</text>
+<path d="M817.2 288.0 Q437.8 372.9 230.8 702.0" fill="none" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="480.9" y="429.9" text-anchor="middle">recent writes consulted on a miss</text>
+<path d="M902.3 283.9 Q1219.4 265.7 1049.4 533.9" fill="none" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="1097.6" y="333.3" text-anchor="middle">every read miss and every write</text>
+<path d="M1049.4 533.9 Q1219.4 265.7 902.3 283.9" fill="none" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text class="e" x="1097.6" y="333.3" text-anchor="middle">invalidate objects, refill association lists</text>
+<line x1="894.0" y1="569.0" x2="928.0" y2="569.0" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="911.0" y="565.0" text-anchor="middle">every read miss and every write</text>
+<line x1="928.0" y1="569.0" x2="894.0" y2="569.0" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text class="e" x="911.0" y="565.0" text-anchor="middle">invalidate objects, refill association lists</text>
+<path d="M785.9 288.0 Q552.2 512.8 229.0 538.9" fill="none" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="529.9" y="459.2" text-anchor="middle">0.15% of misses, when the leader is unavailable</text>
+<path d="M928.0 577.0 Q578.5 427.5 229.0 577.0" fill="none" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="578.5" y="498.2" text-anchor="middle">always the local region's database</text>
+<path d="M985.2 616.0 Q811.2 912.8 470.3 866.0" fill="none" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="769.5" y="822.9" text-anchor="middle">forward the write to the shard's master region</text>
+<path d="M404.9 866.0 Q344.3 605.6 563.1 452.0" fill="none" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="414.2" y="628.3" text-anchor="middle">synchronous write: the consistent source of truth</text>
+<path d="M406.2 866.0 Q281.9 667.6 510.3 616.0" fill="none" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text class="e" x="370.1" y="700.3" text-anchor="middle">appendWrite(SessionId, Ticket)</text>
+<line x1="592.0" y1="905.0" x2="558.0" y2="905.0" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text class="e" x="575.0" y="901.0" text-anchor="middle">repair hanging associations</text>
+<line x1="666.0" y1="413.0" x2="700.0" y2="413.0" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text class="e" x="683.0" y="409.0" text-anchor="middle">data plus embedded cache-maintenance messages</text>
+<path d="M748.2 452.0 Q466.5 399.0 229.0 559.5" fill="none" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text class="e" x="477.5" y="448.4" text-anchor="middle">replicate to each region's slave shards</text>
+<path d="M938.6 452.0 Q766.5 668.9 960.9 866.0" fill="none" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text class="e" x="858.1" y="659.9" text-anchor="middle">released only after the transaction is replicated locally</text>
+<path d="M975.2 866.0 Q1243.8 812.7 1053.3 616.0" fill="none" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text class="e" x="1129.0" y="772.9" text-anchor="middle">version-tagged invalidate / refill</text>
+<path d="M886.0 889.0 Q540.8 931.0 241.0 754.6" fill="none" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text class="e" x="552.1" y="872.4" text-anchor="middle">the same at-least-once stream, ~3 minutes retained</text>
+<line x1="886.0" y1="871.6" x2="674.9" y2="780.0" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text class="e" x="780.4" y="821.8" text-anchor="middle">graph writes to reshard, transform and filter</text>
+<line x1="730.0" y1="741.0" x2="764.0" y2="741.0" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text class="e" x="747.0" y="737.0" text-anchor="middle">index asynchronously, off the write path</text>
+<line x1="229.0" y1="577.0" x2="263.0" y2="577.0" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text class="e" x="246.0" y="573.0" text-anchor="middle">tail the commit log and extract deletes</text>
+<path d="M389.0 549.9 Q648.5 275.7 1026.0 276.1" fill="none" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text class="e" x="678.0" y="340.3" text-anchor="middle">batched deletes to every frontend cluster</text>
+<path d="M1026.0 260.5 Q691.1 489.1 297.0 394.0" fill="none" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="676.3" y="404.2" text-anchor="middle">unpack the batch, route by key</text>
+<path d="M1026.0 263.8 Q778.7 491.1 456.0 398.2" fill="none" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="759.9" y="407.1" text-anchor="middle">keys whose cache server has failed</text>
+<path d="M1029.7 288.0 Q796.9 619.9 399.8 702.0" fill="none" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="755.8" y="553.5" text-anchor="middle">low-access-rate items and remote markers</text>
+<path d="M696.1 124.0 Q807.9 315.6 593.9 374.0" fill="none" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="726.5" y="278.3" text-anchor="middle">per-shard mastership and automatic promotion</text>
+<path d="M667.0 124.0 Q313.0 198.0 189.5 538.0" fill="none" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="370.6" y="260.5" text-anchor="middle">mark down replicas that fall too far behind</text>
+<rect class="f-purple" x="460" y="46" width="126" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(511.0 57)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2.5"/><path d="M8 21h8M12 17v4"/></g></g>
+<text class="n" x="523.0" y="98" text-anchor="middle">end-user</text>
+<text class="c" x="523.0" y="114" text-anchor="middle">web-browser</text>
+<rect class="f-teal" x="112" y="210" width="144" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(172.0 221)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h8"/><path d="M10 12V6h5M10 12h5M10 12v6h5"/><path d="M13 4l2 2-2 2M13 10l2 2-2 2M13 16l2 2-2 2"/></g></g>
+<text class="n" x="184.0" y="262" text-anchor="middle">Load balancer</text>
+<text class="c" x="184.0" y="278" text-anchor="middle">load-balancer-tier</text>
+<rect class="f-blue" x="290" y="210" width="137" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(346.5 221)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M6.5 7.5h.01M6.5 16.5h.01"/><path d="M10 7.5h5M10 16.5h5"/></g></g>
+<text class="n" x="358.5" y="262" text-anchor="middle">PHP web tier</text>
+<text class="c" x="358.5" y="278" text-anchor="middle">container-service</text>
+<rect class="f-amber" x="460" y="210" width="260" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(578.0 221)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M13.5 7.5 9.5 13H12l-1.5 4.5 4-5.5H12z"/></g></g>
+<text class="n" x="590.0" y="262" text-anchor="middle">TAO client-side hot-item cache</text>
+<text class="c" x="590.0" y="278" text-anchor="middle">cache-cluster</text>
+<rect class="f-amber" x="423" y="538" width="207" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(514.5 549)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M13.5 7.5 9.5 13H12l-1.5 4.5 4-5.5H12z"/></g></g>
+<text class="n" x="526.5" y="590" text-anchor="middle">FlightTracker (Tickets)</text>
+<text class="c" x="526.5" y="606" text-anchor="middle">cache-cluster</text>
+<rect class="f-amber" x="754" y="210" width="237" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(860.5 221)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M13.5 7.5 9.5 13H12l-1.5 4.5 4-5.5H12z"/></g></g>
+<text class="n" x="872.5" y="262" text-anchor="middle">Follower tier (L1), primary</text>
+<text class="c" x="872.5" y="278" text-anchor="middle">cache-cluster</text>
+<rect class="f-amber" x="664" y="538" width="230" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(767.0 549)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M13.5 7.5 9.5 13H12l-1.5 4.5 4-5.5H12z"/></g></g>
+<text class="n" x="779.0" y="590" text-anchor="middle">Follower tier (L1), backup</text>
+<text class="c" x="779.0" y="606" text-anchor="middle">cache-cluster</text>
+<rect class="f-amber" x="928" y="538" width="275" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(1053.5 549)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M13.5 7.5 9.5 13H12l-1.5 4.5 4-5.5H12z"/></g></g>
+<text class="n" x="1065.5" y="590" text-anchor="middle">Leader tier (L2), one per region</text>
+<text class="c" x="1065.5" y="606" text-anchor="middle">cache-cluster</text>
+<rect class="f-amber" x="222" y="866" width="336" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(378.0 877)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M13.5 7.5 9.5 13H12l-1.5 4.5 4-5.5H12z"/></g></g>
+<text class="n" x="390.0" y="918" text-anchor="middle">Leader tier in the shard's master region</text>
+<text class="c" x="390.0" y="934" text-anchor="middle">cache-cluster</text>
+<rect class="f-amber" x="110" y="702" width="131" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(163.5 713)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M13.5 7.5 9.5 13H12l-1.5 4.5 4-5.5H12z"/></g></g>
+<text class="n" x="175.5" y="754" text-anchor="middle">RefillLibrary</text>
+<text class="c" x="175.5" y="770" text-anchor="middle">cache-cluster</text>
+<rect class="f-amber" x="1026" y="210" width="126" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(1077.0 221)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="4" rx="4.5" ry="1.8"/><path d="M7.5 4v3.6c0 1 2 1.8 4.5 1.8s4.5-.8 4.5-1.8V4"/><rect x="2" y="12" width="20" height="6.5" rx="2"/><path d="M6 15.2h.01M10 15.2h.01M14 15.2h.01M18 15.2h.01"/></g></g>
+<text class="n" x="1089.0" y="262" text-anchor="middle">mcrouter</text>
+<text class="c" x="1089.0" y="278" text-anchor="middle">proxysql</text>
+<rect class="f-amber" x="90" y="374" width="207" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(181.5 385)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M13.5 7.5 9.5 13H12l-1.5 4.5 4-5.5H12z"/></g></g>
+<text class="n" x="193.5" y="426" text-anchor="middle">memcache lookaside tier</text>
+<text class="c" x="193.5" y="442" text-anchor="middle">memcached</text>
+<rect class="f-amber" x="330" y="374" width="126" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(381.0 385)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M13.5 7.5 9.5 13H12l-1.5 4.5 4-5.5H12z"/></g></g>
+<text class="n" x="393.0" y="426" text-anchor="middle">Gutter pool</text>
+<text class="c" x="393.0" y="442" text-anchor="middle">memcached</text>
+<rect class="f-amber" x="275" y="702" width="131" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(328.5 713)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M13.5 7.5 9.5 13H12l-1.5 4.5 4-5.5H12z"/></g></g>
+<text class="n" x="340.5" y="754" text-anchor="middle">Regional pool</text>
+<text class="c" x="340.5" y="770" text-anchor="middle">memcached</text>
+<rect class="f-violet" x="263" y="538" width="126" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(314.0 549)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="7" cy="5.5" rx="5" ry="2.2"/><path d="M2 5.5v11c0 1.2 2.2 2.2 5 2.2s5-1 5-2.2v-11"/><path d="M2 11.5c0 1.2 2.2 2.2 5 2.2s5-1 5-2.2"/><path d="M14 12h7"/><path d="M18 9l3 3-3 3"/></g></g>
+<text class="n" x="326.0" y="590" text-anchor="middle">mcsqueal</text>
+<text class="c" x="326.0" y="606" text-anchor="middle">debezium</text>
+<rect class="f-violet" x="700" y="374" width="473" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(924.5 385)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="7" cy="5.5" rx="5" ry="2.2"/><path d="M2 5.5v11c0 1.2 2.2 2.2 5 2.2s5-1 5-2.2v-11"/><path d="M2 11.5c0 1.2 2.2 2.2 5 2.2s5-1 5-2.2"/><path d="M14 12h7"/><path d="M18 9l3 3-3 3"/></g></g>
+<text class="n" x="936.5" y="426" text-anchor="middle">Replication stream with embedded invalidations and refills</text>
+<text class="c" x="936.5" y="442" text-anchor="middle">debezium</text>
+<rect class="f-violet" x="886" y="866" width="154" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(951.0 877)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="4" cy="12" r="2.3"/><circle cx="15" cy="4.5" r="2.3"/><circle cx="15" cy="12" r="2.3"/><circle cx="15" cy="19.5" r="2.3"/><path d="M6 10.7 13 5.8M6.3 12h6.4M6 13.3l7 4.9"/><path d="M18 4.5h3M18 12h3M18 19.5h3"/><g stroke="none"><circle cx="18.5" cy="18.5" r="5.3" fill="var(--arkore-icon-bg, #fff)"/><circle cx="18.5" cy="18.5" r="4.5" fill="#660066"/><path transform="translate(15.80 15.80) scale(0.2250)" fill="#fff" d="M10.657 23.994h-9.45A1.212 1.212 0 0 1 0 22.788v-9.18h.071c5.784 0 10.504 4.65 10.586 10.386Zm7.606 0h-4.045C14.135 16.246 7.795 9.977 0 9.942V6.038h.071c9.983 0 18.121 8.044 18.192 17.956Zm4.53 0h-.97C21.754 12.071 11.995 2.407 0 2.372v-1.16C0 .55.544.006 1.207.006h7.64C15.733 2.49 21.257 7.789 24 14.508v8.291c0 .663-.544 1.195-1.207 1.195ZM16.713.006h6.092A1.19 1.19 0 0 1 24 1.2v5.914c-.91-1.242-2.046-2.65-3.158-3.762C19.588 2.11 18.122.987 16.714.005Z"/></g></g></g>
+<text class="n" x="963.0" y="918" text-anchor="middle">Wormhole pub-sub</text>
+<text class="c" x="963.0" y="934" text-anchor="middle">mqtt-broker</text>
+<rect class="f-blue" x="440" y="702" width="290" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(573.0 713)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v1.5M12 20v1.5M21.5 12H20M4 12H2.5M18.7 5.3l-1.1 1.1M6.4 17.6l-1.1 1.1M18.7 18.7l-1.1-1.1M6.4 6.4 5.3 5.3"/></g></g>
+<text class="n" x="585.0" y="754" text-anchor="middle">Asynchronous index update pipeline</text>
+<text class="c" x="585.0" y="770" text-anchor="middle">container-worker</text>
+<rect class="f-blue" x="592" y="866" width="260" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(710.0 877)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v1.5M12 20v1.5M21.5 12H20M4 12H2.5M18.7 5.3l-1.1 1.1M6.4 17.6l-1.1 1.1M18.7 18.7l-1.1-1.1M6.4 6.4 5.3 5.3"/></g></g>
+<text class="n" x="722.0" y="918" text-anchor="middle">Inverse-association repair job</text>
+<text class="c" x="722.0" y="934" text-anchor="middle">container-worker</text>
+<rect class="f-amber" x="764" y="702" width="389" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(946.5 713)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="14" cy="10" r="6"/><path d="M9.8 14.2 4 20"/><path d="M11 8.5h6M11 11.5h4"/><g stroke="none"><circle cx="18.5" cy="18.5" r="5.3" fill="var(--arkore-icon-bg, #fff)"/><circle cx="18.5" cy="18.5" r="4.5" fill="#005571"/><path transform="translate(15.80 15.80) scale(0.2250)" fill="#fff" d="M13.394 0C8.683 0 4.609 2.716 2.644 6.667h15.641a4.77 4.77 0 0 0 3.073-1.11c.446-.375.864-.785 1.247-1.243l.001-.002A11.974 11.974 0 0 0 13.394 0zM1.804 8.889a12.009 12.009 0 0 0 0 6.222h14.7a3.111 3.111 0 1 0 0-6.222zm.84 8.444C4.61 21.283 8.684 24 13.395 24c3.701 0 7.011-1.677 9.212-4.312l-.001-.002a9.958 9.958 0 0 0-1.247-1.243 4.77 4.77 0 0 0-3.073-1.11z"/></g></g></g>
+<text class="n" x="958.5" y="754" text-anchor="middle">Global secondary indexes and materialised views</text>
+<text class="c" x="958.5" y="770" text-anchor="middle">elasticsearch</text>
+<rect class="f-green" x="620" y="46" width="184" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(700.0 57)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4.5" r="2.5"/><circle cx="4.5" cy="17.5" r="2.5"/><circle cx="17" cy="16" r="2.5"/><path d="M10.4 6.8 6.1 15.2M13.7 6.5l2.6 7.2M6.9 16.9l7.6-.6"/><g stroke="none"><circle cx="18.5" cy="18.5" r="5.3" fill="var(--arkore-icon-bg, #fff)"/><circle cx="18.5" cy="18.5" r="4.5" fill="#419EDA"/><path transform="translate(15.80 15.80) scale(0.2250)" fill="#fff" d="M10.985 10.715A1.565 1.565 0 1 1 9.42 9.151a1.566 1.566 0 0 1 1.565 1.564zm2.023 0a1.565 1.565 0 1 0 1.565-1.564 1.564 1.564 0 0 0-1.565 1.564zm10.653 1.698a4.295 4.295 0 0 1-.346.013 4.517 4.517 0 0 1-1.986-.462 18.448 18.448 0 0 0 .267-3.515 18.184 18.184 0 0 0-2.274-2.695 4.519 4.519 0 0 1 1.603-1.717l.294-.182-.23-.26a11.977 11.977 0 0 0-4.182-3.05l-.319-.138-.08.336a4.506 4.506 0 0 1-1.135 2.058 18.19 18.19 0 0 0-3.277-1.35 18.126 18.126 0 0 0-3.272 1.348A4.495 4.495 0 0 1 7.594.745L7.512.408l-.317.139a12.091 12.091 0 0 0-4.182 3.05l-.23.259.294.182a4.512 4.512 0 0 1 1.599 1.708 18.322 18.322 0 0 0-2.27 2.685 18.435 18.435 0 0 0 .26 3.538 4.505 4.505 0 0 1-1.975.458 4.224 4.224 0 0 1-.346-.013L0 12.386l.032.344a11.904 11.904 0 0 0 1.609 4.924l.175.298.263-.223a4.502 4.502 0 0 1 2.132-.998 18.29 18.29 0 0 0 1.824 2.971 18.473 18.473 0 0 0 3.457.85 4.493 4.493 0 0 1-.287 2.36l-.132.319.338.075a12.048 12.048 0 0 0 2.59.286l2.59-.286.338-.075-.131-.32a4.487 4.487 0 0 1-.287-2.361 18.476 18.476 0 0 0 3.443-.848 18.208 18.208 0 0 0 1.826-2.974 4.51 4.51 0 0 1 2.143.999l.263.223.175-.296a11.877 11.877 0 0 0 1.607-4.924l.032-.343zm-7.958 4.209a13.981 13.981 0 0 1-7.416 0 14.189 14.189 0 0 1-2.256-7.013 14.118 14.118 0 0 1 2.687-2.558 14.333 14.333 0 0 1 3.279-1.784 14.377 14.377 0 0 1 3.27 1.779 14.226 14.226 0 0 1 2.7 2.576 14.293 14.293 0 0 1-.675 3.652 14.365 14.365 0 0 1-1.59 3.348z"/></g></g></g>
+<text class="n" x="712.0" y="98" text-anchor="middle">Global configuration</text>
+<text class="c" x="712.0" y="114" text-anchor="middle">etcd</text>
+<rect class="f-amber" x="490" y="374" width="176" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(566.0 385)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/><g stroke="none"><circle cx="18.5" cy="18.5" r="5.3" fill="var(--arkore-icon-bg, #fff)"/><circle cx="18.5" cy="18.5" r="4.5" fill="#4479A1"/><path transform="translate(15.80 15.80) scale(0.2250)" fill="#fff" d="M16.41 5.5c-.12 0-.19.01-.27.03v.01h.01c.05.1.15.18.21.27.05.11.1.21.15.32l.01-.01c.09-.07.14-.17.14-.33-.04-.05-.05-.09-.08-.14-.04-.07-.13-.1-.18-.15zM5.77 18.7h-.93a50.85 50.85 0 0 0-.27-4.41h-.01l-1.41 4.41H2.45l-1.4-4.41h-.01a72.89 72.89 0 0 0-.2 4.41H0c.06-1.97.19-3.81.41-5.53h1.15l1.33 4.06h.01l1.35-4.06h1.09c.24 2.02.38 3.86.43 5.53zm4.02-4.08c-.38 2.04-.88 3.53-1.49 4.46-.48.72-1.01 1.07-1.58 1.07-.15 0-.34-.05-.57-.14v-.49c.11.02.24.03.39.03.27 0 .48-.07.65-.22.2-.18.29-.38.29-.6 0-.15-.08-.47-.23-.94L6.23 14.62h.91l.73 2.36c.16.54.23.91.2 1.12.4-1.06.68-2.23.83-3.48zm12.32 4.08h-2.63v-5.53h.89v4.85h1.75zm-3.32.14l-1.02-.5c.09-.08.18-.16.26-.25.43-.51.65-1.26.65-2.25 0-1.83-.72-2.75-2.15-2.75-.7 0-1.25.23-1.65.7-.43.51-.65 1.26-.65 2.25 0 .97.19 1.69.57 2.14.35.41.88.61 1.58.61.26 0 .51-.03.72-.1l1.32.77.36-.62zM15.5 17.59c-.23-.36-.34-.94-.34-1.74 0-1.39.42-2.09 1.27-2.09.44 0 .77.17.98.5.22.36.34.94.34 1.72 0 1.4-.42 2.11-1.27 2.11-.45 0-.77-.17-.98-.5zm-1.66-.42c0 .47-.17.86-.52 1.16-.34.3-.8.45-1.38.45-.54 0-1.06-.17-1.57-.52l.24-.48c.44.22.83.33 1.19.33.33 0 .59-.07.78-.22a.75.75 0 0 0 .3-.61c0-.33-.23-.61-.65-.84-.39-.21-1.16-.66-1.16-.66-.42-.31-.63-.64-.63-1.18 0-.45.16-.81.47-1.08.32-.28.72-.41 1.22-.41.51 0 .98.14 1.4.41l-.21.48a2.73 2.73 0 0 0-1.06-.23c-.28 0-.5.07-.65.21a.69.69 0 0 0-.25.52c0 .33.23.61.67.85.39.21 1.19.67 1.19.67.43.3.65.63.65 1.17zm9.38-5.85c-.54-.01-.95.04-1.3.19-.1.04-.26.04-.27.17.06.05.06.14.11.21.08.13.22.31.35.41.14.11.28.22.43.31.26.16.56.26.81.42.14.09.29.21.44.31.07.05.12.14.21.17v-.02c-.05-.06-.06-.15-.1-.21-.07-.07-.13-.13-.2-.19a3.22 3.22 0 0 0-.69-.68c-.21-.15-.68-.35-.77-.59l-.01-.01c.15-.01.32-.07.46-.11.23-.06.43-.05.67-.11.11-.03.21-.06.32-.09v-.06c-.12-.12-.21-.28-.33-.4a8.87 8.87 0 0 0-1.1-.82c-.21-.13-.48-.22-.7-.33-.08-.04-.21-.06-.26-.13-.12-.15-.19-.34-.28-.51a17.69 17.69 0 0 1-.55-1.16c-.12-.26-.19-.52-.34-.76-.69-1.14-1.44-1.83-2.59-2.5-.25-.14-.54-.2-.86-.27-.17-.01-.33-.02-.5-.03-.11-.05-.22-.17-.31-.23-.38-.24-1.36-.76-1.64-.07-.18.43.27.86.42 1.08.12.15.26.33.34.5.05.12.06.23.11.36.11.29.21.62.35.9.07.14.15.29.25.41.05.07.15.11.17.23-.09.14-.1.33-.15.5-.24.76-.15 1.69.19 2.25.11.17.36.53.7.39.3-.12.23-.5.32-.83.02-.08.01-.13.05-.19v.01c.09.19.19.37.27.56.21.33.57.67.87.9.16.12.29.33.49.4v-.02h-.01c-.04-.06-.1-.09-.15-.13a3.44 3.44 0 0 1-.35-.4 8.76 8.76 0 0 1-.75-1.22c-.11-.21-.2-.44-.29-.64-.04-.08-.04-.2-.11-.24-.1.15-.25.27-.32.45-.13.29-.14.64-.19 1.01-.03.01-.01 0-.03.01-.21-.05-.29-.27-.37-.46-.2-.47-.23-1.24-.06-1.78.05-.14.25-.58.17-.72-.04-.13-.17-.2-.25-.3a2.48 2.48 0 0 1-.24-.43c-.16-.37-.24-.79-.41-1.16-.08-.17-.22-.35-.33-.51-.13-.18-.27-.31-.37-.52-.03-.07-.08-.19-.03-.27.01-.05.04-.07.09-.09.09-.07.34.02.42.06.25.1.46.19.66.33.09.07.2.19.32.23h.14c.21.05.46.01.66.07.35.11.68.28.96.46a5.95 5.95 0 0 1 2.08 2.29c.08.15.12.29.19.46.14.33.31.66.46.98.14.32.28.64.48.9.1.14.5.21.68.29.13.06.34.12.46.19.23.14.45.3.67.45.11.08.44.24.46.38z"/></g></g></g>
+<text class="n" x="578.0" y="426" text-anchor="middle">Master MySQL shards</text>
+<text class="c" x="578.0" y="442" text-anchor="middle">mysql</text>
+<rect class="f-amber" x="60" y="538" width="169" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(132.5 549)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/><g stroke="none"><circle cx="18.5" cy="18.5" r="5.3" fill="var(--arkore-icon-bg, #fff)"/><circle cx="18.5" cy="18.5" r="4.5" fill="#4479A1"/><path transform="translate(15.80 15.80) scale(0.2250)" fill="#fff" d="M16.41 5.5c-.12 0-.19.01-.27.03v.01h.01c.05.1.15.18.21.27.05.11.1.21.15.32l.01-.01c.09-.07.14-.17.14-.33-.04-.05-.05-.09-.08-.14-.04-.07-.13-.1-.18-.15zM5.77 18.7h-.93a50.85 50.85 0 0 0-.27-4.41h-.01l-1.41 4.41H2.45l-1.4-4.41h-.01a72.89 72.89 0 0 0-.2 4.41H0c.06-1.97.19-3.81.41-5.53h1.15l1.33 4.06h.01l1.35-4.06h1.09c.24 2.02.38 3.86.43 5.53zm4.02-4.08c-.38 2.04-.88 3.53-1.49 4.46-.48.72-1.01 1.07-1.58 1.07-.15 0-.34-.05-.57-.14v-.49c.11.02.24.03.39.03.27 0 .48-.07.65-.22.2-.18.29-.38.29-.6 0-.15-.08-.47-.23-.94L6.23 14.62h.91l.73 2.36c.16.54.23.91.2 1.12.4-1.06.68-2.23.83-3.48zm12.32 4.08h-2.63v-5.53h.89v4.85h1.75zm-3.32.14l-1.02-.5c.09-.08.18-.16.26-.25.43-.51.65-1.26.65-2.25 0-1.83-.72-2.75-2.15-2.75-.7 0-1.25.23-1.65.7-.43.51-.65 1.26-.65 2.25 0 .97.19 1.69.57 2.14.35.41.88.61 1.58.61.26 0 .51-.03.72-.1l1.32.77.36-.62zM15.5 17.59c-.23-.36-.34-.94-.34-1.74 0-1.39.42-2.09 1.27-2.09.44 0 .77.17.98.5.22.36.34.94.34 1.72 0 1.4-.42 2.11-1.27 2.11-.45 0-.77-.17-.98-.5zm-1.66-.42c0 .47-.17.86-.52 1.16-.34.3-.8.45-1.38.45-.54 0-1.06-.17-1.57-.52l.24-.48c.44.22.83.33 1.19.33.33 0 .59-.07.78-.22a.75.75 0 0 0 .3-.61c0-.33-.23-.61-.65-.84-.39-.21-1.16-.66-1.16-.66-.42-.31-.63-.64-.63-1.18 0-.45.16-.81.47-1.08.32-.28.72-.41 1.22-.41.51 0 .98.14 1.4.41l-.21.48a2.73 2.73 0 0 0-1.06-.23c-.28 0-.5.07-.65.21a.69.69 0 0 0-.25.52c0 .33.23.61.67.85.39.21 1.19.67 1.19.67.43.3.65.63.65 1.17zm9.38-5.85c-.54-.01-.95.04-1.3.19-.1.04-.26.04-.27.17.06.05.06.14.11.21.08.13.22.31.35.41.14.11.28.22.43.31.26.16.56.26.81.42.14.09.29.21.44.31.07.05.12.14.21.17v-.02c-.05-.06-.06-.15-.1-.21-.07-.07-.13-.13-.2-.19a3.22 3.22 0 0 0-.69-.68c-.21-.15-.68-.35-.77-.59l-.01-.01c.15-.01.32-.07.46-.11.23-.06.43-.05.67-.11.11-.03.21-.06.32-.09v-.06c-.12-.12-.21-.28-.33-.4a8.87 8.87 0 0 0-1.1-.82c-.21-.13-.48-.22-.7-.33-.08-.04-.21-.06-.26-.13-.12-.15-.19-.34-.28-.51a17.69 17.69 0 0 1-.55-1.16c-.12-.26-.19-.52-.34-.76-.69-1.14-1.44-1.83-2.59-2.5-.25-.14-.54-.2-.86-.27-.17-.01-.33-.02-.5-.03-.11-.05-.22-.17-.31-.23-.38-.24-1.36-.76-1.64-.07-.18.43.27.86.42 1.08.12.15.26.33.34.5.05.12.06.23.11.36.11.29.21.62.35.9.07.14.15.29.25.41.05.07.15.11.17.23-.09.14-.1.33-.15.5-.24.76-.15 1.69.19 2.25.11.17.36.53.7.39.3-.12.23-.5.32-.83.02-.08.01-.13.05-.19v.01c.09.19.19.37.27.56.21.33.57.67.87.9.16.12.29.33.49.4v-.02h-.01c-.04-.06-.1-.09-.15-.13a3.44 3.44 0 0 1-.35-.4 8.76 8.76 0 0 1-.75-1.22c-.11-.21-.2-.44-.29-.64-.04-.08-.04-.2-.11-.24-.1.15-.25.27-.32.45-.13.29-.14.64-.19 1.01-.03.01-.01 0-.03.01-.21-.05-.29-.27-.37-.46-.2-.47-.23-1.24-.06-1.78.05-.14.25-.58.17-.72-.04-.13-.17-.2-.25-.3a2.48 2.48 0 0 1-.24-.43c-.16-.37-.24-.79-.41-1.16-.08-.17-.22-.35-.33-.51-.13-.18-.27-.31-.37-.52-.03-.07-.08-.19-.03-.27.01-.05.04-.07.09-.09.09-.07.34.02.42.06.25.1.46.19.66.33.09.07.2.19.32.23h.14c.21.05.46.01.66.07.35.11.68.28.96.46a5.95 5.95 0 0 1 2.08 2.29c.08.15.12.29.19.46.14.33.31.66.46.98.14.32.28.64.48.9.1.14.5.21.68.29.13.06.34.12.46.19.23.14.45.3.67.45.11.08.44.24.46.38z"/></g></g></g>
+<text class="n" x="144.5" y="590" text-anchor="middle">Slave MySQL shards</text>
+<text class="c" x="144.5" y="606" text-anchor="middle">mysql</text>
+</svg>

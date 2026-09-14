@@ -43,13 +43,73 @@ An authored or imported design becomes a reference design only by a separate dec
 
 | design | nodes | edges | groups | source |
 |---|---|---|---|---|
+| [ad-click-aggregation](reference/ad-click-aggregation/) | 20 | 24 | 5 | intake card |
+| [airbnb-search](reference/airbnb-search/) | 24 | 31 | 5 | intake card |
+| [amazon-order](reference/amazon-order/) | 22 | 26 | 5 | intake card |
+| [booking-search](reference/booking-search/) | 25 | 36 | 6 | intake card |
+| [canva-uploads](reference/canva-uploads/) | 23 | 31 | 4 | intake card |
+| [cloudflare-edge](reference/cloudflare-edge/) | 20 | 26 | 5 | intake card |
+| [coinbase-exchange](reference/coinbase-exchange/) | 25 | 32 | 7 | intake card |
+| [datadog-husky](reference/datadog-husky/) | 23 | 29 | 6 | intake card |
+| [digital-wallet](reference/digital-wallet/) | 21 | 25 | 5 | intake card |
+| [discord-messages](reference/discord-messages/) | 14 | 19 | 5 | intake card |
+| [distributed-email](reference/distributed-email/) | 22 | 29 | 5 | intake card |
+| [distributed-message-queue](reference/distributed-message-queue/) | 15 | 20 | 5 | intake card |
 | [doordash-delivery](reference/doordash-delivery/) | 15 | 19 | 3 | intake card |
+| [dropbox-sync](reference/dropbox-sync/) | 25 | 34 | 5 | intake card |
+| [duolingo-backend](reference/duolingo-backend/) | 23 | 24 | 4 | intake card |
+| [etsy-search](reference/etsy-search/) | 24 | 26 | 5 | intake card |
+| [facebook-messenger](reference/facebook-messenger/) | 23 | 34 | 5 | intake card |
+| [facebook-tao](reference/facebook-tao/) | 23 | 34 | 5 | intake card |
+| [figma-multiplayer](reference/figma-multiplayer/) | 16 | 21 | 6 | intake card |
+| [github-mysql](reference/github-mysql/) | 24 | 28 | 6 | intake card |
+| [gitlab-architecture](reference/gitlab-architecture/) | 25 | 44 | 8 | intake card |
+| [gojek-platform](reference/gojek-platform/) | 24 | 30 | 3 | intake card |
+| [google-maps](reference/google-maps/) | 22 | 28 | 5 | intake card |
+| [grab-geo](reference/grab-geo/) | 19 | 22 | 5 | intake card |
+| [hotel-reservation](reference/hotel-reservation/) | 23 | 31 | 4 | intake card |
+| [hotstar-streaming](reference/hotstar-streaming/) | 24 | 33 | 5 | intake card |
+| [instagram-feed](reference/instagram-feed/) | 23 | 27 | 5 | intake card |
+| [khan-academy-goliath](reference/khan-academy-goliath/) | 22 | 29 | 5 | intake card |
+| [linear-sync](reference/linear-sync/) | 20 | 32 | 5 | intake card |
+| [linkedin-kafka](reference/linkedin-kafka/) | 22 | 27 | 6 | intake card |
+| [lyft-envoy](reference/lyft-envoy/) | 23 | 37 | 6 | intake card |
+| [meta-threads](reference/meta-threads/) | 24 | 35 | 5 | intake card |
+| [metrics-monitoring](reference/metrics-monitoring/) | 22 | 21 | 4 | intake card |
+| [monzo-platform](reference/monzo-platform/) | 25 | 29 | 5 | intake card |
 | [multi-region-web](reference/multi-region-web/) | 8 | 8 | 2 | composed for v1 |
+| [nearby-friends](reference/nearby-friends/) | 14 | 19 | 4 | intake card |
+| [netflix-streaming](reference/netflix-streaming/) | 17 | 24 | 5 | intake card |
+| [notion-sharding](reference/notion-sharding/) | 16 | 21 | 5 | intake card |
+| [nubank-core](reference/nubank-core/) | 24 | 36 | 5 | intake card |
 | [object-storage](reference/object-storage/) | 13 | 16 | 4 | intake card |
 | [order-processing](reference/order-processing/) | 9 | 10 | 2 | composed for v1 |
 | [payment-system](reference/payment-system/) | 15 | 18 | 3 | intake card |
+| [paypal-payments](reference/paypal-payments/) | 24 | 30 | 9 | intake card |
+| [pinterest-feed](reference/pinterest-feed/) | 25 | 32 | 5 | intake card |
+| [pokemon-go](reference/pokemon-go/) | 18 | 20 | 4 | intake card |
+| [proximity-service](reference/proximity-service/) | 16 | 22 | 5 | intake card |
+| [reddit-feed](reference/reddit-feed/) | 25 | 37 | 4 | intake card |
+| [robinhood-trading](reference/robinhood-trading/) | 22 | 33 | 5 | intake card |
+| [shopify-flash-sale](reference/shopify-flash-sale/) | 19 | 26 | 6 | intake card |
 | [slack-messaging](reference/slack-messaging/) | 16 | 21 | 5 | intake card |
+| [snapchat-platform](reference/snapchat-platform/) | 23 | 28 | 6 | intake card |
+| [spotify-playback](reference/spotify-playback/) | 19 | 28 | 4 | intake card |
+| [stack-overflow](reference/stack-overflow/) | 25 | 35 | 4 | intake card |
+| [stock-exchange](reference/stock-exchange/) | 20 | 27 | 6 | intake card |
+| [stripe-payments](reference/stripe-payments/) | 24 | 27 | 6 | intake card |
+| [tiktok-recommendation](reference/tiktok-recommendation/) | 16 | 18 | 6 | intake card |
+| [tinder-geo](reference/tinder-geo/) | 14 | 18 | 4 | intake card |
+| [twitch-live](reference/twitch-live/) | 25 | 29 | 5 | intake card |
 | [twitter-timeline](reference/twitter-timeline/) | 15 | 18 | 3 | intake card |
+| [uber-dispatch](reference/uber-dispatch/) | 21 | 30 | 6 | intake card |
+| [unique-id-generator](reference/unique-id-generator/) | 6 | 6 | 3 | intake card |
+| [whatsapp-messaging](reference/whatsapp-messaging/) | 19 | 26 | 6 | intake card |
+| [wikipedia](reference/wikipedia/) | 24 | 29 | 5 | intake card |
+| [x-recommendation](reference/x-recommendation/) | 25 | 31 | 3 | intake card |
+| [youtube-upload-playback](reference/youtube-upload-playback/) | 19 | 24 | 5 | intake card |
+| [zerodha-kite](reference/zerodha-kite/) | 25 | 35 | 5 | intake card |
+| [zoom-video](reference/zoom-video/) | 18 | 28 | 8 | intake card |
 
 ## Imported
 

@@ -1,0 +1,211 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture 8, broken variant: the Instagram stack with the four mistakes the
+# sources themselves warn about: the activity feed and fraud logs kept only in
+# Redis with no persistence and no eviction policy, one Cassandra ring stretched across the
+# Atlantic instead of two per-continent rings, a Gearman queue with nowhere to put a poison
+# fan-out job, and Solr written inline by Django on the request path.
+#
+# This file MUST trip:
+#   - cache-as-primary-store-without-persistence  (redis holds the feed and inbox, persistence off)
+#   - cache-missing-eviction-policy               (redis declares an eviction policy of none)
+#   - queue-missing-dlq                           (job-queue takes async traffic, no dead letters)
+#   - derived-store-without-cdc-or-rebuild        (search-index is only written sync by django)
+#   - multi-leader-store-without-conflict-policy  (cassandra-us and cassandra-eu are one ring
+#                                                  across the ocean with no conflict resolution)
+# and MUST NOT trip:
+#   - materialised-cache-without-rebuild-path     (photo-workers still write redis, so a worker
+#                                                  in-edge exists)
+#   - business-updates-without-index-propagation  (postgres is written through pgbouncer, a
+#                                                  database-proxy, not directly by an app-server)
+#   - datastore-missing-backup, datastore-single-region (both postgres nodes keep backups with a
+#                                                  retention and replicate asynchronously)
+#   - retry-without-adaptive-shedding, retry-without-backoff (no edge declares a retry policy)
+#   - push-fanout-without-celebrity-path          (photo-workers fan out with a hybrid strategy)
+#   - credentials-without-rotation                (the design still declares a rotation period)
+#   - external-call-inline-without-durable-path   (django has a queue attached; apns is reached
+#                                                  from pyapns, never inline from the app tier)
+#   - object-store-single-zone-with-durability-target, stateful-node-without-zone-redundancy,
+#     sync-chain-too-deep, cross-cell-call, read-heavy-path-without-cache (no such node, group
+#     or requirement in this design)
+schemaVersion: "1"
+type: "design"
+id: "instagram-feed"
+
+requirements:
+  availability:
+    multiRegion: true
+    regions: 6
+  latency:
+    geoDistributed: true
+  consistency:
+    model: "ap"
+    quorumScope: "global"
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "us", kind: "region", label: "US datacenters" }
+  - { id: "eu", kind: "region", label: "EU datacenter" }
+  - { id: "us-edge", kind: "trust-zone", parent: "us" }
+  - { id: "us-core", kind: "trust-zone", parent: "us" }
+  - { id: "us-data", kind: "trust-zone", parent: "us" }
+
+nodes:
+  - id: "mobile-client"
+    component: "mobile-app"
+    props: { os: "both", localCache: true }
+
+  - id: "dns"
+    component: "route53"
+    label: "Route 53"
+    group: "us-edge"
+    props: { anycast: true, routingPolicy: "simple" }
+
+  - id: "elb"
+    component: "aws-classic-load-balancer"
+    label: "Elastic Load Balancer"
+    group: "us-edge"
+    props: { listenerProtocol: "https", crossZone: true, connectionDraining: true }
+
+  - id: "nginx"
+    component: "nginx"
+    group: "us-edge"
+    props: { layer: "l7", hashing: "round-robin" }
+
+  - id: "photo-cdn"
+    component: "cloudfront"
+    label: "CloudFront"
+    group: "us-edge"
+    props: { caching: true, tls: true }
+
+  - id: "django"
+    component: "vm-service"
+    label: "Django / gunicorn"
+    group: "us-core"
+    props: { provider: "aws", stateless: true, instances: 25, criticality: "high", autoscaling: false }
+
+  - id: "pgbouncer"
+    component: "pgbouncer"
+    group: "us-core"
+    props: { pooling: true, poolMode: "transaction", routing: "shard-key", poolSharded: true }
+
+  - id: "job-queue"
+    component: "gearman"
+    label: "Gearman"
+    group: "us-core"
+    props: { delivery: "at-most-once", deadLetterQueue: false, persistence: false, role: "work" }
+
+  - id: "photo-workers"
+    component: "container-worker"
+    label: "Gearman Python workers"
+    group: "us-core"
+    props: { trigger: "queue", instances: 200, idempotent: true, fanoutStrategy: "hybrid", concurrency: 200 }
+
+  - id: "akkio"
+    component: "container-worker"
+    label: "Akkio"
+    group: "us-core"
+    props: { trigger: "stream", idempotent: true, rateControl: "aimd" }
+
+  - id: "pyapns"
+    component: "notification-platform"
+    label: "pyapns"
+    group: "us-core"
+    props: { channelPush: true, dedupKey: true }
+
+  - id: "apns"
+    component: "apns"
+    label: "APNs"
+    props: { tokenBasedAuth: true }
+
+  - id: "observability"
+    component: "sentry"
+    label: "Sentry / Munin / PagerDuty"
+    group: "us-core"
+    props: { signal: "all", independentOfMonitored: true, alertGrouping: true }
+
+  - id: "postgres"
+    component: "postgres"
+    label: "PostgreSQL shards"
+    group: "us-data"
+    props: { version: "9", sharded: true, shardKey: "user_id", idEncodesShard: true, replication: "async", backupEnabled: true, backupRetentionDays: 30, managed: false }
+
+  - id: "postgres-replica"
+    component: "postgres"
+    label: "PostgreSQL streaming replicas"
+    group: "us-data"
+    props: { version: "9", sharded: true, shardKey: "user_id", replicaOf: "postgres", replication: "async", backupEnabled: true, backupRetentionDays: 30, managed: false }
+
+  - id: "redis"
+    component: "redis"
+    label: "Redis (feed, inbox, fraud logs)"
+    group: "us-data"
+    props: { evictionPolicy: "none", persistence: false, hashing: "consistent", structure: "hash-set", usedAsPrimaryStore: true, materialised: true, replication: "single-az" }
+
+  - id: "memcached"
+    component: "memcached"
+    group: "us-data"
+    props: { evictionPolicy: "lru", hashing: "consistent", replication: "none" }
+
+  - id: "photo-store"
+    component: "s3"
+    label: "S3"
+    group: "us-data"
+    props: { zones: 3, storageClass: "standard", durabilityNines: 11, encryptionAtRest: true }
+
+  - id: "search-index"
+    component: "solr"
+    label: "Solr geo-search"
+    group: "us-core"
+    props: { structure: "geo-cell", geoScheme: "geohash", indexing: "sync", shardingStrategy: "geo", replicas: 1 }
+
+  - id: "cassandra-us"
+    component: "cassandra"
+    label: "Cassandra (US replicas of one global ring)"
+    group: "us-data"
+    props: { model: "wide-column", consistency: "tunable", replication: "multi-region-multi-leader", replicationFactor: 5, quorumWrites: 2, quorumReads: 1, partitionKey: "user_id", conflictResolution: "none", backupEnabled: true, backupRetentionDays: 30, compactionStrategy: "leveled" }
+
+  - id: "cassandra-eu"
+    component: "cassandra"
+    label: "Cassandra (EU replicas of one global ring)"
+    group: "eu"
+    props: { model: "wide-column", consistency: "tunable", replication: "multi-region-multi-leader", replicationFactor: 3, quorumWrites: 2, quorumReads: 1, partitionKey: "user_id", conflictResolution: "none", backupEnabled: true, backupRetentionDays: 30, compactionStrategy: "leveled" }
+
+  - id: "tao-us"
+    component: "tao"
+    label: "TAO (single global master)"
+    group: "us-data"
+    props: { masterPerShard: true, crossRegionConsistency: "single-leader", writeThrough: true }
+
+  - id: "tao-eu"
+    component: "tao"
+    label: "TAO (EU follower)"
+    group: "eu"
+    props: { masterPerShard: true, crossRegionConsistency: "single-leader", writeThrough: true }
+
+edges:
+  - { from: "mobile-client", to: "dns", protocol: "dns", mode: "sync", label: "resolve" }
+  - { from: "mobile-client", to: "elb", protocol: "https", mode: "sync", label: "api call, tls terminated at the elb" }
+  - { from: "mobile-client", to: "photo-cdn", protocol: "https", mode: "sync", label: "photo download" }
+  - { from: "photo-cdn", to: "photo-store", protocol: "https", mode: "sync", timeoutMs: 2000, fallback: "cached", label: "origin fetch" }
+  - { from: "elb", to: "nginx", protocol: "http", mode: "sync", label: "three nginx proxies" }
+  - { from: "nginx", to: "django", protocol: "http", mode: "sync", timeoutMs: 5000, label: "upstream" }
+  - { from: "django", to: "pgbouncer", protocol: "postgres", mode: "sync", timeoutMs: 1000, label: "pooled connection" }
+  - { from: "pgbouncer", to: "postgres", protocol: "postgres", mode: "sync", timeoutMs: 1000, idempotent: true, label: "logical shard routing, the id carries the shard" }
+  - { from: "pgbouncer", to: "postgres-replica", protocol: "postgres", mode: "sync", timeoutMs: 1000, fallback: "degraded", label: "reads" }
+  - { from: "postgres", to: "postgres-replica", protocol: "postgres-streaming", mode: "async", delivery: "at-least-once", label: "streaming replication into another zone" }
+  - { from: "django", to: "memcached", protocol: "memcached", mode: "sync", timeoutMs: 50, fallback: "degraded", label: "object cache" }
+  - { from: "django", to: "redis", protocol: "redis", mode: "sync", timeoutMs: 50, label: "read feed and inbox straight out of memory" }
+  - { from: "django", to: "photo-store", protocol: "https", mode: "sync", timeoutMs: 10000, idempotent: true, circuitBreaker: true, label: "upload photo" }
+  - { from: "django", to: "job-queue", protocol: "gearman", mode: "async", delivery: "at-most-once", label: "fan-out, sharing, notify" }
+  - { from: "job-queue", to: "photo-workers", protocol: "gearman", mode: "async", delivery: "at-most-once", label: "200 python workers" }
+  - { from: "photo-workers", to: "redis", protocol: "redis", mode: "sync", timeoutMs: 50, batched: true, label: "insert into every follower feed" }
+  - { from: "photo-workers", to: "pyapns", protocol: "http", mode: "async", delivery: "at-least-once", idempotent: true, label: "enqueue push" }
+  - { from: "pyapns", to: "apns", protocol: "apns", mode: "async", delivery: "at-most-once", label: "over a billion push notifications" }
+  - { from: "django", to: "search-index", protocol: "http", mode: "sync", timeoutMs: 300, label: "index geo-tagged photo inline, then query it" }
+  - { from: "django", to: "cassandra-us", protocol: "cql", mode: "sync", timeoutMs: 200, fallback: "degraded", label: "read, quorum may land on the other continent" }
+  - { from: "django", to: "tao-us", protocol: "thrift", mode: "sync", timeoutMs: 100, circuitBreaker: true, label: "social graph, all writes to the US master" }
+  - { from: "tao-eu", to: "tao-us", protocol: "thrift", mode: "sync", timeoutMs: 400, label: "EU writes cross the Atlantic to the master" }
+  - { from: "akkio", to: "cassandra-us", protocol: "internal", mode: "async", delivery: "at-least-once", idempotent: true, label: "microshard placement by access pattern" }
+  - { from: "akkio", to: "cassandra-eu", protocol: "internal", mode: "async", delivery: "at-least-once", idempotent: true, label: "microshard placement by access pattern" }
+  - { from: "django", to: "observability", protocol: "http", mode: "async", delivery: "at-most-once", label: "errors and metrics" }

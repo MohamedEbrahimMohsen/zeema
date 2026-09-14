@@ -1,0 +1,150 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1164 1154" width="1164" height="1154" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif">
+<title>zoom-video</title>
+<style>:root{--ink:#1b1b19;--muted:#6b6b66;--line:#8a8a85;--frame:#b4b4ae;--bg:#ffffff}@media (prefers-color-scheme: dark){:root{--ink:#ececea;--muted:#a1a19c;--line:#7e7e88;--frame:#55555c;--bg:#17171a}.f-blue{fill:#1b2a3f;stroke:#3f6698}.f-teal{fill:#152e2b;stroke:#3c7d72}.f-amber{fill:#33280f;stroke:#8a6a2b}.f-violet{fill:#241f3d;stroke:#5b4f9c}.f-purple{fill:#2d1c34;stroke:#7a4d8c}.f-green{fill:#162b18;stroke:#417a47}.f-rose{fill:#33191a;stroke:#8f4c48}.f-red{fill:#341a1a;stroke:#8d4340}.f-grey{fill:#26262a;stroke:#5a5a60}}.f-blue{fill:#eaf1fd;stroke:#9cc0f0}.f-teal{fill:#e6f5f2;stroke:#8fcfc2}.f-amber{fill:#fbf1e0;stroke:#dcb473}.f-violet{fill:#f0edfc;stroke:#b6a8ee}.f-purple{fill:#f6ecf9;stroke:#cda3dc}.f-green{fill:#e9f5ea;stroke:#96c99b}.f-rose{fill:#fceceb;stroke:#e5a7a1}.f-red{fill:#fbe9e9;stroke:#e09b98}.f-grey{fill:#f0f0ef;stroke:#c2c2bf}.n{font-size:14px;font-weight:500;fill:var(--ink)}.c{font-size:12px;fill:var(--muted)}.g{font-size:12px;fill:var(--muted)}.e{font-size:12px;fill:var(--muted);paint-order:stroke;stroke:var(--bg);stroke-width:3px}.ic{color:var(--ink)}</style>
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1L9 5L1 9" fill="none" stroke="var(--line)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<rect width="1164" height="1154" fill="var(--bg)"/>
+<rect x="356.0" y="474.0" width="452.0" height="174.0" rx="10" fill="none" stroke="var(--frame)" stroke-width="1" stroke-dasharray="5 4"/>
+<text class="g" x="368.0" y="493.0">americas (region)</text>
+<rect x="356.0" y="638.0" width="452.0" height="174.0" rx="10" fill="none" stroke="var(--frame)" stroke-width="1" stroke-dasharray="5 4"/>
+<text class="g" x="368.0" y="657.0">emea (region)</text>
+<rect x="85.0" y="310.0" width="451.0" height="174.0" rx="10" fill="none" stroke="var(--frame)" stroke-width="1" stroke-dasharray="5 4"/>
+<text class="g" x="97.0" y="329.0">china (region)</text>
+<rect x="372.0" y="506.0" width="420.0" height="126.0" rx="10" fill="none" stroke="var(--frame)" stroke-width="1" stroke-dasharray="5 4"/>
+<text class="g" x="384.0" y="525.0">Meeting Zone, Equinix Silicon Valley</text>
+<rect x="372.0" y="670.0" width="420.0" height="126.0" rx="10" fill="none" stroke="var(--frame)" stroke-width="1" stroke-dasharray="5 4"/>
+<text class="g" x="384.0" y="689.0">Meeting Zone, Equinix Amsterdam</text>
+<rect x="101.0" y="342.0" width="419.0" height="126.0" rx="10" fill="none" stroke="var(--frame)" stroke-width="1" stroke-dasharray="5 4"/>
+<text class="g" x="113.0" y="361.0">Geofenced data center</text>
+<rect x="44.0" y="834.0" width="1076.0" height="290.0" rx="10" fill="none" stroke="var(--frame)" stroke-width="1" stroke-dasharray="5 4"/>
+<text class="g" x="56.0" y="853.0">AWS, Oracle Cloud and Azure</text>
+<rect x="522.0" y="342.0" width="541.0" height="126.0" rx="10" fill="none" stroke="var(--frame)" stroke-width="1" stroke-dasharray="5 4"/>
+<text class="g" x="534.0" y="361.0">Customer network</text>
+<path d="M448.3 124.0 Q652.7 467.3 625.7 866.0" fill="none" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="594.9" y="477.2" text-anchor="middle">sign in, schedule, join</text>
+<path d="M585.6 288.0 Q490.1 586.5 631.9 866.0" fill="none" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="549.4" y="577.7" text-anchor="middle">sign in, schedule, join</text>
+<path d="M684.5 124.0 Q542.2 487.5 637.5 866.0" fill="none" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="601.6" y="487.2" text-anchor="middle">join</text>
+<path d="M698.0 905.0 Q824.0 1043.0 950.0 905.0" fill="none" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="824.0" y="970.0" text-anchor="middle">zoom.us origin on public cloud</text>
+<line x1="598.3" y1="944.0" x2="517.2" y2="1030.0" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="557.8" y="983.0" text-anchor="middle">account, billing, reporting</text>
+<line x1="988.5" y1="866.0" x2="741.5" y2="616.0" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="865.0" y="737.0" text-anchor="middle">pick the meeting zone nearest the participant</text>
+<line x1="950.0" y1="866.0" x2="776.0" y2="778.0" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="863.0" y="818.0" text-anchor="middle">pick the meeting zone nearest the participant</text>
+<path d="M979.8 866.0 Q653.2 750.8 478.2 452.0" fill="none" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="691.1" y="700.9" text-anchor="middle">China accounts pinned to the geofenced zone</text>
+<line x1="1017.4" y1="866.0" x2="915.1" y2="452.0" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="966.2" y="655.0" text-anchor="middle">Meeting Connector handoff, retried until it answers</text>
+<line x1="630.0" y1="577.0" x2="595.0" y2="577.0" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="612.5" y="573.0" text-anchor="middle">allocate a router by server load</text>
+<line x1="630.0" y1="741.0" x2="595.0" y2="741.0" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="612.5" y="737.0" text-anchor="middle">allocate a router by server load</text>
+<line x1="358.0" y1="413.0" x2="324.0" y2="413.0" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="341.0" y="409.0" text-anchor="middle">allocate a router by server load</text>
+<line x1="764.0" y1="413.0" x2="730.0" y2="413.0" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="747.0" y="409.0" text-anchor="middle">designate the on-premise router</text>
+<path d="M451.1 123.2 Q591.5 317.5 495.3 537.2" fill="none" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text class="e" x="532.4" y="319.8" text-anchor="middle">one multi-bitrate stream up, UDP 8801</text>
+<path d="M495.3 537.2 Q591.5 317.5 451.1 123.2" fill="none" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text class="e" x="532.4" y="319.8" text-anchor="middle">selectively forwarded streams</text>
+<path d="M583.2 289.5 Q691.9 523.6 506.6 703.5" fill="none" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text class="e" x="618.4" y="506.1" text-anchor="middle">one multi-bitrate stream up</text>
+<path d="M506.6 703.5 Q691.9 523.6 583.2 289.5" fill="none" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text class="e" x="618.4" y="506.1" text-anchor="middle">selectively forwarded streams</text>
+<line x1="501.3" y1="294.6" x2="309.9" y2="381.3" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text class="e" x="405.6" y="333.9" text-anchor="middle">participants in China stay inside the geofenced zone</text>
+<line x1="309.9" y1="381.3" x2="501.3" y2="294.6" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text class="e" x="405.6" y="333.9" text-anchor="middle">selectively forwarded streams</text>
+<line x1="473.1" y1="124.0" x2="548.4" y2="210.0" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text class="e" x="510.8" y="163.0" text-anchor="middle">two-party meeting runs peer to peer, no MMR</text>
+<path d="M462.2 124.0 Q424.3 315.7 610.8 374.0" fill="none" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text class="e" x="480.4" y="278.3" text-anchor="middle">media stays inside the customer network</text>
+<line x1="600.1" y1="452.0" x2="525.4" y2="538.0" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text class="e" x="562.8" y="491.0" text-anchor="middle">cascade to the Zoom cloud for external participants</text>
+<line x1="491.5" y1="616.0" x2="491.5" y2="702.0" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text class="e" x="491.5" y="655.0" text-anchor="middle">cascade so each participant stays in a local zone</text>
+<line x1="455.2" y1="616.0" x2="222.3" y2="866.0" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text class="e" x="338.8" y="737.0" text-anchor="middle">private interconnect instead of the public internet</text>
+<path d="M308.8 944.0 Q508.7 850.6 618.0 1042.2" fill="none" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text class="e" x="486.0" y="917.8" text-anchor="middle">burst meeting capacity in public cloud</text>
+<path d="M485.6 616.0 Q318.9 718.7 447.9 866.0" fill="none" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text class="e" x="392.8" y="725.8" text-anchor="middle">cloud recording</text>
+<path d="M693.5 124.0 Q872.9 475.4 817.5 866.0" fill="none" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text class="e" x="814.2" y="481.2" text-anchor="middle">dial-in and SIP room system interop</text>
+<path d="M784.5 866.0 Q574.2 825.7 531.0 616.0" fill="none" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text class="e" x="616.0" y="779.4" text-anchor="middle">dial-in audio into the meeting</text>
+<rect class="f-purple" x="351" y="46" width="176" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(427.0 57)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2.5"/><path d="M8 21h8M12 17v4"/></g></g>
+<text class="n" x="439.0" y="98" text-anchor="middle">Zoom desktop client</text>
+<text class="c" x="439.0" y="114" text-anchor="middle">desktop-app</text>
+<rect class="f-purple" x="498" y="210" width="169" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(570.5 221)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2.5"/><path d="M8 21h8M12 17v4"/></g></g>
+<text class="n" x="582.5" y="262" text-anchor="middle">Zoom mobile client</text>
+<text class="c" x="582.5" y="278" text-anchor="middle">mobile-app</text>
+<rect class="f-purple" x="561" y="46" width="252" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(675.0 57)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2.5"/><path d="M8 21h8M12 17v4"/></g></g>
+<text class="n" x="687.0" y="98" text-anchor="middle">Zoom Room and SIP room system</text>
+<text class="c" x="687.0" y="114" text-anchor="middle">user-device</text>
+<rect class="f-teal" x="572" y="866" width="126" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(623.0 877)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a13.5 13.5 0 0 1 0 18 13.5 13.5 0 0 1 0-18"/><circle cx="12" cy="3" r="1.6"/><circle cx="3" cy="12" r="1.6"/><circle cx="21" cy="12" r="1.6"/><g stroke="none"><circle cx="18.5" cy="18.5" r="5.3" fill="var(--arkore-icon-bg, #fff)"/><circle cx="18.5" cy="18.5" r="4.5" fill="#F38020"/><path transform="translate(15.80 15.80) scale(0.2250)" fill="#fff" d="M16.509 16.845c.147-.507.091-.971-.155-1.315-.225-.316-.605-.499-1.062-.52l-8.659-.112a.156.156 0 0 1-.133-.071c-.028-.042-.035-.099-.021-.155.028-.084.112-.148.204-.156l8.736-.112c1.035-.049 2.16-.887 2.554-1.914l.499-1.301c.021-.056.029-.113.015-.168-.563-2.546-2.835-4.445-5.55-4.445-2.504 0-4.628 1.618-5.388 3.861-.493-.366-1.119-.563-1.794-.499-1.203.119-2.167 1.083-2.286 2.286-.028.31-.007.613.064.894C1.568 13.171 0 14.775 0 16.752c0 .175.014.351.035.527.014.083.084.147.169.147h15.981c.091 0 .176-.065.203-.155l.12-.427zm2.757-5.563c-.077 0-.161 0-.238.011-.057 0-.105.042-.127.098l-.338 1.174c-.147.507-.092.971.154 1.316.226.316.606.498 1.063.519l1.844.113c.056 0 .105.026.133.07.028.043.035.107.021.156-.028.084-.113.148-.204.155l-1.921.112c-1.041.049-2.158.887-2.553 1.914l-.141.358c-.028.071.021.142.099.142h6.598c.077 0 .147-.049.169-.126.112-.408.176-.837.176-1.28 0-2.603-2.125-4.727-4.734-4.727"/></g></g></g>
+<text class="n" x="635.0" y="918" text-anchor="middle">zoom.us CDN</text>
+<text class="c" x="635.0" y="934" text-anchor="middle">cloudflare-cdn</text>
+<rect class="f-blue" x="950" y="866" width="154" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(1015.0 877)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M6.5 7.5h.01M6.5 16.5h.01"/><path d="M10 7.5h5M10 16.5h5"/></g></g>
+<text class="n" x="1027.0" y="918" text-anchor="middle">zoom.us web tier</text>
+<text class="c" x="1027.0" y="934" text-anchor="middle">container-service</text>
+<rect class="f-blue" x="377" y="1030" width="207" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(468.5 1041)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M6.5 7.5h.01M6.5 16.5h.01"/><path d="M10 7.5h5M10 16.5h5"/></g></g>
+<text class="n" x="480.5" y="1082" text-anchor="middle">Non-meeting back office</text>
+<text class="c" x="480.5" y="1098" text-anchor="middle">container-service</text>
+<rect class="f-green" x="630" y="538" width="146" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(691.0 549)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4.5" r="2.5"/><circle cx="4.5" cy="17.5" r="2.5"/><circle cx="17" cy="16" r="2.5"/><path d="M10.4 6.8 6.1 15.2M13.7 6.5l2.6 7.2M6.9 16.9l7.6-.6"/></g></g>
+<text class="n" x="703.0" y="590" text-anchor="middle">Zone Controller</text>
+<text class="c" x="703.0" y="606" text-anchor="middle">apache-helix</text>
+<rect class="f-green" x="630" y="702" width="146" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(691.0 713)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4.5" r="2.5"/><circle cx="4.5" cy="17.5" r="2.5"/><circle cx="17" cy="16" r="2.5"/><path d="M10.4 6.8 6.1 15.2M13.7 6.5l2.6 7.2M6.9 16.9l7.6-.6"/></g></g>
+<text class="n" x="703.0" y="754" text-anchor="middle">Zone Controller</text>
+<text class="c" x="703.0" y="770" text-anchor="middle">apache-helix</text>
+<rect class="f-green" x="358" y="374" width="146" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(419.0 385)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4.5" r="2.5"/><circle cx="4.5" cy="17.5" r="2.5"/><circle cx="17" cy="16" r="2.5"/><path d="M10.4 6.8 6.1 15.2M13.7 6.5l2.6 7.2M6.9 16.9l7.6-.6"/></g></g>
+<text class="n" x="431.0" y="426" text-anchor="middle">Zone Controller</text>
+<text class="c" x="431.0" y="442" text-anchor="middle">apache-helix</text>
+<rect class="f-teal" x="388" y="538" width="207" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(479.5 549)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="12" r="5"/><path d="M5.7 9.5 10 12l-4.3 2.5z"/><path d="M12 12h3.5M15.5 12V6h4.5M15.5 12v6h4.5"/></g></g>
+<text class="n" x="491.5" y="590" text-anchor="middle">Multimedia Router (MMR)</text>
+<text class="c" x="491.5" y="606" text-anchor="middle">mediasoup</text>
+<rect class="f-teal" x="388" y="702" width="207" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(479.5 713)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="12" r="5"/><path d="M5.7 9.5 10 12l-4.3 2.5z"/><path d="M12 12h3.5M15.5 12V6h4.5M15.5 12v6h4.5"/></g></g>
+<text class="n" x="491.5" y="754" text-anchor="middle">Multimedia Router (MMR)</text>
+<text class="c" x="491.5" y="770" text-anchor="middle">mediasoup</text>
+<rect class="f-teal" x="117" y="374" width="207" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(208.5 385)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="12" r="5"/><path d="M5.7 9.5 10 12l-4.3 2.5z"/><path d="M12 12h3.5M15.5 12V6h4.5M15.5 12v6h4.5"/></g></g>
+<text class="n" x="220.5" y="426" text-anchor="middle">Multimedia Router (MMR)</text>
+<text class="c" x="220.5" y="442" text-anchor="middle">mediasoup</text>
+<rect class="f-teal" x="618" y="1030" width="169" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(690.5 1041)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="12" r="5"/><path d="M5.7 9.5 10 12l-4.3 2.5z"/><path d="M12 12h3.5M15.5 12V6h4.5M15.5 12v6h4.5"/></g></g>
+<text class="n" x="702.5" y="1082" text-anchor="middle">Burst MMR capacity</text>
+<text class="c" x="702.5" y="1098" text-anchor="middle">mediasoup</text>
+<rect class="f-green" x="60" y="866" width="252" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(174.0 877)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(0 0) scale(0.3)" fill="#000" stroke="none" stroke-width="1"><g id="aws-direct-connect-0" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g id="aws-direct-connect-1" fill="#8C4FFF"><rect id="aws-direct-connect-2" x="0" y="0" width="80" height="80"></rect></g><path d="M29.97 60.66l17.86 0 0-5.87c0-.52-.57-.96-1.24-.96l-15.38 0c-.67 0-1.24.44-1.24.96l0 5.87Zm23.17 3.33l0 3.68 0 .33-2 0 0-.33 0-3.68c0-.78-.46-1.33-.87-1.33l-22.74 0c-.41 0-.87.55-.87 1.33l0 3.68 0 .33-2 0 0-.33 0-3.68c0-1.83 1.29-3.33 2.87-3.33l.44 0 0-5.87c0-1.63 1.45-2.96 3.24-2.96l15.38 0c1.79 0 3.24 1.33 3.24 2.96l0 5.87.44 0c1.59 0 2.87 1.5 2.87 3.33l0 0ZM45.52 38.59c1.27 0 2.31-1.03 2.31-2.31 0-1.27-1.04-2.31-2.31-2.31-1.27 0-2.31 1.04-2.31 2.31 0 1.28 1.04 2.31 2.31 2.31l0 0Zm-1 12.04l0-10.16c-1.89-.46-3.31-2.15-3.31-4.19 0-2.37 1.93-4.31 4.31-4.31 2.38 0 4.31 1.94 4.31 4.31 0 2.04-1.42 3.73-3.31 4.19l0 10.16-2 0ZM41.14 28.56c0-1.27-1.04-2.31-2.31-2.31-1.28 0-2.31 1.04-2.31 2.31 0 1.27 1.03 2.31 2.31 2.31 1.27 0 2.31-1.04 2.31-2.31l0 0Zm2 0c0 2.01-1.38 3.68-3.24 4.16l0 17.91-2 0 0-17.87c-1.93-.42-3.38-2.14-3.38-4.2 0-2.38 1.93-4.31 4.31-4.31 2.37 0 4.31 1.93 4.31 4.31l0 0ZM32.28 33.97c-1.27 0-2.31 1.04-2.31 2.31 0 1.28 1.04 2.31 2.31 2.31 1.27 0 2.31-1.03 2.31-2.31 0-1.27-1.04-2.31-2.31-2.31l0 0Zm0-2c2.38 0 4.31 1.94 4.31 4.31 0 2.04-1.42 3.73-3.31 4.19l0 10.16-2 0 0-10.16c-1.89-.46-3.31-2.15-3.31-4.19 0-2.37 1.93-4.31 4.31-4.31l0 0ZM68 37.37c0 7.65-5.81 10.38-11.25 10.38l-7.81 0 0-2 7.81 0c2.17 0 9.25-.61 9.25-8.38 0-5.63-4.41-7.69-8.1-8.44-.45-.09-.78-.46-.81-.92C56.83 23.57 54.24 22 52.1 22c-1.45 0-2.81.69-3.73 1.89-.22.29-.58.44-.95.38-.36-.05-.66-.3-.78-.64C46 21.91 44.88 19.49 43.12 17.79 39.24 14.02 33.92 12.99 28.9 15.05c-4.09 1.68-7.43 6.81-7.43 11.43l.1 1.52c.06.5-.27.97-.76 1.09-2.05.5-6.81 2.3-6.81 8.2l.02.62c.24 4.32 4.31 7.84 9.07 7.84l5.75 0 0 2-5.75 0c-5.8 0-10.76-4.37-11.06-9.74L12 37.29c0-4.8 2.79-8.45 7.5-9.91l-.03-.9c0-4.78 3.25-11.06 8.68-13.28 5.77-2.37 11.89-1.19 16.36 3.16 1.56 1.5 2.67 3.44 3.42 5.13C49.11 20.53 50.56 20 52.1 20c3.09 0 6.34 2.21 6.93 7.13 5.79 1.4 8.97 5.01 8.97 10.24l0 0Z" id="aws-direct-connect-3" fill="#FFFFFF"></path></g></g></g>
+<text class="n" x="186.0" y="918" text-anchor="middle">Equinix Cloud Exchange Fabric</text>
+<text class="c" x="186.0" y="934" text-anchor="middle">aws-direct-connect</text>
+<rect class="f-green" x="764" y="374" width="283" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(893.5 385)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4.5" r="2.5"/><circle cx="4.5" cy="17.5" r="2.5"/><circle cx="17" cy="16" r="2.5"/><path d="M10.4 6.8 6.1 15.2M13.7 6.5l2.6 7.2M6.9 16.9l7.6-.6"/></g></g>
+<text class="n" x="905.5" y="426" text-anchor="middle">Meeting Connector Zone Controller</text>
+<text class="c" x="905.5" y="442" text-anchor="middle">apache-helix</text>
+<rect class="f-teal" x="538" y="374" width="192" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(622.0 385)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="12" r="5"/><path d="M5.7 9.5 10 12l-4.3 2.5z"/><path d="M12 12h3.5M15.5 12V6h4.5M15.5 12v6h4.5"/></g></g>
+<text class="n" x="634.0" y="426" text-anchor="middle">Meeting Connector MMR</text>
+<text class="c" x="634.0" y="442" text-anchor="middle">mediasoup</text>
+<rect class="f-violet" x="732" y="866" width="184" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(812.0 877)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.75 9.5V9a7.25 7.25 0 0 1 14.5 0v.5"/><rect x="3" y="8.5" width="3.5" height="5" rx="1.75"/><rect x="17.5" y="8.5" width="3.5" height="5" rx="1.75"/><path d="M5.75 13.5v2a2 2 0 0 0 2 2h2.75"/></g></g>
+<text class="n" x="824.0" y="918" text-anchor="middle">PSTN and SIP gateway</text>
+<text class="c" x="824.0" y="934" text-anchor="middle">freeswitch</text>
+<rect class="f-amber" x="346" y="866" width="192" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(430.0 877)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="7" rx="8" ry="2.5"/><path d="M4 7l1.6 12.3a2 2 0 0 0 2 1.7h8.8a2 2 0 0 0 2-1.7L20 7"/></g></g>
+<text class="n" x="442.0" y="918" text-anchor="middle">Cloud recording store</text>
+<text class="c" x="442.0" y="934" text-anchor="middle">blob-store</text>
+</svg>

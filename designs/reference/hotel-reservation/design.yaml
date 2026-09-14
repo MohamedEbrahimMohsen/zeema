@@ -1,0 +1,197 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture, clean variant: hotel reservation with a sharded relational inventory
+# table as the source of truth, a CDC-fed Redis availability cache, a durable saga that drives
+# fraud, payment and supplier confirmation, and supplier price fetching behind a quota limiter.
+#
+# Fixes relative to hotel-reservation.broken.yaml:
+#   - booking-orchestrator (durable saga, compensation on) owns fraud -> payment -> supplier
+#     confirmation, so payment-service never calls the PSP inline with nowhere to park the request
+#   - payment-service -> psp declares idempotent, so a retried charge cannot become a double charge
+#   - reservation-db -> inventory-cdc -> cache-updater rebuilds inventory-cache, so the
+#     materialised availability counts have a rebuild path instead of app-level writes only
+#   - price-cache declares an lru eviction policy instead of leaving the vendor default
+#   - reservation-service -> reservation-db uses the database's own concurrency control and a
+#     circuit breaker on its retry, so optimistic-lock retries cannot storm the shard
+# This file MUST trip no rule.
+schemaVersion: "1"
+type: "design"
+id: "hotel-reservation"
+
+requirements:
+  availability:
+    multiRegion: false
+  consistency:
+    model: "cp"
+    readAfterWrite: true
+  correctness:
+    exactlyOnceEffect: true
+  traffic:
+    readWriteRatio: 100
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "primary-dc", kind: "region" }
+  - { id: "edge", kind: "trust-zone", parent: "primary-dc" }
+  - { id: "core", kind: "trust-zone", parent: "primary-dc" }
+  - { id: "partners", kind: "trust-zone" }
+
+nodes:
+  - id: "web-client"
+    component: "web-browser"
+    props: { platform: "web" }
+
+  - id: "mobile-client"
+    component: "mobile-app"
+    props: { platform: "mobile", os: "both" }
+
+  - id: "static-cdn"
+    component: "content-delivery-network"
+    group: "edge"
+    props: { caching: true, tls: true }
+
+  - id: "api-gateway"
+    component: "envoy-gateway"
+    group: "edge"
+    props: { auth: "oauth2", rateLimiting: true, tls: true, idempotencyKeys: true, protocol: "http" }
+    nfr: { rps: 300 }
+
+  - id: "hotel-service"
+    component: "container-service"
+    group: "core"
+    props: { orchestrator: "kubernetes", autoscaling: true, criticality: "medium" }
+    nfr: { rps: 300 }
+
+  - id: "rate-service"
+    component: "container-service"
+    group: "core"
+    props: { orchestrator: "kubernetes", autoscaling: true, criticality: "medium" }
+    nfr: { rps: 300 }
+
+  - id: "price-search-service"
+    component: "container-service"
+    group: "core"
+    props: { orchestrator: "kubernetes", autoscaling: true, criticality: "medium" }
+
+  - id: "reservation-service"
+    component: "container-service"
+    group: "core"
+    props: { orchestrator: "kubernetes", autoscaling: true, criticality: "high" }
+    nfr: { rps: 3, consistency: "strong" }
+
+  - id: "fraud-service"
+    component: "container-service"
+    group: "core"
+    props: { orchestrator: "kubernetes", criticality: "high" }
+
+  - id: "payment-service"
+    component: "container-service"
+    group: "core"
+    props: { orchestrator: "kubernetes", criticality: "high" }
+
+  - id: "hotel-management-service"
+    component: "container-service"
+    group: "core"
+    props: { orchestrator: "kubernetes", criticality: "medium" }
+
+  - id: "booking-orchestrator"
+    component: "temporal"
+    group: "core"
+    label: "Booking engine (agent graph)"
+    props: { durable: true, pattern: "saga", compensation: true, stepsIdempotent: true, activityRetry: true }
+
+  - id: "smart-ttl"
+    component: "tensorflow-serving"
+    group: "core"
+    label: "SmartTTL"
+    props: { training: "batch", inputs: "both", batching: true }
+
+  - id: "smart-scheduler"
+    component: "cron-job"
+    group: "core"
+    label: "SmartScheduler"
+    props: { trigger: "schedule", idempotent: true, rateControl: "fixed", overlapAllowed: false, missedRunPolicy: "skip" }
+
+  - id: "cache-updater"
+    component: "container-worker"
+    group: "core"
+    props: { trigger: "stream", idempotent: true, orchestrator: "kubernetes" }
+
+  - id: "supplier-quota-limiter"
+    component: "in-process-limiter"
+    group: "core"
+    props: { algorithm: "token-bucket", scope: "global", failMode: "closed", placement: "sidecar", distributed: true, perReplicaQuotaDivision: true }
+
+  - id: "inventory-cdc"
+    component: "debezium"
+    group: "core"
+    props: { mode: "log-based", ordered: true, deployment: "server" }
+
+  - id: "inventory-cache"
+    component: "redis"
+    group: "core"
+    props: { cluster: true, evictionPolicy: "lru", invalidation: "event", structure: "hash-set", materialised: true, usedAsPrimaryStore: false, persistence: false, replication: "multi-az" }
+    nfr: { rps: 300 }
+
+  - id: "price-cache"
+    component: "cache-cluster"
+    group: "core"
+    label: "Price DB"
+    props: { evictionPolicy: "lru", invalidation: "ttl", ttlJitter: true, structure: "key-value", materialised: false, usedAsPrimaryStore: false, persistence: false, replication: "multi-az" }
+
+  - id: "reservation-db"
+    component: "relational-database"
+    group: "core"
+    label: "Reservation + room_type_inventory"
+    props: { sharded: true, shardKey: "hotel_id", concurrencyControl: "optimistic", replication: "async", backupEnabled: true, backupRetentionDays: 30, encryptionAtRest: true, commitProtocol: "single" }
+    nfr: { rps: 300, consistency: "strong" }
+
+  - id: "hotel-rate-db"
+    component: "relational-database"
+    group: "core"
+    label: "Hotel + room_type_rate"
+    props: { sharded: false, replication: "async", backupEnabled: true, backupRetentionDays: 30, encryptionAtRest: true }
+    nfr: { rps: 600 }
+
+  - id: "supplier-api"
+    component: "supplier-api"
+    group: "partners"
+    props: { authScheme: "api-key", callbackStyle: "none", idempotent: false, handlesMoney: false }
+
+  - id: "psp"
+    component: "payment-service-provider"
+    group: "partners"
+    props: { idempotent: true, handlesMoney: true, callbackStyle: "webhook", signedCallbacks: true, hostedPage: true }
+
+edges:
+  - { from: "web-client", to: "static-cdn", protocol: "https", mode: "sync", label: "static assets" }
+  - { from: "mobile-client", to: "static-cdn", protocol: "https", mode: "sync", label: "static assets" }
+  - { from: "web-client", to: "api-gateway", protocol: "https", mode: "sync" }
+  - { from: "mobile-client", to: "api-gateway", protocol: "https", mode: "sync" }
+  - { from: "api-gateway", to: "hotel-service", protocol: "grpc", mode: "sync", timeoutMs: 1000, label: "hotel and room type detail" }
+  - { from: "api-gateway", to: "rate-service", protocol: "grpc", mode: "sync", timeoutMs: 1000, label: "room type rates" }
+  - { from: "api-gateway", to: "price-search-service", protocol: "grpc", mode: "sync", timeoutMs: 2000, label: "search supplier prices" }
+  - { from: "api-gateway", to: "reservation-service", protocol: "grpc", mode: "sync", timeoutMs: 3000, idempotent: true, label: "reserve with client reservation id" }
+  - { from: "api-gateway", to: "hotel-management-service", protocol: "grpc", mode: "sync", timeoutMs: 3000, label: "admin crud on hotels and inventory" }
+  - { from: "hotel-service", to: "hotel-rate-db", protocol: "sql", mode: "sync", timeoutMs: 500, label: "hotel and room type rows" }
+  - { from: "rate-service", to: "hotel-rate-db", protocol: "sql", mode: "sync", timeoutMs: 500, label: "room_type_rate rows" }
+  - { from: "hotel-management-service", to: "hotel-rate-db", protocol: "sql", mode: "sync", timeoutMs: 1000, label: "hotel crud" }
+  - { from: "hotel-management-service", to: "reservation-db", protocol: "sql", mode: "sync", timeoutMs: 1000, label: "total_inventory updates" }
+  - { from: "reservation-service", to: "inventory-cache", protocol: "redis", mode: "sync", timeoutMs: 50, fallback: "degraded", label: "available count per hotel, room type, date" }
+  - { from: "reservation-service", to: "reservation-db", protocol: "sql", mode: "sync", timeoutMs: 1000, idempotent: true, retryPolicy: "exponential-jitter", circuitBreaker: true, label: "authoritative check and insert, total_reserved <= 110% total_inventory" }
+  - { from: "reservation-db", to: "inventory-cdc", protocol: "mysql-binlog", mode: "async", delivery: "at-least-once", label: "inventory row changes" }
+  - { from: "inventory-cdc", to: "cache-updater", protocol: "cdc-stream", mode: "async", delivery: "at-least-once" }
+  - { from: "cache-updater", to: "inventory-cache", protocol: "redis", mode: "async", delivery: "at-least-once", idempotent: true, batched: true, label: "refresh available count, current and future dates only" }
+  - { from: "reservation-service", to: "booking-orchestrator", protocol: "grpc", mode: "sync", timeoutMs: 2000, idempotent: true, label: "start booking workflow, status pending" }
+  - { from: "booking-orchestrator", to: "fraud-service", protocol: "grpc", mode: "sync", timeoutMs: 2000, retryPolicy: "exponential-jitter", circuitBreaker: true, fallback: "degraded", label: "fraud check agent" }
+  - { from: "booking-orchestrator", to: "supplier-api", protocol: "https", mode: "sync", timeoutMs: 10000, idempotent: true, retryPolicy: "exponential-jitter", circuitBreaker: true, label: "confirm strictest-terms product first" }
+  - { from: "booking-orchestrator", to: "payment-service", protocol: "grpc", mode: "sync", timeoutMs: 5000, idempotent: true, retryPolicy: "exponential-jitter", circuitBreaker: true, label: "payment agent, status paid" }
+  - { from: "payment-service", to: "psp", protocol: "https", mode: "sync", timeoutMs: 10000, idempotent: true, retryPolicy: "exponential-jitter", circuitBreaker: true, label: "charge card with idempotency key" }
+  - { from: "booking-orchestrator", to: "reservation-service", protocol: "grpc", mode: "async", delivery: "at-least-once", idempotent: true, label: "compensate: rejected, cancelled or refunded" }
+  - { from: "price-search-service", to: "price-cache", protocol: "redis", mode: "sync", timeoutMs: 50, label: "itinerary price lookup" }
+  - { from: "price-search-service", to: "smart-ttl", protocol: "grpc", mode: "sync", timeoutMs: 100, fallback: "static", label: "predict ttl for this search cluster" }
+  - { from: "smart-ttl", to: "price-cache", protocol: "redis", mode: "sync", timeoutMs: 50, label: "write learned per-itinerary ttl" }
+  - { from: "price-search-service", to: "supplier-quota-limiter", protocol: "http", mode: "sync", timeoutMs: 100, fallback: "cached", label: "on price cache miss" }
+  - { from: "smart-scheduler", to: "supplier-quota-limiter", protocol: "http", mode: "async", delivery: "at-least-once", label: "prefetch high-value itineraries at constant qps" }
+  - { from: "supplier-quota-limiter", to: "supplier-api", protocol: "https", mode: "sync", timeoutMs: 5000, fallback: "cached", label: "fetch price within supplier qps quota" }
+  - { from: "supplier-quota-limiter", to: "price-cache", protocol: "redis", mode: "async", delivery: "at-least-once", label: "store fetched price" }

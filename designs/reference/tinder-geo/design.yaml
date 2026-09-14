@@ -1,0 +1,137 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture 8, clean variant: location-based recommendations served from an
+# Elasticsearch index sharded by Google S2 geo cells, fronted by an abstraction service that
+# looks the shard up, with Kafka ordering every user's updates and a periodic reindex.
+#
+# Fixes relative to tinder-geo.broken.yaml:
+#   - recommendation-service routes by looking the user up in shard-mapping (shardingStrategy
+#     lookup) instead of consistent-hashing users onto shards with nothing owning the ring
+#   - indexer writes geoshard-index asynchronously off the Kafka stream, and reindex-job
+#     periodically rebuilds it from profile-store, so the index has a rebuild path
+#   - the indexer no longer retries into Elasticsearch bare: the retrying hop is the Envoy
+#     one, which carries a circuit breaker
+#   - cluster-dns is the node-local CoreDNS DaemonSet, redundant on every node
+#   - profile-cache declares an eviction policy
+# This file MUST trip no rule.
+schemaVersion: "1"
+type: "design"
+id: "tinder-geo"
+
+requirements:
+  availability:
+    multiRegion: false
+    discoveryRedundant: true
+  consistency:
+    readAfterWrite: true
+  messaging:
+    orderingScope: "partition"
+  data:
+    reconciliation: true
+  traffic:
+    skew: "heavy-tail"
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "aws-region", kind: "region", label: "AWS region" }
+  - { id: "edge", kind: "trust-zone", parent: "aws-region" }
+  - { id: "platform", kind: "trust-zone", parent: "aws-region", label: "Kubernetes cluster" }
+  - { id: "data", kind: "trust-zone", parent: "aws-region" }
+
+nodes:
+  - id: "mobile-client"
+    component: "mobile-app"
+    props: { platform: "mobile", os: "both", localCache: true }
+
+  - id: "elb"
+    component: "aws-classic-load-balancer"
+    group: "edge"
+    props: { listenerProtocol: "https", healthChecks: true }
+
+  - id: "api-front-proxy"
+    component: "envoy-gateway"
+    group: "edge"
+    label: "Envoy front proxy"
+    props: { tls: true, rateLimiting: true, protocol: "grpc" }
+
+  - id: "recommendation-service"
+    component: "container-service"
+    group: "platform"
+    label: "Recommendation abstraction service"
+    props: { orchestrator: "kubernetes", stateless: true, shardingStrategy: "lookup", criticality: "high" }
+
+  - id: "envoy-sidecar"
+    component: "envoy-sidecar"
+    group: "platform"
+    props: { sidecar: true, retries: true, circuitBreaking: true }
+
+  - id: "cluster-dns"
+    component: "coredns"
+    group: "platform"
+    label: "CoreDNS DaemonSet"
+    props: { role: "cluster", redundantProviders: true, managed: false }
+    nfr: { rps: 250000 }
+
+  - id: "kubernetes-cluster"
+    component: "kubernetes"
+    group: "platform"
+    props: { nodeCount: 1000, cniPlugin: "flannel", autoscaling: true, managed: false }
+
+  - id: "indexer"
+    component: "container-worker"
+    group: "platform"
+    props: { trigger: "stream", orchestrator: "kubernetes", idempotent: true }
+
+  - id: "reindex-job"
+    component: "container-worker"
+    group: "platform"
+    props: { trigger: "schedule", orchestrator: "kubernetes", idempotent: true }
+
+  - id: "user-updates"
+    component: "kafka"
+    group: "platform"
+    label: "user update topic"
+    props: { ordering: "per-key", delivery: "at-least-once", storage: "persistent" }
+
+  - id: "geoshard-index"
+    component: "elasticsearch"
+    group: "data"
+    label: "Geosharded Elasticsearch"
+    props: { structure: "inverted", shardingStrategy: "geo", geoScheme: "s2", indexing: "async", refreshIntervalSeconds: 1 }
+
+  - id: "shard-mapping"
+    component: "dynamodb"
+    group: "data"
+    label: "user to geoshard mapping"
+    props: { model: "key-value", consistency: "strong", replication: "single-region" }
+
+  - id: "profile-store"
+    component: "dynamodb"
+    group: "data"
+    label: "profiles and matches"
+    props: { model: "key-value", consistency: "eventual", replication: "single-region" }
+
+  - id: "profile-cache"
+    component: "aws-elasticache"
+    group: "data"
+    props: { engine: "redis-oss", evictionPolicy: "lru", persistence: false, usedAsPrimaryStore: false }
+
+edges:
+  - { from: "mobile-client", to: "elb", protocol: "https", mode: "sync" }
+  - { from: "elb", to: "api-front-proxy", protocol: "http", mode: "sync", label: "one front proxy deployment per zone" }
+  - { from: "api-front-proxy", to: "envoy-sidecar", protocol: "grpc", mode: "sync", retryPolicy: "exponential-jitter", circuitBreaker: true, label: "balanced per pod, not per connection" }
+  - { from: "envoy-sidecar", to: "recommendation-service", protocol: "grpc", mode: "sync", label: "local container port" }
+  - { from: "recommendation-service", to: "cluster-dns", protocol: "dns", mode: "sync", label: "resolve service name" }
+  - { from: "recommendation-service", to: "shard-mapping", protocol: "https", mode: "sync", label: "which geoshard holds this user" }
+  - { from: "recommendation-service", to: "geoshard-index", protocol: "http", mode: "sync", label: "query the shard, and its neighbours near a boundary" }
+  - { from: "recommendation-service", to: "profile-cache", protocol: "redis", mode: "sync", label: "hydrate candidates" }
+  - { from: "recommendation-service", to: "profile-store", protocol: "https", mode: "sync", label: "profiles and matches on miss" }
+  - { from: "recommendation-service", to: "user-updates", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "location and profile update, hashed on user id" }
+  - { from: "user-updates", to: "indexer", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "one partition per user, ordered" }
+  - { from: "indexer", to: "geoshard-index", protocol: "http", mode: "async", delivery: "at-least-once", idempotent: true, label: "delete from the old shard, write to the new one" }
+  - { from: "indexer", to: "shard-mapping", protocol: "https", mode: "sync", idempotent: true, label: "move the user to the new geoshard" }
+  - { from: "indexer", to: "cluster-dns", protocol: "dns", mode: "sync", label: "resolve service name" }
+  - { from: "reindex-job", to: "profile-store", protocol: "https", mode: "sync", batched: true, label: "read the source of truth" }
+  - { from: "reindex-job", to: "geoshard-index", protocol: "http", mode: "async", delivery: "at-least-once", batched: true, label: "periodic reindex" }
+  - { from: "kubernetes-cluster", to: "cluster-dns", protocol: "http", mode: "sync", label: "pod and service records" }
+  - { from: "kubernetes-cluster", to: "envoy-sidecar", protocol: "xds", mode: "sync", label: "inject and configure sidecars" }

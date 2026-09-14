@@ -1,0 +1,183 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture 8, broken variant: the same YouTube upload and playback path as it
+# looked before Vitess and before the cache work — shard routing in application code against a
+# single MySQL primary with read replicas bolted on, a page cache with no declared eviction
+# policy, transcoding invoked inline from the upload handler, and an extraction queue with
+# nowhere to park a video that will never extract.
+#
+# This file MUST trip:
+#   - read-replica-as-sole-scaling       (mysql-primary: async replicas, not sharded, 11574 rps)
+#   - single-writer-primary-at-peak-qps  (mysql-primary: single unsharded writer at 11574 rps)
+#   - cache-missing-eviction-policy      (page-cache declares evictionPolicy none)
+#   - queue-missing-dlq                  (extract-queue takes async traffic, deadLetterQueue false)
+#   - fanout-inline-in-request-path      (upload-service calls transcoding-farm synchronously)
+# and MUST NOT trip:
+#   - read-heavy-path-without-cache            (page-cache exists; that rule is design-wide)
+#   - materialised-cache-without-rebuild-path  (precompute-jobs, a worker, still feeds page-cache)
+#   - cache-as-primary-store-without-persistence (page-cache is not the primary store)
+#   - datastore-missing-backup                 (both MySQL nodes declare backups and retention)
+#   - datastore-single-region                  (availability.multiRegion is not declared)
+#   - credentials-without-rotation             (security.credentialRotationDays is declared)
+#   - retry-queue-without-dlq, retry-without-backoff (no queue has role retry)
+#   - shared-worker-pool-across-queues          (isolation.perQueue is not declared)
+#   - shared-dependency-without-redundancy, stateful-engine-pinned-to-single-zone
+#     (the coordination service is gone with Vitess, and there are no availability-zone groups)
+#   - object-store-single-zone-with-durability-target (no durability.annualNines requirement)
+#   - multi-leader-store-without-conflict-policy (thumbnail-store declares last-writer-wins)
+#   - business-updates-without-index-propagation, derived-store-without-cdc-or-rebuild
+#     (no search index in this design)
+#   - push-fanout-without-celebrity-path        (no graph database, no push fan-out worker)
+#   - sync-chain-too-deep                       (no api-gateway node)
+schemaVersion: "1"
+type: "design"
+id: "youtube-upload-playback"
+
+requirements:
+  latency:
+    p95Ms: 100
+  consistency:
+    model: "ap"
+  freshness:
+    maxSeconds: 1
+  traffic:
+    skew: "heavy-tail"
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "colo", kind: "region", label: "YouTube colo" }
+  - { id: "edge-pop", kind: "point-of-presence", label: "CDN edge" }
+  - { id: "serving-tier", kind: "trust-zone", parent: "colo", label: "Web and video serving tier" }
+  - { id: "data-tier", kind: "trust-zone", parent: "colo", label: "Data tier" }
+  - { id: "upload-pipeline", kind: "system", parent: "colo", label: "Upload and transcoding" }
+
+nodes:
+  - id: "device-client"
+    component: "web-browser"
+    label: "Browser, mobile and TV clients"
+    props: { platform: "multi", localCache: true }
+
+  - id: "netscaler"
+    component: "load-balancer-tier"
+    label: "NetScaler"
+    group: "serving-tier"
+    props: { layer: "l7", healthChecks: true }
+    nfr: { rps: 11574 }
+
+  - id: "apache-frontend"
+    component: "apache-httpd"
+    label: "Apache + mod_fastcgi"
+    group: "serving-tier"
+    props: { mpm: "prefork", lbMethod: "by-requests" }
+
+  - id: "python-app"
+    component: "container-service"
+    label: "Python app servers with shard routing in application code"
+    group: "serving-tier"
+    props: { stateless: true, runtime: "python", criticality: "high", shardingStrategy: "lookup" }
+    nfr: { rps: 11574 }
+
+  - id: "page-cache"
+    component: "memcached"
+    label: "Row, object and page caches"
+    group: "serving-tier"
+    props: { evictionPolicy: "none", ttlJitter: false, ttlSeconds: 64800, materialised: true, usedAsPrimaryStore: false, persistence: false, invalidation: "ttl" }
+
+  - id: "precompute-jobs"
+    component: "cron-job"
+    label: "Precalculation jobs"
+    group: "serving-tier"
+    props: { trigger: "schedule", idempotent: true, overlapAllowed: true }
+
+  - id: "lighttpd-video"
+    component: "container-service"
+    label: "lighttpd video mini-clusters"
+    group: "serving-tier"
+    props: { stateless: true, runtime: "lighttpd", criticality: "high" }
+
+  - id: "video-cdn"
+    component: "content-delivery-network"
+    label: "CDN (most popular videos)"
+    group: "edge-pop"
+    props: { caching: true, tls: true }
+
+  - id: "upload-service"
+    component: "container-service"
+    label: "Chunked resumable upload service"
+    group: "upload-pipeline"
+    props: { stateless: true, criticality: "high" }
+
+  - id: "transcoding-farm"
+    component: "container-worker"
+    label: "Transcoding farm called from the upload handler"
+    group: "upload-pipeline"
+    props: { trigger: "manual", accelerator: "none", idempotent: false }
+
+  - id: "extract-queue"
+    component: "message-queue"
+    label: "Extraction job queue"
+    group: "upload-pipeline"
+    props: { delivery: "at-least-once", deadLetterQueue: false, role: "work", persistence: true }
+
+  - id: "extractors"
+    component: "container-worker"
+    label: "Thumbnail, caption and metadata extractors"
+    group: "upload-pipeline"
+    props: { trigger: "queue", idempotent: false }
+
+  - id: "mysql-primary"
+    component: "mysql"
+    label: "MySQL primary (users, videos, subscriptions)"
+    group: "data-tier"
+    props: { sharded: false, multiWriter: false, distributed: false, replication: "async", storageEngine: "innodb", backupEnabled: true, backupRetentionDays: 30 }
+    nfr: { rps: 11574, consistency: "strong" }
+
+  - id: "mysql-replica"
+    component: "mysql"
+    label: "MySQL read replicas"
+    group: "data-tier"
+    props: { sharded: false, multiWriter: false, distributed: false, replication: "async", replicaOf: "mysql-primary", storageEngine: "innodb", backupEnabled: true, backupRetentionDays: 30 }
+    nfr: { consistency: "eventual" }
+
+  - id: "thumbnail-store"
+    component: "bigtable"
+    label: "Thumbnail store (BigTable)"
+    group: "data-tier"
+    props: { model: "wide-column", replication: "multi-region-multi-leader", conflictResolution: "last-writer-wins", appProfileRouting: "multi-cluster", consistency: "eventual" }
+
+  - id: "video-storage"
+    component: "blob-store"
+    label: "Video master and variant storage"
+    group: "data-tier"
+    props: { tier: "hot", checksumOnWrite: false }
+
+  - id: "colo-video-store"
+    component: "blob-store"
+    label: "Colo video racks (long tail)"
+    group: "data-tier"
+    props: { tier: "warm" }
+
+edges:
+  - { from: "device-client", to: "netscaler", protocol: "https", mode: "sync", label: "watch page" }
+  - { from: "netscaler", to: "apache-frontend", protocol: "http", mode: "sync" }
+  - { from: "apache-frontend", to: "python-app", protocol: "fastcgi", mode: "sync", label: "mod_fastcgi" }
+  - { from: "python-app", to: "page-cache", protocol: "memcached", mode: "sync", label: "row, object and page cache" }
+  - { from: "python-app", to: "mysql-primary", protocol: "mysql", mode: "sync", label: "writes, shard picked in application code" }
+  - { from: "python-app", to: "mysql-replica", protocol: "mysql", mode: "sync", label: "reads" }
+  - { from: "mysql-primary", to: "mysql-replica", protocol: "mysql-binlog", mode: "async", delivery: "at-least-once", label: "single-threaded replication, lag causes cache misses" }
+  - { from: "python-app", to: "thumbnail-store", protocol: "bigtable-rpc", mode: "sync", label: "60 thumbnails per page" }
+  - { from: "precompute-jobs", to: "mysql-replica", protocol: "mysql", mode: "sync", label: "read source rows" }
+  - { from: "precompute-jobs", to: "page-cache", protocol: "memcached", mode: "async", delivery: "at-least-once", batched: true, label: "push precalculated data" }
+  - { from: "device-client", to: "video-cdn", protocol: "https", mode: "sync", label: "popular videos" }
+  - { from: "device-client", to: "lighttpd-video", protocol: "https", mode: "sync", label: "long tail, 1-20 views per day" }
+  - { from: "lighttpd-video", to: "colo-video-store", protocol: "file", mode: "sync", label: "read from local racks" }
+  - { from: "device-client", to: "upload-service", protocol: "https", mode: "sync", label: "chunked resumable upload" }
+  - { from: "upload-service", to: "video-storage", protocol: "internal", mode: "sync", label: "store original" }
+  - { from: "upload-service", to: "transcoding-farm", protocol: "http", mode: "sync", timeoutMs: 600000, label: "transcode inline, the upload request waits" }
+  - { from: "transcoding-farm", to: "video-storage", protocol: "internal", mode: "sync", label: "dozens of resolution and codec variants" }
+  - { from: "transcoding-farm", to: "video-cdn", protocol: "internal", mode: "async", delivery: "at-least-once", label: "distribute popular variants" }
+  - { from: "transcoding-farm", to: "colo-video-store", protocol: "internal", mode: "async", delivery: "at-least-once", label: "distribute long tail" }
+  - { from: "upload-service", to: "extract-queue", protocol: "amqp", mode: "async", delivery: "at-least-once", label: "thumbnail, caption and metadata jobs" }
+  - { from: "extract-queue", to: "extractors", protocol: "amqp", mode: "async", delivery: "at-least-once" }
+  - { from: "extractors", to: "thumbnail-store", protocol: "bigtable-rpc", mode: "sync", label: "4 thumbnails per video" }
+  - { from: "extractors", to: "mysql-primary", protocol: "mysql", mode: "sync", label: "write video metadata" }

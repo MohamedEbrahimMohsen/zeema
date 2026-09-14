@@ -1,0 +1,223 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Wikimedia/Wikipedia serving infrastructure, clean variant: a GeoDNS-steered edge of caching
+# sites (LVS director, HAProxy TLS, in-memory Varnish frontend, on-disk ATS backend) in front of
+# MediaWiki on Kubernetes in two active-active application datacenters, with sharded MariaDB,
+# Memcached with its gutter pool, Swift media storage and a Kafka-based invalidation path.
+#
+# Fixes relative to wikipedia.broken.yaml:
+#   - the core MariaDB primary replicates asynchronously to the codfw DC master, so the second
+#     application datacenter is warm rather than a cold standby
+#   - parsercache is a cache and not the only copy of rendered wikitext: usedAsPrimaryStore false,
+#     persistence true, materialised false, and MediaWiki re-renders from mariadb-core-replicas
+#     and external-store on a miss
+#   - kask-session-store declares its conflict policy (last-writer-wins, Cassandra cell
+#     resolution) instead of accepting concurrent multi-region writes with no rule
+#   - changeprop is one worker per event stream rather than two queues sharing a single
+#     mw-jobrunner pool, which is what "a dedicated consumer per high-traffic job" means
+# This file MUST trip no rule.
+schemaVersion: "1"
+type: "design"
+id: "wikipedia"
+
+requirements:
+  availability:
+    multiRegion: true
+    regions: 7
+    degradedModeAllowed: true
+  consistency:
+    model: "ap"
+    readAfterWrite: true
+  messaging:
+    replay: true
+    orderingScope: "partition"
+  latency:
+    geoDistributed: true
+  traffic:
+    skew: "heavy-tail"
+  isolation:
+    perQueue: true
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "edge", kind: "point-of-presence", label: "Caching sites: esams, ulsfo, eqsin, drmrs, magru, and the cache layer of each core datacenter" }
+  - { id: "eqiad", kind: "region", label: "eqiad (Ashburn), primary application datacenter" }
+  - { id: "codfw", kind: "region", label: "codfw (Carrollton), secondary application datacenter" }
+  - { id: "eqiad-app", kind: "trust-zone", parent: "eqiad", label: "Internal application network, Envoy-terminated TLS" }
+  - { id: "eqiad-data", kind: "trust-zone", parent: "eqiad", label: "Restricted data tier" }
+
+nodes:
+  - id: "readers-and-editors"
+    component: "web-browser"
+    label: "Readers and editors (browsers and apps)"
+    props: { platform: "multi", localCache: true }
+
+  - id: "authoritative-dns"
+    component: "dns-resolver"
+    label: "Authoritative DNS (GeoDNS + DNS Discovery)"
+    props: { geoRouting: true, ttlSeconds: 300, managed: false }
+
+  - id: "lvs-director"
+    component: "load-balancer-tier"
+    label: "LVS director + PyBal"
+    group: "edge"
+    props: { layer: "l4", hashing: "maglev", healthChecks: true, connectionPreserving: true, managed: false }
+
+  - id: "haproxy-tls"
+    component: "haproxy"
+    label: "HAProxy on the cache hosts"
+    group: "edge"
+    props: { layer: "l7", healthChecks: true, managed: false }
+
+  - id: "varnish-frontend"
+    component: "varnish"
+    label: "Varnish frontend (in memory)"
+    group: "edge"
+    props: { storageBackend: "malloc", evictionPolicy: "lru", ttlSeconds: 86400, persistence: false, invalidation: "event", hashing: "none", tier: "edge", usedAsPrimaryStore: false, materialised: false }
+
+  - id: "ats-backend"
+    component: "trafficserver"
+    label: "Apache Traffic Server backend (on disk)"
+    group: "edge"
+    props: { caching: true, ramCache: true, tls: true, originShield: true, managed: false }
+
+  - id: "purged"
+    component: "container-worker"
+    label: "purged"
+    group: "edge"
+    props: { trigger: "stream", idempotent: true, concurrency: 52, orchestrator: "none" }
+
+  - id: "mw-web"
+    component: "container-service"
+    label: "mw-web (MediaWiki on Kubernetes)"
+    group: "eqiad-app"
+    props: { orchestrator: "kubernetes", stateless: true, runtime: "php-fpm", criticality: "high", ownsData: false }
+
+  - id: "mw-api"
+    component: "container-service"
+    label: "mw-api-ext / mw-api-int"
+    group: "eqiad-app"
+    props: { orchestrator: "kubernetes", stateless: true, runtime: "php-fpm", criticality: "high", ownsData: false }
+
+  - id: "mw-jobrunner"
+    component: "container-worker"
+    label: "mw-jobrunner"
+    group: "eqiad-app"
+    props: { trigger: "queue", idempotent: true, orchestrator: "kubernetes" }
+
+  - id: "eventgate"
+    component: "container-service"
+    label: "EventGate"
+    group: "eqiad-app"
+    props: { orchestrator: "kubernetes", stateless: true, runtime: "nodejs", criticality: "high", ownsData: false }
+
+  - id: "changeprop"
+    component: "container-worker"
+    label: "changeprop / changeprop-jobqueue"
+    group: "eqiad-app"
+    props: { trigger: "stream", idempotent: true, rateControl: "fixed", orchestrator: "kubernetes" }
+
+  - id: "thumbor"
+    component: "ffmpeg"
+    label: "Thumbor (on-demand thumbnailing)"
+    group: "eqiad-app"
+    props: { mode: "file", packaging: "none", managed: false }
+
+  - id: "memcached-main"
+    component: "memcached"
+    label: "Memcached main pool (18 shards per DC)"
+    group: "eqiad-data"
+    props: { evictionPolicy: "lru", persistence: false, hashing: "consistent", invalidation: "event", replication: "none", tier: "core", usedAsPrimaryStore: false, materialised: false }
+
+  - id: "memcached-gutter"
+    component: "memcached"
+    label: "Memcached gutter pool (3 shards per DC)"
+    group: "eqiad-data"
+    props: { evictionPolicy: "lru", persistence: false, hashing: "consistent", invalidation: "ttl", replication: "none", tier: "core", usedAsPrimaryStore: false, materialised: false }
+
+  - id: "parsercache"
+    component: "cache-cluster"
+    label: "ParserCache pc1-pc8 (MariaDB)"
+    group: "eqiad-data"
+    props: { evictionPolicy: "ttl", ttlSeconds: 2592000, persistence: true, hashing: "consistent", invalidation: "event", replication: "multi-region", tier: "core", usedAsPrimaryStore: false, materialised: false }
+
+  - id: "mariadb-core-primary"
+    component: "mariadb"
+    label: "MariaDB core sections s1-s8, x1-x4 (primary)"
+    group: "eqiad-data"
+    props: { sharded: true, shardKey: "wiki_section", replication: "async", multiWriter: false, backupEnabled: true, backupRetentionDays: 30, encryptionAtRest: false, concurrencyControl: "pessimistic" }
+
+  - id: "mariadb-core-replicas"
+    component: "mariadb"
+    label: "MariaDB core section replicas (weighted, lag aware)"
+    group: "eqiad-data"
+    props: { sharded: true, shardKey: "wiki_section", replication: "async", replicaOf: "mariadb-core-primary", backupEnabled: true, backupRetentionDays: 30 }
+    nfr: { consistency: "eventual" }
+
+  - id: "mariadb-codfw-master"
+    component: "mariadb"
+    label: "MariaDB DC master in codfw"
+    group: "codfw"
+    props: { sharded: true, shardKey: "wiki_section", replication: "async", replicaOf: "mariadb-core-primary", backupEnabled: true, backupRetentionDays: 30 }
+    nfr: { consistency: "eventual" }
+
+  - id: "external-store"
+    component: "mariadb"
+    label: "External Store es1-es7"
+    group: "eqiad-data"
+    props: { sharded: true, appendOnly: true, replication: "async", backupEnabled: true, backupRetentionDays: 30 }
+
+  - id: "kask-session-store"
+    component: "cassandra"
+    label: "Session store (Kask over Cassandra)"
+    group: "eqiad-data"
+    props: { model: "key-value", replication: "multi-region-multi-leader", conflictResolution: "last-writer-wins", consistency: "tunable", backupEnabled: false }
+
+  - id: "swift"
+    component: "swift"
+    label: "Swift media store (ms-fe / ms-be)"
+    group: "eqiad-data"
+    props: { storagePolicy: "replication", replicaCount: 3, replication: "quorum", containerSync: true, tier: "hot", managed: false }
+
+  - id: "kafka-main-eqiad"
+    component: "kafka"
+    label: "Kafka main-eqiad"
+    group: "eqiad-data"
+    props: { delivery: "at-least-once", ordering: "per-key", storage: "persistent", schemaEnforced: true, managed: false }
+
+  - id: "kafka-main-codfw"
+    component: "kafka"
+    label: "Kafka main-codfw"
+    group: "codfw"
+    props: { delivery: "at-least-once", ordering: "per-key", storage: "persistent", schemaEnforced: true, managed: false }
+
+edges:
+  - { from: "readers-and-editors", to: "authoritative-dns", protocol: "dns", mode: "sync", label: "GeoIP resolution, 5-minute TTLs" }
+  - { from: "readers-and-editors", to: "lvs-director", protocol: "tcp", mode: "sync", label: "nearest site's service IP, announced by PyBal over BGP" }
+  - { from: "lvs-director", to: "haproxy-tls", protocol: "tcp", mode: "sync", label: "LVS-DR: only forward traffic is balanced, responses bypass the director" }
+  - { from: "haproxy-tls", to: "varnish-frontend", protocol: "http", mode: "sync", label: "TLS and HTTP/2 terminated, rate limiting applied" }
+  - { from: "varnish-frontend", to: "ats-backend", protocol: "https", mode: "sync", fallback: "cached", label: "on frontend miss; backend chosen by request hash" }
+  - { from: "ats-backend", to: "mw-web", protocol: "https", mode: "sync", fallback: "cached", label: "on backend miss; GET routed to the local application datacenter" }
+  - { from: "ats-backend", to: "mw-api", protocol: "https", mode: "sync", label: "/w/api.php and /w/rest.php" }
+  - { from: "varnish-frontend", to: "swift", protocol: "http", mode: "sync", label: "cache_upload: original or thumbnail fetch on miss" }
+  - { from: "swift", to: "thumbor", protocol: "http", mode: "sync", label: "proxy plugin renders a missing thumbnail on demand" }
+  - { from: "thumbor", to: "swift", protocol: "http", mode: "async", delivery: "at-least-once", label: "Thumbor saves a copy in Swift" }
+  - { from: "mw-web", to: "memcached-main", protocol: "memcached", mode: "sync", label: "WANObjectCache on every render, sharded and relayed by mcrouter" }
+  - { from: "mw-web", to: "memcached-gutter", protocol: "memcached", mode: "sync", label: "gutter pool: used when a main-pool shard is down" }
+  - { from: "mw-web", to: "parsercache", protocol: "mysql", mode: "sync", label: "parsed wikitext, consistent hashing on the cache key, 30-day TTL" }
+  - { from: "mw-web", to: "mariadb-core-replicas", protocol: "mysql", mode: "sync", timeoutMs: 60000, fallback: "degraded", label: "read path; replica chosen by weight and replication lag, 60s query killer" }
+  - { from: "mw-web", to: "external-store", protocol: "mysql", mode: "sync", label: "compressed full text of the page revision" }
+  - { from: "mw-web", to: "kask-session-store", protocol: "http", mode: "sync", label: "login sessions, multi-region Cassandra underneath" }
+  - { from: "mw-web", to: "swift", protocol: "http", mode: "sync", label: "FileBackend: uploads and originals" }
+  - { from: "mw-api", to: "mariadb-core-primary", protocol: "mysql", mode: "sync", idempotent: false, label: "edits: POST routed to the primary datacenter only" }
+  - { from: "mw-web", to: "eventgate", protocol: "http", mode: "sync", label: "EventBus extension, JSONSchema-validated before acceptance" }
+  - { from: "mariadb-core-primary", to: "mariadb-core-replicas", protocol: "mysql-replication", mode: "async", delivery: "at-least-once", label: "per-section primary to local replicas" }
+  - { from: "mariadb-core-primary", to: "mariadb-codfw-master", protocol: "mysql-replication", mode: "async", delivery: "at-least-once", label: "cross-DC, TLS encrypted; the DC master then feeds codfw's replicas" }
+  - { from: "eventgate", to: "kafka-main-eqiad", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "topic prefixed with the producing datacenter" }
+  - { from: "kafka-main-eqiad", to: "kafka-main-codfw", protocol: "kafka-mirrormaker", mode: "async", delivery: "at-least-once", label: "codfw pulls all eqiad.* topics; mirrored both ways" }
+  - { from: "kafka-main-eqiad", to: "purged", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "eqiad.resource-purge and codfw.resource-purge" }
+  - { from: "purged", to: "varnish-frontend", protocol: "http-purge", mode: "sync", label: "4 frontend workers" }
+  - { from: "purged", to: "ats-backend", protocol: "http-purge", mode: "sync", label: "48 backend workers" }
+  - { from: "kafka-main-eqiad", to: "changeprop", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "once an event is in Kafka it will be processed" }
+  - { from: "changeprop", to: "mw-jobrunner", protocol: "http", mode: "sync", idempotent: true, label: "one HTTP call per job; dedicated consumers for high-traffic jobs, deduplicated" }
+  - { from: "changeprop", to: "kafka-main-eqiad", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "persistent error tracking in a dedicated error topic" }

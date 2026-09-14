@@ -1,0 +1,223 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture: Robinhood brokerage and crypto, broken variant. The same platform
+# with the shortcuts a team takes on the way to sharding: the internal API proxy reaches
+# synchronously into another user's shard while the design still promises shard isolation,
+# that hop pushes the routing layer's synchronous chain past the one-second execution SLA,
+# the Postgres-backed retry store has nowhere to park a poison event and no backoff, and
+# internal service discovery runs on a single provider, which is what fell over in March 2020.
+#
+# This file MUST trip:
+#   - cross-cell-call                       (internal-api-proxy -> brokerage-service-2 and every other sync edge leaving a shard, while isolation.tenancy is cell)
+#   - sync-chain-too-deep                   (routing-layer -> brokerage-service-1 -> internal-api-proxy -> brokerage-service-2 -> shard-db-2 is 4 sync hops under latency.p95Ms)
+#   - retry-queue-without-dlq               (failed-event-store: role retry, deadLetterQueue false)
+#   - retry-without-backoff                 (failed-event-store declares no backoff)
+#   - shared-dependency-without-redundancy  (service-dns: redundantProviders false while availability.discoveryRedundant is true)
+# and MUST NOT trip:
+#   - queue-missing-dlq                     (failed-event-store is written synchronously; it has no async in-edge)
+#   - datastore-missing-backup              (both Postgres shards declare backup and 30 day retention)
+#   - datastore-single-region               (availability.multiRegion is false)
+#   - single-writer-primary-at-peak-qps, read-replica-as-sole-scaling (both shards declare sharded true)
+#   - cache-missing-eviction-policy, cache-as-primary-store-without-persistence, materialised-cache-without-rebuild-path (both memcaches declare lru and hold no materialised view)
+#   - credentials-without-rotation          (security.credentialRotationDays is set)
+#   - retry-without-adaptive-shedding       (the only retrying edge, internal-api-proxy -> settlements, keeps its circuit breaker)
+#   - shared-dependency-without-redundancy is fired by service-dns only; shard-mapping stays replicated
+#   - external-call-inline-without-durable-path, exactly-once-with-external-side-effects (no node calls execution-venues synchronously)
+#   - read-heavy-path-without-cache         (traffic.readWriteRatio is not declared, and caches exist)
+#   - business-updates-without-index-propagation, derived-store-without-cdc-or-rebuild (no search index in this design)
+#   - stateful-node-without-zone-redundancy, stateful-engine-pinned-to-single-zone (the design declares no availability-zone groups)
+#   - pubsub-replay-required                (no pubsub-topic node; Kafka is a stream)
+schemaVersion: "1"
+type: "design"
+id: "robinhood-trading"
+
+requirements:
+  availability:
+    multiRegion: false
+    discoveryRedundant: true
+  latency:
+    p95Ms: 1000
+  consistency:
+    model: "cp"
+  messaging:
+    replay: true
+    orderingScope: "partition"
+  freshness:
+    maxSeconds: 900
+  isolation:
+    tenancy: "cell"
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "aws-us-east", kind: "region", label: "AWS" }
+  - { id: "edge", kind: "trust-zone", parent: "aws-us-east", label: "Public edge" }
+  - { id: "platform", kind: "trust-zone", parent: "aws-us-east", label: "Shared platform" }
+  - { id: "shard-1", kind: "cell", parent: "aws-us-east", label: "Shard 1" }
+  - { id: "shard-2", kind: "cell", parent: "aws-us-east", label: "Shard 2" }
+
+nodes:
+  - id: "mobile-client"
+    component: "mobile-app"
+    label: "Robinhood app"
+    props: { platform: "mobile", os: "both" }
+
+  - id: "public-lb"
+    component: "load-balancer-tier"
+    label: "Public load balancer"
+    group: "edge"
+    props: { layer: "l7", healthChecks: true, managed: true }
+    nfr: { rps: 750000 }
+
+  - id: "routing-layer"
+    component: "envoy-gateway"
+    label: "Routing layer"
+    group: "edge"
+    props: { tls: true, protocol: "http" }
+
+  - id: "shard-mapping"
+    component: "apache-helix"
+    label: "Shard mapping service"
+    group: "platform"
+    props: { role: "sharding", replicated: true }
+
+  - id: "aggregation-layer"
+    component: "container-service"
+    label: "Aggregation layer"
+    group: "platform"
+    props: { orchestrator: "kubernetes", stateless: true, ownsData: false, runtime: "python" }
+
+  - id: "internal-api-proxy"
+    component: "envoy-gateway"
+    label: "Internal API proxy"
+    group: "platform"
+    props: { tls: true, protocol: "http" }
+
+  - id: "settlements"
+    component: "container-service"
+    label: "Settlements"
+    group: "platform"
+    props: { orchestrator: "kubernetes", stateless: true, criticality: "high", runtime: "python" }
+
+  - id: "brokerage-service-1"
+    component: "container-service"
+    label: "Brokerage services, shard 1"
+    group: "shard-1"
+    props: { orchestrator: "kubernetes", stateless: true, runtime: "python", shardingStrategy: "lookup", criticality: "high" }
+
+  - id: "shard-cache-1"
+    component: "memcached"
+    label: "Memcache, shard 1"
+    group: "shard-1"
+    props: { evictionPolicy: "lru" }
+
+  - id: "shard-db-1"
+    component: "postgres"
+    label: "Postgres, shard 1"
+    group: "shard-1"
+    props: { sharded: true, shardKey: "user_id", replication: "async", backupEnabled: true, backupRetentionDays: 30, encryptionAtRest: true, managed: true }
+
+  - id: "brokerage-service-2"
+    component: "container-service"
+    label: "Brokerage services, shard 2"
+    group: "shard-2"
+    props: { orchestrator: "kubernetes", stateless: true, runtime: "python", shardingStrategy: "lookup", criticality: "high" }
+
+  - id: "shard-cache-2"
+    component: "memcached"
+    label: "Memcache, shard 2"
+    group: "shard-2"
+    props: { evictionPolicy: "lru" }
+
+  - id: "shard-db-2"
+    component: "postgres"
+    label: "Postgres, shard 2"
+    group: "shard-2"
+    props: { sharded: true, shardKey: "user_id", replication: "async", backupEnabled: true, backupRetentionDays: 30, encryptionAtRest: true, managed: true }
+
+  - id: "kafkaproxy"
+    component: "envoy-sidecar"
+    label: "Kafkaproxy sidecar"
+    group: "platform"
+    props: { sidecar: true }
+
+  - id: "order-kafka"
+    component: "kafka"
+    label: "Kafka clusters"
+    group: "platform"
+    props: { partitions: 90000 }
+    nfr: { rps: 2200000 }
+
+  - id: "failed-event-store"
+    component: "message-queue"
+    label: "Postgres-backed failed-event store"
+    group: "platform"
+    props: { role: "retry", delivery: "at-least-once", deadLetterQueue: false, replay: true, persistence: true }
+
+  - id: "stream-processing"
+    component: "flink"
+    label: "Faust and Flink"
+    group: "platform"
+    props: { instances: 100 }
+
+  - id: "shard-cdc"
+    component: "debezium"
+    label: "Debezium CDC"
+    group: "platform"
+    props: { mode: "log-based", ordered: true, deployment: "kafka-connect" }
+
+  - id: "data-lake"
+    component: "blob-store"
+    label: "Data lake"
+    group: "platform"
+
+  - id: "logging"
+    component: "warpstream"
+    label: "WarpStream logging"
+    group: "platform"
+    props: { objectStore: "s3" }
+
+  - id: "service-dns"
+    component: "dns-resolver"
+    label: "Internal service discovery"
+    group: "platform"
+    props: { managed: true }
+
+  - id: "execution-venues"
+    component: "supplier-api"
+    label: "Market makers, exchanges, clearing"
+
+edges:
+  - { from: "mobile-client", to: "public-lb", protocol: "https", mode: "sync" }
+  - { from: "public-lb", to: "routing-layer", protocol: "http", mode: "sync", label: "per-user request" }
+  - { from: "public-lb", to: "aggregation-layer", protocol: "http", mode: "sync", label: "cross-shard read" }
+  - { from: "routing-layer", to: "shard-mapping", protocol: "grpc", mode: "sync", timeoutMs: 100, label: "user to shard lookup" }
+  - { from: "routing-layer", to: "service-dns", protocol: "udp", mode: "sync", label: "service discovery" }
+  - { from: "routing-layer", to: "brokerage-service-1", protocol: "http", mode: "sync", label: "route to owning shard" }
+  - { from: "routing-layer", to: "brokerage-service-2", protocol: "http", mode: "sync", label: "route to owning shard" }
+  - { from: "aggregation-layer", to: "brokerage-service-1", protocol: "http", mode: "sync", timeoutMs: 500, label: "fan-out, merge on cursor" }
+  - { from: "aggregation-layer", to: "brokerage-service-2", protocol: "http", mode: "sync", timeoutMs: 500, label: "fan-out, merge on cursor" }
+  - { from: "brokerage-service-1", to: "shard-db-1", protocol: "postgres", mode: "sync", label: "one query per request" }
+  - { from: "brokerage-service-1", to: "shard-cache-1", protocol: "memcached", mode: "sync", label: "staleness-tolerant reads" }
+  - { from: "brokerage-service-2", to: "shard-db-2", protocol: "postgres", mode: "sync", label: "one query per request" }
+  - { from: "brokerage-service-2", to: "shard-cache-2", protocol: "memcached", mode: "sync", label: "staleness-tolerant reads" }
+  - { from: "brokerage-service-1", to: "service-dns", protocol: "udp", mode: "sync", label: "service discovery" }
+  - { from: "brokerage-service-1", to: "internal-api-proxy", protocol: "http", mode: "sync", label: "shared component call" }
+  - { from: "brokerage-service-2", to: "internal-api-proxy", protocol: "http", mode: "sync", label: "shared component call" }
+  - { from: "internal-api-proxy", to: "settlements", protocol: "http", mode: "sync", timeoutMs: 500, retryPolicy: "exponential-jitter", circuitBreaker: true, label: "settlements, extracted and shared" }
+  - { from: "internal-api-proxy", to: "brokerage-service-2", protocol: "http", mode: "sync", timeoutMs: 2000, label: "read another user's shard inline" }
+  - { from: "brokerage-service-1", to: "kafkaproxy", protocol: "grpc", mode: "async", label: "produce through the sidecar" }
+  - { from: "brokerage-service-2", to: "kafkaproxy", protocol: "grpc", mode: "async", label: "produce through the sidecar" }
+  - { from: "kafkaproxy", to: "order-kafka", protocol: "kafka", mode: "async", delivery: "at-least-once", batched: true, label: "pooled broker connections" }
+  - { from: "order-kafka", to: "kafkaproxy", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "consumer group lifecycle" }
+  - { from: "kafkaproxy", to: "brokerage-service-1", protocol: "grpc", mode: "async", delivery: "at-least-once", label: "all shards consume, filter per message" }
+  - { from: "kafkaproxy", to: "brokerage-service-2", protocol: "grpc", mode: "async", delivery: "at-least-once", label: "all shards consume, filter per message" }
+  - { from: "brokerage-service-1", to: "failed-event-store", protocol: "postgres", mode: "sync", idempotent: true, label: "park failed event, queryable by reason" }
+  - { from: "brokerage-service-2", to: "failed-event-store", protocol: "postgres", mode: "sync", idempotent: true, label: "park failed event, queryable by reason" }
+  - { from: "failed-event-store", to: "order-kafka", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "inspect, then replay to a retry topic" }
+  - { from: "settlements", to: "order-kafka", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "settlement events" }
+  - { from: "order-kafka", to: "execution-venues", protocol: "fix", mode: "async", label: "5 to 10 hops, under one second" }
+  - { from: "order-kafka", to: "stream-processing", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "risk, fraud, order quality" }
+  - { from: "shard-db-1", to: "shard-cdc", protocol: "postgres-logical", mode: "async", delivery: "at-least-once", label: "logical decoding" }
+  - { from: "shard-db-2", to: "shard-cdc", protocol: "postgres-logical", mode: "async", delivery: "at-least-once", label: "logical decoding" }
+  - { from: "shard-cdc", to: "data-lake", protocol: "http", mode: "async", delivery: "exactly-once", batched: true, label: "Hudi, 5 to 15 minute freshness" }
+  - { from: "brokerage-service-1", to: "logging", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "logs, diskless and S3 backed" }

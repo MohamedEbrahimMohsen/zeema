@@ -1,0 +1,222 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture, broken variant: the same Snapchat multicloud backend, built the way a
+# team gets it wrong — the GCP-side KeyDB promoted to the copy of record, the cross-cloud read
+# retried with no circuit breaker, the user table turned into a multi-leader global table, Snap
+# media parked in a one-zone storage class, and ads reporting chained inline into an e-mail call
+# with no workflow engine behind it.
+#
+# This file MUST trip:
+#   - cache-as-primary-store-without-persistence     (keydb-cache: usedAsPrimaryStore true, persistence false)
+#   - retry-without-adaptive-shedding                (caching-secondary-user-service -> user-service retries with no circuit breaker and no rate limiter)
+#   - multi-leader-store-without-conflict-policy     (user-conversation-store: global tables, conflictResolution none)
+#   - object-store-single-zone-with-durability-target (s3-media-store: one-zone-ia, zones 1, design targets 11 nines)
+#   - external-call-inline-without-durable-path      (notification-service calls smtp-relay inline; temporal-cluster is gone)
+# and MUST NOT trip:
+#   - cache-missing-eviction-policy               (keydb-cache still declares ttl eviction)
+#   - materialised-cache-without-rebuild-path     (keydb-cache holds user records, not materialised views)
+#   - credentials-without-rotation                (security.credentialRotationDays is still declared)
+#   - datastore-missing-backup, datastore-single-region, read-replica-as-sole-scaling,
+#     single-writer-primary-at-peak-qps           (no sql-database node in this design)
+#   - read-heavy-path-without-cache               (no traffic.readWriteRatio requirement, and a cache exists)
+#   - sync-chain-too-deep                         (no latency.p95Ms: the sources publish no latency SLO)
+#   - queue-missing-dlq, pubsub-replay-required, retry-queue-without-dlq, retry-without-backoff
+#                                                 (no queue or topic node in this design)
+#   - fanout-inline-in-request-path               (no app-server calls a worker synchronously)
+#   - exactly-once-with-external-side-effects     (messaging.exactlyOnce is not claimed)
+#   - stateful-node-without-zone-redundancy, stateful-engine-pinned-to-single-zone, cross-cell-call
+#                                                 (no availability-zone or cell groups)
+schemaVersion: "1"
+type: "design"
+id: "snapchat-platform"
+
+requirements:
+  availability:
+    multiRegion: true
+    regions: 7
+    sla: "99.99"
+    degradedModeAllowed: true
+  consistency:
+    model: "ap"
+  messaging:
+    replay: true
+  durability:
+    annualNines: 11
+  security:
+    credentialRotationDays: 1
+
+groups:
+  - { id: "aws-us-east-1", kind: "region", label: "AWS us-east-1" }
+  - { id: "gcp-us-central1", kind: "region", label: "GCP us-central1" }
+  - { id: "aws-edge", kind: "trust-zone", parent: "aws-us-east-1", label: "internet-exposed" }
+  - { id: "aws-compute", kind: "trust-zone", parent: "aws-us-east-1", label: "compute accounts" }
+  - { id: "aws-data", kind: "trust-zone", parent: "aws-us-east-1", label: "tenant data accounts" }
+  - { id: "gcp-compute", kind: "trust-zone", parent: "gcp-us-central1", label: "GKE clusters" }
+
+nodes:
+  - id: "snapchat-client"
+    component: "mobile-app"
+    label: "Snapchat client"
+    props: { os: "both", platform: "mobile", localCache: true, persistentConnection: false }
+
+  - id: "api-gateway"
+    component: "envoy-gateway"
+    label: "API Gateway"
+    group: "aws-edge"
+    props: { auth: "jwt", rateLimiting: true, tls: true, protocol: "grpc", concurrencyLimit: true, gatewayApi: false }
+
+  - id: "cloudfront"
+    component: "cloudfront"
+    label: "Content system"
+    group: "aws-edge"
+    props: { caching: true, tls: true, signedUrls: true }
+
+  - id: "envoy-sidecar"
+    component: "envoy-sidecar"
+    label: "Snap Service Mesh data plane"
+    group: "aws-compute"
+    props: { sidecar: true, mtls: true, retries: true, circuitBreaking: false, controlPlanes: 7, xds: true }
+    nfr: { rps: 10000000 }
+
+  - id: "xds-control-plane"
+    component: "container-service"
+    label: "xDS Control Plane"
+    group: "aws-compute"
+    props: { orchestrator: "kubernetes", criticality: "high", stateless: true }
+
+  - id: "switchboard"
+    component: "container-service"
+    label: "Switchboard"
+    group: "aws-compute"
+    props: { orchestrator: "kubernetes", criticality: "high", stateless: true }
+
+  - id: "switchboard-config-store"
+    component: "dynamodb"
+    label: "Switchboard config"
+    group: "aws-data"
+    props: { model: "document", consistency: "strong", replication: "single-region", backupEnabled: true, backupRetentionDays: 35, encryptionAtRest: true }
+
+  - id: "eks-clusters"
+    component: "aws-eks"
+    label: "Shared multi-tenant EKS clusters"
+    group: "aws-compute"
+    props: { rbac: true, networkPolicy: true, privateControlPlane: true, autoscaling: true, ipFamily: "ipv4" }
+
+  - id: "gke-clusters"
+    component: "google-gke"
+    label: "GKE clusters"
+    group: "gcp-compute"
+    props: { rbac: true, networkPolicy: true, locationType: "zonal", zonesSpanned: 1, autoscaling: true }
+
+  - id: "spinnaker"
+    component: "spinnaker"
+    label: "Spinnaker"
+    group: "aws-compute"
+    props: { triggerSource: "pipeline", deploymentStrategy: "none", selfHostedRunners: true }
+
+  - id: "messaging-core-service"
+    component: "container-service"
+    label: "Messaging Core Service"
+    group: "aws-compute"
+    props: { orchestrator: "kubernetes", criticality: "high", stateless: true, autoscaling: true }
+
+  - id: "media-service"
+    component: "container-service"
+    label: "Media Service"
+    group: "aws-compute"
+    props: { orchestrator: "kubernetes", criticality: "high", stateless: true, autoscaling: true }
+
+  - id: "friend-service"
+    component: "container-service"
+    label: "Friend Service"
+    group: "aws-compute"
+    props: { orchestrator: "kubernetes", criticality: "high", stateless: true }
+
+  - id: "user-service"
+    component: "container-service"
+    label: "User Service"
+    group: "aws-compute"
+    props: { orchestrator: "kubernetes", criticality: "high", stateless: true, autoscaling: true }
+
+  - id: "caching-secondary-user-service"
+    component: "container-service"
+    label: "CachingSecondaryUserService"
+    group: "gcp-compute"
+    props: { orchestrator: "kubernetes", criticality: "high", stateless: true }
+
+  - id: "keydb-cache"
+    component: "keydb"
+    label: "KeyDB"
+    group: "gcp-compute"
+    props: { evictionPolicy: "ttl", ttlSeconds: 86400, invalidation: "ttl", usedAsPrimaryStore: true, materialised: false, persistence: false, replication: "none", structure: "key-value" }
+    nfr: { latencyP95Ms: 2 }
+
+  - id: "secondary-service-cache-invalidator"
+    component: "container-worker"
+    label: "SecondaryServiceCacheInvalidator"
+    group: "aws-compute"
+    props: { orchestrator: "kubernetes", trigger: "stream", idempotent: true }
+
+  - id: "user-conversation-store"
+    component: "dynamodb"
+    label: "DynamoDB (user and conversation data)"
+    group: "aws-data"
+    props: { model: "key-value", consistency: "eventual", replication: "multi-region-multi-leader", conflictResolution: "none", globalTables: true, backupEnabled: true, backupRetentionDays: 35, encryptionAtRest: true, onDemandCapacity: true, streams: true }
+
+  - id: "s3-media-store"
+    component: "s3"
+    label: "Snap media store"
+    group: "aws-data"
+    props: { zones: 1, storageClass: "one-zone-ia", tier: "cold", durabilityNines: 11, encryptionAtRest: true, versioning: false, strongReadAfterWrite: true }
+
+  - id: "data-fetching-service"
+    component: "container-service"
+    label: "Data Fetching Service"
+    group: "aws-compute"
+    props: { orchestrator: "kubernetes", criticality: "medium", stateless: true }
+
+  - id: "report-generation-service"
+    component: "container-service"
+    label: "Report Generation Service"
+    group: "aws-compute"
+    props: { orchestrator: "kubernetes", criticality: "medium", stateless: true }
+
+  - id: "notification-service"
+    component: "container-service"
+    label: "Notification Service"
+    group: "aws-compute"
+    props: { orchestrator: "kubernetes", criticality: "medium", stateless: true }
+
+  - id: "smtp-relay"
+    component: "smtp-relay"
+    label: "Advertiser e-mail relay"
+    props: { callbackStyle: "none" }
+
+edges:
+  - { from: "snapchat-client", to: "api-gateway", protocol: "grpc-quic", mode: "sync", timeoutMs: 10000, label: "gRPC over QUIC/HTTP3" }
+  - { from: "api-gateway", to: "media-service", protocol: "grpc", mode: "sync", timeoutMs: 5000, label: "send: persist media first" }
+  - { from: "media-service", to: "s3-media-store", protocol: "s3", mode: "sync", timeoutMs: 5000, idempotent: true, label: "store Snap media" }
+  - { from: "media-service", to: "friend-service", protocol: "grpc", mode: "sync", timeoutMs: 500, label: "may the sender send to this recipient" }
+  - { from: "friend-service", to: "messaging-core-service", protocol: "grpc", mode: "sync", timeoutMs: 1000, label: "write conversation" }
+  - { from: "messaging-core-service", to: "user-conversation-store", protocol: "dynamodb", mode: "sync", timeoutMs: 500, label: "conversation stored in DynamoDB" }
+  - { from: "api-gateway", to: "messaging-core-service", protocol: "grpc", mode: "sync", timeoutMs: 1000, label: "receive: message metadata and media pointer" }
+  - { from: "snapchat-client", to: "cloudfront", protocol: "https", mode: "sync", label: "resolve media pointer" }
+  - { from: "cloudfront", to: "s3-media-store", protocol: "https", mode: "sync", timeoutMs: 3000, label: "origin fetch on miss" }
+  - { from: "messaging-core-service", to: "envoy-sidecar", protocol: "localhost", mode: "sync", label: "all ingress and egress" }
+  - { from: "caching-secondary-user-service", to: "envoy-sidecar", protocol: "localhost", mode: "sync", label: "all ingress and egress" }
+  - { from: "envoy-sidecar", to: "xds-control-plane", protocol: "grpc", mode: "async", delivery: "at-least-once", label: "open bidirectional xDS stream" }
+  - { from: "xds-control-plane", to: "envoy-sidecar", protocol: "grpc", mode: "async", delivery: "at-least-once", label: "config pushed to every Envoy at once" }
+  - { from: "switchboard", to: "switchboard-config-store", protocol: "dynamodb", mode: "sync", timeoutMs: 1000, label: "config changes saved to DynamoDB" }
+  - { from: "switchboard", to: "xds-control-plane", protocol: "grpc", mode: "async", delivery: "at-least-once", label: "full Envoy API surfaced to service owners" }
+  - { from: "switchboard", to: "eks-clusters", protocol: "https", mode: "async", delivery: "at-least-once", label: "provision clusters" }
+  - { from: "switchboard", to: "gke-clusters", protocol: "https", mode: "async", delivery: "at-least-once", label: "provision clusters" }
+  - { from: "switchboard", to: "spinnaker", protocol: "https", mode: "async", delivery: "at-least-once", label: "generate pipelines" }
+  - { from: "api-gateway", to: "caching-secondary-user-service", protocol: "grpc", mode: "sync", timeoutMs: 1000, label: "GCP-side user read" }
+  - { from: "caching-secondary-user-service", to: "keydb-cache", protocol: "redis", mode: "sync", timeoutMs: 50, label: "the cache is the user store on the GCP side" }
+  - { from: "caching-secondary-user-service", to: "user-service", protocol: "grpc", mode: "sync", retryPolicy: "exponential", label: "cross-cloud miss, retried hard" }
+  - { from: "user-service", to: "user-conversation-store", protocol: "dynamodb", mode: "sync", timeoutMs: 500, label: "authoritative user reads and writes" }
+  - { from: "user-conversation-store", to: "secondary-service-cache-invalidator", protocol: "dynamodb-streams", mode: "async", delivery: "at-least-once", label: "data written to DynamoDB by other services" }
+  - { from: "secondary-service-cache-invalidator", to: "keydb-cache", protocol: "redis", mode: "async", delivery: "at-least-once", label: "invalidate" }
+  - { from: "api-gateway", to: "data-fetching-service", protocol: "grpc", mode: "sync", timeoutMs: 60000, label: "start ads report inline" }
+  - { from: "data-fetching-service", to: "report-generation-service", protocol: "grpc", mode: "sync", timeoutMs: 60000, label: "hand the formatted file on" }
+  - { from: "report-generation-service", to: "notification-service", protocol: "grpc", mode: "sync", timeoutMs: 30000, label: "tell the advertiser" }
+  - { from: "notification-service", to: "smtp-relay", protocol: "smtp", mode: "sync", timeoutMs: 30000, label: "e-mail the advertiser, nothing behind it" }

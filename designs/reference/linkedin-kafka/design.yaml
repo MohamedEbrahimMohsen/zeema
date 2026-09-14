@@ -1,0 +1,201 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture 8, clean variant: LinkedIn's log-centric event pipeline, where every
+# activity event and database change is published once into tiered Kafka clusters, mirrored
+# across datacenters by Brooklin and consumed by Samza, Espresso, Venice, Pinot and Hadoop.
+#
+# Fixes relative to linkedin-kafka.broken.yaml:
+#   - zookeeper is a replicated ensemble, so the metadata store every Kafka cluster and every
+#     Brooklin coordinator depends on has no single instance
+#   - samza does no event-time windowing it cannot close; the source describes continuous
+#     stateful processing over Kafka, not watermarked windows
+#   - espresso keeps a single-leader replication model instead of accepting writes in every
+#     datacenter with no conflict policy
+#   - producer-service produces without an unguarded exponential retry into the broker it is
+#     already overloading
+#   - security.credentialRotationDays is declared for the clusters that carry every event
+# This file MUST trip no rule.
+schemaVersion: "1"
+type: "design"
+id: "linkedin-kafka"
+
+requirements:
+  availability:
+    regions: 2
+    discoveryRedundant: true
+  messaging:
+    replay: true
+    orderingScope: "partition"
+  data:
+    lossDetection: true
+    reconciliation: true
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "dc-us", kind: "region" }
+  - { id: "dc-sg", kind: "region" }
+  - { id: "us-producers", kind: "trust-zone", parent: "dc-us" }
+  - { id: "us-pipeline", kind: "trust-zone", parent: "dc-us" }
+  - { id: "us-consumers", kind: "trust-zone", parent: "dc-us" }
+  - { id: "sg-producers", kind: "trust-zone", parent: "dc-sg" }
+
+nodes:
+  - id: "non-java-client"
+    component: "sdk-client"
+    label: "Non-Java client"
+    props: { platform: "sdk", resendPolicy: "retry" }
+
+  - id: "producer-service"
+    component: "container-service"
+    label: "Producer services (LiKafka)"
+    group: "us-producers"
+    props: { criticality: "high" }
+
+  - id: "producer-service-sg"
+    component: "container-service"
+    label: "Producer services (Singapore)"
+    group: "sg-producers"
+    props: { criticality: "high" }
+
+  - id: "rest-proxy"
+    component: "envoy-gateway"
+    label: "Kafka REST proxy"
+    group: "us-producers"
+    props: { protocol: "http", tls: true }
+
+  - id: "schema-registry"
+    component: "confluent-schema-registry"
+    label: "LinkedIn schema registry"
+    group: "us-producers"
+    props: { schemaFormat: "avro", enforced: true, compatibility: "backward" }
+
+  - id: "local-kafka"
+    component: "kafka"
+    label: "Local Kafka cluster (US)"
+    group: "us-pipeline"
+    props: { replicationFactor: 3, minInsyncReplicas: 2, acks: "all", schemaEnforced: true, delivery: "at-least-once", ordering: "per-key", storage: "persistent" }
+
+  - id: "local-kafka-sg"
+    component: "kafka"
+    label: "Local Kafka cluster (Singapore)"
+    group: "sg-producers"
+    props: { replicationFactor: 3, minInsyncReplicas: 2, acks: "all", schemaEnforced: true, delivery: "at-least-once", ordering: "per-key", storage: "persistent" }
+
+  - id: "aggregate-kafka"
+    component: "kafka"
+    label: "Aggregate Kafka cluster"
+    group: "us-pipeline"
+    props: { replicationFactor: 3, minInsyncReplicas: 2, acks: "all", schemaEnforced: true, compaction: true, delivery: "at-least-once", ordering: "per-key", storage: "persistent" }
+
+  - id: "cdc-kafka"
+    component: "kafka"
+    label: "CDC Kafka cluster"
+    group: "us-pipeline"
+    props: { replicationFactor: 3, minInsyncReplicas: 2, acks: "all", schemaEnforced: true, delivery: "at-least-once", ordering: "per-key", storage: "persistent" }
+
+  - id: "brooklin"
+    component: "brooklin"
+    label: "Brooklin"
+    group: "us-pipeline"
+    props: { mirroring: true, mode: "log-based", ordered: true }
+
+  - id: "zookeeper"
+    component: "zookeeper"
+    label: "ZooKeeper"
+    group: "us-pipeline"
+    props: { role: "metadata", consensus: "zab", replicated: true }
+
+  - id: "cruise-control"
+    component: "container-worker"
+    label: "Cruise Control"
+    group: "us-pipeline"
+    props: { trigger: "schedule", idempotent: true }
+
+  - id: "kafka-monitor"
+    component: "observability-stack"
+    label: "Kafka Monitor"
+    group: "us-pipeline"
+    props: { signal: "metrics", collectorMode: "push", independentOfMonitored: true }
+
+  - id: "burrow"
+    component: "observability-stack"
+    label: "Burrow"
+    group: "us-pipeline"
+    props: { signal: "alerts", collectorMode: "pull", independentOfMonitored: true }
+
+  - id: "audit-trail"
+    component: "observability-stack"
+    label: "Kafka audit / Bean Counter"
+    group: "us-pipeline"
+    props: { signal: "metrics", collectorMode: "pull", independentOfMonitored: true }
+
+  - id: "topic-gc"
+    component: "cron-job"
+    label: "TopicGC"
+    group: "us-pipeline"
+    props: { trigger: "schedule", idempotent: true, overlapAllowed: false }
+
+  - id: "samza"
+    component: "samza"
+    label: "Samza"
+    group: "us-consumers"
+    props: { stateBackend: "rocksdb", changelogTopics: true, windowing: "none", exactlyOnce: false }
+
+  - id: "espresso"
+    component: "nosql-store"
+    label: "Espresso"
+    group: "us-consumers"
+    props: { model: "document", consistency: "strong", replication: "multi-region-single-leader" }
+
+  - id: "venice"
+    component: "nosql-store"
+    label: "Venice"
+    group: "us-consumers"
+    props: { model: "key-value", consistency: "eventual" }
+
+  - id: "pinot"
+    component: "pinot"
+    label: "Pinot"
+    group: "us-consumers"
+    props: { realtime: true, streamIngestion: true, format: "columnar" }
+
+  - id: "gobblin"
+    component: "container-worker"
+    label: "Gobblin"
+    group: "us-consumers"
+    props: { trigger: "stream", idempotent: true }
+
+  - id: "hadoop"
+    component: "hdfs"
+    label: "Hadoop (HDFS)"
+    group: "us-consumers"
+    props: { protocol: "native", replicationFactor: 3, redundancy: "zonal" }
+
+edges:
+  - { from: "non-java-client", to: "rest-proxy", protocol: "http", mode: "sync", label: "publish over HTTP" }
+  - { from: "rest-proxy", to: "local-kafka", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "guaranteed delivery client" }
+  - { from: "producer-service", to: "schema-registry", protocol: "http", mode: "sync", label: "register / look up Avro schema" }
+  - { from: "rest-proxy", to: "schema-registry", protocol: "http", mode: "sync", label: "resolve schema id" }
+  - { from: "producer-service", to: "local-kafka", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "LiKafka produce: Avro, schema id, audit header" }
+  - { from: "producer-service-sg", to: "local-kafka-sg", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "LiKafka produce" }
+  - { from: "local-kafka", to: "zookeeper", protocol: "zookeeper", mode: "sync", label: "cluster metadata, controller election" }
+  - { from: "aggregate-kafka", to: "zookeeper", protocol: "zookeeper", mode: "sync", label: "cluster metadata, controller election" }
+  - { from: "brooklin", to: "zookeeper", protocol: "zookeeper", mode: "sync", label: "datastream metadata, leader election" }
+  - { from: "local-kafka", to: "brooklin", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "mirror source" }
+  - { from: "local-kafka-sg", to: "brooklin", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "mirror source, cross-datacenter" }
+  - { from: "brooklin", to: "aggregate-kafka", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "mirror into the aggregate tier" }
+  - { from: "espresso", to: "brooklin", protocol: "espresso-cdc", mode: "async", delivery: "at-least-once", label: "change capture" }
+  - { from: "brooklin", to: "cdc-kafka", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "CDC datastream" }
+  - { from: "cdc-kafka", to: "espresso", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "partition replication over the log" }
+  - { from: "aggregate-kafka", to: "samza", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "input topics" }
+  - { from: "samza", to: "aggregate-kafka", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "output topics and changelog state" }
+  - { from: "aggregate-kafka", to: "venice", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "near-line ingestion" }
+  - { from: "hadoop", to: "aggregate-kafka", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "Kafka push job: batch data to Venice" }
+  - { from: "aggregate-kafka", to: "pinot", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "real-time OLAP ingestion" }
+  - { from: "aggregate-kafka", to: "gobblin", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "ingestion pull" }
+  - { from: "gobblin", to: "hadoop", protocol: "hdfs", mode: "async", delivery: "at-least-once", label: "land into HDFS" }
+  - { from: "kafka-monitor", to: "local-kafka", protocol: "kafka", mode: "sync", label: "synthetic produce and consume" }
+  - { from: "burrow", to: "aggregate-kafka", protocol: "kafka", mode: "async", label: "consumer offsets, sliding window of ~10 commits" }
+  - { from: "audit-trail", to: "aggregate-kafka", protocol: "kafka", mode: "async", label: "producer vs consumer counts per 10-minute window" }
+  - { from: "cruise-control", to: "local-kafka", protocol: "kafka-admin", mode: "async", label: "rebalance partitions, self-heal broker failures" }
+  - { from: "topic-gc", to: "local-kafka", protocol: "kafka-admin", mode: "async", label: "delete unused topics" }

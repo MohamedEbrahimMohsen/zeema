@@ -1,0 +1,213 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture: Zerodha Kite, broken variant. The same platform built the way a team
+# usually builds it first: the Kite backend writes the hot Redis cache itself and treats it as the
+# only copy of orders and positions, orders go straight into the vendor OMS with nothing that can
+# reject them in place (the 27 Feb 2019 shape), partner traffic is funnelled through the same edge
+# so the public API's call chain gets one hop deeper, and the whole 40-50k QPS peak lands on one
+# unsharded Postgres primary with async failover replicas as the only scaling story.
+#
+# This file MUST trip:
+#   - cache-as-primary-store-without-persistence (hot-redis-cache: usedAsPrimaryStore true, persistence false)
+#   - materialised-cache-without-rebuild-path    (hot-redis-cache is materialised and only kite-backend writes it)
+#   - external-call-inline-without-durable-path  (kite-backend calls the opaque vendor OMS sync with no queue or workflow engine)
+#   - sync-chain-too-deep                        (kite-connect -> edge-proxy -> kite-backend -> oms -> exchange is 4 sync hops under a 40 ms target)
+#   - single-writer-primary-at-peak-qps          (primary-postgres: sharded false, multiWriter false, 50000 rps)
+#   - read-replica-as-sole-scaling               (primary-postgres: replication async, not sharded, not distributed, 50000 rps)
+# and MUST NOT trip:
+#   - cache-missing-eviction-policy              (all three caches declare ttl)
+#   - datastore-missing-backup                   (primary-postgres still declares snapshots and retention)
+#   - datastore-single-region                    (availability.multiRegion is false)
+#   - credentials-without-rotation               (security.credentialRotationDays is set)
+#   - fanout-inline-in-request-path              (console queues DungBeetle jobs asynchronously)
+#   - retry-without-adaptive-shedding            (no edge declares a retry policy)
+#   - queue-missing-dlq, pubsub-replay-required  (Kafka and NATS are stream nodes, not queue or pubsub-topic)
+#   - business-updates-without-index-propagation, derived-store-without-cdc-or-rebuild (no search-index node)
+#   - stateful-websocket-scale-in-without-drain, reconnect-stampede-without-guard (ticker does not autoscale and calls no coordination service)
+#   - stateful-node-without-zone-redundancy      (the design declares no availability-zone groups)
+schemaVersion: "1"
+type: "design"
+id: "zerodha-kite"
+
+requirements:
+  availability:
+    multiRegion: false
+    degradedModeAllowed: false
+  latency:
+    p95Ms: 40
+  consistency:
+    model: "cp"
+    readAfterWrite: false
+  correctness:
+    tamperEvident: true
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "colo", kind: "region", label: "Zerodha data centres (exchange leased lines)" }
+  - { id: "exchange-zone", kind: "trust-zone", parent: "colo", label: "Exchange-facing" }
+  - { id: "aws", kind: "region", label: "AWS (P2P leased lines to the racks)" }
+  - { id: "public-edge", kind: "trust-zone", parent: "aws", label: "Public edge" }
+  - { id: "core-vpc", kind: "vpc", parent: "aws", label: "Core VPC" }
+
+nodes:
+  - id: "kite-web"
+    component: "web-browser"
+    label: "Kite web"
+    props: { platform: "web", localCache: true }
+
+  - id: "kite-mobile"
+    component: "mobile-app"
+    label: "Kite mobile"
+    props: { platform: "mobile", os: "both", localCache: true }
+
+  - id: "partner-apps"
+    component: "sdk-client"
+    label: "Third-party Kite Connect apps"
+    props: { platform: "sdk", persistentConnection: true }
+
+  - id: "edge-proxy"
+    component: "haproxy"
+    label: "HAProxy / NGINX"
+    group: "public-edge"
+    props: { layer: "l7", healthChecks: true }
+
+  - id: "kite-connect"
+    component: "envoy-gateway"
+    label: "Kite Connect"
+    group: "public-edge"
+    props: { auth: "oauth2", tls: true, protocol: "http" }
+
+  - id: "ticker"
+    component: "websocket-gateway"
+    label: "Ticker"
+    group: "public-edge"
+    props: { protocol: "websocket", stateful: true, subscriptionsPerUser: 3000 }
+
+  - id: "kite-backend"
+    component: "container-service"
+    label: "Kite backend"
+    group: "core-vpc"
+    props: { stateless: true, runtime: "go", criticality: "high", ownsData: true }
+
+  - id: "console"
+    component: "container-service"
+    label: "Console"
+    group: "core-vpc"
+    props: { stateless: true, runtime: "go", ownsData: false }
+
+  - id: "dungbeetle"
+    component: "container-worker"
+    label: "DungBeetle (sql-jobber)"
+    group: "core-vpc"
+    props: { trigger: "queue", rateControl: "fixed" }
+
+  - id: "contract-note-workers"
+    component: "container-worker"
+    label: "EOD contract-note workers (Tasqueue)"
+    group: "core-vpc"
+    props: { trigger: "schedule", schedule: "nightly", instances: 40, orchestrator: "nomad" }
+
+  - id: "market-data-bus"
+    component: "nats-jetstream"
+    label: "NATS market-data transport"
+    group: "core-vpc"
+    props: { delivery: "at-most-once", storage: "ephemeral", ordering: "global" }
+
+  - id: "kafka"
+    component: "kafka"
+    label: "Kafka central bus"
+    group: "core-vpc"
+    props: { delivery: "at-least-once", storage: "persistent" }
+
+  - id: "hot-redis-cache"
+    component: "redis"
+    label: "Hot Redis cache"
+    group: "core-vpc"
+    props: { persistence: false, evictionPolicy: "ttl", invalidation: "event", structure: "key-value", materialised: true, usedAsPrimaryStore: true }
+
+  - id: "etag-map"
+    component: "redis"
+    label: "E-Tag map"
+    group: "core-vpc"
+    props: { persistence: false, evictionPolicy: "ttl", invalidation: "event", structure: "hash-set", usedAsPrimaryStore: false }
+
+  - id: "primary-postgres"
+    component: "postgres"
+    label: "Primary Postgres"
+    group: "core-vpc"
+    props: { sharded: false, replication: "async", backupEnabled: true, backupRetentionDays: 30, managed: false }
+    nfr: { rps: 50000, consistency: "strong" }
+
+  - id: "hot-cache-db"
+    component: "cache-cluster"
+    label: "Hot-cache Postgres"
+    group: "core-vpc"
+    props: { persistence: false, evictionPolicy: "ttl", invalidation: "event", materialised: true, usedAsPrimaryStore: false, replication: "none" }
+
+  - id: "clickhouse"
+    component: "clickhouse"
+    label: "ClickHouse"
+    group: "core-vpc"
+    props: { format: "columnar", realtime: true, managed: false }
+
+  - id: "log-pipeline"
+    component: "vector"
+    label: "Vector agents and aggregators"
+    group: "core-vpc"
+    props: { signal: "logs", collectorMode: "push", role: "aggregator", retentionDays: 90 }
+
+  - id: "prometheus"
+    component: "prometheus"
+    label: "Prometheus"
+    group: "core-vpc"
+    props: { signal: "metrics", collectorMode: "pull", remoteWrite: true }
+
+  - id: "contract-note-store"
+    component: "s3"
+    label: "Contract-note object store"
+    group: "aws"
+    props: { tier: "hot", encryptionAtRest: true }
+
+  - id: "oms"
+    component: "supplier-api"
+    label: "OMS (vendor)"
+    group: "exchange-zone"
+    props: { callbackStyle: "webhook", authScheme: "api-key" }
+
+  - id: "exchange"
+    component: "supplier-api"
+    label: "NSE / BSE / MCX"
+    group: "exchange-zone"
+    props: { callbackStyle: "none", authScheme: "mtls" }
+
+edges:
+  - { from: "kite-web", to: "edge-proxy", protocol: "https", mode: "sync", label: "E-Tag sent, 304 when unchanged" }
+  - { from: "kite-mobile", to: "edge-proxy", protocol: "https", mode: "sync", label: "E-Tag sent, 304 when unchanged" }
+  - { from: "partner-apps", to: "kite-connect", protocol: "https", mode: "sync", label: "OAuth-like token" }
+  - { from: "kite-connect", to: "edge-proxy", protocol: "http", mode: "sync", label: "partner orders through the same edge" }
+  - { from: "edge-proxy", to: "kite-backend", protocol: "http", mode: "sync", label: "pooled connections" }
+  - { from: "kite-backend", to: "hot-redis-cache", protocol: "redis", mode: "sync", label: "write-through from the request path" }
+  - { from: "kite-backend", to: "etag-map", protocol: "redis", mode: "sync", label: "E-Tag per user per resource" }
+  - { from: "kite-backend", to: "primary-postgres", protocol: "postgres", mode: "sync", label: "single primary" }
+  - { from: "kite-backend", to: "oms", protocol: "http-xml", mode: "sync", fallback: "none", label: "order straight into the black box" }
+  - { from: "oms", to: "exchange", protocol: "leased-line", mode: "sync", label: "exchange protocol over leased line" }
+  - { from: "oms", to: "kite-backend", protocol: "postback", mode: "async", delivery: "at-least-once", label: "COMPLETE, REJECTED, CANCELLED, UPDATE" }
+  - { from: "kite-backend", to: "kafka", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "central bus" }
+  - { from: "kafka", to: "console", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "consume the bus" }
+  - { from: "exchange", to: "market-data-bus", protocol: "nats", mode: "async", delivery: "at-most-once", label: "~16M ticks/sec" }
+  - { from: "market-data-bus", to: "ticker", protocol: "nats", mode: "async", delivery: "at-most-once", label: "last-value stream" }
+  - { from: "kite-web", to: "ticker", protocol: "wss", mode: "async", delivery: "at-most-once", label: "binary ticks, 3000 instruments per connection" }
+  - { from: "kite-mobile", to: "ticker", protocol: "wss", mode: "async", delivery: "at-most-once", label: "binary ticks" }
+  - { from: "partner-apps", to: "ticker", protocol: "wss", mode: "async", delivery: "at-most-once", label: "wss://ws.kite.trade" }
+  - { from: "ticker", to: "partner-apps", protocol: "wss", mode: "async", delivery: "at-most-once", label: "postbacks and alerts on the same socket" }
+  - { from: "kite-connect", to: "partner-apps", protocol: "https", mode: "async", delivery: "at-most-once", label: "postback signed with SHA-256" }
+  - { from: "console", to: "dungbeetle", protocol: "http", mode: "async", delivery: "at-least-once", label: "heavy SQL read jobs queued" }
+  - { from: "dungbeetle", to: "primary-postgres", protocol: "postgres", mode: "sync", label: "heavy reads on the same primary" }
+  - { from: "dungbeetle", to: "hot-cache-db", protocol: "postgres", mode: "async", delivery: "at-least-once", label: "one ephemeral table per result set" }
+  - { from: "console", to: "hot-cache-db", protocol: "postgres", mode: "sync", label: "user filters and sorts" }
+  - { from: "console", to: "clickhouse", protocol: "http", mode: "sync", label: "immutable financial data" }
+  - { from: "contract-note-workers", to: "primary-postgres", protocol: "postgres", mode: "async", delivery: "at-least-once", batched: true, label: "EOD, 99% of all writes" }
+  - { from: "contract-note-workers", to: "contract-note-store", protocol: "https", mode: "async", delivery: "at-least-once", label: "5.3k req/s, fixed prefix partitioning" }
+  - { from: "kite-backend", to: "log-pipeline", protocol: "vector", mode: "async", delivery: "at-most-once", label: "agents ship, aggregators batch" }
+  - { from: "log-pipeline", to: "clickhouse", protocol: "http", mode: "async", delivery: "at-least-once", batched: true, label: "batched INSERTs" }
+  - { from: "kite-backend", to: "prometheus", protocol: "http", mode: "async", delivery: "at-most-once", label: "scrape, EC2 SD by tag" }

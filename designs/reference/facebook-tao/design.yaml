@@ -1,0 +1,221 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture: Facebook/Meta TAO, clean variant. The read-optimised social graph
+# store — a per-region follower (L1) cache tier in front of one leader (L2) tier per region,
+# over statically sharded MySQL, with invalidations and refills riding the replication stream.
+#
+# Fixes relative to facebook-tao.broken.yaml:
+#   - the graph is stored in hundreds of thousands of shards (master-db and slave-db sharded,
+#     the shard id embedded in every object id), not one unsharded primary with read replicas
+#   - web-server never writes a store directly: every write goes follower -> leader ->
+#     master-leader -> master-db, so one cache coordinator per shard owns the database
+#   - binlog-stream tails the master's commit log, so cache maintenance and index updates are
+#     derived from the log instead of dual-written by application code
+#   - index-pipeline consumes wormhole and feeds secondary-index asynchronously
+#   - wormhole is replayable, so invalidations lost to a leader failure can be re-delivered
+#   - flighttracker supplies read-your-writes per session, and refill-library keeps ~3 minutes
+#     of recent writes so a cache miss can still see them
+# This file MUST trip no rule.
+schemaVersion: "1"
+type: "design"
+id: "facebook-tao"
+
+requirements:
+  availability:
+    multiRegion: true
+    regions: 10
+    degradedModeAllowed: true
+  consistency:
+    model: "ap"
+    readAfterWrite: true
+  messaging:
+    replay: true
+    orderingScope: "partition"
+  freshness:
+    maxSeconds: 10
+  traffic:
+    readWriteRatio: 500
+    skew: "heavy-tail"
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "master-region", kind: "region", label: "Region holding the database masters" }
+  - { id: "slave-region", kind: "region", label: "A slave region" }
+  - { id: "master-storage", kind: "trust-zone", parent: "master-region", label: "Storage cluster" }
+  - { id: "frontend-cluster", kind: "trust-zone", parent: "slave-region", label: "Frontend cluster" }
+  - { id: "storage-cluster", kind: "trust-zone", parent: "slave-region", label: "Storage cluster" }
+
+nodes:
+  - id: "end-user"
+    component: "web-browser"
+    props: { platform: "web", localCache: false }
+
+  - id: "frontend-lb"
+    component: "load-balancer-tier"
+    group: "frontend-cluster"
+    label: "Load balancer"
+    props: { layer: "l7", hashing: "consistent", healthChecks: true }
+
+  - id: "web-server"
+    component: "container-service"
+    group: "frontend-cluster"
+    label: "PHP web tier"
+    props: { stateless: true, runtime: "php", criticality: "high", ownsData: false }
+
+  - id: "client-hot-cache"
+    component: "cache-cluster"
+    group: "frontend-cluster"
+    label: "TAO client-side hot-item cache"
+    props: { evictionPolicy: "lru", invalidation: "event", structure: "key-value", usedAsPrimaryStore: false }
+
+  - id: "flighttracker"
+    component: "cache-cluster"
+    group: "slave-region"
+    label: "FlightTracker (Tickets)"
+    props: { evictionPolicy: "lru", invalidation: "event", structure: "key-value", persistence: false, usedAsPrimaryStore: false, readBarrier: true }
+    nfr: { rps: 100000000 }
+
+  - id: "follower-primary"
+    component: "cache-cluster"
+    group: "frontend-cluster"
+    label: "Follower tier (L1), primary"
+    props: { evictionPolicy: "lru", hashing: "consistent", invalidation: "event", structure: "key-value", usedAsPrimaryStore: false, replication: "none" }
+
+  - id: "follower-backup"
+    component: "cache-cluster"
+    group: "slave-region"
+    label: "Follower tier (L1), backup"
+    props: { evictionPolicy: "lru", hashing: "consistent", invalidation: "event", structure: "key-value", usedAsPrimaryStore: false, replication: "none" }
+
+  - id: "leader"
+    component: "cache-cluster"
+    group: "slave-region"
+    label: "Leader tier (L2), one per region"
+    props: { evictionPolicy: "lru", hashing: "consistent", invalidation: "event", structure: "key-value", usedAsPrimaryStore: false }
+
+  - id: "master-leader"
+    component: "cache-cluster"
+    group: "master-region"
+    label: "Leader tier in the shard's master region"
+    props: { evictionPolicy: "lru", hashing: "consistent", invalidation: "event", structure: "key-value", usedAsPrimaryStore: false }
+
+  - id: "refill-library"
+    component: "cache-cluster"
+    group: "slave-region"
+    label: "RefillLibrary"
+    props: { evictionPolicy: "lru", ttlSeconds: 180, invalidation: "event", structure: "key-value", usedAsPrimaryStore: false }
+
+  - id: "mcrouter"
+    component: "proxysql"
+    group: "frontend-cluster"
+    label: "mcrouter"
+    props: { pooling: true, routing: "shard-key", requestCoalescing: true }
+
+  - id: "memcache-tier"
+    component: "memcached"
+    group: "frontend-cluster"
+    label: "memcache lookaside tier"
+    props: { evictionPolicy: "lru", hashing: "consistent", invalidation: "event", usedAsPrimaryStore: false }
+    nfr: { rps: 1000000000 }
+
+  - id: "gutter-pool"
+    component: "memcached"
+    group: "frontend-cluster"
+    label: "Gutter pool"
+    props: { evictionPolicy: "ttl", hashing: "none", invalidation: "ttl", usedAsPrimaryStore: false }
+
+  - id: "regional-pool"
+    component: "memcached"
+    group: "slave-region"
+    label: "Regional pool"
+    props: { evictionPolicy: "lru", hashing: "consistent", invalidation: "event", usedAsPrimaryStore: false }
+
+  - id: "mcsqueal"
+    component: "debezium"
+    group: "storage-cluster"
+    label: "mcsqueal"
+    props: { mode: "log-based", ordered: true, deployment: "server", snapshotOnStart: false }
+
+  - id: "binlog-stream"
+    component: "debezium"
+    group: "master-storage"
+    label: "Replication stream with embedded invalidations and refills"
+    props: { mode: "log-based", ordered: true, deployment: "server", snapshotOnStart: false }
+
+  - id: "wormhole"
+    component: "mqtt-broker"
+    label: "Wormhole pub-sub"
+    props: { delivery: "at-least-once", replay: true, ordering: "per-key", topicPerEventType: false }
+
+  - id: "index-pipeline"
+    component: "container-worker"
+    group: "slave-region"
+    label: "Asynchronous index update pipeline"
+    props: { trigger: "stream", idempotent: true }
+
+  - id: "inverse-repair-job"
+    component: "container-worker"
+    group: "master-region"
+    label: "Inverse-association repair job"
+    props: { trigger: "schedule", idempotent: true }
+
+  - id: "secondary-index"
+    component: "elasticsearch"
+    group: "slave-region"
+    label: "Global secondary indexes and materialised views"
+    props: { structure: "inverted", shardingStrategy: "hash", indexing: "async" }
+
+  - id: "global-config"
+    component: "etcd"
+    label: "Global configuration"
+    props: { role: "placement", consensus: "raft", replicated: true }
+
+  - id: "master-db"
+    component: "mysql"
+    group: "master-storage"
+    label: "Master MySQL shards"
+    props: { sharded: true, shardKey: "id1", idEncodesShard: true, multiWriter: false, replication: "async", backupEnabled: true, backupRetentionDays: 30, encryptionAtRest: true, concurrencyControl: "pessimistic", commitProtocol: "single" }
+    nfr: { rps: 1000000, consistency: "strong" }
+
+  - id: "slave-db"
+    component: "mysql"
+    group: "storage-cluster"
+    label: "Slave MySQL shards"
+    props: { sharded: true, shardKey: "id1", idEncodesShard: true, multiWriter: false, replication: "async", replicaOf: "master-db", backupEnabled: true, backupRetentionDays: 30, encryptionAtRest: true }
+    nfr: { consistency: "eventual" }
+
+edges:
+  - { from: "end-user", to: "frontend-lb", protocol: "https", mode: "sync" }
+  - { from: "frontend-lb", to: "web-server", protocol: "http", mode: "sync", label: "sticky to one frontend cluster" }
+  - { from: "web-server", to: "flighttracker", protocol: "rpc", mode: "sync", label: "fetch the Ticket once per request" }
+  - { from: "web-server", to: "client-hot-cache", protocol: "in-process", mode: "sync", label: "hot objects and associations, checked by version" }
+  - { from: "web-server", to: "follower-primary", protocol: "tao-rpc", mode: "sync", label: "Ticket-inclusive graph read, shard by consistent hash" }
+  - { from: "web-server", to: "follower-backup", protocol: "tao-rpc", mode: "sync", fallback: "cached", label: "failover tier when the shard's server is marked down" }
+  - { from: "web-server", to: "secondary-index", protocol: "rpc", mode: "sync", label: "Ticket-inclusive index read" }
+  - { from: "web-server", to: "mcrouter", protocol: "memcache", mode: "sync", label: "lookaside get/set/delete outside the graph model" }
+  - { from: "follower-primary", to: "client-hot-cache", protocol: "tao-rpc", mode: "async", delivery: "at-most-once", label: "access-rate feedback fills and versions the client cache" }
+  - { from: "follower-primary", to: "refill-library", protocol: "in-process", mode: "sync", label: "recent writes consulted on a miss" }
+  - { from: "follower-primary", to: "leader", protocol: "tao-rpc", mode: "sync", label: "every read miss and every write" }
+  - { from: "follower-backup", to: "leader", protocol: "tao-rpc", mode: "sync", label: "every read miss and every write" }
+  - { from: "follower-primary", to: "slave-db", protocol: "mysql", mode: "sync", fallback: "degraded", label: "0.15% of misses, when the leader is unavailable" }
+  - { from: "leader", to: "slave-db", protocol: "mysql", mode: "sync", label: "always the local region's database" }
+  - { from: "leader", to: "master-leader", protocol: "tao-rpc", mode: "sync", label: "forward the write to the shard's master region" }
+  - { from: "master-leader", to: "master-db", protocol: "mysql", mode: "sync", idempotent: true, label: "synchronous write: the consistent source of truth" }
+  - { from: "master-leader", to: "flighttracker", protocol: "rpc", mode: "async", delivery: "at-least-once", idempotent: true, label: "appendWrite(SessionId, Ticket)" }
+  - { from: "inverse-repair-job", to: "master-leader", protocol: "tao-rpc", mode: "async", delivery: "at-least-once", idempotent: true, label: "repair hanging associations" }
+  - { from: "leader", to: "follower-primary", protocol: "tao-invalidation", mode: "async", delivery: "at-least-once", idempotent: true, label: "invalidate objects, refill association lists" }
+  - { from: "leader", to: "follower-backup", protocol: "tao-invalidation", mode: "async", delivery: "at-least-once", idempotent: true, label: "invalidate objects, refill association lists" }
+  - { from: "master-db", to: "binlog-stream", protocol: "mysql-binlog", mode: "async", delivery: "at-least-once", label: "data plus embedded cache-maintenance messages" }
+  - { from: "binlog-stream", to: "slave-db", protocol: "mysql-replication", mode: "async", delivery: "at-least-once", label: "replicate to each region's slave shards" }
+  - { from: "binlog-stream", to: "wormhole", protocol: "pubsub", mode: "async", delivery: "at-least-once", label: "released only after the transaction is replicated locally" }
+  - { from: "wormhole", to: "leader", protocol: "pubsub", mode: "async", delivery: "at-least-once", idempotent: true, label: "version-tagged invalidate / refill" }
+  - { from: "wormhole", to: "refill-library", protocol: "pubsub", mode: "async", delivery: "at-least-once", idempotent: true, label: "the same at-least-once stream, ~3 minutes retained" }
+  - { from: "wormhole", to: "index-pipeline", protocol: "pubsub", mode: "async", delivery: "at-least-once", label: "graph writes to reshard, transform and filter" }
+  - { from: "index-pipeline", to: "secondary-index", protocol: "http", mode: "async", delivery: "at-least-once", batched: true, label: "index asynchronously, off the write path" }
+  - { from: "slave-db", to: "mcsqueal", protocol: "mysql-binlog", mode: "async", delivery: "at-least-once", label: "tail the commit log and extract deletes" }
+  - { from: "mcsqueal", to: "mcrouter", protocol: "memcache", mode: "async", delivery: "at-least-once", batched: true, label: "batched deletes to every frontend cluster" }
+  - { from: "mcrouter", to: "memcache-tier", protocol: "memcache", mode: "sync", label: "unpack the batch, route by key" }
+  - { from: "mcrouter", to: "gutter-pool", protocol: "memcache", mode: "sync", fallback: "cached", label: "keys whose cache server has failed" }
+  - { from: "mcrouter", to: "regional-pool", protocol: "memcache", mode: "sync", label: "low-access-rate items and remote markers" }
+  - { from: "global-config", to: "master-db", protocol: "config", mode: "sync", label: "per-shard mastership and automatic promotion" }
+  - { from: "global-config", to: "slave-db", protocol: "config", mode: "sync", label: "mark down replicas that fall too far behind" }

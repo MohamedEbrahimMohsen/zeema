@@ -1,0 +1,206 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture: a distributed email service - the textbook send/receive pipeline (web and
+# IMAP clients, outgoing and incoming queues, SMTP workers, per-user metadata, attachments, search)
+# wired to Fastmail's production mailbox storage (nginx proxies, a central user-to-store database,
+# a master Cyrus slot replicated to slots at a second site) and a spam and virus classifier.
+#
+# Fixes relative to distributed-email.broken.yaml:
+#   - web-server hands the send to outgoing-queue asynchronously; the queue is a work queue with a
+#     dead-letter queue, exponential backoff with jitter and a bounded attempt count, not a bare
+#     retry loop that nothing ever drains
+#   - the hop from outgoing-queue to smtp-outbound-worker is at-least-once, because delivery to a
+#     remote mail exchanger is a retried external side effect that exactly-once cannot cover;
+#     smtp-outbound-worker retries with exponential backoff behind a circuit breaker and bounces
+#     on a permanent failure
+#   - each queue has its own consumer: incoming-queue feeds mail-processing-worker, outgoing-queue
+#     feeds smtp-outbound-worker, so one poisoned pipeline cannot starve the other
+#   - realtime-server does not autoscale and drains its sockets on scale-in, so a scale-down is not
+#     a reconnect storm across every online mailbox
+# This file MUST trip no rule.
+schemaVersion: "1"
+type: "design"
+id: "distributed-email"
+
+requirements:
+  availability:
+    multiRegion: true
+    regions: 2
+  consistency:
+    model: "cp"
+  isolation:
+    perQueue: true
+    tenancy: "dedicated"
+  traffic:
+    readWriteRatio: 4
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "site-a", kind: "region", label: "Primary site" }
+  - { id: "site-b", kind: "region", label: "Replica site" }
+  - { id: "internet", kind: "trust-zone", label: "Public internet, untrusted SMTP peers" }
+  - { id: "edge", kind: "trust-zone", parent: "site-a" }
+  - { id: "core", kind: "trust-zone", parent: "site-a" }
+
+nodes:
+  - id: "web-client"
+    component: "web-browser"
+    label: "Web client"
+    props: { platform: "web", localCache: true }
+
+  - id: "mail-client"
+    component: "mobile-app"
+    label: "IMAP / JMAP client"
+    props: { platform: "mobile", os: "both", localCache: true, offlineCapable: true }
+
+  - id: "load-balancer"
+    component: "load-balancer-tier"
+    group: "edge"
+    props: { layer: "l4", healthChecks: true, connectionPreserving: true }
+
+  - id: "imap-proxy"
+    component: "nginx"
+    label: "nginx IMAP / POP / SMTP frontend proxy"
+    group: "edge"
+    props: { layer: "l4", hashing: "consistent", connectionPreserving: true, healthChecks: true }
+
+  - id: "inbound-smtp-server"
+    component: "container-service"
+    label: "Incoming mail servers"
+    group: "edge"
+    props: { orchestrator: "none", stateless: true, ownsData: false, criticality: "high" }
+
+  - id: "realtime-server"
+    component: "websocket-gateway"
+    label: "Real-time servers"
+    group: "edge"
+    props: { protocol: "websocket", stateful: true, autoscaling: false, drainOnScaleIn: true, channelAssignment: "hash", pushFallback: true }
+
+  - id: "web-server"
+    component: "container-service"
+    label: "Web servers"
+    group: "core"
+    props: { orchestrator: "none", stateless: true, ownsData: false, criticality: "high" }
+
+  - id: "mail-processing-worker"
+    component: "container-worker"
+    label: "Mail processing workers"
+    group: "core"
+    props: { trigger: "queue", idempotent: true, orchestrator: "none" }
+
+  - id: "smtp-outbound-worker"
+    component: "container-worker"
+    label: "SMTP outgoing workers"
+    group: "core"
+    props: { trigger: "queue", idempotent: true, rateControl: "aimd", orchestrator: "none" }
+    nfr: { rps: 100000 }
+
+  - id: "replication-verifier"
+    component: "cron-job"
+    label: "Weekly replication verification"
+    group: "core"
+    props: { trigger: "schedule", schedule: "weekly", idempotent: true, overlapAllowed: false, missedRunPolicy: "catch-up" }
+
+  - id: "spam-virus-check"
+    component: "tensorflow-serving"
+    label: "Spam and virus check"
+    group: "core"
+    props: { training: "batch", inputs: "both", batching: true }
+
+  - id: "incoming-queue"
+    component: "message-queue"
+    label: "Incoming email queue"
+    group: "core"
+    props: { delivery: "at-least-once", ordering: "per-key", role: "work", deadLetterQueue: true, persistence: true, backoff: "exponential-jitter", maxAttempts: 10 }
+
+  - id: "outgoing-queue"
+    component: "message-queue"
+    label: "Outgoing email queue"
+    group: "core"
+    props: { delivery: "at-least-once", ordering: "per-key", role: "work", deadLetterQueue: true, persistence: true, backoff: "exponential-jitter", maxAttempts: 10 }
+    nfr: { rps: 100000 }
+
+  - id: "user-store-db"
+    component: "mysql"
+    label: "Central user-to-store database"
+    group: "core"
+    props: { sharded: false, multiWriter: false, replication: "async", backupEnabled: true, backupRetentionDays: 30, encryptionAtRest: true }
+
+  - id: "metadata-db"
+    component: "cassandra"
+    label: "Metadata database"
+    group: "core"
+    props: { model: "wide-column", consistency: "tunable", replication: "multi-region-single-leader", partitionKey: "userId", bucketing: true, encryptionAtRest: true, backupEnabled: true, backupRetentionDays: 30 }
+
+  - id: "mail-store-master"
+    component: "vm-service"
+    label: "Mail store, master Cyrus slot"
+    group: "core"
+    props: { provider: "on-prem", stateless: false, ownsData: true, singleWriter: true, instancePerEntity: true, criticality: "high" }
+
+  - id: "mail-store-replica"
+    component: "vm-service"
+    label: "Mail store, replica Cyrus slots"
+    group: "site-b"
+    props: { provider: "on-prem", stateless: false, ownsData: true, instances: 2, criticality: "high" }
+
+  - id: "attachment-store"
+    component: "blob-store"
+    label: "Attachment store"
+    group: "core"
+    props: { tier: "hot", replication: "primary-secondary", checksumOnWrite: true, encryptionAtRest: true, versioning: false }
+
+  - id: "inbox-cache"
+    component: "redis"
+    label: "Distributed cache"
+    group: "core"
+    props: { cluster: true, evictionPolicy: "lru", structure: "key-value", persistence: false, usedAsPrimaryStore: false, materialised: false, replication: "single-az", invalidation: "event" }
+
+  - id: "search-index"
+    component: "elasticsearch"
+    label: "Search store"
+    group: "core"
+    props: { structure: "inverted", shardingStrategy: "hash", indexing: "async", replicas: 2 }
+
+  - id: "mx-dns"
+    component: "dns-resolver"
+    label: "DNS: MX, SPF and DKIM records"
+    group: "internet"
+    props: { anycast: true, redundantProviders: true, healthChecked: true }
+
+  - id: "remote-mx"
+    component: "smtp-relay"
+    label: "Recipient mail exchanger"
+    group: "internet"
+    props: { idempotent: false, authenticated: true, tlsRequired: true, callbackStyle: "none" }
+
+edges:
+  - { from: "web-client", to: "load-balancer", protocol: "https", mode: "sync", label: "compose, read, folder ops" }
+  - { from: "mail-client", to: "load-balancer", protocol: "imap", mode: "sync", label: "IMAP / JMAP session" }
+  - { from: "load-balancer", to: "web-server", protocol: "http", mode: "sync" }
+  - { from: "load-balancer", to: "imap-proxy", protocol: "imap", mode: "sync" }
+  - { from: "imap-proxy", to: "user-store-db", protocol: "mysql", mode: "sync", timeoutMs: 1000, label: "which slot is this user's master" }
+  - { from: "imap-proxy", to: "mail-store-master", protocol: "imap", mode: "sync", timeoutMs: 30000, label: "proxy the session to the master slot" }
+  - { from: "web-server", to: "metadata-db", protocol: "cql", mode: "sync", timeoutMs: 500, idempotent: true, label: "folder listing, read status" }
+  - { from: "web-server", to: "inbox-cache", protocol: "redis", mode: "sync", timeoutMs: 50, fallback: "degraded", label: "inbox pages" }
+  - { from: "web-server", to: "attachment-store", protocol: "https", mode: "sync", timeoutMs: 30000, idempotent: true, label: "upload, signed reads" }
+  - { from: "web-server", to: "search-index", protocol: "http", mode: "sync", timeoutMs: 1000, label: "per-user full-text query" }
+  - { from: "web-server", to: "outgoing-queue", protocol: "amqp", mode: "async", delivery: "at-least-once", idempotent: true, label: "send" }
+  - { from: "outgoing-queue", to: "smtp-outbound-worker", protocol: "amqp", mode: "async", delivery: "at-least-once", label: "consume for delivery" }
+  - { from: "smtp-outbound-worker", to: "spam-virus-check", protocol: "grpc", mode: "sync", timeoutMs: 2000, fallback: "degraded", label: "outbound spam and virus scan" }
+  - { from: "smtp-outbound-worker", to: "mx-dns", protocol: "dns", mode: "sync", timeoutMs: 2000, label: "MX lookup" }
+  - { from: "smtp-outbound-worker", to: "remote-mx", protocol: "smtp-tls", mode: "sync", timeoutMs: 30000, retryPolicy: "exponential", circuitBreaker: true, label: "deliver; defer and retry on transient, bounce on permanent" }
+  - { from: "remote-mx", to: "inbound-smtp-server", protocol: "smtp-tls", mode: "sync", timeoutMs: 30000, label: "inbound mail, SPF / DKIM / DMARC validated" }
+  - { from: "inbound-smtp-server", to: "incoming-queue", protocol: "amqp", mode: "async", delivery: "at-least-once", idempotent: true, label: "accept and park" }
+  - { from: "incoming-queue", to: "mail-processing-worker", protocol: "amqp", mode: "async", delivery: "at-least-once", label: "consume for processing" }
+  - { from: "mail-processing-worker", to: "spam-virus-check", protocol: "grpc", mode: "sync", timeoutMs: 2000, fallback: "degraded", label: "inbound classification, thousands of signals per message" }
+  - { from: "mail-processing-worker", to: "user-store-db", protocol: "mysql", mode: "sync", timeoutMs: 1000, label: "which store holds the recipient" }
+  - { from: "mail-processing-worker", to: "metadata-db", protocol: "cql", mode: "sync", timeoutMs: 500, idempotent: true, label: "write metadata, denormalised per folder" }
+  - { from: "mail-processing-worker", to: "attachment-store", protocol: "https", mode: "sync", timeoutMs: 30000, idempotent: true, label: "attachment blob, referenced by metadata" }
+  - { from: "mail-processing-worker", to: "mail-store-master", protocol: "lmtp", mode: "sync", timeoutMs: 30000, idempotent: true, label: "deliver into the Cyrus mailbox" }
+  - { from: "mail-processing-worker", to: "search-index", protocol: "http", mode: "async", delivery: "at-least-once", batched: true, label: "index asynchronously" }
+  - { from: "mail-processing-worker", to: "realtime-server", protocol: "grpc", mode: "async", delivery: "at-least-once", label: "new mail event" }
+  - { from: "realtime-server", to: "web-client", protocol: "websocket", mode: "async", delivery: "at-most-once", label: "push to online clients" }
+  - { from: "mail-store-master", to: "mail-store-replica", protocol: "cyrus-sync", mode: "async", delivery: "at-least-once", label: "sync_client replication log; failover under 10s, up to 30s" }
+  - { from: "replication-verifier", to: "mail-store-master", protocol: "imap", mode: "sync", batched: true, label: "weekly folder comparison" }
+  - { from: "replication-verifier", to: "mail-store-replica", protocol: "imap", mode: "sync", batched: true, label: "weekly folder comparison" }

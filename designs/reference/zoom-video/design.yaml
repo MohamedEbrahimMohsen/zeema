@@ -1,0 +1,176 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture: Zoom video meetings, clean variant. Multi-bitrate streams from every
+# participant into a selective-forwarding Multimedia Router inside a geographically chosen
+# Meeting Zone, zone controllers that allocate routers by load, cascading between zones, an
+# on-premise Meeting Connector and burst capacity reached over a private interconnect.
+#
+# Fixes relative to zoom-video.broken.yaml:
+#   - every Zone Controller is replicated: a secondary ZC stands by for the primary in each
+#     meeting zone and in the on-premise Meeting Connector, which the design requires because
+#     the whole join path runs through them
+#   - the cloud-to-on-premise Meeting Connector handoff retries with jittered backoff behind a
+#     circuit breaker and degrades instead of hammering a single customer-hosted controller
+#   - the design states a credential rotation period, so the cloud recording store is not left
+#     with credentials that never expire
+# This file MUST trip no rule.
+schemaVersion: "1"
+type: "design"
+id: "zoom-video"
+
+requirements:
+  availability:
+    multiRegion: true
+    discoveryRedundant: true
+    degradedModeAllowed: true
+  latency:
+    geoDistributed: true
+  consistency:
+    model: "ap"
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "americas", kind: "region" }
+  - { id: "emea", kind: "region" }
+  - { id: "china", kind: "region" }
+  - { id: "mz-americas", kind: "point-of-presence", parent: "americas", label: "Meeting Zone, Equinix Silicon Valley" }
+  - { id: "mz-emea", kind: "point-of-presence", parent: "emea", label: "Meeting Zone, Equinix Amsterdam" }
+  - { id: "mz-china", kind: "point-of-presence", parent: "china", label: "Geofenced data center" }
+  - { id: "public-cloud", kind: "system", label: "AWS, Oracle Cloud and Azure" }
+  - { id: "customer-network", kind: "trust-zone", label: "Customer network" }
+
+nodes:
+  - id: "desktop-client"
+    component: "desktop-app"
+    label: "Zoom desktop client"
+    props: { platform: "desktop", localCache: true, persistentConnection: true, resendPolicy: "none", autoUpdate: true }
+
+  - id: "mobile-client"
+    component: "mobile-app"
+    label: "Zoom mobile client"
+    props: { platform: "mobile", os: "both", localCache: true, persistentConnection: true, resendPolicy: "none" }
+
+  - id: "room-system"
+    component: "user-device"
+    label: "Zoom Room and SIP room system"
+    props: { platform: "embedded", persistentConnection: true }
+
+  - id: "web-cdn"
+    component: "cloudflare-cdn"
+    label: "zoom.us CDN"
+    group: "public-cloud"
+    props: { caching: true, tls: true, managed: true }
+
+  - id: "web-tier"
+    component: "container-service"
+    label: "zoom.us web tier"
+    group: "public-cloud"
+    props: { stateless: true, autoscaling: true, criticality: "high", orchestrator: "none" }
+
+  - id: "back-office"
+    component: "container-service"
+    label: "Non-meeting back office"
+    group: "public-cloud"
+    props: { stateless: true, autoscaling: true, criticality: "medium", orchestrator: "none" }
+
+  - id: "zc-americas"
+    component: "apache-helix"
+    label: "Zone Controller"
+    group: "mz-americas"
+    props: { role: "placement", replicated: true, nodes: 2, stateModel: "leader-standby" }
+
+  - id: "zc-emea"
+    component: "apache-helix"
+    label: "Zone Controller"
+    group: "mz-emea"
+    props: { role: "placement", replicated: true, nodes: 2, stateModel: "leader-standby" }
+
+  - id: "zc-china"
+    component: "apache-helix"
+    label: "Zone Controller"
+    group: "mz-china"
+    props: { role: "placement", replicated: true, nodes: 2, stateModel: "leader-standby" }
+
+  - id: "mmr-americas"
+    component: "mediasoup"
+    label: "Multimedia Router (MMR)"
+    group: "mz-americas"
+    props: { mode: "sfu", transport: "both", cascading: true, rerouteOnFailure: true, managed: false }
+
+  - id: "mmr-emea"
+    component: "mediasoup"
+    label: "Multimedia Router (MMR)"
+    group: "mz-emea"
+    props: { mode: "sfu", transport: "both", cascading: true, rerouteOnFailure: true, managed: false }
+
+  - id: "mmr-china"
+    component: "mediasoup"
+    label: "Multimedia Router (MMR)"
+    group: "mz-china"
+    props: { mode: "sfu", transport: "both", cascading: false, rerouteOnFailure: true, managed: false }
+
+  - id: "mmr-cloud-burst"
+    component: "mediasoup"
+    label: "Burst MMR capacity"
+    group: "public-cloud"
+    props: { mode: "sfu", transport: "both", cascading: true, rerouteOnFailure: true, managed: true }
+
+  - id: "cloud-exchange-fabric"
+    component: "aws-direct-connect"
+    label: "Equinix Cloud Exchange Fabric"
+    group: "public-cloud"
+    props: { interconnect: "private", redundantCircuits: true, managed: true }
+
+  - id: "mc-zone-controller"
+    component: "apache-helix"
+    label: "Meeting Connector Zone Controller"
+    group: "customer-network"
+    props: { role: "placement", replicated: true, nodes: 2, stateModel: "leader-standby" }
+
+  - id: "mc-mmr"
+    component: "mediasoup"
+    label: "Meeting Connector MMR"
+    group: "customer-network"
+    props: { mode: "sfu", transport: "both", cascading: true, rerouteOnFailure: true, managed: false }
+
+  - id: "pstn-gateway"
+    component: "freeswitch"
+    label: "PSTN and SIP gateway"
+    group: "public-cloud"
+    props: { channelVoice: true, videoSupport: true, emergencyCalling: true, callRecording: false }
+
+  - id: "cloud-recording"
+    component: "blob-store"
+    label: "Cloud recording store"
+    group: "public-cloud"
+    props: { tier: "hot", replication: "primary-secondary", encryptionAtRest: true, versioning: false }
+
+edges:
+  - { from: "desktop-client", to: "web-cdn", protocol: "https", mode: "sync", label: "sign in, schedule, join" }
+  - { from: "mobile-client", to: "web-cdn", protocol: "https", mode: "sync", label: "sign in, schedule, join" }
+  - { from: "room-system", to: "web-cdn", protocol: "https", mode: "sync", label: "join" }
+  - { from: "web-cdn", to: "web-tier", protocol: "https", mode: "sync", label: "zoom.us origin on public cloud" }
+  - { from: "web-cdn", to: "back-office", protocol: "https", mode: "sync", label: "account, billing, reporting" }
+  - { from: "web-tier", to: "zc-americas", protocol: "https", mode: "sync", timeoutMs: 1000, label: "pick the meeting zone nearest the participant" }
+  - { from: "web-tier", to: "zc-emea", protocol: "https", mode: "sync", timeoutMs: 1000, label: "pick the meeting zone nearest the participant" }
+  - { from: "web-tier", to: "zc-china", protocol: "https", mode: "sync", timeoutMs: 1000, label: "China accounts pinned to the geofenced zone" }
+  - { from: "web-tier", to: "mc-zone-controller", protocol: "https", mode: "sync", timeoutMs: 3000, retryPolicy: "exponential-jitter", circuitBreaker: true, fallback: "degraded", label: "Meeting Connector handoff: designate the primary ZC" }
+  - { from: "zc-americas", to: "mmr-americas", protocol: "https", mode: "sync", timeoutMs: 500, label: "allocate a router by server load" }
+  - { from: "zc-emea", to: "mmr-emea", protocol: "https", mode: "sync", timeoutMs: 500, label: "allocate a router by server load" }
+  - { from: "zc-china", to: "mmr-china", protocol: "https", mode: "sync", timeoutMs: 500, label: "allocate a router by server load" }
+  - { from: "mc-zone-controller", to: "mc-mmr", protocol: "https", mode: "sync", timeoutMs: 500, label: "designate the on-premise router" }
+  - { from: "desktop-client", to: "mmr-americas", protocol: "udp", mode: "async", delivery: "at-most-once", label: "one multi-bitrate stream up, UDP 8801, falls back to TCP 443 then TLS" }
+  - { from: "mmr-americas", to: "desktop-client", protocol: "udp", mode: "async", delivery: "at-most-once", label: "selectively forwarded streams at the bitrate each receiver can take" }
+  - { from: "mobile-client", to: "mmr-emea", protocol: "udp", mode: "async", delivery: "at-most-once", label: "one multi-bitrate stream up" }
+  - { from: "mmr-emea", to: "mobile-client", protocol: "udp", mode: "async", delivery: "at-most-once", label: "selectively forwarded streams" }
+  - { from: "mobile-client", to: "mmr-china", protocol: "udp", mode: "async", delivery: "at-most-once", label: "participants in China stay inside the geofenced zone" }
+  - { from: "mmr-china", to: "mobile-client", protocol: "udp", mode: "async", delivery: "at-most-once", label: "selectively forwarded streams" }
+  - { from: "desktop-client", to: "mobile-client", protocol: "udp", mode: "async", delivery: "at-most-once", label: "two-party meeting runs peer to peer, no MMR" }
+  - { from: "desktop-client", to: "mc-mmr", protocol: "udp", mode: "async", delivery: "at-most-once", label: "media stays inside the customer network" }
+  - { from: "mc-mmr", to: "mmr-americas", protocol: "udp", mode: "async", delivery: "at-most-once", label: "cascade to the Zoom cloud for external participants" }
+  - { from: "mmr-americas", to: "mmr-emea", protocol: "udp", mode: "async", delivery: "at-most-once", label: "cascade so each participant stays in a local zone" }
+  - { from: "mmr-americas", to: "cloud-exchange-fabric", protocol: "udp", mode: "async", delivery: "at-most-once", label: "private interconnect instead of the public internet" }
+  - { from: "cloud-exchange-fabric", to: "mmr-cloud-burst", protocol: "udp", mode: "async", delivery: "at-most-once", label: "burst meeting capacity in public cloud" }
+  - { from: "mmr-americas", to: "cloud-recording", protocol: "https", mode: "async", delivery: "at-least-once", label: "cloud recording" }
+  - { from: "room-system", to: "pstn-gateway", protocol: "sip", mode: "async", delivery: "at-most-once", label: "dial-in and SIP room system interop" }
+  - { from: "pstn-gateway", to: "mmr-americas", protocol: "rtp", mode: "async", delivery: "at-most-once", label: "dial-in audio into the meeting" }

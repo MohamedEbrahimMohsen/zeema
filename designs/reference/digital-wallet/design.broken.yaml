@@ -1,0 +1,215 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture: digital wallet, broken variant. This is the wallet the chapter walks
+# through and then rejects: account balances sharded across an in-memory Redis cluster that is
+# the only copy, relational balance shards committed with X/Open XA two-phase commit instead of
+# an append-only double-entry ledger, one unreplicated event journal and its state machine
+# pinned to a single availability zone, and a migration backfill that retries into Docstore
+# with nothing in front of it.
+#
+# This file MUST trip:
+#   - cache-as-primary-store-without-persistence  (balance-cache: usedAsPrimaryStore true, persistence false)
+#   - money-store-without-double-entry-ledger     (money.zeroSum true, no ledger node: balances live in Redis and relational shards)
+#   - stateful-engine-pinned-to-single-zone       (event-log: replication none, one availability-zone group)
+#   - stateful-node-without-zone-redundancy       (state-machine: stateless false, one availability-zone group, no cell)
+#   - retry-without-adaptive-shedding             (backfill-worker -> docstore retries with no circuit breaker and no rate limiter in front)
+# and MUST NOT trip:
+#   - cache-missing-eviction-policy               (balance-cache declares lru)
+#   - datastore-missing-backup                    (balance-shards declares backupEnabled and backupRetentionDays)
+#   - single-writer-primary-at-peak-qps, read-replica-as-sole-scaling (balance-shards is sharded, replication sync)
+#   - queue-missing-dlq                           (command-queue declares deadLetterQueue)
+#   - money-mutation-without-idempotency-key      (no ledger and no handlesMoney node is left for that rule to select)
+#   - credentials-without-rotation                (security.credentialRotationDays stays declared)
+#   - business-updates-without-index-propagation, derived-store-without-cdc-or-rebuild (no search-index kind in this design)
+#   - sync-chain-too-deep                         (no api-gateway node, and no p95 latency target is stated by the source)
+#   - shared-dependency-without-redundancy        (shard-map is replicated; availability.discoveryRedundant is not declared)
+#   - object-store-single-zone-with-durability-target, multi-leader-store-without-conflict-policy,
+#     pubsub-replay-required, cross-cell-call, external-call-inline-without-durable-path (no such node or requirement)
+schemaVersion: "1"
+type: "design"
+id: "digital-wallet"
+
+requirements:
+  availability:
+    multiRegion: false
+    sla: "99.99"
+  consistency:
+    model: "cp"
+    readAfterWrite: true
+  correctness:
+    exactlyOnceEffect: true
+    reproducible: true
+    tamperEvident: true
+  money:
+    zeroSum: true
+  data:
+    immutableAudit: true
+    reconciliation: true
+    lossDetection: true
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "edge", kind: "trust-zone", label: "Client edge" }
+  - { id: "internal", kind: "trust-zone", label: "Wallet internal" }
+  - { id: "wallet-core", kind: "system", parent: "internal", label: "Wallet core (2PC over sharded balances)" }
+  - { id: "shard-az", kind: "availability-zone", parent: "wallet-core", label: "Shard host zone" }
+  - { id: "ledgerstore", kind: "system", parent: "internal", label: "Ledger records in Docstore" }
+  - { id: "migration", kind: "system", parent: "internal", label: "DynamoDB to Docstore migration" }
+
+nodes:
+  - id: "wallet-client"
+    component: "user-device"
+    label: "Wallet clients"
+    props: { platform: "multi", resendPolicy: "retry" }
+
+  - id: "wallet-api"
+    component: "container-service"
+    label: "Wallet service (transfer API)"
+    group: "edge"
+    props: { stateless: true, criticality: "high", ownsData: false, orchestrator: "kubernetes" }
+    nfr: { rps: 1000000 }
+
+  - id: "shard-map"
+    component: "zookeeper"
+    label: "ZooKeeper shard map"
+    group: "wallet-core"
+    props: { role: "sharding", consensus: "zab", replicated: true }
+
+  - id: "balance-cache"
+    component: "redis"
+    label: "In-memory balance shards"
+    group: "wallet-core"
+    props: { cluster: true, evictionPolicy: "lru", persistence: false, usedAsPrimaryStore: true, replication: "none", structure: "key-value" }
+
+  - id: "balance-shards"
+    component: "relational-database"
+    label: "Balance shards (XA two-phase commit)"
+    group: "wallet-core"
+    props: { sharded: true, shardKey: "account_id", replication: "sync", commitProtocol: "two-phase", concurrencyControl: "pessimistic", backupEnabled: true, backupRetentionDays: 30, encryptionAtRest: true }
+
+  - id: "twopc-coordinator"
+    component: "cadence"
+    label: "Two-phase commit coordinator"
+    group: "wallet-core"
+    props: { durable: true, pattern: "two-phase-commit", stepsIdempotent: false, compensation: false }
+
+  - id: "command-queue"
+    component: "message-queue"
+    label: "Transfer command queue"
+    group: "wallet-core"
+    props: { delivery: "at-least-once", ordering: "per-key", role: "work", deadLetterQueue: true, persistence: true }
+
+  - id: "state-machine"
+    component: "container-service"
+    label: "Wallet state machine (per shard)"
+    group: "shard-az"
+    props: { stateless: false, singleWriter: true, criticality: "high", ownsData: true, shardingStrategy: "lookup", orchestrator: "kubernetes" }
+
+  - id: "event-log"
+    component: "raft-event-log"
+    label: "Single-node event journal"
+    group: "shard-az"
+    props: { replication: "none", journaled: true, storage: "mmap", role: "journal", nodes: 1 }
+
+  - id: "snapshot-store"
+    component: "blob-store"
+    label: "Snapshot store"
+    group: "wallet-core"
+    props: { tier: "hot" }
+
+  - id: "read-view-builder"
+    component: "container-worker"
+    label: "CQRS read-view state machines"
+    group: "wallet-core"
+    props: { trigger: "stream", idempotent: true, orchestrator: "kubernetes" }
+
+  - id: "balance-read-store"
+    component: "nosql-store"
+    label: "Read-only balance views"
+    group: "wallet-core"
+    props: { model: "key-value", consistency: "eventual", partitionKey: "account_id" }
+    nfr: { consistency: "eventual" }
+
+  - id: "replayer"
+    component: "container-worker"
+    label: "Reproducibility replayer"
+    group: "wallet-core"
+    props: { trigger: "batch", idempotent: true }
+
+  - id: "docstore"
+    component: "nosql-store"
+    label: "Docstore (ledger records)"
+    group: "ledgerstore"
+    props: { model: "document", consistency: "strong", replication: "single-region", encryptionAtRest: true }
+    nfr: { consistency: "strong" }
+
+  - id: "eventual-indexes"
+    component: "nosql-store"
+    label: "Eventually consistent indexes (Docstore materialised views)"
+    group: "ledgerstore"
+    props: { model: "document", consistency: "eventual", replication: "single-region" }
+    nfr: { consistency: "eventual" }
+
+  - id: "sealing-service"
+    component: "cron-job"
+    label: "Sealing service"
+    group: "ledgerstore"
+    props: { trigger: "schedule", schedule: "*/30 * * * *", idempotent: true, overlapAllowed: false }
+
+  - id: "cold-tier"
+    component: "blob-store"
+    label: "Cold tier (TerraBlob)"
+    group: "ledgerstore"
+    props: { tier: "cold" }
+
+  - id: "legacy-dynamodb"
+    component: "dynamodb"
+    label: "DynamoDB (legacy ledger store, 12 weeks hot)"
+    group: "migration"
+    props: { model: "key-value", consistency: "strong", backupEnabled: true, backupRetentionDays: 30, encryptionAtRest: true }
+    nfr: { consistency: "strong" }
+
+  - id: "backfill-worker"
+    component: "container-worker"
+    label: "Migration backfill workers"
+    group: "migration"
+    props: { trigger: "batch", idempotent: true, rateControl: "none" }
+
+  - id: "shadow-validator"
+    component: "container-worker"
+    label: "Shadow validation"
+    group: "migration"
+    props: { trigger: "stream", idempotent: true }
+
+  - id: "offline-validator"
+    component: "spark-job"
+    label: "Offline validation"
+    group: "migration"
+    props: { trigger: "batch", idempotent: true, resourceManager: "yarn" }
+
+edges:
+  - { from: "wallet-client", to: "wallet-api", protocol: "https", mode: "sync", idempotent: true, label: "transfer command" }
+  - { from: "wallet-api", to: "shard-map", protocol: "zookeeper", mode: "sync", label: "account to partition lookup" }
+  - { from: "wallet-api", to: "balance-cache", protocol: "redis", mode: "sync", label: "read and write the balance in memory" }
+  - { from: "wallet-api", to: "command-queue", protocol: "queue", mode: "async", delivery: "at-least-once", label: "enqueue command to the owning shard" }
+  - { from: "wallet-api", to: "twopc-coordinator", protocol: "grpc", mode: "sync", label: "start cross-shard transfer" }
+  - { from: "wallet-api", to: "balance-read-store", protocol: "grpc", mode: "sync", label: "read balance from the CQRS view" }
+  - { from: "twopc-coordinator", to: "balance-shards", protocol: "sql", mode: "sync", label: "prepare then commit, locks held across the network" }
+  - { from: "command-queue", to: "state-machine", protocol: "queue", mode: "async", delivery: "at-least-once", label: "deliver command" }
+  - { from: "state-machine", to: "balance-shards", protocol: "sql", mode: "sync", label: "debit and credit" }
+  - { from: "state-machine", to: "event-log", protocol: "file", mode: "sync", label: "append event to the local journal" }
+  - { from: "state-machine", to: "snapshot-store", protocol: "file", mode: "async", delivery: "at-least-once", batched: true, label: "periodic state snapshot" }
+  - { from: "event-log", to: "read-view-builder", protocol: "grpc", mode: "async", delivery: "at-least-once", label: "project events into read-only views" }
+  - { from: "read-view-builder", to: "balance-read-store", protocol: "grpc", mode: "async", delivery: "at-least-once", batched: true, label: "derived balances" }
+  - { from: "replayer", to: "snapshot-store", protocol: "file", mode: "async", delivery: "at-least-once", label: "load the nearest snapshot" }
+  - { from: "replayer", to: "event-log", protocol: "grpc", mode: "async", delivery: "at-least-once", label: "replay the tail" }
+  - { from: "state-machine", to: "docstore", protocol: "grpc", mode: "sync", label: "write the ledger record" }
+  - { from: "docstore", to: "eventual-indexes", protocol: "grpc", mode: "async", delivery: "at-least-once", label: "materialised views" }
+  - { from: "sealing-service", to: "docstore", protocol: "grpc", mode: "async", delivery: "at-least-once", label: "close a time range" }
+  - { from: "docstore", to: "cold-tier", protocol: "blob", mode: "async", delivery: "at-least-once", batched: true, label: "tier old ranges to cold storage" }
+  - { from: "legacy-dynamodb", to: "backfill-worker", protocol: "dynamodb", mode: "async", delivery: "at-least-once", batched: true, label: "read historical entries" }
+  - { from: "backfill-worker", to: "docstore", protocol: "grpc", mode: "async", delivery: "at-least-once", batched: true, retryPolicy: "exponential", label: "backfill at full speed, retried on timeout" }
+  - { from: "shadow-validator", to: "docstore", protocol: "grpc", mode: "sync", label: "compare live reads" }
+  - { from: "shadow-validator", to: "legacy-dynamodb", protocol: "dynamodb", mode: "sync", label: "compare live reads" }
+  - { from: "offline-validator", to: "docstore", protocol: "grpc", mode: "async", delivery: "at-least-once", batched: true, label: "offline diff" }
+  - { from: "offline-validator", to: "cold-tier", protocol: "blob", mode: "async", delivery: "at-least-once", batched: true, label: "read compressed sealed data" }

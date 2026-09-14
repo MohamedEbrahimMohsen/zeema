@@ -1,0 +1,215 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture: Twitch live streaming, clean variant. Broadcasters push RTMP/WebRTC into
+# the nearest of ~100 PoPs, an Intelligest media proxy asks the stateful Intelligest Routing Service
+# which origin should take the stream, the origin transcoder emits segment-aligned HLS variants over
+# the private backbone to the edge PoPs, and chat runs as its own Go system beside the Helix API.
+#
+# Fixes relative to twitch-live.broken.yaml:
+#   - chat-edge assigns channels by hash instead of randomly, so one 20,000-viewer channel cannot
+#     drag down every other channel sharing its host (the incident breaking-the-monolith describes)
+#   - chat-edge does not autoscale connections away without draining them first
+#   - room keeps viewer lists without a hand-edited consistent-hash ring
+#   - search-index is fed asynchronously by db-cdc reading the Postgres write-ahead log instead of
+#     being dual-written inline by the Go services
+#   - eventsub verifies the caller signature and is idempotent
+# This file MUST trip no rule.
+schemaVersion: "1"
+type: "design"
+id: "twitch-live"
+
+requirements:
+  availability:
+    multiRegion: true
+  latency:
+    geoDistributed: true
+  consistency:
+    model: "ap"
+  traffic:
+    skew: "heavy-tail"
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "ingest-pop", kind: "point-of-presence", label: "Ingest PoP (one of ~100)" }
+  - { id: "origin-dc", kind: "point-of-presence", label: "Origin data center" }
+  - { id: "edge-pop", kind: "point-of-presence", label: "Edge PoP" }
+  - { id: "aws", kind: "region", label: "AWS" }
+  - { id: "chat", kind: "system", parent: "aws", label: "Chat" }
+
+nodes:
+  - id: "broadcaster-software"
+    component: "desktop-app"
+    label: "Broadcaster software"
+    props: { platform: "desktop", persistentConnection: true }
+
+  - id: "viewer-client"
+    component: "user-device"
+    label: "Viewer clients (web, mobile, TV)"
+    props: { platform: "multi", persistentConnection: true }
+
+  - id: "intelligest-proxy"
+    component: "srs"
+    label: "Intelligest media proxy"
+    group: "ingest-pop"
+    props: { mode: "ingest", transport: "both", ingestProtocol: "rtmp", rerouteOnFailure: true, cascading: false }
+
+  - id: "irs"
+    component: "apache-helix"
+    label: "Intelligest Routing Service (IRS)"
+    group: "aws"
+    props: { role: "placement", replicated: true }
+
+  - id: "capacitor"
+    component: "observability-stack"
+    label: "Capacitor"
+    props: { signal: "metrics", collectorMode: "pull" }
+
+  - id: "the-well"
+    component: "observability-stack"
+    label: "The Well"
+    props: { signal: "metrics", collectorMode: "pull" }
+
+  - id: "backbone"
+    component: "spine-leaf-fabric"
+    label: "Private backbone"
+    props: { interconnect: "private", redundantSpines: true }
+
+  - id: "twitch-transcoder"
+    component: "ffmpeg"
+    label: "TwitchTranscoder"
+    group: "origin-dc"
+    props: { mode: "live", videoCodec: "h264", packaging: "hls" }
+
+  - id: "edge-cdn"
+    component: "content-delivery-network"
+    label: "Edge PoPs (HLS distribution)"
+    group: "edge-pop"
+    props: { caching: true, tls: true, managed: false }
+
+  - id: "vod-archive"
+    component: "s3"
+    label: "VOD archive"
+    group: "aws"
+
+  - id: "chat-edge"
+    component: "websocket-gateway"
+    label: "Chat Edge"
+    group: "chat"
+    props: { protocol: "websocket", stateful: true, channelAssignment: "hash", autoscaling: false, drainOnScaleIn: true, stampedeGuard: true }
+
+  - id: "chat-pubsub"
+    component: "redis-pubsub"
+    label: "Chat Pubsub"
+    group: "chat"
+    props: { delivery: "at-most-once", ordering: "per-key", replay: false }
+
+  - id: "clue"
+    component: "container-service"
+    label: "Clue"
+    group: "chat"
+    props: { stateless: true, runtime: "go", criticality: "high" }
+
+  - id: "room"
+    component: "container-service"
+    label: "Room"
+    group: "chat"
+    props: { stateless: false, runtime: "go", ownsData: true }
+
+  - id: "helix-api"
+    component: "envoy-gateway"
+    label: "Helix API"
+    group: "aws"
+    props: { auth: "oauth2", rateLimiting: true, tls: true }
+    nfr: { rps: 50000 }
+
+  - id: "go-services"
+    component: "container-service"
+    label: "Go microservices (Twirp)"
+    group: "aws"
+    props: { stateless: true, runtime: "go", autoscaling: true, criticality: "high" }
+
+  - id: "event-bus"
+    component: "sns"
+    label: "Event Bus"
+    group: "aws"
+    props: { delivery: "at-least-once", ordering: "none", replay: false }
+    nfr: { rps: 1660 }
+
+  - id: "eventsub"
+    component: "webhook-receiver"
+    label: "EventSub"
+    group: "aws"
+    props: { signatureVerified: true, idempotent: true, retriedByCaller: true }
+
+  - id: "spade"
+    component: "kinesis"
+    label: "Spade"
+    group: "aws"
+    props: { delivery: "at-least-once", ordering: "per-key", storage: "persistent" }
+    nfr: { rps: 3000000 }
+
+  - id: "tahoe"
+    component: "s3"
+    label: "Tahoe data lake"
+    group: "aws"
+
+  - id: "sheik"
+    component: "redshift"
+    label: "Sheik"
+    group: "aws"
+    props: { format: "columnar", realtime: false }
+
+  - id: "search-index"
+    component: "aws-opensearch"
+    label: "Search"
+    group: "aws"
+    props: { structure: "inverted", shardingStrategy: "hash", indexing: "async" }
+
+  - id: "user-db"
+    component: "dynamodb"
+    label: "DynamoDB"
+    group: "aws"
+    props: { model: "key-value", consistency: "eventual" }
+
+  - id: "relational-db"
+    component: "postgres"
+    label: "PostgreSQL"
+    group: "aws"
+    props: { sharded: true, replication: "async", backupEnabled: true, backupRetentionDays: 30, encryptionAtRest: true }
+
+  - id: "db-cdc"
+    component: "debezium"
+    label: "Change data capture"
+    group: "aws"
+    props: { mode: "log-based", ordered: true }
+
+edges:
+  - { from: "broadcaster-software", to: "intelligest-proxy", protocol: "rtmp", mode: "async", delivery: "at-most-once", label: "push to nearest PoP" }
+  - { from: "intelligest-proxy", to: "irs", protocol: "rpc", mode: "sync", label: "which origin takes this stream" }
+  - { from: "capacitor", to: "irs", protocol: "http", mode: "async", delivery: "at-least-once", label: "origin compute utilisation" }
+  - { from: "the-well", to: "irs", protocol: "http", mode: "async", delivery: "at-least-once", label: "backbone network health" }
+  - { from: "intelligest-proxy", to: "backbone", protocol: "rtmp", mode: "async", delivery: "at-most-once", label: "forward stream to chosen origin" }
+  - { from: "backbone", to: "twitch-transcoder", protocol: "rtmp", mode: "async", delivery: "at-most-once" }
+  - { from: "twitch-transcoder", to: "backbone", protocol: "hls", mode: "async", delivery: "at-most-once", label: "aligned HLS variants" }
+  - { from: "backbone", to: "edge-cdn", protocol: "hls", mode: "async", delivery: "at-most-once" }
+  - { from: "twitch-transcoder", to: "vod-archive", protocol: "s3", mode: "async", delivery: "at-least-once", label: "archive for VOD" }
+  - { from: "viewer-client", to: "edge-cdn", protocol: "https", mode: "sync", label: "HLS playback" }
+  - { from: "viewer-client", to: "chat-edge", protocol: "websocket", mode: "async", delivery: "at-least-once", label: "IRC over WebSocket or TCP" }
+  - { from: "chat-edge", to: "chat-pubsub", protocol: "internal", mode: "async", delivery: "at-most-once", label: "fan-out between Edge nodes" }
+  - { from: "chat-edge", to: "clue", protocol: "rpc", mode: "sync", label: "ban and subscription checks" }
+  - { from: "chat-edge", to: "room", protocol: "rpc", mode: "sync", label: "viewer list membership" }
+  - { from: "clue", to: "user-db", protocol: "dynamodb", mode: "sync", label: "user state" }
+  - { from: "room", to: "user-db", protocol: "dynamodb", mode: "sync", label: "membership state" }
+  - { from: "viewer-client", to: "helix-api", protocol: "https", mode: "sync" }
+  - { from: "helix-api", to: "go-services", protocol: "twirp", mode: "sync" }
+  - { from: "go-services", to: "user-db", protocol: "dynamodb", mode: "sync" }
+  - { from: "go-services", to: "relational-db", protocol: "postgres", mode: "sync" }
+  - { from: "go-services", to: "search-index", protocol: "https", mode: "sync", label: "search query" }
+  - { from: "relational-db", to: "db-cdc", protocol: "postgres-wal", mode: "async", delivery: "at-least-once", label: "write-ahead log" }
+  - { from: "db-cdc", to: "search-index", protocol: "https", mode: "async", delivery: "at-least-once", batched: true, label: "index" }
+  - { from: "go-services", to: "event-bus", protocol: "sns", mode: "async", delivery: "at-least-once" }
+  - { from: "event-bus", to: "eventsub", protocol: "https", mode: "async", delivery: "at-least-once", label: "developer webhooks" }
+  - { from: "go-services", to: "spade", protocol: "http", mode: "async", delivery: "at-least-once", label: "service events" }
+  - { from: "viewer-client", to: "spade", protocol: "http", mode: "async", delivery: "at-least-once", label: "client events" }
+  - { from: "spade", to: "tahoe", protocol: "s3", mode: "async", delivery: "at-least-once" }
+  - { from: "tahoe", to: "sheik", protocol: "redshift-copy", mode: "async", delivery: "at-least-once", label: "load for reporting" }

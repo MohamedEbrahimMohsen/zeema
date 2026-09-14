@@ -1,0 +1,224 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Coinbase exchange and platform, clean variant: a price-time-priority matching engine with
+# automated cross-zone failover, EKS services talking over managed MSK, and a CDC pipeline that
+# feeds Delta Lake and Snowflake without anyone dual-writing.
+#
+# Fixes relative to coinbase-exchange.broken.yaml:
+#   - matching-engine declares failover "automatic", the cross-zone recovery Coinbase committed
+#     to after the 2026-05-07 zone loss, so the Cluster Placement Group is no longer a single
+#     point of failure
+#   - acm-certificates issues and renews the TLS certificates that internal-lb serves, so an
+#     internal hostname cannot silently expire the way it did on 2021-11-23
+#   - custody-hsm holds the withdrawal signing keys instead of the withdrawal service itself
+#   - every hop that moves money (matching-engine -> ledger, withdrawal-service -> ledger,
+#     withdrawal-service -> blockchain-rpc) declares an idempotency key
+#   - withdrawal-service broadcasts to the chain asynchronously instead of blocking the caller
+#   - order-gateway talks to the matching engine directly rather than through the internal
+#     load-balancer tier, keeping the exchange path three synchronous hops deep
+# This file MUST trip no rule.
+schemaVersion: "1"
+type: "design"
+id: "coinbase-exchange"
+
+requirements:
+  availability:
+    multiRegion: false
+  latency:
+    p95Ms: 10
+    p99Us: 1000
+  messaging:
+    replay: true
+  consistency:
+    model: "cp"
+  correctness:
+    exactlyOnceEffect: true
+  money:
+    zeroSum: true
+  security:
+    certificateRotationAutomated: true
+
+groups:
+  - { id: "us-east-1", kind: "region" }
+  - { id: "edge", kind: "trust-zone", parent: "us-east-1" }
+  - { id: "exchange", kind: "system", parent: "us-east-1" }
+  - { id: "use1-az4", kind: "availability-zone", parent: "exchange" }
+  - { id: "platform", kind: "trust-zone", parent: "us-east-1" }
+  - { id: "custody", kind: "trust-zone", parent: "us-east-1" }
+  - { id: "data-platform", kind: "system", parent: "us-east-1" }
+
+nodes:
+  - id: "web-client"
+    component: "web-browser"
+    props: { platform: "web", localCache: true }
+
+  - id: "mobile-app"
+    component: "mobile-app"
+    props: { platform: "mobile", os: "both" }
+
+  - id: "clickstream-sdk"
+    component: "sdk-client"
+    label: "Ruby and Golang clickstream SDK"
+    props: { platform: "sdk" }
+
+  - id: "nginx-router"
+    component: "nginx"
+    label: "Nginx routers"
+    group: "edge"
+    props: { layer: "l7", healthChecks: true, managed: false }
+
+  - id: "internal-lb"
+    component: "load-balancer-tier"
+    label: "Internal load balancers"
+    group: "platform"
+    props: { layer: "l7", healthChecks: true, managed: false }
+
+  - id: "order-gateway"
+    component: "envoy-gateway"
+    label: "Exchange order gateway (REST, WebSocket, FIX)"
+    group: "exchange"
+    props: { tls: true, rateLimiting: true }
+
+  - id: "matching-engine"
+    component: "order-book-matcher"
+    label: "Matching engine"
+    group: "use1-az4"
+    props: { algorithm: "price-time", singleThreaded: true, deterministic: true, role: "primary", failover: "automatic" }
+    nfr: { rps: 100000 }
+
+  - id: "market-data-feed"
+    component: "websocket-gateway"
+    label: "Market data feed"
+    group: "exchange"
+    props: { protocol: "websocket", stateful: true, sequenceNumbers: true }
+
+  - id: "ledger"
+    component: "double-entry-ledger"
+    label: "Balances ledger"
+    group: "exchange"
+    props: { doubleEntry: true, appendOnly: true, indexConsistency: "strong", multiCurrency: true, backingStore: "postgres-core" }
+
+  - id: "retail-services"
+    component: "container-service"
+    label: "Retail and platform services on EKS"
+    group: "platform"
+    props: { orchestrator: "kubernetes", autoscaling: true, criticality: "high", stateless: true }
+
+  - id: "identity-service"
+    component: "container-service"
+    label: "Users (identity) service"
+    group: "platform"
+    props: { orchestrator: "kubernetes", autoscaling: true, criticality: "high", stateless: true }
+    nfr: { rps: 1500000 }
+
+  - id: "withdrawal-service"
+    component: "container-service"
+    label: "Withdrawal approval service"
+    group: "custody"
+    props: { orchestrator: "kubernetes", criticality: "high", stateless: true }
+
+  - id: "mongodb"
+    component: "mongodb"
+    group: "platform"
+    props: { model: "document", consistency: "strong", replication: "single-region", writeConcernMajority: true, encryptionAtRest: true }
+
+  - id: "dynamodb"
+    component: "dynamodb"
+    group: "platform"
+    props: { model: "key-value", replication: "single-region", conflictResolution: "last-writer-wins", encryptionAtRest: true, managed: true }
+
+  - id: "postgres-core"
+    component: "postgres"
+    group: "platform"
+    props: { replication: "async", backupEnabled: true, backupRetentionDays: 30, encryptionAtRest: true, managed: true }
+
+  - id: "msk-multi-tenant"
+    component: "aws-msk"
+    label: "Multi-tenant MSK cluster"
+    group: "platform"
+    props: { managed: true, delivery: "at-least-once", ordering: "per-key", replicationFactor: 3, minInsyncReplicas: 2, storage: "persistent", clientEncryptionInTransit: "tls", encryptionAtRest: true }
+
+  - id: "msk-dedicated"
+    component: "aws-msk"
+    label: "Service-dedicated MSK cluster for extreme latency"
+    group: "exchange"
+    props: { managed: true, delivery: "at-least-once", ordering: "per-key", replicationFactor: 3, minInsyncReplicas: 2, storage: "persistent", clientEncryptionInTransit: "tls", encryptionAtRest: true }
+
+  - id: "kafka-connect"
+    component: "kafka-connect"
+    label: "Kafka Connect CDC and sink cluster"
+    group: "data-platform"
+    props: { mode: "log-based", ordered: true, deploymentMode: "distributed", connectorDirection: "source" }
+
+  - id: "soon-ingestion"
+    component: "spark-streaming"
+    label: "SOON, Spark continuous ingestion on Databricks"
+    group: "data-platform"
+    props: { windowing: "processing-time", exactlyOnce: false, stateBackend: "external" }
+
+  - id: "delta-lake"
+    component: "s3"
+    label: "Delta Lake on S3"
+    group: "data-platform"
+    props: { zones: 3, durabilityNines: 11, storageClass: "standard", encryptionAtRest: true, strongReadAfterWrite: true }
+
+  - id: "snowflake"
+    component: "snowflake"
+    group: "data-platform"
+    props: { format: "columnar", managed: true }
+
+  - id: "airflow"
+    component: "airflow"
+    label: "Airflow, central orchestrator since 2017"
+    group: "data-platform"
+    props: { pattern: "dag", durable: true, executor: "kubernetes", metadataDatabase: "postgres" }
+
+  - id: "acm-certificates"
+    component: "aws-acm"
+    label: "AWS Certificate Manager"
+    group: "platform"
+    props: { rotationAutomated: true, certificateSource: "amazon-issued", validationMethod: "dns", managed: true }
+
+  - id: "custody-hsm"
+    component: "cloudhsm"
+    label: "Custody signing HSM"
+    group: "custody"
+    props: { hsm: true, managed: true }
+
+  - id: "blockchain-rpc"
+    component: "supplier-api"
+    label: "Blockchain networks and settlement rails"
+    props: { handlesMoney: true, callbackStyle: "poll", authScheme: "mtls" }
+
+edges:
+  - { from: "web-client", to: "nginx-router", protocol: "https", mode: "sync" }
+  - { from: "mobile-app", to: "nginx-router", protocol: "https", mode: "sync" }
+  - { from: "web-client", to: "market-data-feed", protocol: "websocket", mode: "sync", label: "subscribe to sequenced market data channels" }
+  - { from: "nginx-router", to: "retail-services", protocol: "http", mode: "sync", label: "retail API" }
+  - { from: "nginx-router", to: "order-gateway", protocol: "https", mode: "sync", label: "exchange REST, WebSocket and FIX" }
+  - { from: "order-gateway", to: "matching-engine", protocol: "internal", mode: "sync", timeoutMs: 1000, label: "submit order, price-time priority" }
+  - { from: "matching-engine", to: "ledger", protocol: "internal", mode: "sync", idempotent: true, label: "post fills to balances" }
+  - { from: "ledger", to: "postgres-core", protocol: "postgres", mode: "sync", idempotent: true, label: "append postings" }
+  - { from: "matching-engine", to: "market-data-feed", protocol: "internal", mode: "async", delivery: "at-least-once", label: "sequenced order and trade updates" }
+  - { from: "matching-engine", to: "msk-dedicated", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "trade events, sub-10 ms" }
+  - { from: "msk-dedicated", to: "retail-services", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "fills into retail balances" }
+  - { from: "retail-services", to: "internal-lb", protocol: "https", mode: "sync", label: "inter-service call over TLS" }
+  - { from: "internal-lb", to: "identity-service", protocol: "https", mode: "sync", label: "user and permission reads" }
+  - { from: "internal-lb", to: "withdrawal-service", protocol: "https", mode: "sync", label: "withdrawal request" }
+  - { from: "acm-certificates", to: "internal-lb", protocol: "acm", mode: "async", label: "issue and auto-renew internal TLS certificates" }
+  - { from: "identity-service", to: "mongodb", protocol: "mongodb", mode: "sync", label: "federated identity reads" }
+  - { from: "identity-service", to: "dynamodb", protocol: "dynamodb", mode: "sync", label: "federated identity reads" }
+  - { from: "retail-services", to: "postgres-core", protocol: "postgres", mode: "sync", label: "relational workloads" }
+  - { from: "withdrawal-service", to: "ledger", protocol: "internal", mode: "sync", idempotent: true, label: "debit balance" }
+  - { from: "withdrawal-service", to: "custody-hsm", protocol: "pkcs11", mode: "sync", timeoutMs: 2000, label: "request withdrawal signature" }
+  - { from: "withdrawal-service", to: "blockchain-rpc", protocol: "rpc", mode: "async", delivery: "at-least-once", idempotent: true, label: "broadcast signed withdrawal" }
+  - { from: "retail-services", to: "msk-multi-tenant", protocol: "kafka", mode: "async", delivery: "at-least-once", retryPolicy: "exponential-jitter", circuitBreaker: true, label: "service events through the Streaming SDK" }
+  - { from: "clickstream-sdk", to: "msk-multi-tenant", protocol: "http", mode: "async", delivery: "at-least-once", batched: true, label: "clickstream" }
+  - { from: "postgres-core", to: "kafka-connect", protocol: "postgres-cdc", mode: "async", delivery: "at-least-once", label: "change data capture" }
+  - { from: "mongodb", to: "kafka-connect", protocol: "mongodb-cdc", mode: "async", delivery: "at-least-once", label: "change data capture" }
+  - { from: "dynamodb", to: "delta-lake", protocol: "s3", mode: "async", delivery: "at-least-once", batched: true, label: "full table snapshots" }
+  - { from: "kafka-connect", to: "msk-multi-tenant", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "CDC topics" }
+  - { from: "kafka-connect", to: "snowflake", protocol: "sink", mode: "async", delivery: "at-least-once", batched: true, label: "Snowflake sink connector" }
+  - { from: "kafka-connect", to: "delta-lake", protocol: "sink", mode: "async", delivery: "at-least-once", batched: true, label: "S3 sink connector" }
+  - { from: "msk-multi-tenant", to: "soon-ingestion", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "Spark structured streaming" }
+  - { from: "soon-ingestion", to: "delta-lake", protocol: "delta", mode: "async", delivery: "at-least-once", label: "append and merge into Delta Lake" }
+  - { from: "airflow", to: "snowflake", protocol: "orchestration", mode: "async", delivery: "at-least-once", label: "orchestrate ETL DAGs" }

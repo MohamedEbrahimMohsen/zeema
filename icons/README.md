@@ -7,7 +7,7 @@ icon, so the set can grow or be replaced without touching the model.
 | Folder | Files | Contents |
 |---|---|---|
 | `kinds/` | 71 | One generic line glyph per kind. A queue, a cache, a cylinder, a gear. |
-| `providers/` | 229 | Brand marks, used as the badge in the corner of a component icon. |
+| `providers/` | 276 | Brand marks, used as the badge in the corner of a component icon. |
 | `components/<provider>/` | 1855 | One per component, in the same provider subfolder as the component file. For `aws`, `azure`, `oci` and `k8s` this is the vendor's own product icon (see *Two styles* below); everywhere else it is the kind glyph, plus a provider badge where the component is a cloud service or a branded product. |
 
 ## Naming

@@ -1,0 +1,231 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture 10, broken variant: the same Pinterest home feed with the async
+# platform taken away - the feed is generated inline on the read path, one worker pool
+# drains every queue, no queue has a dead-letter queue, every dequeue broker sits in one
+# availability zone and the sharded MySQL fleet declares no backup.
+#
+# This file MUST trip:
+#   - fanout-inline-in-request-path          (smartfeed-service calls smartfeed-worker synchronously)
+#   - shared-worker-pool-across-queues       (smartfeed-worker drains both queues while isolation.perQueue is true)
+#   - queue-missing-dlq                      (feed-jobs-queue and media-jobs-queue: deadLetterQueue false, async in-edge)
+#   - stateful-node-without-zone-redundancy  (pacer-broker is stateful and lives only in az-a)
+#   - datastore-missing-backup               (mysql-fleet: backupEnabled false)
+# and MUST NOT trip:
+#   - credentials-without-rotation           (security.credentialRotationDays is still 90)
+#   - cache-missing-eviction-policy          (pin-cache and board-cache both declare lru)
+#   - cache-as-primary-store-without-persistence, materialised-cache-without-rebuild-path
+#                                            (neither cache is materialised or a primary store)
+#   - push-fanout-without-celebrity-path     (no worker declares a push fan-out strategy)
+#   - stateful-hash-ring-without-ring-manager (pacer-broker is assigned partitions by lookup, not a hash ring,
+#                                            and still talks to Helix)
+#   - stateful-engine-pinned-to-single-zone  (Helix and ZooKeeper stay outside the zone groups and are replicated)
+#   - datastore-single-region                (multiRegion is false)
+#   - read-heavy-path-without-cache          (no readWriteRatio is stated and the design has caches)
+#   - sync-chain-too-deep                    (no api-gateway node and no p95 target)
+#   - derived-store-without-cdc-or-rebuild, business-updates-without-index-propagation (no search index)
+#   - retry-without-adaptive-shedding        (the one retrying edge keeps its circuit breaker)
+schemaVersion: "1"
+type: "design"
+id: "pinterest-feed"
+
+requirements:
+  availability:
+    multiRegion: false
+    sla: "99.99"
+    zones: 2
+  consistency:
+    model: "ap"
+  latency:
+    p99Us: 60000
+  freshness:
+    maxSeconds: 86400
+  isolation:
+    perQueue: true
+  messaging:
+    orderingScope: "partition"
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "aws-us-east", kind: "region" }
+  - { id: "core", kind: "trust-zone", parent: "aws-us-east" }
+  - { id: "async-platform", kind: "system", parent: "core" }
+  - { id: "az-a", kind: "availability-zone", parent: "aws-us-east" }
+  - { id: "az-b", kind: "availability-zone", parent: "aws-us-east" }
+
+nodes:
+  - id: "web-client"
+    component: "web-browser"
+    props: { platform: "web" }
+
+  - id: "mobile-client"
+    component: "mobile-app"
+    props: { platform: "mobile", os: "both" }
+
+  - id: "api-service"
+    component: "container-service"
+    label: "Python API (Thrift)"
+    group: "core"
+    props: { stateless: true, runtime: "python", criticality: "high", ownsData: false }
+
+  - id: "smartfeed-service"
+    component: "container-service"
+    label: "SmartFeed service"
+    group: "core"
+    props: { stateless: true, criticality: "high", ownsData: false }
+
+  - id: "content-generator"
+    component: "container-service"
+    label: "SmartFeed content generator"
+    group: "core"
+    props: { stateless: true, ownsData: false }
+
+  - id: "follower-service"
+    component: "container-service"
+    label: "Follower service"
+    group: "core"
+    props: { stateless: true, ownsData: false }
+
+  - id: "pinnability"
+    component: "tensorflow-serving"
+    label: "Pinnability"
+    group: "core"
+    props: { training: "batch", inputs: "both", batching: true }
+
+  - id: "pixie"
+    component: "graph-store"
+    label: "Pixie"
+    group: "core"
+    props: { inMemory: true, rebuildCadenceHours: 24, crossRegionConsistency: "none" }
+    nfr: { rps: 100000, consistency: "eventual" }
+
+  - id: "zen"
+    component: "graph-store"
+    label: "Zen"
+    group: "core"
+    props: { inMemory: false, masterPerShard: false }
+
+  - id: "pacer-api"
+    component: "container-service"
+    label: "Pacer Thrift API"
+    group: "async-platform"
+    props: { stateless: true, orchestrator: "kubernetes", ownsData: false }
+
+  - id: "pacer-broker"
+    component: "container-service"
+    label: "Pacer dequeue broker"
+    group: "az-a"
+    props: { stateless: false, shardingStrategy: "lookup", orchestrator: "kubernetes", criticality: "high" }
+
+  - id: "feed-jobs-queue"
+    component: "message-queue"
+    label: "feed generation queue"
+    group: "async-platform"
+    props: { delivery: "at-least-once", ordering: "none", deadLetterQueue: false, persistence: true, maxAttempts: 5, role: "work" }
+
+  - id: "media-jobs-queue"
+    component: "message-queue"
+    label: "image transform queue"
+    group: "async-platform"
+    props: { delivery: "at-least-once", ordering: "none", deadLetterQueue: false, persistence: true, maxAttempts: 5, role: "work" }
+
+  - id: "smartfeed-worker"
+    component: "container-worker"
+    label: "SmartFeed worker"
+    group: "async-platform"
+    props: { trigger: "queue", idempotent: true, orchestrator: "kubernetes", fanoutStrategy: "none" }
+
+  - id: "helix"
+    component: "apache-helix"
+    label: "Apache Helix"
+    group: "async-platform"
+    props: { role: "placement", replicated: true, stateModel: "leader-standby" }
+
+  - id: "zookeeper"
+    component: "zookeeper"
+    label: "ZooKeeper"
+    group: "core"
+    props: { role: "config", consensus: "zab", replicated: true }
+
+  - id: "pixie-graph-builder"
+    component: "container-worker"
+    label: "Pixie graph builder"
+    group: "core"
+    props: { trigger: "schedule", schedule: "daily", idempotent: true }
+
+  - id: "hadoop"
+    component: "hadoop-yarn"
+    label: "Hadoop"
+    group: "core"
+    props: { engine: "hadoop", scheduler: "capacity" }
+
+  - id: "feed-pools-hbase"
+    component: "hbase"
+    label: "HBase pools cluster"
+    group: "az-a"
+    props: { model: "wide-column", consistency: "strong", partitionKey: "user_id", replication: "single-region", backupEnabled: true, backupRetentionDays: 7, encryptionAtRest: true }
+
+  - id: "feed-materialised-hbase"
+    component: "hbase"
+    label: "HBase materialised content"
+    group: "az-a"
+    props: { model: "wide-column", consistency: "strong", partitionKey: "user_id", replication: "single-region", backupEnabled: true, backupRetentionDays: 7, encryptionAtRest: true }
+
+  - id: "feed-materialised-standby"
+    component: "hbase"
+    label: "HBase hot standby"
+    group: "az-b"
+    props: { model: "wide-column", consistency: "eventual", partitionKey: "user_id", replication: "single-region", backupEnabled: true, backupRetentionDays: 7, encryptionAtRest: true }
+
+  - id: "mysql-fleet"
+    component: "mysql"
+    label: "sharded MySQL fleet"
+    group: "core"
+    props: { sharded: true, shardKey: "shard_id", idEncodesShard: true, replication: "async", backupEnabled: false, encryptionAtRest: true }
+    nfr: { consistency: "strong" }
+
+  - id: "pin-cache"
+    component: "memcached"
+    label: "pin_id to pin object"
+    group: "core"
+    props: { evictionPolicy: "lru", hashing: "consistent", structure: "key-value", materialised: false }
+
+  - id: "board-cache"
+    component: "redis"
+    label: "board_id to pin_ids"
+    group: "core"
+    props: { evictionPolicy: "lru", cluster: true, structure: "key-value", replication: "single-az", materialised: false, usedAsPrimaryStore: false }
+
+edges:
+  - { from: "web-client", to: "api-service", protocol: "https", mode: "sync" }
+  - { from: "mobile-client", to: "api-service", protocol: "https", mode: "sync" }
+  - { from: "api-service", to: "zookeeper", protocol: "zookeeper", mode: "sync", label: "shard configuration" }
+  - { from: "api-service", to: "smartfeed-service", protocol: "thrift", mode: "sync", label: "get home feed" }
+  - { from: "api-service", to: "pin-cache", protocol: "memcached", mode: "sync", label: "pin objects by id" }
+  - { from: "api-service", to: "board-cache", protocol: "redis", mode: "sync", label: "board to pin ids" }
+  - { from: "api-service", to: "mysql-fleet", protocol: "mysql", mode: "sync", label: "shard from the 64-bit id, no cross-shard join" }
+  - { from: "api-service", to: "pixie", protocol: "thrift", mode: "sync", fallback: "degraded", label: "related pins, p99 under 60 ms" }
+  - { from: "api-service", to: "pacer-api", protocol: "thrift", mode: "async", delivery: "at-least-once", idempotent: true, label: "enqueue feed generation on a pin action" }
+  - { from: "smartfeed-service", to: "content-generator", protocol: "thrift", mode: "sync", label: "new pins since last visit" }
+  - { from: "smartfeed-service", to: "smartfeed-worker", protocol: "thrift", mode: "sync", timeoutMs: 3000, label: "generate the feed inline on read" }
+  - { from: "smartfeed-service", to: "zen", protocol: "thrift", mode: "sync", label: "materialised feed, one range scan" }
+  - { from: "content-generator", to: "zen", protocol: "thrift", mode: "sync", label: "read pools in score order" }
+  - { from: "zen", to: "feed-pools-hbase", protocol: "hbase", mode: "sync", label: "pools, write-heavy cluster" }
+  - { from: "zen", to: "feed-materialised-hbase", protocol: "hbase", mode: "sync", label: "materialised content, read-heavy cluster" }
+  - { from: "zen", to: "feed-materialised-standby", protocol: "hbase", mode: "sync", fallback: "degraded", label: "speculative read past the 99.9th percentile" }
+  - { from: "feed-materialised-hbase", to: "feed-materialised-standby", protocol: "hbase-replication", mode: "async", delivery: "at-least-once", label: "hot standby, a few hundred ms behind" }
+  - { from: "pacer-api", to: "feed-jobs-queue", protocol: "mysql", mode: "async", delivery: "at-least-once", idempotent: true, label: "enqueue" }
+  - { from: "pacer-api", to: "media-jobs-queue", protocol: "mysql", mode: "async", delivery: "at-least-once", idempotent: true, label: "enqueue" }
+  - { from: "pacer-broker", to: "feed-jobs-queue", protocol: "mysql", mode: "sync", batched: true, label: "prefetch the partitions this broker owns" }
+  - { from: "pacer-broker", to: "media-jobs-queue", protocol: "mysql", mode: "sync", batched: true, label: "prefetch the partitions this broker owns" }
+  - { from: "pacer-broker", to: "helix", protocol: "zookeeper", mode: "sync", label: "exclusive partition assignment" }
+  - { from: "helix", to: "zookeeper", protocol: "zookeeper", mode: "sync", label: "cluster state" }
+  - { from: "feed-jobs-queue", to: "smartfeed-worker", protocol: "thrift", mode: "async", delivery: "at-least-once", label: "one shared pod pool" }
+  - { from: "media-jobs-queue", to: "smartfeed-worker", protocol: "thrift", mode: "async", delivery: "at-least-once", label: "same pool as the feed queue" }
+  - { from: "smartfeed-worker", to: "follower-service", protocol: "thrift", mode: "sync", timeoutMs: 500, retryPolicy: "exponential-jitter", circuitBreaker: true, label: "who this user follows" }
+  - { from: "follower-service", to: "mysql-fleet", protocol: "mysql", mode: "sync", label: "follow edges" }
+  - { from: "smartfeed-worker", to: "pinnability", protocol: "thrift", mode: "sync", timeoutMs: 200, circuitBreaker: true, label: "score each candidate pin" }
+  - { from: "smartfeed-worker", to: "pixie", protocol: "thrift", mode: "sync", fallback: "degraded", label: "recommendation candidates" }
+  - { from: "smartfeed-worker", to: "zen", protocol: "thrift", mode: "async", delivery: "at-least-once", idempotent: true, batched: true, label: "push scored pins into the user's pool" }
+  - { from: "hadoop", to: "pixie-graph-builder", protocol: "hdfs", mode: "async", delivery: "at-least-once", label: "pin-board edges from MapReduce" }
+  - { from: "pixie-graph-builder", to: "pixie", protocol: "binary-load", mode: "async", delivery: "at-least-once", label: "daily pruned graph, about 10 minutes to load" }

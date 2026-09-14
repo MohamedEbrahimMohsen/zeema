@@ -1,0 +1,94 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture, broken variant: the same id layer built the two ways chapter 7 rejects.
+# Datacenter A hands out ids from a central Flickr-style ticket server backed by one unsharded
+# MySQL auto-increment row, datacenter B gives up and falls back to random 128-bit UUIDs, and the
+# worker-id registry that both datacenters depend on is a single ZooKeeper pinned to one zone.
+#
+# This file MUST trip:
+#   - single-writer-primary-at-peak-qps        (ticket-db is one unsharded writer at 10000 rps)
+#   - read-replica-as-sole-scaling             (ticket-db leans on async replicas and nothing else)
+#   - datastore-missing-backup                 (ticket-db has no backup and no retention)
+#   - shared-dependency-without-redundancy     (worker-id-registry is a single unreplicated instance)
+#   - stateful-engine-pinned-to-single-zone    (worker-id-registry lives in dc-a-az1 alone)
+# and MUST NOT trip:
+#   - credentials-without-rotation             (the design still declares a rotation period)
+#   - datastore-single-region                  (the design makes no multi-region promise)
+#   - read-heavy-path-without-cache            (no read/write ratio is declared; id issuing is a write path)
+#   - stateful-node-without-zone-redundancy    (both client tiers are stateless and sit in region groups)
+#   - stateful-hash-ring-without-ring-manager  (neither client tier shards by consistent hash)
+#   - sync-chain-too-deep                      (no api-gateway node starts the chain)
+#   - cache-missing-eviction-policy, queue-missing-dlq, derived-store-without-cdc-or-rebuild,
+#     fanout-inline-in-request-path, materialised-cache-without-rebuild-path (no cache, queue,
+#     search index or worker exists in this design)
+schemaVersion: "1"
+type: "design"
+id: "unique-id-generator"
+
+requirements:
+  availability:
+    discoveryRedundant: true
+  latency:
+    p95Ms: 2
+  consistency:
+    model: "ap"
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "internal", kind: "trust-zone" }
+  - { id: "dc-a", kind: "region", parent: "internal" }
+  - { id: "dc-b", kind: "region", parent: "internal" }
+  - { id: "dc-a-az1", kind: "availability-zone", parent: "dc-a" }
+
+nodes:
+  - id: "app-tier-a"
+    component: "container-service"
+    label: "Client services (datacenter A)"
+    group: "dc-a"
+    props: { stateless: true, criticality: "high" }
+
+  - id: "app-tier-b"
+    component: "container-service"
+    label: "Client services (datacenter B)"
+    group: "dc-b"
+    props: { stateless: true, criticality: "high" }
+
+  - id: "ticket-server"
+    component: "ticket-server"
+    label: "Central ticket server"
+    group: "dc-a"
+    props: { strategy: "counter", central: true, replicated: false, timeSortable: true, clockRollbackGuard: false, backingStore: "ticket-db", interleaveStep: 1 }
+    nfr: { rps: 10000 }
+
+  - id: "uuid-fallback"
+    component: "uuid-generator"
+    label: "UUID v4 fallback (datacenter B)"
+    group: "dc-b"
+    props: { strategy: "uuid", central: false, timeSortable: false, clockRollbackGuard: false, uuidVersion: "v4" }
+
+  - id: "worker-id-registry"
+    component: "zookeeper"
+    label: "Worker-id assignment"
+    group: "dc-a-az1"
+    props: { role: "config", consensus: "zab", replicated: false, nodes: 1 }
+
+  - id: "ticket-db"
+    component: "mysql"
+    label: "AUTO_INCREMENT ticket table"
+    group: "dc-a"
+    props: { replication: "async", sharded: false, multiWriter: false, distributed: false, backupEnabled: false, encryptionAtRest: true }
+    nfr: { rps: 10000, consistency: "strong" }
+
+  - id: "entity-store"
+    component: "cassandra"
+    label: "Entity store keyed by id"
+    group: "internal"
+    props: { model: "wide-column", consistency: "tunable", encryptionAtRest: true }
+
+edges:
+  - { from: "app-tier-a", to: "ticket-server", protocol: "http", mode: "sync", label: "fetch next id" }
+  - { from: "app-tier-b", to: "uuid-fallback", protocol: "in-process", mode: "sync", label: "generate uuid v4" }
+  - { from: "ticket-server", to: "ticket-db", protocol: "mysql", mode: "sync", label: "REPLACE INTO, LAST_INSERT_ID()" }
+  - { from: "ticket-server", to: "worker-id-registry", protocol: "zookeeper", mode: "sync", label: "read interleave step at startup" }
+  - { from: "app-tier-a", to: "entity-store", protocol: "cql", mode: "sync", label: "write row keyed by the id" }
+  - { from: "app-tier-b", to: "entity-store", protocol: "cql", mode: "sync", label: "write row keyed by the uuid" }

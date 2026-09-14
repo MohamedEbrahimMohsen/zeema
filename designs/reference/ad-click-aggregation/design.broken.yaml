@@ -1,0 +1,203 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture, broken variant: the same billing-grade ad click pipeline built the way a
+# team commonly builds it first — event-time windows with nothing to close them, an unbounded
+# dedup keyspace, an attribution store taking writes in both regions with no conflict policy, an
+# ingest hop that retries exponentially into the broker it is already saturating, and no stated
+# rotation for the credentials that reach every store holding billable event data.
+#
+# This file MUST trip:
+#   - windowed-aggregation-without-watermark     (aggregate-job windows by event time, no watermarkSeconds)
+#   - cache-missing-eviction-policy              (dedup-state declares no evictionPolicy; the event-id keyspace grows forever)
+#   - multi-leader-store-without-conflict-policy (order-store is multi-region-multi-leader with no conflictResolution)
+#   - retry-without-adaptive-shedding            (log-ingest -> raw-click-events retries exponentially, no circuit breaker, no rate-limiter)
+#   - credentials-without-rotation               (data nodes present, no security.credentialRotationDays, no key-management node)
+# and MUST NOT trip:
+#   - datastore-missing-backup, datastore-single-region, single-writer-primary-at-peak-qps,
+#     read-replica-as-sole-scaling, business-updates-without-index-propagation (no relational node)
+#   - queue-missing-dlq, retry-queue-without-dlq, retry-without-backoff, pubsub-replay-required
+#     (the pipeline is streams, not queues or fan-out topics)
+#   - cache-as-primary-store-without-persistence, materialised-cache-without-rebuild-path
+#     (dedup-state is neither the primary copy nor a materialised view)
+#   - read-heavy-path-without-cache              (a cache node exists and no readWriteRatio is stated)
+#   - exactly-once-with-external-side-effects, external-call-inline-without-durable-path,
+#     money-mutation-without-idempotency-key     (no third-party-api and no money-handling node)
+#   - derived-store-without-cdc-or-rebuild       (no search index)
+#   - sync-chain-too-deep                        (no api-gateway and no latency.p95Ms target)
+#   - stateful-engine-pinned-to-single-zone, stateful-node-without-zone-redundancy
+#     (the design draws regions and trust zones, not availability zones)
+#   - fanout-inline-in-request-path, push-fanout-without-celebrity-path,
+#     shared-worker-pool-across-queues, shared-dependency-without-redundancy (no such nodes or edges)
+schemaVersion: "1"
+type: "design"
+id: "ad-click-aggregation"
+
+requirements:
+  availability:
+    multiRegion: true
+    regions: 2
+  messaging:
+    exactlyOnce: true
+    replay: true
+    orderingScope: "partition"
+  correctness:
+    exactlyOnceEffect: true
+    billingGrade: true
+    reproducible: true
+  data:
+    reconciliation: true
+  freshness:
+    maxSeconds: 240
+  traffic:
+    skew: "heavy-tail"
+
+groups:
+  - { id: "region-a", kind: "region", label: "Region A" }
+  - { id: "region-b", kind: "region", label: "Region B" }
+  - { id: "ingestion", kind: "trust-zone", parent: "region-a", label: "Ingestion" }
+  - { id: "streaming", kind: "trust-zone", parent: "region-a", label: "Streaming" }
+  - { id: "serving", kind: "trust-zone", parent: "region-a", label: "Serving and batch" }
+
+nodes:
+  - id: "ad-client"
+    component: "mobile-app"
+    label: "Mobile and web clients"
+    props: { platform: "multi", resendPolicy: "retry", localCache: true }
+
+  - id: "log-ingest"
+    component: "container-worker"
+    label: "Log watcher"
+    group: "ingestion"
+    props: { trigger: "stream", idempotent: false }
+
+  - id: "raw-click-events"
+    component: "kafka"
+    label: "Kafka (raw ad events)"
+    group: "ingestion"
+    props: { delivery: "at-least-once", ordering: "per-key", retentionHours: 72 }
+
+  - id: "order-events"
+    component: "kafka"
+    label: "Kafka (order data)"
+    group: "ingestion"
+    props: { delivery: "at-least-once", ordering: "per-key", retentionHours: 72 }
+
+  - id: "map-job"
+    component: "flink"
+    label: "Map nodes"
+    group: "streaming"
+    props: { windowing: "none" }
+
+  - id: "aggregate-job"
+    component: "flink"
+    label: "Aggregation job"
+    group: "streaming"
+    props: { windowing: "event-time", checkpointIntervalSeconds: 120, exactlyOnce: true, lateDataPolicy: "shift" }
+
+  - id: "reduce-job"
+    component: "flink"
+    label: "Reduce nodes"
+    group: "streaming"
+    props: { windowing: "none", exactlyOnce: true, checkpointIntervalSeconds: 120 }
+
+  - id: "dedup-state"
+    component: "cache-cluster"
+    label: "Dedup state (keyed by event id)"
+    group: "streaming"
+    props: { structure: "key-value", invalidation: "ttl" }
+
+  - id: "attribution-job"
+    component: "flink"
+    label: "Attribution job"
+    group: "streaming"
+    props: { windowing: "none", exactlyOnce: true, checkpointIntervalSeconds: 120 }
+
+  - id: "order-store"
+    component: "nosql-store"
+    label: "Docstore"
+    group: "streaming"
+    props: { model: "document", consistency: "strong", replication: "multi-region-multi-leader" }
+
+  - id: "aggregate-events"
+    component: "kafka"
+    label: "Kafka (aggregates, transactional)"
+    group: "streaming"
+    props: { delivery: "exactly-once", transactions: true, idempotentProducer: true, retentionHours: 72 }
+
+  - id: "checkpoint-store"
+    component: "blob-store"
+    label: "Checkpoint store"
+    group: "streaming"
+
+  - id: "aggregate-events-b"
+    component: "kafka"
+    label: "Kafka (Region B aggregates)"
+    group: "region-b"
+    props: { delivery: "exactly-once", transactions: true, idempotentProducer: true, retentionHours: 72 }
+
+  - id: "union-load-job"
+    component: "flink"
+    label: "Union and load job"
+    group: "streaming"
+    props: { windowing: "none", exactlyOnce: true, checkpointIntervalSeconds: 120 }
+
+  - id: "olap-store"
+    component: "pinot"
+    label: "Pinot (minute aggregates)"
+    group: "serving"
+    props: { realtime: true, upsert: true, streamIngestion: true, format: "columnar" }
+
+  - id: "warehouse"
+    component: "hive"
+    label: "Hive"
+    group: "serving"
+    props: { realtime: false }
+
+  - id: "raw-event-store"
+    component: "cassandra"
+    label: "Raw event store"
+    group: "serving"
+    props: { model: "wide-column", consistency: "tunable", replication: "single-region", compactionStrategy: "time-window" }
+
+  - id: "query-service"
+    component: "container-service"
+    label: "Query service"
+    group: "serving"
+    props: { stateless: true, criticality: "high", ownsData: false }
+
+  - id: "reconciliation-job"
+    component: "spark-job"
+    label: "Reconciliation batch job"
+    group: "serving"
+    props: { trigger: "schedule", schedule: "nightly", idempotent: true }
+
+  - id: "alerting"
+    component: "observability-stack"
+    label: "Pacing and downtime alerting"
+    group: "serving"
+    props: { signal: "alerts", collectorMode: "push", alertGrouping: true }
+
+edges:
+  - { from: "ad-client", to: "log-ingest", protocol: "https", mode: "async", delivery: "at-least-once", label: "click and impression beacons (duplicates possible)" }
+  - { from: "log-ingest", to: "raw-click-events", protocol: "kafka", mode: "async", delivery: "at-least-once", retryPolicy: "exponential", label: "publish raw ad events, retried on every broker error" }
+  - { from: "raw-click-events", to: "map-job", protocol: "kafka", mode: "async", delivery: "at-least-once" }
+  - { from: "map-job", to: "aggregate-job", protocol: "shuffle", mode: "async", label: "repartition by ad id" }
+  - { from: "aggregate-job", to: "dedup-state", protocol: "keyed-state", mode: "sync", idempotent: true, label: "drop duplicate event ids" }
+  - { from: "aggregate-job", to: "order-store", protocol: "docstore", mode: "sync", idempotent: true, label: "store ad events for attribution" }
+  - { from: "aggregate-job", to: "reduce-job", protocol: "shuffle", mode: "async", label: "partial minute counts and top-N heaps" }
+  - { from: "reduce-job", to: "aggregate-events", protocol: "kafka", mode: "async", delivery: "exactly-once", idempotent: true, label: "transactional write, 2PC on checkpoint" }
+  - { from: "order-events", to: "attribution-job", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "order data" }
+  - { from: "attribution-job", to: "order-store", protocol: "docstore", mode: "sync", idempotent: true, label: "match ad events for order" }
+  - { from: "attribution-job", to: "aggregate-events", protocol: "kafka", mode: "async", delivery: "exactly-once", idempotent: true, label: "attributed conversions, deterministic record UUID" }
+  - { from: "aggregate-events", to: "union-load-job", protocol: "kafka", mode: "async", delivery: "exactly-once", label: "read_committed" }
+  - { from: "aggregate-events-b", to: "union-load-job", protocol: "kafka", mode: "async", delivery: "exactly-once", label: "Region B output" }
+  - { from: "union-load-job", to: "olap-store", protocol: "pinot", mode: "sync", idempotent: true, label: "upsert by record UUID" }
+  - { from: "union-load-job", to: "warehouse", protocol: "hive", mode: "async", delivery: "at-least-once", idempotent: true, batched: true, label: "load, deduplicated by record UUID" }
+  - { from: "map-job", to: "raw-event-store", protocol: "cql", mode: "async", delivery: "at-least-once", batched: true, label: "append raw events for replay" }
+  - { from: "aggregate-job", to: "checkpoint-store", protocol: "blob", mode: "async", delivery: "at-least-once", label: "checkpoint every 2 minutes" }
+  - { from: "attribution-job", to: "checkpoint-store", protocol: "blob", mode: "async", delivery: "at-least-once", label: "checkpoint every 2 minutes" }
+  - { from: "union-load-job", to: "checkpoint-store", protocol: "blob", mode: "async", delivery: "at-least-once", label: "checkpoint every 2 minutes" }
+  - { from: "query-service", to: "olap-store", protocol: "sql", mode: "sync", label: "counts per ad per minute, top ads" }
+  - { from: "reconciliation-job", to: "raw-event-store", protocol: "cql", mode: "async", batched: true, label: "nightly recompute from raw events" }
+  - { from: "reconciliation-job", to: "warehouse", protocol: "hive", mode: "async", batched: true, label: "batch truth" }
+  - { from: "reconciliation-job", to: "olap-store", protocol: "sql", mode: "async", batched: true, label: "compare streaming aggregates to batch results" }
+  - { from: "aggregate-job", to: "alerting", protocol: "http", mode: "async", delivery: "at-least-once", label: "job liveness and pacing metrics" }

@@ -1,0 +1,188 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture, clean variant: metrics monitoring and alerting — pull collection with
+# service discovery, a Kafka buffer between collection and storage, a tiered downsampled TSDB,
+# and an alert path that is buffered before it reaches the pager.
+#
+# Fixes relative to metrics-monitoring.broken.yaml:
+#   - alert-evaluator never calls a pager directly; it hands firing alerts to alert-manager,
+#     which groups and publishes to alert-kafka, and notification-consumers deliver from there
+#   - the three outbound notification edges retry with a circuit breaker instead of retrying blind
+#   - query-cache declares a ttl eviction policy, so the vendor default does not decide
+#   - aggregation-consumers do not claim event-time windows without a watermark
+#   - alert-webhook verifies the caller's signature and deduplicates by alert id
+# This file MUST trip no rule.
+schemaVersion: "1"
+type: "design"
+id: "metrics-monitoring"
+
+requirements:
+  availability:
+    multiRegion: false
+  consistency:
+    model: "ap"
+  messaging:
+    replay: true
+  correctness:
+    billingGrade: false
+  observability:
+    alertingIndependent: true
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "datacenter", kind: "region", label: "Datacenter" }
+  - { id: "monitored", kind: "trust-zone", parent: "datacenter", label: "Monitored estate" }
+  - { id: "platform", kind: "trust-zone", parent: "datacenter", label: "Monitoring platform" }
+  - { id: "external", kind: "trust-zone", label: "Alert destinations" }
+
+nodes:
+  - id: "grafana-dashboards"
+    component: "grafana"
+    group: "platform"
+    label: "Grafana"
+    props: { signal: "metrics", managed: false }
+
+  - id: "metrics-source"
+    component: "container-service"
+    group: "monitored"
+    label: "Metrics sources / exporters"
+
+  - id: "short-lived-job"
+    component: "container-worker"
+    group: "monitored"
+    label: "Short-lived job with push agent"
+    props: { trigger: "batch" }
+
+  - id: "service-discovery"
+    component: "etcd"
+    group: "platform"
+    label: "Service discovery"
+    props: { role: "discovery", consensus: "raft" }
+
+  - id: "pull-collector"
+    component: "prometheus"
+    group: "platform"
+    label: "Metrics collector (pull)"
+    props: { signal: "metrics", collectorMode: "pull", remoteWrite: true, independentOfMonitored: true }
+
+  - id: "push-gateway"
+    component: "observability-stack"
+    group: "platform"
+    label: "Push gateway"
+    props: { signal: "metrics", collectorMode: "push" }
+
+  - id: "query-service"
+    component: "container-service"
+    group: "platform"
+    label: "Query service (PromQL)"
+    props: { stateless: true, ownsData: false }
+
+  - id: "alert-evaluator"
+    component: "container-service"
+    group: "platform"
+    label: "Alert rule evaluator"
+    props: { stateless: true, ownsData: false, criticality: "high" }
+
+  - id: "alert-manager"
+    component: "alertmanager"
+    group: "platform"
+    label: "Alertmanager"
+    props: { dedupKey: true, channelEmail: true, groupWaitSeconds: 30, repeatIntervalHours: 4 }
+
+  - id: "aggregation-consumers"
+    component: "flink"
+    group: "platform"
+    label: "Stream consumers (aggregate)"
+
+  - id: "downsampling-job"
+    component: "cron-job"
+    group: "platform"
+    label: "Downsampling jobs"
+    props: { trigger: "schedule", idempotent: true, overlapAllowed: false }
+
+  - id: "notification-consumers"
+    component: "container-worker"
+    group: "platform"
+    label: "Notification consumers"
+    props: { trigger: "stream", idempotent: true }
+
+  - id: "metrics-kafka"
+    component: "kafka"
+    group: "platform"
+    label: "Kafka (metrics)"
+    props: { delivery: "at-least-once", storage: "persistent", consumerGroups: true }
+
+  - id: "alert-kafka"
+    component: "kafka"
+    group: "platform"
+    label: "Kafka (alerts)"
+    props: { delivery: "at-least-once", storage: "persistent", consumerGroups: true }
+
+  - id: "tsdb"
+    component: "influxdb"
+    group: "platform"
+    label: "Time-series database"
+    props: { retentionRawDays: 7, downsampling: true, tiers: "hot-warm-cold", labelIndex: true }
+
+  - id: "query-cache"
+    component: "cache-cluster"
+    group: "platform"
+    label: "Query cache"
+    props: { evictionPolicy: "ttl", invalidation: "ttl", usedAsPrimaryStore: false, materialised: false }
+
+  - id: "alert-rules-config"
+    component: "etcd"
+    group: "platform"
+    label: "Alert rules config"
+    props: { role: "config", consensus: "raft" }
+
+  - id: "alert-store"
+    component: "cassandra"
+    group: "platform"
+    label: "Alert store"
+    props: { model: "wide-column", consistency: "tunable", replication: "single-region" }
+
+  - id: "cold-storage"
+    component: "blob-store"
+    group: "platform"
+    label: "Cold storage"
+    props: { tier: "cold" }
+
+  - id: "email-relay"
+    component: "smtp-relay"
+    group: "external"
+    label: "Email"
+
+  - id: "pager"
+    component: "pagerduty"
+    group: "external"
+    label: "PagerDuty"
+
+  - id: "alert-webhook"
+    component: "webhook-receiver"
+    group: "external"
+    label: "Webhook destination"
+    props: { signatureVerified: true, idempotent: true, retriedByCaller: true }
+
+edges:
+  - { from: "pull-collector", to: "service-discovery", protocol: "http", mode: "sync", label: "discover scrape targets" }
+  - { from: "pull-collector", to: "metrics-source", protocol: "http", mode: "sync", label: "scrape /metrics on interval" }
+  - { from: "short-lived-job", to: "push-gateway", protocol: "http", mode: "async", delivery: "at-most-once", label: "push job metrics" }
+  - { from: "pull-collector", to: "push-gateway", protocol: "http", mode: "sync", label: "scrape the gateway" }
+  - { from: "pull-collector", to: "metrics-kafka", protocol: "kafka", mode: "async", delivery: "at-least-once", batched: true, label: "buffer raw points" }
+  - { from: "metrics-kafka", to: "aggregation-consumers", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "aggregate and downsample" }
+  - { from: "aggregation-consumers", to: "tsdb", protocol: "http", mode: "sync", batched: true, label: "write series" }
+  - { from: "downsampling-job", to: "tsdb", protocol: "http", mode: "async", delivery: "at-least-once", idempotent: true, label: "raw to 1-minute to 1-hour rollups" }
+  - { from: "tsdb", to: "cold-storage", protocol: "https", mode: "async", delivery: "at-least-once", label: "archive expired blocks" }
+  - { from: "grafana-dashboards", to: "query-service", protocol: "http", mode: "sync", label: "dashboard query" }
+  - { from: "query-service", to: "query-cache", protocol: "redis", mode: "sync", label: "cached query results" }
+  - { from: "query-service", to: "tsdb", protocol: "http", mode: "sync", label: "range query on miss" }
+  - { from: "alert-evaluator", to: "alert-rules-config", protocol: "grpc", mode: "sync", label: "load alert rules" }
+  - { from: "alert-evaluator", to: "query-service", protocol: "http", mode: "sync", label: "evaluate rule expression" }
+  - { from: "alert-evaluator", to: "alert-store", protocol: "cql", mode: "sync", label: "alert state" }
+  - { from: "alert-evaluator", to: "alert-manager", protocol: "http", mode: "async", delivery: "at-least-once", label: "firing alerts" }
+  - { from: "alert-manager", to: "alert-kafka", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "grouped, deduplicated notifications" }
+  - { from: "alert-kafka", to: "notification-consumers", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "fan out to channels" }
+  - { from: "notification-consumers", to: "email-relay", protocol: "smtp", mode: "async", delivery: "at-least-once", retryPolicy: "exponential-jitter", circuitBreaker: true, label: "email" }
+  - { from: "notification-consumers", to: "pager", protocol: "https", mode: "async", delivery: "at-least-once", retryPolicy: "exponential-jitter", circuitBreaker: true, idempotent: true, label: "page on-call" }
+  - { from: "notification-consumers", to: "alert-webhook", protocol: "https", mode: "async", delivery: "at-least-once", retryPolicy: "exponential-jitter", circuitBreaker: true, idempotent: true, label: "webhook" }

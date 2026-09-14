@@ -1,0 +1,239 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# GitLab.com as documented today: one GCP region (us-east1), four GKE clusters carrying the
+# stateless GitLab tiers, and the datastore tiers - PostgreSQL, Gitaly, Redis, Elasticsearch -
+# deliberately kept off Kubernetes on VMs.
+#
+# Fixes relative to gitlab-architecture.broken.yaml:
+#   - puma and sidekiq reach postgresql through pgbouncer, so the Rails tier never opens a
+#     connection straight at the primary
+#   - postgresql is backed up with a stated 14-day retention (DB-DR-RETENTION) and archives WAL
+#     continuously to gcs, which is what makes PITR possible
+#   - elasticsearch is fed asynchronously by sidekiq (the GitLab Elasticsearch Indexer) instead
+#     of being dual-written inline from the request path
+#   - sidekiq-queue parks poison jobs in a dead-letter set rather than retrying them forever
+#   - redis-shared-state keeps persistence on, so sessions and CI trace chunks survive a restart
+#   - sidekiq consumes one queue substrate; queues are split into resource groups across pods
+#     instead of one pool draining every queue
+# This file MUST trip no rule.
+schemaVersion: "1"
+type: "design"
+id: "gitlab-architecture"
+
+requirements:
+  availability:
+    multiRegion: false
+    regions: 1
+    sla: "99.95"
+    discoveryRedundant: true
+  consistency:
+    model: "cp"
+  isolation:
+    perQueue: true
+  observability:
+    alertingIndependent: true
+
+groups:
+  - { id: "cloudflare-edge", kind: "point-of-presence", label: "Cloudflare global edge (WAF + DNS)" }
+  - { id: "us-east1", kind: "region", label: "GCP us-east1" }
+  - { id: "lb-tier", kind: "trust-zone", parent: "us-east1", label: "HAProxy origin fleet (VMs, not Kubernetes)" }
+  - { id: "gke-zonal", kind: "trust-zone", parent: "us-east1", label: "Zonal GKE clusters us-east1-b/-c/-d, gitlab namespace" }
+  - { id: "gke-regional", kind: "trust-zone", parent: "us-east1", label: "Regional GKE cluster, low-bandwidth services" }
+  - { id: "datastores", kind: "trust-zone", parent: "us-east1", label: "Datastore VMs, deliberately off Kubernetes" }
+  - { id: "ci-zones", kind: "trust-zone", parent: "us-east1", label: "CI runner managers, us-east1-c and us-east1-d" }
+  - { id: "ops", kind: "trust-zone", label: "ops.gitlab.net and dev.gitlab.org, outside the production failure domain" }
+
+nodes:
+  - id: "git-client"
+    component: "user-device"
+    label: "Browsers and Git clients"
+    props: { platform: "multi", persistentConnection: false }
+
+  - id: "cloudflare"
+    component: "cloudflare-waf"
+    group: "cloudflare-edge"
+    label: "Cloudflare (WAF + authoritative DNS)"
+    props: { mode: "prevention", rateLimiting: true, botProtection: true, managed: true }
+
+  - id: "haproxy"
+    component: "haproxy"
+    group: "lb-tier"
+    label: "HAProxy (Cloudflare origin)"
+    props: { layer: "l7", healthChecks: true, managed: false }
+
+  - id: "nginx"
+    component: "nginx"
+    group: "gke-zonal"
+    label: "NGINX ingress"
+    props: { layer: "l7", healthChecks: true }
+
+  - id: "gitlab-shell"
+    component: "container-service"
+    group: "gke-zonal"
+    label: "GitLab Shell (Git over SSH, port 22)"
+    props: { stateless: true, orchestrator: "kubernetes", criticality: "high", ownsData: false }
+
+  - id: "workhorse"
+    component: "container-service"
+    group: "gke-zonal"
+    label: "GitLab Workhorse (smart reverse proxy)"
+    props: { stateless: true, orchestrator: "kubernetes", criticality: "high", ownsData: false }
+
+  - id: "puma"
+    component: "container-service"
+    group: "gke-zonal"
+    label: "Puma (GitLab Rails monolith)"
+    props: { stateless: true, orchestrator: "kubernetes", criticality: "high", runtime: "ruby" }
+
+  - id: "rack-attack"
+    component: "redis-rate-limiter"
+    group: "gke-zonal"
+    label: "Rack::Attack (gprd-redis-ratelimiting)"
+    props: { algorithm: "fixed-window", scope: "user", placement: "in-process", failMode: "open", distributed: true }
+
+  - id: "sidekiq"
+    component: "container-worker"
+    group: "gke-regional"
+    label: "Sidekiq (background jobs)"
+    props: { trigger: "queue", orchestrator: "kubernetes", idempotent: true }
+
+  - id: "kas"
+    component: "websocket-gateway"
+    group: "gke-regional"
+    label: "Kas (GitLab agent server)"
+    props: { protocol: "grpc-stream", stateful: true, autoscaling: false, channelAssignment: "sticky" }
+
+  - id: "gitlab-pages"
+    component: "container-service"
+    group: "gke-zonal"
+    label: "GitLab Pages (*.gitlab.io)"
+    props: { stateless: true, orchestrator: "kubernetes", ownsData: false }
+
+  - id: "registry"
+    component: "gitlab-registry"
+    group: "gke-zonal"
+    label: "GitLab Container Registry"
+    props: { visibilityFollowsProject: true, enabledPerProject: true, managed: false }
+
+  - id: "gitaly"
+    component: "file-store"
+    group: "datastores"
+    label: "Gitaly fleet (t2d-standard-32, pd-ssd, sharded storages)"
+    props: { protocol: "native", redundancy: "local", encryptionInTransit: true, backupEnabled: true, managed: false }
+
+  - id: "pgbouncer"
+    component: "pgbouncer"
+    group: "datastores"
+    label: "PgBouncer"
+    props: { pooling: true, poolMode: "transaction", routing: "lookup" }
+
+  - id: "postgresql"
+    component: "postgres"
+    group: "datastores"
+    label: "PostgreSQL primary (main, ci, sec)"
+    props: { replication: "async", backupEnabled: true, backupRetentionDays: 14, encryptionAtRest: true, sharded: false, distributed: false, managed: false }
+
+  - id: "postgresql-replica"
+    component: "postgres"
+    group: "datastores"
+    label: "PostgreSQL hot standbys"
+    props: { replication: "async", replicaOf: "postgresql", backupEnabled: true, backupRetentionDays: 14, encryptionAtRest: true, managed: false }
+
+  - id: "consul"
+    component: "consul"
+    group: "datastores"
+    label: "Patroni + Consul"
+    props: { role: "leader-election", consensus: "raft", replicated: true, managed: false }
+
+  - id: "redis-cache"
+    component: "redis"
+    group: "datastores"
+    label: "gprd-redis-cache (transient cache)"
+    props: { evictionPolicy: "lru", persistence: false, usedAsPrimaryStore: false, replication: "single-az", cluster: false }
+
+  - id: "redis-shared-state"
+    component: "redis"
+    group: "datastores"
+    label: "gprd-redis, gprd-sessions, gprd-redis-tracechunks (persistent shards)"
+    props: { evictionPolicy: "ttl", persistence: true, usedAsPrimaryStore: true, replication: "single-az", cluster: false }
+
+  - id: "sidekiq-queue"
+    component: "redis-queue"
+    group: "datastores"
+    label: "gprd-redis-sidekiq (job queues)"
+    props: { delivery: "at-least-once", ordering: "per-key", deadLetterQueue: true, persistence: true, role: "work", implementation: "list" }
+
+  - id: "elasticsearch"
+    component: "elasticsearch"
+    group: "datastores"
+    label: "Elasticsearch (advanced search, and the pod log sink)"
+    props: { structure: "inverted", indexing: "async", shardingStrategy: "time", managed: false }
+
+  - id: "gcs"
+    component: "gcs"
+    group: "us-east1"
+    label: "Google Cloud Storage (artifacts, LFS, uploads, registry blobs, backups)"
+    props: { locationType: "multi-region", storageClass: "standard", versioning: true, encryptionAtRest: true }
+
+  - id: "runner-manager"
+    component: "gitlab-ci"
+    group: "ci-zones"
+    label: "Runner managers (GitLab Runner + Docker Machine on GCE)"
+    props: { trigger: "commit", selfHostedRunners: true, runnerScope: "instance", protectedVariables: true }
+
+  - id: "prometheus"
+    component: "prometheus"
+    group: "ops"
+    label: "Prometheus per cluster, remote-written to Mimir"
+    props: { signal: "metrics", collectorMode: "pull", remoteWrite: true, independentOfMonitored: true, alertGrouping: true }
+
+  - id: "gkms"
+    component: "google-cloud-kms"
+    group: "ops"
+    label: "GKMS (Google Cloud KMS)"
+    props: { hsm: false, envelopeEncryption: true, managed: true }
+
+edges:
+  - { from: "git-client", to: "cloudflare", protocol: "https", mode: "sync", label: "all web, Git HTTP and Git SSH traffic" }
+  - { from: "cloudflare", to: "haproxy", protocol: "https", mode: "sync", label: "Cloudflare origin" }
+  - { from: "haproxy", to: "nginx", protocol: "http", mode: "sync", label: "web and API into the GKE clusters" }
+  - { from: "haproxy", to: "gitlab-shell", protocol: "ssh", mode: "sync", label: "Git over SSH, port 22, as the git user" }
+  - { from: "nginx", to: "workhorse", protocol: "http", mode: "sync", label: "the default HTTP path" }
+  - { from: "nginx", to: "gitlab-pages", protocol: "http", mode: "sync", label: "TCP 8090" }
+  - { from: "nginx", to: "kas", protocol: "http", mode: "sync", label: "TCP 8150" }
+  - { from: "nginx", to: "registry", protocol: "http", mode: "sync", label: "registry front door" }
+  - { from: "workhorse", to: "puma", protocol: "http", mode: "sync", timeoutMs: 60000, label: "Unix socket; only what really needs Rails, Puma kills at 60 s" }
+  - { from: "workhorse", to: "gitaly", protocol: "grpc", mode: "sync", label: "SmartHTTPService pack data, never through Ruby" }
+  - { from: "workhorse", to: "gcs", protocol: "https", mode: "sync", label: "direct upload and download, bypassing Rails" }
+  - { from: "workhorse", to: "redis-cache", protocol: "redis", mode: "sync", label: "shared state read" }
+  - { from: "gitlab-shell", to: "puma", protocol: "http", mode: "sync", label: "internal API: authorized_keys, then allowed?" }
+  - { from: "gitlab-shell", to: "gitaly", protocol: "grpc", mode: "sync", label: "SSHService.SSHUploadPack, bidirectional stream" }
+  - { from: "gitlab-shell", to: "sidekiq-queue", protocol: "redis", mode: "async", delivery: "at-least-once", label: "enqueue Sidekiq job" }
+  - { from: "puma", to: "rack-attack", protocol: "redis", mode: "sync", label: "per-user, per-IP, per-path limits; 429 with headers" }
+  - { from: "puma", to: "pgbouncer", protocol: "postgres", mode: "sync", label: "pooled, never straight at the primary" }
+  - { from: "pgbouncer", to: "postgresql", protocol: "postgres", mode: "sync", label: "main, ci and sec; cross-database joins raise an error" }
+  - { from: "pgbouncer", to: "consul", protocol: "http", mode: "sync", label: "learns the current primary" }
+  - { from: "postgresql", to: "consul", protocol: "http", mode: "sync", label: "registers; Patroni drives failover" }
+  - { from: "puma", to: "consul", protocol: "http", mode: "sync", label: "database node discovery" }
+  - { from: "postgresql", to: "postgresql-replica", protocol: "postgres-replication", mode: "async", delivery: "at-least-once", label: "streaming replication, DB-HA-LOSS bounds lag at 60 s" }
+  - { from: "postgresql", to: "gcs", protocol: "https", mode: "async", delivery: "at-least-once", label: "continuous WAL archiving, PITR within 14 days" }
+  - { from: "puma", to: "redis-cache", protocol: "redis", mode: "sync", label: "transient cache, LRU eviction" }
+  - { from: "puma", to: "redis-shared-state", protocol: "redis", mode: "sync", label: "sessions, shared state, CI trace chunks" }
+  - { from: "puma", to: "sidekiq-queue", protocol: "redis", mode: "async", delivery: "at-least-once", idempotent: true, label: "enqueue background job" }
+  - { from: "sidekiq-queue", to: "sidekiq", protocol: "redis", mode: "async", delivery: "at-least-once", label: "dequeue; queues split into resource groups across pods" }
+  - { from: "sidekiq", to: "pgbouncer", protocol: "postgres", mode: "sync", label: "pooled" }
+  - { from: "sidekiq", to: "gitaly", protocol: "grpc", mode: "sync", label: "background Git work" }
+  - { from: "sidekiq", to: "gcs", protocol: "https", mode: "sync", label: "artifacts, uploads, exports" }
+  - { from: "sidekiq", to: "elasticsearch", protocol: "http", mode: "async", delivery: "at-least-once", batched: true, label: "GitLab Elasticsearch Indexer, TCP 9200" }
+  - { from: "puma", to: "elasticsearch", protocol: "http", mode: "sync", label: "advanced search queries" }
+  - { from: "puma", to: "gitaly", protocol: "grpc", mode: "sync", label: "branches, tags, diffs, blobs" }
+  - { from: "puma", to: "gkms", protocol: "https", mode: "sync", label: "service secrets; Chef encrypted data bags elsewhere" }
+  - { from: "gitaly", to: "gcs", protocol: "https", mode: "async", delivery: "at-least-once", label: "repository backups" }
+  - { from: "registry", to: "puma", protocol: "http", mode: "sync", label: "token auth: 401, client fetches a token, retries" }
+  - { from: "registry", to: "gcs", protocol: "https", mode: "sync", label: "image blobs" }
+  - { from: "gitlab-pages", to: "gcs", protocol: "https", mode: "sync", label: "site content" }
+  - { from: "kas", to: "gitaly", protocol: "grpc", mode: "sync", label: "agent configuration from the repository" }
+  - { from: "kas", to: "redis-shared-state", protocol: "redis", mode: "sync", label: "agent connection state" }
+  - { from: "runner-manager", to: "puma", protocol: "https", mode: "sync", label: "POST /api/v4/jobs/request polling, 2000 per minute" }
+  - { from: "runner-manager", to: "cloudflare", protocol: "https", mode: "sync", label: "ephemeral build VMs clone with a gitlab-ci-token" }
+  - { from: "prometheus", to: "puma", protocol: "http", mode: "async", delivery: "at-most-once", label: "one Prometheus per cluster scrapes every workload" }
+  - { from: "prometheus", to: "postgresql", protocol: "http", mode: "async", delivery: "at-most-once", label: "node, PostgreSQL and PgBouncer exporters" }

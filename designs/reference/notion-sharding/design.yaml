@@ -1,0 +1,162 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture: Notion's block store sharded by workspace id into 480 logical schemas,
+# resharded from 32 to 96 RDS instances behind four sharded PgBouncer clusters, with Debezium
+# change data capture feeding a Hudi-on-S3 data lake that Spark reads.
+#
+# Fixes relative to notion-sharding.broken.yaml:
+#   - every application query reaches Postgres through the sharded PgBouncer clusters, routed by
+#     shard key, instead of the application opening connections straight at the shard fleet
+#   - debezium is attached to the live 96-instance fleet, so shard updates propagate by log-based
+#     CDC instead of by dual writes from application code
+#   - search-index is fed asynchronously by spark-job off the lake, never written on the request path
+#   - the 96-instance fleet keeps RDS backups, so the shard fleet is recoverable
+#   - the 2021 double-write is captured in an audit log and replayed by catchup-worker off the
+#     request path, not called synchronously by the application
+#   - security.credentialRotationDays is declared for the fleet
+# This file MUST trip no rule.
+schemaVersion: "1"
+type: "design"
+id: "notion-sharding"
+
+requirements:
+  availability:
+    multiRegion: false
+  consistency:
+    model: "cp"
+    readAfterWrite: true
+  messaging:
+    replay: true
+    orderingScope: "partition"
+  freshness:
+    maxSeconds: 7200
+  correctness:
+    reproducible: true
+  data:
+    ownershipExclusive: true
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "aws-us", kind: "region" }
+  - { id: "app-tier", kind: "trust-zone", parent: "aws-us" }
+  - { id: "db-tier", kind: "trust-zone", parent: "aws-us" }
+  - { id: "data-platform", kind: "trust-zone", parent: "aws-us" }
+  - { id: "migration", kind: "system", parent: "aws-us" }
+
+nodes:
+  - id: "web-client"
+    component: "web-browser"
+    props: { platform: "web" }
+
+  - id: "notion-app"
+    component: "container-service"
+    group: "app-tier"
+    label: "Notion application"
+    props: { stateless: true, shardingStrategy: "lookup", criticality: "high", ownsData: true }
+
+  - id: "pgbouncer-cluster"
+    component: "pgbouncer"
+    group: "db-tier"
+    label: "PgBouncer, 4 clusters x 24 databases"
+    props: { pooling: true, poolSharded: true, routing: "shard-key" }
+
+  - id: "postgres-monolith"
+    component: "aws-rds"
+    group: "db-tier"
+    label: "Postgres monolith (pre-2021)"
+    props: { engine: "postgres", sharded: false, publiclyAccessible: false, encryptionAtRest: true }
+
+  - id: "postgres-shards-32"
+    component: "aws-rds"
+    group: "db-tier"
+    label: "32 instances x 15 logical schemas"
+    props: { engine: "postgres", sharded: true, shardKey: "space_id", replication: "async", publiclyAccessible: false, encryptionAtRest: true }
+
+  - id: "postgres-shards-96"
+    component: "aws-rds"
+    group: "db-tier"
+    label: "96 instances x 5 logical schemas"
+    props: { engine: "postgres", sharded: true, shardKey: "space_id", replication: "async", publiclyAccessible: false, encryptionAtRest: true }
+
+  - id: "audit-log"
+    component: "aws-rds"
+    group: "migration"
+    label: "Audit log (double-write capture)"
+    props: { engine: "postgres", appendOnly: true, publiclyAccessible: false, encryptionAtRest: true }
+
+  - id: "catchup-worker"
+    component: "container-worker"
+    group: "migration"
+    label: "Backfill and catch-up script"
+    props: { trigger: "batch", idempotent: true, orchestrator: "none" }
+
+  - id: "cdc-connectors"
+    component: "debezium"
+    group: "data-platform"
+    label: "Debezium, one connector per Postgres host on EKS"
+    props: { mode: "log-based", ordered: true, deployment: "kafka-connect" }
+
+  - id: "cdc-topics"
+    component: "kafka"
+    group: "data-platform"
+    label: "One topic per table, 480 shards consolidated"
+    props: { delivery: "at-least-once", ordering: "per-key", storage: "persistent" }
+
+  - id: "hudi-deltastreamer"
+    component: "spark-streaming"
+    group: "data-platform"
+    label: "Hudi Deltastreamer, COPY_ON_WRITE upsert"
+    props: { windowing: "none", stateBackend: "external" }
+
+  - id: "data-lake"
+    component: "s3"
+    group: "data-platform"
+    label: "S3 data lake, partitioned by shard"
+    props: { versioning: true, encryptionAtRest: true }
+
+  - id: "spark-job"
+    component: "spark-job"
+    group: "data-platform"
+    label: "Spark denormalisation and permission tree traversal"
+    props: { trigger: "batch", idempotent: true, resourceManager: "kubernetes" }
+
+  - id: "snowflake"
+    component: "snowflake"
+    group: "data-platform"
+    label: "Snowflake (insert-heavy and BI workloads)"
+    props: { upsert: false, format: "columnar" }
+
+  - id: "fivetran"
+    component: "fivetran"
+    group: "data-platform"
+    label: "Fivetran (third-party and small datasets)"
+    props: { trigger: "schedule", idempotent: true }
+
+  - id: "search-index"
+    component: "elasticsearch"
+    group: "data-platform"
+    label: "Search index"
+    props: { structure: "inverted", indexing: "async", shardingStrategy: "hash" }
+
+edges:
+  - { from: "web-client", to: "notion-app", protocol: "https", mode: "sync" }
+  - { from: "notion-app", to: "pgbouncer-cluster", protocol: "postgres", mode: "sync", label: "query routed by space_id" }
+  - { from: "pgbouncer-cluster", to: "postgres-shards-96", protocol: "postgres", mode: "sync", label: "24 databases per cluster" }
+  - { from: "pgbouncer-cluster", to: "postgres-shards-32", protocol: "postgres", mode: "sync", label: "pre-reshard fleet" }
+  - { from: "pgbouncer-cluster", to: "postgres-monolith", protocol: "postgres", mode: "sync", label: "pre-2021 monolith" }
+  - { from: "pgbouncer-cluster", to: "audit-log", protocol: "postgres", mode: "sync", label: "double-write audit record" }
+  - { from: "postgres-monolith", to: "catchup-worker", protocol: "postgres", mode: "async", batched: true, label: "backfill 480 schemas, ~3 days on 96 CPUs" }
+  - { from: "audit-log", to: "catchup-worker", protocol: "postgres", mode: "async", delivery: "at-least-once", batched: true, label: "replay double-write backlog, compare versions" }
+  - { from: "catchup-worker", to: "postgres-shards-32", protocol: "postgres", mode: "sync", idempotent: true, label: "catch-up apply before switchover" }
+  - { from: "postgres-shards-32", to: "postgres-shards-96", protocol: "postgres-logical-replication", mode: "async", delivery: "at-least-once", label: "3 publications x 5 schemas, indexes rebuilt after copy" }
+  - { from: "postgres-shards-96", to: "postgres-shards-32", protocol: "postgres-logical-replication", mode: "async", delivery: "at-least-once", label: "reversed stream, rollback path" }
+  - { from: "notion-app", to: "postgres-shards-96", protocol: "postgres", mode: "sync", fallback: "degraded", label: "dark read, compare up to 5 rows after a 1 s pause" }
+  - { from: "postgres-shards-96", to: "cdc-connectors", protocol: "postgres-logical-decoding", mode: "async", delivery: "at-least-once", label: "tens of MB/sec of row changes" }
+  - { from: "cdc-connectors", to: "cdc-topics", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "one topic per table" }
+  - { from: "cdc-topics", to: "hudi-deltastreamer", protocol: "kafka", mode: "async", delivery: "at-least-once" }
+  - { from: "hudi-deltastreamer", to: "data-lake", protocol: "s3", mode: "async", batched: true, label: "COPY_ON_WRITE upsert, partitioned by shard" }
+  - { from: "postgres-shards-96", to: "data-lake", protocol: "s3", mode: "async", batched: true, label: "RDS snapshot export, bootstrap within 24 hours" }
+  - { from: "data-lake", to: "spark-job", protocol: "s3", mode: "async", batched: true, label: "read Hudi tables" }
+  - { from: "spark-job", to: "snowflake", protocol: "snowflake", mode: "async", batched: true, label: "denormalised permission trees" }
+  - { from: "spark-job", to: "search-index", protocol: "http", mode: "async", delivery: "at-least-once", batched: true, label: "index blocks" }
+  - { from: "fivetran", to: "snowflake", protocol: "snowflake", mode: "async", batched: true, label: "third-party and small datasets" }

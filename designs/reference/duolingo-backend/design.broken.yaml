@@ -1,0 +1,203 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Duolingo's backend, broken variant: the campaign "go button" calls the fan-out workers
+# synchronously, one publishing pool drains both FIFO queues, neither queue has a dead-letter
+# queue, the last hop claims exactly-once while calling APNs and FCM inline, and the Session
+# Generator's in-memory cache is the only copy of the course data.
+#
+# This file MUST trip:
+#   - fanout-inline-in-request-path              (campaign-api calls interim-workers synchronously)
+#   - shared-worker-pool-across-queues           (push-workers consumes dispatch-queue and batch-queue while isolation.perQueue is true)
+#   - queue-missing-dlq                          (dispatch-queue and batch-queue: deadLetterQueue false with async in-edges)
+#   - exactly-once-with-external-side-effects    (batch-queue -> push-workers is exactly-once, push-workers calls apns and fcm sync)
+#   - cache-as-primary-store-without-persistence (course-cache: usedAsPrimaryStore true, persistence false, no S3 fall-through)
+# and MUST NOT trip:
+#   - cache-missing-eviction-policy              (course-cache still declares ttl)
+#   - materialised-cache-without-rebuild-path    (course-cache holds cached files, not materialised views)
+#   - external-call-inline-without-durable-path  (campaign-api's sync callee is a worker, not a third party; the third-party calls are made by push-workers, a worker)
+#   - credentials-without-rotation               (security.credentialRotationDays is declared)
+#   - read-heavy-path-without-cache              (no traffic.readWriteRatio is stated, and the design has a cache)
+#   - retry-without-adaptive-shedding            (no edge declares a retry policy)
+#   - sync-chain-too-deep                        (no api-gateway node and no latency.p95Ms)
+#   - datastore-missing-backup, datastore-single-region, business-updates-without-index-propagation (no sql-database)
+#   - stateful-node-without-zone-redundancy      (no availability-zone group)
+schemaVersion: "1"
+type: "design"
+id: "duolingo-backend"
+
+requirements:
+  availability:
+    sla: "99.99"
+    multiRegion: false
+    degradedModeAllowed: true
+  correctness:
+    exactlyOnceEffect: true
+  isolation:
+    perQueue: true
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "aws-primary", kind: "region", label: "AWS primary region" }
+  - { id: "edge", kind: "trust-zone", parent: "aws-primary" }
+  - { id: "core", kind: "trust-zone", parent: "aws-primary" }
+  - { id: "superb-owl", kind: "system", parent: "aws-primary", label: "Superb Owl dedicated ECS cluster" }
+
+nodes:
+  - id: "learner-client"
+    component: "mobile-app"
+    label: "Mobile and web clients"
+    props: { platform: "multi", os: "both", localCache: true, offlineCapable: true, resendPolicy: "store-and-forward" }
+
+  - id: "alb"
+    component: "alb"
+    label: "Elastic / Application Load Balancer"
+    group: "edge"
+    props: { layer: "l7", healthChecks: true, crossZone: true }
+
+  - id: "migration-dns"
+    component: "route53"
+    label: "Weighted DNS canary"
+    group: "edge"
+    props: { routingPolicy: "weighted" }
+
+  - id: "api-servers"
+    component: "container-service"
+    label: "API servers"
+    group: "core"
+    props: { stateless: true, orchestrator: "ecs", criticality: "high" }
+
+  - id: "session-generator"
+    component: "container-service"
+    label: "Session Generator"
+    group: "core"
+    props: { stateless: true, orchestrator: "ecs", runtime: "scala", criticality: "high" }
+
+  - id: "birdbrain"
+    component: "tensorflow-serving"
+    label: "Birdbrain"
+    group: "core"
+    props: { training: "batch", inputs: "live" }
+
+  - id: "campaign-api"
+    component: "container-service"
+    label: "Superb Owl campaign API"
+    group: "superb-owl"
+    props: { stateless: true, orchestrator: "ecs" }
+
+  - id: "course-build-job"
+    component: "container-worker"
+    label: "Offline course build"
+    group: "core"
+    props: { trigger: "batch", orchestrator: "ecs", idempotent: true }
+
+  - id: "interim-workers"
+    component: "container-worker"
+    label: "Interim notification workers"
+    group: "superb-owl"
+    props: { trigger: "queue", orchestrator: "ecs", idempotent: true, concurrency: 1, fanoutStrategy: "push" }
+
+  - id: "push-workers"
+    component: "container-worker"
+    label: "Push publishing workers"
+    group: "superb-owl"
+    props: { trigger: "queue", orchestrator: "ecs", idempotent: true }
+
+  - id: "dispatch-queue"
+    component: "sqs"
+    label: "SQS FIFO, first tier"
+    group: "superb-owl"
+    props: { fifo: true, ordering: "per-key", delivery: "at-least-once", deadLetterQueue: false, role: "work", persistence: true }
+
+  - id: "batch-queue"
+    component: "sqs"
+    label: "SQS FIFO, second tier"
+    group: "superb-owl"
+    props: { fifo: true, ordering: "per-key", delivery: "exactly-once", deadLetterQueue: false, role: "work", persistence: true }
+
+  - id: "ecs"
+    component: "aws-ecs"
+    label: "Amazon ECS (500+ services)"
+    group: "core"
+    props: { managed: true, autoscaling: true }
+
+  - id: "eks"
+    component: "aws-eks"
+    label: "Amazon EKS"
+    group: "core"
+    props: { managed: true, autoscaling: true, ipFamily: "ipv6" }
+
+  - id: "argo-cd"
+    component: "argo-cd"
+    label: "Argo CD"
+    group: "core"
+    props: { trigger: "commit", automatedSync: true }
+
+  - id: "observability"
+    component: "observability-stack"
+    label: "Observability plane (Jaeger, CloudWatch, Prometheus, Athena)"
+    group: "core"
+    props: { signal: "all", collectorMode: "push" }
+
+  - id: "course-cache"
+    component: "cache-cluster"
+    label: "Session Generator in-memory course cache"
+    group: "core"
+    props: { evictionPolicy: "ttl", invalidation: "ttl", structure: "key-value", materialised: false, usedAsPrimaryStore: true, persistence: false, replication: "none" }
+
+  - id: "course-data"
+    component: "s3"
+    label: "Course data files"
+    group: "core"
+    props: { storageClass: "standard" }
+
+  - id: "campaign-staging"
+    component: "s3"
+    label: "Campaign S3 staging"
+    group: "superb-owl"
+    props: { storageClass: "standard" }
+
+  - id: "proficiency-store"
+    component: "dynamodb"
+    label: "Birdbrain proficiency store"
+    group: "core"
+    props: { model: "key-value", consistency: "eventual", replication: "single-region" }
+
+  - id: "campaign-lists"
+    component: "dynamodb"
+    label: "Campaign user-list store"
+    group: "superb-owl"
+    props: { model: "key-value", consistency: "eventual", replication: "single-region" }
+
+  - id: "apns"
+    component: "apns"
+    label: "APNs"
+
+  - id: "fcm"
+    component: "fcm"
+    label: "FCM"
+
+edges:
+  - { from: "learner-client", to: "alb", protocol: "https", mode: "sync", label: "lesson requests" }
+  - { from: "alb", to: "api-servers", protocol: "http", mode: "sync", label: "X-Amzn-Trace-Id stamped at the edge" }
+  - { from: "api-servers", to: "session-generator", protocol: "http", mode: "sync", label: "generate lesson, learner state injected into the request" }
+  - { from: "api-servers", to: "birdbrain", protocol: "http", mode: "sync", label: "completed exercise outcomes" }
+  - { from: "session-generator", to: "course-cache", protocol: "in-process", mode: "sync", label: "course data lookup" }
+  - { from: "session-generator", to: "birdbrain", protocol: "http", mode: "sync", label: "exercises at the right difficulty for this learner" }
+  - { from: "course-build-job", to: "course-data", protocol: "s3", mode: "async", delivery: "at-least-once", label: "course data serialised offline into files" }
+  - { from: "birdbrain", to: "proficiency-store", protocol: "dynamodb", mode: "sync", batched: true, label: "proficiency writes buffered in memory with an LRU policy" }
+  - { from: "migration-dns", to: "ecs", protocol: "dns", mode: "sync", label: "decreasing weight during the migration" }
+  - { from: "migration-dns", to: "eks", protocol: "dns", mode: "sync", label: "weight raised to 99%, ECS copy kept for rollback" }
+  - { from: "argo-cd", to: "eks", protocol: "kubernetes", mode: "async", delivery: "at-least-once", label: "GitOps blue-green from GitHub" }
+  - { from: "campaign-api", to: "campaign-lists", protocol: "dynamodb", mode: "async", delivery: "at-least-once", label: "campaign user-ID list, created days ahead" }
+  - { from: "campaign-api", to: "campaign-staging", protocol: "s3", mode: "async", delivery: "at-least-once", label: "asynchronous fetch DynamoDB to S3" }
+  - { from: "campaign-staging", to: "interim-workers", protocol: "s3", mode: "sync", label: "payloads preloaded into worker memory during scale-up" }
+  - { from: "campaign-api", to: "interim-workers", protocol: "http", mode: "sync", label: "go button invokes the fan-out workers directly" }
+  - { from: "interim-workers", to: "dispatch-queue", protocol: "sqs", mode: "async", delivery: "at-least-once", label: "iOS batches" }
+  - { from: "interim-workers", to: "batch-queue", protocol: "sqs", mode: "async", delivery: "at-least-once", batched: true, label: "Android batches" }
+  - { from: "dispatch-queue", to: "push-workers", protocol: "sqs", mode: "async", delivery: "at-least-once", label: "iOS batches" }
+  - { from: "batch-queue", to: "push-workers", protocol: "sqs", mode: "async", delivery: "exactly-once", label: "Android batches, assumed exactly-once" }
+  - { from: "push-workers", to: "apns", protocol: "https", mode: "sync", batched: true, label: "APNs batch API, called inline" }
+  - { from: "push-workers", to: "fcm", protocol: "https", mode: "sync", batched: true, label: "FCM batch API, called inline" }
+  - { from: "api-servers", to: "observability", protocol: "http", mode: "async", delivery: "at-least-once", label: "traces tagged with the cluster name" }
+  - { from: "session-generator", to: "observability", protocol: "http", mode: "async", delivery: "at-least-once", label: "traces and metrics" }
+  - { from: "push-workers", to: "observability", protocol: "http", mode: "async", delivery: "at-least-once", label: "per-message process times" }

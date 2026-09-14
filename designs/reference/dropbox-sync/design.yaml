@@ -1,0 +1,236 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Dropbox file sync and storage, clean variant: the Nucleus desktop client commits blocklists
+# through a PoP edge to a metaserver whose append-only Server File Journal is the system of
+# record, while 4 MB content-addressed blocks land in Magic Pocket cells whose Block Index,
+# soft-state Master and cross-zone replicator keep twelve nines of durability over three zones.
+#
+# Fixes relative to dropbox-sync.broken.yaml:
+#   - osd declares zones 3 and a cross-zone replicator lands every block in a second zone
+#     within about a second, which is what twelve nines of durability rests on
+#   - block-index is backed up with a stated retention, like the other three MySQL nodes
+#   - metadata-mysql is sharded by entity id, the split Edgestore has always run, instead of
+#     one unsharded primary scaled by async read replicas at ten million requests a second
+#   - sync-memcache is a latency optimisation over the journal, not the only copy of
+#     uncommitted file state
+#   - mp-master is a replicated soft-state coordinator whose cell is not pinned to one
+#     availability zone, so losing a zone does not lose the placement authority
+# This file MUST trip no rule.
+schemaVersion: "1"
+type: "design"
+id: "dropbox-sync"
+
+requirements:
+  availability:
+    multiRegion: false
+    sla: "99.99"
+    zones: 3
+  durability:
+    annualNines: 12
+  consistency:
+    model: "cp"
+    readAfterWrite: true
+  messaging:
+    orderingScope: "partition"
+  correctness:
+    reproducible: true
+  data:
+    immutableAudit: true
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "pop", kind: "point-of-presence", label: "PoP (20 sites, 2018)" }
+  - { id: "us-west", kind: "region", label: "US West zone" }
+  - { id: "dc-core", kind: "trust-zone", parent: "us-west", label: "Data-center services" }
+  - { id: "metadata-plane", kind: "trust-zone", parent: "us-west", label: "Metadata plane" }
+  - { id: "mp-cell", kind: "cell", parent: "us-west", label: "Magic Pocket cell (~50 PB)" }
+
+nodes:
+  - id: "desktop-client"
+    component: "desktop-app"
+    label: "Nucleus desktop client"
+    props: { platform: "desktop", localCache: true, offlineCapable: true, persistentConnection: true, resendPolicy: "store-and-forward", autoUpdate: true }
+
+  - id: "web-client"
+    component: "web-browser"
+    label: "dropbox.com and mobile apps"
+    props: { platform: "web", localCache: true, resendPolicy: "retry" }
+
+  - id: "gslb"
+    component: "dns-resolver"
+    label: "GSLB / GeoDNS"
+    props: { geoRouting: true, healthChecked: true, redundantProviders: true }
+
+  - id: "pop-ipvs"
+    component: "load-balancer-tier"
+    label: "IPVS"
+    group: "pop"
+    props: { layer: "l4", hashing: "consistent", connectionPreserving: true, healthChecks: true }
+
+  - id: "pop-nginx"
+    component: "nginx"
+    label: "nginx edge proxy"
+    group: "pop"
+    props: { layer: "l7", connectionPreserving: true, healthChecks: true }
+
+  - id: "bandaid"
+    component: "load-balancer-tier"
+    label: "Bandaid"
+    group: "dc-core"
+    props: { layer: "l7", hashing: "least-connections", healthChecks: true }
+
+  - id: "metaserver"
+    component: "container-service"
+    label: "Metaserver"
+    group: "dc-core"
+    props: { stateless: true, ownsData: false, criticality: "high" }
+
+  - id: "blockserver"
+    component: "container-service"
+    label: "Blockserver / Magic Pocket frontend"
+    group: "dc-core"
+    props: { stateless: true, ownsData: false, criticality: "high" }
+
+  - id: "notification-server"
+    component: "websocket-gateway"
+    label: "Notification server"
+    group: "dc-core"
+    props: { protocol: "long-poll", stateful: true, channelAssignment: "hash", drainOnScaleIn: true }
+
+  - id: "edgestore-core"
+    component: "container-service"
+    label: "Edgestore Cores"
+    group: "dc-core"
+    props: { stateless: true, ownsData: false, criticality: "high" }
+    nfr: { rps: 10000000, consistency: "strong" }
+
+  - id: "edgestore-engine"
+    component: "proxysql"
+    label: "Edgestore Engines"
+    group: "dc-core"
+    props: { pooling: true, poolSharded: true, routing: "shard-key" }
+
+  - id: "panda-frontend"
+    component: "container-service"
+    label: "Panda frontend"
+    group: "dc-core"
+    props: { stateless: true, ownsData: false, shardingStrategy: "range", criticality: "high" }
+
+  - id: "sfj"
+    component: "mysql"
+    label: "Server File Journal"
+    group: "metadata-plane"
+    props: { appendOnly: true, sharded: true, shardKey: "namespace_id", replication: "async", backupEnabled: true, backupRetentionDays: 30, encryptionAtRest: true }
+    nfr: { consistency: "strong" }
+
+  - id: "sync-memcache"
+    component: "memcached"
+    label: "Streaming-sync memcache"
+    group: "metadata-plane"
+    props: { evictionPolicy: "lru", hashing: "consistent", invalidation: "ttl", persistence: false, usedAsPrimaryStore: false }
+
+  - id: "edgestore-cache"
+    component: "cache-cluster"
+    label: "Edgestore cache"
+    group: "metadata-plane"
+    props: { evictionPolicy: "lru", invalidation: "event", replication: "multi-az", hashing: "consistent", readBarrier: true }
+
+  - id: "edgestore-txn-record"
+    component: "etcd"
+    label: "Edgestore transaction record"
+    group: "metadata-plane"
+    props: { role: "metadata", consensus: "none", replicated: true }
+
+  - id: "metadata-mysql"
+    component: "mysql"
+    label: "MySQL metadata shards"
+    group: "metadata-plane"
+    props: { sharded: true, shardKey: "entity_id", concurrencyControl: "optimistic", commitProtocol: "two-phase", replication: "async", backupEnabled: true, backupRetentionDays: 30, encryptionAtRest: true }
+    nfr: { consistency: "strong" }
+
+  - id: "panda-storage-node"
+    component: "nosql-store"
+    label: "Panda storage node"
+    group: "metadata-plane"
+    props: { model: "key-value", consistency: "strong", replication: "single-region", backupEnabled: true, backupRetentionDays: 30, encryptionAtRest: true, partitionKey: "key_range" }
+    nfr: { consistency: "strong" }
+
+  - id: "block-index"
+    component: "mysql"
+    label: "Block Index"
+    group: "us-west"
+    props: { sharded: true, shardKey: "block_hash_sha256", replication: "async", backupEnabled: true, backupRetentionDays: 30, encryptionAtRest: true }
+    nfr: { consistency: "strong" }
+
+  - id: "replication-table"
+    component: "mysql"
+    label: "Replication Table"
+    group: "mp-cell"
+    props: { replication: "async", backupEnabled: true, backupRetentionDays: 30, encryptionAtRest: true }
+    nfr: { consistency: "strong" }
+
+  - id: "mp-master"
+    component: "etcd"
+    label: "Magic Pocket Master"
+    group: "mp-cell"
+    props: { role: "placement", consensus: "none", replicated: true }
+
+  - id: "volume-manager"
+    component: "container-worker"
+    label: "Volume Manager"
+    group: "mp-cell"
+    props: { trigger: "queue", idempotent: true, rateControl: "aimd" }
+
+  - id: "osd"
+    component: "blob-store"
+    label: "OSD fleet (SMR)"
+    group: "mp-cell"
+    props: { zones: 3, replication: "erasure-coded", tier: "hot", versioning: false, objectLock: true, checksumOnWrite: true, encryptionAtRest: true, durabilityNines: 12 }
+
+  - id: "cross-zone-replicator"
+    component: "container-worker"
+    label: "Cross-zone replication daemon"
+    group: "mp-cell"
+    props: { trigger: "stream", idempotent: true, rateControl: "aimd" }
+
+  - id: "mp-cold-tier"
+    component: "blob-store"
+    label: "Magic Pocket cold tier"
+    group: "us-west"
+    props: { zones: 3, replication: "erasure-coded", tier: "cold", versioning: false, objectLock: true, checksumOnWrite: true, encryptionAtRest: true, durabilityNines: 12 }
+
+edges:
+  - { from: "desktop-client", to: "gslb", protocol: "dns", mode: "sync", label: "nearest PoP unless over capacity" }
+  - { from: "web-client", to: "gslb", protocol: "dns", mode: "sync" }
+  - { from: "desktop-client", to: "pop-ipvs", protocol: "tcp-tls", mode: "sync", label: "consistent hash, packet encapsulation" }
+  - { from: "web-client", to: "pop-ipvs", protocol: "tcp-tls", mode: "sync" }
+  - { from: "pop-ipvs", to: "pop-nginx", protocol: "tcp", mode: "sync", label: "L4 to L7 inside the PoP" }
+  - { from: "pop-nginx", to: "bandaid", protocol: "http2", mode: "sync", label: "keep-alive over the backbone" }
+  - { from: "bandaid", to: "metaserver", protocol: "http", mode: "sync", label: "URL routing; retries exclude tried hosts" }
+  - { from: "bandaid", to: "blockserver", protocol: "http", mode: "sync" }
+  - { from: "desktop-client", to: "metaserver", protocol: "https", mode: "sync", idempotent: true, label: "commit blocklist; list from cursor" }
+  - { from: "metaserver", to: "desktop-client", protocol: "https", mode: "sync", label: "need blocks" }
+  - { from: "desktop-client", to: "blockserver", protocol: "https", mode: "sync", batched: true, idempotent: true, label: "put / retrieve_batch 4 MB blocks" }
+  - { from: "metaserver", to: "sfj", protocol: "mysql", mode: "sync", idempotent: true, label: "append one version row per namespace" }
+  - { from: "metaserver", to: "sync-memcache", protocol: "memcached", mode: "sync", label: "write on failed commit, read on list" }
+  - { from: "metaserver", to: "edgestore-core", protocol: "edgestore-rpc", mode: "sync", label: "users, namespaces, sharing" }
+  - { from: "metaserver", to: "notification-server", protocol: "grpc", mode: "async", delivery: "at-most-once", label: "per-namespace change hint" }
+  - { from: "notification-server", to: "desktop-client", protocol: "http-long-poll", mode: "async", delivery: "at-most-once", label: "hint only; a lost hint costs latency" }
+  - { from: "edgestore-core", to: "edgestore-cache", protocol: "internal", mode: "sync", label: "95% of reads; invalidated on write" }
+  - { from: "edgestore-core", to: "edgestore-engine", protocol: "grpc", mode: "sync", label: "route to the owning shard or region" }
+  - { from: "edgestore-core", to: "edgestore-txn-record", protocol: "edgestore-rpc", mode: "sync", idempotent: true, label: "phase 0: durable transaction record" }
+  - { from: "edgestore-engine", to: "metadata-mysql", protocol: "mysql", mode: "sync", label: "copy-on-write staging tables, 2PC" }
+  - { from: "edgestore-engine", to: "panda-frontend", protocol: "panda-rpc", mode: "sync", label: "Panda sits between Edgestore and MySQL" }
+  - { from: "panda-frontend", to: "panda-storage-node", protocol: "grpc", mode: "sync", label: "~100 GB key range; 2PC, hybrid-logical clocks" }
+  - { from: "panda-storage-node", to: "metadata-mysql", protocol: "mysql", mode: "sync", label: "MySQL used only as the storage engine" }
+  - { from: "blockserver", to: "block-index", protocol: "mysql", mode: "sync", idempotent: true, label: "existence check by hash; commit point for a put" }
+  - { from: "blockserver", to: "replication-table", protocol: "mysql", mode: "sync", label: "bucket -> volume -> OSD set" }
+  - { from: "blockserver", to: "osd", protocol: "internal", mode: "sync", idempotent: true, fallback: "degraded", label: "store to every OSD, fsync before ack; retry another volume" }
+  - { from: "osd", to: "cross-zone-replicator", protocol: "internal", mode: "async", delivery: "at-least-once" }
+  - { from: "cross-zone-replicator", to: "osd", protocol: "internal", mode: "async", delivery: "at-least-once", idempotent: true, label: "remote zone within ~1 s; >= 2 zones per block" }
+  - { from: "osd", to: "mp-cold-tier", protocol: "internal", mode: "async", delivery: "at-least-once", label: "split + XOR across zones, 2x -> 1.5x" }
+  - { from: "mp-master", to: "osd", protocol: "internal", mode: "async", delivery: "at-least-once", label: "health watch; repair after 15 min offline" }
+  - { from: "mp-master", to: "volume-manager", protocol: "grpc", mode: "async", delivery: "at-least-once", idempotent: true, label: "move volume, erasure-code, reconstruct" }
+  - { from: "mp-master", to: "replication-table", protocol: "mysql", mode: "sync", label: "generation bump, then mapping update (commit point)" }
+  - { from: "volume-manager", to: "osd", protocol: "internal", mode: "async", delivery: "at-least-once", batched: true, label: "reconstruction reads fan out over hundreds of OSDs" }
+  - { from: "volume-manager", to: "mp-cold-tier", protocol: "internal", mode: "async", delivery: "at-least-once", label: "reconstruct a cold blob from its XOR zone" }
