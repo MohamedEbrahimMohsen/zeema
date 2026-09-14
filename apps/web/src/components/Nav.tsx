@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { currentUser } from "@/lib/auth";
+import { Mark } from "./Logo";
 import { NavTabs } from "./NavTabs";
 import { ThemeToggle } from "./ThemeToggle";
 import { UserMenu } from "./UserMenu";
@@ -9,6 +10,7 @@ export async function Nav() {
   return (
     <header className="topbar">
       <Link href="/" className="wordmark no-underline">
+        <Mark size={20} />
         Arkore
       </Link>
       <NavTabs />

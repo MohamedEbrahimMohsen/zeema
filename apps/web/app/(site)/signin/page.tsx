@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { Mark } from "@/components/Logo";
 import { currentUser, devLoginEnabled, githubConfigured } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +17,10 @@ export default async function SignIn({
     <div className="mx-auto max-w-sm py-6">
       <div className="panel p-6 flex flex-col gap-4">
         <div className="flex flex-col gap-1">
-          <span className="wordmark">Arkore</span>
+          <span className="wordmark">
+            <Mark size={24} />
+            Arkore
+          </span>
           <span className="small muted">Architecture as typed, queryable data.</span>
         </div>
         <p className="small muted">
