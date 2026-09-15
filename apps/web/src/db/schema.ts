@@ -18,6 +18,7 @@ import {
 export const visibilityEnum = pgEnum("visibility", ["public", "private"]);
 export const originEnum = pgEnum("origin", ["authored", "imported", "reference"]);
 export const eventKindEnum = pgEnum("event_kind", ["view", "clone", "export"]);
+export const roleEnum = pgEnum("role", ["admin"]);
 
 export const users = pgTable(
   "users",
@@ -56,8 +57,29 @@ export const sessions = pgTable(
     lastSeenAt: timestamp("last_seen_at", { withTimezone: true }).notNull().defaultNow(),
     expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
     revoked: boolean("revoked").notNull().default(false),
+    // An admin signs in as an ordinary member; this session-scoped switch turns the role on.
+    actingAdmin: boolean("acting_admin").notNull().default(false),
   },
   (t) => [uniqueIndex("sessions_token").on(t.tokenHash), index("sessions_user").on(t.userId)],
+);
+
+// Role assignments with their history: a grant row per assignment, closed by revoked_at.
+// A user holds a role while an open grant exists.
+export const roleGrants = pgTable(
+  "role_grants",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    role: roleEnum("role").notNull(),
+    grantedById: uuid("granted_by_id").references(() => users.id),
+    grantedAt: timestamp("granted_at", { withTimezone: true }).notNull().defaultNow(),
+    revokedById: uuid("revoked_by_id").references(() => users.id),
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+    note: text("note"),
+  },
+  (t) => [index("role_grants_user").on(t.userId, t.role)],
 );
 
 export const designs = pgTable(
@@ -71,7 +93,10 @@ export const designs = pgTable(
     visibility: visibilityEnum("visibility").notNull().default("private"),
     origin: originEnum("origin").notNull().default("authored"),
     sourceDesignId: uuid("source_design_id"),
+    // The head: every save moves it. Only the owner (or an acting admin) sees it.
     currentVersionId: uuid("current_version_id"),
+    // The release: what everyone else sees. Moves only on publish.
+    publishedVersionId: uuid("published_version_id"),
     tags: jsonb("tags").$type<string[]>().notNull().default([]),
     searchText: text("search_text").notNull().default(""),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -103,6 +128,8 @@ export const designVersions = pgTable(
     message: text("message"),
     broken: boolean("broken").notNull().default(false),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    // Set when this version was released; readers only ever see released versions.
+    publishedAt: timestamp("published_at", { withTimezone: true }),
   },
   (t) => [index("versions_design_created").on(t.designId, t.createdAt)],
 );
@@ -136,3 +163,5 @@ export const designEvents = pgTable(
 export type User = typeof users.$inferSelect;
 export type Design = typeof designs.$inferSelect;
 export type DesignVersion = typeof designVersions.$inferSelect;
+export type RoleGrant = typeof roleGrants.$inferSelect;
+export type Role = (typeof roleEnum.enumValues)[number];

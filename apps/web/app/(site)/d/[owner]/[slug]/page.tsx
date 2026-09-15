@@ -88,6 +88,13 @@ export default async function DesignPage({
               canWrite={view.can.write && view.design.origin === "authored"}
             />
             <span className="tag">{view.design.visibility}</span>
+            {view.unpublished && !sp.v ? (
+              <span className="tag tag-accent" title="Readers see the last release">
+                draft
+              </span>
+            ) : null}
+            {sp.v && version?.publishedAt ? <span className="tag">released</span> : null}
+            {sp.v && !version?.publishedAt ? <span className="tag">unreleased</span> : null}
             {broken ? <span className="tag tag-danger">broken twin</span> : null}
           </h1>
           {view.design.summary ? <p className="muted">{view.design.summary}</p> : null}
@@ -113,8 +120,27 @@ export default async function DesignPage({
           signedIn={Boolean(viewer)}
           visibility={view.design.visibility}
           isCurated={view.design.origin !== "authored"}
+          unpublished={view.unpublished}
+          neverPublished={!view.published}
         />
       </div>
+      {view.can.write && view.unpublished ? (
+        <div className="small muted">
+          {view.published
+            ? "This is your draft. Readers see the release from "
+            : "Not released yet. Readers see nothing until you publish"}
+          {view.published ? (
+            <>
+              {when(view.published.publishedAt ?? view.published.createdAt)}
+              {view.design.visibility === "public" ? "" : " (once the design is public)"}.
+            </>
+          ) : view.design.visibility === "public" ? (
+            "."
+          ) : (
+            " and make the design public."
+          )}
+        </div>
+      ) : null}
       {hasBroken ? (
         <div className="small">
           {broken ? (
@@ -185,9 +211,11 @@ export default async function DesignPage({
               })}
             </ul>
           </section>
-          {versions.length > 1 ? (
+          {versions.length > 1 || (view.can.write && versions.length > 0) ? (
             <section className="panel p-4 flex flex-col gap-2">
-              <span className="label">Versions · {versions.length}</span>
+              <span className="label">
+                {view.can.write ? "History" : "Releases"} · {versions.length}
+              </span>
               <ul className="flex flex-col gap-1 small">
                 {versions.slice(0, 12).map((v) => {
                   const active = (sp.v ?? currentId) === v.id;
@@ -204,7 +232,11 @@ export default async function DesignPage({
                         {v.contentHash.slice(0, 8)}
                       </Link>
                       <span className="muted">{when(v.createdAt)}</span>
-                      {v.id === currentId ? <span className="tag ml-auto">current</span> : null}
+                      {v.id === view.design.publishedVersionId ? (
+                        <span className="tag tag-accent ml-auto">released</span>
+                      ) : v.id === currentId && view.can.write ? (
+                        <span className="tag ml-auto">draft</span>
+                      ) : null}
                     </li>
                   );
                 })}

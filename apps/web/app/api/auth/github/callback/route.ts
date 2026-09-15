@@ -3,7 +3,13 @@
 import { GitHub } from "arctic";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { createSession, githubConfigured, setSessionCookie, upsertGithubUser } from "@/lib/auth";
+import {
+  bootstrapAdmin,
+  createSession,
+  githubConfigured,
+  setSessionCookie,
+  upsertGithubUser,
+} from "@/lib/auth";
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
@@ -45,6 +51,7 @@ export async function GET(req: Request) {
     bio?: string | null;
   };
   const user = await upsertGithubUser(profile);
+  await bootstrapAdmin(user);
   const { token, expiresAt } = await createSession(user.id);
   await setSessionCookie(token, expiresAt);
   const next = jar.get("arkore_oauth_next")?.value;

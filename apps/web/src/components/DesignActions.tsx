@@ -11,6 +11,10 @@ type Props = {
   signedIn: boolean;
   visibility: "public" | "private";
   isCurated: boolean;
+  /** The head is ahead of the release: offer Publish. */
+  unpublished: boolean;
+  /** Never released yet (a private draft). */
+  neverPublished: boolean;
 };
 
 export function DesignActions({
@@ -21,6 +25,8 @@ export function DesignActions({
   signedIn,
   visibility,
   isCurated,
+  unpublished,
+  neverPublished,
 }: Props) {
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
@@ -51,6 +57,10 @@ export function DesignActions({
       const body = await res.json();
       router.push(body.design.address);
     }
+  };
+  const publish = async () => {
+    const res = await call("publish", () => fetch(`${base}/publish`, { method: "POST" }));
+    if (res) router.refresh();
   };
   const toggleVisibility = async () => {
     const next = visibility === "public" ? "private" : "public";
@@ -94,6 +104,21 @@ export function DesignActions({
         <a className="btn btn-sm no-underline" href={`/d/${owner}/${slug}/edit`}>
           Edit YAML
         </a>
+      ) : null}
+      {canWrite && unpublished ? (
+        <button
+          type="button"
+          className="btn btn-sm btn-primary"
+          onClick={publish}
+          disabled={busy !== null}
+          title={
+            neverPublished
+              ? "Release this version; it shows to others once the design is public"
+              : "Release the current draft; readers see the previous release until then"
+          }
+        >
+          {busy === "publish" ? "publishing…" : "Publish"}
+        </button>
       ) : null}
       {canClone ? (
         <button type="button" className="btn btn-sm" onClick={clone} disabled={busy !== null}>

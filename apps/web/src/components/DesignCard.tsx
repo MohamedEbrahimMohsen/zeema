@@ -101,6 +101,9 @@ export function DesignCard({ d }: { d: DesignSummary }) {
           ) : d.origin !== "authored" ? (
             <span className="tag">{d.origin}</span>
           ) : null}
+          {d.unpublished && (d.visibility === "private" || d.owner) ? (
+            <span className="tag tag-accent">draft</span>
+          ) : null}
           <span className="ml-auto">{d.stats.cloneCount} clones</span>
         </div>
       </div>

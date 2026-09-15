@@ -34,6 +34,8 @@ type Props = {
   canWrite: boolean;
   canClone: boolean;
   signedIn: boolean;
+  /** The head is ahead of the release. */
+  unpublished: boolean;
 };
 
 type Bundle = { catalogue: any; search: any[]; icons: Record<string, string> };
@@ -73,6 +75,7 @@ export function Canvas(props: Props) {
   const [menu, setMenu] = useState<{ x: number; y: number; items: MenuItem[] } | null>(null);
   const [help, setHelp] = useState(false);
   const [title, setTitle] = useState(props.title);
+  const [unpublished, setUnpublished] = useState(props.unpublished);
   const [editingTitle, setEditingTitle] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -196,6 +199,7 @@ export function Canvas(props: Props) {
       const body = await res.json();
       e.baseHash = body.version.contentHash;
       e.cst = parse(text).cst; // the saved text is the new base for minimal diffs; the doc stays what it is
+      setUnpublished(true);
       if (e.saveSeq === seq) {
         e.dirty = false;
         setStatus("saved");
@@ -829,6 +833,31 @@ export function Canvas(props: Props) {
   );
 
   // ---------------------------------------------------------------- toolbar actions
+  // Release what is on screen: unsaved edits are saved first, then the head becomes the release.
+  const doPublish = async () => {
+    const e = eng.current;
+    if (!e) return;
+    if (e.structural.length) {
+      setStatus("fix structural errors before publishing");
+      return;
+    }
+    if (e.dirty || saving.current.inFlight) {
+      await save();
+      if (eng.current?.dirty) return; // the save reported its own failure
+    }
+    setStatus("publishing…");
+    const res = await fetch(`/api/v1/designs/${props.owner}/${props.slug}/publish`, {
+      method: "POST",
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      setStatus(`publish failed: ${body?.error?.message ?? res.status}`);
+      return;
+    }
+    setUnpublished(false);
+    setStatus("published");
+  };
+
   const doClone = async () => {
     const e = eng.current!;
     setStatus("cloning…");
@@ -931,7 +960,7 @@ export function Canvas(props: Props) {
           </span>
         )}
         <span
-          className={`status ${status.includes("fail") || status.includes("conflict") ? "status-err" : status === "saved" ? "status-ok" : status === "unsaved" ? "status-warn" : ""}`}
+          className={`status ${status.includes("fail") || status.includes("conflict") ? "status-err" : status === "saved" || status === "published" ? "status-ok" : status === "unsaved" ? "status-warn" : ""}`}
         >
           {status}
         </span>
@@ -956,6 +985,19 @@ export function Canvas(props: Props) {
                 />
                 auto
               </label>
+              <button
+                type="button"
+                className={`btn${unpublished ? " btn-primary" : ""}`}
+                onClick={() => void doPublish()}
+                disabled={blocking || !unpublished}
+                title={
+                  unpublished
+                    ? "Release the draft: readers see the previous release until you do"
+                    : "Readers already see this version"
+                }
+              >
+                {unpublished ? "Publish" : "Published"}
+              </button>
               <button
                 type="button"
                 className="btn"

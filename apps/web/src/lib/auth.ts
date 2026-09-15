@@ -1,10 +1,13 @@
 // Sessions: an opaque random token in an HTTP-only cookie, its hash in the database, idle and
 // absolute expiry, revocation on sign-out. No password is ever handled (plan, section 13).
 import { createHash, randomBytes } from "node:crypto";
-import { and, eq, gt } from "drizzle-orm";
+import { and, eq, gt, isNull } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { getDb, schema } from "@/db";
-import type { User } from "@/db/schema";
+import type { Role, User } from "@/db/schema";
+import { isAdmin, type SessionUser } from "./viewer";
+
+export { actingAdmin, isAdmin, type SessionUser } from "./viewer";
 
 export const SESSION_COOKIE = "arkore_session";
 const IDLE_DAYS = 14;
@@ -37,7 +40,7 @@ export async function clearSessionCookie() {
 }
 
 /** The signed-in user, or null. Touches last-seen and slides the idle expiry at most once a day. */
-export async function currentUser(): Promise<User | null> {
+export async function currentUser(): Promise<SessionUser | null> {
   const jar = await cookies();
   const token = jar.get(SESSION_COOKIE)?.value;
   if (!token) return null;
@@ -68,7 +71,51 @@ export async function currentUser(): Promise<User | null> {
       .set({ lastSeenAt: now, expiresAt })
       .where(eq(schema.sessions.id, row.session.id));
   }
-  return row.user;
+  const roles = await rolesOf(row.user.id);
+  return {
+    ...row.user,
+    sessionId: row.session.id,
+    roles,
+    actingAdmin: row.session.actingAdmin && roles.includes("admin"),
+  };
+}
+
+export async function rolesOf(userId: string): Promise<Role[]> {
+  const db = await getDb();
+  const rows = await db
+    .select({ role: schema.roleGrants.role })
+    .from(schema.roleGrants)
+    .where(and(eq(schema.roleGrants.userId, userId), isNull(schema.roleGrants.revokedAt)));
+  return [...new Set(rows.map((r) => r.role))];
+}
+
+/** Switch the admin role on or off for this session only. Refused for accounts without it. */
+export async function setActingAdmin(viewer: SessionUser, on: boolean) {
+  if (on && !isAdmin(viewer)) return false;
+  const db = await getDb();
+  await db
+    .update(schema.sessions)
+    .set({ actingAdmin: on })
+    .where(eq(schema.sessions.id, viewer.sessionId));
+  return true;
+}
+
+/**
+ * First admins come from ARKORE_ADMINS (comma-separated usernames) so a fresh deployment has
+ * someone who can open the IAM page. Applied at sign-in; a grant made this way carries no
+ * granter and the note "bootstrap".
+ */
+export async function bootstrapAdmin(user: User) {
+  const list = (process.env.ARKORE_ADMINS ?? "")
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+  if (!list.includes(user.username.toLowerCase())) return;
+  if ((await rolesOf(user.id)).includes("admin")) return;
+  const db = await getDb();
+  await db
+    .insert(schema.roleGrants)
+    .values({ userId: user.id, role: "admin", note: "bootstrap (ARKORE_ADMINS)" });
 }
 
 export async function revokeCurrentSession() {

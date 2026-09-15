@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { currentUser } from "@/lib/auth";
+import { actingAdmin, currentUser, isAdmin } from "@/lib/auth";
 import { Mark } from "./Logo";
 import { NavTabs } from "./NavTabs";
 import { ThemeToggle } from "./ThemeToggle";
@@ -25,6 +25,8 @@ export async function Nav() {
               username={user.username}
               displayName={user.displayName}
               avatarUrl={user.avatarUrl}
+              isAdmin={isAdmin(user)}
+              actingAdmin={actingAdmin(user)}
             />
           </>
         ) : (

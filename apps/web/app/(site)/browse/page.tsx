@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { DesignCard } from "@/components/DesignCard";
-import { currentUser } from "@/lib/auth";
+import { actingAdmin, currentUser } from "@/lib/auth";
 import { getCatalogue } from "@/lib/catalogue";
 import { listDesigns } from "@/lib/designs";
 
@@ -13,6 +13,8 @@ type Search = {
   owner?: string;
   sort?: string;
   page?: string;
+  /** Acting admins: `all` or `private` to include what the public cannot see. */
+  scope?: string;
 };
 
 const PROVIDERS = [
@@ -34,12 +36,15 @@ export default async function Browse({ searchParams }: { searchParams: Promise<S
   const viewer = await currentUser();
   const cat = getCatalogue();
   const mine = sp.owner === "me";
+  const admin = actingAdmin(viewer);
+  const adminScope = admin && (sp.scope === "all" || sp.scope === "private") ? sp.scope : null;
   const result = await listDesigns(viewer, {
     q: sp.q,
     provider: sp.provider,
     kind: sp.kind,
     owner: mine ? undefined : sp.owner,
-    scope: mine ? "mine" : "public",
+    scope: mine ? "mine" : adminScope ? "all" : "public",
+    visibility: adminScope === "private" ? "private" : undefined,
     sort: (sp.sort as "updated" | "created" | "clones" | "exports") ?? "updated",
     page: Number(sp.page ?? 1),
   });
@@ -53,15 +58,37 @@ export default async function Browse({ searchParams }: { searchParams: Promise<S
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-baseline gap-4">
-        <h1 className="title">{mine ? "My designs" : "Browse"}</h1>
+        <h1 className="title">
+          {mine
+            ? "My designs"
+            : adminScope === "private"
+              ? "Private designs"
+              : adminScope
+                ? "All designs"
+                : "Browse"}
+        </h1>
         {viewer ? (
           <Link href={mine ? "/browse" : "/browse?owner=me"} className="small link">
             {mine ? "Show public designs" : "Show only mine"}
           </Link>
         ) : null}
+        {admin && !mine ? (
+          <span className="small flex gap-3">
+            <Link
+              href={adminScope === "private" ? "/browse" : "/browse?scope=private"}
+              className="link"
+            >
+              {adminScope === "private" ? "Public only" : "Private designs"}
+            </Link>
+            <Link href={adminScope === "all" ? "/browse" : "/browse?scope=all"} className="link">
+              {adminScope === "all" ? "Public only" : "Everything"}
+            </Link>
+          </span>
+        ) : null}
       </div>
       <form className="flex flex-wrap items-center gap-3" method="get">
         {mine ? <input type="hidden" name="owner" value="me" /> : null}
+        {adminScope ? <input type="hidden" name="scope" value={adminScope} /> : null}
         {sp.provider ? <input type="hidden" name="provider" value={sp.provider} /> : null}
         <input
           className="input"

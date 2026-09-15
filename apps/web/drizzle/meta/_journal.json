@@ -8,6 +8,13 @@
       "when": 1789063302324,
       "tag": "0000_zippy_spyke",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789479275182,
+      "tag": "0001_roles_publishing",
+      "breakpoints": true
     }
   ]
 }
