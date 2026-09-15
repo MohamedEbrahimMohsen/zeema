@@ -4,6 +4,7 @@ import { parse } from "@arkore/core/yaml";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DesignActions } from "@/components/DesignActions";
+import { EditableTitle } from "@/components/EditableTitle";
 import { Findings } from "@/components/Findings";
 import { Icon } from "@/components/Icon";
 import { currentUser } from "@/lib/auth";
@@ -80,7 +81,12 @@ export default async function DesignPage({
             <span className="mono">{view.design.slug}</span>
           </div>
           <h1 className="display flex items-baseline gap-3 flex-wrap">
-            {view.design.title}
+            <EditableTitle
+              owner={ownerSeg}
+              slug={view.design.slug}
+              title={view.design.title}
+              canWrite={view.can.write && view.design.origin === "authored"}
+            />
             <span className="tag">{view.design.visibility}</span>
             {broken ? <span className="tag tag-danger">broken twin</span> : null}
           </h1>

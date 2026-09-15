@@ -1025,3 +1025,30 @@ kbd.key {
   box-shadow: var(--shadow-float);
   color: var(--ink);
 }
+
+/* ── inline rename ────────────────────────────────────────────────── */
+
+.title-btn {
+  font: inherit;
+  letter-spacing: inherit;
+  line-height: inherit;
+  padding: 0 4px;
+  margin: 0 -4px;
+  border: var(--border) solid transparent;
+  border-radius: var(--rc);
+  background: transparent;
+  color: inherit;
+  cursor: text;
+  text-align: left;
+}
+.title-btn:hover {
+  border-color: var(--line);
+}
+.title-input {
+  font: inherit;
+  letter-spacing: inherit;
+  line-height: inherit;
+  padding: 0 4px;
+  min-width: 16ch;
+  max-width: 100%;
+}
