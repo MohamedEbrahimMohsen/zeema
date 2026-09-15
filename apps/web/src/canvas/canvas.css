@@ -52,6 +52,33 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.arkore-canvas.is-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  height: 100vh;
+  min-height: 0;
+  background: var(--bg);
+}
+.arkore-canvas .toolbar .doc-title-btn {
+  font: inherit;
+  font-weight: var(--fw-medium);
+  font-size: var(--fs-body);
+  border: var(--border) solid transparent;
+  border-radius: var(--rc);
+  background: transparent;
+  color: inherit;
+  cursor: text;
+}
+.arkore-canvas .toolbar .doc-title-btn:hover {
+  border-color: var(--line);
+}
+.arkore-canvas .toolbar .doc-title-input {
+  font-weight: var(--fw-medium);
+  font-size: var(--fs-body);
+  padding: 2px var(--sp-1);
+  width: 28ch;
+}
 .arkore-canvas .toolbar .auto {
   display: flex;
   align-items: center;

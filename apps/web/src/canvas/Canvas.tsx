@@ -72,6 +72,10 @@ export function Canvas(props: Props) {
   const [autosave, setAutosave] = useState(props.canWrite);
   const [menu, setMenu] = useState<{ x: number; y: number; items: MenuItem[] } | null>(null);
   const [help, setHelp] = useState(false);
+  const [title, setTitle] = useState(props.title);
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [fullscreen, setFullscreen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
   const [selection, setSelection] = useState<Subject>({ type: null, ref: null });
   const [multi, setMulti] = useState<Set<string>>(new Set());
   const saving = useRef<{ inFlight: boolean; again: boolean }>({ inFlight: false, again: false });
@@ -764,6 +768,66 @@ export function Canvas(props: Props) {
     [bundle, commit, notify, render, renameToLabel],
   );
 
+  // Native fullscreen when the browser grants it; otherwise the canvas pins itself over the
+  // page (same look, Escape leaves it), so the button works in embedded and restricted contexts.
+  const pseudoFs = useRef(false);
+  useEffect(() => {
+    const onChange = () => {
+      if (!pseudoFs.current) setFullscreen(Boolean(document.fullscreenElement));
+    };
+    const onKey = (ev: KeyboardEvent) => {
+      if (ev.key === "Escape" && pseudoFs.current) {
+        pseudoFs.current = false;
+        setFullscreen(false);
+      }
+    };
+    document.addEventListener("fullscreenchange", onChange);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("fullscreenchange", onChange);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, []);
+  const toggleFullscreen = useCallback(async () => {
+    if (pseudoFs.current) {
+      pseudoFs.current = false;
+      setFullscreen(false);
+      return;
+    }
+    if (document.fullscreenElement) {
+      await document.exitFullscreen().catch(() => {});
+      return;
+    }
+    try {
+      const req = rootRef.current?.requestFullscreen?.();
+      await Promise.race([req, new Promise((r) => setTimeout(r, 400))]);
+      if (document.fullscreenElement) return;
+    } catch {}
+    pseudoFs.current = true;
+    setFullscreen(true);
+  }, []);
+
+  const rename = useCallback(
+    async (next: string) => {
+      const value = next.trim().slice(0, 120);
+      setEditingTitle(false);
+      if (!value || value === title) return;
+      const prev = title;
+      setTitle(value);
+      const res = await fetch(`/api/v1/designs/${props.owner}/${props.slug}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ title: value }),
+      });
+      if (!res.ok) {
+        setTitle(prev);
+        const body = await res.json().catch(() => ({}));
+        setStatus(`rename failed: ${body?.error?.message ?? res.status}`);
+      }
+    },
+    [props.owner, props.slug, title],
+  );
+
   // ---------------------------------------------------------------- toolbar actions
   const doClone = async () => {
     const e = eng.current!;
@@ -829,7 +893,7 @@ export function Canvas(props: Props) {
       .join(" · ") || "no findings";
 
   return (
-    <div className="arkore-canvas">
+    <div className={`arkore-canvas${fullscreen ? " is-fullscreen" : ""}`} ref={rootRef}>
       <div className="toolbar">
         <Link
           href={`/d/${props.owner}/${props.slug}`}
@@ -838,9 +902,34 @@ export function Canvas(props: Props) {
         >
           ←
         </Link>
-        <span className="doc-title" title={props.title}>
-          {props.title}
-        </span>
+        {editingTitle ? (
+          <input
+            className="input doc-title-input"
+            defaultValue={title}
+            maxLength={120}
+            // biome-ignore lint/a11y/noAutofocus: the field appears on the user's own click
+            autoFocus
+            onFocus={(ev) => ev.currentTarget.select()}
+            onBlur={(ev) => void rename(ev.currentTarget.value)}
+            onKeyDown={(ev) => {
+              if (ev.key === "Enter") ev.currentTarget.blur();
+              if (ev.key === "Escape") setEditingTitle(false);
+            }}
+          />
+        ) : props.canWrite ? (
+          <button
+            type="button"
+            className="doc-title doc-title-btn"
+            title="Rename"
+            onClick={() => setEditingTitle(true)}
+          >
+            {title}
+          </button>
+        ) : (
+          <span className="doc-title" title={title}>
+            {title}
+          </span>
+        )}
         <span
           className={`status ${status.includes("fail") || status.includes("conflict") ? "status-err" : status === "saved" ? "status-ok" : status === "unsaved" ? "status-warn" : ""}`}
         >
@@ -939,6 +1028,43 @@ export function Canvas(props: Props) {
           </button>
         </div>
         <span className={`ml-auto status ${blocking ? "status-err" : ""}`}>{summary}</span>
+        <button
+          type="button"
+          className="btn btn-ghost"
+          onClick={() => void toggleFullscreen()}
+          title={fullscreen ? "Exit full screen" : "Full screen"}
+          aria-label={fullscreen ? "Exit full screen" : "Full screen"}
+        >
+          {fullscreen ? (
+            <svg
+              viewBox="0 0 24 24"
+              width="16"
+              height="16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5" />
+            </svg>
+          ) : (
+            <svg
+              viewBox="0 0 24 24"
+              width="16"
+              height="16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" />
+            </svg>
+          )}
+        </button>
         <button
           type="button"
           className="btn btn-ghost"

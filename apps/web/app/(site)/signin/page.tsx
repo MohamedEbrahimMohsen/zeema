@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { Mark } from "@/components/Logo";
-import { currentUser, devLoginEnabled, githubConfigured } from "@/lib/auth";
+import { currentUser, githubConfigured } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -41,22 +41,6 @@ export default async function SignIn({
             <code>GITHUB_CLIENT_SECRET</code>.
           </p>
         )}
-        {devLoginEnabled() ? (
-          <>
-            <div className="rule" />
-            <form action="/api/auth/dev" method="post" className="flex flex-col gap-2">
-              <span className="label">Local development account</span>
-              <div className="field">
-                <label htmlFor="dev-login">username</label>
-                <input id="dev-login" className="input" name="login" defaultValue="dev" />
-                <span className="hint">string · local only</span>
-              </div>
-              <button type="submit" className="btn">
-                Sign in locally
-              </button>
-            </form>
-          </>
-        ) : null}
       </div>
     </div>
   );

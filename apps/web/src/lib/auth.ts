@@ -148,5 +148,3 @@ async function freeUsername(login: string) {
 
 export const githubConfigured = () =>
   Boolean(process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET);
-export const devLoginEnabled = () =>
-  process.env.NODE_ENV !== "production" && process.env.AUTH_DEV_LOGIN === "1";
