@@ -1,7 +1,10 @@
-// Runs once per server start: open the database (migrating if needed) and seed the curated
-// designs when the store is empty, so a fresh deployment has something to browse.
+// Runs once per server start: install the metrics collectors, then open the database
+// (migrating if needed) and seed the curated designs when the store is empty, so a fresh
+// deployment has something to browse.
 export async function register() {
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
+  const { installHttpMetrics } = await import("./src/lib/metrics");
+  installHttpMetrics();
   const { getDb, schema } = await import("./src/db");
   const { seedCurated } = await import("./src/db/seed");
   try {

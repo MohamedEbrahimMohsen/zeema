@@ -1,0 +1,22 @@
+# Keep the build context small and never ship host state into the image.
+.git
+node_modules
+**/node_modules
+.next
+**/.next
+.turbo
+**/.turbo
+dist
+**/dist
+work
+coverage
+**/coverage
+apps/web/.pglite
+apps/web/data
+brand
+*.log
+.env
+.env.*
+!.env.example
+**/.env.local
+**/tsconfig.tsbuildinfo

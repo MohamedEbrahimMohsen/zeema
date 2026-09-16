@@ -11,3 +11,4 @@ apps/web/data/*.db
 apps/web/.pglite/
 work/
 __pycache__/
+backups/

@@ -23,13 +23,7 @@ export function FindingsPanel({
 }) {
   if (!structural.length && !rules.length)
     return <div className="meta">Nothing to report. The design is valid and trips no rule.</div>;
-  const row = (
-    f: CanvasFinding,
-    severity: string,
-    rule: string,
-    blocking: boolean,
-    key: string,
-  ) => (
+  const row = (f: CanvasFinding, severity: string, rule: string, key: string) => (
     <button
       key={key}
       type="button"
@@ -50,13 +44,12 @@ export function FindingsPanel({
   );
   return (
     <>
-      {structural.map((f, i) => row(f, "error", "structural", true, `s${i}`))}
+      {structural.map((f, i) => row(f, "error", "structural", `s${i}`))}
       {rules.map((f, i) =>
         row(
           f,
           f.severity ?? "info",
           catalogue.locale.rules[f.id ?? ""]?.name ?? f.id ?? "rule",
-          false,
           `r${i}`,
         ),
       )}

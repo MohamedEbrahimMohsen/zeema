@@ -94,7 +94,14 @@ describe("lint", () => {
     const r = await run(["lint", "designs/reference", "--format", "json", "--out", out]);
     expect(r.code).toBe(1);
     const j = JSON.parse(fs.readFileSync(out, "utf8"));
-    expect(j.counts.files).toBe(14);
+    // Every reference design is a clean file and its broken twin. Counted from the directory
+    // rather than hard-coded, so adding a design does not fail an unrelated test.
+    const onDisk = fs
+      .readdirSync(path.join(ROOT, "designs", "reference"))
+      .flatMap((d) => fs.readdirSync(path.join(ROOT, "designs", "reference", d)))
+      .filter((f) => f.endsWith(".yaml")).length;
+    expect(onDisk).toBeGreaterThan(1);
+    expect(j.counts.files).toBe(onDisk);
   });
 
   it("usage errors exit 2", async () => {

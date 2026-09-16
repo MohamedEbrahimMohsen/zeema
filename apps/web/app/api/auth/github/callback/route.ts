@@ -10,11 +10,14 @@ import {
   setSessionCookie,
   upsertGithubUser,
 } from "@/lib/auth";
+import { countSignin } from "@/lib/metrics";
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
-  const fail = (why: string) =>
-    NextResponse.redirect(new URL(`/signin?error=${encodeURIComponent(why)}`, req.url));
+  const fail = (why: string) => {
+    countSignin("failed");
+    return NextResponse.redirect(new URL(`/signin?error=${encodeURIComponent(why)}`, req.url));
+  };
   if (!githubConfigured()) return fail("github-not-configured");
   const jar = await cookies();
   const code = url.searchParams.get("code");
@@ -53,6 +56,7 @@ export async function GET(req: Request) {
   const user = await upsertGithubUser(profile);
   await bootstrapAdmin(user);
   const { token, expiresAt } = await createSession(user.id);
+  countSignin("ok");
   await setSessionCookie(token, expiresAt);
   const next = jar.get("arkore_oauth_next")?.value;
   jar.delete("arkore_oauth_next");

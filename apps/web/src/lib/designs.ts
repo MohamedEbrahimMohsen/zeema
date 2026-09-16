@@ -8,6 +8,7 @@ import type { Design, DesignVersion } from "@/db/schema";
 import { brandMarkFor } from "./brand";
 import { type Catalogue, getCatalogue } from "./catalogue";
 import { analyse } from "./lint";
+import { countExport, countWrite } from "./metrics";
 import { type Sketch, sketchOf } from "./sketch";
 import { actingAdmin, type SessionUser } from "./viewer";
 
@@ -435,6 +436,7 @@ export async function createDesign(
     .set({ currentVersionId: version.id, publishedVersionId })
     .where(eq(schema.designs.id, design.id));
   await db.insert(schema.designStats).values({ designId: design.id });
+  countWrite("create");
   return { design: { ...design, currentVersionId: version.id, publishedVersionId }, version };
 }
 
@@ -523,6 +525,7 @@ export async function saveVersion(owner: string, slug: string, viewer: Viewer, i
     })
     .where(eq(schema.designs.id, view.design.id))
     .returning();
+  countWrite("save");
   return { design, version, unchanged: false };
 }
 
@@ -558,6 +561,7 @@ export async function publishDesign(
     })
     .where(eq(schema.designs.id, view.design.id))
     .returning();
+  countWrite("publish");
   return { design, version, unchanged: false };
 }
 
@@ -610,6 +614,7 @@ export async function deleteDesign(owner: string, slug: string, viewer: Viewer) 
     .update(schema.designs)
     .set({ deletedAt: new Date() })
     .where(eq(schema.designs.id, view.design.id));
+  countWrite("delete");
 }
 
 export type CloneInput = { slug?: string; title?: string; yaml?: string; layout?: unknown };
@@ -638,6 +643,7 @@ export async function cloneDesign(
     sourceDesignId: view.design.id,
   });
   await recordEvent(view.design.id, viewer, "clone");
+  countWrite("clone");
   return created;
 }
 
@@ -648,6 +654,7 @@ export async function recordEvent(
   opts: { format?: string; ip?: string } = {},
 ) {
   const db = await getDb();
+  if (kind === "export") countExport(opts.format ?? "unknown");
   const ipHash = opts.ip
     ? createHash("sha256")
         .update(
