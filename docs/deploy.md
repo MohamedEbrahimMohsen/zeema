@@ -12,13 +12,14 @@ and the monitoring that watches both.
 cp .env.example .env
 ```
 
-Fill in the three required secrets in `.env`. Generate each with `openssl rand -hex 24`:
+Fill in the four required secrets in `.env`. Generate each with `openssl rand -hex 24`:
 
 | Variable | What it protects |
 |---|---|
 | `POSTGRES_PASSWORD` | The database |
 | `METRICS_TOKEN` | `/api/metrics`, and the token Prometheus presents to scrape it |
 | `GRAFANA_PASSWORD` | The Grafana admin account |
+| `GRAFANA_DB_PASSWORD` | The read-only database account Grafana queries with |
 
 Then:
 
@@ -58,6 +59,7 @@ authentication.
 | `POSTGRES_PASSWORD` | yes | Database password, used by the app, the exporter and backups |
 | `METRICS_TOKEN` | yes | Bearer token for `/api/metrics`. Without a match the endpoint answers 404 |
 | `GRAFANA_PASSWORD` | yes | Grafana admin password |
+| `GRAFANA_DB_PASSWORD` | yes | Password for `grafana_ro`, the read-only database account Grafana queries with |
 | `APP_ORIGIN` | yes | The public origin, such as `https://arkore.example.com`. Used for the OAuth callback |
 | `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | for sign-in | From a GitHub OAuth app. Without them, reading works and creating is disabled |
 | `ARKORE_ADMINS` | once | Usernames granted the admin role at their next sign-in. See `roles-and-publishing.md` |
@@ -91,14 +93,33 @@ Prometheus scrapes two targets every fifteen seconds and keeps thirty days by de
   accounts, designs by visibility, unpublished drafts, stored versions and active sessions.
 - **Postgres**, through `postgres-exporter`: connections, database size, transaction rates.
 
-Grafana is provisioned from the repository. The datasource is `ops/grafana/provisioning`, the
-dashboard is `ops/grafana/dashboards/arkore-overview.json`, and both are reapplied on restart.
-Edits made in the Grafana interface survive until then; to keep one, export the dashboard JSON
-over the file in the repository.
+Grafana also reads the application database directly, as `grafana_ro`, an account that can
+only SELECT. This is for the panels Prometheus cannot serve: a view count per design would be
+one time series per design, which is exactly the cardinality Prometheus is bad at, and the
+number already sits in `design_stats`. The role is created by
+`ops/postgres/init/10-grafana-ro.sh` when the database is first initialised. On a database that
+already exists, run it once by hand:
 
-Two numbers on that dashboard matter more than the rest. **Event loop lag** growing means the
-single Node thread is saturated, which is the real ceiling on this app. **95th percentile
-response time by route** tells you which page is responsible.
+```bash
+docker compose exec -T db sh /docker-entrypoint-initdb.d/10-grafana-ro.sh
+```
+
+The dashboard has, in order: requests per second, availability, 95th percentile latency and
+24 hour uptime as headline numbers; requests per second split by section, where a section is a
+part of the product such as canvas, design, browse or api; availability over time with the
+error rate beside it; latency across everything at the 50th, 95th and 99th percentile; latency
+per API endpoint; and the fifty most viewed and fifty most cloned designs. Two collapsed rows
+hold content counts and the system panels.
+
+Everything Grafana shows is provisioned from the repository. The datasources are
+`ops/grafana/provisioning`, the dashboard is `ops/grafana/dashboards/arkore-overview.json`, and
+both are reapplied on restart. An edit made in the Grafana interface survives restarts until
+the repository file changes, at which point the file wins and the edit is gone. To keep a
+change, export the dashboard JSON over the file in the repository.
+
+Two numbers matter more than the rest. **Event loop lag** growing means the single Node thread
+is saturated, which is the real ceiling on this app. **Latency per section** tells you which
+part of the product is responsible.
 
 ## 6. Backups
 

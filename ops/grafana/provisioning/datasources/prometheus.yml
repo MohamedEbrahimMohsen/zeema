@@ -9,3 +9,21 @@ datasources:
     isDefault: true
     jsonData:
       timeInterval: 15s
+
+  # The application database, read-only. Used by the panels Prometheus cannot serve: per-design
+  # counts, which would be one time series per design. The password comes from the environment.
+  - name: Arkore database
+    uid: arkore-postgres
+    type: grafana-postgresql-datasource
+    access: proxy
+    url: db:5432
+    database: arkore
+    user: grafana_ro
+    secureJsonData:
+      password: $GRAFANA_DB_PASSWORD
+    jsonData:
+      sslmode: disable
+      postgresVersion: 1700
+      maxOpenConns: 5
+      maxIdleConns: 2
+      connMaxLifetime: 14400

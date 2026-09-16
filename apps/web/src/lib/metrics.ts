@@ -19,7 +19,7 @@ import {
 
 type Metrics = {
   registry: Registry;
-  httpDuration: Histogram<"route" | "method" | "status">;
+  httpDuration: Histogram<"route" | "section" | "method" | "status">;
   inFlight: Gauge<string>;
   saves: Counter<"kind">;
   exports: Counter<"format">;
@@ -61,6 +61,30 @@ export function routeOf(rawPath: string): string {
   return "other";
 }
 
+/**
+ * The part of the product a route belongs to: canvas, design page, browse, api, and so on.
+ * A handful of values, so "requests per second per section" is one group-by instead of a
+ * regular expression over route names.
+ */
+export function sectionOf(route: string): string {
+  if (route.startsWith("/_next")) return "asset";
+  if (route === "/api/metrics" || route === "/api/health") return "ops";
+  if (route.startsWith("/api/auth")) return "auth";
+  if (route.startsWith("/api/v1/admin")) return "admin-api";
+  if (route.startsWith("/api")) return "api";
+  if (route.startsWith("/d/")) {
+    if (route.endsWith("/canvas")) return "canvas";
+    if (route.endsWith("/edit")) return "editor";
+    return "design";
+  }
+  if (route.startsWith("/catalogue")) return "catalogue";
+  if (route.startsWith("/admin")) return "admin";
+  if (route === "/u/:username") return "profile";
+  if (route === "/") return "home";
+  if (["/browse", "/docs", "/signin", "/new"].includes(route)) return route.slice(1);
+  return "other";
+}
+
 function build(): Metrics {
   const registry = defaultRegister;
   registry.setDefaultLabels({ app: "arkore-web" });
@@ -69,7 +93,7 @@ function build(): Metrics {
   const httpDuration = new Histogram({
     name: "arkore_http_request_duration_seconds",
     help: "Time from the first byte of a request to the end of its response",
-    labelNames: ["route", "method", "status"] as const,
+    labelNames: ["route", "section", "method", "status"] as const,
     buckets: [0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10],
     registers: [registry],
   });
@@ -210,9 +234,11 @@ export function installHttpMetrics() {
     const start = request.__arkoreStart;
     if (!start) return;
     const seconds = Number(process.hrtime.bigint() - start) / 1e9;
+    const route = routeOf(request.url ?? "/");
     m.httpDuration.observe(
       {
-        route: routeOf(request.url ?? "/"),
+        route,
+        section: sectionOf(route),
         method: request.method ?? "GET",
         status: String(response.statusCode ?? 0),
       },
