@@ -1,6 +1,6 @@
 # twitter-timeline: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/twitter-timeline.md`
 - Size: 15 nodes, 18 edges, 3 groups.
 

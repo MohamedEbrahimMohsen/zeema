@@ -11,7 +11,7 @@ kinds/ components/ rules/ locales/ icons/ schema/   the catalogue (data; governe
 designs/reference|imported|authored/<id>/           designs (data; tier decides writability)
 packages/core        the engine. Pure ES modules, zero dependencies, no DOM, no fs, no network
 packages/catalogue   load the catalogue, build the bundle, run the repository gate
-packages/cli         the `arkore` command
+packages/cli         the `zeema` command
 apps/web             Next.js app: pages, API under /api/v1, Drizzle schema, GitHub OAuth
 docs/                specification, plan, governance, intake cards, inventories
 ```
@@ -57,7 +57,7 @@ changes only when a behaviour change is intended, and the commit says why.
   recorded gap. Governance: `docs/governance.md`.
 - A rule: `rules/<id>.yaml`, locale entry, a reference design's broken twin that trips it
   (header lists the rule ids). `pnpm validate` fails on a rule no design trips.
-- A design import follows `.claude/skills/arkore-design-import`: same boxes, same names, same
+- A design import follows `.claude/skills/zeema-design-import`: same boxes, same names, same
   arrows; `mapping.yaml` proves it.
 
 ## Web app notes

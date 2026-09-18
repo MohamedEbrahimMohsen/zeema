@@ -16,7 +16,7 @@ export default async function Home() {
         <div className="flex flex-col gap-4">
           <h1 className="display">Architecture as typed, queryable data.</h1>
           <p className="muted" style={{ fontSize: "var(--fs-lead)" }}>
-            A diagram is a picture. An Arkore design is a model: every box is a catalogued component
+            A diagram is a picture. A Zeema design is a model: every box is a catalogued component
             with real properties, every promise the system makes is written down, and rules check
             the two against each other.
           </p>

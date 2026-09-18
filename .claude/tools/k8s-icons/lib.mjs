@@ -1,7 +1,7 @@
-// Rewrites harvested vendor icons into the shape D:\Personal\_arkore expects and installs them
+// Rewrites harvested vendor icons into the shape D:\Personal\_zeema expects and installs them
 // over icons/components/<provider>/<id>.svg.
 //
-//   node tools/install-into-arkore.mjs [--dry] [--repo <path>] [providers...]
+//   node tools/install-into-zeema.mjs [--dry] [--repo <path>] [providers...]
 //
 // The repository's contract (packages/catalogue/src/validate.js) is non-negotiable: the file is
 // an SVG, at most 4096 bytes, carries viewBox="0 0 24 24", and contains no <script>, no on*
@@ -15,8 +15,8 @@ const ROOT = path.resolve(path.join(import.meta.dirname, ".."));
 const argv = process.argv.slice(2);
 const DRY = argv.includes("--dry");
 const repoAt = argv.indexOf("--repo");
-const REPO = repoAt >= 0 ? argv[repoAt + 1] : "D:/Personal/_arkore";
-const PRIOR = "D:/Personal/_arkore-icons/out";
+const REPO = repoAt >= 0 ? argv[repoAt + 1] : "D:/Personal/_zeema";
+const PRIOR = "D:/Personal/_zeema-icons/out";
 const providers = argv.filter((a) => !a.startsWith("--") && a !== REPO);
 const PROVIDERS = providers.length ? providers : ["aws", "azure", "oci"];
 const LIMIT = 4096;

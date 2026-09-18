@@ -44,7 +44,7 @@ export function ContextMenu({
   }, [x, y]);
   const list = items.filter(Boolean) as Exclude<MenuItem, null>[];
   return (
-    <div ref={ref} className="arkore-menu" role="menu" style={{ left: x, top: y }}>
+    <div ref={ref} className="zeema-menu" role="menu" style={{ left: x, top: y }}>
       {list.map((item, i) =>
         item === "-" ? (
           <div key={`sep-${i}`} className="sep" />

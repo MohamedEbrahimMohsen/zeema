@@ -4,7 +4,7 @@ const config: NextConfig = {
   reactStrictMode: true,
   devIndicators: false,
   serverExternalPackages: ["@electric-sql/pglite", "postgres", "prom-client"],
-  transpilePackages: ["@arkore/core", "@arkore/catalogue"],
+  transpilePackages: ["@zeema/core", "@zeema/catalogue"],
 };
 
 export default config;

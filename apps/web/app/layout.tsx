@@ -5,13 +5,13 @@ import { RouteSpinner } from "@/components/RouteSpinner";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Arkore",
+  title: "Zeema",
   description: "Software architecture as typed, queryable data.",
 };
 
 // Runs before first paint: applies the stored theme so the tokens never flash. A first visit has
 // nothing stored, so the OS preference is resolved once and saved as the user's setting.
-const themeBoot = `(function(){try{var k="arkore-theme",t=localStorage.getItem(k);if(t!=="light"&&t!=="dark"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";localStorage.setItem(k,t)}document.documentElement.setAttribute("data-theme",t)}catch(e){}})();`;
+const themeBoot = `(function(){try{var k="zeema-theme",t=localStorage.getItem(k);if(t!=="light"&&t!=="dark"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";localStorage.setItem(k,t)}document.documentElement.setAttribute("data-theme",t)}catch(e){}})();`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://arkore.dev/schema/v1/kind.schema.json",
-  "title": "Arkore Kind",
+  "$id": "https://zeema.dev/schema/v1/kind.schema.json",
+  "title": "Zeema Kind",
   "description": "An abstract component kind: the vocabulary the linter reasons about.",
   "type": "object",
   "additionalProperties": false,

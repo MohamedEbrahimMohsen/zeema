@@ -1,15 +1,15 @@
-# Arkore — design brief
+# Zeema — design brief
 
-A brief for redesigning the Arkore web app. Everything below describes what the app *does today*
+A brief for redesigning the Zeema web app. Everything below describes what the app *does today*
 (pages, data, states, actions) so the new design covers real behaviour, plus a short list of
 things the current UI lacks and the new design should add. Nothing here is decoration for its own
 sake: every page exists because a user needs to do the thing on it.
 
 ---
 
-## 1. What Arkore is
+## 1. What Zeema is
 
-**Architecture as typed, queryable data.** A normal diagram is a picture. An Arkore design is a
+**Architecture as typed, queryable data.** A normal diagram is a picture. A Zeema design is a
 model: every box is a component from a curated catalogue with real properties, the promises the
 system makes are written down as *requirements*, and *rules* check the two against each other and
 report *findings*.
@@ -74,7 +74,7 @@ counts. The new card should be **dominated by an image**:
    tinted background derived from the design's dominant provider colour.
 
 Below the image: title, one-line summary (may be empty → don't leave a hole), owner avatar +
-`@username` (or "arkore" for curated designs), component count, provider chips (`aws`, `azure`
+`@username` (or "zeema" for curated designs), component count, provider chips (`aws`, `azure`
 … never `default`), and the two stats `clones · exports`. Small tags where relevant: `private`,
 and for curated designs their origin (`reference`, `imported`).
 
@@ -130,7 +130,7 @@ rule id), an empty state, a 404.
 
 ## 3. Global chrome
 
-**Header** (every page except the canvas, which has its own toolbar): wordmark "Arkore" at left;
+**Header** (every page except the canvas, which has its own toolbar): wordmark "Zeema" at left;
 nav links **Browse · Catalogue · Docs**; at right, signed-out → **Sign in** (primary); signed-in
 → **New design** (primary), avatar + `username` (links to the profile), **Sign out**. Add the
 **theme toggle** here.
@@ -209,7 +209,7 @@ section index on wide screens.
 ### 4.5 Sign in — `/signin`
 
 Narrow centred card. Title "Sign in", explanation: *"Reading is open to everyone. Creating,
-cloning and publishing designs needs an account, and the account is your GitHub identity. Arkore
+cloning and publishing designs needs an account, and the account is your GitHub identity. Zeema
 never sees a password."* One primary button **Continue with GitHub** (OAuth; on return the user
 lands on `?next=` or their profile). States: an error line ("Sign-in failed: …"), a "not
 configured on this server" notice, and — dev only — a small "Local development account" form
@@ -228,7 +228,7 @@ clone a reference) — the starter YAML is the only option today.
 
 The read view of one design. Public designs are readable by everyone, signed in or not.
 
-- Breadcrumb `@owner / slug` (or `arkore · reference / slug` for curated designs).
+- Breadcrumb `@owner / slug` (or `zeema · reference / slug` for curated designs).
 - Title, summary.
 - Stat row: `N components · N edges · N boundaries · N views · N clones · N exports`, a
   `public|private` tag, and a `broken twin` tag when viewing one (see below).

@@ -4,18 +4,18 @@ One folder per design; the folder name is the design id. Three tiers.
 
 ```
 designs/
-  reference/<id>/     curated by Arkore, rule fixtures
+  reference/<id>/     curated by Zeema, rule fixtures
     design.yaml         must trip no rule
     design.broken.yaml  must trip exactly the rules named in its header
     source/             the intake card, or a note on the origin
     diagram.md          Mermaid rendering of design.yaml
     diagram.svg         drawn rendering with the component icons (design.broken.yaml gets diagram.broken.svg)
     notes.md            what the design shows, what the broken variant breaks
-  authored/<id>/      made in the Arkore canvas
+  authored/<id>/      made in the Zeema canvas
     design.yaml         the design; no external source, so no mapping.yaml, and no broken twin
     design.layout.json  node positions and edge bows, written by the editor
-  imported/<id>/      brought in from a real source by the arkore-design-import skill
-    design.yaml         the same design as the source, expressed in Arkore components
+  imported/<id>/      brought in from a real source by the zeema-design-import skill
+    design.yaml         the same design as the source, expressed in Zeema components
     source/             the original file(s), untouched
     mapping.yaml        every source box, boundary and arrow and where it went; machine checked
     diagram.md          Mermaid rendering of design.yaml, for side-by-side review

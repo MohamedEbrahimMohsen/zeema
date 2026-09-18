@@ -22,9 +22,9 @@ export type Db =
   | ReturnType<typeof drizzlePostgres<typeof schema>>;
 
 type Holder = { db?: Db; ready?: Promise<Db>; kind?: "pglite" | "postgres" };
-const g = globalThis as unknown as { __arkoreDb?: Holder };
-if (!g.__arkoreDb) g.__arkoreDb = {};
-const holder: Holder = g.__arkoreDb;
+const g = globalThis as unknown as { __zeemaDb?: Holder };
+if (!g.__zeemaDb) g.__zeemaDb = {};
+const holder: Holder = g.__zeemaDb;
 
 async function open(): Promise<Db> {
   const url = process.env.DATABASE_URL;

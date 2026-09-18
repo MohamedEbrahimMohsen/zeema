@@ -1,4 +1,4 @@
-# Arkore format specification, v1
+# Zeema format specification, v1
 
 This is the authoritative description of every document type. The JSON Schemas in
 `schema/` are the machine-readable form of this page; if they disagree, this page is wrong

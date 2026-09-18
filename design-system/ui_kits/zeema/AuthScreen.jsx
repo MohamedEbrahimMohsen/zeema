@@ -4,7 +4,7 @@ function AuthScreen() {
     <div style={{padding:"var(--sp-3)",display:"grid",gridTemplateColumns:"360px minmax(0,1fr)",gap:"var(--sp-6)",alignItems:"start",maxWidth:1000,margin:"0 auto"}}>
       <div style={{background:"var(--panel)",border:"1px solid var(--line)",borderRadius:"var(--rp)",padding:"var(--sp-3)",display:"flex",flexDirection:"column",gap:"var(--sp-2)"}}>
         <div style={{display:"flex",flexDirection:"column",gap:"var(--sp-0-5)"}}>
-          <span style={{fontSize:"var(--fs-title)",fontWeight:"var(--fw-semibold)",letterSpacing:"var(--ls-title)"}}>Arkore</span>
+          <span style={{fontSize:"var(--fs-title)",fontWeight:"var(--fw-semibold)",letterSpacing:"var(--ls-title)"}}>Zeema</span>
           <span style={{color:"var(--muted)",fontSize:"var(--fs-small)"}}>Architecture as typed, queryable data.</span>
         </div>
         <Field label="email" hint="string · required"><TextInput placeholder="you@company.com" /></Field>

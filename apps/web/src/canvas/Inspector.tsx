@@ -3,7 +3,7 @@
 // Every control here is generated from the catalogue and the design schema; nothing about a
 // product is hard coded. A control shows the value the design resolves to and writes only when
 // the user sets something. Text inputs commit on blur or Enter, never per keystroke.
-import { effective, propDefs } from "@arkore/core/document";
+import { effective, propDefs } from "@zeema/core/document";
 import type { Subject } from "./scene";
 
 export type InspectorApi = {

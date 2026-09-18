@@ -1,6 +1,6 @@
 # wikipedia: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/wikipedia.md` (Wikimedia Foundation operational documentation on wikitech.wikimedia.org, two Wikimedia Tech Blog posts and two public incident reports; re-verified 2026-09-14, see the "Verification 2026-09-14" section of that file).
 - Size: 24 nodes, 29 edges, 5 groups.
 

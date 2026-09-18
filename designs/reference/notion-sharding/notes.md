@@ -1,6 +1,6 @@
 # notion-sharding: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/notion-sharding.md` (three official Notion engineering posts, 2021-2024, all re-fetched and confirmed on 2026-09-13).
 - Size: 16 nodes, 21 edges, 5 groups.
 

@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://arkore.dev/schema/v1/component.schema.json",
-  "title": "Arkore Component",
+  "$id": "https://zeema.dev/schema/v1/component.schema.json",
+  "title": "Zeema Component",
   "description": "A concrete implementation of exactly one kind (for example kafka is a queue).",
   "type": "object",
   "additionalProperties": false,

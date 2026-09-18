@@ -1,6 +1,6 @@
 # booking-search: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/booking-search.md` (intake card of 2026-09-07, re-verified 2026-09-14; verification log appended to the card).
 - Size: 25 nodes, 36 edges, 6 groups. Broken twin: 24 nodes, 33 edges, 6 groups.
 

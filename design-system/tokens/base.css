@@ -1,4 +1,4 @@
-/* Element defaults. Kept deliberately thin — Arkore styles components, not tags. */
+/* Element defaults. Kept deliberately thin — Zeema styles components, not tags. */
 
 :root { color-scheme: light; }
 [data-theme="dark"] { color-scheme: dark; }

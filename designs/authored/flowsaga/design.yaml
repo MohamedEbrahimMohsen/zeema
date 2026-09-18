@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=../../../schema/design.schema.json
-# Authored in the Arkore canvas.
+# Authored in the Zeema canvas.
 schemaVersion: "1"
 type: "design"
 id: "flowsaga"

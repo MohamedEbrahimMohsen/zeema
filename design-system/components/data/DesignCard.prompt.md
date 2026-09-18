@@ -4,7 +4,7 @@ One-line: the gallery tile for a published design.
 <DesignCard
   title="Order processing"
   description="Checkout to fulfilment with a replayable log."
-  author="arkore" componentCount={9} provider="aws" clones={88}
+  author="zeema" componentCount={9} provider="aws" clones={88}
   thumbnail={<MiniDiagram />}
 />
 ```

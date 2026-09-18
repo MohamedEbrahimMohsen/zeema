@@ -1,7 +1,7 @@
 {
-  "name": "@arkore/core",
+  "name": "@zeema/core",
   "version": "0.1.0",
-  "description": "The Arkore engine: parse, serialise, document operations, structure checks, rules, layout, geometry. No dependencies, no environment.",
+  "description": "The Zeema engine: parse, serialise, document operations, structure checks, rules, layout, geometry. No dependencies, no environment.",
   "license": "MIT",
   "type": "module",
   "exports": {

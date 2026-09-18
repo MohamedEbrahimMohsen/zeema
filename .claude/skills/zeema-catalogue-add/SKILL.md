@@ -1,6 +1,6 @@
 ---
-name: arkore-catalogue-add
-description: Add a product that is missing from the Arkore catalogue. Researches the product from official docs, picks an existing kind or installs a new one, writes the component in every provider where the product or an equivalent exists (azure, aws, gcp, oci, cloudflare, ibm, alibabacloud, digitalocean, openstack, outscale, k8s, default), adds locale, icon and inventory row, and validates. Use when a design import meets an unknown box, or the user says add component, add resource, add kind, missing product, or names a cloud resource that is not in components/.
+name: zeema-catalogue-add
+description: Add a product that is missing from the Zeema catalogue. Researches the product from official docs, picks an existing kind or installs a new one, writes the component in every provider where the product or an equivalent exists (azure, aws, gcp, oci, cloudflare, ibm, alibabacloud, digitalocean, openstack, outscale, k8s, default), adds locale, icon and inventory row, and validates. Use when a design import meets an unknown box, or the user says add component, add resource, add kind, missing product, or names a cloud resource that is not in components/.
 ---
 
 # Add a component (and its kind if needed) to the catalogue
@@ -129,7 +129,7 @@ feature may exist only there). That is a correct outcome.
 1. Locale snippet (scratchpad), one line per id, then merge:
    `<id>: { name: "<official product name>", description: "<one line>" }`
    ```bash
-   python .claude/tools/arkore_locale.py add <snippet.yaml>
+   python .claude/tools/zeema_locale.py add <snippet.yaml>
    ```
 2. Icon. Cloud providers get their provider badge automatically. A `default` product with a
    brand mark: add `"<id>": "<simple-icons slug>"` to `.claude/tools/badges-extra.json` if

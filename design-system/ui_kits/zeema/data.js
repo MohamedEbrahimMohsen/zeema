@@ -57,11 +57,11 @@ window.KIT = {
   ],
 
   designs: [
-    { title: "YouTube", description: "Upload, transcode, serve at scale.", author: "arkore", componentCount: 14, clones: 212, thumb: "mark" },
-    { title: "Order processing", description: "Checkout to fulfilment with a replayable log.", author: "arkore", componentCount: 9, provider: "aws", clones: 88, thumb: "diagram" },
+    { title: "YouTube", description: "Upload, transcode, serve at scale.", author: "zeema", componentCount: 14, clones: 212, thumb: "mark" },
+    { title: "Order processing", description: "Checkout to fulfilment with a replayable log.", author: "zeema", componentCount: 9, provider: "aws", clones: 88, thumb: "diagram" },
     { title: "Rate limiter", author: "@mira", componentCount: 3, visibility: "private", thumb: "plate" },
-    { title: "Multi-region reads", description: "Spanner primary with regional read replicas.", author: "arkore", componentCount: 11, provider: "gcp", clones: 47, thumb: "diagram" },
+    { title: "Multi-region reads", description: "Spanner primary with regional read replicas.", author: "zeema", componentCount: 11, provider: "gcp", clones: 47, thumb: "diagram" },
     { title: "Stripe webhooks", description: "Idempotent ingest with a dead-letter path.", author: "@dev", componentCount: 6, clones: 31, thumb: "plate" },
-    { title: "Edge image pipeline", description: "Transform at the edge, cache in R2.", author: "arkore", componentCount: 7, provider: "cloudflare", clones: 19, thumb: "diagram" },
+    { title: "Edge image pipeline", description: "Transform at the edge, cache in R2.", author: "zeema", componentCount: 7, provider: "cloudflare", clones: 19, thumb: "diagram" },
   ],
 };

@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://arkore.dev/schema/v1/design.schema.json",
-  "title": "Arkore Design",
+  "$id": "https://zeema.dev/schema/v1/design.schema.json",
+  "title": "Zeema Design",
   "description": "One system: requirements, groups, nodes (component instances) and edges.",
   "type": "object",
   "additionalProperties": false,

@@ -1,6 +1,6 @@
 # reddit-feed: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/reddit-feed.md` (intake card of 2026-09-07, with the 2026-09-13 verification appended).
 - Size: 25 nodes, 37 edges, 4 groups (broken twin: 23 nodes, 35 edges, 4 groups).
 

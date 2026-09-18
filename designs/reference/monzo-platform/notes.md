@@ -1,6 +1,6 @@
 # monzo-platform: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/monzo-platform.md` (Monzo engineering blog, 11 posts; three InfoQ write-ups of QCon London talks by Monzo engineers, 2019/2020/2023). Two URLs re-verified 2026-09-14.
 - Size: 25 nodes, 29 edges, 5 groups. The broken twin is 23 nodes, 26 edges, 5 groups.
 

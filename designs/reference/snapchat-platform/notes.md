@@ -1,6 +1,6 @@
 # snapchat-platform: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/snapchat-platform.md` (intake card, with a `## Verification 2026-09-14` section appended).
 - Size: 23 nodes, 28 edges, 6 groups.
 

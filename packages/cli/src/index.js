@@ -1,20 +1,20 @@
-// arkore: the command line.
-//   arkore lint [paths...] [--format human|json|sarif] [--fail-on error|warning|info|never] [--out file]
-//   arkore validate [--root <repo>]
-//   arkore render <design> [--format svg|mermaid] [--out file] [--theme auto|light|dark]
-//   arkore catalogue find|component|kind|kinds|providers ...
-//   arkore init [dir]
-//   arkore version
+// zeema: the command line.
+//   zeema lint [paths...] [--format human|json|sarif] [--fail-on error|warning|info|never] [--out file]
+//   zeema validate [--root <repo>]
+//   zeema render <design> [--format svg|mermaid] [--out file] [--theme auto|light|dark]
+//   zeema catalogue find|component|kind|kinds|providers ...
+//   zeema init [dir]
+//   zeema version
 // Exit codes: 0 clean, 1 findings at or above the failing severity (or any structural problem),
 // 2 usage or input error.
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { DEFAULT_ROOT, iconMap, loadCatalogue } from "@arkore/catalogue";
-import { validateRepository } from "@arkore/catalogue/validate";
-import { normalize } from "@arkore/core/document";
-import { toMermaid, toSvg } from "@arkore/core/render";
-import { parse } from "@arkore/core/yaml";
+import { DEFAULT_ROOT, iconMap, loadCatalogue } from "@zeema/catalogue";
+import { validateRepository } from "@zeema/catalogue/validate";
+import { normalize } from "@zeema/core/document";
+import { toMermaid, toSvg } from "@zeema/core/render";
+import { parse } from "@zeema/core/yaml";
 import { catalogueCommand } from "./catalogue-cmd.js";
 import { initProject } from "./init.js";
 import {
@@ -45,11 +45,11 @@ export function parseArgs(argv) {
   return { positional, flags };
 }
 
-// The catalogue root: --root, ARKORE_ROOT, the nearest ancestor of cwd holding kinds/ and
+// The catalogue root: --root, ZEEMA_ROOT, the nearest ancestor of cwd holding kinds/ and
 // components/, or the repository this package lives in.
 export function findRoot(flags, cwd = process.cwd()) {
   if (flags.root) return path.resolve(cwd, flags.root);
-  if (process.env.ARKORE_ROOT) return path.resolve(process.env.ARKORE_ROOT);
+  if (process.env.ZEEMA_ROOT) return path.resolve(process.env.ZEEMA_ROOT);
   let dir = cwd;
   for (;;) {
     if (fs.existsSync(path.join(dir, "kinds")) && fs.existsSync(path.join(dir, "components")))
@@ -70,16 +70,16 @@ function catalogueFor(root) {
 }
 
 function readConfig(cwd) {
-  const p = path.join(cwd, "arkore.config.json");
+  const p = path.join(cwd, "zeema.config.json");
   if (!fs.existsSync(p)) return {};
   try {
     return JSON.parse(fs.readFileSync(p, "utf8"));
   } catch (e) {
-    throw new Error(`arkore.config.json: ${e.message}`);
+    throw new Error(`zeema.config.json: ${e.message}`);
   }
 }
 
-const USAGE = `arkore <command>
+const USAGE = `zeema <command>
 
   lint [paths...]        structure and rules on design files (default: config "designs" or cwd)
                          --format human|json|sarif  --fail-on error|warning|info|never  --out <file>
@@ -109,7 +109,7 @@ export async function main(argv, io = {}) {
       return cmd ? 0 : 2;
     }
     if (cmd === "version") {
-      stdout(`arkore ${VERSION}\n`);
+      stdout(`zeema ${VERSION}\n`);
       return 0;
     }
     if (cmd === "init") {
@@ -137,7 +137,7 @@ export async function main(argv, io = {}) {
     }
     if (cmd === "render") {
       if (!rest[0]) {
-        stderr("usage: arkore render <design> [--format svg|mermaid] [--out file]\n");
+        stderr("usage: zeema render <design> [--format svg|mermaid] [--out file]\n");
         return 2;
       }
       const text = fs.readFileSync(path.resolve(cwd, rest[0]), "utf8");

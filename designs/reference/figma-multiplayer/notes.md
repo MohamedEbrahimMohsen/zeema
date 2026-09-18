@@ -1,6 +1,6 @@
 # figma-multiplayer: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/figma-multiplayer.md` (six official Figma engineering posts, 2018-2024, all re-fetched and confirmed 2026-09-13).
 - Size: 16 nodes, 21 edges, 6 groups (the broken variant adds one availability-zone group).
 

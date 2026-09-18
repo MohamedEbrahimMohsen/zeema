@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* ── Arkore design system ──────────────────────────────────────────────
+/* ── Zeema design system ──────────────────────────────────────────────
    Tokens mirror design-system/tokens/*.css (the "Blueprint" direction).
    Light is the default; the theme boot script in layout.tsx stamps
    data-theme="light|dark" on <html> before first paint, so dark needs only

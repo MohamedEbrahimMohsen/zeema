@@ -1,6 +1,6 @@
 # hotel-reservation: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/hotel-reservation.md` (Alex Xu and Sahn Lam, *System Design Interview vol 2*, ch 7, official ByteByteGo course page; Agoda, "PriceAggregator", arXiv 2008.02087; Agoda multi-product booking engine post via search summary). Re-verified 2026-09-14.
 - Size: 23 nodes, 31 edges, 4 groups.
 

@@ -1,4 +1,4 @@
-# Arkore: the complete product plan
+# Zeema: the complete product plan
 
 **Status:** target specification. This document describes the whole product as it must exist to be
 called production-ready and released to the developer community. It does not describe the current
@@ -48,7 +48,7 @@ unambiguous, and acceptance criteria that a test or a reviewer can check. "Must"
 
 ## 1. Vision and thesis
 
-Arkore describes software architecture as **typed, queryable data** rather than as pictures.
+Zeema describes software architecture as **typed, queryable data** rather than as pictures.
 
 A design is a text document that names components drawn from a curated catalogue, the directed
 edges between them, the boundaries that contain them, and the promises the system makes about
@@ -66,7 +66,7 @@ written to trip them. Every pillar below exists to make that test possible and r
 
 ## 2. Audiences and use cases
 
-| Audience | What they do with Arkore |
+| Audience | What they do with Zeema |
 |---|---|
 | Software architect | Authors a design, states its promises, runs the rules, publishes it |
 | Development team | Keeps the design in the repository beside the code, lints it in every pull request |
@@ -82,7 +82,7 @@ Primary use cases, each of which must be possible end to end:
 2. Draw a design on the canvas, save it as the same text format, and open it again unchanged.
 3. Run the linter locally and in continuous integration on every change, with a machine-readable
    result and a non-zero exit on structural errors.
-4. Import an existing diagram or infrastructure definition into a faithful Arkore design, with a
+4. Import an existing diagram or infrastructure definition into a faithful Zeema design, with a
    mapping that proves fidelity.
 5. Publish a design to the community site, choose whether it is public, and let others read,
    clone and export it while only the owner edits it.
@@ -656,13 +656,13 @@ installation through the registry's ad-hoc runner.
 
 | Command | Does |
 |---|---|
-| `arkore lint <paths...>` | Structural check and rules on one or more designs, or on every design under a folder |
-| `arkore validate` | The full repository gate: schemas, catalogue, locale, icons, rules, reference twins, imported fidelity |
-| `arkore render <design> --format svg\|mermaid` | Render using the shared layout |
-| `arkore catalogue find\|component\|kind\|kinds\|providers` | Query the bundle |
-| `arkore import <source> --into <folder>` | Run the import contract as far as it can be automated and report what a person must decide |
-| `arkore init` | Create a starter design, the editor schema mapping and a continuous-integration workflow |
-| `arkore version` | Tool, schema and catalogue versions |
+| `zeema lint <paths...>` | Structural check and rules on one or more designs, or on every design under a folder |
+| `zeema validate` | The full repository gate: schemas, catalogue, locale, icons, rules, reference twins, imported fidelity |
+| `zeema render <design> --format svg\|mermaid` | Render using the shared layout |
+| `zeema catalogue find\|component\|kind\|kinds\|providers` | Query the bundle |
+| `zeema import <source> --into <folder>` | Run the import contract as far as it can be automated and report what a person must decide |
+| `zeema init` | Create a starter design, the editor schema mapping and a continuous-integration workflow |
+| `zeema version` | Tool, schema and catalogue versions |
 
 **E1.3** `lint` output formats: human-readable (default), JSON, and a static-analysis interchange
 format that code hosting platforms render inline on pull requests. Each finding carries rule id,
@@ -683,7 +683,7 @@ counted in the output.
 
 ### E2. Continuous integration
 
-**E2.1** A published, reusable workflow for the major code hosting platform runs `arkore lint`
+**E2.1** A published, reusable workflow for the major code hosting platform runs `zeema lint`
 on changed designs, annotates the pull request with findings, and fails the check by the same
 exit rules as E1.4.
 
@@ -694,7 +694,7 @@ failing gate.
 ### E3. Editor integration
 
 **E3.1** The schemas are published at stable addresses so any editor with JSON Schema support
-validates and completes designs on type. `arkore init` writes the mapping for the common editors.
+validates and completes designs on type. `zeema init` writes the mapping for the common editors.
 
 **Acceptance:** a fresh repository with one design and the published workflow gets a failing
 check with inline annotations when a rule of severity `error` fires, and a passing check after
@@ -1185,7 +1185,7 @@ events, session expiry, salt rotation.
 
 | Document | Content |
 |---|---|
-| Argument | What Arkore is, the ten-line example, the thesis |
+| Argument | What Zeema is, the ten-line example, the thesis |
 | Format specification | Every field, every rule of A1 to A7, with examples |
 | Rule reference | Every shipped rule: rationale, evidence, positive and negative examples |
 | Catalogue reference | Every kind with its properties; component search; provider inventories |

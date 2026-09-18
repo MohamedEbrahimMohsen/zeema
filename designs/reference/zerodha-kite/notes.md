@@ -1,6 +1,6 @@
 # zerodha-kite: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/zerodha-kite.md` (nine official Zerodha Tech blog posts, the Kite Connect v3 API docs, the Z-Connect 2019 postmortem and the CNCF case study; re-verified 2026-09-14).
 - Size: 25 nodes, 35 edges, 5 groups. The broken twin has 22 nodes, 30 edges, 5 groups.
 

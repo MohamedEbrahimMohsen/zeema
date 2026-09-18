@@ -1,4 +1,4 @@
-# Deploying the Arkore platform
+# Deploying the Zeema platform
 
 The web app is one Node process in front of a Postgres database. Migrations and the seeding of
 the curated designs happen at boot, so a fresh deployment needs no manual steps.
@@ -36,6 +36,7 @@ The app is on port 3000. First boot seeds the curated designs, which takes a min
 | Service | Port | Reachable from |
 |---|---|---|
 | `web` | 3000 | every interface |
+| `landing` | 4000 | every interface |
 | `grafana` | 3001 | localhost |
 | `prometheus` | 9090 | localhost |
 | `db` | 5432 | localhost |
@@ -60,13 +61,14 @@ authentication.
 | `METRICS_TOKEN` | yes | Bearer token for `/api/metrics`. Without a match the endpoint answers 404 |
 | `GRAFANA_PASSWORD` | yes | Grafana admin password |
 | `GRAFANA_DB_PASSWORD` | yes | Password for `grafana_ro`, the read-only database account Grafana queries with |
-| `APP_ORIGIN` | yes | The public origin, such as `https://arkore.example.com`. Used for the OAuth callback |
+| `APP_ORIGIN` | yes | The public origin, such as `https://zeema.example.com`. Used for the OAuth callback |
+| `CANVAS_URL` | no | Where the landing page's "Open Canvas" and "Get started" buttons send visitors. Defaults to `APP_ORIGIN` |
 | `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | for sign-in | From a GitHub OAuth app. Without them, reading works and creating is disabled |
-| `ARKORE_ADMINS` | once | Usernames granted the admin role at their next sign-in. See `roles-and-publishing.md` |
+| `ZEEMA_ADMINS` | once | Usernames granted the admin role at their next sign-in. See `roles-and-publishing.md` |
 | `EVENT_SALT` | recommended | Salt for the hashed network addresses in the event log |
 | `AUTO_SEED` | no | `0` skips seeding the curated designs into an empty database |
 | `DATABASE_URL` | outside compose | Postgres connection string. Unset locally to use the embedded database under `apps/web/.pglite` |
-| `ARKORE_ROOT` | no | Repository root holding `kinds/`, `components/`, `designs/`. Defaults to the monorepo root |
+| `ZEEMA_ROOT` | no | Repository root holding `kinds/`, `components/`, `designs/`. Defaults to the monorepo root |
 
 The embedded database is for local development only. It runs inside the app process, so it
 cannot be shared by two processes or backed up while the app is running.
@@ -112,7 +114,7 @@ per API endpoint; and the fifty most viewed and fifty most cloned designs. Two c
 hold content counts and the system panels.
 
 Everything Grafana shows is provisioned from the repository. The datasources are
-`ops/grafana/provisioning`, the dashboard is `ops/grafana/dashboards/arkore-overview.json`, and
+`ops/grafana/provisioning`, the dashboard is `ops/grafana/dashboards/zeema-overview.json`, and
 both are reapplied on restart. An edit made in the Grafana interface survives restarts until
 the repository file changes, at which point the file wins and the edit is gone. To keep a
 change, export the dashboard JSON over the file in the repository.
@@ -135,7 +137,7 @@ A volume is not a backup. `ops/backup.sh` writes a compressed dump and prunes ol
 Nightly, from the repository root:
 
 ```
-15 3 * * * cd /srv/arkore && ./ops/backup.sh >> /var/log/arkore-backup.log 2>&1
+15 3 * * * cd /srv/zeema && ./ops/backup.sh >> /var/log/zeema-backup.log 2>&1
 ```
 
 Copy the dumps off the machine too, and restore one into a scratch database once so you know
@@ -157,7 +159,7 @@ migration.
 
 ```bash
 pnpm install
-pnpm --filter @arkore/web build
+pnpm --filter @zeema/web build
 cd apps/web && DATABASE_URL=... GITHUB_CLIENT_ID=... GITHUB_CLIENT_SECRET=... APP_ORIGIN=... pnpm start
 ```
 
@@ -172,5 +174,5 @@ containers behind a reverse proxy; they share the database and need no coordinat
 - `curl localhost:3000/api/health` returns `{"status":"ok"}`.
 - `GET /api/v1/designs` returns the seeded list.
 - `/signin` shows "Continue with GitHub".
-- Prometheus, at `http://localhost:9090/targets`, shows `arkore-web` and `postgres` up.
-- The Grafana dashboard "Arkore overview" draws traffic.
+- Prometheus, at `http://localhost:9090/targets`, shows `zeema-web` and `postgres` up.
+- The Grafana dashboard "Zeema overview" draws traffic.

@@ -1,6 +1,6 @@
 # github-mysql: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/github-mysql.md` (eight GitHub engineering blog posts, three official incident reports, the github/glb-director README; re-verified 2026-09-14).
 - Size: 24 nodes, 28 edges, 6 groups (broken twin: 22 nodes, 25 edges, 6 groups).
 

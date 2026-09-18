@@ -1,6 +1,6 @@
 # stack-overflow: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/stack-overflow.md` (intake card of 2026-09-14, with a verification section appended the same day)
 - Size: 25 nodes, 35 edges, 4 groups. Broken twin: 24 nodes, 33 edges, 4 groups.
 

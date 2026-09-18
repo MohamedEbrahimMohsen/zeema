@@ -1,4 +1,4 @@
-// Arkore repository validator. Tooling only; v1 ships no code.
+// Zeema repository validator. Tooling only; v1 ships no code.
 //   node validate.mjs                  whole repository (kinds, components, locale, icons, rules, designs)
 //   node validate.mjs --design <file>  one design: schema + references + fired rules with messages (exit 1 only on structural problems)
 // designs/reference/<id>/design.yaml must trip no rule and design.broken.yaml exactly the rules named in its header;

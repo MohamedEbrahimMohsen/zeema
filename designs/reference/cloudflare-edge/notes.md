@@ -1,6 +1,6 @@
 # cloudflare-edge: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/cloudflare-edge.md` (five official Cloudflare posts including two postmortems, plus the full 2019-07-02 postmortem; verification appended to the card).
 - Size: 20 nodes, 26 edges, 5 groups (broken variant: 18 nodes, 23 edges, 5 groups).
 

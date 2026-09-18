@@ -1,6 +1,6 @@
-# Arkore web: one container. Migrations run at boot and the curated designs are seeded into an
+# Zeema web: one container. Migrations run at boot and the curated designs are seeded into an
 # empty store. Build from the repository root:
-#   docker build -f apps/web/Dockerfile -t arkore-web .
+#   docker build -f apps/web/Dockerfile -t zeema-web .
 # or let compose do it:  docker compose up -d --build
 FROM node:22-alpine AS base
 RUN corepack enable && corepack prepare pnpm@12.3.4 --activate
@@ -17,11 +17,11 @@ RUN pnpm install --frozen-lockfile
 FROM deps AS build
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
-RUN pnpm --filter @arkore/web build
+RUN pnpm --filter @zeema/web build
 
 FROM node:22-alpine AS run
 WORKDIR /repo
-ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=3000 ARKORE_ROOT=/repo
+ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=3000 ZEEMA_ROOT=/repo
 # The catalogue files stay in the image: the server reads kinds/, components/, rules/ and
 # designs/ for seeding, and the browser bundle is already built under apps/web/public/catalogue.
 COPY --from=build --chown=node:node /repo /repo

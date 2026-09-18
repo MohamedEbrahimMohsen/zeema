@@ -1,4 +1,4 @@
-One-line: enum picker — the default inspector control, because most Arkore properties are enums.
+One-line: enum picker — the default inspector control, because most Zeema properties are enums.
 
 ```jsx
 <Select options={["at-least-once", "exactly-once"]} />

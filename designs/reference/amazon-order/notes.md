@@ -1,6 +1,6 @@
 # amazon-order: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/amazon-order.md` (Dynamo paper 2007, AWS Herd case study, Prime Day 2025 metrics post, Prime Video monitoring post, Builders' Library on cells and shuffle sharding), re-verified 2026-09-14.
 - Size: 22 nodes, 26 edges, 5 groups.
 

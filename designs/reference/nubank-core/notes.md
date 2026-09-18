@@ -1,6 +1,6 @@
 # nubank-core: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/nubank-core.md` (two QCon talks written up by InfoQ, two official QCon talk pages, and six posts on building.nubank.com, 2017-2025). Two URLs re-verified 2026-09-14.
 - Size: 24 nodes, 36 edges, 5 groups. The broken twin is 24 nodes, 35 edges, 5 groups.
 

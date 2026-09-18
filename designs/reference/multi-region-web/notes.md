@@ -1,6 +1,6 @@
 # multi-region-web: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/README.md`
 - Size: 8 nodes, 8 edges, 2 groups.
 

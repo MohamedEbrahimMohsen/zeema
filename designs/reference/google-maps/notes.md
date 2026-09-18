@@ -1,6 +1,6 @@
 # google-maps: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/google-maps.md` (four official Google and DeepMind posts, 2019-2020, all re-fetched and reachable on 2026-09-14).
 - Size: 22 nodes, 28 edges, 5 groups.
 

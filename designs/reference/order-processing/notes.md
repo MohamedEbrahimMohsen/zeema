@@ -1,6 +1,6 @@
 # order-processing: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/README.md`
 - Size: 9 nodes, 10 edges, 2 groups.
 

@@ -1,6 +1,6 @@
 # duolingo-backend: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/duolingo-backend.md`
 - Size: 23 nodes, 24 edges, 4 groups.
 

@@ -18,7 +18,7 @@ export default function Docs() {
         ))}
       </nav>
       <article className="prose max-w-3xl flex flex-col gap-6">
-        <h1 className="display">How Arkore works</h1>
+        <h1 className="display">How Zeema works</h1>
         <section id="layers">
           <h2>Three layers</h2>
           <p>
@@ -79,9 +79,9 @@ edges:
         </section>
         <section id="repo">
           <h2>In your repository</h2>
-          <pre className="code">{`npx @arkore/cli init          # starter design, config, editor schema mapping, CI workflow
-npx @arkore/cli lint          # structure and rules; exit 1 on errors
-npx @arkore/cli render architecture/checkout.arkore.yaml --format svg`}</pre>
+          <pre className="code">{`npx @zeema/cli init          # starter design, config, editor schema mapping, CI workflow
+npx @zeema/cli lint          # structure and rules; exit 1 on errors
+npx @zeema/cli render architecture/checkout.zeema.yaml --format svg`}</pre>
         </section>
         <section id="site">
           <h2>On this site</h2>

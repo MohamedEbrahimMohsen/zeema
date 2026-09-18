@@ -1,6 +1,6 @@
-# Arkore app — UI kit
+# Zeema app — UI kit
 
-A six-screen click-through recreation of the Arkore product, composed entirely from the
+A six-screen click-through recreation of the Zeema product, composed entirely from the
 published primitives in `components/`. Open `index.html`.
 
 | Screen | File | What it shows |

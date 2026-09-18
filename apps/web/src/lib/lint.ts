@@ -1,9 +1,9 @@
 // Server-side validation through the shared engine. Storage never accepts a design the
 // structural check rejects; rule findings are reported, never blocking.
-import { normalize } from "@arkore/core/document";
-import { runRules } from "@arkore/core/rules";
-import { check } from "@arkore/core/structure";
-import { parse } from "@arkore/core/yaml";
+import { normalize } from "@zeema/core/document";
+import { runRules } from "@zeema/core/rules";
+import { check } from "@zeema/core/structure";
+import { parse } from "@zeema/core/yaml";
 import type { Catalogue } from "./catalogue";
 
 export type Finding = {

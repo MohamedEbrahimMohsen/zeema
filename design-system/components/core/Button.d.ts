@@ -1,7 +1,7 @@
 import * as React from "react";
 
 /**
- * Arkore's action control. Exactly one primary per view; everything else is secondary.
+ * Zeema's action control. Exactly one primary per view; everything else is secondary.
  * @startingPoint section="Core" subtitle="Primary, secondary, danger and ghost actions" viewport="700x150"
  */
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {

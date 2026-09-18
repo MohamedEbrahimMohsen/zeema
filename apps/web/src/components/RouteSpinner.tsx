@@ -1,6 +1,6 @@
 "use client";
 
-// Replaces Next's bottom-left activity indicator with the Arkore spinner. It appears when an
+// Replaces Next's bottom-left activity indicator with the Zeema spinner. It appears when an
 // internal link is followed and disappears once the URL has changed (or after a safety timeout).
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";

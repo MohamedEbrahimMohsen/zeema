@@ -1,6 +1,6 @@
 # youtube-upload-playback: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/youtube-upload-playback.md` (Cuong Do's 2007 Google Tech Talk write-up, Mike Solomon's 2012 "7 years of YouTube scalability" write-up, the official Vitess history, and 2021 press coverage of Google's Argos VCU paper). Verified 2026-09-13.
 - Size: 19 nodes, 24 edges, 5 groups. Broken twin: 17 nodes, 23 edges, 5 groups.
 

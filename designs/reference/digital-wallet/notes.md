@@ -1,6 +1,6 @@
 # digital-wallet: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/digital-wallet.md` (intake card of 2026-09-07, with the 2026-09-14 verification appended)
 - Size: 21 nodes, 25 edges, 5 groups (the broken twin has 21 nodes, 25 edges, 6 groups).
 

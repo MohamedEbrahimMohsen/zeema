@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zeema — Architecture as data</title>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fafaf8; --bg-alt:#f2f2ee; --surface:#ffffff; --text:#1b1b19; --muted:#6b6b66;
+  --border:#e4e4df; --accent:#3f4fc4; --accent-strong:#333fa8; --accent-soft:#ecedfb; --grad-end:#2b3596;
+  --grid:rgba(27,27,25,.05);
+  --code-bg:#1b1b1f; --code-text:#ececea; --shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.08);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#131315; --bg-alt:#171719; --surface:#1b1b1f; --text:#ececea; --muted:#a1a19c;
+    --border:#2c2c31; --accent:#98a6f2; --accent-strong:#98a6f2; --accent-soft:rgba(152,166,242,.14);
+    --grid:rgba(152,166,242,.05); --code-bg:#0f0f11; --shadow:0 1px 2px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131315; --bg-alt:#171719; --surface:#1b1b1f; --text:#ececea; --muted:#a1a19c;
+  --border:#2c2c31; --accent:#98a6f2; --accent-strong:#98a6f2; --accent-soft:rgba(152,166,242,.14);
+  --grid:rgba(152,166,242,.05); --code-bg:#0f0f11; --shadow:0 1px 2px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:Geist,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:32px 32px}
+a{color:inherit;text-decoration:none}
+.skip{position:absolute;left:-999px;top:8px;background:var(--accent);color:#fff;padding:8px 14px;border-radius:6px}
+.skip:focus{left:16px;z-index:100}
+.wrap{max-width:1140px;margin:0 auto;padding:0 16px}
+section{padding:88px 0}
+h1{font-size:clamp(2.2rem,5.5vw,3.75rem);font-weight:800;letter-spacing:-.03em;line-height:1.08}
+h2{font-size:clamp(1.75rem,3.5vw,2.5rem);font-weight:800;letter-spacing:-.02em;line-height:1.2}
+.lead{color:var(--muted);font-size:1.125rem;margin-top:12px;max-width:620px}
+.center{text-align:center}.center .lead{margin-inline:auto}
+.eyebrow{display:inline-block;color:var(--accent-strong);font-weight:600;font-size:.8rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:10px;font-weight:600;font-size:.95rem;border:1px solid transparent;transition:.15s}
+.btn-primary{background:#3f4fc4;color:#fff}
+.btn-primary:hover{background:#333fa8}
+.btn-ghost{border-color:var(--border);background:var(--surface)}
+.btn-ghost:hover{border-color:var(--accent)}
+.accent{color:var(--accent-strong)}
+
+nav{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--bg) 85%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.15rem;letter-spacing:-.01em}
+.logo-mark{width:30px;height:30px;border-radius:7px;background:#3f4fc4;display:grid;place-items:center}
+.nav-links{display:flex;gap:26px;color:var(--muted);font-weight:500;font-size:.93rem}
+.nav-links a:hover{color:var(--text)}
+@media (max-width:720px){.nav-links{display:none}}
+.nav-cta{display:flex;gap:10px;align-items:center}
+.btn-canvas{padding:10px 16px;color:var(--accent-strong)}
+.btn-canvas svg{transition:transform .2s}
+.btn-canvas:hover svg{transform:translate(2px,-2px)}
+@media (max-width:480px){.nav-start{display:none}}
+
+.hero{padding:96px 0 64px;text-align:center}
+.hero .lead{margin-inline:auto;font-size:1.2rem}
+.hero .actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:32px}
+.pill{display:inline-flex;gap:8px;align-items:center;border:1px solid var(--border);background:var(--surface);border-radius:999px;padding:5px 14px;font-size:.85rem;color:var(--muted);margin-bottom:22px}
+.pill i{width:8px;height:8px;border-radius:50%;background:var(--accent)}
+
+.stats{padding:40px 0;border-block:1px solid var(--border);background:var(--bg)}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.stat{text-align:center}
+.stat b{display:block;font-size:clamp(1.6rem,4vw,2.4rem);font-weight:800;letter-spacing:-.02em;color:var(--accent-strong)}
+.stat span{color:var(--muted);font-size:.95rem}
+@media (max-width:560px){.stats-grid{grid-template-columns:1fr;gap:24px}}
+
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:48px;text-align:left}
+@media (max-width:900px){.grid3{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:560px){.grid3{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:26px;box-shadow:var(--shadow);transition:.2s}
+.card:hover{transform:translateY(-3px);border-color:var(--accent)}
+.icon{width:42px;height:42px;border-radius:10px;background:var(--accent-soft);color:var(--accent-strong);display:grid;place-items:center;margin-bottom:16px}
+.icon svg{width:22px;height:22px}
+.card h3{font-size:1.1rem;font-weight:700;margin-bottom:6px}
+.card p{color:var(--muted);font-size:.95rem}
+
+.alt{background:var(--bg-alt);border-block:1px solid var(--border)}
+.integrations{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:48px;text-align:left}
+@media (max-width:900px){.integrations{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:560px){.integrations{grid-template-columns:1fr}}
+.int{display:flex;align-items:center;gap:16px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;transition:.2s}
+.int:hover{border-color:var(--accent);box-shadow:var(--shadow)}
+.int .icon{margin:0;flex-shrink:0}
+.int strong{display:block;font-weight:700}
+.int span{color:var(--muted);font-size:.9rem}
+.more{display:inline-block;margin-top:32px;font-weight:600;color:var(--accent-strong)}
+.more:hover{text-decoration:underline}
+
+.dev{display:grid;grid-template-columns:1fr 1.1fr;gap:56px;align-items:center}
+@media (max-width:900px){.dev{grid-template-columns:1fr;gap:36px}}
+.dev .actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
+.code{background:var(--code-bg);border-radius:14px;overflow:hidden;border:1px solid var(--border);box-shadow:var(--shadow)}
+.code-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #2c2c31;color:#a1a19c;font-size:.85rem}
+.dots{display:flex;gap:6px}.dots i{width:10px;height:10px;border-radius:50%;background:#55555c}
+.copy{background:none;border:1px solid #3a3a40;color:#ececea;border-radius:6px;padding:4px 10px;font:inherit;font-size:.8rem;cursor:pointer}
+.copy:hover{border-color:var(--accent)}
+pre{padding:20px;overflow-x:auto;font-family:"JetBrains Mono",monospace;font-size:.88rem;line-height:1.7;color:var(--code-text)}
+.c{color:#7d7d78}.k{color:#98a6f2}.s{color:#6fc28f}.n{color:#e0a23d}
+
+.cta{background:linear-gradient(135deg,#3f4fc4 0%,#2b3596 100%);color:#fff;border-radius:20px;padding:64px 24px;text-align:center}
+.cta p{opacity:.9;font-size:1.1rem;margin-top:10px}
+.cta .actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:28px}
+.cta .btn-primary{background:#fff;color:#333fa8}
+.cta .btn-primary:hover{background:#ecedfb}
+.cta .btn-ghost{background:transparent;border-color:rgba(255,255,255,.5);color:#fff}
+.cta .btn-ghost:hover{border-color:#fff}
+
+
+/* ===== Architect <-> Agent ===== */
+.loop{position:relative;overflow:hidden}
+.loop::before{content:"";position:absolute;inset:-40% -10% auto;height:520px;background:radial-gradient(closest-side,var(--accent-soft),transparent);opacity:.9;pointer-events:none}
+.loop .wrap{position:relative}
+.switch{display:inline-flex;margin-top:28px;padding:4px;border:1px solid var(--border);background:var(--surface);border-radius:999px;position:relative;box-shadow:var(--shadow)}
+.switch button{position:relative;z-index:1;border:0;background:none;font:inherit;font-weight:600;font-size:.9rem;padding:9px 18px;border-radius:999px;color:var(--muted);cursor:pointer;transition:color .3s}
+.switch button.on{color:#fff}
+.switch .thumb{position:absolute;top:4px;bottom:4px;left:4px;border-radius:999px;background:var(--accent);transition:transform .45s cubic-bezier(.7,0,.2,1),width .45s}
+.progress{height:3px;width:220px;margin:14px auto 0;background:var(--border);border-radius:3px;overflow:hidden}
+.progress i{display:block;height:100%;width:0;background:var(--accent)}
+.stage{display:grid;grid-template-columns:1fr 150px 1fr;gap:0;align-items:stretch;margin-top:44px;text-align:left}
+.panel{background:var(--code-bg);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);min-height:340px;display:flex;flex-direction:column;transition:box-shadow .4s,border-color .4s}
+.panel.active{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft),var(--shadow)}
+.panel-head{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid #2c2c31;color:#ececea;font-size:.85rem;font-weight:600}
+.avatar{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;background:rgba(255,255,255,.06);color:var(--accent)}
+.avatar svg{width:15px;height:15px}
+.panel-head small{margin-left:auto;font-weight:500;color:#7d7d78;font-family:"JetBrains Mono",monospace;font-size:.75rem}
+.status{width:8px;height:8px;border-radius:50%;background:#55555c;margin-left:6px}
+.panel.active .status{background:#98a6f2;box-shadow:0 0 0 0 rgba(152,166,242,.6);animation:ping 1.4s infinite}
+@keyframes ping{70%{box-shadow:0 0 0 8px rgba(152,166,242,0)}100%{box-shadow:0 0 0 0 rgba(152,166,242,0)}}
+.panel pre{flex:1;padding:18px;font-size:.84rem;white-space:pre}
+.term{flex:1;padding:18px;font-family:"JetBrains Mono",monospace;font-size:.82rem;line-height:1.85;color:#ececea}
+.term div{opacity:0;transform:translateY(6px);transition:opacity .35s,transform .35s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.term div.show{opacity:1;transform:none}
+.ok{color:#6fc28f}.warn{color:#e0a23d}.add{color:#6fc28f}.dim{color:#7d7d78}
+.diff-add{display:inline-block;width:100%;background:rgba(152,166,242,.12);box-shadow:inset 3px 0 0 #98a6f2}
+.caret{display:inline-block;width:8px;height:1.05em;vertical-align:-2px;background:var(--accent);animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.panel-foot{padding:12px 16px;border-top:1px solid #2c2c31;display:flex;gap:8px;align-items:center;min-height:52px}
+.chip{font-size:.75rem;font-weight:600;padding:4px 10px;border-radius:999px;border:1px solid #3a3a40;color:#a1a19c;opacity:0;transform:scale(.9);transition:.35s}
+.chip.show{opacity:1;transform:none}
+.chip.go{background:var(--accent);border-color:var(--accent);color:#fff}
+
+.bridge{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+.bridge svg.wire{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.wire path{fill:none;stroke:var(--border);stroke-width:2}
+.wire .flow{stroke:var(--accent);stroke-dasharray:6 10;animation:dash 1s linear infinite}
+.stage.rev .wire .flow{animation-direction:reverse}
+@keyframes dash{to{stroke-dashoffset:-16}}
+.packet{position:absolute;top:50%;left:0;width:30px;height:22px;margin-top:-11px;border-radius:6px;background:var(--surface);border:1px solid var(--accent);color:var(--accent-strong);font:600 .6rem "JetBrains Mono",monospace;display:grid;place-items:center;opacity:0;box-shadow:0 4px 14px var(--accent-soft)}
+.stage.run .packet{animation:fly 2.2s cubic-bezier(.6,0,.3,1) infinite}
+.stage.run .packet:nth-of-type(2){animation-delay:.73s}
+.stage.run .packet:nth-of-type(3){animation-delay:1.46s}
+.stage.rev.run .packet{animation-name:flyrev}
+@keyframes fly{0%{left:-10px;opacity:0}15%{opacity:1}85%{opacity:1}100%{left:calc(100% - 20px);opacity:0}}
+@keyframes flyrev{0%{left:calc(100% - 20px);opacity:0}15%{opacity:1}85%{opacity:1}100%{left:-10px;opacity:0}}
+.core{position:relative;z-index:2;width:62px;height:62px;border-radius:18px;background:var(--accent);display:grid;place-items:center;box-shadow:0 0 0 8px var(--accent-soft),0 10px 30px var(--accent-soft)}
+.core svg{width:28px;height:28px;transition:transform .6s cubic-bezier(.7,0,.2,1)}
+.stage.rev .core svg{transform:rotate(180deg)}
+.core::after{content:"";position:absolute;inset:-14px;border-radius:24px;border:1.5px dashed var(--accent);opacity:.5;animation:spin 12s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.bridge-label{position:relative;z-index:2;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-strong);background:var(--bg);padding:2px 8px;border-radius:6px}
+
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:40px;text-align:left}
+.step{padding:20px 22px;border-radius:14px;border:1px solid var(--border);background:var(--surface);transition:.4s}
+.step.on{border-color:var(--accent);transform:translateY(-3px);box-shadow:var(--shadow)}
+.step b{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:8px;background:var(--accent-soft);color:var(--accent-strong);font-size:.8rem;margin-bottom:10px}
+.step h4{font-size:1rem;margin-bottom:4px}
+.step p{color:var(--muted);font-size:.9rem}
+
+@media (max-width:900px){
+  .stage{grid-template-columns:1fr;grid-template-rows:auto 120px auto}
+  .bridge .wire{transform:rotate(90deg) scale(.35,2.6)}
+  .stage.run .packet{animation-name:flyv}.stage.rev.run .packet{animation-name:flyvrev}
+  .packet{left:50%!important;margin-left:-15px;top:0}
+  @keyframes flyv{0%{top:-10px;opacity:0}15%,85%{opacity:1}100%{top:calc(100% - 12px);opacity:0}}
+  @keyframes flyvrev{0%{top:calc(100% - 12px);opacity:0}15%,85%{opacity:1}100%{top:-10px;opacity:0}}
+  .core svg{transform:rotate(90deg)}.stage.rev .core svg{transform:rotate(270deg)}
+  .steps{grid-template-columns:1fr}
+  .panel{min-height:300px}
+}
+@media (prefers-reduced-motion:reduce){
+  .wire .flow,.core::after,.caret,.panel.active .status{animation:none}
+  .stage.run .packet{animation:none;opacity:0}
+}
+
+footer{border-top:1px solid var(--border);padding:28px 0;color:var(--muted);font-size:.9rem;background:var(--bg)}
+footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to main content</a>
+
+<nav>
+  <div class="wrap">
+    <a class="logo" href="#">
+      <span class="logo-mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 3 21h18L12 3z"/><path d="M7.5 14h9"/></svg></span>
+      Zeema
+    </a>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#integrations">Workflow</a>
+      <a href="#developers">Schema</a>
+      <a href="#agents">Agents</a>
+      <a href="#">Docs</a>
+    </div>
+    <div class="nav-cta">
+      <a class="btn btn-ghost btn-canvas" href="__CANVAS_URL__" target="_blank" rel="noopener noreferrer">Open Canvas
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg></a>
+      <a class="btn btn-primary nav-start" href="__CANVAS_URL__">Get started</a>
+    </div>
+  </div>
+</nav>
+
+<main id="main">
+  <header class="hero">
+    <div class="wrap">
+      <span class="pill"><i></i>Open schema · Free to use</span>
+      <h1>Your architecture,<br><span class="accent">as data.</span></h1>
+      <p class="lead">Zeema describes systems as structured, versioned data—not diagrams that go stale. Define components once, query them, diff them, and keep them next to your code.</p>
+      <div class="actions">
+        <a class="btn btn-primary" href="__CANVAS_URL__">Get started</a>
+        <a class="btn btn-ghost" href="#developers">See the schema</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="stats">
+    <div class="wrap stats-grid">
+      <div class="stat"><b>Schema-first</b><span>Public, documented format</span></div>
+      <div class="stat"><b>1 file</b><span>Per component, in YAML</span></div>
+      <div class="stat"><b>Free</b><span>No seats, no paywall</span></div>
+    </div>
+  </div>
+
+  <section id="features">
+    <div class="wrap center">
+      <h2>Why architects choose Zeema</h2>
+      <p class="lead">Architecture documentation that stays true, because it lives where your code does.</p>
+      <div class="grid3">
+        <div class="card"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.7 4 3 9 3s9-1.3 9-3V5"/><path d="M3 12c0 1.7 4 3 9 3s9-1.3 9-3"/></svg></div><h3>Data, not pictures</h3><p>Every service, database, and queue is a typed definition you can validate, query, and reuse.</p></div>
+        <div class="card"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h4"/></svg></div><h3>One file per component</h3><p>Small YAML files that are easy to read, review, and own—no giant monolithic model.</p></div>
+        <div class="card"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><path d="M6 9v3a6 6 0 0 0 6 6h3"/></svg></div><h3>Git-native</h3><p>Branch, diff, and review architecture changes in pull requests, like any other code.</p></div>
+        <div class="card"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></div><h3>Validated by schema</h3><p>Catch missing owners, broken dependencies, and typos before they reach the docs.</p></div>
+        <div class="card"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 18 6-6-6-6M8 6l-6 6 6 6"/></svg></div><h3>Open format</h3><p>The schema is public. Your architecture is never locked inside a proprietary tool.</p></div>
+        <div class="card"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div><h3>Reusable catalog</h3><p>Build a library of standard components and compose new systems from proven parts.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="integrations" class="alt">
+    <div class="wrap center">
+      <h2>Fits your workflow</h2>
+      <p class="lead">Plain files and an open schema—so it works with the tools you already use.</p>
+      <div class="integrations">
+        <a class="int" href="#"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="9" r="3"/><path d="M6 9v6M18 12c0 3-3 4-9 5"/></svg></div><div><strong>Git</strong><span>Version & review in PRs</span></div></a>
+        <a class="int" href="#"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 18 6-6-6-6M8 6l-6 6 6 6"/></svg></div><div><strong>Your editor</strong><span>Autocomplete via JSON Schema</span></div></a>
+        <a class="int" href="#"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg></div><div><strong>CI / CD</strong><span>Validate on every commit</span></div></a>
+        <a class="int" href="#"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V2H6.5A2.5 2.5 0 0 0 4 4.5z"/></svg></div><div><strong>Docs</strong><span>Generate Markdown pages</span></div></a>
+        <a class="int" href="#"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="19" cy="19" r="2"/><path d="M7 12h5l5-6M12 12l5 6"/></svg></div><div><strong>Diagrams</strong><span>Render views from the data</span></div></a>
+        <a class="int" href="#"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17 10 11 4 5M12 19h8"/></svg></div><div><strong>CLI</strong><span>Query & lint locally</span></div></a>
+      </div>
+      <a class="more" href="#">See how it fits together →</a>
+    </div>
+  </section>
+
+  <section id="developers">
+    <div class="wrap dev">
+      <div>
+        <span class="eyebrow">For Developers</span>
+        <h2>Define a component in seconds</h2>
+        <p class="lead">Each component is a small YAML file checked against the public Zeema schema. Dependencies, ownership, and tech stack—all machine-readable.</p>
+        <div class="actions">
+          <a class="btn btn-primary" href="#">Read the schema</a>
+          <a class="btn btn-ghost" href="#">View examples</a>
+        </div>
+      </div>
+      <div class="code">
+        <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span>components/order-service.yaml</span><button class="copy" id="copyBtn">Copy</button></div>
+<pre id="snippet"><span class="c"># Zeema component definition</span>
+<span class="k">kind</span>: <span class="s">service</span>
+<span class="k">name</span>: <span class="s">order-service</span>
+<span class="k">owner</span>: <span class="s">team-checkout</span>
+<span class="k">runtime</span>: <span class="s">dotnet</span>
+<span class="k">exposes</span>:
+  - <span class="k">api</span>: <span class="s">orders.v1</span>
+    <span class="k">protocol</span>: <span class="s">http</span>
+<span class="k">dependsOn</span>:
+  - <span class="s">postgres/orders-db</span>
+  - <span class="s">queue/payment-events</span>
+<span class="k">replicas</span>: <span class="n">3</span></pre>
+      </div>
+    </div>
+  </section>
+
+    <section id="agents" class="loop">
+    <div class="wrap center">
+      <span class="eyebrow">New · Architecture ⇄ AI</span>
+      <h2>Architect to Agent. <span class="accent">Agent to Architect.</span></h2>
+      <p class="lead">Because your architecture is data, AI agents can read it, build from it, and tell you when reality drifts. The diagram in your head finally becomes a contract both humans and agents follow.</p>
+
+      <div class="switch" role="tablist" aria-label="Direction">
+        <span class="thumb" id="thumb"></span>
+        <button role="tab" class="on" data-mode="a2g" aria-selected="true">Architect → Agent</button>
+        <button role="tab" data-mode="g2a" aria-selected="false">Agent → Architect</button>
+      </div>
+      <div class="progress"><i id="prog"></i></div>
+
+      <div class="stage" id="stage">
+        <div class="panel" id="pArch">
+          <div class="panel-head">
+            <span class="avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 3 21h18L12 3z"/><path d="M7.5 14h9"/></svg></span>
+            Architect <span class="status"></span>
+            <small id="archFile">payment-service.yaml</small>
+          </div>
+          <pre id="archCode"></pre>
+          <div class="panel-foot" id="archFoot"></div>
+        </div>
+
+        <div class="bridge" aria-hidden="true">
+          <svg class="wire" viewBox="0 0 150 100" preserveAspectRatio="none"><path d="M0 50 H150"/><path class="flow" d="M0 50 H150"/></svg>
+          <span class="packet">yml</span><span class="packet">{ }</span><span class="packet">diff</span>
+          <div class="core"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+          <span class="bridge-label">Zeema schema</span>
+        </div>
+
+        <div class="panel" id="pAgent">
+          <div class="panel-head">
+            <span class="avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 4v4M9 14h.01M15 14h.01"/></svg></span>
+            AI Agent <span class="status"></span>
+            <small>zeema-mcp</small>
+          </div>
+          <div class="term" id="term"></div>
+          <div class="panel-foot" id="agentFoot"></div>
+        </div>
+      </div>
+
+      <div class="steps" id="steps">
+        <div class="step"><b>1</b><h4 id="s1t">Design as data</h4><p id="s1p">You define the component once, in a small YAML file.</p></div>
+        <div class="step"><b>2</b><h4 id="s2t">Agent reads the contract</h4><p id="s2p">Any agent loads the schema: owners, APIs, dependencies.</p></div>
+        <div class="step"><b>3</b><h4 id="s3t">Code matches architecture</h4><p id="s3p">The agent builds exactly what was designed, and opens a PR.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding-top:0">
+    <div class="wrap">
+      <div class="cta">
+        <h2>Start modeling in minutes</h2>
+        <p>No account required. No credit card. Just define your first component.</p>
+        <div class="actions">
+          <a class="btn btn-primary" href="__CANVAS_URL__">Get started</a>
+          <a class="btn btn-ghost" href="#">Explore the schema</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap"><span>© 2026 Zeema</span><span>Architecture as data</span></div>
+</footer>
+
+<script>
+document.getElementById('copyBtn').addEventListener('click', async e => {
+  const text = document.getElementById('snippet').innerText;
+  try { await navigator.clipboard.writeText(text); e.target.textContent = 'Copied'; }
+  catch { e.target.textContent = 'Failed'; }
+  setTimeout(() => e.target.textContent = 'Copy', 1500);
+});
+</script>
+<script>
+(() => {
+  const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  const hl = l => esc(l).replace(/^(\s*-?\s*)([A-Za-z]+)(:)/,'$1<span class="k">$2</span>$3').replace(/:\s(.+)$/,m=>': <span class="s">'+m.slice(2)+'</span>').replace(/^(\s*#.*)$/,'<span class="c">$1</span>');
+  const $ = id => document.getElementById(id);
+  const stage=$('stage'), code=$('archCode'), term=$('term'), aF=$('archFoot'), gF=$('agentFoot'), prog=$('prog');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const DUR = 11000;
+
+  const A2G = {
+    file:'payment-service.yaml',
+    yaml:['kind: service','name: payment-service','owner: team-payments','runtime: dotnet','exposes:','  - api: payments.v1','dependsOn:','  - postgres/payments-db','  - queue/payment-events'],
+    term:[['dim','$ agent run "build payment-service"'],['','▸ loading zeema schema…'],['ok','✓ 14 components · 21 dependencies'],['','▸ resolving payment-service contract'],['add','+ src/PaymentService (dotnet)'],['add','+ consumer: queue/payment-events'],['ok','✓ validated against architecture']],
+    archChips:[['Committed','']], agentChips:[['PR #42 opened','go']],
+    steps:[['Design as data','You define the component once, in a small YAML file.'],['Agent reads the contract','Any agent loads the schema: owners, APIs, dependencies.'],['Code matches architecture','The agent builds exactly what was designed, and opens a PR.']]
+  };
+  const G2A = {
+    file:'order-service.yaml',
+    yaml:['kind: service','name: order-service','owner: team-checkout','dependsOn:','  - postgres/orders-db','  - queue/payment-events','+ - cache/redis-orders','+ - api/shipping.v2'],
+    term:[['dim','$ agent scan ./repo'],['','▸ comparing code ↔ architecture'],['warn','! order-service → redis (undeclared)'],['warn','! order-service → shipping.v2 (undeclared)'],['','▸ drafting architecture update'],['ok','✓ 2 changes proposed to architect']],
+    archChips:[['Review','' ],['Accept','go']], agentChips:[['Drift detected','']],
+    steps:[['Agent watches the code','Agents scan the repo and compare it to the declared architecture.'],['Drift becomes a diff','Undeclared dependencies turn into a proposed YAML change.'],['Architect stays in control','You review and accept, and the architecture stays true.']]
+  };
+
+  let mode='a2g', timers=[], cycle;
+  const later=(fn,ms)=>timers.push(setTimeout(fn,reduce?0:ms));
+  const chips=(el,list)=>{el.innerHTML=list.map(([t,c])=>`<span class="chip ${c}">${t}</span>`).join('');[...el.children].forEach((c,i)=>later(()=>c.classList.add('show'),i*180));};
+  const stepOn=i=>[...$('steps').children].forEach((s,j)=>s.classList.toggle('on',j===i));
+
+  function typeYaml(lines,start,done){
+    let li=0,ci=0,out=[];
+    const tick=()=>{
+      if(li>=lines.length){code.innerHTML=out.join('\n');done&&done();return;}
+      const raw=lines[li], isAdd=raw.startsWith('+ '), text=isAdd?'  '+raw.slice(2):raw;
+      ci++;
+      const partial=text.slice(0,ci);
+      const lineHtml=isAdd?`<span class="diff-add">${hl(partial)}</span>`:hl(partial);
+      code.innerHTML=[...out,lineHtml].join('\n')+'<span class="caret"></span>';
+      if(ci>=text.length){out.push(isAdd?`<span class="diff-add">${hl(text)}</span>`:hl(text));li++;ci=0;later(tick,isAdd?120:60);}
+      else later(tick,isAdd?38:22);
+    };
+    later(tick,start);
+  }
+  function runTerm(lines,start,gap){
+    term.innerHTML=lines.map(([c,t])=>`<div class="${c}">${esc(t)}</div>`).join('');
+    [...term.children].forEach((d,i)=>later(()=>d.classList.add('show'),start+i*gap));
+  }
+
+  function play(){
+    timers.forEach(clearTimeout);timers=[];
+    const S = mode==='a2g'?A2G:G2A;
+    stage.classList.toggle('rev',mode==='g2a');
+    stage.classList.remove('run');
+    $('archFile').textContent=S.file; code.innerHTML=''; term.innerHTML=''; aF.innerHTML=''; gF.innerHTML='';
+    S.steps.forEach(([t,p],i)=>{$('s'+(i+1)+'t').textContent=t;$('s'+(i+1)+'p').textContent=p;});
+    $('pArch').classList.remove('active');$('pAgent').classList.remove('active');
+    prog.style.transition='none';prog.style.width='0';
+    requestAnimationFrame(()=>{prog.style.transition=reduce?'none':`width ${DUR}ms linear`;prog.style.width='100%';});
+
+    if(mode==='a2g'){
+      $('pArch').classList.add('active');stepOn(0);
+      typeYaml(S.yaml,300,()=>{
+        chips(aF,S.archChips);
+        stage.classList.add('run');stepOn(1);
+        later(()=>{$('pArch').classList.remove('active');$('pAgent').classList.add('active');},500);
+        runTerm(S.term,900,520);
+        later(()=>{stage.classList.remove('run');stepOn(2);chips(gF,S.agentChips);},900+S.term.length*520);
+      });
+    } else {
+      $('pAgent').classList.add('active');stepOn(0);
+      runTerm(S.term,300,560);
+      const t2=300+S.term.length*560;
+      later(()=>{chips(gF,S.agentChips);stage.classList.add('run');stepOn(1);},t2-600);
+      later(()=>{$('pAgent').classList.remove('active');$('pArch').classList.add('active');
+        typeYaml(S.yaml,0,()=>{stage.classList.remove('run');stepOn(2);chips(aF,S.archChips);});},t2);
+    }
+  }
+
+  const btns=[...document.querySelectorAll('.switch button')], thumb=$('thumb');
+  function setMode(m,user){
+    mode=m;
+    btns.forEach(b=>{const on=b.dataset.mode===m;b.classList.toggle('on',on);b.setAttribute('aria-selected',on);});
+    const b=btns.find(b=>b.dataset.mode===m);
+    thumb.style.width=b.offsetWidth+'px';thumb.style.transform=`translateX(${b.offsetLeft-4}px)`;
+    play();
+    clearInterval(cycle);
+    if(!reduce) cycle=setInterval(()=>setMode(mode==='a2g'?'g2a':'a2g'),DUR+1500);
+  }
+  btns.forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode,true)));
+  addEventListener('resize',()=>{const b=btns.find(b=>b.dataset.mode===mode);thumb.style.width=b.offsetWidth+'px';thumb.style.transform=`translateX(${b.offsetLeft-4}px)`;});
+
+  let started=false;
+  new IntersectionObserver(es=>{if(es[0].isIntersecting&&!started){started=true;setMode('a2g');}},{threshold:.3}).observe(stage);
+})();
+</script>
+</body>
+</html>

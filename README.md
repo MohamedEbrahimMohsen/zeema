@@ -1,8 +1,8 @@
-# Arkore
+# Zeema
 
 Software architecture as **typed, queryable data**.
 
-A diagram is a picture. An Arkore design is a model: every box is a catalogued component with
+A diagram is a picture. A Zeema design is a model: every box is a catalogued component with
 real properties, every promise the system makes is written down under `requirements`, and rules
 check the two against each other. A linter finds design mistakes deterministically, a diff in a
 pull request is readable, and any renderer can draw the same design.
@@ -29,7 +29,7 @@ The rule `pubsub-replay-required` fires: the design requires replay, and SNS can
 | `designs/` | Reference designs (each with a deliberately broken twin), imported designs (with fidelity mappings), authored designs |
 | `packages/core` | The engine: span-preserving YAML, document operations, structural checks, rules, layout, geometry, renderers. Zero dependencies, no environment |
 | `packages/catalogue` | Loads the catalogue, builds the client bundle, runs the repository gate |
-| `packages/cli` | `arkore lint / validate / render / catalogue / init` |
+| `packages/cli` | `zeema lint / validate / render / catalogue / init` |
 | `apps/web` | The community platform: browse, drag-and-drop canvas, YAML editor, own, publish, clone, export; GitHub sign-in |
 | `docs/` | The format specification, governance, usage, the full product plan (`docs/final-plan.md`), intake cards, provider inventories |
 
@@ -50,8 +50,8 @@ set `DATABASE_URL`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` and `APP_ORIGIN` 
 ## Lint a design in your own repository
 
 ```bash
-npx @arkore/cli init     # starter design, config, editor schema mapping, CI workflow
-npx @arkore/cli lint     # exit 1 on structural errors or rules of severity error
+npx @zeema/cli init     # starter design, config, editor schema mapping, CI workflow
+npx @zeema/cli lint     # exit 1 on structural errors or rules of severity error
 ```
 
 ## Documents

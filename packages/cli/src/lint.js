@@ -2,10 +2,10 @@
 // Output formats: human, json, sarif. Exit code policy lives in index.js.
 import fs from "node:fs";
 import path from "node:path";
-import { normalize } from "@arkore/core/document";
-import { runRules } from "@arkore/core/rules";
-import { check } from "@arkore/core/structure";
-import { parse } from "@arkore/core/yaml";
+import { normalize } from "@zeema/core/document";
+import { runRules } from "@zeema/core/rules";
+import { check } from "@zeema/core/structure";
+import { parse } from "@zeema/core/yaml";
 
 export const SEVERITY_RANK = { info: 1, warning: 2, error: 3 };
 
@@ -24,7 +24,7 @@ export function collectDesigns(paths, cwd = process.cwd()) {
         if (d.isDirectory()) {
           if (d.name === "node_modules" || d.name.startsWith(".")) continue;
           visit(child);
-        } else if (/^design(\.broken)?\.yaml$/.test(d.name) || /\.arkore\.yaml$/.test(d.name))
+        } else if (/^design(\.broken)?\.yaml$/.test(d.name) || /\.zeema\.yaml$/.test(d.name))
           out.push(child);
       }
     } else out.push(abs);
@@ -186,7 +186,7 @@ export function formatSarif(result, catalogue, version) {
     runs: [
       {
         tool: {
-          driver: { name: "arkore", version, informationUri: "https://github.com/arkore", rules },
+          driver: { name: "zeema", version, informationUri: "https://github.com/zeema", rules },
         },
         results,
       },

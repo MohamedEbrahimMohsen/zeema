@@ -1,6 +1,6 @@
 # slack-messaging: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/slack-messaging.md`
 - Size: 16 nodes, 21 edges, 5 groups.
 

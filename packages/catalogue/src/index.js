@@ -28,7 +28,7 @@ export const PROVIDERS = [
   "default",
 ];
 
-export const resolveRoot = (root) => path.resolve(root ?? process.env.ARKORE_ROOT ?? DEFAULT_ROOT);
+export const resolveRoot = (root) => path.resolve(root ?? process.env.ZEEMA_ROOT ?? DEFAULT_ROOT);
 
 /** Recursive walk returning root-relative POSIX paths with the extension, sorted. */
 export function walk(root, dir, ext) {

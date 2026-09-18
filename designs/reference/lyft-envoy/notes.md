@@ -1,6 +1,6 @@
 # lyft-envoy: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/lyft-envoy.md`
 - Size: 23 nodes, 37 edges, 6 groups.
 

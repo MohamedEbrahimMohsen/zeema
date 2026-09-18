@@ -1,6 +1,6 @@
 # gitlab-architecture: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/gitlab-architecture.md` (GitLab official docs, the Infrastructure handbook controlled documents, the infrastructure runbooks and the 2017 database outage postmortem; re-verified 2026-09-14).
 - Size: 25 nodes, 44 edges, 8 groups.
 

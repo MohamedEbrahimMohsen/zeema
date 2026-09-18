@@ -16,7 +16,7 @@ export async function GET(req: Request) {
   const state = generateState();
   const url = github.createAuthorizationURL(state, ["read:user"]);
   const jar = await cookies();
-  jar.set("arkore_oauth_state", state, {
+  jar.set("zeema_oauth_state", state, {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
@@ -25,6 +25,6 @@ export async function GET(req: Request) {
   });
   const next = new URL(req.url).searchParams.get("next");
   if (next?.startsWith("/"))
-    jar.set("arkore_oauth_next", next, { httpOnly: true, sameSite: "lax", path: "/", maxAge: 600 });
+    jar.set("zeema_oauth_next", next, { httpOnly: true, sameSite: "lax", path: "/", maxAge: 600 });
   return NextResponse.redirect(url);
 }

@@ -1,4 +1,4 @@
-"""Catalogue lookup for the Arkore skills.
+"""Catalogue lookup for the Zeema skills.
 
   python catalogue.py find <words...>        components / inventory rows matching the words (name, id, description)
   python catalogue.py component <id>         print the component file and its effective property set

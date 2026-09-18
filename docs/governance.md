@@ -133,14 +133,14 @@ change freely, and this file records that freedom expires at public ship.
 
 `designs/` has two tiers, one folder per design, and the folder name is the design id.
 
-`designs/reference/<id>/` holds architectures curated by Arkore: `design.yaml` (must trip no
+`designs/reference/<id>/` holds architectures curated by Zeema: `design.yaml` (must trip no
 rule), `design.broken.yaml` (must trip exactly the rules named in its header), the intake
 card or origin note under `source/`, `diagram.md` and `notes.md`. Together they are the
 format's evidence and, later, the linter's test fixtures. A reference design may be anonymised
 from a real system but must be realistic: real products, real edge modes, real requirements.
 
 `designs/imported/<id>/` holds designs brought in from real sources (pictures, models,
-infrastructure code) by the `arkore-design-import` skill: the original under `source/`,
+infrastructure code) by the `zeema-design-import` skill: the original under `source/`,
 `design.yaml`, `mapping.yaml` (where every box, boundary and arrow went, machine checked),
 `diagram.md` and `notes.md`. Fidelity to the source is the acceptance criterion: same nodes,
 edges and groups, labels verbatim. An imported design becomes a reference design only through

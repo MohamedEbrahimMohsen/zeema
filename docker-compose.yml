@@ -9,15 +9,15 @@
 # localhost by default, so on a server they are reached through an SSH tunnel until you put
 # them behind a reverse proxy with authentication.
 
-name: arkore
+name: zeema
 
 services:
   db:
     image: postgres:17-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-arkore}
-      POSTGRES_USER: ${POSTGRES_USER:-arkore}
+      POSTGRES_DB: ${POSTGRES_DB:-zeema}
+      POSTGRES_USER: ${POSTGRES_USER:-zeema}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
       # Checksums catch silent corruption at read time rather than months later.
       POSTGRES_INITDB_ARGS: "--data-checksums"
@@ -29,7 +29,7 @@ services:
     ports:
       - "${POSTGRES_BIND:-127.0.0.1}:${POSTGRES_PORT:-5432}:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-arkore} -d ${POSTGRES_DB:-arkore}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-zeema} -d ${POSTGRES_DB:-zeema}"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -45,12 +45,12 @@ services:
       db:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgres://${POSTGRES_USER:-arkore}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-arkore}
+      DATABASE_URL: postgres://${POSTGRES_USER:-zeema}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-zeema}
       APP_ORIGIN: ${APP_ORIGIN:-http://localhost:3000}
       GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
       GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
-      ARKORE_ADMINS: ${ARKORE_ADMINS:-}
-      EVENT_SALT: ${EVENT_SALT:-arkore}
+      ZEEMA_ADMINS: ${ZEEMA_ADMINS:-}
+      EVENT_SALT: ${EVENT_SALT:-zeema}
       METRICS_TOKEN: ${METRICS_TOKEN:?set METRICS_TOKEN in .env}
       AUTO_SEED: ${AUTO_SEED:-1}
     ports:
@@ -61,6 +61,25 @@ services:
       timeout: 5s
       retries: 5
       start_period: 60s
+
+  landing:
+    build:
+      context: .
+      dockerfile: apps/landing/Dockerfile
+    restart: unless-stopped
+    init: true
+    environment:
+      LANDING_PORT: 4000
+      # Where "Open Canvas" sends visitors: the app's public origin. Falls back to APP_ORIGIN.
+      CANVAS_URL: ${CANVAS_URL:-${APP_ORIGIN:-http://localhost:3000}}
+    ports:
+      - "${LANDING_BIND:-0.0.0.0}:${LANDING_PORT:-4000}:4000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   prometheus:
     image: prom/prometheus:v3.2.1
@@ -88,7 +107,7 @@ services:
       db:
         condition: service_healthy
     environment:
-      DATA_SOURCE_NAME: postgresql://${POSTGRES_USER:-arkore}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-arkore}?sslmode=disable
+      DATA_SOURCE_NAME: postgresql://${POSTGRES_USER:-zeema}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-zeema}?sslmode=disable
 
   grafana:
     image: grafana/grafana:11.6.0

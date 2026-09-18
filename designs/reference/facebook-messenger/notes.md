@@ -1,6 +1,6 @@
 # facebook-messenger: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/facebook-messenger.md` (seven Engineering at Meta posts spanning 2011-2025, two official Meta protocol whitepapers from 2023, and the HighScalability write-up of the @Scale 2014 Iris talk; verification appended to the card).
 - Size: 23 nodes, 34 edges, 5 groups (broken variant: 23 nodes, 33 edges, 5 groups).
 

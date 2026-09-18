@@ -1,6 +1,6 @@
 # grab-geo: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/grab-geo.md` (six official Grab engineering posts, 2020-2024, re-verified 2026-09-14).
 - Size: 19 nodes, 22 edges, 5 groups.
 

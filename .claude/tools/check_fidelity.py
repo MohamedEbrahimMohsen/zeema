@@ -2,7 +2,7 @@
 
   python check_fidelity.py designs/imported/<name>
 
-Reads <name>/design.yaml (the Arkore design) and <name>/mapping.yaml (what the source shows and
+Reads <name>/design.yaml (the Zeema design) and <name>/mapping.yaml (what the source shows and
 where each item went) and fails unless the two describe the same picture:
 
   - source counts (nodes, edges, groups) equal the mapping lists and the design lists

@@ -1,6 +1,6 @@
 # unique-id-generator: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/unique-id-generator.md` (intake card of 2026-09-07, re-verified 2026-09-14)
 - Size: 6 nodes, 6 edges, 3 groups (broken twin: 7 nodes, 6 edges, 4 groups).
 

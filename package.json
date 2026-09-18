@@ -1,8 +1,8 @@
 {
-  "name": "arkore-monorepo",
+  "name": "zeema-monorepo",
   "private": true,
   "version": "0.1.0",
-  "description": "Arkore: software architecture as typed, queryable data",
+  "description": "Zeema: software architecture as typed, queryable data",
   "license": "MIT",
   "type": "module",
   "packageManager": "pnpm@12.3.4",
@@ -10,11 +10,11 @@
   "scripts": {
     "build": "turbo run build",
     "test": "turbo run test",
-    "validate": "pnpm --filter @arkore/catalogue validate",
-    "bundle": "pnpm --filter @arkore/catalogue bundle",
+    "validate": "pnpm --filter @zeema/catalogue validate",
+    "bundle": "pnpm --filter @zeema/catalogue bundle",
     "lint": "biome check .",
     "format": "biome format --write .",
-    "dev": "pnpm --filter @arkore/web dev",
+    "dev": "pnpm --filter @zeema/web dev",
     "gate": "pnpm validate && pnpm test && pnpm lint"
   },
   "devDependencies": {

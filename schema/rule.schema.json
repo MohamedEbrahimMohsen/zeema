@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://arkore.dev/schema/v1/rule.schema.json",
-  "title": "Arkore Rule",
+  "$id": "https://zeema.dev/schema/v1/rule.schema.json",
+  "title": "Zeema Rule",
   "description": "A deterministic lint rule expressed with the fixed v1 predicate set.",
   "type": "object",
   "additionalProperties": false,

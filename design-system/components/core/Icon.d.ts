@@ -1,7 +1,7 @@
 import * as React from "react";
 
 /**
- * Renders the three Arkore icon classes with the right colour behaviour for each.
+ * Renders the three Zeema icon classes with the right colour behaviour for each.
  * @startingPoint section="Core" subtitle="Brand marks, masked kind glyphs, provider logos" viewport="700x140"
  */
 export interface IconProps {

@@ -1,6 +1,6 @@
 # whatsapp-messaging: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/whatsapp-messaging.md` (re-verified 2026-09-13; see the "Verification 2026-09-13" section there).
 - Size: 19 nodes, 26 edges, 6 groups.
 

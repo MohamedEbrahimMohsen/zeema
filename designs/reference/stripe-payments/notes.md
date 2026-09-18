@@ -1,6 +1,6 @@
 # stripe-payments: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/stripe-payments.md`
 - Size: 24 nodes, 27 edges, 6 groups (broken variant: 22 nodes, 25 edges, 6 groups).
 

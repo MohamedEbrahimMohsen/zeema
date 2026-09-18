@@ -3,12 +3,12 @@
 // The canvas shell. React renders the frame once and re-renders the side panels only at commit
 // boundaries; positions live in refs and go straight to the SVG during a drag. Every change goes
 // through `commit`, which snapshots first, so undo and redo are uniform.
-import * as D from "@arkore/core/document";
-import { edgeKeys } from "@arkore/core/geometry";
-import { layout } from "@arkore/core/layout";
-import { runRules } from "@arkore/core/rules";
-import { check } from "@arkore/core/structure";
-import { parse, serialize } from "@arkore/core/yaml";
+import * as D from "@zeema/core/document";
+import { edgeKeys } from "@zeema/core/geometry";
+import { layout } from "@zeema/core/layout";
+import { runRules } from "@zeema/core/rules";
+import { check } from "@zeema/core/structure";
+import { parse, serialize } from "@zeema/core/yaml";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -922,7 +922,7 @@ export function Canvas(props: Props) {
       .join(" · ") || "no findings";
 
   return (
-    <div className={`arkore-canvas${fullscreen ? " is-fullscreen" : ""}`} ref={rootRef}>
+    <div className={`zeema-canvas${fullscreen ? " is-fullscreen" : ""}`} ref={rootRef}>
       <div className="toolbar">
         <Link
           href={`/d/${props.owner}/${props.slug}`}

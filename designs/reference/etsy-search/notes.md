@@ -1,6 +1,6 @@
 # etsy-search: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/etsy-search.md` (14 first-party Code as Craft posts, re-verified 2026-09-14 against the archived bodies in `work/research/etsy-search/fetched/`; etsy.com answers 403 to fetchers).
 - Size: 24 nodes, 26 edges, 5 groups.
 

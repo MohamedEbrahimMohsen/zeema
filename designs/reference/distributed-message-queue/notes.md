@@ -1,6 +1,6 @@
 # distributed-message-queue: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/distributed-message-queue.md`
 - Size: 15 nodes, 20 edges, 5 groups.
 

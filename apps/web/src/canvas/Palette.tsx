@@ -82,7 +82,7 @@ export function Palette({
                 className="pal-row"
                 draggable
                 title={`${id} · ${kind}`}
-                onDragStart={(e) => e.dataTransfer.setData("text/arkore-component", id)}
+                onDragStart={(e) => e.dataTransfer.setData("text/zeema-component", id)}
                 onDoubleClick={() => onCreate(id)}
               >
                 {/* biome-ignore lint/security/noDangerouslySetInnerHtml: catalogue icon markup, sanitised at build */}

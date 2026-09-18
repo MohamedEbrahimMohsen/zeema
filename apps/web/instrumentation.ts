@@ -12,9 +12,9 @@ export async function register() {
     const rows = await db.select({ id: schema.designs.id }).from(schema.designs).limit(1);
     if (!rows[0] && process.env.AUTO_SEED !== "0") {
       const n = await seedCurated((s) => console.log(`[seed] ${s}`));
-      console.log(`[arkore] seeded ${n} curated design(s)`);
+      console.log(`[zeema] seeded ${n} curated design(s)`);
     }
   } catch (e) {
-    console.error("[arkore] database not ready:", e);
+    console.error("[zeema] database not ready:", e);
   }
 }

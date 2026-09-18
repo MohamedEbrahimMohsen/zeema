@@ -1,6 +1,6 @@
 # pinterest-feed: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/pinterest-feed.md`
 - Size: 25 nodes, 32 edges, 5 groups.
 

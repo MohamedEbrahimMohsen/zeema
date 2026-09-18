@@ -1,6 +1,6 @@
 # netflix-streaming: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/netflix-streaming.md`
 - Size: 17 nodes, 24 edges, 5 groups.
 

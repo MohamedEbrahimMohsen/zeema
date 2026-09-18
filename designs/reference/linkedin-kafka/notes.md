@@ -1,6 +1,6 @@
 # linkedin-kafka: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/linkedin-kafka.md`
 - Size: 22 nodes, 27 edges, 6 groups.
 

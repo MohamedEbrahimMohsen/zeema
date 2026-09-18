@@ -1,6 +1,6 @@
 import React from "react";
 
-/** Arkore ships two icon classes and renders them differently on purpose:
+/** Zeema ships two icon classes and renders them differently on purpose:
  *  - "component": vendor brand marks, full colour, never recoloured
  *  - "kind": monochrome category glyphs, masked so they take --ink or any tone
  *  - "provider": vendor logos in chrome, tinted through --icon-filter in dark

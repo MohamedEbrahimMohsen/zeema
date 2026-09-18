@@ -1,6 +1,6 @@
 # facebook-tao: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/facebook-tao.md` (four peer-reviewed papers by Facebook/Meta engineers — USENIX ATC '13, USENIX NSDI '13, USENIX OSDI '20, PVLDB 2021 — plus two official Meta engineering posts; verification appended to the card).
 - Size: 23 nodes, 34 edges, 5 groups (broken variant: 20 nodes, 30 edges, 5 groups).
 

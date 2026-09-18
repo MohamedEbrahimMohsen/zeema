@@ -1,6 +1,6 @@
 # datadog-husky: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/datadog-husky.md` (nine posts on Datadog's engineering and incident-response blogs; two re-verified 2026-09-14).
 - Size: 23 nodes, 29 edges, 6 groups. Broken twin: 22 nodes, 28 edges, 6 groups.
 

@@ -9,7 +9,7 @@ import { isAdmin, type SessionUser } from "./viewer";
 
 export { actingAdmin, isAdmin, type SessionUser } from "./viewer";
 
-export const SESSION_COOKIE = "arkore_session";
+export const SESSION_COOKIE = "zeema_session";
 const IDLE_DAYS = 14;
 const ABSOLUTE_DAYS = 90;
 
@@ -101,12 +101,12 @@ export async function setActingAdmin(viewer: SessionUser, on: boolean) {
 }
 
 /**
- * First admins come from ARKORE_ADMINS (comma-separated usernames) so a fresh deployment has
+ * First admins come from ZEEMA_ADMINS (comma-separated usernames) so a fresh deployment has
  * someone who can open the IAM page. Applied at sign-in; a grant made this way carries no
  * granter and the note "bootstrap".
  */
 export async function bootstrapAdmin(user: User) {
-  const list = (process.env.ARKORE_ADMINS ?? "")
+  const list = (process.env.ZEEMA_ADMINS ?? "")
     .split(",")
     .map((s) => s.trim().toLowerCase())
     .filter(Boolean);
@@ -115,7 +115,7 @@ export async function bootstrapAdmin(user: User) {
   const db = await getDb();
   await db
     .insert(schema.roleGrants)
-    .values({ userId: user.id, role: "admin", note: "bootstrap (ARKORE_ADMINS)" });
+    .values({ userId: user.id, role: "admin", note: "bootstrap (ZEEMA_ADMINS)" });
 }
 
 export async function revokeCurrentSession() {

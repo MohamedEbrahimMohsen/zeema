@@ -1,4 +1,4 @@
-// Hand-authored 24x24 line glyphs, one per Arkore kind.
+// Hand-authored 24x24 line glyphs, one per Zeema kind.
 // Style: stroke=currentColor, fill=none, stroke-width 1.5, round caps/joins.
 export const KIND_GLYPHS = {
   "api-gateway":

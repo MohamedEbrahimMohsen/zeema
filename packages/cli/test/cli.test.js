@@ -14,7 +14,7 @@ const broken = "designs/reference/order-processing/design.broken.yaml";
 
 let tmp;
 beforeAll(() => {
-  tmp = fs.mkdtempSync(path.join(os.tmpdir(), "arkore-cli-"));
+  tmp = fs.mkdtempSync(path.join(os.tmpdir(), "zeema-cli-"));
 });
 afterAll(() => {
   fs.rmSync(tmp, { recursive: true, force: true });
@@ -61,14 +61,14 @@ describe("lint", () => {
     const r = await run(["lint", broken, "--format", "sarif"]);
     const s = JSON.parse(r.out);
     expect(s.version).toBe("2.1.0");
-    expect(s.runs[0].tool.driver.name).toBe("arkore");
+    expect(s.runs[0].tool.driver.name).toBe("zeema");
     expect(s.runs[0].results.length).toBeGreaterThan(0);
     expect(s.runs[0].results[0].locations[0].physicalLocation.artifactLocation.uri).toBe(broken);
   });
 
   it("--fail-on never returns 0 despite rule findings, but structure still fails", async () => {
     expect((await run(["lint", broken, "--fail-on", "never"])).code).toBe(0);
-    const bad = path.join(tmp, "bad.arkore.yaml");
+    const bad = path.join(tmp, "bad.zeema.yaml");
     fs.writeFileSync(
       bad,
       'schemaVersion: "1"\ntype: "design"\nid: "bad"\nnodes:\n  - { id: "a", component: "no-such-component" }\nedges: []\n',
@@ -79,7 +79,7 @@ describe("lint", () => {
   });
 
   it("a YAML refusal is a finding with a line, not a crash", async () => {
-    const bad = path.join(tmp, "tabs.arkore.yaml");
+    const bad = path.join(tmp, "tabs.zeema.yaml");
     fs.writeFileSync(
       bad,
       'schemaVersion: "1"\ntype: "design"\nid: "bad"\nnodes:\n\t- { id: "a", component: "kafka" }\nedges: []\n',
@@ -144,8 +144,8 @@ describe("init and validate", () => {
     const dir = path.join(tmp, "proj");
     const r = await run(["init", dir]);
     expect(r.code).toBe(0);
-    expect(fs.existsSync(path.join(dir, "architecture", "checkout.arkore.yaml"))).toBe(true);
-    expect(fs.existsSync(path.join(dir, ".github", "workflows", "arkore.yml"))).toBe(true);
+    expect(fs.existsSync(path.join(dir, "architecture", "checkout.zeema.yaml"))).toBe(true);
+    expect(fs.existsSync(path.join(dir, ".github", "workflows", "zeema.yml"))).toBe(true);
     const lint = await run(["lint", "--root", ROOT], dir);
     expect(lint.out).toContain("pubsub-replay-required");
     expect(lint.code).toBe(1);

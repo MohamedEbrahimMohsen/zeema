@@ -2,14 +2,14 @@
 //   node src/validate.js                    whole repository
 //   node src/validate.js --design <file>    one design: structure, then the rules that fire
 //   node src/validate.js --root <repo>
-// Design structure and rules come from @arkore/core; this file adds only what the core cannot
+// Design structure and rules come from @zeema/core; this file adds only what the core cannot
 // know: schemas, file naming, provider folders, locale both ways, icons, reference twins and
 // import mappings. Exit 1 on any problem, with every problem listed.
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { runRules } from "@arkore/core/rules";
-import { check } from "@arkore/core/structure";
+import { runRules } from "@zeema/core/rules";
+import { check } from "@zeema/core/structure";
 import Ajv from "ajv";
 import YAML from "yaml";
 import { loadCatalogue, PROVIDERS, resolveRoot, walk } from "./index.js";

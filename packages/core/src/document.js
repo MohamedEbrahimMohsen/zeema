@@ -16,7 +16,7 @@ export function createDoc(id = "untitled") {
 export function newDesignText(id) {
   return [
     "# yaml-language-server: $schema=../../../schema/design.schema.json",
-    "# Authored in the Arkore canvas.",
+    "# Authored in the Zeema canvas.",
     `schemaVersion: ${JSON.stringify("1")}`,
     `type: ${JSON.stringify("design")}`,
     `id: ${JSON.stringify(id)}`,

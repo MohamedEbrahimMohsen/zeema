@@ -1,4 +1,4 @@
-// The Arkore mark: an arch of seven blocks on the 24-grid, the keystone in the accent colour.
+// The Zeema mark: an arch of seven blocks on the 24-grid, the keystone in the accent colour.
 // `Mark` is the static logo; `Spinner` assembles the arch block by block, keystone last, on a
 // 1.6 s cycle (keyframes `ark-build` in globals.css). Both inherit `currentColor` for the blocks
 // and `--accent` for the keystone, so they follow the theme.

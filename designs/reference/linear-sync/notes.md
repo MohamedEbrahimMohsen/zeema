@@ -1,6 +1,6 @@
 # linear-sync: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/linear-sync.md` (intake card plus a 2026-09-14 verification section)
 - Size: 20 nodes, 32 edges, 5 groups. Broken twin: 19 nodes, 31 edges, 5 groups.
 

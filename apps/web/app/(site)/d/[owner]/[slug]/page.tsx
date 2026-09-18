@@ -1,6 +1,6 @@
-import { normalize } from "@arkore/core/document";
-import { toSvg } from "@arkore/core/render";
-import { parse } from "@arkore/core/yaml";
+import { normalize } from "@zeema/core/document";
+import { toSvg } from "@zeema/core/render";
+import { parse } from "@zeema/core/yaml";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DesignActions } from "@/components/DesignActions";
@@ -75,7 +75,7 @@ export default async function DesignPage({
                 @{view.owner.username}
               </Link>
             ) : (
-              <span>arkore · {view.design.origin}</span>
+              <span>zeema · {view.design.origin}</span>
             )}
             {" / "}
             <span className="mono">{view.design.slug}</span>

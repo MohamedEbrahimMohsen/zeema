@@ -1,9 +1,9 @@
 {
-  "uid": "arkore-overview",
-  "title": "Arkore overview",
+  "uid": "zeema-overview",
+  "title": "Zeema overview",
   "description": "Traffic, availability, latency and the most used designs.",
   "tags": [
-    "arkore"
+    "zeema"
   ],
   "timezone": "browser",
   "editable": true,
@@ -34,15 +34,15 @@
       },
       "datasource": {
         "type": "prometheus",
-        "uid": "arkore-prometheus"
+        "uid": "zeema-prometheus"
       },
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(increase(arkore_http_request_duration_seconds_count{section!=\"ops\"}[$__range])) / $__range_s",
+          "expr": "sum(increase(zeema_http_request_duration_seconds_count{section!=\"ops\"}[$__range])) / $__range_s",
           "datasource": {
             "type": "prometheus",
-            "uid": "arkore-prometheus"
+            "uid": "zeema-prometheus"
           },
           "instant": true
         }
@@ -89,15 +89,15 @@
       },
       "datasource": {
         "type": "prometheus",
-        "uid": "arkore-prometheus"
+        "uid": "zeema-prometheus"
       },
       "targets": [
         {
           "refId": "A",
-          "expr": "avg_over_time(up{job=\"arkore-web\"}[$__range])",
+          "expr": "avg_over_time(up{job=\"zeema-web\"}[$__range])",
           "datasource": {
             "type": "prometheus",
-            "uid": "arkore-prometheus"
+            "uid": "zeema-prometheus"
           },
           "instant": true
         }
@@ -152,15 +152,15 @@
       },
       "datasource": {
         "type": "prometheus",
-        "uid": "arkore-prometheus"
+        "uid": "zeema-prometheus"
       },
       "targets": [
         {
           "refId": "A",
-          "expr": "(1 - avg_over_time(up{job=\"arkore-web\"}[$__range])) * $__range_s",
+          "expr": "(1 - avg_over_time(up{job=\"zeema-web\"}[$__range])) * $__range_s",
           "datasource": {
             "type": "prometheus",
-            "uid": "arkore-prometheus"
+            "uid": "zeema-prometheus"
           },
           "instant": true
         }
@@ -215,15 +215,15 @@
       },
       "datasource": {
         "type": "prometheus",
-        "uid": "arkore-prometheus"
+        "uid": "zeema-prometheus"
       },
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(increase(arkore_http_request_duration_seconds_count{section!=\"ops\",status!~\"5..\"}[$__range])) / sum(increase(arkore_http_request_duration_seconds_count{section!=\"ops\"}[$__range]))",
+          "expr": "sum(increase(zeema_http_request_duration_seconds_count{section!=\"ops\",status!~\"5..\"}[$__range])) / sum(increase(zeema_http_request_duration_seconds_count{section!=\"ops\"}[$__range]))",
           "datasource": {
             "type": "prometheus",
-            "uid": "arkore-prometheus"
+            "uid": "zeema-prometheus"
           },
           "instant": true
         }
@@ -279,15 +279,15 @@
       },
       "datasource": {
         "type": "prometheus",
-        "uid": "arkore-prometheus"
+        "uid": "zeema-prometheus"
       },
       "targets": [
         {
           "refId": "A",
-          "expr": "histogram_quantile(0.95, sum by (le) (increase(arkore_http_request_duration_seconds_bucket{section!=\"ops\"}[$__range])))",
+          "expr": "histogram_quantile(0.95, sum by (le) (increase(zeema_http_request_duration_seconds_bucket{section!=\"ops\"}[$__range])))",
           "datasource": {
             "type": "prometheus",
-            "uid": "arkore-prometheus"
+            "uid": "zeema-prometheus"
           },
           "instant": true
         }
@@ -343,16 +343,16 @@
       },
       "datasource": {
         "type": "prometheus",
-        "uid": "arkore-prometheus"
+        "uid": "zeema-prometheus"
       },
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (section) (rate(arkore_http_request_duration_seconds_count{section!=\"ops\",section!=\"\"}[5m]))",
+          "expr": "sum by (section) (rate(zeema_http_request_duration_seconds_count{section!=\"ops\",section!=\"\"}[5m]))",
           "legendFormat": "{{section}}",
           "datasource": {
             "type": "prometheus",
-            "uid": "arkore-prometheus"
+            "uid": "zeema-prometheus"
           }
         }
       ],
@@ -396,33 +396,33 @@
       },
       "datasource": {
         "type": "prometheus",
-        "uid": "arkore-prometheus"
+        "uid": "zeema-prometheus"
       },
       "targets": [
         {
           "refId": "A",
-          "expr": "avg_over_time(up{job=\"arkore-web\"}[$__rate_interval])",
+          "expr": "avg_over_time(up{job=\"zeema-web\"}[$__rate_interval])",
           "datasource": {
             "type": "prometheus",
-            "uid": "arkore-prometheus"
+            "uid": "zeema-prometheus"
           },
           "legendFormat": "service reachable"
         },
         {
           "refId": "B",
-          "expr": "sum(rate(arkore_http_request_duration_seconds_count{section!=\"ops\",status!~\"5..\"}[$__rate_interval])) / sum(rate(arkore_http_request_duration_seconds_count{section!=\"ops\"}[$__rate_interval]))",
+          "expr": "sum(rate(zeema_http_request_duration_seconds_count{section!=\"ops\",status!~\"5..\"}[$__rate_interval])) / sum(rate(zeema_http_request_duration_seconds_count{section!=\"ops\"}[$__rate_interval]))",
           "datasource": {
             "type": "prometheus",
-            "uid": "arkore-prometheus"
+            "uid": "zeema-prometheus"
           },
           "legendFormat": "successful request share"
         },
         {
           "refId": "C",
-          "expr": "sum by (status) (rate(arkore_http_request_duration_seconds_count{section!=\"ops\",status=~\"[45]..\"}[$__rate_interval]))",
+          "expr": "sum by (status) (rate(zeema_http_request_duration_seconds_count{section!=\"ops\",status=~\"[45]..\"}[$__rate_interval]))",
           "datasource": {
             "type": "prometheus",
-            "uid": "arkore-prometheus"
+            "uid": "zeema-prometheus"
           },
           "legendFormat": "{{status}} per second"
         }
@@ -493,34 +493,34 @@
       },
       "datasource": {
         "type": "prometheus",
-        "uid": "arkore-prometheus"
+        "uid": "zeema-prometheus"
       },
       "targets": [
         {
           "refId": "A",
-          "expr": "histogram_quantile(0.50, sum by (le) (rate(arkore_http_request_duration_seconds_bucket{section!=\"ops\"}[5m])))",
+          "expr": "histogram_quantile(0.50, sum by (le) (rate(zeema_http_request_duration_seconds_bucket{section!=\"ops\"}[5m])))",
           "legendFormat": "p50",
           "datasource": {
             "type": "prometheus",
-            "uid": "arkore-prometheus"
+            "uid": "zeema-prometheus"
           }
         },
         {
           "refId": "B",
-          "expr": "histogram_quantile(0.95, sum by (le) (rate(arkore_http_request_duration_seconds_bucket{section!=\"ops\"}[5m])))",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(zeema_http_request_duration_seconds_bucket{section!=\"ops\"}[5m])))",
           "legendFormat": "p95",
           "datasource": {
             "type": "prometheus",
-            "uid": "arkore-prometheus"
+            "uid": "zeema-prometheus"
           }
         },
         {
           "refId": "C",
-          "expr": "histogram_quantile(0.99, sum by (le) (rate(arkore_http_request_duration_seconds_bucket{section!=\"ops\"}[5m])))",
+          "expr": "histogram_quantile(0.99, sum by (le) (rate(zeema_http_request_duration_seconds_bucket{section!=\"ops\"}[5m])))",
           "legendFormat": "p99",
           "datasource": {
             "type": "prometheus",
-            "uid": "arkore-prometheus"
+            "uid": "zeema-prometheus"
           }
         }
       ],
@@ -560,16 +560,16 @@
       },
       "datasource": {
         "type": "prometheus",
-        "uid": "arkore-prometheus"
+        "uid": "zeema-prometheus"
       },
       "targets": [
         {
           "refId": "A",
-          "expr": "histogram_quantile(0.95, sum by (le, route) (rate(arkore_http_request_duration_seconds_bucket{section=~\"api|auth|admin-api\"}[5m])))",
+          "expr": "histogram_quantile(0.95, sum by (le, route) (rate(zeema_http_request_duration_seconds_bucket{section=~\"api|auth|admin-api\"}[5m])))",
           "legendFormat": "{{route}}",
           "datasource": {
             "type": "prometheus",
-            "uid": "arkore-prometheus"
+            "uid": "zeema-prometheus"
           }
         }
       ],
@@ -614,17 +614,17 @@
       },
       "datasource": {
         "type": "grafana-postgresql-datasource",
-        "uid": "arkore-postgres"
+        "uid": "zeema-postgres"
       },
       "targets": [
         {
           "refId": "A",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select d.title as \"Design\", coalesce(u.username, 'arkore') as \"Owner\", d.visibility as \"Visibility\", s.view_count as \"Views\", s.clone_count as \"Clones\" from design_stats s join designs d on d.id = s.design_id left join users u on u.id = d.owner_id where d.deleted_at is null order by s.view_count desc, d.title asc limit 50",
+          "rawSql": "select d.title as \"Design\", coalesce(u.username, 'zeema') as \"Owner\", d.visibility as \"Visibility\", s.view_count as \"Views\", s.clone_count as \"Clones\" from design_stats s join designs d on d.id = s.design_id left join users u on u.id = d.owner_id where d.deleted_at is null order by s.view_count desc, d.title asc limit 50",
           "datasource": {
             "type": "grafana-postgresql-datasource",
-            "uid": "arkore-postgres"
+            "uid": "zeema-postgres"
           }
         }
       ],
@@ -709,17 +709,17 @@
       },
       "datasource": {
         "type": "grafana-postgresql-datasource",
-        "uid": "arkore-postgres"
+        "uid": "zeema-postgres"
       },
       "targets": [
         {
           "refId": "A",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "select d.title as \"Design\", coalesce(u.username, 'arkore') as \"Owner\", d.visibility as \"Visibility\", s.clone_count as \"Clones\", s.view_count as \"Views\" from design_stats s join designs d on d.id = s.design_id left join users u on u.id = d.owner_id where d.deleted_at is null order by s.clone_count desc, d.title asc limit 50",
+          "rawSql": "select d.title as \"Design\", coalesce(u.username, 'zeema') as \"Owner\", d.visibility as \"Visibility\", s.clone_count as \"Clones\", s.view_count as \"Views\" from design_stats s join designs d on d.id = s.design_id left join users u on u.id = d.owner_id where d.deleted_at is null order by s.clone_count desc, d.title asc limit 50",
           "datasource": {
             "type": "grafana-postgresql-datasource",
-            "uid": "arkore-postgres"
+            "uid": "zeema-postgres"
           }
         }
       ],
@@ -815,17 +815,17 @@
           },
           "datasource": {
             "type": "prometheus",
-            "uid": "arkore-prometheus"
+            "uid": "zeema-prometheus"
           },
           "targets": [
             {
               "refId": "A",
-              "expr": "sum by (visibility) (arkore_designs_total)",
+              "expr": "sum by (visibility) (zeema_designs_total)",
               "legendFormat": "{{visibility}}",
               "instant": true,
               "datasource": {
                 "type": "prometheus",
-                "uid": "arkore-prometheus"
+                "uid": "zeema-prometheus"
               }
             }
           ],
@@ -869,27 +869,27 @@
           },
           "datasource": {
             "type": "prometheus",
-            "uid": "arkore-prometheus"
+            "uid": "zeema-prometheus"
           },
           "targets": [
             {
               "refId": "A",
-              "expr": "arkore_users_total",
+              "expr": "zeema_users_total",
               "legendFormat": "accounts",
               "instant": true,
               "datasource": {
                 "type": "prometheus",
-                "uid": "arkore-prometheus"
+                "uid": "zeema-prometheus"
               }
             },
             {
               "refId": "B",
-              "expr": "arkore_sessions_active",
+              "expr": "zeema_sessions_active",
               "legendFormat": "active sessions",
               "instant": true,
               "datasource": {
                 "type": "prometheus",
-                "uid": "arkore-prometheus"
+                "uid": "zeema-prometheus"
               }
             }
           ],
@@ -933,16 +933,16 @@
           },
           "datasource": {
             "type": "prometheus",
-            "uid": "arkore-prometheus"
+            "uid": "zeema-prometheus"
           },
           "targets": [
             {
               "refId": "A",
-              "expr": "arkore_designs_unpublished",
+              "expr": "zeema_designs_unpublished",
               "instant": true,
               "datasource": {
                 "type": "prometheus",
-                "uid": "arkore-prometheus"
+                "uid": "zeema-prometheus"
               }
             }
           ],
@@ -986,34 +986,34 @@
           },
           "datasource": {
             "type": "prometheus",
-            "uid": "arkore-prometheus"
+            "uid": "zeema-prometheus"
           },
           "targets": [
             {
               "refId": "A",
-              "expr": "sum by (kind) (rate(arkore_design_writes_total[15m])) * 60",
+              "expr": "sum by (kind) (rate(zeema_design_writes_total[15m])) * 60",
               "legendFormat": "{{kind}}",
               "datasource": {
                 "type": "prometheus",
-                "uid": "arkore-prometheus"
+                "uid": "zeema-prometheus"
               }
             },
             {
               "refId": "B",
-              "expr": "sum by (result) (rate(arkore_signins_total[15m])) * 60",
+              "expr": "sum by (result) (rate(zeema_signins_total[15m])) * 60",
               "legendFormat": "sign-in {{result}}",
               "datasource": {
                 "type": "prometheus",
-                "uid": "arkore-prometheus"
+                "uid": "zeema-prometheus"
               }
             },
             {
               "refId": "C",
-              "expr": "sum by (format) (rate(arkore_design_exports_total[15m])) * 60",
+              "expr": "sum by (format) (rate(zeema_design_exports_total[15m])) * 60",
               "legendFormat": "export {{format}}",
               "datasource": {
                 "type": "prometheus",
-                "uid": "arkore-prometheus"
+                "uid": "zeema-prometheus"
               }
             }
           ],
@@ -1068,25 +1068,25 @@
           },
           "datasource": {
             "type": "prometheus",
-            "uid": "arkore-prometheus"
+            "uid": "zeema-prometheus"
           },
           "targets": [
             {
               "refId": "A",
-              "expr": "nodejs_eventloop_lag_p99_seconds{job=\"arkore-web\"}",
+              "expr": "nodejs_eventloop_lag_p99_seconds{job=\"zeema-web\"}",
               "legendFormat": "p99",
               "datasource": {
                 "type": "prometheus",
-                "uid": "arkore-prometheus"
+                "uid": "zeema-prometheus"
               }
             },
             {
               "refId": "B",
-              "expr": "nodejs_eventloop_lag_mean_seconds{job=\"arkore-web\"}",
+              "expr": "nodejs_eventloop_lag_mean_seconds{job=\"zeema-web\"}",
               "legendFormat": "mean",
               "datasource": {
                 "type": "prometheus",
-                "uid": "arkore-prometheus"
+                "uid": "zeema-prometheus"
               }
             }
           ],
@@ -1126,25 +1126,25 @@
           },
           "datasource": {
             "type": "prometheus",
-            "uid": "arkore-prometheus"
+            "uid": "zeema-prometheus"
           },
           "targets": [
             {
               "refId": "A",
-              "expr": "rate(process_cpu_seconds_total{job=\"arkore-web\"}[5m])",
+              "expr": "rate(process_cpu_seconds_total{job=\"zeema-web\"}[5m])",
               "legendFormat": "cores used",
               "datasource": {
                 "type": "prometheus",
-                "uid": "arkore-prometheus"
+                "uid": "zeema-prometheus"
               }
             },
             {
               "refId": "B",
-              "expr": "process_resident_memory_bytes{job=\"arkore-web\"}",
+              "expr": "process_resident_memory_bytes{job=\"zeema-web\"}",
               "legendFormat": "resident memory",
               "datasource": {
                 "type": "prometheus",
-                "uid": "arkore-prometheus"
+                "uid": "zeema-prometheus"
               }
             }
           ],
@@ -1201,16 +1201,16 @@
           },
           "datasource": {
             "type": "prometheus",
-            "uid": "arkore-prometheus"
+            "uid": "zeema-prometheus"
           },
           "targets": [
             {
               "refId": "A",
-              "expr": "arkore_http_requests_in_flight",
+              "expr": "zeema_http_requests_in_flight",
               "legendFormat": "in flight",
               "datasource": {
                 "type": "prometheus",
-                "uid": "arkore-prometheus"
+                "uid": "zeema-prometheus"
               }
             }
           ],
@@ -1250,7 +1250,7 @@
           },
           "datasource": {
             "type": "prometheus",
-            "uid": "arkore-prometheus"
+            "uid": "zeema-prometheus"
           },
           "targets": [
             {
@@ -1259,7 +1259,7 @@
               "legendFormat": "{{datname}}",
               "datasource": {
                 "type": "prometheus",
-                "uid": "arkore-prometheus"
+                "uid": "zeema-prometheus"
               }
             }
           ],
@@ -1299,7 +1299,7 @@
           },
           "datasource": {
             "type": "prometheus",
-            "uid": "arkore-prometheus"
+            "uid": "zeema-prometheus"
           },
           "targets": [
             {
@@ -1308,7 +1308,7 @@
               "legendFormat": "{{datname}}",
               "datasource": {
                 "type": "prometheus",
-                "uid": "arkore-prometheus"
+                "uid": "zeema-prometheus"
               }
             }
           ],

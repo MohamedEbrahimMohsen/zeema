@@ -3,7 +3,7 @@ function TopBar({ view, setView, theme, setTheme, right }) {
   const tabs = [["editor","Editor"],["findings","Findings"],["browse","Browse"],["detail","Design"],["catalog","Catalog"],["auth","Sign in"]];
   return (
     <header style={{display:"flex",alignItems:"center",gap:"var(--sp-3)",padding:"var(--sp-1-5) var(--sp-3)",borderBottom:"1px solid var(--line)",background:"var(--panel)"}}>
-      <span style={{fontWeight:"var(--fw-semibold)",fontSize:"var(--fs-title)",letterSpacing:"var(--ls-title)"}}>Arkore</span>
+      <span style={{fontWeight:"var(--fw-semibold)",fontSize:"var(--fs-title)",letterSpacing:"var(--ls-title)"}}>Zeema</span>
       <nav style={{display:"flex",gap:"var(--sp-0-5)"}}>
         {tabs.map(([id,label]) => (
           <button key={id} onClick={() => setView(id)} style={{

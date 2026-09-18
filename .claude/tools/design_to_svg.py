@@ -1,4 +1,4 @@
-"""Render an Arkore design as a standalone SVG, using the real component icons.
+"""Render a Zeema design as a standalone SVG, using the real component icons.
 
   python design_to_svg.py <design.yaml> [-o out.svg] [--direction TB|LR]
 

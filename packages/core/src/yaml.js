@@ -1,4 +1,4 @@
-// YAML for Arkore documents: a parser that keeps a concrete syntax tree with every source span,
+// YAML for Zeema documents: a parser that keeps a concrete syntax tree with every source span,
 // and a serialiser that copies unchanged spans back out verbatim and rewrites only what changed.
 //
 //   parse(text)          -> { doc, cst }     throws Error("... at line N") on unsupported input

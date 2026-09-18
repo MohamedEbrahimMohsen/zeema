@@ -11,7 +11,7 @@ export interface ContextMenuItem {
 }
 
 /**
- * Right-click menu on the canvas — one of the few things in Arkore that casts a shadow.
+ * Right-click menu on the canvas — one of the few things in Zeema that casts a shadow.
  * @startingPoint section="Canvas" subtitle="Right-click menu with shortcuts" viewport="700x220"
  */
 export interface ContextMenuProps extends React.HTMLAttributes<HTMLDivElement> {

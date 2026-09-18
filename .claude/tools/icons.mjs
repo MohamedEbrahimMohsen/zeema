@@ -100,7 +100,7 @@ const markColour = (hex) => {
   return 0.2126 * c(0) + 0.7152 * c(2) + 0.0722 * c(4) > 0.45 ? "#111" : "#fff";
 };
 const badge = (p) =>
-  `<g stroke="none"><circle cx="${CX}" cy="${CY}" r="${HALO}" fill="var(--arkore-icon-bg, #fff)"/><circle cx="${CX}" cy="${CY}" r="${R}" fill="#${p.hex}"/><path transform="translate(${TX} ${TY}) scale(${S})" fill="${markColour(p.hex)}"${p.source === "original" ? ' fill-rule="evenodd"' : ""} d="${p.path}"/></g>`;
+  `<g stroke="none"><circle cx="${CX}" cy="${CY}" r="${HALO}" fill="var(--zeema-icon-bg, #fff)"/><circle cx="${CX}" cy="${CY}" r="${R}" fill="#${p.hex}"/><path transform="translate(${TX} ${TY}) scale(${S})" fill="${markColour(p.hex)}"${p.source === "original" ? ' fill-rule="evenodd"' : ""} d="${p.path}"/></g>`;
 const DEFAULT_BADGE = {
   aws: "aws",
   azure: "azure",

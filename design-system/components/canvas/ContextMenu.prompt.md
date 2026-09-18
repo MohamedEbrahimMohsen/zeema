@@ -10,4 +10,4 @@ One-line: the canvas right-click menu.
 ]} />
 ```
 
-Every item that has a keyboard route shows it, mono, right-aligned — Arkore assumes a keyboard user. Destructive items are separated and take `--err` text, never an `--err` fill. Floats on `--shadow-float`; the item radius is `calc(var(--rc) - 2px)` so it nests inside the menu's own corner.
+Every item that has a keyboard route shows it, mono, right-aligned — Zeema assumes a keyboard user. Destructive items are separated and take `--err` text, never an `--err` fill. Floats on `--shadow-float`; the item radius is `calc(var(--rc) - 2px)` so it nests inside the menu's own corner.

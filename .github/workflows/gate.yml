@@ -19,7 +19,7 @@ jobs:
       - run: pnpm validate
       - run: pnpm lint
       - run: pnpm test
-      - run: pnpm --filter @arkore/web exec tsc --noEmit
-      - run: pnpm --filter @arkore/web build
+      - run: pnpm --filter @zeema/web exec tsc --noEmit
+      - run: pnpm --filter @zeema/web build
         env:
           AUTO_SEED: "0"

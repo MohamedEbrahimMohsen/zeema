@@ -2,7 +2,7 @@ apiVersion: 1
 
 datasources:
   - name: Prometheus
-    uid: arkore-prometheus
+    uid: zeema-prometheus
     type: prometheus
     access: proxy
     url: http://prometheus:9090
@@ -12,12 +12,12 @@ datasources:
 
   # The application database, read-only. Used by the panels Prometheus cannot serve: per-design
   # counts, which would be one time series per design. The password comes from the environment.
-  - name: Arkore database
-    uid: arkore-postgres
+  - name: Zeema database
+    uid: zeema-postgres
     type: grafana-postgresql-datasource
     access: proxy
     url: db:5432
-    database: arkore
+    database: zeema
     user: grafana_ro
     secureJsonData:
       password: $GRAFANA_DB_PASSWORD

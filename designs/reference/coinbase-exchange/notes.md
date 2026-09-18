@@ -1,6 +1,6 @@
 # coinbase-exchange: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/coinbase-exchange.md` (intake card of 2026-09-07, with a verification section appended 2026-09-14)
 - Size: 25 nodes, 32 edges, 7 groups. Broken twin: 23 nodes, 31 edges, 7 groups.
 

@@ -1,6 +1,6 @@
 # metrics-monitoring: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/metrics-monitoring.md` (Alex Xu and Sahn Lam, *System Design Interview* vol 2 ch 5, via the author's ByteByteGo overview and a public chapter-notes page; plus the official Prometheus architecture overview). Re-verified 2026-09-14.
 - Size: 22 nodes, 21 edges, 4 groups. The broken twin keeps the same 22 nodes and adds one edge.
 

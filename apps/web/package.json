@@ -1,5 +1,5 @@
 {
-  "name": "@arkore/web",
+  "name": "@zeema/web",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -14,8 +14,8 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@arkore/catalogue": "workspace:*",
-    "@arkore/core": "workspace:*",
+    "@zeema/catalogue": "workspace:*",
+    "@zeema/core": "workspace:*",
     "@electric-sql/pglite": "^0.5.8",
     "arctic": "^3.7.0",
     "drizzle-orm": "^0.45.2",

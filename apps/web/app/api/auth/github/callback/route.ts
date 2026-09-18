@@ -22,8 +22,8 @@ export async function GET(req: Request) {
   const jar = await cookies();
   const code = url.searchParams.get("code");
   const state = url.searchParams.get("state");
-  const saved = jar.get("arkore_oauth_state")?.value;
-  jar.delete("arkore_oauth_state");
+  const saved = jar.get("zeema_oauth_state")?.value;
+  jar.delete("zeema_oauth_state");
   if (!code || !state || !saved || state !== saved) return fail("state-mismatch");
   const origin = process.env.APP_ORIGIN ?? url.origin;
   const github = new GitHub(
@@ -41,7 +41,7 @@ export async function GET(req: Request) {
   const res = await fetch("https://api.github.com/user", {
     headers: {
       Authorization: `Bearer ${accessToken}`,
-      "User-Agent": "arkore",
+      "User-Agent": "zeema",
       Accept: "application/vnd.github+json",
     },
   });
@@ -58,8 +58,8 @@ export async function GET(req: Request) {
   const { token, expiresAt } = await createSession(user.id);
   countSignin("ok");
   await setSessionCookie(token, expiresAt);
-  const next = jar.get("arkore_oauth_next")?.value;
-  jar.delete("arkore_oauth_next");
+  const next = jar.get("zeema_oauth_next")?.value;
+  jar.delete("zeema_oauth_next");
   return NextResponse.redirect(
     new URL(next?.startsWith("/") ? next : `/u/${user.username}`, req.url),
   );

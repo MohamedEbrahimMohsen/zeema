@@ -1,4 +1,4 @@
-One-line: the only sanctioned way to render an Arkore glyph — it encodes which icons may be recoloured and which may not.
+One-line: the only sanctioned way to render a Zeema glyph — it encodes which icons may be recoloured and which may not.
 
 ```jsx
 <Icon src="assets/icons/components/aws/sqs.svg" />

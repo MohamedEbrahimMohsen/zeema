@@ -2,7 +2,7 @@
 // built bundle), same shape the browser gets from /catalogue/*.json.
 import fs from "node:fs";
 import path from "node:path";
-import { designIndex, iconMap, loadCatalogue, resolveRoot } from "@arkore/catalogue";
+import { designIndex, iconMap, loadCatalogue, resolveRoot } from "@zeema/catalogue";
 
 export type Catalogue = {
   kinds: Record<string, { id: string; category: string; properties: Record<string, PropertyDef> }>;
@@ -35,12 +35,12 @@ export type PropertyDef = {
 export type LocaleEntry = { name?: string; description?: string };
 
 type Holder = { cat?: Catalogue & { root: string }; icons?: Record<string, string> };
-const g = globalThis as unknown as { __arkoreCat?: Holder };
-if (!g.__arkoreCat) g.__arkoreCat = {};
-const holder: Holder = g.__arkoreCat;
+const g = globalThis as unknown as { __zeemaCat?: Holder };
+if (!g.__zeemaCat) g.__zeemaCat = {};
+const holder: Holder = g.__zeemaCat;
 
 export function repoRoot() {
-  return resolveRoot(process.env.ARKORE_ROOT);
+  return resolveRoot(process.env.ZEEMA_ROOT);
 }
 
 export function getCatalogue(): Catalogue & { root: string } {

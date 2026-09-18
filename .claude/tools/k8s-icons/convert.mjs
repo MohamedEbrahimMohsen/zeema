@@ -6,7 +6,7 @@ import path from "node:path";
 import { build, LIMIT } from "./lib.mjs";
 
 const HERE = path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1"));
-const ROOT = "D:/Personal/_arkore";
+const ROOT = "D:/Personal/_zeema";
 const BANNED = /<script|\son[a-z]+\s*=|<image\b|href\s*=|<foreignObject/i;
 // Inkscape leaves editor metadata and namespaced attributes behind; none of it draws, and
 // style="fill:#hex" has to become a fill attribute for the rewriter to see the colour.

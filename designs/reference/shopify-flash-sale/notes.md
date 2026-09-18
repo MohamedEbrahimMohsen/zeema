@@ -1,6 +1,6 @@
 # shopify-flash-sale: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/shopify-flash-sale.md`
 - Size: 19 nodes, 26 edges, 6 groups (broken variant: 16 nodes, 22 edges, 6 groups).
 

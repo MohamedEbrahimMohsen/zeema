@@ -17,6 +17,7 @@
       "!**/*.svg",
       "!packages/catalogue/data",
       "!apps/web/public",
+      "!apps/landing/public",
       "!apps/web/drizzle",
       "!design-system",
       "!.claude/tools",

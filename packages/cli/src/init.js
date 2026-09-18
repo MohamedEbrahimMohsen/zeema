@@ -1,8 +1,8 @@
-// arkore init: a starter design, a config file, editor schema mapping and a CI workflow.
+// zeema init: a starter design, a config file, editor schema mapping and a CI workflow.
 import fs from "node:fs";
 import path from "node:path";
 
-const STARTER = `# yaml-language-server: $schema=https://arkore.dev/schema/design.schema.json
+const STARTER = `# yaml-language-server: $schema=https://zeema.dev/schema/design.schema.json
 schemaVersion: "1"
 type: "design"
 id: "checkout"
@@ -22,7 +22,7 @@ const CONFIG = `{
 }
 `;
 
-const WORKFLOW = `name: arkore
+const WORKFLOW = `name: zeema
 on:
   pull_request:
   push:
@@ -38,11 +38,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npx --yes @arkore/cli lint --format sarif --out arkore.sarif || true
+      - run: npx --yes @zeema/cli lint --format sarif --out zeema.sarif || true
       - uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: arkore.sarif
-      - run: npx --yes @arkore/cli lint
+          sarif_file: zeema.sarif
+      - run: npx --yes @zeema/cli lint
 `;
 
 export function initProject(dir) {
@@ -54,9 +54,9 @@ export function initProject(dir) {
     fs.writeFileSync(abs, text, "utf8");
     written.push(rel);
   };
-  put("architecture/checkout.arkore.yaml", STARTER);
-  put("arkore.config.json", CONFIG);
-  put(".github/workflows/arkore.yml", WORKFLOW);
+  put("architecture/checkout.zeema.yaml", STARTER);
+  put("zeema.config.json", CONFIG);
+  put(".github/workflows/zeema.yml", WORKFLOW);
   const vs = path.join(dir, ".vscode", "settings.json");
   let settings = {};
   if (fs.existsSync(vs)) {
@@ -68,7 +68,7 @@ export function initProject(dir) {
   }
   settings["yaml.schemas"] = {
     ...(settings["yaml.schemas"] ?? {}),
-    "https://arkore.dev/schema/design.schema.json": ["**/*.arkore.yaml", "**/design.yaml"],
+    "https://zeema.dev/schema/design.schema.json": ["**/*.zeema.yaml", "**/design.yaml"],
   };
   fs.mkdirSync(path.dirname(vs), { recursive: true });
   fs.writeFileSync(vs, `${JSON.stringify(settings, null, 2)}\n`, "utf8");

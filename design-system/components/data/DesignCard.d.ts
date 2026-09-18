@@ -8,7 +8,7 @@ export interface DesignCardProps extends React.HTMLAttributes<HTMLDivElement> {
   title: string;
   /** One sentence, sentence case, ending in a full stop. */
   description?: string;
-  /** Owner handle — an org slug ("arkore") or a person ("@mira"). */
+  /** Owner handle — an org slug ("zeema") or a person ("@mira"). */
   author?: string;
   componentCount?: number;
   provider?: string;

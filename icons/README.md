@@ -66,8 +66,8 @@ keeping the drawing within about a fiftieth of a pixel at 24 px allows.
 In the line-glyph style only the badge carries fixed colour. It is a 9 unit circle centred at `(18.5, 18.5)`
 filled with the brand hex, with the mark inside it in white — or in near-black when the
 brand colour is light enough that white would not read at 16 px. Behind it sits a slightly
-larger halo circle filled with `var(--arkore-icon-bg, #fff)`, which knocks the kind glyph
-out from under the badge. Set `--arkore-icon-bg` to the surrounding background colour on a
+larger halo circle filled with `var(--zeema-icon-bg, #fff)`, which knocks the kind glyph
+out from under the badge. Set `--zeema-icon-bg` to the surrounding background colour on a
 dark theme; the default white is correct on a light one.
 
 ## Adding an icon
@@ -109,7 +109,7 @@ the Azure Public Service Icons set, Oracle's OCI diagram toolkit, and the Kubern
 icon set (github.com/kubernetes/community, Apache License 2.0). They are scaled into the
 24 unit box and their coordinates are rounded; nothing else about the drawings is changed.
 Each vendor's terms govern its own marks, and they are not MIT with the rest of this
-repository. `_arkore-icons-v2/out/components/<provider>/<id>/source.json` records, per icon,
+repository. `_zeema-icons-v2/out/components/<provider>/<id>/source.json` records, per icon,
 which pack it came from, the path inside that pack, and the licence page.
 
 All trademarks and logos are the property of their respective owners. The marks are used

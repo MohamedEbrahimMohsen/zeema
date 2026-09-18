@@ -67,7 +67,7 @@ export type DesignSummary = {
   sketch: Sketch | null;
 };
 
-export const ownerSegment = (owner: { username: string } | null) => owner?.username ?? "arkore";
+export const ownerSegment = (owner: { username: string } | null) => owner?.username ?? "zeema";
 
 // ---------------------------------------------------------------- reads
 
@@ -87,7 +87,7 @@ function canWrite(d: Design, viewer: Viewer) {
 
 async function resolveDesign(owner: string, slug: string) {
   const db = await getDb();
-  if (owner === "arkore") {
+  if (owner === "zeema") {
     const rows = await db
       .select()
       .from(schema.designs)
@@ -244,7 +244,7 @@ export async function listDesigns(
       ? schema.designs.currentVersionId
       : schema.designs.publishedVersionId;
   if (opts.owner) {
-    if (opts.owner === "arkore") conds.push(isNull(schema.designs.ownerId));
+    if (opts.owner === "zeema") conds.push(isNull(schema.designs.ownerId));
     else
       conds.push(
         sql`${schema.designs.ownerId} in (select id from users where lower(username) = ${opts.owner.toLowerCase()})`,
@@ -658,7 +658,7 @@ export async function recordEvent(
   const ipHash = opts.ip
     ? createHash("sha256")
         .update(
-          `${process.env.EVENT_SALT ?? "arkore"}:${opts.ip}:${new Date().toISOString().slice(0, 10)}`,
+          `${process.env.EVENT_SALT ?? "zeema"}:${opts.ip}:${new Date().toISOString().slice(0, 10)}`,
         )
         .digest("hex")
     : null;

@@ -1,6 +1,6 @@
 # spotify-playback: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/spotify-playback.md` (seven official Spotify engineering posts, 2013-2024; all seven re-fetched and confirmed on 2026-09-13, see the "Verification 2026-09-13" section of that file).
 - Size: 19 nodes, 28 edges, 4 groups.
 

@@ -1,6 +1,6 @@
 # khan-academy-goliath: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/khan-academy-goliath.md` (eleven Khan Academy engineering-blog posts, plus InfoQ and Pragmatic Engineer interviews; re-verified 2026-09-14)
 - Size: 22 nodes, 29 edges, 5 groups.
 

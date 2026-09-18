@@ -8,8 +8,8 @@
 // selection, double click edits a label in place, the right button opens a menu about whatever is
 // under it.
 
-import { displayName } from "@arkore/core/document";
-import { bowAt, edgeGeometry, groupFrames, innermostFrameAt, pathOf } from "@arkore/core/geometry";
+import { displayName } from "@zeema/core/document";
+import { bowAt, edgeGeometry, groupFrames, innermostFrameAt, pathOf } from "@zeema/core/geometry";
 
 const NS = "http://www.w3.org/2000/svg";
 const el = (name: string, attrs: Record<string, unknown> = {}) => {
@@ -543,10 +543,10 @@ export class Scene {
     });
 
     svg.addEventListener("dragover", (ev) => {
-      if (ev.dataTransfer?.types.includes("text/arkore-component")) ev.preventDefault();
+      if (ev.dataTransfer?.types.includes("text/zeema-component")) ev.preventDefault();
     });
     svg.addEventListener("drop", (ev) => {
-      const id = ev.dataTransfer?.getData("text/arkore-component");
+      const id = ev.dataTransfer?.getData("text/zeema-component");
       if (!id) return;
       ev.preventDefault();
       const [wx, wy] = this.toWorld(ev.clientX, ev.clientY);

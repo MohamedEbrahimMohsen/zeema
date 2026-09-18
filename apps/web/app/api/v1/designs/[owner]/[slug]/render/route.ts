@@ -1,7 +1,7 @@
 // Server-side render of the current version: SVG or Mermaid, through the shared engine.
-import { normalize } from "@arkore/core/document";
-import { toMermaid, toSvg } from "@arkore/core/render";
-import { parse } from "@arkore/core/yaml";
+import { normalize } from "@zeema/core/document";
+import { toMermaid, toSvg } from "@zeema/core/render";
+import { parse } from "@zeema/core/yaml";
 import type { NextRequest } from "next/server";
 import { handle, viewerOf } from "@/lib/api";
 import { getCatalogue, getIcons } from "@/lib/catalogue";

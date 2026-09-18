@@ -1,6 +1,6 @@
 # discord-messages: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/discord-messages.md` (three official Discord engineering posts, 2017 and 2023; re-fetched and confirmed 2026-09-13)
 - Size: 14 nodes, 19 edges, 5 groups.
 

@@ -1,8 +1,8 @@
 """locales/en.yaml maintenance.
 
-  python arkore_locale.py add <snippet.yaml> [...]   merge entries, rewrite sorted
-  python arkore_locale.py check                      report ids without entry / entries without file
-  python arkore_locale.py prune                      drop entries whose id has no file
+  python zeema_locale.py add <snippet.yaml> [...]   merge entries, rewrite sorted
+  python zeema_locale.py check                      report ids without entry / entries without file
+  python zeema_locale.py prune                      drop entries whose id has no file
 
 A snippet is either {kinds: {...}, components: {...}, rules: {...}} or a flat
 {<id>: {name, description}} map, which is treated as components.

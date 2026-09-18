@@ -1,8 +1,8 @@
 // A design's thumbnail is a real mini-diagram: the engine's own layout, drawn as taxonomy-tinted
 // boxes and quiet edges. No labels, no icons — at card size the shape is the information.
-import { normalize } from "@arkore/core/document";
-import { layout } from "@arkore/core/layout";
-import { parse } from "@arkore/core/yaml";
+import { normalize } from "@zeema/core/document";
+import { layout } from "@zeema/core/layout";
+import { parse } from "@zeema/core/yaml";
 import type { Catalogue } from "./catalogue";
 
 export type Sketch = {

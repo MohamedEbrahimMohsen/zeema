@@ -26,7 +26,7 @@ type Metrics = {
   signins: Counter<"result">;
 };
 
-const g = globalThis as unknown as { __arkoreMetrics?: Metrics };
+const g = globalThis as unknown as { __zeemaMetrics?: Metrics };
 
 /**
  * Path to a low-cardinality label. Every dynamic segment becomes a placeholder, so a million
@@ -87,35 +87,35 @@ export function sectionOf(route: string): string {
 
 function build(): Metrics {
   const registry = defaultRegister;
-  registry.setDefaultLabels({ app: "arkore-web" });
+  registry.setDefaultLabels({ app: "zeema-web" });
   collectDefaultMetrics({ register: registry });
 
   const httpDuration = new Histogram({
-    name: "arkore_http_request_duration_seconds",
+    name: "zeema_http_request_duration_seconds",
     help: "Time from the first byte of a request to the end of its response",
     labelNames: ["route", "section", "method", "status"] as const,
     buckets: [0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10],
     registers: [registry],
   });
   const inFlight = new Gauge({
-    name: "arkore_http_requests_in_flight",
+    name: "zeema_http_requests_in_flight",
     help: "Requests being answered right now",
     registers: [registry],
   });
   const saves = new Counter({
-    name: "arkore_design_writes_total",
+    name: "zeema_design_writes_total",
     help: "Design writes by kind: save, publish, clone, create, delete",
     labelNames: ["kind"] as const,
     registers: [registry],
   });
   const exports_ = new Counter({
-    name: "arkore_design_exports_total",
+    name: "zeema_design_exports_total",
     help: "Design exports by format",
     labelNames: ["format"] as const,
     registers: [registry],
   });
   const signins = new Counter({
-    name: "arkore_signins_total",
+    name: "zeema_signins_total",
     help: "Sign-in attempts by result",
     labelNames: ["result"] as const,
     registers: [registry],
@@ -158,7 +158,7 @@ function build(): Metrics {
   };
 
   new Gauge({
-    name: "arkore_users_total",
+    name: "zeema_users_total",
     help: "Accounts that are not deleted",
     registers: [registry],
     async collect() {
@@ -166,7 +166,7 @@ function build(): Metrics {
     },
   });
   new Gauge({
-    name: "arkore_designs_total",
+    name: "zeema_designs_total",
     help: "Designs that are not deleted, by visibility",
     labelNames: ["visibility"] as const,
     registers: [registry],
@@ -177,7 +177,7 @@ function build(): Metrics {
     },
   });
   new Gauge({
-    name: "arkore_designs_unpublished",
+    name: "zeema_designs_unpublished",
     help: "Designs whose head is ahead of their release",
     registers: [registry],
     async collect() {
@@ -185,7 +185,7 @@ function build(): Metrics {
     },
   });
   new Gauge({
-    name: "arkore_design_versions_total",
+    name: "zeema_design_versions_total",
     help: "Stored design versions",
     registers: [registry],
     async collect() {
@@ -193,7 +193,7 @@ function build(): Metrics {
     },
   });
   new Gauge({
-    name: "arkore_sessions_active",
+    name: "zeema_sessions_active",
     help: "Sessions that are neither revoked nor expired",
     registers: [registry],
     async collect() {
@@ -205,11 +205,11 @@ function build(): Metrics {
 }
 
 export function metrics(): Metrics {
-  if (!g.__arkoreMetrics) g.__arkoreMetrics = build();
-  return g.__arkoreMetrics;
+  if (!g.__zeemaMetrics) g.__zeemaMetrics = build();
+  return g.__zeemaMetrics;
 }
 
-type Timed = { __arkoreStart?: bigint };
+type Timed = { __zeemaStart?: bigint };
 
 /**
  * Subscribe to Node's HTTP channels once. Every response the server finishes lands in the
@@ -217,12 +217,12 @@ type Timed = { __arkoreStart?: bigint };
  */
 export function installHttpMetrics() {
   const m = metrics();
-  const started = globalThis as unknown as { __arkoreHttpMetrics?: boolean };
-  if (started.__arkoreHttpMetrics) return;
-  started.__arkoreHttpMetrics = true;
+  const started = globalThis as unknown as { __zeemaHttpMetrics?: boolean };
+  if (started.__zeemaHttpMetrics) return;
+  started.__zeemaHttpMetrics = true;
   subscribe("http.server.request.start", (message) => {
     const { request } = message as { request: Timed };
-    request.__arkoreStart = process.hrtime.bigint();
+    request.__zeemaStart = process.hrtime.bigint();
     m.inFlight.inc();
   });
   subscribe("http.server.response.finish", (message) => {
@@ -231,7 +231,7 @@ export function installHttpMetrics() {
       response: { statusCode?: number };
     };
     m.inFlight.dec();
-    const start = request.__arkoreStart;
+    const start = request.__zeemaStart;
     if (!start) return;
     const seconds = Number(process.hrtime.bigint() - start) / 1e9;
     const route = routeOf(request.url ?? "/");

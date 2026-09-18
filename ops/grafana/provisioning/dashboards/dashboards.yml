@@ -1,9 +1,9 @@
 apiVersion: 1
 
 providers:
-  - name: arkore
+  - name: zeema
     orgId: 1
-    folder: Arkore
+    folder: Zeema
     type: file
     disableDeletion: false
     updateIntervalSeconds: 30

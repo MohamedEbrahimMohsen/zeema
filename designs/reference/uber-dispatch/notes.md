@@ -1,6 +1,6 @@
 # uber-dispatch: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/uber-dispatch.md` (QCon London 2015 talk by Matt Ranney, Uber chief systems architect, as written up on HighScalability; plus an ex-Uber engineer's 2009-2023 retrospective). Verified 2026-09-13.
 - Size: 21 nodes, 30 edges, 6 groups.
 

@@ -1,6 +1,6 @@
 # nearby-friends: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/nearby-friends.md` (Alex Xu and Sahn Lam, *System Design Interview* vol 2 ch 2 "Nearby Friends", via the liquidslr/system-design-notes mirror; Google Cloud's Zenly customer story)
 - Size: 14 nodes, 19 edges, 4 groups.
 

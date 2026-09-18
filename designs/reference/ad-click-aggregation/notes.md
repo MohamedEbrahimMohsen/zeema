@@ -1,6 +1,6 @@
 # ad-click-aggregation: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/ad-click-aggregation.md` (Alex Xu and Sahn Lam, *System Design Interview* vol 2 ch 6, plus Uber's "Real-Time Exactly-Once Ad Event Processing with Apache Flink, Kafka, and Pinot", 2021)
 - Size: 20 nodes, 24 edges, 5 groups.
 

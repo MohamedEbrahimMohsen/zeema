@@ -11,7 +11,7 @@ rules live; pages and the API derive their state from its answers.
 - The **admin** role is a grant, not a flag: `role_grants` holds one row per assignment with
   who granted it, when, an optional note, and who revoked it and when. A user holds a role
   while an open (unrevoked) grant exists. Revoking keeps the row, so the history stays.
-- The first admin comes from `ARKORE_ADMINS` (comma-separated usernames) and is granted at
+- The first admin comes from `ZEEMA_ADMINS` (comma-separated usernames) and is granted at
   that user's next sign-in with the note `bootstrap`. After that, roles are managed from the
   IAM page (`/admin/iam`) or the API (`/api/v1/admin/users`, `/api/v1/admin/grants`).
 - An admin cannot revoke their own admin role. Another admin has to.

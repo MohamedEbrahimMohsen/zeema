@@ -1,4 +1,4 @@
-# IaC resource type -> Arkore component id. null = not a node (skip). "todo" = node but no component yet.
+# IaC resource type -> Zeema component id. null = not a node (skip). "todo" = node but no component yet.
 terraform:
   aws:
     aws_acm_certificate: "aws-acm"

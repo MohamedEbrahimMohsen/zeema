@@ -1,12 +1,12 @@
-# Arkore Design System
+# Zeema Design System
 
-Arkore is a tool for describing software architecture as **typed, queryable data** rather than
+Zeema is a tool for describing software architecture as **typed, queryable data** rather than
 as a drawing. Its own framing, from the source artifact:
 
-> A diagram is a picture. An Arkore design is a model: components with real properties,
+> A diagram is a picture. A Zeema design is a model: components with real properties,
 > requirements, and rules that check them.
 
-Everything in this system follows from that one sentence. A node on the Arkore canvas is not a
+Everything in this system follows from that one sentence. A node on the Zeema canvas is not a
 box with a label — it is an instance of a component *kind* with a schema, properties that are
 either set or inherited, and rules that can fail against it. The visual language exists to make
 that distinction legible: what a human authored versus what the system knows.
@@ -18,9 +18,9 @@ that distinction legible: what a human authored versus what the system knows.
 This system was derived from a single design artifact supplied by the user:
 
 - **Artifact:** `https://claude.ai/code/artifact/1985e013-1ef0-44f6-9d36-9479e7ba0b96`
-- **Local export:** `uploads/Arkore/` — `Design System.dc.html` (the three-direction board) and
+- **Local export:** `uploads/Zeema/` — `Design System.dc.html` (the three-direction board) and
   `DS Sheet.dc.html` (the specimen sheet rendered once per direction per theme).
-- **Icons:** `uploads/Arkore/icons/` — 48 SVGs across `components/`, `kinds/` and `providers/`,
+- **Icons:** `uploads/Zeema/icons/` — 48 SVGs across `components/`, `kinds/` and `providers/`,
   copied verbatim into `assets/icons/`.
 
 The artifact explored three directions — **1a Instrument** (compact, system sans),
@@ -41,12 +41,12 @@ is inferred from the sheet and is marked as such where it matters.
 
 ## Content fundamentals
 
-Arkore's copy is written by engineers, for engineers, and it never pretends to be friendlier
+Zeema's copy is written by engineers, for engineers, and it never pretends to be friendlier
 than the situation.
 
 **Two registers, strictly separated.** Prose is sentence case and grammatical. Identifiers are
 lowercase-hyphenated or camelCase and are never prettified for display. The same property is
-`deadLetterQueue` in a checkbox label and `deadLetterQueue` in the schema table — Arkore does not
+`deadLetterQueue` in a checkbox label and `deadLetterQueue` in the schema table — Zeema does not
 translate machine names into "Dead letter queue", because the reader will type the machine name.
 
 **Findings state the problem and the consequence.** Not "Invalid cache configuration" but:
@@ -134,7 +134,7 @@ are fully round.
 
 ### Borders, shadow and elevation
 
-Arkore separates with lines, not shadow. Every panel, card, table and canvas is a 1px `--line`
+Zeema separates with lines, not shadow. Every panel, card, table and canvas is a 1px `--line`
 on `--panel`. **Shadow appears on exactly one class of object: things that float above the
 canvas** — context menus, popovers, dialogs. `--shadow-float` is `0 8px 24px rgba(0,0,0,0.12)`;
 nothing else in the product is allowed one.
@@ -208,12 +208,12 @@ in dark mode.
 
 Emoji are never used. Unicode is used for exactly two things: the middle dot `·` as a metadata
 separator, and modifier glyphs in keyboard shortcuts (`⌃`, `⇧`, `⌘`, `⌫`). Never draw a new
-Arkore icon by hand — take the nearest Lucide line icon at 1.5px stroke and add it to `kinds/`.
+Zeema icon by hand — take the nearest Lucide line icon at 1.5px stroke and add it to `kinds/`.
 
 ### Substitutions flagged
 
 - **Fonts.** No binaries were supplied. Geist and JetBrains Mono are loaded from Google Fonts in
-  `tokens/fonts.css`. If Arkore self-hosts these, replace that file with `@font-face` rules and
+  `tokens/fonts.css`. If Zeema self-hosts these, replace that file with `@font-face` rules and
   drop the files into `assets/fonts/`.
 - **No logo was supplied.** None has been drawn. The brand is set in Geist 600 at
   `letter-spacing: -0.01em` wherever a mark would go — see `guidelines/brand-wordmark.html`.
@@ -230,7 +230,7 @@ Arkore icon by hand — take the nearest Lucide line icon at 1.5px stroke and ad
 | `assets/icons/` | `components/` (26 vendor marks) · `kinds/` (16 glyphs) · `providers/` (7 logos) |
 | `guidelines/` | 18 foundation specimen cards — Colors, Type, Spacing, Brand |
 | `components/` | 22 React primitives in five groups |
-| `ui_kits/arkore/` | Six-screen click-through recreation of the Arkore app |
+| `ui_kits/zeema/` | Six-screen click-through recreation of the Zeema app |
 | `ds-ns.js` | Bundle-namespace resolver used by the cards and the kit |
 | `SKILL.md` | Agent Skills wrapper, for use in Claude Code |
 

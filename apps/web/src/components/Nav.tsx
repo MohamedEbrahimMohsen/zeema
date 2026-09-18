@@ -11,7 +11,7 @@ export async function Nav() {
     <header className="topbar">
       <Link href="/" className="wordmark no-underline">
         <Mark size={20} />
-        Arkore
+        Zeema
       </Link>
       <NavTabs />
       <div className="ml-auto flex items-center gap-3">

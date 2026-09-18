@@ -1,6 +1,6 @@
 # proximity-service: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/proximity-service.md`
 - Size: 16 nodes, 22 edges, 5 groups.
 

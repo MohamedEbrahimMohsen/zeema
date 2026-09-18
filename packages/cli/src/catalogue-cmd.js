@@ -1,5 +1,5 @@
-// arkore catalogue find|component|kind|kinds|providers
-import { PROVIDERS } from "@arkore/catalogue";
+// zeema catalogue find|component|kind|kinds|providers
+import { PROVIDERS } from "@zeema/catalogue";
 
 const name = (cat, id) => cat.locale.components[id]?.name ?? id;
 
@@ -16,7 +16,7 @@ export function catalogueCommand(cat, sub, args) {
     return ok;
   }
   if (sub === "find") {
-    if (!args.length) return { lines: ["usage: arkore catalogue find <words...>"], code: 2 };
+    if (!args.length) return { lines: ["usage: zeema catalogue find <words...>"], code: 2 };
     const words = args.map((w) => w.toLowerCase());
     const rows = Object.values(cat.components).filter((c) => {
       const hay =
@@ -88,7 +88,7 @@ export function catalogueCommand(cat, sub, args) {
   }
   return {
     lines: [
-      "usage: arkore catalogue find <words...> | component <id> | kind <id> | kinds | providers <kind>",
+      "usage: zeema catalogue find <words...> | component <id> | kind <id> | kinds | providers <kind>",
     ],
     code: 2,
   };

@@ -1,6 +1,6 @@
 # zoom-video: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/zoom-video.md`
 - Size: 18 nodes, 28 edges, 8 groups.
 

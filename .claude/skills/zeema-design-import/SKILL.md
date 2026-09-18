@@ -1,13 +1,13 @@
 ---
-name: arkore-design-import
-description: Convert an architecture design (image, draw.io, Mermaid, PlantUML, Excalidraw, Markdown, Terraform, Bicep, ARM, CloudFormation, Pulumi) into an identical Arkore design YAML stored under designs/imported/<name>/ with the source, a mapping table, a diagram and notes; adds missing components to the catalogue through the arkore-catalogue-add skill. Use when the user drops a design or diagram into docs/ (or anywhere) and asks to convert, import, encode, map or "arkore-ify" it, or says "new design".
+name: zeema-design-import
+description: Convert an architecture design (image, draw.io, Mermaid, PlantUML, Excalidraw, Markdown, Terraform, Bicep, ARM, CloudFormation, Pulumi) into an identical Zeema design YAML stored under designs/imported/<name>/ with the source, a mapping table, a diagram and notes; adds missing components to the catalogue through the zeema-catalogue-add skill. Use when the user drops a design or diagram into docs/ (or anywhere) and asks to convert, import, encode, map or "zeema-ify" it, or says "new design".
 ---
 
-# Import a design into Arkore
+# Import a design into Zeema
 
 ## The contract
 
-The output is the **same design** the user gave, expressed in Arkore components. Same boxes,
+The output is the **same design** the user gave, expressed in Zeema components. Same boxes,
 same names, same arrows, same boundaries. Nothing added, nothing dropped, nothing renamed,
 nothing "improved". A user who gets back a different design than the one they entered
 leaves. Fidelity is checked mechanically by `check_fidelity.py` and visually by you.
@@ -20,7 +20,7 @@ component is `azure-queue-storage`; the node keeps `label: "Storage Queue"`.
 ```
 designs/imported/<name>/
   source/<original file(s)>     untouched copy of what the user gave
-  design.yaml                   the Arkore design (id == <name> == folder name)
+  design.yaml                   the Zeema design (id == <name> == folder name)
   mapping.yaml                  source inventory and where every item went (machine checked)
   diagram.md                    Mermaid rendering of design.yaml, for side-by-side review
   notes.md                      decisions, assumptions, gaps, rules fired
@@ -130,7 +130,7 @@ For each node, in this order, and record `node`, `component`, `confidence`, `not
      sub-resource is the node (Storage Account -> its blob/queue/table/file service). Map to the
      sub-resource and note it. If the reason is "retired", keep the box: map to the closest
      living component, `confidence: assumed`, note the retirement.
-   - Nothing found at all: invoke the `arkore-catalogue-add` skill for that product (it
+   - Nothing found at all: invoke the `zeema-catalogue-add` skill for that product (it
      researches it, adds the kind if needed, and adds the component in every provider where an
      equivalent exists). Then map to the new id. Continue with the other boxes while it runs
      only if it was launched as a background agent; otherwise finish it first.
@@ -187,7 +187,7 @@ not import errors; keep them for the report and do not change the design to sile
 ### 6. Record
 
 - `notes.md`: source and format, the mapping table (source text -> node -> component ->
-  confidence), assumptions, components or kinds added by `arkore-catalogue-add`, gaps, and the
+  confidence), assumptions, components or kinds added by `zeema-catalogue-add`, gaps, and the
   rules fired.
 - Each `gaps` entry also goes to `docs/schema-gaps.md` in its entry format (Design, Missing,
   Workaround, Proposed change, Status open).
@@ -210,4 +210,4 @@ unasked.
 - Never add a node the source does not show, even an obviously missing one. Put it in
   `notes.md` under "observations" if worth saying.
 - Never edit `kinds/`, `schema/` or other providers' components from this skill; catalogue
-  changes go through `arkore-catalogue-add`.
+  changes go through `zeema-catalogue-add`.

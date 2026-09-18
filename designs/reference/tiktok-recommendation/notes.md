@@ -1,6 +1,6 @@
 # tiktok-recommendation: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/tiktok-recommendation.md` (Monolith, ORSUM at RecSys 2022; ByteGraph, VLDB 2022; the archived `bytedance/monolith` repository). Re-verified 2026-09-13.
 - Size: 16 nodes, 18 edges, 6 groups.
 

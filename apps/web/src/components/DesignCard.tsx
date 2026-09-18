@@ -86,7 +86,7 @@ export function DesignCard({ d }: { d: DesignSummary }) {
         <div className="medium">{d.title}</div>
         {d.summary ? <div className="small muted clamp-2">{d.summary}</div> : null}
         <div className="card-strip">
-          <span>{d.owner ? `@${d.owner.username}` : "arkore"}</span>
+          <span>{d.owner ? `@${d.owner.username}` : "zeema"}</span>
           <span>·</span>
           <span>{d.nodeCount} components</span>
           {d.providers

@@ -19,13 +19,13 @@ export default async function SignIn({
         <div className="flex flex-col gap-1">
           <span className="wordmark">
             <Mark size={24} />
-            Arkore
+            Zeema
           </span>
           <span className="small muted">Architecture as typed, queryable data.</span>
         </div>
         <p className="small muted">
           Reading is open to everyone. Creating, cloning and publishing designs needs an account,
-          and the account is your GitHub identity. Arkore never sees a password.
+          and the account is your GitHub identity. Zeema never sees a password.
         </p>
         {sp.error ? <p className="status status-err">sign-in failed: {sp.error}</p> : null}
         {githubConfigured() ? (

@@ -1,6 +1,6 @@
 # dropbox-sync: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/dropbox-sync.md` (twelve Dropbox engineering posts, 2014-2022, plus the QCon SF 2022 Magic Pocket talk and its InfoQ write-up), re-verified 2026-09-14.
 - Size: 25 nodes, 34 edges, 5 groups.
 

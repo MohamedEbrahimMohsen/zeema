@@ -1,6 +1,6 @@
 # robinhood-trading: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/robinhood-trading.md` (three official Robinhood engineering posts plus a synthesis of the Kafka Summit / Current talks; re-verified 2026-09-14, all four URLs reachable).
 - Size: 22 nodes, 33 edges, 5 groups.
 

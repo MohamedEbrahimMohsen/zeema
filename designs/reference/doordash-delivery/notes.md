@@ -1,6 +1,6 @@
 # doordash-delivery: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/doordash-delivery.md`
 - Size: 15 nodes, 19 edges, 3 groups.
 

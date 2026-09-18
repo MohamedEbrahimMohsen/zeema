@@ -1,6 +1,6 @@
 # tinder-geo: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/tinder-geo.md`
 - Size: 14 nodes, 18 edges, 4 groups (broken twin: 13 nodes, 15 edges, 4 groups).
 

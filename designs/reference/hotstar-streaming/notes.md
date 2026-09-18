@@ -1,6 +1,6 @@
 # hotstar-streaming: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/hotstar-streaming.md` (intake card of 2026-09-07 plus the verification appended 2026-09-14).
 - Size: 24 nodes, 33 edges, 5 groups. The broken twin is 25 nodes, 35 edges, 5 groups.
 
@@ -124,7 +124,7 @@ Hotstar "DC" abstraction that groups the six EKS clusters inside one region.
   WARM_IP_TARGET, the 1000-endpoint truncation, one P0 stack per cluster, NodePort exhaustion,
   10 Gbps nodes and topology spread) have no matching properties in v1.
 - The card draws "CMS -> Video Validation Orchestrator" as a data arrow; the design reverses it
-  to `validation-orchestrator -> cms` because Arkore edges are calls and the orchestrator polls.
+  to `validation-orchestrator -> cms` because Zeema edges are calls and the orchestrator polls.
 - The card lists a direct "client player -> ad decisioning service" edge; the design routes the
   ad request through `internal-gateway` like every other API call, which is what parts 1 and 2
   describe for the platform as a whole.

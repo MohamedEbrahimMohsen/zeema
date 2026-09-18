@@ -1,24 +1,24 @@
-# Arkore — logo prompt for Claude Design
+# Zeema — logo prompt for Claude Design
 
 Paste everything below the line into Claude Design.
 
 ---
 
-Design the logo for **Arkore**, a developer tool whose one-line pitch is *"software architecture as typed, queryable data."*
+Design the logo for **Zeema**, a developer tool whose one-line pitch is *"software architecture as typed, queryable data."*
 
-## What Arkore is
+## What Zeema is
 
-Arkore replaces hand-drawn architecture diagrams with a strict, machine-readable catalogue. It has three layers that build on each other:
+Zeema replaces hand-drawn architecture diagrams with a strict, machine-readable catalogue. It has three layers that build on each other:
 
 - **Kinds** — 71 abstract building blocks of any system (object storage, message queue, load balancer, virtual machine, secret store…). Each kind declares typed properties.
 - **Components** — 1,855 real products across 12 providers (AWS, Azure, GCP, OCI, Cloudflare, IBM, Alibaba Cloud, DigitalOcean, OpenStack, Outscale, Kubernetes, and a vendor-neutral set), each one *an instance of a kind* with documented defaults.
 - **Designs** — a user's actual architecture: nodes that are components, edges between them, regions that group them. A design is YAML, so it can be rendered, diffed, and checked by **rules** (36 of them, e.g. "a public bucket has no encryption", "a queue with no dead-letter target").
 
-People sign in with GitHub, create designs on a canvas, publish them at a URL like `arkore.dev/d/owner/slug`, and browse other people's designs. The product feeling is: engineering rigour, calm, typed, auditable. Think Terraform Registry, Linear, and a good schema editor — not a marketing SaaS.
+People sign in with GitHub, create designs on a canvas, publish them at a URL like `zeema.dev/d/owner/slug`, and browse other people's designs. The product feeling is: engineering rigour, calm, typed, auditable. Think Terraform Registry, Linear, and a good schema editor — not a marketing SaaS.
 
 ## The name
 
-"Arkore" reads as **ark / arc** (architecture, an arch, a vessel that carries a structured cargo) + **core / ore** (the essential centre; raw material refined into something precise). Either reading can drive the mark. Pronounced "ar-KORE".
+"Zeema" reads as **ark / arc** (architecture, an arch, a vessel that carries a structured cargo) + **core / ore** (the essential centre; raw material refined into something precise). Either reading can drive the mark. Pronounced "ar-KORE".
 
 ## The brand system it must live inside ("Blueprint")
 
@@ -39,7 +39,7 @@ Avoid: clouds, gears, hexagons with circuit traces, shields, rockets, generic "n
 
 ## Deliverables
 
-1. **Primary lockup** — mark + wordmark "Arkore", horizontal, for the top bar (rendered at 20–24px tall).
+1. **Primary lockup** — mark + wordmark "Zeema", horizontal, for the top bar (rendered at 20–24px tall).
 2. **Mark alone** — must survive at 16×16 (favicon), 32×32 (tab/GitHub avatar), and 512×512 (app icon). Test it at 16px: no detail thinner than 1/12 of the icon size.
 3. **Wordmark alone** — for docs headers and the sign-in page.
 4. **Light and dark variants** of each, using the exact ground and ink colours above. The accent stays `#3f4fc4` in both; if it fails contrast on dark, lighten toward `#6b7ae0` and say so.

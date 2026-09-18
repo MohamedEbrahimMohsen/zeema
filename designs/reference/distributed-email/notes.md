@@ -1,6 +1,6 @@
 # distributed-email: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/distributed-email.md` (intake card plus the 2026-09-14 verification section).
 - Size: 22 nodes, 29 edges, 5 groups (the broken twin has 22 nodes, 30 edges, 5 groups).
 

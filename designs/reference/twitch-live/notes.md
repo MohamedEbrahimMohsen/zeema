@@ -1,6 +1,6 @@
 # twitch-live: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/twitch-live.md` (five official Twitch engineering posts, 2015-2023, plus the 2018 Twirp announcement; all six re-fetched 2026-09-13).
 - Size: 25 nodes, 29 edges, 5 groups. The broken twin is 24 nodes, 27 edges, 5 groups.
 

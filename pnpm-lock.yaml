@@ -124,10 +124,10 @@ importers:
 
   apps/web:
     dependencies:
-      '@arkore/catalogue':
+      '@zeema/catalogue':
         specifier: workspace:*
         version: link:../../packages/catalogue
-      '@arkore/core':
+      '@zeema/core':
         specifier: workspace:*
         version: link:../../packages/core
       '@electric-sql/pglite':
@@ -188,7 +188,7 @@ importers:
 
   packages/catalogue:
     dependencies:
-      '@arkore/core':
+      '@zeema/core':
         specifier: workspace:*
         version: link:../core
       ajv:
@@ -207,10 +207,10 @@ importers:
 
   packages/cli:
     dependencies:
-      '@arkore/catalogue':
+      '@zeema/catalogue':
         specifier: workspace:*
         version: link:../catalogue
-      '@arkore/core':
+      '@zeema/core':
         specifier: workspace:*
         version: link:../core
       yaml:

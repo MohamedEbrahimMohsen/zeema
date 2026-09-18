@@ -1,6 +1,6 @@
 # gojek-platform: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/gojek-platform.md` (17 posts on Gojek's own engineering blog, blog.gojek.io, 2018-2022, plus the gojek/ziggurat open-source repository).
 - Size: 24 nodes, 30 edges, 3 groups.
 

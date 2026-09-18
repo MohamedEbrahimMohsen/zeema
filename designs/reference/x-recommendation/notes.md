@@ -1,6 +1,6 @@
 # x-recommendation: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/x-recommendation.md` (intake card, sources fetched 2026-09-14, with the verification section appended).
 - Size: 25 nodes, 31 edges, 3 groups. Broken twin: 22 nodes, 27 edges, 3 groups.
 

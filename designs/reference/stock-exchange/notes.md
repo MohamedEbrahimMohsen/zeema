@@ -1,6 +1,6 @@
 # stock-exchange: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/stock-exchange.md` (Alex Xu and Sahn Lam, *System Design Interview* vol 2 ch 12; Martin Fowler, "The LMAX Architecture"; Jane Street, "How to Build an Exchange" and *Signals and Threads*, "Multicast and the Markets"), re-verified 2026-09-14.
 - Size: 20 nodes, 27 edges, 6 groups.
 

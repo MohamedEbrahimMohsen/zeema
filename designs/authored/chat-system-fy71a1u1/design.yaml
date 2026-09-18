@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=../../../schema/design.schema.json
-# Cloned from designs/imported/chat-system/design.yaml in the Arkore canvas.
+# Cloned from designs/imported/chat-system/design.yaml in the Zeema canvas.
 # Imported 2026-09-08 from source/chat-system.md, a transcription of Figure 12-8 (the adjusted
 # high-level design, page 186) of "System Design Interview - An Insider's Guide" (Alex Xu),
 # Chapter 12: Design A Chat System, pages 178-199. The book is copyrighted; source/ holds the

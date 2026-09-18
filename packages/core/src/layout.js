@@ -1,4 +1,4 @@
-// Layout for Arkore designs: a faithful port of .claude/tools/design_to_svg.py.
+// Layout for Zeema designs: a faithful port of .claude/tools/design_to_svg.py.
 //
 // Layered layout. Rank by longest path over the edges (with a fallback for nodes a
 // topological sort never reaches), collapse every group's members onto one rank,
@@ -230,7 +230,7 @@ function hits(x1, y1, x2, y2, r) {
 // --- the layout --------------------------------------------------------------
 
 /**
- * @param {object} doc      an Arkore design document
+ * @param {object} doc      a Zeema design document
  * @param {object} [catalogue]  unused: geometry reads nothing outside the document,
  *                              exactly as the Python renderer does
  * @returns {{positions: Object, sizes: Object, frames: Object,

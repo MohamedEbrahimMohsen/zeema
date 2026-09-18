@@ -9,23 +9,23 @@
 #   BACKUP_DIR=/mnt/x KEEP=60 ./ops/backup.sh
 #
 # Nightly, from the repository root, via `crontab -e`:
-#   15 3 * * * cd /srv/arkore && ./ops/backup.sh >> /var/log/arkore-backup.log 2>&1
+#   15 3 * * * cd /srv/zeema && ./ops/backup.sh >> /var/log/zeema-backup.log 2>&1
 #
 # Copy the dumps off this machine as well: object storage, or another host over ssh.
 #
 # To restore into an empty database:
-#   gunzip -c backups/arkore-YYYYmmdd-HHMMSS.sql.gz | docker compose exec -T db psql -U arkore -d arkore
+#   gunzip -c backups/zeema-YYYYmmdd-HHMMSS.sql.gz | docker compose exec -T db psql -U zeema -d zeema
 set -eu
 
 cd "$(dirname "$0")/.."
 BACKUP_DIR="${BACKUP_DIR:-./backups}"
 KEEP="${KEEP:-30}"
-USER_NAME="${POSTGRES_USER:-arkore}"
-DB_NAME="${POSTGRES_DB:-arkore}"
+USER_NAME="${POSTGRES_USER:-zeema}"
+DB_NAME="${POSTGRES_DB:-zeema}"
 
 mkdir -p "$BACKUP_DIR"
 stamp="$(date +%Y%m%d-%H%M%S)"
-out="$BACKUP_DIR/arkore-$stamp.sql.gz"
+out="$BACKUP_DIR/zeema-$stamp.sql.gz"
 
 # --clean --if-exists makes the dump replayable into a database that already has the schema.
 docker compose exec -T db pg_dump -U "$USER_NAME" -d "$DB_NAME" --clean --if-exists \
@@ -39,4 +39,4 @@ if [ "$size" -lt 1024 ]; then
 fi
 echo "wrote $out ($size bytes)"
 
-find "$BACKUP_DIR" -name 'arkore-*.sql.gz' -type f -mtime "+$KEEP" -print -delete
+find "$BACKUP_DIR" -name 'zeema-*.sql.gz' -type f -mtime "+$KEEP" -print -delete

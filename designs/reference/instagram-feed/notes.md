@@ -1,6 +1,6 @@
 # instagram-feed: notes
 
-- Tier: reference design curated by Arkore; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
+- Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/instagram-feed.md` (intake card of 2026-09-07, re-verified 2026-09-13)
 - Size: 23 nodes, 27 edges, 5 groups.
 
