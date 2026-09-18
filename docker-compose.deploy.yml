@@ -1,0 +1,171 @@
+# Zeema, deployed from published images. Nothing here builds, and nothing is read from the
+# host filesystem, so this file is self-contained: paste it into a Docker host's web interface
+# (Hostinger's Docker Manager, Portainer, or anything else that accepts a compose file) and it
+# runs. The application and its monitoring configuration travel inside the images, which are
+# built and pushed by .github/workflows/publish-images.yml on every push to main.
+#
+# For the development stack that builds from source instead, use docker-compose.yml.
+#
+# Required environment (set these in the panel, or in a .env beside this file):
+#   POSTGRES_PASSWORD, METRICS_TOKEN, GRAFANA_PASSWORD, GRAFANA_DB_PASSWORD
+# Worth setting:
+#   APP_ORIGIN, CANVAS_URL, GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, ZEEMA_ADMINS
+#
+# Data lives in named volumes, never inside a container. `docker compose down` leaves them
+# untouched; only `down -v` or an explicit `docker volume rm` destroys them.
+
+name: zeema
+
+services:
+  db:
+    # The stock Postgres plus the init that creates grafana_ro. See ops/postgres/Dockerfile.
+    image: ${ZEEMA_REGISTRY:-ghcr.io/mohamedebrahimmohsen}/zeema-db:${ZEEMA_TAG:-latest}
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-zeema}
+      POSTGRES_USER: ${POSTGRES_USER:-zeema}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      # Checksums catch silent corruption at read time rather than months later.
+      POSTGRES_INITDB_ARGS: "--data-checksums"
+      GRAFANA_DB_PASSWORD: ${GRAFANA_DB_PASSWORD:?set GRAFANA_DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_BIND:-127.0.0.1}:${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-zeema} -d ${POSTGRES_DB:-zeema}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  web:
+    image: ${ZEEMA_REGISTRY:-ghcr.io/mohamedebrahimmohsen}/zeema-web:${ZEEMA_TAG:-latest}
+    restart: unless-stopped
+    init: true
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-zeema}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-zeema}
+      APP_ORIGIN: ${APP_ORIGIN:-http://localhost:3000}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
+      ZEEMA_ADMINS: ${ZEEMA_ADMINS:-}
+      EVENT_SALT: ${EVENT_SALT:-zeema}
+      METRICS_TOKEN: ${METRICS_TOKEN:?set METRICS_TOKEN}
+      AUTO_SEED: ${AUTO_SEED:-1}
+    ports:
+      - "${WEB_BIND:-0.0.0.0}:${WEB_PORT:-3000}:3000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+  landing:
+    image: ${ZEEMA_REGISTRY:-ghcr.io/mohamedebrahimmohsen}/zeema-landing:${ZEEMA_TAG:-latest}
+    restart: unless-stopped
+    init: true
+    environment:
+      LANDING_PORT: 4000
+      # Where "Open Canvas" sends visitors: the app's public origin.
+      CANVAS_URL: ${CANVAS_URL:-${APP_ORIGIN:-http://localhost:3000}}
+    ports:
+      - "${LANDING_BIND:-0.0.0.0}:${LANDING_PORT:-4000}:4000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  prometheus:
+    image: prom/prometheus:v3.2.1
+    restart: unless-stopped
+    depends_on:
+      - web
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=${PROMETHEUS_RETENTION:-30d}
+      - --web.enable-lifecycle
+    volumes:
+      - prometheus:/prometheus
+    # The scrape config is small and has no secrets, so it travels inline rather than in an
+    # image of its own. The token it reads is written from the environment below.
+    configs:
+      - source: prometheus_config
+        target: /etc/prometheus/prometheus.yml
+      - source: metrics_token
+        target: /etc/prometheus/metrics-token
+    ports:
+      - "${PROMETHEUS_BIND:-127.0.0.1}:${PROMETHEUS_PORT:-9090}:9090"
+
+  postgres-exporter:
+    image: quay.io/prometheuscommunity/postgres-exporter:v0.17.1
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATA_SOURCE_NAME: postgresql://${POSTGRES_USER:-zeema}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-zeema}?sslmode=disable
+
+  grafana:
+    # Grafana with this repository's datasources and dashboards baked in.
+    # See ops/grafana/Dockerfile.
+    image: ${ZEEMA_REGISTRY:-ghcr.io/mohamedebrahimmohsen}/zeema-grafana:${ZEEMA_TAG:-latest}
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:?set GRAFANA_PASSWORD}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+      # Read by the provisioned datasource file, never written into it.
+      GRAFANA_DB_PASSWORD: ${GRAFANA_DB_PASSWORD}
+    volumes:
+      - grafana:/var/lib/grafana
+    ports:
+      - "${GRAFANA_BIND:-127.0.0.1}:${GRAFANA_PORT:-3001}:3000"
+
+configs:
+  # Written from the environment at start, so the token lives in one place and Prometheus
+  # reads the same value the app checks.
+  metrics_token:
+    content: ${METRICS_TOKEN}
+
+  prometheus_config:
+    content: |
+      # What Prometheus collects. Targets are compose service names on the internal network,
+      # so nothing here has to be published to the host.
+      global:
+        scrape_interval: 15s
+        evaluation_interval: 15s
+        external_labels:
+          stack: zeema
+
+      scrape_configs:
+        - job_name: zeema-web
+          metrics_path: /api/metrics
+          authorization:
+            type: Bearer
+            credentials_file: /etc/prometheus/metrics-token
+          static_configs:
+            - targets: ["web:3000"]
+
+        - job_name: postgres
+          static_configs:
+            - targets: ["postgres-exporter:9187"]
+
+        - job_name: prometheus
+          static_configs:
+            - targets: ["localhost:9090"]
+
+volumes:
+  pgdata:
+  prometheus:
+  grafana:
