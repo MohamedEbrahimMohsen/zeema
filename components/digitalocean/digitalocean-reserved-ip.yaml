@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# DigitalOcean Reserved IP: "publicly-accessible static IPv4 and IPv6 addresses" that you remap
+# instantly between Droplets in the same datacenter, free while assigned, and the basis for
+# failover when a public service binds to the Droplet's anchor IP ("Reserved IPs"). Reserved IPv6
+# reached general availability in June 2025. "Droplets Limits": a Droplet holds at most one
+# reserved IP address at a time, and Private Droplets take none.
+schemaVersion: "1"
+type: "component"
+id: "digitalocean-reserved-ip"
+kind: "network-fabric"
+provider: "digitalocean"
+defaults:
+  managed: true
+  interconnect: "public"
+  overlay: false
+  multicast: false
+properties:
+  addressFamily:
+    type: "enum"
+    values: ["ipv4", "ipv6"]
+    default: "ipv4"
+  remappableWithinDatacenter:
+    type: "boolean"
+    default: true
+  maxPerDroplet:
+    type: "integer"
+    default: 1

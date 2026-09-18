@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Kubernetes Pod: the smallest deployable unit, one or more co-located containers sharing a
+# network namespace and filesystem volumes. Per "Pods" a Pod is an ephemeral, disposable entity
+# that is not self-healing: a failed Pod is replaced only by a workload controller, and a Pod
+# persists until deleted. Per "DaemonSet" an unspecified restartPolicy defaults to Always.
+schemaVersion: "1"
+type: "component"
+id: "k8s-pod"
+kind: "app-server"
+provider: "k8s"
+defaults:
+  managed: false
+  instances: 1
+  autoscaling: false
+properties:
+  restartPolicy:
+    type: "enum"
+    values: ["always", "on-failure", "never"]
+    default: "always"
+  sharedNetworkNamespace:
+    type: "boolean"
+    default: true
+  sharedStorageVolumes:
+    type: "boolean"
+    default: true
+  selfHealing:
+    type: "boolean"
+    default: false

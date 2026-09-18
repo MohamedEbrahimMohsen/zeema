@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Kubernetes PersistentVolumeClaim: a Pod's request for storage of a given size and access mode,
+# bound to one PersistentVolume. Per "Persistent Volumes" volumeMode defaults to Filesystem, the
+# access mode must be requested explicitly and has no default, omitting storageClassName routes the
+# claim to the cluster's default StorageClass for dynamic provisioning while an empty string
+# disables it, and storage object in use protection keeps a bound claim from being removed while a
+# Pod still uses it. Resizing needs allowVolumeExpansion on the class, which is unset by default.
+schemaVersion: "1"
+type: "component"
+id: "k8s-persistent-volume-claim"
+kind: "block-storage"
+provider: "k8s"
+defaults:
+  managed: false
+properties:
+  volumeMode:
+    type: "enum"
+    values: ["filesystem", "block"]
+    default: "filesystem"
+  accessMode:
+    type: "enum"
+    values: ["read-write-once", "read-only-many", "read-write-many", "read-write-once-pod"]
+  dynamicProvisioning:
+    type: "boolean"
+    default: true
+  inUseProtection:
+    type: "boolean"
+    default: true
+  expandable:
+    type: "boolean"
+    default: false

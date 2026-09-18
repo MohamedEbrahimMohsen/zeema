@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# X API: hosted API for reading and posting to X. "X API" describes a pay-per-usage model where
+# credits are purchased upfront and cost scales with actual usage, rather than fixed named tiers,
+# so no request quota is set. The same page documents the filtered stream, which delivers posts
+# in near real time over a held-open connection with up to 1,000 filtering rules; that is a
+# stream the caller opens, not a callback the service makes, so callbackStyle stays none. No
+# idempotency mechanism is documented.
+schemaVersion: "1"
+type: "component"
+id: "x-api"
+kind: "third-party-api"
+provider: "default"
+defaults:
+  managed: true
+  callbackStyle: "none"
+  hostedPage: false
+  handlesMoney: false
+properties:
+  filteredStream:
+    type: "boolean"
+    default: false
+  maxFilterRules:
+    type: "integer"
+    default: 1000
+  payPerUsage:
+    type: "boolean"
+    default: true

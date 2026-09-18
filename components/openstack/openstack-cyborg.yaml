@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenStack Cyborg: general management framework for accelerators. Per "OpenStack Accelerator (Cyborg)" the
+# cyborg-agent discovers local FPGAs, GPUs, NICs, SSDs and AI chips via drivers, reports inventory to the
+# conductor for Placement, and manages device programming and attachment to Nova instances through device
+# profiles: a placement role over the cloud, with no consensus protocol of its own.
+schemaVersion: "1"
+type: "component"
+id: "openstack-cyborg"
+kind: "coordination-service"
+provider: "openstack"
+defaults:
+  role: "placement"
+  managed: false
+properties:
+  acceleratorType:
+    type: "enum"
+    values: ["fpga", "gpu", "nic", "ssd", "ai-chip"]
+  placementInventory:
+    type: "boolean"
+    default: true
+  deviceProfile:
+    type: "boolean"
+    default: true

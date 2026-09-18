@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Kubernetes DaemonSet: runs one copy of a Pod on every eligible node, adding and garbage
+# collecting Pods as nodes join and leave. Per "DaemonSet" a Pod template must have restartPolicy
+# Always or leave it unspecified, which defaults to Always; per "Perform a Rolling Update on a
+# DaemonSet" the update strategy defaults to RollingUpdate with maxUnavailable 1 and maxSurge 0.
+# Replica count follows the node count rather than a spec field, so instances is not set.
+schemaVersion: "1"
+type: "component"
+id: "k8s-daemonset"
+kind: "app-server"
+provider: "k8s"
+defaults:
+  managed: false
+  stateless: true
+  autoscaling: false
+properties:
+  updateStrategy:
+    type: "enum"
+    values: ["rolling-update", "on-delete"]
+    default: "rolling-update"
+  maxUnavailable:
+    type: "integer"
+    default: 1
+  maxSurge:
+    type: "integer"
+    default: 0
+  onePodPerNode:
+    type: "boolean"
+    default: true

@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apsara File Storage NAS: shared POSIX file system for ECS, E-HPC and container workloads.
+# "File Storage NAS, benefits, and usage": NFS and SMB clients mount the same file system with
+# POSIX semantics and file locking, a single-zone mechanism keeps multiple replicas for eleven
+# nines of durability, and neither server-side encryption nor encryption in transit is applied
+# unless it is configured.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-nas"
+kind: "file-storage"
+provider: "alibabacloud"
+defaults:
+  protocol: "multi"
+  redundancy: "zonal"
+  encryptionInTransit: false
+  managed: true
+properties:
+  fileSystemType:
+    type: "enum"
+    values: ["general-purpose-capacity", "general-purpose-premium", "general-purpose-performance", "extreme-standard", "extreme-advanced"]
+  encryptionAtRest:
+    type: "boolean"
+    default: false
+  durabilityNines:
+    type: "integer"
+    default: 11
+  fileLocking:
+    type: "boolean"
+    default: true

@@ -1,0 +1,181 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture: the Cloudflare edge network, clean variant. An anycast point of
+# presence where every server runs every service, an in-kernel XDP L4 load balancer spreads
+# connections, and a tiered Quicksilver key-value store pushes configuration to every server.
+#
+# Fixes relative to cloudflare-edge.broken.yaml:
+#   - quicksilver-root and quicksilver-intermediate keep the full dataset; the leaf proxy is a
+#     cache of values in front of them, not the only copy (usedAsPrimaryStore false)
+#   - quicksilver-proxy declares an eviction policy and persists its keys to disk, and is fed by
+#     quicksilver-intermediate, so a cold proxy can be refilled instead of losing configuration
+#   - consul is a replicated Raft cluster, so the per-PoP health and forwarding-table channel is
+#     not the single instance that the 2022 BGP change turned into a lockout
+#   - edge-proxy does not retry blindly into a struggling customer origin
+# This file MUST trip no rule.
+schemaVersion: "1"
+type: "design"
+id: "cloudflare-edge"
+
+requirements:
+  availability:
+    multiRegion: true
+    discoveryRedundant: true
+  latency:
+    geoDistributed: true
+  consistency:
+    model: "ap"
+  traffic:
+    skew: "heavy-tail"
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "internet", kind: "trust-zone", label: "Internet" }
+  - { id: "customer-network", kind: "trust-zone", label: "Customer network" }
+  - { id: "edge-pop", kind: "point-of-presence", label: "Anycast PoP (one of 200+ cities; MCP sites add a spine layer)" }
+  - { id: "edge-server", kind: "trust-zone", parent: "edge-pop", label: "Every server runs every service" }
+  - { id: "control-plane", kind: "system", label: "Cloudflare control plane" }
+
+nodes:
+  - id: "end-user"
+    component: "web-browser"
+    group: "internet"
+    props: { platform: "web", localCache: true }
+
+  - id: "customer-origin"
+    component: "supplier-api"
+    group: "customer-network"
+    label: "Customer origin server"
+    props: { callbackStyle: "none" }
+
+  - id: "anycast-edge-router"
+    component: "cisco-router"
+    group: "edge-pop"
+    label: "Anycast BGP edge router"
+    props: { role: "service-provider", interconnect: "public", formFactor: "hardware", managed: false }
+
+  - id: "spine-fabric"
+    component: "spine-leaf-fabric"
+    group: "edge-pop"
+    label: "MCP spine layer (Clos)"
+    props: { interconnect: "private", redundantSpines: true, overlay: false }
+
+  - id: "l4drop"
+    component: "cloudflare-ddos-protection"
+    group: "edge-server"
+    label: "l4drop (XDP attack mitigation)"
+    props: { scope: "network", alwaysOn: true, mitigationAction: "block", telemetry: true, managed: true }
+
+  - id: "unimog-xdpd"
+    component: "load-balancer-tier"
+    group: "edge-server"
+    label: "Unimog xdpd (in-kernel L4)"
+    props: { layer: "l4", hashing: "maglev", connectionPreserving: true, healthChecks: true, global: false, managed: false }
+
+  - id: "multimog"
+    component: "load-balancer-tier"
+    group: "edge-pop"
+    label: "Multimog (inter-server forwarding)"
+    props: { layer: "l4", hashing: "maglev", connectionPreserving: true, healthChecks: true, global: false, managed: false }
+
+  - id: "conductor"
+    component: "container-service"
+    group: "edge-pop"
+    label: "Conductor (per-PoP control plane)"
+    props: { stateless: false, singleWriter: true, ownsData: false, criticality: "high", autoscaling: false, orchestrator: "none" }
+
+  - id: "consul"
+    component: "consul"
+    group: "edge-pop"
+    props: { role: "discovery", consensus: "raft", replicated: true, managed: false }
+
+  - id: "prometheus"
+    component: "prometheus"
+    group: "edge-pop"
+    props: { signal: "metrics", collectorMode: "pull", managed: false }
+
+  - id: "edge-proxy"
+    component: "nginx"
+    group: "edge-server"
+    label: "FL / Pingora edge proxy"
+    props: { layer: "l7", hashing: "round-robin", healthChecks: true, managed: false, plus: false }
+
+  - id: "waf"
+    component: "cloudflare-waf"
+    group: "edge-server"
+    label: "WAF managed rulesets"
+    props: { mode: "prevention", managedRuleSet: "cloudflare-managed-ruleset", rateLimiting: true, managed: true }
+
+  - id: "cdn-cache"
+    component: "cloudflare-cdn"
+    group: "edge-server"
+    props: { caching: true, edgeCompute: true, tls: true, managed: true }
+
+  - id: "authoritative-dns"
+    component: "cloudflare-dns"
+    group: "edge-server"
+    props: { anycast: true, proxied: true, redundantProviders: true, managed: true }
+
+  - id: "workers-runtime"
+    component: "cloudflare-workers"
+    group: "edge-server"
+    label: "Workers (V8 isolates)"
+    props: { stateless: true, runtime: "javascript", autoscaling: true, ownsData: false, criticality: "high", managed: true }
+
+  - id: "spectrum"
+    component: "cloudflare-spectrum"
+    group: "edge-server"
+    props: { layer: "l4", protocol: "tcp", global: true, managed: true }
+
+  - id: "quicksilver-proxy"
+    component: "cache-cluster"
+    group: "edge-server"
+    label: "Quicksilver leaf proxy"
+    props: { evictionPolicy: "lru", persistence: true, structure: "key-value", tier: "edge", invalidation: "event", usedAsPrimaryStore: false, materialised: false, replication: "none", managed: false }
+    nfr: { rps: 3000000000 }
+
+  - id: "quicksilver-intermediate"
+    component: "nosql-store"
+    group: "edge-pop"
+    label: "Quicksilver intermediate replica"
+    props: { model: "key-value", consistency: "strong", replication: "multi-region-single-leader", managed: false }
+
+  - id: "quicksilver-root"
+    component: "nosql-store"
+    group: "control-plane"
+    label: "Quicksilver root replica"
+    props: { model: "key-value", consistency: "strong", replication: "multi-region-single-leader", managed: false }
+
+  - id: "config-api"
+    component: "container-service"
+    group: "control-plane"
+    label: "Dashboard and configuration API"
+    props: { stateless: true, ownsData: false, criticality: "high", orchestrator: "none" }
+
+edges:
+  - { from: "end-user", to: "anycast-edge-router", protocol: "ip", mode: "sync", label: "anycast: BGP steers to the nearest PoP" }
+  - { from: "anycast-edge-router", to: "spine-fabric", protocol: "ecmp", mode: "sync", label: "Clos mesh inside an MCP site" }
+  - { from: "spine-fabric", to: "l4drop", protocol: "ip", mode: "sync", label: "packets reach a server NIC" }
+  - { from: "l4drop", to: "unimog-xdpd", protocol: "xdp", mode: "sync", label: "attack packets dropped first, the rest passed" }
+  - { from: "unimog-xdpd", to: "multimog", protocol: "xdp", mode: "sync", label: "forwarding table by 4-tuple, at most one extra hop" }
+  - { from: "multimog", to: "edge-proxy", protocol: "tcp", mode: "sync", label: "deliver to the chosen server" }
+  - { from: "multimog", to: "authoritative-dns", protocol: "dns", mode: "sync", label: "authoritative and resolver queries" }
+  - { from: "multimog", to: "spectrum", protocol: "tcp", mode: "sync", label: "Spectrum TCP and UDP applications" }
+  - { from: "conductor", to: "prometheus", protocol: "http", mode: "sync", label: "per-server CPU and load" }
+  - { from: "conductor", to: "consul", protocol: "http", mode: "sync", label: "server and service health; writes forwarding tables to KV" }
+  - { from: "consul", to: "unimog-xdpd", protocol: "http", mode: "async", delivery: "at-least-once", label: "blocking query delivers the new forwarding table" }
+  - { from: "consul", to: "multimog", protocol: "http", mode: "async", delivery: "at-least-once", label: "blocking query delivers the new forwarding table" }
+  - { from: "edge-proxy", to: "waf", protocol: "in-process", mode: "sync", label: "evaluate managed rulesets" }
+  - { from: "edge-proxy", to: "cdn-cache", protocol: "in-process", mode: "sync", label: "cache lookup" }
+  - { from: "edge-proxy", to: "workers-runtime", protocol: "in-process", mode: "sync", label: "run the customer isolate" }
+  - { from: "edge-proxy", to: "customer-origin", protocol: "https", mode: "sync", fallback: "cached", label: "origin fetch on cache miss" }
+  - { from: "spectrum", to: "customer-origin", protocol: "tcp", mode: "sync", label: "proxy to the customer application" }
+  - { from: "waf", to: "quicksilver-proxy", protocol: "local-read", mode: "sync", label: "ruleset for this zone" }
+  - { from: "cdn-cache", to: "quicksilver-proxy", protocol: "local-read", mode: "sync", label: "zone cache settings" }
+  - { from: "authoritative-dns", to: "quicksilver-proxy", protocol: "local-read", mode: "sync", label: "zone records" }
+  - { from: "workers-runtime", to: "quicksilver-proxy", protocol: "local-read", mode: "sync", label: "script and route lookup" }
+  - { from: "config-api", to: "quicksilver-root", protocol: "http", mode: "async", delivery: "at-least-once", label: "customer or operator configuration change" }
+  - { from: "config-api", to: "spine-fabric", protocol: "netconf", mode: "async", delivery: "at-least-once", label: "BGP policy change, the 2022 outage path" }
+  - { from: "quicksilver-root", to: "quicksilver-intermediate", protocol: "replication", mode: "async", delivery: "at-least-once", label: "ordered replication with MVCC history" }
+  - { from: "quicksilver-intermediate", to: "quicksilver-proxy", protocol: "replication", mode: "async", delivery: "at-least-once", label: "keys always, values in the sliding window" }
+  - { from: "quicksilver-proxy", to: "quicksilver-intermediate", protocol: "rpc", mode: "sync", timeoutMs: 1000, label: "fetch value on miss" }

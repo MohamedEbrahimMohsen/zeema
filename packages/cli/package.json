@@ -1,0 +1,12 @@
+{
+  "name": "@zeema/cli",
+  "version": "0.1.0",
+  "description": "zeema: lint, validate and render architecture designs from the command line.",
+  "license": "MIT",
+  "type": "module",
+  "bin": { "zeema": "./src/bin.js" },
+  "exports": { ".": "./src/index.js" },
+  "scripts": { "test": "vitest run" },
+  "dependencies": { "@zeema/core": "workspace:*", "@zeema/catalogue": "workspace:*", "yaml": "2.8.2" },
+  "devDependencies": { "vitest": "5.0.0" }
+}

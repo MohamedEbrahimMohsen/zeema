@@ -1,0 +1,12 @@
+/* ── Radius ─────────────────────────────────────────────────────────────
+   Two radii only, and they carry meaning: panels are softer than controls.
+   Blueprint's ratio (8 / 4) is what makes it read as drafting, not consumer. */
+
+:root {
+  --rp: 8px;    /* panels, cards, canvas frames, findings list */
+  --rc: 4px;    /* buttons, inputs, pills-that-aren't-round, menu items */
+  --rn: 8px;    /* canvas nodes */
+  --r-round: 999px;
+  --border: 1px;
+  --border-selected: 2px;
+}

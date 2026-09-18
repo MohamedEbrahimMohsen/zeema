@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Polyaxon: "an open-source AI engineering control plane" for building, training, serving and
+# monitoring machine learning workloads on Kubernetes. It tracks metrics, artifacts, visualisations
+# and lineage, versions models, artifacts, components and datasets in a registry, and runs distributed
+# training, hyperparameter tuning and mapped workloads. It is "open, self-hostable, and extensible",
+# and also sold as a hosted cloud version ("Overview - Polyaxon").
+schemaVersion: "1"
+type: "component"
+id: "polyaxon"
+kind: "ml-platform"
+provider: "default"
+defaults:
+  managed: false
+  modelRegistry: true
+  experimentTracking: true
+properties:
+  deployment:
+    type: "enum"
+    values: ["self-hosted", "cloud"]
+    default: "self-hosted"
+  distributedTraining:
+    type: "boolean"
+    default: true
+  hyperparameterTuning:
+    type: "boolean"
+    default: true

@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Device Update for IoT Hub: the over-the-air update service that publishes, distributes and tracks firmware
+# and package updates for devices registered in an IoT hub ("Introduction to Device Update for Azure IoT
+# Hub"). That page states the service orchestrates the agent workflow through IoT Hub device twin properties,
+# groups devices by compatibility properties and device twin tags, supports package-based and image-based
+# updates, can roll back automatically to a fallback version, and offers delta updates in public preview.
+schemaVersion: "1"
+type: "component"
+id: "azure-device-update"
+kind: "iot-hub"
+provider: "azure"
+defaults:
+  managed: true
+  deviceTwin: true
+properties:
+  updateType:
+    type: "enum"
+    values: ["package-based", "image-based"]
+  deviceGrouping:
+    type: "boolean"
+    default: true
+  automaticRollback:
+    type: "boolean"
+  deltaUpdates:
+    type: "boolean"
+    default: false

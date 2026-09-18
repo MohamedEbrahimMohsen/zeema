@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cisco router: the WAN and SD-WAN routing appliance families Cisco lists - Catalyst 8000 (8100, 8200,
+# 8300 for branches, 8400/8500 for campus and data centre aggregation), ISR 900 and 1000 for small
+# branches, ASR 9000 and NCS 5700 for service provider aggregation, Cisco 8000 for service provider
+# core, Catalyst IR rugged models for industrial sites, and the virtual Catalyst 8000V
+# ("Cisco SD-WAN Routers and WAN Appliances"). Multicast, overlay and interconnect are configuration,
+# so none is claimed here.
+schemaVersion: "1"
+type: "component"
+id: "cisco-router"
+kind: "network-fabric"
+provider: "default"
+defaults:
+  managed: false
+properties:
+  series:
+    type: "enum"
+    values: ["catalyst-8000", "isr-1000", "isr-900", "asr-9000", "ncs-5700", "cisco-8000", "catalyst-ir"]
+  role:
+    type: "enum"
+    values: ["branch", "campus", "data-center", "service-provider", "industrial"]
+  formFactor:
+    type: "enum"
+    values: ["hardware", "virtual"]
+    default: "hardware"

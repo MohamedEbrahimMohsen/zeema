@@ -1,0 +1,156 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture 29, clean variant: a read-heavy proximity service that answers "what is
+# near me" from a geohash cell index and its eight neighbours, hydrates business details from a
+# cache over a sharded MySQL, and keeps every derived index fed by its own worker.
+#
+# Fixes relative to proximity-service.broken.yaml:
+#   - business-service only writes business-db; business-cdc reads the binlog and index-updater
+#     is the worker that propagates changes to geohash-index and invalidates both caches
+#   - geohash-cache is a materialised cell-list cache fed by that worker, not the only copy of
+#     the cell index, so usedAsPrimaryStore is false and a cold cache refills from geohash-index
+#   - quadtree-rebuild-job rebuilds the in-memory quadtree from business-db, so the alternative
+#     index has a rebuild path instead of being written inline by the business service
+#   - indexing-pipeline reindexes the Yelp geoshards asynchronously and writes the S3 snapshots
+#     the cluster loads at startup
+#   - the lbs to geohash-cache hop no longer retries bare: no retry policy is stated by the
+#     source, so none is declared, and the index hops carry a circuit breaker
+# This file MUST trip no rule.
+schemaVersion: "1"
+type: "design"
+id: "proximity-service"
+
+requirements:
+  availability:
+    multiRegion: false
+  consistency:
+    model: "ap"
+  freshness:
+    maxSeconds: 86400
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "region", kind: "region", label: "Deployment region" }
+  - { id: "edge", kind: "trust-zone", parent: "region" }
+  - { id: "core", kind: "trust-zone", parent: "region" }
+  - { id: "data", kind: "trust-zone", parent: "region" }
+  - { id: "business-search", kind: "system", parent: "region", label: "Yelp business search" }
+
+nodes:
+  - id: "mobile-client"
+    component: "mobile-app"
+    props: { platform: "mobile", os: "both", localCache: true }
+
+  - id: "web-client"
+    component: "web-browser"
+    props: { platform: "web", localCache: true }
+
+  - id: "lb"
+    component: "load-balancer-tier"
+    group: "edge"
+    label: "Load balancer"
+    props: { layer: "l7", healthChecks: true }
+
+  - id: "lbs"
+    component: "container-service"
+    group: "core"
+    label: "Location-based service"
+    props: { stateless: true, criticality: "high", autoscaling: true, ownsData: false }
+    nfr: { rps: 5000 }
+
+  - id: "business-service"
+    component: "container-service"
+    group: "core"
+    label: "Business service"
+    props: { stateless: true, criticality: "medium" }
+
+  - id: "index-updater"
+    component: "container-worker"
+    group: "core"
+    label: "Index propagation worker"
+    props: { trigger: "stream", idempotent: true }
+
+  - id: "quadtree-rebuild-job"
+    component: "container-worker"
+    group: "core"
+    label: "Quadtree rebuild job"
+    props: { trigger: "schedule", idempotent: true }
+
+  - id: "indexing-pipeline"
+    component: "container-worker"
+    group: "business-search"
+    label: "Indexing pipeline"
+    props: { trigger: "schedule", idempotent: true }
+
+  - id: "business-cdc"
+    component: "debezium"
+    group: "data"
+    label: "Business change feed"
+    props: { mode: "log-based", ordered: true }
+
+  - id: "geohash-cache"
+    component: "redis"
+    group: "data"
+    label: "Geohash Redis"
+    props: { evictionPolicy: "lru", structure: "hash-set", materialised: true, usedAsPrimaryStore: false, persistence: false, invalidation: "event" }
+
+  - id: "business-cache"
+    component: "redis"
+    group: "data"
+    label: "Business info Redis"
+    props: { evictionPolicy: "lru", structure: "key-value", materialised: false, usedAsPrimaryStore: false, persistence: false, invalidation: "event" }
+
+  - id: "geohash-index"
+    component: "geo-cell-index"
+    group: "data"
+    label: "Geohash index"
+    props: { structure: "geo-cell", geoScheme: "geohash", cellLevel: 6, inMemory: false, indexing: "async", shardingStrategy: "none", replicas: 3 }
+
+  - id: "quadtree-servers"
+    component: "geo-cell-index"
+    group: "data"
+    label: "Quadtree servers"
+    props: { structure: "geo-cell", geoScheme: "quadtree", inMemory: true, indexing: "batch", shardingStrategy: "none", replicas: 3 }
+
+  - id: "business-db"
+    component: "mysql"
+    group: "data"
+    label: "Business database"
+    props: { sharded: true, shardKey: "business_id", replication: "async", backupEnabled: true, backupRetentionDays: 30, encryptionAtRest: true }
+    nfr: { consistency: "eventual" }
+
+  - id: "geoshard-index"
+    component: "elasticsearch"
+    group: "business-search"
+    label: "Geosharded Elasticsearch"
+    props: { structure: "inverted", shardingStrategy: "geo", geoScheme: "geohash", indexing: "async", replicas: 1 }
+
+  - id: "snapshot-store"
+    component: "s3"
+    group: "business-search"
+    label: "Index snapshots"
+    props: { storageClass: "standard", versioning: true }
+
+edges:
+  - { from: "mobile-client", to: "lb", protocol: "https", mode: "sync", label: "nearby(lat, long, radius)" }
+  - { from: "web-client", to: "lb", protocol: "https", mode: "sync", label: "nearby(lat, long, radius)" }
+  - { from: "lb", to: "lbs", protocol: "http", mode: "sync", label: "GET nearby" }
+  - { from: "lb", to: "business-service", protocol: "http", mode: "sync", label: "business CRUD" }
+  - { from: "lbs", to: "geohash-cache", protocol: "redis", mode: "sync", batched: true, label: "cell and its 8 neighbours, queried in parallel" }
+  - { from: "lbs", to: "geohash-index", protocol: "mysql", mode: "sync", circuitBreaker: true, fallback: "degraded", label: "geohash to business ids on cache miss" }
+  - { from: "lbs", to: "quadtree-servers", protocol: "grpc", mode: "sync", circuitBreaker: true, fallback: "degraded", label: "alternative index, replicated for reads" }
+  - { from: "lbs", to: "business-cache", protocol: "redis", mode: "sync", batched: true, label: "hydrate business details by id" }
+  - { from: "lbs", to: "business-db", protocol: "mysql", mode: "sync", fallback: "degraded", label: "read replica fills the cache miss" }
+  - { from: "lbs", to: "geoshard-index", protocol: "http", mode: "sync", circuitBreaker: true, label: "query routed to the geoshard for the location" }
+  - { from: "business-service", to: "business-db", protocol: "mysql", mode: "sync", idempotent: true, label: "create and update businesses" }
+  - { from: "business-db", to: "business-cdc", protocol: "mysql-binlog", mode: "async", delivery: "at-least-once", label: "binlog" }
+  - { from: "business-cdc", to: "index-updater", protocol: "cdc", mode: "async", delivery: "at-least-once", label: "business changes" }
+  - { from: "index-updater", to: "geohash-index", protocol: "mysql", mode: "async", delivery: "at-least-once", batched: true, idempotent: true, label: "daily batch of cell membership changes" }
+  - { from: "index-updater", to: "geohash-cache", protocol: "redis", mode: "async", delivery: "at-least-once", batched: true, label: "refresh cell lists" }
+  - { from: "index-updater", to: "business-cache", protocol: "redis", mode: "async", delivery: "at-least-once", label: "invalidate business info" }
+  - { from: "quadtree-rebuild-job", to: "business-db", protocol: "mysql", mode: "sync", batched: true, label: "read every business" }
+  - { from: "quadtree-rebuild-job", to: "quadtree-servers", protocol: "grpc", mode: "async", delivery: "at-least-once", batched: true, idempotent: true, label: "rebuild at startup, a few minutes for 200M" }
+  - { from: "indexing-pipeline", to: "business-db", protocol: "mysql", mode: "sync", batched: true, label: "read the source of truth" }
+  - { from: "indexing-pipeline", to: "geoshard-index", protocol: "http", mode: "async", delivery: "at-least-once", batched: true, idempotent: true, label: "bulk reindex of geoshard and microshard" }
+  - { from: "indexing-pipeline", to: "snapshot-store", protocol: "https", mode: "async", delivery: "at-least-once", label: "write index snapshot" }
+  - { from: "snapshot-store", to: "geoshard-index", protocol: "https", mode: "async", delivery: "at-least-once", label: "instances load the snapshot at startup" }

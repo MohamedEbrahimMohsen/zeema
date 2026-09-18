@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Cloud Transit Gateway: interconnects VPCs, classic infrastructure, Direct Link connections,
+# VPN gateways and Power Virtual Server instances across regions and accounts. Connections "on the
+# IBM private network are not exposed to the public internet", routing is local or global, and the
+# gateway is "a fully redundant, fault-tolerant service with no single point of failure" in
+# multi-zone regions ("About IBM Cloud Transit Gateway"). No default routing scope is documented.
+schemaVersion: "1"
+type: "component"
+id: "ibm-transit-gateway"
+kind: "network-fabric"
+provider: "ibm"
+defaults:
+  managed: true
+  interconnect: "cloud-backbone"
+properties:
+  routing:
+    type: "enum"
+    values: ["local", "global"]
+  redundant:
+    type: "boolean"
+    default: true

@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Cloudant: a managed JSON document store with a primary-primary setup in which "every node
+# can accept both writes and reads" and updates are "eventually seen by other parts of the
+# system" ("CAP Theorem"). Conflicting revisions are not resolved for you: "your application
+# must identify all the potential changes, and reconcile them" ("Conflicts"). "Security" states
+# that all stored data is encrypted at rest with AES-256 under IBM-managed keys, that BYOK
+# through Key Protect is a Dedicated Hardware plan option, and that TLS 1.2 is the minimum.
+schemaVersion: "1"
+type: "component"
+id: "ibm-cloudant"
+kind: "nosql-database"
+provider: "ibm"
+defaults:
+  managed: true
+  model: "document"
+  consistency: "eventual"
+  replication: "single-region"
+  conflictResolution: "app-merge"
+  encryptionAtRest: true
+properties:
+  keyManagement:
+    type: "enum"
+    values: ["provider-managed", "customer-managed"]
+    default: "provider-managed"
+  minimumTlsVersion:
+    type: "enum"
+    values: ["1.2", "1.3"]
+    default: "1.2"

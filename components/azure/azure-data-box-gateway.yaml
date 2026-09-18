@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Data Box Gateway: a virtual appliance you run on your own hypervisor that exposes SMB and NFS shares
+# and writes their contents through to Azure Storage ("Microsoft Azure Data Box Gateway overview"). The
+# specifications table on that page gives a single-node device with a minimum of 4 virtual processors, 8 GB
+# of RAM and a 2 TB data disk used as a local cache, data in flight encrypted with AES-256, day-to-day
+# management from the Azure portal, and a disconnected mode for offline upload.
+schemaVersion: "1"
+type: "component"
+id: "azure-data-box-gateway"
+kind: "edge-appliance"
+provider: "azure"
+defaults:
+  managed: false
+  cloudManaged: true
+  connectivity: "connected"
+  offlineMode: true
+  formFactor: "virtual"
+  localStorageGib: 2048
+properties:
+  shareProtocols:
+    type: "enum"
+    values: ["smb", "nfs", "both"]
+    default: "both"
+  minimumVirtualProcessors:
+    type: "integer"
+    default: 4
+  encryptionInTransit:
+    type: "boolean"
+    default: true
+  singleNode:
+    type: "boolean"
+    default: true

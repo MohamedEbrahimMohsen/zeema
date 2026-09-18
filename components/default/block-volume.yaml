@@ -1,0 +1,11 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Generic block volume whose product the design does not name: raw blocks attached to one host and
+# formatted with a file system by that host ("Block-level storage"). No size, media type, redundancy,
+# encryption or snapshot schedule is assumed.
+schemaVersion: "1"
+type: "component"
+id: "block-volume"
+kind: "block-storage"
+provider: "default"
+defaults:
+  managed: false

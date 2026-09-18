@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Microsoft Connected Cache: a software-only cache that delivers Microsoft content from servers inside your
+# own network ("Microsoft Connected Cache overview"). That page states there are two offerings, one for
+# Enterprise and Education (generally available) and one for Internet Service Providers (public preview),
+# that cache nodes are deployed to as many Windows servers, bare-metal servers or VMs as needed, that both
+# are created and managed in the Azure portal, and that ISP nodes are pointed at customers by manual CIDR or
+# BGP routing. The cache software runs on your hardware, so managed is false.
+schemaVersion: "1"
+type: "component"
+id: "azure-connected-cache"
+kind: "cdn"
+provider: "azure"
+defaults:
+  managed: false
+  caching: true
+  edgeCompute: false
+  originShield: false
+properties:
+  offering:
+    type: "enum"
+    values: ["enterprise-education", "internet-service-provider"]
+  microsoftContentOnly:
+    type: "boolean"
+    default: true
+  hostPlatform:
+    type: "enum"
+    values: ["windows-server", "bare-metal", "virtual-machine"]
+  ispRouting:
+    type: "enum"
+    values: ["manual-cidr", "bgp"]

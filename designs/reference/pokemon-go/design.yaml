@@ -1,0 +1,171 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture 46, clean variant: Niantic's Pokemon GO on Google Cloud as the 2021
+# architecture describes it — global L7 ingress with a deliberate admission limit, an isolated
+# Google Front End pool, an NGINX tier inside GKE, the front-end game service and the spatial
+# query backend, Spanner as the transactional world state, and an analytics path that leaves the
+# request path through Pub/Sub and Bigtable.
+#
+# Fixes relative to pokemon-go.broken.yaml:
+#   - the ingress is the global HTTP(S) load balancer, not the regional L4 Network Load Balancer,
+#     and edge-rate-limit sits in front of it, so the client's jittered exponential backoff retries
+#     into a tier that can shed load administratively instead of one that only amplifies them
+#   - game-state-db is Cloud Spanner with backups and a stated retention, not a managed store
+#     trusted to its own replication with no recovery point
+#   - event-topic keeps Pub/Sub's seven-day retention and replay, so the analysis pipeline can be
+#     re-run against past events as the design's replay requirement demands
+#   - analytics-pipeline declares a watermark for its event-time windows, so a location report
+#     that arrives late lands in a defined place instead of an undefined one
+# This file MUST trip no rule.
+schemaVersion: "1"
+type: "design"
+id: "pokemon-go"
+
+requirements:
+  consistency:
+    model: "cp"
+    readAfterWrite: true
+  messaging:
+    replay: true
+  latency:
+    geoDistributed: true
+  isolation:
+    tenancy: "dedicated"
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "google-cloud", kind: "region", label: "Google Cloud (global footprint)" }
+  - { id: "edge", kind: "trust-zone", parent: "google-cloud", label: "Cloud Load Balancing and CDN edge" }
+  - { id: "cluster", kind: "trust-zone", parent: "google-cloud", label: "GKE cluster" }
+  - { id: "managed-data", kind: "trust-zone", parent: "google-cloud", label: "Managed data services" }
+
+nodes:
+  - id: "player-phone"
+    component: "mobile-app"
+    label: "Pokemon GO app"
+    props: { platform: "mobile", os: "both", localCache: true, resendPolicy: "retry" }
+
+  - id: "edge-rate-limit"
+    component: "envoy-ratelimit"
+    label: "Administrative rate-limit override"
+    group: "edge"
+    props: { scope: "global", placement: "edge", distributed: true }
+
+  - id: "cloud-load-balancing"
+    component: "google-cloud-load-balancing"
+    label: "Cloud Load Balancing"
+    group: "edge"
+    props: { layer: "l7", global: true, scheme: "external", managed: true, hashing: "maglev", healthChecks: true }
+
+  - id: "google-front-end"
+    component: "load-balancer-tier"
+    label: "Google Front End, isolated pool"
+    group: "edge"
+    props: { layer: "l7", global: true }
+
+  - id: "cloud-cdn"
+    component: "google-cloud-cdn"
+    label: "Cloud CDN"
+    group: "edge"
+    props: { caching: true, cacheMode: "cache-all-static", tls: true, managed: true }
+
+  - id: "nginx-proxy"
+    component: "nginx"
+    label: "NGINX reverse proxy"
+    group: "cluster"
+    props: { layer: "l7", managed: false, hashing: "round-robin" }
+
+  - id: "gke-cluster"
+    component: "google-gke"
+    label: "Google Kubernetes Engine"
+    group: "cluster"
+    props: { managed: true, nodeAutoUpgrade: true, releaseChannel: "regular" }
+
+  - id: "frontend-game-service"
+    component: "container-service"
+    label: "Front-end game service"
+    group: "cluster"
+    props: { orchestrator: "kubernetes", stateless: true, autoscaling: true, criticality: "high", ownsData: false }
+
+  - id: "spatial-query-backend"
+    component: "container-service"
+    label: "Spatial query backend"
+    group: "cluster"
+    props: { orchestrator: "kubernetes", stateless: true, autoscaling: true, criticality: "high", ownsData: false }
+
+  - id: "geospatial-platform"
+    component: "container-service"
+    label: "Geospatial platform, map and world data"
+    group: "cluster"
+    props: { orchestrator: "kubernetes", stateless: true, criticality: "high", ownsData: false }
+
+  - id: "insights-service"
+    component: "container-service"
+    label: "Analytics, cheat detection and marketing reporting"
+    group: "cluster"
+    props: { orchestrator: "kubernetes", stateless: true, criticality: "medium", ownsData: false }
+
+  - id: "event-topic"
+    component: "google-pubsub"
+    label: "Pub/Sub, game events"
+    group: "managed-data"
+    props: { delivery: "at-least-once", replay: true, ordering: "none", managed: true }
+
+  - id: "analytics-pipeline"
+    component: "google-dataflow"
+    label: "Dataflow"
+    group: "managed-data"
+    props: { windowing: "event-time", watermarkSeconds: 60, lateDataPolicy: "drop", exactlyOnce: true, stateBackend: "external", streamingEngine: true, managed: true }
+
+  - id: "game-state-db"
+    component: "spanner"
+    label: "Cloud Spanner, game state"
+    group: "managed-data"
+    props: { nodes: 5000, multiWriter: true, distributed: true, sharded: true, replication: "sync", commitProtocol: "two-phase", backupEnabled: true, backupRetentionDays: 30, encryptionAtRest: true, managed: true }
+    nfr: { rps: 400000, consistency: "strong" }
+
+  - id: "action-log"
+    component: "bigtable"
+    label: "Cloud Bigtable, protobuf action log"
+    group: "managed-data"
+    props: { model: "wide-column", consistency: "strong", replication: "single-region", encryptionAtRest: true, managed: true }
+
+  - id: "static-media"
+    component: "gcs"
+    label: "Cloud Storage, static game media"
+    group: "managed-data"
+    props: { encryptionAtRest: true, managed: true }
+
+  - id: "analytics-warehouse"
+    component: "bigquery"
+    label: "BigQuery"
+    group: "managed-data"
+    props: { streamingInserts: true, realtime: true, format: "columnar", managed: true }
+
+  - id: "cloud-monitoring"
+    component: "google-cloud-monitoring"
+    label: "Cloud Monitoring and Logging"
+    group: "managed-data"
+    props: { signal: "all", collectorMode: "push", alertGrouping: true, managed: true }
+
+edges:
+  - { from: "player-phone", to: "cloud-load-balancing", protocol: "https", mode: "sync", retryPolicy: "exponential-jitter", label: "position and gameplay actions" }
+  - { from: "edge-rate-limit", to: "cloud-load-balancing", protocol: "internal", mode: "sync", label: "administrative override on accepted rate" }
+  - { from: "cloud-load-balancing", to: "google-front-end", protocol: "internal", mode: "sync", label: "isolated GFE pool" }
+  - { from: "cloud-load-balancing", to: "cloud-cdn", protocol: "https", mode: "sync", label: "static media, never reaches the cluster" }
+  - { from: "cloud-cdn", to: "static-media", protocol: "https", mode: "sync", label: "origin fetch on cache miss" }
+  - { from: "google-front-end", to: "nginx-proxy", protocol: "http", mode: "sync", label: "into the cluster" }
+  - { from: "gke-cluster", to: "nginx-proxy", protocol: "kubernetes", mode: "sync", label: "schedule proxy pods" }
+  - { from: "gke-cluster", to: "frontend-game-service", protocol: "kubernetes", mode: "sync", label: "schedule and scale service pods" }
+  - { from: "nginx-proxy", to: "frontend-game-service", protocol: "http", mode: "sync", label: "route and load balance across pods" }
+  - { from: "frontend-game-service", to: "spatial-query-backend", protocol: "internal", mode: "sync", label: "what is near me" }
+  - { from: "spatial-query-backend", to: "geospatial-platform", protocol: "internal", mode: "sync", label: "map and world data" }
+  - { from: "spatial-query-backend", to: "game-state-db", protocol: "spanner", mode: "sync", idempotent: true, label: "catch, spin, battle as one ACID transaction" }
+  - { from: "spatial-query-backend", to: "action-log", protocol: "bigtable", mode: "sync", idempotent: true, label: "protobuf representation of the user action" }
+  - { from: "spatial-query-backend", to: "event-topic", protocol: "pubsub", mode: "async", delivery: "at-least-once", label: "publish event off the request path" }
+  - { from: "event-topic", to: "analytics-pipeline", protocol: "pubsub", mode: "async", delivery: "at-least-once", label: "streaming path" }
+  - { from: "action-log", to: "analytics-pipeline", protocol: "bigtable", mode: "async", delivery: "at-least-once", batched: true, label: "batch player logs" }
+  - { from: "analytics-pipeline", to: "analytics-warehouse", protocol: "streaming-insert", mode: "async", delivery: "at-least-once", idempotent: true, label: "5-10 TB per day" }
+  - { from: "analytics-warehouse", to: "insights-service", protocol: "sql", mode: "sync", label: "behaviour, distribution verification, cheat detection" }
+  - { from: "gke-cluster", to: "cloud-monitoring", protocol: "metrics", mode: "async", delivery: "at-least-once", label: "cluster metrics and logs" }
+  - { from: "frontend-game-service", to: "cloud-monitoring", protocol: "metrics", mode: "async", delivery: "at-least-once", label: "dashboards and alerting" }

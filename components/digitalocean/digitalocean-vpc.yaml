@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# DigitalOcean VPC: "A private network interface for collections of DigitalOcean resources. VPC
+# networks are inaccessible from the public internet and other VPC networks, and traffic on them
+# doesn't count against bandwidth usage" ("VPC"), linked to each other by peering connections.
+# "VPC Limits": ranges are RFC 1918 and may not overlap another network in the account, a network
+# holds up to 10,000 resources, networks do not span datacenter regions, and a resource belongs to
+# one VPC with a single private interface.
+schemaVersion: "1"
+type: "component"
+id: "digitalocean-vpc"
+kind: "network-fabric"
+provider: "digitalocean"
+defaults:
+  managed: true
+  overlay: true
+  interconnect: "private"
+  multicast: false
+properties:
+  maxResourcesPerNetwork:
+    type: "integer"
+    default: 10000
+  spansRegions:
+    type: "boolean"
+    default: false
+  peering:
+    type: "boolean"
+    default: false

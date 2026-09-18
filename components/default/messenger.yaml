@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Messenger Platform: Meta's API for conversations with a Facebook Page or an Instagram
+# professional account. "Overview for the Messenger Platform" states that when a person sends a
+# message to your business Page or Instagram Professional account a webhook notification is
+# triggered, so an app is pushed events rather than polling the social graph, and names rate
+# limiting on API call volume and message throughput without giving a figure. No idempotency
+# mechanism is documented.
+schemaVersion: "1"
+type: "component"
+id: "messenger"
+kind: "third-party-api"
+provider: "default"
+defaults:
+  managed: true
+  callbackStyle: "webhook"
+  hostedPage: false
+  handlesMoney: false
+properties:
+  surface:
+    type: "enum"
+    values: ["messenger", "instagram"]
+    default: "messenger"

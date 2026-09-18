@@ -1,0 +1,44 @@
+<!-- @dsCard group="Zeema" viewport="1280x720" subtitle="Canvas editor, findings, browse, design detail, catalog, sign-in" name="Zeema app" -->
+<!-- @startingPoint section="Zeema" subtitle="Full click-through app — editor, findings, gallery, catalog" viewport="1280x800" -->
+<!DOCTYPE html>
+<html data-theme="light">
+<head>
+<meta charset="utf-8">
+<title>Zeema — UI kit</title>
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../ds-ns.js"></script>
+<script src="data.js"></script>
+<style id="__om-edit-overrides"></style>
+<style>html,body{min-height:100%}body{background:var(--bg)}#root{min-height:100vh}</style>
+</head>
+<body>
+<div id="root"><header style="display:flex;align-items:center;gap:24px;padding:12px 24px;border-bottom:1px solid var(--line);background:var(--panel)"><span style="font-weight:600;font-size:1.35em;letter-spacing:-0.01em">Zeema</span><span style="font-family:var(--mono);text-transform:uppercase;letter-spacing:0.08em;font-size:0.75em;color:var(--muted)">loading kit</span></header></div>
+<script>
+const DS_FILES = [
+  "core/Icon.jsx","core/Button.jsx","core/Tag.jsx","core/StatusText.jsx","core/SectionLabel.jsx",
+  "forms/Field.jsx","forms/TextInput.jsx","forms/Select.jsx","forms/Checkbox.jsx","forms/Radio.jsx",
+  "data/ComponentRow.jsx","data/PropertyTable.jsx","data/Disclosure.jsx","data/DesignCard.jsx",
+  "feedback/Finding.jsx","feedback/FindingsPanel.jsx","feedback/EmptyState.jsx",
+  "canvas/Canvas.jsx","canvas/CanvasNode.jsx","canvas/CanvasEdge.jsx","canvas/Boundary.jsx","canvas/ContextMenu.jsx"
+];
+const KIT_FILES = ["Chrome.jsx","Thumb.jsx","EditorScreen.jsx","FindingsScreen.jsx","BrowseScreen.jsx","DetailScreen.jsx","CatalogScreen.jsx","AuthScreen.jsx","App.jsx"];
+
+window.dsReady("../../components/", DS_FILES).then(function (ns) {
+  window.DS = ns;
+  return KIT_FILES.reduce(function (p, f) {
+    return p.then(function () {
+      return fetch(f).then(function (r) { return r.text(); }).then(function (src) {
+        var code = Babel.transform(src, { presets: ["react"], filename: f }).code;
+        (0, eval)(code);
+      });
+    });
+  }, Promise.resolve());
+}).then(function () {
+  ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(window.App));
+}).catch(function (e) { console.error("[kit] boot failed", e); });
+</script>
+</body>
+</html>

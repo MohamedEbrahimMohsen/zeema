@@ -1,0 +1,174 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1224 990" width="1224" height="990" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif">
+<title>x-recommendation</title>
+<style>:root{--ink:#1b1b19;--muted:#6b6b66;--line:#8a8a85;--frame:#b4b4ae;--bg:#ffffff}@media (prefers-color-scheme: dark){:root{--ink:#ececea;--muted:#a1a19c;--line:#7e7e88;--frame:#55555c;--bg:#17171a}.f-blue{fill:#1b2a3f;stroke:#3f6698}.f-teal{fill:#152e2b;stroke:#3c7d72}.f-amber{fill:#33280f;stroke:#8a6a2b}.f-violet{fill:#241f3d;stroke:#5b4f9c}.f-purple{fill:#2d1c34;stroke:#7a4d8c}.f-green{fill:#162b18;stroke:#417a47}.f-rose{fill:#33191a;stroke:#8f4c48}.f-red{fill:#341a1a;stroke:#8d4340}.f-grey{fill:#26262a;stroke:#5a5a60}}.f-blue{fill:#eaf1fd;stroke:#9cc0f0}.f-teal{fill:#e6f5f2;stroke:#8fcfc2}.f-amber{fill:#fbf1e0;stroke:#dcb473}.f-violet{fill:#f0edfc;stroke:#b6a8ee}.f-purple{fill:#f6ecf9;stroke:#cda3dc}.f-green{fill:#e9f5ea;stroke:#96c99b}.f-rose{fill:#fceceb;stroke:#e5a7a1}.f-red{fill:#fbe9e9;stroke:#e09b98}.f-grey{fill:#f0f0ef;stroke:#c2c2bf}.n{font-size:14px;font-weight:500;fill:var(--ink)}.c{font-size:12px;fill:var(--muted)}.g{font-size:12px;fill:var(--muted)}.e{font-size:12px;fill:var(--muted);paint-order:stroke;stroke:var(--bg);stroke-width:3px}.ic{color:var(--ink)}</style>
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1L9 5L1 9" fill="none" stroke="var(--line)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<rect width="1224" height="990" fill="var(--bg)"/>
+<rect x="412.0" y="14.0" width="399.0" height="126.0" rx="10" fill="none" stroke="var(--frame)" stroke-width="1" stroke-dasharray="5 4"/>
+<text class="g" x="424.0" y="33.0">Client and GraphQL edge</text>
+<rect x="44.0" y="506.0" width="1136.0" height="454.0" rx="10" fill="none" stroke="var(--frame)" stroke-width="1" stroke-dasharray="5 4"/>
+<text class="g" x="56.0" y="525.0">Home Mixer and the request-path services</text>
+<rect x="67.0" y="178.0" width="1090.0" height="290.0" rx="10" fill="none" stroke="var(--frame)" stroke-width="1" stroke-dasharray="5 4"/>
+<text class="g" x="79.0" y="197.0">Offline jobs and the stores they maintain</text>
+<line x1="588.0" y1="85.0" x2="554.0" y2="85.0" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="571.0" y="81.0" text-anchor="middle">For You request</text>
+<path d="M465.5 124.0 Q487.2 433.6 195.0 538.0" fill="none" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="408.7" y="378.3" text-anchor="middle">construct the home timeline</text>
+<line x1="238.0" y1="577.0" x2="272.0" y2="577.0" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="255.0" y="573.0" text-anchor="middle">in-network candidates, truncated to the requested count</text>
+<line x1="295.1" y1="616.0" x2="193.9" y2="702.0" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="244.5" y="655.0" text-anchor="middle">relevance-scored in-network posts</text>
+<path d="M236.0 715.9 Q457.0 771.8 615.0 607.6" fill="none" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="441.2" y="712.8" text-anchor="middle">fan out to clusters and partitions, merge</text>
+<line x1="357.8" y1="616.0" x2="394.7" y2="702.0" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="376.2" y="655.0" text-anchor="middle">posts liked by the accounts you follow</text>
+<line x1="410.0" y1="610.5" x2="598.6" y2="702.0" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="504.3" y="652.2" text-anchor="middle">follow graph, blocked and muted state</text>
+<path d="M238.0 577.0 Q341.0 692.0 444.0 577.0" fill="none" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="341.0" y="630.5" text-anchor="middle">out-of-network candidate coordination</text>
+<path d="M581.0 605.7 Q637.1 795.0 811.3 702.0" fill="none" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="666.6" y="720.4" text-anchor="middle">source signals and embeddings</text>
+<path d="M238.0 577.0 Q550.5 692.0 863.0 577.0" fill="none" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="550.5" y="630.5" text-anchor="middle">FutureGraph posts and Who-to-Follow</text>
+<path d="M238.0 592.3 Q496.5 767.8 805.0 718.8" fill="none" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="509.0" y="707.7" text-anchor="middle">embedding features</text>
+<path d="M176.5 616.0 Q330.7 717.5 221.0 866.0" fill="none" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="264.7" y="725.2" text-anchor="middle">user-pair graph features</text>
+<path d="M202.9 616.0 Q167.3 862.9 416.6 866.0" fill="none" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="238.5" y="797.9" text-anchor="middle">score every candidate; falls back to the reverse-chron pipeline</text>
+<path d="M228.8 616.0 Q521.8 584.4 608.7 866.0" fill="none" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="470.3" y="658.7" text-anchor="middle">allow, interstitial or drop, per post and viewer</text>
+<path d="M238.0 609.4 Q596.2 571.5 794.0 872.6" fill="none" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="556.1" y="652.3" text-anchor="middle">hydrate the posts that survived</text>
+<line x1="931.0" y1="905.0" x2="966.0" y2="905.0" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="948.5" y="901.0" text-anchor="middle">caching repository</text>
+<line x1="919.2" y1="866.0" x2="1044.3" y2="780.0" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="981.8" y="819.0" text-anchor="middle">post data of record</text>
+<path d="M917.2 702.0 Q790.4 522.6 998.3 452.0" fill="none" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="874.1" y="545.8" text-anchor="middle">embedding facade read</text>
+<line x1="654.0" y1="124.0" x2="571.5" y2="210.0" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text class="e" x="612.8" y="163.0" text-anchor="middle">client and server side user actions</text>
+<line x1="531.1" y1="288.0" x2="524.9" y2="374.0" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text class="e" x="528.0" y="327.0" text-anchor="middle">fav, retweet, follow, client events</text>
+<path d="M508.9 452.0 Q358.2 540.4 424.6 702.0" fill="none" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text class="e" x="412.5" y="554.7" text-anchor="middle">per-service GraphJet topic</text>
+<path d="M626.0 249.0 Q729.0 364.0 832.0 249.0" fill="none" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text class="e" x="729.0" y="302.5" text-anchor="middle">engagement events</text>
+<path d="M937.0 288.0 Q970.0 506.7 751.0 538.0" fill="none" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text class="e" x="907.0" y="455.9" text-anchor="middle">live fav, retweet and reply counts</text>
+<path d="M407.0 249.0 Q533.5 387.0 660.0 249.0" fill="none" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text class="e" x="533.5" y="314.0" text-anchor="middle">posts and user modifications</text>
+<path d="M728.2 288.0 Q568.5 409.7 722.8 538.0" fill="none" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text class="e" x="647.0" y="407.3" text-anchor="middle">incremental indexing</text>
+<line x1="466.7" y1="288.0" x2="318.3" y2="374.0" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text class="e" x="392.5" y="327.0" text-anchor="middle">favourite events</text>
+<path d="M419.0 413.0 Q650.0 528.0 881.0 413.0" fill="none" stroke="var(--line)" stroke-width="1.2" marker-end="url(#a)"/>
+<text class="e" x="650.0" y="466.5" text-anchor="middle">post embedding updated on each favourite</text>
+<path d="M1029.4 449.9 Q1233.4 528.3 1098.0 699.9" fill="none" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text class="e" x="1148.6" y="547.6" text-anchor="middle">PersistentTweetJob</text>
+<path d="M1098.0 699.9 Q1233.4 528.3 1029.4 449.9" fill="none" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text class="e" x="1148.6" y="547.6" text-anchor="middle">reload persisted embeddings</text>
+<path d="M685.8 702.0 Q556.8 550.8 729.2 452.0" fill="none" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text class="e" x="632.1" y="559.9" text-anchor="middle">follow graph snapshot</text>
+<line x1="847.0" y1="413.0" x2="881.0" y2="413.0" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text class="e" x="864.0" y="409.0" text-anchor="middle">Known For, InterestedIn and producer embeddings</text>
+<rect class="f-purple" x="588" y="46" width="207" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(679.5 57)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2.5"/><path d="M8 21h8M12 17v4"/></g></g>
+<text class="n" x="691.5" y="98" text-anchor="middle">X app, For You timeline</text>
+<text class="c" x="691.5" y="114" text-anchor="middle">mobile-app</text>
+<rect class="f-teal" x="428" y="46" width="126" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(479.0 57)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V10a9 9 0 0 1 18 0v11"/><path d="M9 21v-8a3 3 0 0 1 6 0v8"/><path d="M2 21h20"/><g stroke="none"><circle cx="18.5" cy="18.5" r="5.3" fill="var(--zeema-icon-bg, #fff)"/><circle cx="18.5" cy="18.5" r="4.5" fill="#AC6199"/><path transform="translate(15.80 15.80) scale(0.2250)" fill="#fff" d="m23.351 7.593-7.068-4.379a1.034 1.034 0 0 0-.84-.117c-.02.01-.052.021-.074.032L8.471 6.105a.695.695 0 0 0-.435.68l.17 7.355c.01.298.191.595.478.765l7.068 4.38c.255.159.574.201.84.116.02-.01.053-.021.074-.032l6.898-2.976a.705.705 0 0 0 .436-.68l-.17-7.355c-.011-.297-.192-.584-.479-.765m-7.185 10.044-6.143-3.805-.149-6.388 5.995-2.583 6.143 3.805.149 6.388zm.011-6.027a.832.832 0 0 0-.414-.67l-5.06-3.135-.159.064.032 1.52 4.007 2.487.095 4.06 1.53.946.086-.032zm-6.058 7.132L5.41 15.83l-.116-4.89 2.146-.924-.042-1.69-3.327 1.435a.611.611 0 0 0-.382.595l.138 5.74c0 .265.16.52.414.67l5.516 3.422c.224.138.5.18.734.106a.15.15 0 0 1 .064-.021l3.252-1.403-1.616-1zm-2.615-6.1-1.52-.947.032 1.446 1.52.946zm2.19 5.059-.032-1.414-1.329-.83c-.021-.01-.042-.031-.053-.042l.032 1.425zm-4.751 1.902-3.476-2.158-.085-3.613 1.7-.734-.031-1.445-2.72 1.17a.527.527 0 0 0-.33.51l.106 4.336c0 .223.138.446.35.574l4.167 2.582a.822.822 0 0 0 .627.096c.021-.01.043-.01.064-.021l2.561-1.106-1.392-.86Z"/></g></g></g>
+<text class="n" x="491.0" y="98" text-anchor="middle">GraphQL edge</text>
+<text class="c" x="491.0" y="114" text-anchor="middle">envoy-gateway</text>
+<rect class="f-blue" x="101" y="538" width="137" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(157.5 549)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M6.5 7.5h.01M6.5 16.5h.01"/><path d="M10 7.5h5M10 16.5h5"/></g></g>
+<text class="n" x="169.5" y="590" text-anchor="middle">Home Mixer</text>
+<text class="c" x="169.5" y="606" text-anchor="middle">container-service</text>
+<rect class="f-blue" x="272" y="538" width="138" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(329.0 549)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M6.5 7.5h.01M6.5 16.5h.01"/><path d="M10 7.5h5M10 16.5h5"/></g></g>
+<text class="n" x="341.0" y="590" text-anchor="middle">TimelineRanker</text>
+<text class="c" x="341.0" y="606" text-anchor="middle">container-service</text>
+<rect class="f-blue" x="444" y="538" width="137" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(500.5 549)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M6.5 7.5h.01M6.5 16.5h.01"/><path d="M10 7.5h5M10 16.5h5"/></g></g>
+<text class="n" x="512.5" y="590" text-anchor="middle">CR-Mixer</text>
+<text class="c" x="512.5" y="606" text-anchor="middle">container-service</text>
+<rect class="f-blue" x="863" y="538" width="260" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(981.0 549)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M6.5 7.5h.01M6.5 16.5h.01"/><path d="M10 7.5h5M10 16.5h5"/></g></g>
+<text class="n" x="993.0" y="590" text-anchor="middle">Follow Recommendations Service</text>
+<text class="c" x="993.0" y="606" text-anchor="middle">container-service</text>
+<rect class="f-teal" x="60" y="702" width="176" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(136.0 713)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h8"/><path d="M10 12V6h5M10 12h5M10 12v6h5"/><path d="M13 4l2 2-2 2M13 10l2 2-2 2M13 16l2 2-2 2"/></g></g>
+<text class="n" x="148.0" y="754" text-anchor="middle">Earlybird superroot</text>
+<text class="c" x="148.0" y="770" text-anchor="middle">load-balancer-tier</text>
+<rect class="f-amber" x="615" y="538" width="214" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(710.0 549)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="14" cy="10" r="6"/><path d="M9.8 14.2 4 20"/><path d="M11 8.5h6M11 11.5h4"/><g stroke="none"><circle cx="18.5" cy="18.5" r="5.3" fill="var(--zeema-icon-bg, #fff)"/><circle cx="18.5" cy="18.5" r="4.5" fill="#005571"/><path transform="translate(15.80 15.80) scale(0.2250)" fill="#fff" d="M13.394 0C8.683 0 4.609 2.716 2.644 6.667h15.641a4.77 4.77 0 0 0 3.073-1.11c.446-.375.864-.785 1.247-1.243l.001-.002A11.974 11.974 0 0 0 13.394 0zM1.804 8.889a12.009 12.009 0 0 0 0 6.222h14.7a3.111 3.111 0 1 0 0-6.222zm.84 8.444C4.61 21.283 8.684 24 13.395 24c3.701 0 7.011-1.677 9.212-4.312l-.001-.002a9.958 9.958 0 0 0-1.247-1.243 4.77 4.77 0 0 0-3.073-1.11z"/></g></g></g>
+<text class="n" x="722.0" y="590" text-anchor="middle">Earlybird realtime index</text>
+<text class="c" x="722.0" y="606" text-anchor="middle">elasticsearch</text>
+<rect class="f-amber" x="270" y="702" width="283" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(399.5 713)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="6" r="2.5"/><circle cx="18" cy="5" r="2.5"/><circle cx="12" cy="13.5" r="2.5"/><circle cx="4" cy="18" r="2.5"/><path d="M6.7 7.9 10.3 11.7M16.2 6.8l-2.6 4.8M10 15 5.9 16.9"/></g></g>
+<text class="n" x="411.5" y="754" text-anchor="middle">User Tweet Entity Graph, GraphJet</text>
+<text class="c" x="411.5" y="770" text-anchor="middle">graph-store</text>
+<rect class="f-amber" x="587" y="702" width="184" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(667.0 713)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="6" r="2.5"/><circle cx="18" cy="5" r="2.5"/><circle cx="12" cy="13.5" r="2.5"/><circle cx="4" cy="18" r="2.5"/><path d="M6.7 7.9 10.3 11.7M16.2 6.8l-2.6 4.8M10 15 5.9 16.9"/></g></g>
+<text class="n" x="679.0" y="754" text-anchor="middle">Social Graph Service</text>
+<text class="c" x="679.0" y="770" text-anchor="middle">graph-store</text>
+<rect class="f-amber" x="132" y="866" width="192" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(216.0 877)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="6" r="2.5"/><circle cx="18" cy="5" r="2.5"/><circle cx="12" cy="13.5" r="2.5"/><circle cx="4" cy="18" r="2.5"/><path d="M6.7 7.9 10.3 11.7M16.2 6.8l-2.6 4.8M10 15 5.9 16.9"/></g></g>
+<text class="n" x="228.0" y="918" text-anchor="middle">Graph Feature Service</text>
+<text class="c" x="228.0" y="934" text-anchor="middle">graph-store</text>
+<rect class="f-blue" x="358" y="866" width="184" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(438.0 877)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="2.5"/><circle cx="12" cy="12" r="2.2"/><path d="M9.5 3v3M14.5 3v3M9.5 18v3M14.5 18v3M3 9.5h3M3 14.5h3M18 9.5h3M18 14.5h3"/><g stroke="none"><circle cx="18.5" cy="18.5" r="5.3" fill="var(--zeema-icon-bg, #fff)"/><circle cx="18.5" cy="18.5" r="4.5" fill="#FF6F00"/><path transform="translate(15.80 15.80) scale(0.2250)" fill="#fff" d="M1.292 5.856L11.54 0v24l-4.095-2.378V7.603l-6.168 3.564.015-5.31zm21.43 5.311l-.014-5.31L12.46 0v24l4.095-2.378V14.87l3.092 1.788-.018-4.618-3.074-1.756V7.603l6.168 3.564z"/></g></g></g>
+<text class="n" x="450.0" y="918" text-anchor="middle">Heavy Ranker on Navi</text>
+<text class="c" x="450.0" y="934" text-anchor="middle">tensorflow-serving</text>
+<rect class="f-amber" x="805" y="702" width="199" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(892.5 713)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M13.5 7.5 9.5 13H12l-1.5 4.5 4-5.5H12z"/></g></g>
+<text class="n" x="904.5" y="754" text-anchor="middle">Representation Manager</text>
+<text class="c" x="904.5" y="770" text-anchor="middle">cache-cluster</text>
+<rect class="f-blue" x="576" y="866" width="184" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(656.0 877)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M6.5 7.5h.01M6.5 16.5h.01"/><path d="M10 7.5h5M10 16.5h5"/></g></g>
+<text class="n" x="668.0" y="918" text-anchor="middle">Visibility Filtering</text>
+<text class="c" x="668.0" y="934" text-anchor="middle">container-service</text>
+<rect class="f-blue" x="794" y="866" width="137" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(850.5 877)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M6.5 7.5h.01M6.5 16.5h.01"/><path d="M10 7.5h5M10 16.5h5"/></g></g>
+<text class="n" x="862.5" y="918" text-anchor="middle">Tweetypie</text>
+<text class="c" x="862.5" y="934" text-anchor="middle">container-service</text>
+<rect class="f-amber" x="966" y="866" width="126" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(1017.0 877)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M13.5 7.5 9.5 13H12l-1.5 4.5 4-5.5H12z"/></g></g>
+<text class="n" x="1029.0" y="918" text-anchor="middle">Twemcache</text>
+<text class="c" x="1029.0" y="934" text-anchor="middle">memcached</text>
+<rect class="f-amber" x="1038" y="702" width="126" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(1089.0 713)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M6.5 11.5h2M11 12h2M15.5 11.5h2"/><path d="M6.5 16h2M11 16.5h2M15.5 16h2"/></g></g>
+<text class="n" x="1101.0" y="754" text-anchor="middle">Manhattan</text>
+<text class="c" x="1101.0" y="770" text-anchor="middle">nosql-store</text>
+<rect class="f-violet" x="124" y="210" width="283" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(253.5 221)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.5c3-2.2 6.5 2.2 9.5 0s6.5-2.2 9.5 0"/><path d="M2.5 12c3-2.2 6.5 2.2 9.5 0s6.5-2.2 9.5 0"/><path d="M2.5 17.5c3-2.2 6.5 2.2 9.5 0s6.5-2.2 9.5 0"/><g stroke="none"><circle cx="18.5" cy="18.5" r="5.3" fill="var(--zeema-icon-bg, #fff)"/><circle cx="18.5" cy="18.5" r="4.5" fill="#231F20"/><path transform="translate(15.80 15.80) scale(0.2250)" fill="#fff" d="M9.71 2.136a1.43 1.43 0 0 0-2.047 0h-.007a1.48 1.48 0 0 0-.421 1.042c0 .41.161.777.422 1.039l.007.007c.257.264.616.426 1.019.426.404 0 .766-.162 1.027-.426l.003-.007c.261-.262.421-.629.421-1.039 0-.408-.159-.777-.421-1.042H9.71zM8.683 22.295c.404 0 .766-.167 1.027-.429l.003-.008c.261-.261.421-.631.421-1.036 0-.41-.159-.778-.421-1.044H9.71a1.42 1.42 0 0 0-1.027-.432 1.4 1.4 0 0 0-1.02.432h-.007c-.26.266-.422.634-.422 1.044 0 .406.161.775.422 1.036l.007.008c.258.262.617.429 1.02.429zm7.89-4.462c.359-.096.683-.33.882-.684l.027-.052a1.47 1.47 0 0 0 .114-1.067 1.454 1.454 0 0 0-.675-.896l-.021-.014a1.425 1.425 0 0 0-1.078-.132c-.36.091-.684.335-.881.686-.2.349-.241.75-.146 1.119.099.363.33.691.675.896h.002c.346.203.737.239 1.101.144zm-6.405-7.342a2.083 2.083 0 0 0-1.485-.627c-.58 0-1.103.242-1.482.627-.378.385-.612.916-.612 1.507s.233 1.124.612 1.514a2.08 2.08 0 0 0 2.967 0c.379-.39.612-.923.612-1.514s-.233-1.122-.612-1.507zm-.835-2.51c.843.141 1.6.552 2.178 1.144h.004c.092.093.182.196.265.299l1.446-.851a3.176 3.176 0 0 1-.047-1.808 3.149 3.149 0 0 1 1.456-1.926l.025-.016a3.062 3.062 0 0 1 2.345-.306c.77.21 1.465.721 1.898 1.482v.002c.431.757.518 1.626.313 2.408a3.145 3.145 0 0 1-1.456 1.928l-.198.118h-.02a3.095 3.095 0 0 1-2.154.201 3.127 3.127 0 0 1-1.514-.944l-1.444.848a4.162 4.162 0 0 1 0 2.879l1.444.846c.413-.47.939-.789 1.514-.944a3.041 3.041 0 0 1 2.371.319l.048.023v.002a3.17 3.17 0 0 1 1.408 1.906 3.215 3.215 0 0 1-.313 2.405l-.026.053-.003-.005a3.147 3.147 0 0 1-1.867 1.436 3.096 3.096 0 0 1-2.371-.318v-.006a3.156 3.156 0 0 1-1.456-1.927 3.175 3.175 0 0 1 .047-1.805l-1.446-.848a3.905 3.905 0 0 1-.265.294l-.004.005a3.938 3.938 0 0 1-2.178 1.138v1.699a3.09 3.09 0 0 1 1.56.862l.002.004c.565.572.914 1.368.914 2.243 0 .873-.35 1.664-.914 2.239l-.002.009a3.1 3.1 0 0 1-2.21.931 3.1 3.1 0 0 1-2.206-.93h-.002v-.009a3.186 3.186 0 0 1-.916-2.239c0-.875.35-1.672.916-2.243v-.004h.002a3.1 3.1 0 0 1 1.558-.862v-1.699a3.926 3.926 0 0 1-2.176-1.138l-.006-.005a4.098 4.098 0 0 1-1.173-2.874c0-1.122.452-2.136 1.173-2.872h.006a3.947 3.947 0 0 1 2.176-1.144V6.289a3.137 3.137 0 0 1-1.558-.864h-.002v-.004a3.192 3.192 0 0 1-.916-2.243c0-.871.35-1.669.916-2.243l.002-.002A3.084 3.084 0 0 1 8.683 0c.861 0 1.641.355 2.21.932v.002h.002c.565.574.914 1.372.914 2.243 0 .876-.35 1.667-.914 2.243l-.002.005a3.142 3.142 0 0 1-1.56.864v1.692zm8.121-1.129l-.012-.019a1.452 1.452 0 0 0-.87-.668 1.43 1.43 0 0 0-1.103.146h.002c-.347.2-.58.529-.677.896-.095.365-.054.768.146 1.119l.007.009c.2.347.519.579.874.673.357.103.755.059 1.098-.144l.019-.009a1.47 1.47 0 0 0 .657-.885 1.493 1.493 0 0 0-.141-1.118"/></g></g></g>
+<text class="n" x="265.5" y="262" text-anchor="middle">Post and user-modification topics</text>
+<text class="c" x="265.5" y="278" text-anchor="middle">kafka</text>
+<rect class="f-violet" x="442" y="210" width="184" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(522.0 221)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.5c3-2.2 6.5 2.2 9.5 0s6.5-2.2 9.5 0"/><path d="M2.5 12c3-2.2 6.5 2.2 9.5 0s6.5-2.2 9.5 0"/><path d="M2.5 17.5c3-2.2 6.5 2.2 9.5 0s6.5-2.2 9.5 0"/><g stroke="none"><circle cx="18.5" cy="18.5" r="5.3" fill="var(--zeema-icon-bg, #fff)"/><circle cx="18.5" cy="18.5" r="4.5" fill="#231F20"/><path transform="translate(15.80 15.80) scale(0.2250)" fill="#fff" d="M9.71 2.136a1.43 1.43 0 0 0-2.047 0h-.007a1.48 1.48 0 0 0-.421 1.042c0 .41.161.777.422 1.039l.007.007c.257.264.616.426 1.019.426.404 0 .766-.162 1.027-.426l.003-.007c.261-.262.421-.629.421-1.039 0-.408-.159-.777-.421-1.042H9.71zM8.683 22.295c.404 0 .766-.167 1.027-.429l.003-.008c.261-.261.421-.631.421-1.036 0-.41-.159-.778-.421-1.044H9.71a1.42 1.42 0 0 0-1.027-.432 1.4 1.4 0 0 0-1.02.432h-.007c-.26.266-.422.634-.422 1.044 0 .406.161.775.422 1.036l.007.008c.258.262.617.429 1.02.429zm7.89-4.462c.359-.096.683-.33.882-.684l.027-.052a1.47 1.47 0 0 0 .114-1.067 1.454 1.454 0 0 0-.675-.896l-.021-.014a1.425 1.425 0 0 0-1.078-.132c-.36.091-.684.335-.881.686-.2.349-.241.75-.146 1.119.099.363.33.691.675.896h.002c.346.203.737.239 1.101.144zm-6.405-7.342a2.083 2.083 0 0 0-1.485-.627c-.58 0-1.103.242-1.482.627-.378.385-.612.916-.612 1.507s.233 1.124.612 1.514a2.08 2.08 0 0 0 2.967 0c.379-.39.612-.923.612-1.514s-.233-1.122-.612-1.507zm-.835-2.51c.843.141 1.6.552 2.178 1.144h.004c.092.093.182.196.265.299l1.446-.851a3.176 3.176 0 0 1-.047-1.808 3.149 3.149 0 0 1 1.456-1.926l.025-.016a3.062 3.062 0 0 1 2.345-.306c.77.21 1.465.721 1.898 1.482v.002c.431.757.518 1.626.313 2.408a3.145 3.145 0 0 1-1.456 1.928l-.198.118h-.02a3.095 3.095 0 0 1-2.154.201 3.127 3.127 0 0 1-1.514-.944l-1.444.848a4.162 4.162 0 0 1 0 2.879l1.444.846c.413-.47.939-.789 1.514-.944a3.041 3.041 0 0 1 2.371.319l.048.023v.002a3.17 3.17 0 0 1 1.408 1.906 3.215 3.215 0 0 1-.313 2.405l-.026.053-.003-.005a3.147 3.147 0 0 1-1.867 1.436 3.096 3.096 0 0 1-2.371-.318v-.006a3.156 3.156 0 0 1-1.456-1.927 3.175 3.175 0 0 1 .047-1.805l-1.446-.848a3.905 3.905 0 0 1-.265.294l-.004.005a3.938 3.938 0 0 1-2.178 1.138v1.699a3.09 3.09 0 0 1 1.56.862l.002.004c.565.572.914 1.368.914 2.243 0 .873-.35 1.664-.914 2.239l-.002.009a3.1 3.1 0 0 1-2.21.931 3.1 3.1 0 0 1-2.206-.93h-.002v-.009a3.186 3.186 0 0 1-.916-2.239c0-.875.35-1.672.916-2.243v-.004h.002a3.1 3.1 0 0 1 1.558-.862v-1.699a3.926 3.926 0 0 1-2.176-1.138l-.006-.005a4.098 4.098 0 0 1-1.173-2.874c0-1.122.452-2.136 1.173-2.872h.006a3.947 3.947 0 0 1 2.176-1.144V6.289a3.137 3.137 0 0 1-1.558-.864h-.002v-.004a3.192 3.192 0 0 1-.916-2.243c0-.871.35-1.669.916-2.243l.002-.002A3.084 3.084 0 0 1 8.683 0c.861 0 1.641.355 2.21.932v.002h.002c.565.574.914 1.372.914 2.243 0 .876-.35 1.667-.914 2.243l-.002.005a3.142 3.142 0 0 1-1.56.864v1.692zm8.121-1.129l-.012-.019a1.452 1.452 0 0 0-.87-.668 1.43 1.43 0 0 0-1.103.146h.002c-.347.2-.58.529-.677.896-.095.365-.054.768.146 1.119l.007.009c.2.347.519.579.874.673.357.103.755.059 1.098-.144l.019-.009a1.47 1.47 0 0 0 .657-.885 1.493 1.493 0 0 0-.141-1.118"/></g></g></g>
+<text class="n" x="534.0" y="262" text-anchor="middle">Unified User Actions</text>
+<text class="c" x="534.0" y="278" text-anchor="middle">kafka</text>
+<rect class="f-blue" x="660" y="210" width="138" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(717.0 221)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v1.5M12 20v1.5M21.5 12H20M4 12H2.5M18.7 5.3l-1.1 1.1M6.4 17.6l-1.1 1.1M18.7 18.7l-1.1-1.1M6.4 6.4 5.3 5.3"/></g></g>
+<text class="n" x="729.0" y="262" text-anchor="middle">Index Ingester</text>
+<text class="c" x="729.0" y="278" text-anchor="middle">container-worker</text>
+<rect class="f-violet" x="832" y="210" width="268" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(954.0 221)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="5.5" width="10" height="13" rx="2.5"/><path d="M1.5 8.5H7M1.5 12H7M1.5 15.5H7M17 12h5.5"/><path d="M19.5 9.5 22 12l-2.5 2.5"/></g></g>
+<text class="n" x="966.0" y="262" text-anchor="middle">Signal Ingester, Heron topology</text>
+<text class="c" x="966.0" y="278" text-anchor="middle">storm</text>
+<rect class="f-blue" x="453" y="374" width="138" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(510.0 385)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v1.5M12 20v1.5M21.5 12H20M4 12H2.5M18.7 5.3l-1.1 1.1M6.4 17.6l-1.1 1.1M18.7 18.7l-1.1-1.1M6.4 6.4 5.3 5.3"/></g></g>
+<text class="n" x="522.0" y="426" text-anchor="middle">Recos-Injector</text>
+<text class="c" x="522.0" y="442" text-anchor="middle">container-worker</text>
+<rect class="f-blue" x="625" y="374" width="222" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(724.0 385)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v1.5M12 20v1.5M21.5 12H20M4 12H2.5M18.7 5.3l-1.1 1.1M6.4 17.6l-1.1 1.1M18.7 18.7l-1.1-1.1M6.4 6.4 5.3 5.3"/></g></g>
+<text class="n" x="736.0" y="426" text-anchor="middle">SimClusters Known For job</text>
+<text class="c" x="736.0" y="442" text-anchor="middle">container-worker</text>
+<rect class="f-blue" x="83" y="374" width="336" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(239.0 385)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v1.5M12 20v1.5M21.5 12H20M4 12H2.5M18.7 5.3l-1.1 1.1M6.4 17.6l-1.1 1.1M18.7 18.7l-1.1-1.1M6.4 6.4 5.3 5.3"/></g></g>
+<text class="n" x="251.0" y="426" text-anchor="middle">SimClusters realtime tweet-embedding job</text>
+<text class="c" x="251.0" y="442" text-anchor="middle">container-worker</text>
+<rect class="f-amber" x="881" y="374" width="260" height="78" rx="8" stroke-width="1"/>
+<g class="ic" transform="translate(999.0 385)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M13.5 7.5 9.5 13H12l-1.5 4.5 4-5.5H12z"/></g></g>
+<text class="n" x="1011.0" y="426" text-anchor="middle">SimClusters embedding Memcache</text>
+<text class="c" x="1011.0" y="442" text-anchor="middle">memcached</text>
+</svg>

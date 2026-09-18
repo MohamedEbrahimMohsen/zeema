@@ -1,0 +1,175 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture: Shopify flash sales and BFCM, clean variant. A scriptable
+# Nginx/OpenResty edge routes each shop to its own pod through the Sorting Hat routing table
+# and admits checkout traffic through a per-shop leaky bucket, so a single merchant's sale
+# cannot exhaust anyone else's MySQL shard, Redis or Memcached.
+#
+# Fixes relative to shopify-flash-sale.broken.yaml:
+#   - MySQL is sharded by shop_id into per-pod shards behind Vitess, instead of one shared
+#     unsharded primary that every shop writes (the Kylie Cosmetics blast radius)
+#   - Redis and Memcached are per-pod, and each pod has its own job workers, instead of one
+#     global Redis whose loss takes the whole platform with it (Redismageddon)
+#   - the per-pod Redis job queues declare a dead-letter queue
+#   - the Sorting Hat routing table is replicated, so the shared routing dependency is redundant
+#   - Semian circuit breakers guard the retrying calls out of Shopify Core into the pod
+#   - Ghostferry (shop-mover) rebalances shards online: locking batch copy, binlog tail,
+#     Redis writer lock, atomic routing-table switch
+# This file MUST trip no rule.
+schemaVersion: "1"
+type: "design"
+id: "shopify-flash-sale"
+
+requirements:
+  availability:
+    multiRegion: true
+    discoveryRedundant: true
+    degradedModeAllowed: true
+  consistency:
+    model: "cp"
+  traffic:
+    skew: "heavy-tail"
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "internet-edge", kind: "trust-zone", label: "Scriptable edge tier" }
+  - { id: "gcp-us-east", kind: "region" }
+  - { id: "gcp-eu-west", kind: "region" }
+  - { id: "core", kind: "trust-zone", parent: "gcp-us-east", label: "Stateless tier" }
+  - { id: "pod-1", kind: "cell", parent: "gcp-us-east", label: "Pod 1" }
+  - { id: "pod-2", kind: "cell", parent: "gcp-eu-west", label: "Pod 2" }
+
+nodes:
+  - id: "buyer-browser"
+    component: "web-browser"
+    label: "Buyer browser and bots"
+    props: { platform: "web", localCache: true }
+
+  - id: "edge-lb"
+    component: "nginx"
+    label: "Nginx + OpenResty"
+    group: "internet-edge"
+    props: { layer: "l7", healthChecks: true, managed: false, global: true }
+    nfr: { rps: 80000 }
+
+  - id: "sorting-hat"
+    component: "consul"
+    label: "Sorting Hat"
+    group: "internet-edge"
+    props: { role: "placement", consensus: "raft", replicated: true }
+
+  - id: "checkout-throttle"
+    component: "redis-rate-limiter"
+    label: "Checkout throttle"
+    group: "internet-edge"
+    props: { algorithm: "leaky-bucket", placement: "edge", distributed: true, atomicOps: true, luaScripted: true }
+
+  - id: "shopify-core"
+    component: "container-service"
+    label: "Shopify Core"
+    group: "core"
+    props: { orchestrator: "kubernetes", stateless: true, autoscaling: true, runtime: "rails", criticality: "high" }
+
+  - id: "vitess"
+    component: "vitess"
+    group: "core"
+    props: { routing: "shard-key", pooling: true, poolSharded: true, scatterGather: true }
+
+  - id: "shop-mover"
+    component: "container-worker"
+    label: "Ghostferry"
+    group: "core"
+    props: { trigger: "manual", orchestrator: "kubernetes", idempotent: true, rateControl: "fixed" }
+
+  - id: "kafka-events"
+    component: "kafka"
+    group: "core"
+    props: { delivery: "at-least-once", ordering: "per-key", partitions: 64, replicationFactor: 3, acks: "all", retentionHours: 168, storage: "persistent" }
+
+  - id: "etl-pipeline"
+    component: "container-worker"
+    label: "ETL / analytics pipeline"
+    group: "core"
+    props: { trigger: "stream", orchestrator: "kubernetes", idempotent: true }
+
+  - id: "mysql-shard-1"
+    component: "mysql"
+    group: "pod-1"
+    props: { sharded: true, shardKey: "shop_id", replication: "async", backupEnabled: true, backupRetentionDays: 30, encryptionAtRest: true, concurrencyControl: "pessimistic" }
+    nfr: { consistency: "strong" }
+
+  - id: "pod-1-redis"
+    component: "redis-queue"
+    group: "pod-1"
+    props: { delivery: "at-least-once", role: "work", deadLetterQueue: true, persistence: false }
+
+  - id: "pod-1-memcached"
+    component: "memcached"
+    group: "pod-1"
+    props: { evictionPolicy: "lru", hashing: "consistent", persistence: false }
+
+  - id: "pod-1-job-workers"
+    component: "container-worker"
+    group: "pod-1"
+    props: { trigger: "queue", orchestrator: "kubernetes", idempotent: true }
+
+  - id: "mysql-shard-2"
+    component: "mysql"
+    group: "pod-2"
+    props: { sharded: true, shardKey: "shop_id", replication: "async", backupEnabled: true, backupRetentionDays: 30, encryptionAtRest: true, concurrencyControl: "pessimistic" }
+    nfr: { consistency: "strong" }
+
+  - id: "pod-2-redis"
+    component: "redis-queue"
+    group: "pod-2"
+    props: { delivery: "at-least-once", role: "work", deadLetterQueue: true, persistence: false }
+
+  - id: "pod-2-memcached"
+    component: "memcached"
+    group: "pod-2"
+    props: { evictionPolicy: "lru", hashing: "consistent", persistence: false }
+
+  - id: "pod-2-job-workers"
+    component: "container-worker"
+    group: "pod-2"
+    props: { trigger: "queue", orchestrator: "kubernetes", idempotent: true }
+
+  - id: "storefront-renderer"
+    component: "container-service"
+    label: "Storefront renderer"
+    group: "gcp-eu-west"
+    props: { orchestrator: "kubernetes", stateless: true, autoscaling: true, runtime: "liquid", criticality: "high" }
+
+  - id: "storefront-replica"
+    component: "mysql"
+    label: "Filtered storefront replica"
+    group: "gcp-eu-west"
+    props: { sharded: false, replication: "async", replicaOf: "mysql-shard-1", backupEnabled: true, backupRetentionDays: 30, encryptionAtRest: true }
+
+edges:
+  - { from: "buyer-browser", to: "edge-lb", protocol: "https", mode: "sync", label: "storefront and checkout traffic" }
+  - { from: "edge-lb", to: "sorting-hat", protocol: "http", mode: "sync", timeoutMs: 100, label: "shop_id to pod routing table" }
+  - { from: "edge-lb", to: "checkout-throttle", protocol: "redis", mode: "sync", timeoutMs: 50, label: "per-shop leaky bucket, 5 s window" }
+  - { from: "edge-lb", to: "buyer-browser", protocol: "http", mode: "sync", fallback: "cached", label: "queue page cached in Nginx; signed cookie skips the throttle once admitted" }
+  - { from: "edge-lb", to: "shopify-core", protocol: "http", mode: "sync", timeoutMs: 10000, label: "routed to the shop's pod" }
+  - { from: "edge-lb", to: "storefront-renderer", protocol: "http", mode: "sync", timeoutMs: 10000, label: "render storefront" }
+  - { from: "shopify-core", to: "vitess", protocol: "mysql", mode: "sync", timeoutMs: 2000, retryPolicy: "exponential", circuitBreaker: true, label: "Semian-wrapped MySQL client" }
+  - { from: "vitess", to: "mysql-shard-1", protocol: "mysql", mode: "sync", label: "routed by shop_id" }
+  - { from: "vitess", to: "mysql-shard-2", protocol: "mysql", mode: "sync", label: "routed by shop_id" }
+  - { from: "shopify-core", to: "pod-1-memcached", protocol: "memcached", mode: "sync", timeoutMs: 200, circuitBreaker: true }
+  - { from: "shopify-core", to: "pod-2-memcached", protocol: "memcached", mode: "sync", timeoutMs: 200, circuitBreaker: true }
+  - { from: "shopify-core", to: "pod-1-redis", protocol: "redis", mode: "async", delivery: "at-least-once", label: "enqueue background job" }
+  - { from: "shopify-core", to: "pod-2-redis", protocol: "redis", mode: "async", delivery: "at-least-once", label: "enqueue background job" }
+  - { from: "pod-1-redis", to: "pod-1-job-workers", protocol: "redis", mode: "async", delivery: "at-least-once" }
+  - { from: "pod-2-redis", to: "pod-2-job-workers", protocol: "redis", mode: "async", delivery: "at-least-once" }
+  - { from: "pod-1-job-workers", to: "mysql-shard-1", protocol: "mysql", mode: "sync", idempotent: true }
+  - { from: "pod-2-job-workers", to: "mysql-shard-2", protocol: "mysql", mode: "sync", idempotent: true }
+  - { from: "shopify-core", to: "kafka-events", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "domain events" }
+  - { from: "kafka-events", to: "etl-pipeline", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "partitions sized for BFCM freshness" }
+  - { from: "mysql-shard-1", to: "storefront-replica", protocol: "mysql-replication", mode: "async", label: "filtered replication for data residency" }
+  - { from: "storefront-renderer", to: "storefront-replica", protocol: "mysql", mode: "sync", timeoutMs: 500, label: "load data, render Liquid" }
+  - { from: "shop-mover", to: "mysql-shard-1", protocol: "mysql", mode: "sync", label: "SELECT ... FOR UPDATE batch copy" }
+  - { from: "mysql-shard-1", to: "shop-mover", protocol: "mysql-binlog", mode: "async", delivery: "at-least-once", label: "tail the source pod binlog" }
+  - { from: "shop-mover", to: "mysql-shard-2", protocol: "mysql", mode: "async", delivery: "at-least-once", idempotent: true, label: "replay onto the target pod" }
+  - { from: "shop-mover", to: "pod-1-redis", protocol: "redis", mode: "sync", label: "multi-reader-single-writer writer lock" }
+  - { from: "shop-mover", to: "sorting-hat", protocol: "http", mode: "sync", idempotent: true, label: "atomic routing table switch" }

@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Anti-DDoS Pro: proxy that absorbs DDoS attacks in front of an origin. "What is Anti-DDoS Proxy?"
+# states that all incoming traffic from the Internet is redirected to an Anti-DDoS scrubbing centre by
+# changing the DNS record to the CNAME address provided by Anti-DDoS Proxy or by pointing the service
+# IP address at the instance address; that the scrubbing centre defends against layer 3 and layer 4
+# volumetric attacks such as SYN floods and UDP floods as well as layer 7 application-layer attacks
+# such as HTTP floods; and that an AI engine learns the service model to identify and filter CC attack
+# traffic. Anti-DDoS Premium is the variant for services outside the Chinese mainland.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-anti-ddos-pro"
+kind: "ddos-protection"
+provider: "alibabacloud"
+defaults:
+  managed: true
+  scope: "both"
+  alwaysOn: true
+  adaptiveThresholds: true
+properties:
+  edition:
+    type: "enum"
+    values: ["anti-ddos-pro", "anti-ddos-premium"]
+  trafficRedirection:
+    type: "enum"
+    values: ["dns-cname", "instance-ip"]
+  protectedServiceType:
+    type: "enum"
+    values: ["website", "non-website"]

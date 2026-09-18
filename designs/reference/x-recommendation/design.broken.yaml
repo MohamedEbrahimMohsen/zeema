@@ -1,0 +1,202 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Broken variant of the X (Twitter) For You recommendation serving path: the same request
+# path, built the way a team builds it before the ingestion and embedding jobs exist —
+# Tweetypie writes the Earlybird index inline as it writes the post, the SimClusters
+# embeddings live only in Memcache and are written straight from CR-Mixer, and the realtime
+# signal topology windows engagement counts by event time with nothing to close a window.
+#
+# This file MUST trip:
+#   - derived-store-without-cdc-or-rebuild        (earlybird-index has no async feed from a stream, CDC or worker; tweetypie dual-writes it)
+#   - cache-as-primary-store-without-persistence  (embedding-cache: usedAsPrimaryStore true, persistence false)
+#   - materialised-cache-without-rebuild-path     (embedding-cache is materialised and only cr-mixer, an app-server, writes it)
+#   - windowed-aggregation-without-watermark      (signal-ingester windows by event time with no watermarkSeconds)
+# and MUST NOT trip:
+#   - cache-missing-eviction-policy               (all three caches still declare lru or ttl)
+#   - read-heavy-path-without-cache               (the design has caches, and states no readWriteRatio)
+#   - credentials-without-rotation                (the design still states credentialRotationDays)
+#   - datastore-missing-backup, datastore-single-region, read-replica-as-sole-scaling,
+#     single-writer-primary-at-peak-qps           (no sql-database node in this design)
+#   - queue-missing-dlq, retry-queue-without-dlq, pubsub-replay-required (no queue and no pubsub-topic)
+#   - business-updates-without-index-propagation  (the system of record is a nosql-database, which that rule does not select)
+#   - fanout-inline-in-request-path               (no app-server calls a worker synchronously)
+#   - retry-without-backoff, retry-without-adaptive-shedding (no edge declares a retry policy)
+#   - sync-chain-too-deep                         (the design states no p95 latency target)
+#   - stateful-node-without-zone-redundancy, stateful-engine-pinned-to-single-zone (no availability-zone groups)
+schemaVersion: "1"
+type: "design"
+id: "x-recommendation"
+
+requirements:
+  availability:
+    degradedModeAllowed: true
+  messaging:
+    replay: true
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "client-edge", kind: "trust-zone", label: "Client and GraphQL edge" }
+  - { id: "request-path", kind: "trust-zone", label: "Home Mixer and the request-path services" }
+  - { id: "offline", kind: "trust-zone", label: "Offline jobs and the stores they maintain" }
+
+nodes:
+  - id: "x-client"
+    component: "mobile-app"
+    label: "X app, For You timeline"
+    group: "client-edge"
+    props: { platform: "mobile", os: "both", localCache: true }
+
+  - id: "graphql-edge"
+    component: "envoy-gateway"
+    label: "GraphQL edge"
+    group: "client-edge"
+    props: { auth: "oauth2", tls: true, protocol: "http" }
+
+  - id: "home-mixer"
+    component: "container-service"
+    label: "Home Mixer"
+    group: "request-path"
+    props: { criticality: "high", ownsData: false, runtime: "scala on product-mixer" }
+
+  - id: "timelineranker"
+    component: "container-service"
+    label: "TimelineRanker"
+    group: "request-path"
+    props: { criticality: "medium", ownsData: false }
+
+  - id: "cr-mixer"
+    component: "container-service"
+    label: "CR-Mixer"
+    group: "request-path"
+    props: { criticality: "medium", ownsData: false }
+
+  - id: "frs"
+    component: "container-service"
+    label: "Follow Recommendations Service"
+    group: "request-path"
+    props: { criticality: "medium", ownsData: false }
+
+  - id: "earlybird-root"
+    component: "load-balancer-tier"
+    label: "Earlybird superroot"
+    group: "request-path"
+    props: { layer: "l7", hashing: "round-robin", healthChecks: true }
+
+  - id: "earlybird-index"
+    component: "elasticsearch"
+    label: "Earlybird realtime index"
+    group: "request-path"
+    props: { structure: "inverted", shardingStrategy: "time", indexing: "sync", refreshIntervalSeconds: 1 }
+
+  - id: "uteg"
+    component: "graph-store"
+    label: "User Tweet Entity Graph, GraphJet"
+    group: "request-path"
+    props: { inMemory: true }
+
+  - id: "social-graph"
+    component: "graph-store"
+    label: "Social Graph Service"
+    group: "request-path"
+    props: { inMemory: false }
+
+  - id: "graph-feature-service"
+    component: "graph-store"
+    label: "Graph Feature Service"
+    group: "request-path"
+    props: { inMemory: false }
+
+  - id: "heavy-ranker"
+    component: "tensorflow-serving"
+    label: "Heavy Ranker on Navi"
+    group: "request-path"
+    props: { training: "online", inputs: "live", batching: true, accelerator: "none" }
+
+  - id: "representation-manager"
+    component: "cache-cluster"
+    label: "Representation Manager"
+    group: "request-path"
+    props: { evictionPolicy: "ttl", invalidation: "ttl", structure: "key-value", materialised: false, usedAsPrimaryStore: false, persistence: false }
+
+  - id: "visibility-filtering"
+    component: "container-service"
+    label: "Visibility Filtering"
+    group: "request-path"
+    props: { criticality: "high", ownsData: false }
+
+  - id: "tweetypie"
+    component: "container-service"
+    label: "Tweetypie"
+    group: "request-path"
+    props: { criticality: "high", ownsData: true }
+
+  - id: "twemcache"
+    component: "memcached"
+    label: "Twemcache"
+    group: "request-path"
+    props: { evictionPolicy: "lru", hashing: "consistent", structure: "key-value", materialised: false, usedAsPrimaryStore: false }
+
+  - id: "manhattan"
+    component: "nosql-store"
+    label: "Manhattan"
+    group: "request-path"
+    props: { model: "key-value", consistency: "eventual", replication: "single-region", backupEnabled: true, backupRetentionDays: 30, encryptionAtRest: true }
+
+  - id: "uua-kafka"
+    component: "kafka"
+    label: "Unified User Actions"
+    group: "offline"
+    props: { delivery: "at-least-once", ordering: "per-key", storage: "persistent" }
+
+  - id: "signal-ingester"
+    component: "storm"
+    label: "Signal Ingester, Heron topology"
+    group: "offline"
+    props: { windowing: "event-time", stateBackend: "memory", exactlyOnce: false }
+
+  - id: "recos-injector"
+    component: "container-worker"
+    label: "Recos-Injector"
+    group: "offline"
+    props: { trigger: "stream", idempotent: true }
+
+  - id: "simclusters-job"
+    component: "container-worker"
+    label: "SimClusters Known For job"
+    group: "offline"
+    props: { trigger: "batch", idempotent: true, schedule: "every three weeks" }
+
+  - id: "embedding-cache"
+    component: "memcached"
+    label: "SimClusters embedding Memcache"
+    group: "offline"
+    props: { evictionPolicy: "lru", hashing: "consistent", structure: "key-value", materialised: true, usedAsPrimaryStore: true, persistence: false }
+
+edges:
+  - { from: "x-client", to: "graphql-edge", protocol: "https", mode: "sync", label: "For You request" }
+  - { from: "graphql-edge", to: "home-mixer", protocol: "graphql", mode: "sync", label: "construct the home timeline" }
+  - { from: "home-mixer", to: "timelineranker", protocol: "thrift", mode: "sync", fallback: "degraded", label: "in-network candidates" }
+  - { from: "timelineranker", to: "earlybird-root", protocol: "thrift", mode: "sync", label: "relevance-scored in-network posts" }
+  - { from: "earlybird-root", to: "earlybird-index", protocol: "thrift", mode: "sync", batched: true, label: "fan out to partitions, merge" }
+  - { from: "timelineranker", to: "uteg", protocol: "thrift", mode: "sync", label: "posts liked by the accounts you follow" }
+  - { from: "timelineranker", to: "social-graph", protocol: "thrift", mode: "sync", label: "follow graph, blocked and muted state" }
+  - { from: "home-mixer", to: "cr-mixer", protocol: "thrift", mode: "sync", fallback: "degraded", label: "out-of-network candidate coordination" }
+  - { from: "cr-mixer", to: "representation-manager", protocol: "thrift", mode: "sync", label: "source signals and embeddings" }
+  - { from: "cr-mixer", to: "embedding-cache", protocol: "memcached", mode: "sync", batched: true, label: "write post embeddings straight from the request path" }
+  - { from: "home-mixer", to: "frs", protocol: "thrift", mode: "sync", fallback: "degraded", label: "FutureGraph posts and Who-to-Follow" }
+  - { from: "home-mixer", to: "representation-manager", protocol: "thrift", mode: "sync", batched: true, label: "embedding features" }
+  - { from: "home-mixer", to: "graph-feature-service", protocol: "thrift", mode: "sync", batched: true, label: "user-pair graph features" }
+  - { from: "home-mixer", to: "heavy-ranker", protocol: "grpc", mode: "sync", batched: true, fallback: "degraded", label: "score every candidate" }
+  - { from: "home-mixer", to: "visibility-filtering", protocol: "thrift", mode: "sync", label: "allow, interstitial or drop, per post and viewer" }
+  - { from: "home-mixer", to: "tweetypie", protocol: "thrift", mode: "sync", label: "hydrate the posts that survived" }
+  - { from: "tweetypie", to: "twemcache", protocol: "memcached", mode: "sync", label: "caching repository" }
+  - { from: "tweetypie", to: "manhattan", protocol: "thrift", mode: "sync", label: "post data of record" }
+  - { from: "tweetypie", to: "earlybird-index", protocol: "thrift", mode: "sync", label: "index inline as the post is written" }
+  - { from: "representation-manager", to: "embedding-cache", protocol: "memcached", mode: "sync", label: "embedding facade read" }
+  - { from: "x-client", to: "uua-kafka", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "client and server side user actions" }
+  - { from: "uua-kafka", to: "recos-injector", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "fav, retweet, follow, client events" }
+  - { from: "recos-injector", to: "uteg", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "per-service GraphJet topic" }
+  - { from: "uua-kafka", to: "signal-ingester", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "engagement events" }
+  - { from: "signal-ingester", to: "earlybird-index", protocol: "thrift", mode: "async", delivery: "at-least-once", label: "live fav, retweet and reply counts" }
+  - { from: "social-graph", to: "simclusters-job", protocol: "batch", mode: "async", delivery: "at-least-once", label: "follow graph snapshot" }
+  - { from: "simclusters-job", to: "representation-manager", protocol: "thrift", mode: "async", delivery: "at-least-once", batched: true, label: "Known For, InterestedIn and producer embeddings" }

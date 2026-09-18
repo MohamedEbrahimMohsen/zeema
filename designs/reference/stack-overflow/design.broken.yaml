@@ -1,0 +1,234 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Stack Overflow, broken variant: the same scale-up topology, with the mistakes a team copying it
+# usually makes — the indexing job deleted so the web tier dual-writes Elasticsearch inline, Redis
+# promoted to the only home of the light queues with persistence off, the whole SQL load declared
+# against one unsharded primary whose async replicas are treated as the scaling plan, and a single
+# DNS provider in front of everything.
+#
+# This file MUST trip:
+#   - derived-store-without-cdc-or-rebuild        (elasticsearch has no async feed; web-tier indexes inline)
+#   - business-updates-without-index-propagation  (both SQL primaries are written sync by web-tier, a search index exists, nothing captures their changes)
+#   - cache-as-primary-store-without-persistence  (redis-master holds the account-merge and A/B queues as the only copy, persistence off)
+#   - single-writer-primary-at-peak-qps           (sql-cluster-1: unsharded single writer declared at 5842 rps)
+#   - read-replica-as-sole-scaling                (sql-cluster-1: async replicas are the only answer above 5000 rps)
+#   - shared-dependency-without-redundancy        (cloudflare is the only DNS provider while the design requires redundant discovery)
+# and MUST NOT trip:
+#   - cache-missing-eviction-policy               (every cache still declares ttl)
+#   - materialised-cache-without-rebuild-path     (no cache holds materialised views)
+#   - datastore-missing-backup                    (every SQL Server still declares backups and retention)
+#   - datastore-single-region                     (multiRegion is false)
+#   - fanout-inline-in-request-path               (the web tier calls no worker synchronously)
+#   - read-heavy-path-without-cache               (caches exist, and no read/write ratio is declared)
+#   - credentials-without-rotation                (a rotation period is still declared)
+#   - queue-missing-dlq, pubsub-replay-required   (no queue; replay is not required of the purge channel)
+#   - sync-chain-too-deep                         (no api-gateway node and no p95 target)
+#   - stateful-websocket-scale-in-without-drain, reconnect-stampede-without-guard
+#                                                 (the socket server does not autoscale and calls no coordination service)
+schemaVersion: "1"
+type: "design"
+id: "stack-overflow"
+
+requirements:
+  availability:
+    multiRegion: false
+    regions: 2
+    degradedModeAllowed: true
+    discoveryRedundant: true
+  consistency:
+    model: "cp"
+  freshness:
+    maxSeconds: 120
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "ny", kind: "region", label: "New York datacenter (primary)" }
+  - { id: "colorado", kind: "region", label: "Colorado datacenter (DR)" }
+  - { id: "dmz", kind: "trust-zone", parent: "ny", label: "DMZ" }
+  - { id: "internal", kind: "trust-zone", parent: "ny", label: "Internal VLANs" }
+
+nodes:
+  - id: "client"
+    component: "web-browser"
+    label: "Browsers and mobile clients"
+    props: { platform: "multi", persistentConnection: true, localCache: true }
+
+  - id: "cloudflare"
+    component: "cloudflare-dns"
+    label: "CloudFlare (sole DNS provider)"
+    props: { proxied: true, anycast: true, redundantProviders: false, managed: true }
+
+  - id: "haproxy-cloudflare"
+    component: "haproxy"
+    label: "HAProxy (CloudFlare traffic)"
+    group: "dmz"
+    props: { layer: "l7", healthChecks: true, hashing: "round-robin" }
+
+  - id: "haproxy-direct"
+    component: "haproxy"
+    label: "HAProxy (direct traffic)"
+    group: "dmz"
+    props: { layer: "l7", healthChecks: true, hashing: "round-robin" }
+
+  - id: "web-tier"
+    component: "iis"
+    label: "Web tier NY-WEB01-09"
+    group: "internal"
+    props: { instances: 9, stateless: true, runtime: "dotnet", criticality: "high", pipelineMode: "integrated" }
+    nfr: { rps: 2423 }
+
+  - id: "l1-cache"
+    component: "cache-cluster"
+    label: "L1 in-process cache"
+    group: "internal"
+    props: { evictionPolicy: "ttl", invalidation: "event", persistence: false, replication: "none", structure: "key-value", tier: "core", usedAsPrimaryStore: false, materialised: false }
+
+  - id: "socket-server"
+    component: "websocket-gateway"
+    label: "Socket server (StackExchange.NetGain)"
+    group: "internal"
+    props: { protocol: "websocket", stateful: true, autoscaling: false, drainOnScaleIn: false }
+
+  - id: "tag-engine"
+    component: "vm-service"
+    label: "Stack Server / tag engine"
+    group: "internal"
+    props: { instances: 3, stateless: false, runtime: "dotnet-http-sys", criticality: "medium", provider: "on-prem" }
+    nfr: { rps: 42 }
+
+  - id: "redis-master"
+    component: "redis"
+    label: "Redis master (cache plus the only copy of the light queues)"
+    group: "internal"
+    props: { evictionPolicy: "ttl", persistence: false, replication: "single-az", invalidation: "event", cluster: false, structure: "key-value", usedAsPrimaryStore: true, materialised: false, tier: "core" }
+    nfr: { rps: 18363 }
+
+  - id: "redis-slave"
+    component: "redis"
+    label: "Redis slave"
+    group: "internal"
+    props: { evictionPolicy: "ttl", persistence: false, replication: "single-az", invalidation: "event", cluster: false, structure: "key-value", usedAsPrimaryStore: false, materialised: false, tier: "core" }
+
+  - id: "purge-channel"
+    component: "redis-pubsub"
+    label: "Redis purge channel"
+    group: "internal"
+    props: { delivery: "at-most-once", replay: false, ordering: "none", topicPerEventType: false, cluster: false }
+
+  - id: "elasticsearch"
+    component: "elasticsearch"
+    label: "Elasticsearch 1.4 (3 nodes)"
+    group: "internal"
+    props: { structure: "inverted", indexing: "sync" }
+    nfr: { rps: 199 }
+
+  - id: "sql-cluster-1"
+    component: "sql-server"
+    label: "SQL cluster 1 primary (Stack Overflow, Sites, PRIZM, Mobile)"
+    group: "internal"
+    props: { alwaysOn: true, replication: "async", sharded: false, multiWriter: false, distributed: false, backupEnabled: true, backupRetentionDays: 30, concurrencyControl: "pessimistic" }
+    nfr: { rps: 5842 }
+
+  - id: "sql-cluster-1-replica"
+    component: "sql-server"
+    label: "SQL cluster 1 read replica (NY)"
+    group: "internal"
+    props: { alwaysOn: true, replication: "async", replicaOf: "sql-cluster-1", backupEnabled: true, backupRetentionDays: 30 }
+    nfr: { consistency: "eventual" }
+
+  - id: "sql-cluster-1-dr"
+    component: "sql-server"
+    label: "SQL cluster 1 DR replica (Colorado)"
+    group: "colorado"
+    props: { alwaysOn: true, replication: "async", replicaOf: "sql-cluster-1", backupEnabled: true, backupRetentionDays: 30 }
+    nfr: { consistency: "eventual" }
+
+  - id: "sql-cluster-2"
+    component: "sql-server"
+    label: "SQL cluster 2 primary (Talent, OpenID, Chat, exceptions, other sites)"
+    group: "internal"
+    props: { alwaysOn: true, replication: "async", sharded: false, multiWriter: false, distributed: false, backupEnabled: true, backupRetentionDays: 30, concurrencyControl: "pessimistic" }
+
+  - id: "sql-cluster-2-replica"
+    component: "sql-server"
+    label: "SQL cluster 2 read replica (NY)"
+    group: "internal"
+    props: { alwaysOn: true, replication: "async", replicaOf: "sql-cluster-2", backupEnabled: true, backupRetentionDays: 30 }
+    nfr: { consistency: "eventual" }
+
+  - id: "providence-api"
+    component: "iis"
+    label: "Providence API"
+    group: "internal"
+    props: { stateless: true, runtime: "dotnet", criticality: "low", pipelineMode: "integrated" }
+
+  - id: "providence-ml"
+    component: "container-worker"
+    label: "Providence ML servers"
+    group: "internal"
+    props: { trigger: "batch", instances: 2, idempotent: true, orchestrator: "none", accelerator: "none" }
+
+  - id: "providence-redis"
+    component: "redis"
+    label: "Providence Redis slaves"
+    group: "internal"
+    props: { evictionPolicy: "ttl", persistence: true, replication: "single-az", cluster: false, structure: "key-value", usedAsPrimaryStore: false, materialised: false, tier: "core" }
+
+  - id: "traffic-processor"
+    component: "container-worker"
+    label: "Traffic processing service"
+    group: "internal"
+    props: { trigger: "stream", idempotent: false, orchestrator: "none" }
+
+  - id: "http-logging-sql"
+    component: "sql-server"
+    label: "HTTP logging SQL Server (columnstore)"
+    group: "internal"
+    props: { appendOnly: true, replication: "none", sharded: false, multiWriter: false, backupEnabled: true, backupRetentionDays: 30 }
+
+  - id: "bosun"
+    component: "observability-stack"
+    label: "Bosun + OpenTSDB/HBase"
+    group: "internal"
+    props: { signal: "metrics", collectorMode: "push", alertGrouping: true, independentOfMonitored: true }
+
+  - id: "opserver"
+    component: "observability-stack"
+    label: "Opserver"
+    group: "internal"
+    props: { signal: "all", collectorMode: "pull", independentOfMonitored: true }
+
+edges:
+  - { from: "client", to: "cloudflare", protocol: "https", mode: "sync", label: "public DNS and proxy" }
+  - { from: "cloudflare", to: "haproxy-cloudflare", protocol: "https", mode: "sync", label: "proxied traffic, dedicated HAProxy pair" }
+  - { from: "client", to: "haproxy-direct", protocol: "https", mode: "sync", label: "direct traffic, second HAProxy pair" }
+  - { from: "haproxy-cloudflare", to: "web-tier", protocol: "http", mode: "sync", label: "TLS terminated at HAProxy" }
+  - { from: "haproxy-direct", to: "web-tier", protocol: "http", mode: "sync", label: "TLS terminated at HAProxy" }
+  - { from: "haproxy-cloudflare", to: "traffic-processor", protocol: "syslog", mode: "async", delivery: "at-most-once", label: "request summaries with timing headers" }
+  - { from: "haproxy-direct", to: "traffic-processor", protocol: "syslog", mode: "async", delivery: "at-most-once", label: "request summaries with timing headers" }
+  - { from: "client", to: "socket-server", protocol: "wss", mode: "async", delivery: "at-most-once", label: "~500k concurrent sockets" }
+  - { from: "web-tier", to: "l1-cache", protocol: "in-process", mode: "sync", label: "L1, checked before Redis" }
+  - { from: "web-tier", to: "redis-master", protocol: "resp", mode: "sync", retryPolicy: "none", batched: true, label: "L2 cache and the light queues" }
+  - { from: "web-tier", to: "purge-channel", protocol: "resp-publish", mode: "async", delivery: "at-most-once", label: "publish key name" }
+  - { from: "purge-channel", to: "web-tier", protocol: "resp-subscribe", mode: "async", delivery: "at-most-once", label: "flush matching L1 entries" }
+  - { from: "redis-master", to: "redis-slave", protocol: "redis-replication", mode: "async", delivery: "at-least-once", label: "one master + one slave per datacenter" }
+  - { from: "web-tier", to: "sql-cluster-1", protocol: "tds", mode: "sync", label: "Dapper over POCOs" }
+  - { from: "web-tier", to: "sql-cluster-2", protocol: "tds", mode: "sync", label: "chat, OpenID, Talent, exception log, other Q&A sites" }
+  - { from: "web-tier", to: "sql-cluster-1-replica", protocol: "tds", mode: "sync", label: "read scaling: send reads to the async replica" }
+  - { from: "sql-cluster-1", to: "sql-cluster-1-replica", protocol: "alwayson", mode: "async", delivery: "at-least-once", label: "async AlwaysOn read replica" }
+  - { from: "sql-cluster-1", to: "sql-cluster-1-dr", protocol: "alwayson-mpls", mode: "async", delivery: "at-least-once", label: "async DR replica over MPLS" }
+  - { from: "sql-cluster-2", to: "sql-cluster-2-replica", protocol: "alwayson", mode: "async", delivery: "at-least-once", label: "async AlwaysOn read replica" }
+  - { from: "web-tier", to: "tag-engine", protocol: "http-sys", mode: "sync", timeoutMs: 1000, fallback: "degraded", label: "tag intersection queries" }
+  - { from: "tag-engine", to: "sql-cluster-1", protocol: "tds", mode: "sync", label: "reload post and tag changes every 2 minutes" }
+  - { from: "web-tier", to: "elasticsearch", protocol: "http", mode: "sync", label: "index inline on write (dual write) and search" }
+  - { from: "web-tier", to: "providence-api", protocol: "http", mode: "sync", fallback: "static", label: "home-page recommendations, job matching" }
+  - { from: "providence-api", to: "providence-redis", protocol: "resp", mode: "sync", label: "predictions, dedicated slaves" }
+  - { from: "providence-ml", to: "providence-redis", protocol: "resp", mode: "async", delivery: "at-most-once", label: "computed predictions written out" }
+  - { from: "http-logging-sql", to: "providence-ml", protocol: "batch", mode: "async", delivery: "at-least-once", batched: true, label: "tag-view deviation features" }
+  - { from: "traffic-processor", to: "http-logging-sql", protocol: "tds", mode: "async", delivery: "at-least-once", batched: true, label: "one summary row per request" }
+  - { from: "traffic-processor", to: "bosun", protocol: "http", mode: "async", delivery: "at-most-once", label: "request metrics" }
+  - { from: "web-tier", to: "bosun", protocol: "http", mode: "async", delivery: "at-most-once", label: "BosunReporter application metrics" }
+  - { from: "opserver", to: "sql-cluster-1", protocol: "tds", mode: "sync", label: "availability-group status polled directly" }
+  - { from: "opserver", to: "redis-master", protocol: "resp", mode: "sync", label: "Redis dashboard" }
+  - { from: "opserver", to: "elasticsearch", protocol: "http", mode: "sync", label: "cluster health" }
+  - { from: "opserver", to: "haproxy-cloudflare", protocol: "haproxy-admin", mode: "sync", label: "backend state" }

@@ -1,0 +1,182 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture 8, clean variant: YouTube's upload, transcoding and playback path —
+# a sharded MySQL serving tier behind Vitess, a jittered multi-level page cache, thumbnails in
+# BigTable, and an asynchronous transcoding pipeline that feeds a CDN and the colo video racks.
+#
+# Fixes relative to youtube-upload-playback.broken.yaml:
+#   - vitess sits between python-app and mysql-shards: the shard routing, connection pooling and
+#     query rewriting live in the proxy, not in application code, and mysql-shards is sharded by
+#     user so writes are no longer aimed at one primary that read replicas cannot help
+#   - zookeeper holds the Vitess topology and is a replicated ensemble, not a single instance
+#   - page-cache declares a ttl eviction policy with jitter (expiry randomised between 18 and
+#     30 hours), which is the documented fix for the synchronised-expiry thundering herd
+#   - upload-service hands transcoding to transcode-queue asynchronously instead of calling the
+#     transcoding farm inline on the upload request
+#   - transcode-queue and extract-queue both declare a dead-letter queue, so a video that cannot
+#     be transcoded is parked instead of retried forever
+# This file MUST trip no rule.
+schemaVersion: "1"
+type: "design"
+id: "youtube-upload-playback"
+
+requirements:
+  latency:
+    p95Ms: 100
+  consistency:
+    model: "ap"
+  freshness:
+    maxSeconds: 1
+  traffic:
+    skew: "heavy-tail"
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "colo", kind: "region", label: "YouTube colo" }
+  - { id: "edge-pop", kind: "point-of-presence", label: "CDN edge" }
+  - { id: "serving-tier", kind: "trust-zone", parent: "colo", label: "Web and video serving tier" }
+  - { id: "data-tier", kind: "trust-zone", parent: "colo", label: "Data tier" }
+  - { id: "upload-pipeline", kind: "system", parent: "colo", label: "Upload and transcoding" }
+
+nodes:
+  - id: "device-client"
+    component: "web-browser"
+    label: "Browser, mobile and TV clients"
+    props: { platform: "multi", localCache: true }
+
+  - id: "netscaler"
+    component: "load-balancer-tier"
+    label: "NetScaler"
+    group: "serving-tier"
+    props: { layer: "l7", healthChecks: true }
+    nfr: { rps: 11574 }
+
+  - id: "apache-frontend"
+    component: "apache-httpd"
+    label: "Apache + mod_fastcgi"
+    group: "serving-tier"
+    props: { mpm: "prefork", lbMethod: "by-requests" }
+
+  - id: "python-app"
+    component: "container-service"
+    label: "Python app servers (Spitfire, psyco)"
+    group: "serving-tier"
+    props: { stateless: true, runtime: "python", criticality: "high" }
+    nfr: { rps: 11574 }
+
+  - id: "page-cache"
+    component: "memcached"
+    label: "Row, object and page caches"
+    group: "serving-tier"
+    props: { evictionPolicy: "ttl", ttlJitter: true, ttlSeconds: 64800, materialised: true, usedAsPrimaryStore: false, persistence: false, invalidation: "ttl" }
+
+  - id: "precompute-jobs"
+    component: "cron-job"
+    label: "Precalculation jobs"
+    group: "serving-tier"
+    props: { trigger: "schedule", idempotent: true, overlapAllowed: false }
+
+  - id: "lighttpd-video"
+    component: "container-service"
+    label: "lighttpd video mini-clusters"
+    group: "serving-tier"
+    props: { stateless: true, runtime: "lighttpd", criticality: "high" }
+
+  - id: "video-cdn"
+    component: "content-delivery-network"
+    label: "CDN (most popular videos)"
+    group: "edge-pop"
+    props: { caching: true, tls: true }
+
+  - id: "upload-service"
+    component: "container-service"
+    label: "Chunked resumable upload service"
+    group: "upload-pipeline"
+    props: { stateless: true, criticality: "high" }
+
+  - id: "transcode-queue"
+    component: "message-queue"
+    label: "Transcode job queue"
+    group: "upload-pipeline"
+    props: { delivery: "at-least-once", deadLetterQueue: true, role: "work", persistence: true }
+
+  - id: "transcoding-farm"
+    component: "container-worker"
+    label: "Transcoding farm (Argos VCU)"
+    group: "upload-pipeline"
+    props: { trigger: "queue", accelerator: "asic", idempotent: true }
+
+  - id: "extract-queue"
+    component: "message-queue"
+    label: "Extraction job queue"
+    group: "upload-pipeline"
+    props: { delivery: "at-least-once", deadLetterQueue: true, role: "work", persistence: true }
+
+  - id: "extractors"
+    component: "container-worker"
+    label: "Thumbnail, caption and metadata extractors"
+    group: "upload-pipeline"
+    props: { trigger: "queue", idempotent: true }
+
+  - id: "vitess"
+    component: "vitess"
+    label: "Vitess (VTGate and VTTablet)"
+    group: "data-tier"
+    props: { pooling: true, poolSharded: true, routing: "shard-key", scatterGather: true }
+
+  - id: "mysql-shards"
+    component: "mysql"
+    label: "MySQL shards (users, videos, subscriptions)"
+    group: "data-tier"
+    props: { sharded: true, shardKey: "user_id", replication: "async", storageEngine: "innodb", backupEnabled: true, backupRetentionDays: 30 }
+    nfr: { consistency: "eventual" }
+
+  - id: "zookeeper"
+    component: "zookeeper"
+    label: "ZooKeeper (Vitess topology)"
+    group: "data-tier"
+    props: { role: "metadata", consensus: "zab", replicated: true }
+
+  - id: "thumbnail-store"
+    component: "bigtable"
+    label: "Thumbnail store (BigTable)"
+    group: "data-tier"
+    props: { model: "wide-column", replication: "multi-region-multi-leader", conflictResolution: "last-writer-wins", appProfileRouting: "multi-cluster", consistency: "eventual" }
+
+  - id: "video-storage"
+    component: "blob-store"
+    label: "Video master and variant storage"
+    group: "data-tier"
+    props: { tier: "hot", checksumOnWrite: true }
+
+  - id: "colo-video-store"
+    component: "blob-store"
+    label: "Colo video racks (long tail)"
+    group: "data-tier"
+    props: { tier: "warm" }
+
+edges:
+  - { from: "device-client", to: "netscaler", protocol: "https", mode: "sync", label: "watch page" }
+  - { from: "netscaler", to: "apache-frontend", protocol: "http", mode: "sync" }
+  - { from: "apache-frontend", to: "python-app", protocol: "fastcgi", mode: "sync", label: "mod_fastcgi" }
+  - { from: "python-app", to: "page-cache", protocol: "memcached", mode: "sync", label: "row, object and page cache" }
+  - { from: "python-app", to: "vitess", protocol: "mysql", mode: "sync", label: "every database request" }
+  - { from: "vitess", to: "mysql-shards", protocol: "mysql", mode: "sync", batched: true, label: "routed by shard key, pooled" }
+  - { from: "vitess", to: "zookeeper", protocol: "zookeeper", mode: "sync", timeoutMs: 1000, label: "topology and locks" }
+  - { from: "python-app", to: "thumbnail-store", protocol: "bigtable-rpc", mode: "sync", label: "60 thumbnails per page" }
+  - { from: "precompute-jobs", to: "vitess", protocol: "mysql", mode: "sync", label: "read source rows" }
+  - { from: "precompute-jobs", to: "page-cache", protocol: "memcached", mode: "async", delivery: "at-least-once", batched: true, label: "push precalculated data" }
+  - { from: "device-client", to: "video-cdn", protocol: "https", mode: "sync", label: "popular videos" }
+  - { from: "device-client", to: "lighttpd-video", protocol: "https", mode: "sync", fallback: "degraded", label: "long tail, 1-20 views per day" }
+  - { from: "lighttpd-video", to: "colo-video-store", protocol: "file", mode: "sync", label: "read from local racks" }
+  - { from: "device-client", to: "upload-service", protocol: "https", mode: "sync", idempotent: true, retryPolicy: "exponential-jitter", circuitBreaker: true, label: "chunked resumable upload" }
+  - { from: "upload-service", to: "video-storage", protocol: "internal", mode: "sync", idempotent: true, label: "store original" }
+  - { from: "upload-service", to: "transcode-queue", protocol: "amqp", mode: "async", delivery: "at-least-once", label: "transcode job" }
+  - { from: "transcode-queue", to: "transcoding-farm", protocol: "amqp", mode: "async", delivery: "at-least-once" }
+  - { from: "transcoding-farm", to: "video-storage", protocol: "internal", mode: "async", delivery: "at-least-once", label: "dozens of resolution and codec variants" }
+  - { from: "transcoding-farm", to: "video-cdn", protocol: "internal", mode: "async", delivery: "at-least-once", label: "distribute popular variants" }
+  - { from: "transcoding-farm", to: "colo-video-store", protocol: "internal", mode: "async", delivery: "at-least-once", label: "distribute long tail" }
+  - { from: "upload-service", to: "extract-queue", protocol: "amqp", mode: "async", delivery: "at-least-once", label: "thumbnail, caption and metadata jobs" }
+  - { from: "extract-queue", to: "extractors", protocol: "amqp", mode: "async", delivery: "at-least-once" }
+  - { from: "extractors", to: "thumbnail-store", protocol: "bigtable-rpc", mode: "sync", idempotent: true, label: "4 thumbnails per video" }
+  - { from: "extractors", to: "vitess", protocol: "mysql", mode: "sync", idempotent: true, label: "write video metadata" }

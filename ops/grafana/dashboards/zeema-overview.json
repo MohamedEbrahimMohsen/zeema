@@ -1,0 +1,1342 @@
+{
+  "uid": "zeema-overview",
+  "title": "Zeema overview",
+  "description": "Traffic, availability, latency and the most used designs.",
+  "tags": [
+    "zeema"
+  ],
+  "timezone": "browser",
+  "editable": true,
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "annotations": {
+    "list": []
+  },
+  "templating": {
+    "list": []
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Requests per second",
+      "description": "Average over the selected range. Covers the whole time range selected at the top of the page, so widening the range widens the measurement. Health checks and metric scrapes are excluded.",
+      "gridPos": {
+        "h": 4,
+        "w": 5,
+        "x": 0,
+        "y": 0
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "zeema-prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(increase(zeema_http_request_duration_seconds_count{section!=\"ops\"}[$__range])) / $__range_s",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "zeema-prometheus"
+          },
+          "instant": true
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "decimals": 2,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Availability",
+      "description": "Share of the selected range in which the server answered Prometheus at all. This is the number that falls when the service is down. Covers the whole time range selected at the top of the page, so widening the range widens the measurement.",
+      "gridPos": {
+        "h": 4,
+        "w": 5,
+        "x": 5,
+        "y": 0
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "zeema-prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "avg_over_time(up{job=\"zeema-web\"}[$__range])",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "zeema-prometheus"
+          },
+          "instant": true
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "decimals": 4,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 0.99
+              },
+              {
+                "color": "green",
+                "value": 0.999
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Downtime in range",
+      "description": "How long the server was unreachable during the selected range. Measured from the scrapes, so a period when Prometheus itself was down counts as unknown, not as downtime.",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 10,
+        "y": 0
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "zeema-prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "(1 - avg_over_time(up{job=\"zeema-web\"}[$__range])) * $__range_s",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "zeema-prometheus"
+          },
+          "instant": true
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 60
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Successful requests",
+      "description": "Share of answered requests that did not fail with a server error. Blind to downtime on its own, which is why Availability sits next to it. Covers the whole time range selected at the top of the page, so widening the range widens the measurement.",
+      "gridPos": {
+        "h": 4,
+        "w": 5,
+        "x": 14,
+        "y": 0
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "zeema-prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(increase(zeema_http_request_duration_seconds_count{section!=\"ops\",status!~\"5..\"}[$__range])) / sum(increase(zeema_http_request_duration_seconds_count{section!=\"ops\"}[$__range]))",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "zeema-prometheus"
+          },
+          "instant": true
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "decimals": 4,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 0.99
+              },
+              {
+                "color": "green",
+                "value": 0.999
+              }
+            ]
+          },
+          "noValue": "no traffic"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Latency, 95th percentile",
+      "description": "Across every request in the selected range. Covers the whole time range selected at the top of the page, so widening the range widens the measurement.",
+      "gridPos": {
+        "h": 4,
+        "w": 5,
+        "x": 19,
+        "y": 0
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "zeema-prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum by (le) (increase(zeema_http_request_duration_seconds_bucket{section!=\"ops\"}[$__range])))",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "zeema-prometheus"
+          },
+          "instant": true
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "decimals": 3,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 0.5
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "noValue": "no traffic"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "Requests per second by section",
+      "description": "Canvas, design page, browse, api and the rest, each as its own line.",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 4
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "zeema-prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (section) (rate(zeema_http_request_duration_seconds_count{section!=\"ops\",section!=\"\"}[5m]))",
+          "legendFormat": "{{section}}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "zeema-prometheus"
+          }
+        }
+      ],
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 11,
+      "type": "timeseries",
+      "title": "Availability and errors over time",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 4
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "zeema-prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "avg_over_time(up{job=\"zeema-web\"}[$__rate_interval])",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "zeema-prometheus"
+          },
+          "legendFormat": "service reachable"
+        },
+        {
+          "refId": "B",
+          "expr": "sum(rate(zeema_http_request_duration_seconds_count{section!=\"ops\",status!~\"5..\"}[$__rate_interval])) / sum(rate(zeema_http_request_duration_seconds_count{section!=\"ops\"}[$__rate_interval]))",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "zeema-prometheus"
+          },
+          "legendFormat": "successful request share"
+        },
+        {
+          "refId": "C",
+          "expr": "sum by (status) (rate(zeema_http_request_duration_seconds_count{section!=\"ops\",status=~\"[45]..\"}[$__rate_interval]))",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "zeema-prometheus"
+          },
+          "legendFormat": "{{status}} per second"
+        }
+      ],
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 0,
+            "showPoints": "never"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": ".*per second"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "reqps"
+              },
+              {
+                "id": "max",
+                "value": null
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "red"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 20,
+      "type": "timeseries",
+      "title": "Latency, all requests",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 12
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "zeema-prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.50, sum by (le) (rate(zeema_http_request_duration_seconds_bucket{section!=\"ops\"}[5m])))",
+          "legendFormat": "p50",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "zeema-prometheus"
+          }
+        },
+        {
+          "refId": "B",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(zeema_http_request_duration_seconds_bucket{section!=\"ops\"}[5m])))",
+          "legendFormat": "p95",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "zeema-prometheus"
+          }
+        },
+        {
+          "refId": "C",
+          "expr": "histogram_quantile(0.99, sum by (le) (rate(zeema_http_request_duration_seconds_bucket{section!=\"ops\"}[5m])))",
+          "legendFormat": "p99",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "zeema-prometheus"
+          }
+        }
+      ],
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 0,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 21,
+      "type": "timeseries",
+      "title": "Latency by API endpoint, 95th percentile",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 12
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "zeema-prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum by (le, route) (rate(zeema_http_request_duration_seconds_bucket{section=~\"api|auth|admin-api\"}[5m])))",
+          "legendFormat": "{{route}}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "zeema-prometheus"
+          }
+        }
+      ],
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 0,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 30,
+      "type": "table",
+      "title": "Top 50 designs by views",
+      "description": "Lifetime totals from the database, not a time window.",
+      "gridPos": {
+        "h": 11,
+        "w": 12,
+        "x": 0,
+        "y": 20
+      },
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "zeema-postgres"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "select d.title as \"Design\", coalesce(u.username, 'zeema') as \"Owner\", d.visibility as \"Visibility\", s.view_count as \"Views\", s.clone_count as \"Clones\" from design_stats s join designs d on d.id = s.design_id left join users u on u.id = d.owner_id where d.deleted_at is null order by s.view_count desc, d.title asc limit 50",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "zeema-postgres"
+          }
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false,
+          "reducer": [
+            "sum"
+          ],
+          "fields": ""
+        },
+        "sortBy": []
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Views"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "gradient"
+                }
+              },
+              {
+                "id": "custom.width",
+                "value": 130
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Clones"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 80
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Visibility"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 90
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 31,
+      "type": "table",
+      "title": "Top 50 designs by clones",
+      "description": "Lifetime totals from the database, not a time window.",
+      "gridPos": {
+        "h": 11,
+        "w": 12,
+        "x": 12,
+        "y": 20
+      },
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "zeema-postgres"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "select d.title as \"Design\", coalesce(u.username, 'zeema') as \"Owner\", d.visibility as \"Visibility\", s.clone_count as \"Clones\", s.view_count as \"Views\" from design_stats s join designs d on d.id = s.design_id left join users u on u.id = d.owner_id where d.deleted_at is null order by s.clone_count desc, d.title asc limit 50",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "zeema-postgres"
+          }
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false,
+          "reducer": [
+            "sum"
+          ],
+          "fields": ""
+        },
+        "sortBy": []
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Clones"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "gradient"
+                }
+              },
+              {
+                "id": "custom.width",
+                "value": 130
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Views"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 80
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Visibility"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 90
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 40,
+      "type": "row",
+      "title": "Content and accounts",
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 31
+      },
+      "panels": [
+        {
+          "id": 41,
+          "type": "stat",
+          "title": "Designs",
+          "gridPos": {
+            "h": 4,
+            "w": 8,
+            "x": 0,
+            "y": 32
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "zeema-prometheus"
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum by (visibility) (zeema_designs_total)",
+              "legendFormat": "{{visibility}}",
+              "instant": true,
+              "datasource": {
+                "type": "prometheus",
+                "uid": "zeema-prometheus"
+              }
+            }
+          ],
+          "options": {
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "colorMode": "value",
+            "graphMode": "none",
+            "textMode": "value_and_name"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "text",
+                    "value": null
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          }
+        },
+        {
+          "id": 42,
+          "type": "stat",
+          "title": "Accounts and sessions",
+          "gridPos": {
+            "h": 4,
+            "w": 8,
+            "x": 8,
+            "y": 32
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "zeema-prometheus"
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "zeema_users_total",
+              "legendFormat": "accounts",
+              "instant": true,
+              "datasource": {
+                "type": "prometheus",
+                "uid": "zeema-prometheus"
+              }
+            },
+            {
+              "refId": "B",
+              "expr": "zeema_sessions_active",
+              "legendFormat": "active sessions",
+              "instant": true,
+              "datasource": {
+                "type": "prometheus",
+                "uid": "zeema-prometheus"
+              }
+            }
+          ],
+          "options": {
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "colorMode": "value",
+            "graphMode": "none",
+            "textMode": "value_and_name"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "text",
+                    "value": null
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          }
+        },
+        {
+          "id": 43,
+          "type": "stat",
+          "title": "Unpublished drafts",
+          "gridPos": {
+            "h": 4,
+            "w": 8,
+            "x": 16,
+            "y": 32
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "zeema-prometheus"
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "zeema_designs_unpublished",
+              "instant": true,
+              "datasource": {
+                "type": "prometheus",
+                "uid": "zeema-prometheus"
+              }
+            }
+          ],
+          "options": {
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "colorMode": "value",
+            "graphMode": "none",
+            "textMode": "auto"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "text",
+                    "value": null
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          }
+        },
+        {
+          "id": 44,
+          "type": "timeseries",
+          "title": "Design writes per minute",
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 36
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "zeema-prometheus"
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum by (kind) (rate(zeema_design_writes_total[15m])) * 60",
+              "legendFormat": "{{kind}}",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "zeema-prometheus"
+              }
+            },
+            {
+              "refId": "B",
+              "expr": "sum by (result) (rate(zeema_signins_total[15m])) * 60",
+              "legendFormat": "sign-in {{result}}",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "zeema-prometheus"
+              }
+            },
+            {
+              "refId": "C",
+              "expr": "sum by (format) (rate(zeema_design_exports_total[15m])) * 60",
+              "legendFormat": "export {{format}}",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "zeema-prometheus"
+              }
+            }
+          ],
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "showPoints": "never"
+              }
+            },
+            "overrides": []
+          }
+        }
+      ]
+    },
+    {
+      "id": 50,
+      "type": "row",
+      "title": "System",
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 32
+      },
+      "panels": [
+        {
+          "id": 51,
+          "type": "timeseries",
+          "title": "Event loop lag",
+          "description": "How long a task waits before Node can run it. Sustained growth means the single thread is saturated.",
+          "gridPos": {
+            "h": 8,
+            "w": 8,
+            "x": 0,
+            "y": 33
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "zeema-prometheus"
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "nodejs_eventloop_lag_p99_seconds{job=\"zeema-web\"}",
+              "legendFormat": "p99",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "zeema-prometheus"
+              }
+            },
+            {
+              "refId": "B",
+              "expr": "nodejs_eventloop_lag_mean_seconds{job=\"zeema-web\"}",
+              "legendFormat": "mean",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "zeema-prometheus"
+              }
+            }
+          ],
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s",
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 0,
+                "showPoints": "never"
+              }
+            },
+            "overrides": []
+          }
+        },
+        {
+          "id": 52,
+          "type": "timeseries",
+          "title": "Process CPU and memory",
+          "gridPos": {
+            "h": 8,
+            "w": 8,
+            "x": 8,
+            "y": 33
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "zeema-prometheus"
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "rate(process_cpu_seconds_total{job=\"zeema-web\"}[5m])",
+              "legendFormat": "cores used",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "zeema-prometheus"
+              }
+            },
+            {
+              "refId": "B",
+              "expr": "process_resident_memory_bytes{job=\"zeema-web\"}",
+              "legendFormat": "resident memory",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "zeema-prometheus"
+              }
+            }
+          ],
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "showPoints": "never"
+              }
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "resident memory"
+                },
+                "properties": [
+                  {
+                    "id": "unit",
+                    "value": "bytes"
+                  },
+                  {
+                    "id": "custom.axisPlacement",
+                    "value": "right"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "id": 53,
+          "type": "timeseries",
+          "title": "Requests in flight",
+          "gridPos": {
+            "h": 8,
+            "w": 8,
+            "x": 16,
+            "y": 33
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "zeema-prometheus"
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "zeema_http_requests_in_flight",
+              "legendFormat": "in flight",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "zeema-prometheus"
+              }
+            }
+          ],
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "showPoints": "never"
+              }
+            },
+            "overrides": []
+          }
+        },
+        {
+          "id": 54,
+          "type": "timeseries",
+          "title": "Database connections",
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 41
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "zeema-prometheus"
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum by (datname) (pg_stat_database_numbackends{datname!=\"\"})",
+              "legendFormat": "{{datname}}",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "zeema-prometheus"
+              }
+            }
+          ],
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "showPoints": "never"
+              }
+            },
+            "overrides": []
+          }
+        },
+        {
+          "id": 55,
+          "type": "timeseries",
+          "title": "Database size",
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 41
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "zeema-prometheus"
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "pg_database_size_bytes{datname!=\"\"}",
+              "legendFormat": "{{datname}}",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "zeema-prometheus"
+              }
+            }
+          ],
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "bytes",
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "showPoints": "never"
+              }
+            },
+            "overrides": []
+          }
+        }
+      ]
+    }
+  ]
+}

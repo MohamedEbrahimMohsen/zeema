@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Cloud Load Balancer for VPC: the application load balancer distributes traffic at layer 7
+# across virtual servers, bare metal servers and Power Systems Virtual Servers, with configurable
+# health monitoring and HTTPS listeners that terminate TLS. A public load balancer "has a public IP
+# address" and a private one "has a private IP address"; round robin, weighted round robin and
+# least connections are the distribution methods ("Creating an application load balancer").
+schemaVersion: "1"
+type: "component"
+id: "ibm-load-balancer"
+kind: "load-balancer"
+provider: "ibm"
+defaults:
+  managed: true
+  layer: "l7"
+  healthChecks: true
+  global: false
+properties:
+  family:
+    type: "enum"
+    values: ["application", "network"]
+  visibility:
+    type: "enum"
+    values: ["public", "private"]
+  tlsTermination:
+    type: "boolean"
+    default: false

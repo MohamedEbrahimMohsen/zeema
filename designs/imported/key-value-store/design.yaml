@@ -1,0 +1,87 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Imported 2026-09-08 from source/key-value-store.md, a transcription of Figure 6-17
+# ("system architecture diagram", page 104) of chapter 6 "Design A Key-Value Store" in
+# System Design Interview - An Insider's Guide (Volume 1), Alex Xu. The book is copyrighted;
+# only the transcription is stored here.
+# Assumptions, all recorded in mapping.yaml and notes.md:
+#   - The nine circles n0-n7 and the coordinator n6 are the same box in the figure: one node of
+#     a decentralised key-value store. All nine map to nosql-store (model key-value).
+#     No product is named; the chapter says the design follows Dynamo, Cassandra and BigTable
+#     but the figure draws an unbranded ring, so the generic component is used.
+#   - The thick grey circle carrying n0-n7 is the consistent-hash ring; it is an unlabelled
+#     boundary, kept as a `system` group (no `ring` group kind exists in v1).
+#   - The four dashed arrows are responses to the four solid arrows. The format has no
+#     "response" edge, so they are ordinary directed edges.
+#   - Protocol "kv" is the get(key) / put(key, value) API the chapter names; no wire protocol
+#     is stated.
+schemaVersion: "1"
+type: "design"
+id: "key-value-store"
+
+requirements:
+  availability:
+    multiRegion: true          # "replicate data across multiple data centers"; survives a data centre outage
+    degradedModeAllowed: true  # sloppy quorum + hinted handoff: offline servers are ignored and a healthy one answers
+    discoveryRedundant: true   # "completely decentralized", "no single point of failure"; membership is gossip-based
+  consistency:
+    model: "ap"                # eventual consistency, the chapter's recommended model (Dynamo, Cassandra)
+  durability:
+    minReplicasAcked: 2        # W = 2 in the chapter's typical configuration N = 3, W = R = 2
+
+groups:
+  - { id: "hash-ring", kind: "system" }
+
+nodes:
+  - id: "client"
+    component: "sdk-client"
+    label: "Client"
+  - id: "n6"
+    component: "nosql-store"
+    label: "n6"
+    group: "hash-ring"
+    props: { model: "key-value", consistency: "tunable", replication: "leaderless", replicationFactor: 3, quorumWrites: 2, quorumReads: 2, conflictResolution: "vector-clock" }
+  - id: "n0"
+    component: "nosql-store"
+    label: "n0"
+    group: "hash-ring"
+    props: { model: "key-value", consistency: "tunable", replication: "leaderless", replicationFactor: 3, quorumWrites: 2, quorumReads: 2, conflictResolution: "vector-clock" }
+  - id: "n1"
+    component: "nosql-store"
+    label: "n1"
+    group: "hash-ring"
+    props: { model: "key-value", consistency: "tunable", replication: "leaderless", replicationFactor: 3, quorumWrites: 2, quorumReads: 2, conflictResolution: "vector-clock" }
+  - id: "n2"
+    component: "nosql-store"
+    label: "n2"
+    group: "hash-ring"
+    props: { model: "key-value", consistency: "tunable", replication: "leaderless", replicationFactor: 3, quorumWrites: 2, quorumReads: 2, conflictResolution: "vector-clock" }
+  - id: "n3"
+    component: "nosql-store"
+    label: "n3"
+    group: "hash-ring"
+    props: { model: "key-value", consistency: "tunable", replication: "leaderless", replicationFactor: 3, quorumWrites: 2, quorumReads: 2, conflictResolution: "vector-clock" }
+  - id: "n4"
+    component: "nosql-store"
+    label: "n4"
+    group: "hash-ring"
+    props: { model: "key-value", consistency: "tunable", replication: "leaderless", replicationFactor: 3, quorumWrites: 2, quorumReads: 2, conflictResolution: "vector-clock" }
+  - id: "n5"
+    component: "nosql-store"
+    label: "n5"
+    group: "hash-ring"
+    props: { model: "key-value", consistency: "tunable", replication: "leaderless", replicationFactor: 3, quorumWrites: 2, quorumReads: 2, conflictResolution: "vector-clock" }
+  - id: "n7"
+    component: "nosql-store"
+    label: "n7"
+    group: "hash-ring"
+    props: { model: "key-value", consistency: "tunable", replication: "leaderless", replicationFactor: 3, quorumWrites: 2, quorumReads: 2, conflictResolution: "vector-clock" }
+
+edges:
+  - { from: "client", to: "n6", protocol: "kv", mode: "sync", label: "read/write" }
+  - { from: "n6", to: "client", protocol: "kv", mode: "sync", label: "response" }
+  - { from: "n6", to: "n0", protocol: "kv", mode: "sync" }
+  - { from: "n0", to: "n6", protocol: "kv", mode: "sync" }
+  - { from: "n6", to: "n1", protocol: "kv", mode: "sync" }
+  - { from: "n1", to: "n6", protocol: "kv", mode: "sync" }
+  - { from: "n6", to: "n2", protocol: "kv", mode: "sync" }
+  - { from: "n2", to: "n6", protocol: "kv", mode: "sync" }

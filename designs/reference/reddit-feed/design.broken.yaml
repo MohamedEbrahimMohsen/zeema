@@ -1,0 +1,214 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture 10, broken variant: the same Reddit stack built the way it was built
+# before the incidents - one job-consumer pool draining the vote, comment and thumbnail queues,
+# none of which dead-letter; a precomputed-listing cache written inline by r2 with no expiry and
+# no rebuild path; and a media metadata store that is one unsharded Aurora writer at 100k rps.
+#
+# This file MUST trip:
+#   - queue-missing-dlq                    (vote-queue, comment-queue and thumbnail-queue all take async traffic with deadLetterQueue false)
+#   - shared-worker-pool-across-queues     (job-consumers drains all three queues while the design requires per-queue isolation)
+#   - cache-missing-eviction-policy        (listing-cache declares evictionPolicy none, so history is kept forever)
+#   - materialised-cache-without-rebuild-path (listing-cache holds materialised listings, written only by r2 and thrift-services)
+#   - single-writer-primary-at-peak-qps    (media-metadata is unsharded and declared at 100000 rps)
+#   - read-replica-as-sole-scaling         (media-metadata scales that read load with async replicas alone)
+# and MUST NOT trip:
+#   - datastore-missing-backup             (thing-db and media-metadata both declare backups and retention)
+#   - datastore-single-region              (the design does not promise multi-region availability)
+#   - derived-store-without-cdc-or-rebuild (search is still fed asynchronously from the Kafka fleet)
+#   - business-updates-without-index-propagation (thing-cdc still streams the Thing tables into Kafka)
+#   - cache-as-primary-store-without-persistence (the listing cache is not declared the only copy)
+#   - fanout-inline-in-request-path        (r2 still hands work to the queues, never to a worker synchronously)
+#   - sync-chain-too-deep                  (the design states no p95 latency target and has no api-gateway node)
+schemaVersion: "1"
+type: "design"
+id: "reddit-feed"
+
+requirements:
+  availability:
+    multiRegion: false
+  consistency:
+    model: "ap"
+  messaging:
+    replay: true
+    orderingScope: "partition"
+  traffic:
+    skew: "heavy-tail"
+  isolation:
+    perQueue: true
+  data:
+    lossDetection: true
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "us-east", kind: "region" }
+  - { id: "edge", kind: "trust-zone", parent: "us-east", label: "CDN and proxy tier" }
+  - { id: "core", kind: "trust-zone", parent: "us-east", label: "r2 and the Thing stores" }
+  - { id: "safety", kind: "system", parent: "us-east", label: "Kafka fleet and REV2 safety engine" }
+
+nodes:
+  - id: "web-client"
+    component: "web-browser"
+    props: { platform: "web", localCache: true }
+
+  - id: "mobile-client"
+    component: "mobile-app"
+    props: { platform: "mobile", os: "both", localCache: true }
+
+  - id: "cdn"
+    component: "content-delivery-network"
+    label: "Fastly"
+    group: "edge"
+    props: { caching: true, edgeCompute: true, tls: true }
+
+  - id: "http-proxy"
+    component: "haproxy"
+    group: "edge"
+    props: { layer: "l7", healthChecks: true, hashing: "round-robin" }
+
+  - id: "r2"
+    component: "container-service"
+    label: "r2"
+    group: "core"
+    props: { instances: 240, criticality: "high", runtime: "python", autoscaling: true }
+
+  - id: "thrift-services"
+    component: "container-service"
+    label: "listing, API and comments services"
+    group: "core"
+    props: { instances: 40, criticality: "high", runtime: "python", orchestrator: "kubernetes", autoscaling: true }
+
+  - id: "memcache"
+    component: "memcached"
+    label: "memcache (sgm, pagecache, rendercache)"
+    group: "core"
+    props: { evictionPolicy: "lru", hashing: "consistent", invalidation: "ttl", ttlSeconds: 3600 }
+
+  - id: "listing-cache"
+    component: "cache-cluster"
+    label: "precomputed listings"
+    group: "core"
+    props: { evictionPolicy: "none", materialised: true, usedAsPrimaryStore: false, structure: "sorted-set", invalidation: "none", hashing: "none" }
+
+  - id: "thing-db"
+    component: "postgres"
+    label: "ThingDB (thing + data tables)"
+    group: "core"
+    props: { sharded: true, shardKey: "thing_type", replication: "async", replicaFanout: 12, backupEnabled: true, backupRetentionDays: 30, encryptionAtRest: true, managed: false }
+    nfr: { consistency: "eventual" }
+
+  - id: "cassandra"
+    component: "cassandra"
+    group: "core"
+    props: { model: "key-value", consistency: "tunable", replication: "single-region", replicationFactor: 3, backupEnabled: true, backupRetentionDays: 30 }
+
+  - id: "vote-queue"
+    component: "rabbitmq"
+    group: "core"
+    props: { delivery: "at-least-once", ordering: "none", deadLetterQueue: false, persistence: false, role: "work" }
+
+  - id: "comment-queue"
+    component: "rabbitmq"
+    group: "core"
+    props: { delivery: "at-least-once", ordering: "none", deadLetterQueue: false, persistence: false, role: "work" }
+
+  - id: "thumbnail-queue"
+    component: "rabbitmq"
+    group: "core"
+    props: { delivery: "at-least-once", deadLetterQueue: false, persistence: false, role: "work" }
+
+  - id: "job-consumers"
+    component: "container-worker"
+    label: "one job-consumer pool"
+    group: "core"
+    props: { trigger: "queue", instances: 24, idempotent: false }
+
+  - id: "search"
+    component: "aws-cloudsearch"
+    label: "search (Solr, then CloudSearch)"
+    group: "core"
+    props: { structure: "inverted", indexing: "batch", replicas: 2 }
+
+  - id: "metadata-pool"
+    component: "pgbouncer"
+    group: "core"
+    props: { pooling: true, poolMode: "session", routing: "none" }
+
+  - id: "media-metadata"
+    component: "aurora"
+    label: "media metadata store"
+    group: "core"
+    props: { engine: "postgresql", sharded: false, replication: "async", backupEnabled: true, backupRetentionDays: 7, encryptionAtRest: true }
+    nfr: { rps: 100000, consistency: "strong" }
+
+  - id: "media-objects"
+    component: "s3"
+    group: "core"
+    props: { zones: 3, durabilityNines: 11, versioning: true, storageClass: "standard" }
+
+  - id: "thing-cdc"
+    component: "kafka-connect"
+    label: "change events from the source systems"
+    group: "safety"
+    props: { mode: "log-based", ordered: true, connectorDirection: "source", deploymentMode: "distributed" }
+
+  - id: "kafka"
+    component: "kafka"
+    label: "Kafka fleet (500+ brokers)"
+    group: "safety"
+    props: { partitions: 512, replicationFactor: 3, minInsyncReplicas: 2, acks: "all", retentionHours: 168, schemaEnforced: true, consumerGroups: true, idempotentProducer: true }
+
+  - id: "safety-engine"
+    component: "flink"
+    label: "REV2 (Stateful Functions)"
+    group: "safety"
+    props: { windowing: "none", stateBackend: "rocksdb", checkpointIntervalSeconds: 60, exactlyOnce: true, instances: 40 }
+
+  - id: "rule-endpoints"
+    component: "container-service"
+    label: "Python rule endpoints (Lua rules)"
+    group: "safety"
+    props: { instances: 20, orchestrator: "kubernetes", autoscaling: true, criticality: "high", runtime: "python" }
+
+  - id: "migration-validator"
+    component: "container-worker"
+    label: "dual-write validation consumer"
+    group: "safety"
+    props: { trigger: "stream", instances: 4, idempotent: true }
+
+edges:
+  - { from: "web-client", to: "cdn", protocol: "https", mode: "sync", label: "page request" }
+  - { from: "mobile-client", to: "cdn", protocol: "https", mode: "sync", label: "app request" }
+  - { from: "cdn", to: "http-proxy", protocol: "http", mode: "sync", label: "miss and logged-in traffic" }
+  - { from: "http-proxy", to: "r2", protocol: "http", mode: "sync", timeoutMs: 5000 }
+  - { from: "http-proxy", to: "thrift-services", protocol: "thrift", mode: "sync", timeoutMs: 3000 }
+  - { from: "r2", to: "memcache", protocol: "memcached", mode: "sync", timeoutMs: 50, label: "one page, many calls" }
+  - { from: "r2", to: "listing-cache", protocol: "memcached", mode: "sync", timeoutMs: 50, label: "read and rewrite the listing inline" }
+  - { from: "r2", to: "thing-db", protocol: "postgres", mode: "sync", timeoutMs: 500, label: "thing and data tables, sharded by type" }
+  - { from: "r2", to: "cassandra", protocol: "cql", mode: "sync", timeoutMs: 200, label: "durable high-write features" }
+  - { from: "r2", to: "search", protocol: "http", mode: "sync", timeoutMs: 1000, label: "query" }
+  - { from: "r2", to: "vote-queue", protocol: "amqp", mode: "async", delivery: "at-least-once", label: "vote" }
+  - { from: "r2", to: "comment-queue", protocol: "amqp", mode: "async", delivery: "at-least-once", label: "comment" }
+  - { from: "r2", to: "thumbnail-queue", protocol: "amqp", mode: "async", delivery: "at-least-once", label: "thumbnail job" }
+  - { from: "vote-queue", to: "job-consumers", protocol: "amqp", mode: "async", delivery: "at-least-once" }
+  - { from: "comment-queue", to: "job-consumers", protocol: "amqp", mode: "async", delivery: "at-least-once" }
+  - { from: "thumbnail-queue", to: "job-consumers", protocol: "amqp", mode: "async", delivery: "at-least-once" }
+  - { from: "job-consumers", to: "thing-db", protocol: "postgres", mode: "sync", timeoutMs: 500, label: "apply vote" }
+  - { from: "job-consumers", to: "cassandra", protocol: "cql", mode: "sync", timeoutMs: 500, label: "rebuild comment tree" }
+  - { from: "job-consumers", to: "media-objects", protocol: "https", mode: "sync", label: "store thumbnail" }
+  - { from: "thrift-services", to: "memcache", protocol: "memcached", mode: "sync", timeoutMs: 50 }
+  - { from: "thrift-services", to: "listing-cache", protocol: "memcached", mode: "sync", timeoutMs: 50, label: "listing service read and write" }
+  - { from: "thrift-services", to: "metadata-pool", protocol: "postgres", mode: "sync", timeoutMs: 100, label: "media metadata, 100k rps" }
+  - { from: "metadata-pool", to: "media-metadata", protocol: "postgres", mode: "sync", timeoutMs: 100, label: "pooled connections to one writer" }
+  - { from: "thrift-services", to: "media-objects", protocol: "https", mode: "sync", timeoutMs: 2000, label: "media file" }
+  - { from: "thing-db", to: "thing-cdc", protocol: "postgres-wal", mode: "async", delivery: "at-least-once", label: "change events" }
+  - { from: "thing-cdc", to: "kafka", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "source-system change topic" }
+  - { from: "kafka", to: "migration-validator", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "dual-write comparison" }
+  - { from: "migration-validator", to: "metadata-pool", protocol: "postgres", mode: "sync", timeoutMs: 200, label: "dual read, compare" }
+  - { from: "kafka", to: "search", protocol: "http", mode: "async", delivery: "at-least-once", batched: true, label: "index documents" }
+  - { from: "r2", to: "kafka", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "posts and comments, protobuf" }
+  - { from: "thrift-services", to: "kafka", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "posts and comments, protobuf" }
+  - { from: "kafka", to: "safety-engine", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "ingress topics, replay by offset reset" }
+  - { from: "safety-engine", to: "rule-endpoints", protocol: "http", mode: "sync", timeoutMs: 1000, label: "dispatch to remote Lua rule" }
+  - { from: "safety-engine", to: "kafka", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "per-action-type egress topics" }
+  - { from: "rule-endpoints", to: "media-objects", protocol: "https", mode: "sync", timeoutMs: 2000, label: "poll rule bundles pushed from GitHub CI" }

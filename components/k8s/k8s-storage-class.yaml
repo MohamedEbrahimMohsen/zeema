@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Kubernetes StorageClass: names a provisioner and its parameters so PersistentVolumeClaims can be
+# satisfied dynamically. Per "Storage Classes" reclaimPolicy defaults to Delete, so a dynamically
+# provisioned volume is destroyed with its claim; volumeBindingMode defaults to Immediate, binding
+# and provisioning as soon as the claim is created rather than waiting for a consuming Pod;
+# allowVolumeExpansion is unset, so claims cannot be resized; and a class is only the cluster
+# default when annotated storageclass.kubernetes.io/is-default-class: "true".
+schemaVersion: "1"
+type: "component"
+id: "k8s-storage-class"
+kind: "block-storage"
+provider: "k8s"
+defaults:
+  managed: false
+properties:
+  reclaimPolicy:
+    type: "enum"
+    values: ["delete", "retain"]
+    default: "delete"
+  volumeBindingMode:
+    type: "enum"
+    values: ["immediate", "wait-for-first-consumer"]
+    default: "immediate"
+  allowVolumeExpansion:
+    type: "boolean"
+    default: false
+  isDefaultClass:
+    type: "boolean"
+    default: false

@@ -1,0 +1,217 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Datadog Husky, clean variant: the observability intake pipeline and the third-generation
+# event store behind it — Kafka Streams, a deterministic Shard Router, stateless Writers and
+# Compactors over S3 fragments, FoundationDB as the strongly consistent metadata source of
+# truth, and a Planner/Orchestrator/Reader query plane fronted by three cache tiers.
+#
+# Fixes relative to datadog-husky.broken.yaml:
+#   - intake-service publishes to intake-stream (Kafka) instead of calling shard-router
+#     synchronously, so routing and sharding stay off the intake request path
+#   - query-orchestrator does not declare a consistent-hash ring that nothing owns; shard
+#     placement is owned by sharding-allocator and assigner, which are coordination services
+#   - metadata-store is a single-region FoundationDB cluster, the strongly consistent source
+#     of truth the sources describe, not a multi-leader cluster spanning regions
+#   - result-cache is a cache, not a store: usedAsPrimaryStore false, every fragment lives in
+#     blob-store and every visible fragment is recorded in metadata-store
+# This file MUST trip no rule.
+schemaVersion: "1"
+type: "design"
+id: "datadog-husky"
+
+requirements:
+  availability:
+    multiRegion: true
+    regions: 5
+  messaging:
+    replay: true
+    exactlyOnce: true
+  consistency:
+    model: "cp"
+    readAfterWrite: true
+  isolation:
+    tenancy: "shared"
+  traffic:
+    skew: "heavy-tail"
+  data:
+    lossDetection: true
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "customer-hosts", kind: "trust-zone", label: "Customer infrastructure" }
+  - { id: "us1", kind: "region", label: "US1" }
+  - { id: "intake-edge", kind: "trust-zone", label: "Public intake", parent: "us1" }
+  - { id: "streaming-platform", kind: "system", label: "Streaming Platform", parent: "us1" }
+  - { id: "husky-storage", kind: "system", label: "Husky storage plane", parent: "us1" }
+  - { id: "husky-query", kind: "system", label: "Husky query plane", parent: "us1" }
+
+nodes:
+  - id: "datadog-agent"
+    component: "sdk-client"
+    label: "Datadog Agent"
+    group: "customer-hosts"
+    props: { platform: "sdk", resendPolicy: "retry", localCache: true }
+
+  - id: "query-client"
+    component: "web-browser"
+    label: "Datadog app and public API clients"
+    props: { platform: "web" }
+
+  - id: "intake-lb"
+    component: "load-balancer-tier"
+    label: "Intake load balancer"
+    group: "intake-edge"
+    props: { layer: "l7", healthChecks: true, global: false }
+
+  - id: "intake-service"
+    component: "container-service"
+    label: "Intake"
+    group: "intake-edge"
+    props: { orchestrator: "kubernetes", stateless: true, autoscaling: true, criticality: "high", ownsData: false }
+
+  - id: "intake-stream"
+    component: "kafka"
+    label: "Stream (per-priority lanes)"
+    group: "streaming-platform"
+    props: { delivery: "at-least-once", ordering: "per-key", acks: "all", storage: "persistent" }
+
+  - id: "dlq-lane"
+    component: "kafka"
+    label: "DLQ lane"
+    group: "streaming-platform"
+    props: { delivery: "at-least-once", ordering: "per-key", acks: "all", storage: "persistent" }
+
+  - id: "assigner"
+    component: "apache-helix"
+    label: "Assigner"
+    group: "streaming-platform"
+    props: { role: "placement", consensus: "none", replicated: true, stateModel: "custom" }
+
+  - id: "shard-router"
+    component: "container-worker"
+    label: "Shard Router"
+    group: "streaming-platform"
+    props: { trigger: "stream", orchestrator: "kubernetes", idempotent: true }
+
+  - id: "sharding-allocator"
+    component: "apache-helix"
+    label: "Sharding Allocator"
+    group: "streaming-platform"
+    props: { role: "sharding", consensus: "none", replicated: true, stateModel: "custom" }
+
+  - id: "autosharder"
+    component: "container-worker"
+    label: "Autosharder"
+    group: "streaming-platform"
+    props: { trigger: "schedule", orchestrator: "kubernetes", idempotent: true }
+
+  - id: "shard-stream"
+    component: "kafka"
+    label: "Shard topics"
+    group: "streaming-platform"
+    props: { delivery: "at-least-once", ordering: "per-key", acks: "all", storage: "persistent" }
+
+  - id: "husky-writers"
+    component: "container-worker"
+    label: "Husky Writers"
+    group: "husky-storage"
+    props: { trigger: "stream", orchestrator: "kubernetes", idempotent: true }
+
+  - id: "husky-compactors"
+    component: "container-worker"
+    label: "Husky Compactors"
+    group: "husky-storage"
+    props: { trigger: "schedule", orchestrator: "kubernetes", idempotent: true }
+
+  - id: "metadata-service"
+    component: "container-service"
+    label: "Metadata Service"
+    group: "husky-storage"
+    props: { orchestrator: "kubernetes", stateless: true, autoscaling: true, criticality: "high", ownsData: true }
+
+  - id: "metadata-store"
+    component: "foundationdb"
+    label: "FoundationDB metadata store"
+    group: "husky-storage"
+    props: { model: "key-value", consistency: "strong", replication: "single-region", redundancyMode: "triple", storageEngine: "ssd", encryptionAtRest: true }
+    nfr: { consistency: "strong" }
+
+  - id: "blob-store"
+    component: "s3"
+    label: "Blob storage (fragments)"
+    group: "husky-storage"
+    props: { zones: 3, replication: "erasure-coded", tier: "hot", storageClass: "standard", strongReadAfterWrite: true, checksumOnWrite: true, encryptionAtRest: true, durabilityNines: 11 }
+
+  - id: "query-planner"
+    component: "container-service"
+    label: "Query Planner"
+    group: "husky-query"
+    props: { orchestrator: "kubernetes", stateless: true, autoscaling: true, criticality: "high", ownsData: false }
+
+  - id: "query-orchestrator"
+    component: "container-service"
+    label: "Query Orchestrator"
+    group: "husky-query"
+    props: { orchestrator: "kubernetes", stateless: true, autoscaling: true, criticality: "high", ownsData: false }
+
+  - id: "husky-readers"
+    component: "container-service"
+    label: "Reader Service"
+    group: "husky-query"
+    props: { orchestrator: "kubernetes", stateless: true, autoscaling: true, criticality: "high", ownsData: false }
+    nfr: { latencyP95Ms: 20 }
+
+  - id: "result-cache"
+    component: "cache-cluster"
+    label: "Result cache"
+    group: "husky-query"
+    props: { evictionPolicy: "lru", persistence: true, invalidation: "none", usedAsPrimaryStore: false, materialised: false, structure: "key-value", tier: "core" }
+
+  - id: "blob-range-cache"
+    component: "cache-cluster"
+    label: "Blob range cache"
+    group: "husky-query"
+    props: { evictionPolicy: "lru", persistence: true, invalidation: "none", usedAsPrimaryStore: false, structure: "key-value", tier: "core" }
+
+  - id: "predicate-cache"
+    component: "cache-cluster"
+    label: "Predicate cache"
+    group: "husky-query"
+    props: { evictionPolicy: "lru", persistence: false, invalidation: "none", usedAsPrimaryStore: false, structure: "key-value", tier: "core" }
+
+  - id: "k8s-fleet"
+    component: "kubernetes"
+    label: "Node fleet (Cilium CNI, Watermark Pod Autoscaler)"
+    group: "us1"
+    props: { cniPlugin: "cilium", autoscaling: true, managed: false, networkPolicy: true }
+
+edges:
+  - { from: "datadog-agent", to: "intake-lb", protocol: "https", mode: "sync", batched: true, label: "ship logs, traces, RUM, NPM, profiles" }
+  - { from: "intake-lb", to: "intake-service", protocol: "http", mode: "sync" }
+  - { from: "intake-service", to: "intake-stream", protocol: "kafka", mode: "async", delivery: "at-least-once", batched: true, label: "publish payload, intake-in to intake-out" }
+  - { from: "intake-stream", to: "shard-router", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "consume via libstreaming" }
+  - { from: "shard-router", to: "sharding-allocator", protocol: "rpc", mode: "sync", label: "placement for tenant and timestamp" }
+  - { from: "sharding-allocator", to: "metadata-store", protocol: "foundationdb", mode: "sync", idempotent: true, label: "immutable shard placements" }
+  - { from: "autosharder", to: "sharding-allocator", protocol: "rpc", mode: "async", label: "raise or lower per-tenant shard count" }
+  - { from: "shard-router", to: "shard-stream", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "deterministic routing to the shard partition" }
+  - { from: "shard-router", to: "dlq-lane", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "poison event copied aside" }
+  - { from: "assigner", to: "shard-router", protocol: "rpc", mode: "async", label: "multi-cluster partition assignment" }
+  - { from: "assigner", to: "husky-writers", protocol: "rpc", mode: "async", label: "multi-cluster partition assignment" }
+  - { from: "shard-stream", to: "husky-writers", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "one writer owns a shard partition set" }
+  - { from: "husky-writers", to: "blob-store", protocol: "s3", mode: "sync", idempotent: true, label: "write fragment, page in event-ID intervals" }
+  - { from: "husky-writers", to: "metadata-service", protocol: "rpc", mode: "sync", idempotent: true, label: "event data and event IDs in one transaction" }
+  - { from: "husky-compactors", to: "metadata-store", protocol: "foundationdb", mode: "sync", idempotent: true, label: "scan small fragments, swap inputs for outputs" }
+  - { from: "husky-compactors", to: "blob-store", protocol: "s3", mode: "sync", batched: true, label: "1 GET per input fragment, PUT the merged fragment" }
+  - { from: "metadata-service", to: "metadata-store", protocol: "foundationdb", mode: "sync", label: "chunked under the 5 s transaction limit" }
+  - { from: "query-client", to: "query-planner", protocol: "https", mode: "sync", label: "query" }
+  - { from: "query-planner", to: "query-orchestrator", protocol: "rpc", mode: "sync", label: "one step per time slice" }
+  - { from: "query-orchestrator", to: "metadata-service", protocol: "rpc", mode: "sync", label: "fragment metadata, then prune" }
+  - { from: "query-orchestrator", to: "husky-readers", protocol: "rpc", mode: "sync", label: "fragment queries, consistent hash plus shuffle shard" }
+  - { from: "husky-readers", to: "result-cache", protocol: "in-process", mode: "sync", label: "whole fragment-query results, 80% hit" }
+  - { from: "husky-readers", to: "blob-range-cache", protocol: "in-process", mode: "sync", label: "byte ranges, 70% hit" }
+  - { from: "husky-readers", to: "predicate-cache", protocol: "in-process", mode: "sync", label: "evaluated predicates, 3% hit, efficiency 11" }
+  - { from: "husky-readers", to: "blob-store", protocol: "s3", mode: "sync", label: "byte-range GET, 0.4% of fragment queries" }
+  - { from: "husky-readers", to: "query-orchestrator", protocol: "rpc", mode: "async", label: "partial aggregates streamed back" }
+  - { from: "query-orchestrator", to: "query-planner", protocol: "rpc", mode: "async", label: "merge sub-results progressively" }
+  - { from: "k8s-fleet", to: "husky-readers", protocol: "internal", mode: "async", label: "Watermark Pod Autoscaler on CPU" }
+  - { from: "k8s-fleet", to: "husky-writers", protocol: "internal", mode: "async", label: "Watermark Pod Autoscaler, shard exclusions" }

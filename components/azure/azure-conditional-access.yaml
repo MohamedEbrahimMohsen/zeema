@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Microsoft Entra Conditional Access: the tenant-wide policy engine that turns identity, device, location
+# and risk signals into grant or block decisions ("Microsoft Entra Conditional Access: Zero Trust Policy
+# Engine"). That page states policies are enforced after first-factor authentication is completed and that a
+# policy is either enabled or report-only. It names no default effect or enforcement mode, so neither is set.
+schemaVersion: "1"
+type: "component"
+id: "azure-conditional-access"
+kind: "policy-engine"
+provider: "azure"
+defaults:
+  managed: true
+  scope: "organization"
+properties:
+  policyState:
+    type: "enum"
+    values: ["on", "off", "report-only"]
+  enforcedAfterFirstFactor:
+    type: "boolean"
+    default: true

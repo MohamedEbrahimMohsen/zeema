@@ -1,2 +1,14 @@
-.claude/tools/node_modules/
-.claude/scheduled_tasks.lock
+node_modules/
+dist/
+.next/
+.turbo/
+*.log
+.env
+.env.local
+.DS_Store
+coverage/
+apps/web/data/*.db
+apps/web/.pglite/
+work/
+__pycache__/
+backups/

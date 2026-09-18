@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# On-premises data gateway: a Windows client application installed on your own machine that bridges local
+# data sources to Power BI, Power Automate, Power Apps, Logic Apps, Fabric and Azure Analysis Services
+# ("What is an on-premises data gateway?"). That page states it opens only outbound connections and needs no
+# inbound ports, comes in a shared standard mode and a single-user personal mode, caps write payloads at
+# 2 MB, and supports at most 1,000 data sources per gateway cluster.
+schemaVersion: "1"
+type: "component"
+id: "azure-on-premises-data-gateway"
+kind: "edge-appliance"
+provider: "azure"
+defaults:
+  managed: false
+  cloudManaged: true
+  connectivity: "connected"
+  offlineMode: false
+  formFactor: "virtual"
+properties:
+  mode:
+    type: "enum"
+    values: ["standard", "personal"]
+  inboundPortsRequired:
+    type: "boolean"
+    default: false
+  maxDataSources:
+    type: "integer"
+    default: 1000
+  writePayloadLimitMb:
+    type: "integer"
+    default: 2

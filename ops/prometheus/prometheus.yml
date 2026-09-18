@@ -1,0 +1,24 @@
+# What Prometheus collects. Targets are compose service names on the internal network, so
+# nothing here has to be published to the host.
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    stack: zeema
+
+scrape_configs:
+  - job_name: zeema-web
+    metrics_path: /api/metrics
+    authorization:
+      type: Bearer
+      credentials_file: /etc/prometheus/metrics-token
+    static_configs:
+      - targets: ["web:3000"]
+
+  - job_name: postgres
+    static_configs:
+      - targets: ["postgres-exporter:9187"]
+
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]

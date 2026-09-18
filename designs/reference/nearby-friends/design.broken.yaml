@@ -1,0 +1,149 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture, broken variant: the same nearby-friends location stream, built by a
+# team that autoscales the stateful WebSocket tier like a stateless one, looks the pub/sub ring
+# up in a single ZooKeeper node on every connect, keeps live locations in a cache with no
+# eviction, and never backs up the user and friendship database.
+#
+# This file MUST trip:
+#   - stateful-websocket-scale-in-without-drain  (websocket-server autoscales, drainOnScaleIn false)
+#   - reconnect-stampede-without-guard           (websocket-server queries zookeeper synchronously, stampedeGuard false)
+#   - cache-missing-eviction-policy              (location-cache declares no evictionPolicy: Redis defaults to noeviction)
+#   - shared-dependency-without-redundancy       (zookeeper replicated false while discoveryRedundant is required)
+#   - datastore-missing-backup                   (user-db backupEnabled false, no retention)
+# and MUST NOT trip:
+#   - cache-as-primary-store-without-persistence (location-cache is not the primary copy; location-history is)
+#   - materialised-cache-without-rebuild-path    (the cache holds raw latest positions, not a materialised view)
+#   - pubsub-replay-required                     (the design never requires messaging.replay; lost updates are re-sent in 30 s)
+#   - datastore-single-region, read-heavy-path-without-cache (single region by design; two caches exist)
+#   - credentials-without-rotation               (the Zenly system group has a key-management node)
+#   - sync-chain-too-deep                        (no api-gateway node; the edge is a load balancer)
+#   - stateful-node-without-zone-redundancy, stateful-engine-pinned-to-single-zone (no availability-zone groups)
+#   - queue-missing-dlq, retry-without-backoff, derived-store-without-cdc-or-rebuild (no queue, retry queue or search index)
+schemaVersion: "1"
+type: "design"
+id: "nearby-friends"
+
+requirements:
+  availability:
+    multiRegion: false
+    discoveryRedundant: true
+  consistency:
+    model: "ap"
+  latency:
+    p95Ms: 300
+  freshness:
+    maxSeconds: 600
+
+groups:
+  - { id: "book-region", kind: "region", label: "Single region (book design)" }
+  - { id: "edge-tier", kind: "trust-zone", parent: "book-region", label: "Public edge" }
+  - { id: "core-tier", kind: "trust-zone", parent: "book-region", label: "Backend" }
+  - { id: "zenly-production", kind: "system", label: "Zenly on Google Cloud" }
+
+nodes:
+  - id: "mobile-client"
+    component: "mobile-app"
+    label: "Mobile client"
+    props: { platform: "mobile", os: "both", localCache: true, persistentConnection: true }
+
+  - id: "load-balancer"
+    component: "load-balancer-tier"
+    label: "Load balancer"
+    group: "edge-tier"
+    props: { layer: "l7", healthChecks: true, connectionPreserving: true }
+
+  - id: "rest-api"
+    component: "container-service"
+    label: "RESTful API servers"
+    group: "core-tier"
+    props: { stateless: true, orchestrator: "none", criticality: "high" }
+
+  - id: "websocket-server"
+    component: "websocket-gateway"
+    label: "WebSocket servers"
+    group: "core-tier"
+    props: { protocol: "websocket", stateful: true, autoscaling: true, drainOnScaleIn: false, stampedeGuard: false, subscriptionsPerUser: 400 }
+    nfr: { rps: 334000 }
+
+  - id: "redis-pubsub"
+    component: "redis-pubsub"
+    label: "Redis pub/sub cluster"
+    group: "core-tier"
+    props: { cluster: true, delivery: "at-most-once", replay: false, ordering: "per-key", topicPerEventType: false }
+    nfr: { rps: 14000000 }
+
+  - id: "location-cache"
+    component: "redis"
+    label: "Location cache"
+    group: "core-tier"
+    props: { cluster: true, structure: "key-value", invalidation: "none", usedAsPrimaryStore: false, materialised: false, persistence: false }
+
+  - id: "user-db"
+    component: "relational-database"
+    label: "User database"
+    group: "core-tier"
+    props: { backupEnabled: false }
+
+  - id: "location-history"
+    component: "cassandra"
+    label: "Location history database"
+    group: "core-tier"
+    props: { model: "wide-column", consistency: "tunable", replication: "single-region", partitionKey: "user_id" }
+
+  - id: "zookeeper"
+    component: "zookeeper"
+    label: "ZooKeeper"
+    group: "core-tier"
+    props: { role: "discovery", consensus: "zab", replicated: false, nodes: 1 }
+
+  - id: "zenly-location-service"
+    component: "container-service"
+    label: "Zenly location processing (GKE)"
+    group: "zenly-production"
+    props: { stateless: true, orchestrator: "kubernetes", autoscaling: true, criticality: "high" }
+    nfr: { latencyP95Ms: 300 }
+
+  - id: "zenly-scylla"
+    component: "scylladb"
+    label: "Scylla on Compute Engine"
+    group: "zenly-production"
+    props: { model: "wide-column", consistency: "tunable", replication: "single-region" }
+
+  - id: "zenly-kms"
+    component: "google-cloud-kms"
+    label: "Cloud KMS"
+    group: "zenly-production"
+    props: { managed: true, envelopeEncryption: true }
+
+  - id: "zenly-data-lake"
+    component: "gcs"
+    label: "Cloud Storage data lake"
+    group: "zenly-production"
+    props: { locationType: "region", storageClass: "standard", tier: "hot" }
+
+  - id: "zenly-bigquery"
+    component: "bigquery"
+    label: "BigQuery"
+    group: "zenly-production"
+    props: { streamingInserts: false, realtime: false }
+
+edges:
+  - { from: "mobile-client", to: "load-balancer", protocol: "https", mode: "sync", label: "REST calls and WebSocket handshake" }
+  - { from: "load-balancer", to: "rest-api", protocol: "http", mode: "sync", label: "friends, profiles, auth" }
+  - { from: "load-balancer", to: "websocket-server", protocol: "websocket", mode: "async", label: "place the connection, sticky for its lifetime" }
+  - { from: "mobile-client", to: "websocket-server", protocol: "websocket", mode: "async", delivery: "at-most-once", label: "location every 30 s" }
+  - { from: "websocket-server", to: "rest-api", protocol: "http", mode: "sync", label: "friend list at connection init" }
+  - { from: "websocket-server", to: "location-cache", protocol: "redis", mode: "sync", idempotent: true, label: "latest lat/long with TTL" }
+  - { from: "websocket-server", to: "location-history", protocol: "cql", mode: "async", delivery: "at-least-once", label: "append location history" }
+  - { from: "websocket-server", to: "redis-pubsub", protocol: "redis", mode: "async", delivery: "at-most-once", label: "publish to the user's own channel" }
+  - { from: "websocket-server", to: "redis-pubsub", protocol: "redis", mode: "sync", label: "subscribe to every friend's channel at init" }
+  - { from: "redis-pubsub", to: "websocket-server", protocol: "redis", mode: "async", delivery: "at-most-once", label: "fan-out to the friends' connection handlers" }
+  - { from: "websocket-server", to: "mobile-client", protocol: "websocket", mode: "async", delivery: "at-most-once", label: "push a friend's location if within the radius" }
+  - { from: "websocket-server", to: "zookeeper", protocol: "zookeeper", mode: "sync", label: "ring lookup on every connect" }
+  - { from: "redis-pubsub", to: "zookeeper", protocol: "zookeeper", mode: "async", delivery: "at-most-once", label: "pub/sub server join and leave" }
+  - { from: "rest-api", to: "user-db", protocol: "sql", mode: "sync", label: "users and friendships" }
+  - { from: "mobile-client", to: "zenly-location-service", protocol: "https", mode: "async", delivery: "at-least-once", label: "Zenly: update processed in under 300 ms" }
+  - { from: "zenly-location-service", to: "zenly-scylla", protocol: "cql", mode: "sync", idempotent: true, label: "primary data store" }
+  - { from: "zenly-location-service", to: "zenly-kms", protocol: "https", mode: "sync", label: "envelope keys" }
+  - { from: "zenly-location-service", to: "zenly-data-lake", protocol: "https", mode: "async", delivery: "at-least-once", batched: true, label: "several TB a day" }
+  - { from: "zenly-data-lake", to: "zenly-bigquery", protocol: "https", mode: "async", delivery: "at-least-once", batched: true, label: "daily load for live dashboards" }

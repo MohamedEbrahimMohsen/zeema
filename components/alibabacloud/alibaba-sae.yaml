@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Serverless App Engine (SAE): "an easy-to-use, fully managed, and highly elastic platform that hosts
+# applications with zero code modification" ("What is Serverless App Engine SAE"). That page states SAE is
+# built on Kubernetes and combines the serverless architecture with the Spring Cloud, Dubbo and HSF
+# microservices frameworks, accepts WAR, JAR and ZIP packages and container images, works with Java, PHP and
+# Python, and scales within seconds under elastic policies on CPU, memory, QPS and response time. Those
+# policies are configured rather than on by default, so autoscaling is left to the kind.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-sae"
+kind: "app-server"
+provider: "alibabacloud"
+defaults:
+  managed: true
+properties:
+  microservicesFramework:
+    type: "enum"
+    values: ["none", "spring-cloud", "dubbo", "hsf"]
+  deploymentPackage:
+    type: "enum"
+    values: ["war", "jar", "zip", "image"]
+  scalingMetric:
+    type: "enum"
+    values: ["cpu", "memory", "qps", "response-time", "schedule"]

@@ -1,0 +1,19 @@
+{
+ "k8s-cronjob": "cronjob",
+ "k8s-deployment": "deploy",
+ "k8s-daemonset": "ds",
+ "k8s-job": "job",
+ "k8s-pod": "pod",
+ "k8s-replicaset": "rs",
+ "k8s-statefulset": "sts",
+ "k8s-endpoints": "ep",
+ "k8s-ingress": "ing",
+ "k8s-network-policy": "netpol",
+ "k8s-service": "svc",
+ "k8s-config-map": "cm",
+ "k8s-secret": "secret",
+ "k8s-persistent-volume": "pv",
+ "k8s-persistent-volume-claim": "pvc",
+ "k8s-storage-class": "sc",
+ "k8s-volume": "vol"
+}

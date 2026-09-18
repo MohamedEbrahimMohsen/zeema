@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Tablestore: serverless structured-data store on the Apsara distributed system.
+# "What is Tablestore?": the Wide Column model is the table model, alongside TimeSeries, Timeline
+# and AI models, and data tables can be encrypted. "Tablestore: Fully Managed NoSQL Cloud Database
+# Service": three copies of data with high consistency, 99.99% availability and eleven nines of data
+# reliability, in either a high-performance or a capacity instance.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-tablestore"
+kind: "nosql-database"
+provider: "alibabacloud"
+defaults:
+  model: "wide-column"
+  consistency: "strong"
+  replication: "single-region"
+  replicationFactor: 3
+  managed: true
+properties:
+  instanceType:
+    type: "enum"
+    values: ["high-performance", "capacity"]
+  dataModel:
+    type: "enum"
+    values: ["wide-column", "timeseries", "timeline", "ai"]
+    default: "wide-column"
+  reliabilityNines:
+    type: "integer"
+    default: 11
+  maxTablesPerInstance:
+    type: "integer"
+    default: 64

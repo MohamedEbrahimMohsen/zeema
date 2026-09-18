@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AnalyticDB: a real-time cloud-native data warehouse offered as AnalyticDB for MySQL and AnalyticDB for
+# PostgreSQL ("Introduction to AnalyticDB"). "What is AnalyticDB for MySQL?" calls it a fully managed data
+# warehouse on a data lakehouse architecture where data becomes queryable milliseconds after it is written,
+# which is why realtime is true, and lists an Enterprise Edition (multi-replica, reserved nodes in multiples
+# of three) and a Basic Edition (single replica).
+schemaVersion: "1"
+type: "component"
+id: "alibaba-analyticdb"
+kind: "data-warehouse"
+provider: "alibabacloud"
+defaults:
+  managed: true
+  realtime: true
+properties:
+  engine:
+    type: "enum"
+    values: ["mysql", "postgresql"]
+  edition:
+    type: "enum"
+    values: ["basic", "enterprise"]

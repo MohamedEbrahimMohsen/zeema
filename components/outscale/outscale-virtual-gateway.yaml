@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OUTSCALE virtual gateway: the entry and exit point on the OUTSCALE side of a site-to-site
+# VPN, attached to a Net ("About Virtual Gateways"). That page states one virtual gateway per
+# Net and up to five client gateways connected to it; "About VPN Connections" states the
+# tunnel is encrypted with IPsec, stays down until the client gateway sends traffic, and that
+# redundancy comes from creating several VPN connections.
+schemaVersion: "1"
+type: "component"
+id: "outscale-virtual-gateway"
+kind: "vpn-gateway"
+provider: "outscale"
+defaults:
+  managed: true
+  peerType: "site-to-site"
+  tunnelType: "ipsec"
+  activeActive: false
+properties:
+  virtualGatewaysPerNet:
+    type: "integer"
+    default: 1
+  clientGatewaysPerVirtualGateway:
+    type: "integer"
+    default: 5
+  tunnelInitiatedByClientGateway:
+    type: "boolean"
+    default: true

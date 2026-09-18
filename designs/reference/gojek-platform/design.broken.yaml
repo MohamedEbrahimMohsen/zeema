@@ -1,0 +1,222 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Gojek super-app platform, broken variant: driver locations back on the single PostgreSQL
+# table that re-indexed on every update, allocation retrying geo-search on a bare fixed
+# interval, an unsigned Courier webhook, Ziggurat retries with no dead-set queue, and Dagger
+# windowing by event time with no watermark.
+#
+# This file MUST trip:
+#   - single-writer-primary-at-peak-qps          (driver-location-db: one unsharded Postgres writer at 10000 rps)
+#   - retry-without-adaptive-shedding            (allocations-service -> available-driver-service retries fixed, no circuit breaker, no rate limiter)
+#   - webhook-without-signature-or-idempotency   (courier-webhook verifies nothing and deduplicates nothing)
+#   - retry-queue-without-dlq                    (rabbitmq-retry is a retry queue with no dead-set queue)
+#   - queue-missing-dlq                          (same queue, async in-edge from ziggurat-consumer)
+#   - windowed-aggregation-without-watermark     (dagger windows by event time with no watermark)
+# and MUST NOT trip:
+#   - retry-without-backoff                      (rabbitmq-retry still declares Ziggurat's linear/fixed backoff)
+#   - datastore-missing-backup, read-replica-as-sole-scaling, datastore-single-region
+#                                                (driver-location-db is backed up, has no read replicas, and multiRegion is false)
+#   - cache-missing-eviction-policy, cache-as-primary-store-without-persistence,
+#     materialised-cache-without-rebuild-path    (no cache node is left in this variant)
+#   - read-heavy-path-without-cache              (the design states no read/write ratio)
+#   - credentials-without-rotation               (security.credentialRotationDays is still declared)
+#   - sync-chain-too-deep                        (the rule selects api-gateway nodes; the ingress here is a load-balancer)
+#   - fanout-inline-in-request-path              (no app-server calls a worker synchronously)
+#   - derived-store-without-cdc-or-rebuild, business-updates-without-index-propagation
+#                                                (no search index in this design)
+#   - reconnect-stampede-without-guard, stateful-websocket-scale-in-without-drain,
+#     shared-host-per-channel-without-isolation  (Courier is an iot-hub, not a realtime-gateway)
+#   - queue/pubsub replay, money, cell and zone rules (no such nodes, groups or requirements)
+schemaVersion: "1"
+type: "design"
+id: "gojek-platform"
+
+requirements:
+  availability:
+    multiRegion: false
+    degradedModeAllowed: true
+  consistency:
+    model: "ap"
+  messaging:
+    replay: true
+    orderingScope: "partition"
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "edge", kind: "trust-zone", label: "GCLB and HAProxy edge" }
+  - { id: "product", kind: "vpc", label: "product namespace" }
+  - { id: "data-engineering", kind: "vpc", label: "Data Engineering namespace" }
+
+nodes:
+  - id: "gojek-app"
+    component: "mobile-app"
+    label: "Customer, driver and merchant apps"
+    props: { platform: "mobile", os: "both", persistentConnection: true, localCache: true, resendPolicy: "retry" }
+
+  - id: "gclb"
+    component: "google-cloud-load-balancing"
+    label: "Google Cloud Load Balancer"
+    group: "edge"
+    props: { layer: "l4", scheme: "external", global: true, connectionPreserving: true }
+
+  - id: "haproxy"
+    component: "haproxy"
+    label: "HAProxy"
+    group: "edge"
+    props: { layer: "l4", healthChecks: true, connectionPreserving: true }
+
+  - id: "vernemq"
+    component: "vernemq"
+    label: "Courier (VerneMQ cluster)"
+    group: "edge"
+    props: { protocol: "mqtt", clustering: true, allowAnonymous: false, deviceCount: 1000000 }
+
+  - id: "courier-webhook"
+    component: "webhook-receiver"
+    label: "WebHook server"
+    group: "edge"
+    props: { signatureVerified: false, idempotent: false, retriedByCaller: true }
+
+  - id: "nginx-ingress"
+    component: "nginx"
+    label: "Nginx ingress controller"
+    group: "edge"
+    props: { layer: "l7", healthChecks: true, global: false }
+
+  - id: "booking-service"
+    component: "container-service"
+    group: "product"
+    props: { orchestrator: "kubernetes", criticality: "high", autoscaling: true }
+
+  - id: "allocations-service"
+    component: "container-service"
+    label: "Allocations"
+    group: "product"
+    props: { orchestrator: "kubernetes", runtime: "clojure", criticality: "high" }
+
+  - id: "available-driver-service"
+    component: "container-service"
+    label: "Available Driver Service"
+    group: "product"
+    props: { orchestrator: "kubernetes", criticality: "high", autoscaling: true }
+    nfr: { rps: 13333, consistency: "eventual" }
+
+  - id: "booking-termination-worker"
+    component: "container-worker"
+    group: "product"
+    props: { trigger: "queue", idempotent: true, orchestrator: "kubernetes" }
+
+  - id: "booking-termination-queue"
+    component: "message-queue"
+    group: "product"
+    props: { delivery: "at-least-once", role: "work", deadLetterQueue: true, persistence: true, backoff: "exponential" }
+
+  - id: "driver-location-db"
+    component: "postgres"
+    label: "PostgreSQL (driver locations)"
+    group: "product"
+    props: { sharded: false, multiWriter: false, replication: "none", backupEnabled: true, backupRetentionDays: 30, encryptionAtRest: true }
+    nfr: { rps: 10000 }
+
+  - id: "booking-history"
+    component: "cassandra"
+    group: "product"
+    props: { model: "wide-column", consistency: "eventual", partitionKey: "customer_id", replication: "single-region" }
+
+  - id: "fronting-rest"
+    component: "container-service"
+    label: "Fronting REST"
+    group: "data-engineering"
+    props: { orchestrator: "kubernetes", criticality: "high" }
+
+  - id: "fronting-kafka"
+    component: "kafka"
+    label: "Fronting Kafka"
+    group: "data-engineering"
+    props: { delivery: "at-least-once", ordering: "per-key", storage: "persistent", consumerGroups: true }
+
+  - id: "fronting-worker"
+    component: "container-worker"
+    label: "Fronting Worker"
+    group: "data-engineering"
+    props: { trigger: "stream", idempotent: true }
+
+  - id: "data-streams"
+    component: "kafka"
+    label: "Data streams (Locstream, Logstream, Tagstream)"
+    group: "data-engineering"
+    props: { delivery: "at-least-once", ordering: "per-key", storage: "persistent", schemaEnforced: true, consumerGroups: true }
+
+  - id: "mirror-stream"
+    component: "kafka"
+    label: "Mirror stream"
+    group: "data-engineering"
+    props: { delivery: "at-least-once", ordering: "per-key", storage: "persistent", consumerGroups: true }
+
+  - id: "ziggurat-consumer"
+    component: "kafka-streams"
+    label: "Ziggurat consumer apps"
+    group: "data-engineering"
+    props: { windowing: "none", stateBackend: "rocksdb", exactlyOnce: false }
+
+  - id: "rabbitmq-retry"
+    component: "rabbitmq"
+    label: "Ziggurat RabbitMQ retry queues"
+    group: "data-engineering"
+    props: { delivery: "at-least-once", role: "retry", deadLetterQueue: false, backoff: "fixed", maxAttempts: 3, persistence: true }
+
+  - id: "dagger"
+    component: "flink"
+    label: "Dagger"
+    group: "data-engineering"
+    props: { windowing: "event-time", stateBackend: "rocksdb", exactlyOnce: false }
+
+  - id: "firehose"
+    component: "container-worker"
+    label: "Firehose"
+    group: "data-engineering"
+    props: { trigger: "stream", idempotent: true, orchestrator: "kubernetes" }
+
+  - id: "sakaar"
+    component: "container-worker"
+    label: "Sakaar / Secor"
+    group: "data-engineering"
+    props: { trigger: "stream", idempotent: false }
+
+  - id: "cold-storage"
+    component: "gcs"
+    label: "Google Cloud Storage (parquet)"
+    group: "data-engineering"
+    props: { storageClass: "standard", locationType: "region", versioning: false }
+
+edges:
+  - { from: "gojek-app", to: "gclb", protocol: "mqtt", mode: "async", delivery: "at-least-once", label: "persistent MQTT connection" }
+  - { from: "gclb", to: "haproxy", protocol: "tcp", mode: "async", label: "opaque TCP with ProxyProtocol" }
+  - { from: "haproxy", to: "vernemq", protocol: "mqtt", mode: "async", label: "broker decodes ProxyProtocol first" }
+  - { from: "vernemq", to: "courier-webhook", protocol: "http", mode: "async", label: "connect, publish and ACK plugin events" }
+  - { from: "courier-webhook", to: "data-streams", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "ACK events" }
+  - { from: "data-streams", to: "firehose", protocol: "kafka", mode: "async", delivery: "at-least-once" }
+  - { from: "firehose", to: "booking-service", protocol: "http", mode: "async", delivery: "at-least-once", label: "message was ACKed by the phone" }
+  - { from: "booking-service", to: "haproxy", protocol: "mqtt", mode: "async", delivery: "at-least-once", label: "push order, 3-minute accept window" }
+  - { from: "gojek-app", to: "available-driver-service", protocol: "http", mode: "async", label: "driver location pings every couple of seconds" }
+  - { from: "booking-service", to: "nginx-ingress", protocol: "http", mode: "sync", timeoutMs: 1000, retryPolicy: "exponential-jitter", circuitBreaker: true, label: "VM range to Kubernetes overlay (Heimdall)" }
+  - { from: "nginx-ingress", to: "allocations-service", protocol: "http", mode: "sync", label: "host-based routing" }
+  - { from: "allocations-service", to: "available-driver-service", protocol: "http", mode: "sync", timeoutMs: 1000, retryPolicy: "fixed", label: "candidate drivers, retried every 15 seconds" }
+  - { from: "available-driver-service", to: "driver-location-db", protocol: "postgres", mode: "sync", label: "600k location writes/min, re-indexed on every update" }
+  - { from: "booking-service", to: "booking-termination-queue", protocol: "amqp", mode: "async", delivery: "at-least-once", label: "terminate booking off the request path" }
+  - { from: "booking-termination-queue", to: "booking-termination-worker", protocol: "amqp", mode: "async", delivery: "at-least-once" }
+  - { from: "booking-termination-worker", to: "booking-service", protocol: "http", mode: "async", retryPolicy: "exponential-jitter", circuitBreaker: true, idempotent: true, label: "debit, credit, release driver, award points" }
+  - { from: "booking-termination-worker", to: "booking-history", protocol: "cassandra", mode: "sync", idempotent: true, label: "record completed booking" }
+  - { from: "booking-service", to: "booking-history", protocol: "cassandra", mode: "sync", timeoutMs: 1000, label: "two-month booking history" }
+  - { from: "booking-service", to: "fronting-rest", protocol: "http", mode: "sync", timeoutMs: 1000, batched: true, label: "publish events, single or batched" }
+  - { from: "fronting-rest", to: "fronting-kafka", protocol: "kafka", mode: "async", delivery: "at-least-once" }
+  - { from: "fronting-kafka", to: "fronting-worker", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "lag grows instead of data being lost" }
+  - { from: "fronting-worker", to: "data-streams", protocol: "kafka", mode: "async", delivery: "at-least-once" }
+  - { from: "data-streams", to: "mirror-stream", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "mirror for replay and aggregation" }
+  - { from: "data-streams", to: "ziggurat-consumer", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "250+ consumer services" }
+  - { from: "ziggurat-consumer", to: "rabbitmq-retry", protocol: "amqp", mode: "async", delivery: "at-least-once", label: "failed message, infinite reconnect" }
+  - { from: "rabbitmq-retry", to: "ziggurat-consumer", protocol: "amqp", mode: "async", delivery: "at-least-once", label: "instant queue replays after the delay TTL" }
+  - { from: "data-streams", to: "dagger", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "windowed SQL aggregation" }
+  - { from: "dagger", to: "data-streams", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "aggregated application sink" }
+  - { from: "data-streams", to: "sakaar", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "offsets committed only after upload" }
+  - { from: "sakaar", to: "cold-storage", protocol: "gcs", mode: "async", delivery: "at-least-once", batched: true, label: "parquet, hourly partitions" }

@@ -1,0 +1,158 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture: Figma multiplayer editing, clean variant. One authoritative in-memory
+# process per open file fanning property-level changes over WebSockets, durability from S3
+# checkpoints plus a DynamoDB write-ahead journal behind a conditional-write file lock, and
+# file metadata served from sharded Postgres through DBProxy and LiveGraph subscriptions.
+#
+# Fixes relative to figma-multiplayer.broken.yaml:
+#   - the per-file document process is not pinned to one availability zone; the design declares
+#     no zone boundary at all, so a lost zone does not take the only copy of a file's authority
+#   - the shard topology store (etcd) is replicated and spans no single zone
+#   - multiplayer-network does not autoscale, and drains connections on scale-in
+#   - the client resends unacknowledged changes as at-least-once idempotent traffic instead of
+#     retrying on a blind exponential policy with no circuit breaker
+#   - livegraph-cache declares an eviction policy
+#   - metadata-shards declares backups and a retention window
+# This file MUST trip no rule.
+schemaVersion: "1"
+type: "design"
+id: "figma-multiplayer"
+
+requirements:
+  availability:
+    multiRegion: false
+  consistency:
+    model: "cp"
+  latency:
+    geoDistributed: true
+  correctness:
+    reproducible: true
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "us-west-2", kind: "region", label: "Oregon (us-west-2)" }
+  - { id: "replica-region", kind: "region", label: "S3 replication target region" }
+  - { id: "realtime", kind: "trust-zone", parent: "us-west-2", label: "Multiplayer cluster" }
+  - { id: "durability", kind: "trust-zone", parent: "us-west-2", label: "Durability" }
+  - { id: "metadata", kind: "trust-zone", parent: "us-west-2", label: "Metadata" }
+  - { id: "livegraph", kind: "trust-zone", parent: "us-west-2", label: "LiveGraph" }
+
+nodes:
+  - id: "figma-client"
+    component: "web-browser"
+    label: "Figma editor (C++ compiled to WebAssembly)"
+    props: { platform: "web", localCache: true, offlineCapable: true, persistentConnection: true, resendPolicy: "retry" }
+
+  - id: "multiplayer-network"
+    component: "websocket-gateway"
+    group: "realtime"
+    label: "Multiplayer network layer (Node.js)"
+    props: { protocol: "websocket", stateful: true, channelAssignment: "hash", autoscaling: false, drainOnScaleIn: true, stampedeGuard: true }
+
+  - id: "document-process"
+    component: "container-service"
+    group: "realtime"
+    label: "Multiplayer document process (Rust)"
+    props: { stateless: false, instancePerEntity: true, singleWriter: true, runtime: "rust", criticality: "high", ownsData: true }
+
+  - id: "livegraph-edge"
+    component: "websocket-gateway"
+    group: "livegraph"
+    label: "LiveGraph Edge"
+    props: { protocol: "websocket", stateful: true, channelAssignment: "hash", autoscaling: false, drainOnScaleIn: true, stampedeGuard: true }
+
+  - id: "web-app"
+    component: "container-service"
+    group: "metadata"
+    label: "Figma web application"
+    props: { stateless: true, criticality: "high", ownsData: false }
+
+  - id: "dbproxy"
+    component: "pgcat"
+    group: "metadata"
+    label: "DBProxy"
+    props: { pooling: true, queryParser: true, sharding: true, routing: "shard-key", scatterGather: true, hedging: true, loadShedding: true }
+
+  - id: "pgbouncer"
+    component: "pgbouncer"
+    group: "metadata"
+    label: "PgBouncer connection pooling layer"
+    props: { pooling: true, routing: "none" }
+
+  - id: "topology-store"
+    component: "etcd"
+    group: "metadata"
+    label: "Database topology"
+    props: { role: "sharding", consensus: "raft", replicated: true }
+
+  - id: "livegraph-invalidator"
+    component: "debezium"
+    group: "livegraph"
+    label: "LiveGraph Invalidator"
+    props: { mode: "log-based", ordered: true, deployment: "server" }
+
+  - id: "livegraph-cache"
+    component: "cache-cluster"
+    group: "livegraph"
+    label: "LiveGraph Cache"
+    props: { evictionPolicy: "lru", invalidation: "event", hashing: "consistent", structure: "key-value", tier: "core", persistence: false, usedAsPrimaryStore: false, materialised: false, replication: "none" }
+
+  - id: "file-lock"
+    component: "dynamodb"
+    group: "durability"
+    label: "File lock (conditional write)"
+    props: { model: "key-value", consistency: "strong", replication: "single-region", conflictResolution: "last-writer-wins", partitionKey: "fileKey", globalTables: false }
+
+  - id: "journal"
+    component: "dynamodb"
+    group: "durability"
+    label: "Write-ahead journal"
+    props: { model: "key-value", consistency: "strong", replication: "single-region", conflictResolution: "last-writer-wins", partitionKey: "fileKey", globalTables: false }
+
+  - id: "checkpoint-store"
+    component: "s3"
+    group: "durability"
+    label: "File checkpoints"
+    props: { storageClass: "standard", versioning: true, crossRegionReplication: true, zones: 3 }
+
+  - id: "checkpoint-replica"
+    component: "s3"
+    group: "replica-region"
+    label: "Replicated checkpoints"
+    props: { storageClass: "standard", versioning: true, zones: 3 }
+
+  - id: "metadata-shards"
+    component: "aws-rds"
+    group: "metadata"
+    label: "Horizontally sharded Postgres (colos)"
+    props: { engine: "postgres", sharded: true, shardKey: "userId/fileId/orgId", multiWriter: false, distributed: false, replication: "async", multiAz: true, encryptionAtRest: true, publiclyAccessible: false, deletionProtection: true, backupEnabled: true, backupRetentionDays: 7 }
+
+  - id: "metadata-replicas"
+    component: "aws-rds"
+    group: "metadata"
+    label: "Read replicas"
+    props: { engine: "postgres", sharded: true, replication: "async", multiAz: true, encryptionAtRest: true, publiclyAccessible: false, backupEnabled: true, backupRetentionDays: 7 }
+
+edges:
+  - { from: "figma-client", to: "multiplayer-network", protocol: "wss", mode: "async", delivery: "at-least-once", idempotent: true, label: "edits applied optimistically, unacked changes resent" }
+  - { from: "multiplayer-network", to: "document-process", protocol: "stdio", mode: "sync", label: "message protocol over stdin/stdout, one process per file" }
+  - { from: "document-process", to: "multiplayer-network", protocol: "stdio", mode: "async", delivery: "at-most-once", label: "property-level fan-out" }
+  - { from: "multiplayer-network", to: "figma-client", protocol: "wss", mode: "async", delivery: "at-most-once", label: "fan-out to every editor, full resync on reconnect" }
+  - { from: "document-process", to: "file-lock", protocol: "dynamodb", mode: "sync", idempotent: true, label: "conditional write, one writer per file" }
+  - { from: "document-process", to: "journal", protocol: "dynamodb", mode: "async", delivery: "at-least-once", batched: true, idempotent: true, label: "journal batch every ~500 ms, recovery replays higher sequence numbers" }
+  - { from: "document-process", to: "checkpoint-store", protocol: "https", mode: "async", delivery: "at-least-once", label: "encode, compress and upload every 30-60 s, recovery loads the latest checkpoint" }
+  - { from: "checkpoint-store", to: "checkpoint-replica", protocol: "s3-replication", mode: "async", delivery: "at-least-once", label: "cross-region replication, every change checkpointed within 30 min" }
+  - { from: "figma-client", to: "web-app", protocol: "https", mode: "sync", label: "files, teams, comments" }
+  - { from: "web-app", to: "dbproxy", protocol: "postgres", mode: "sync", label: "SQL" }
+  - { from: "dbproxy", to: "topology-store", protocol: "grpc", mode: "sync", label: "logical to physical shard map" }
+  - { from: "dbproxy", to: "pgbouncer", protocol: "postgres", mode: "sync", label: "pooled connections" }
+  - { from: "pgbouncer", to: "metadata-shards", protocol: "postgres", mode: "sync", label: "routed query, scatter-gather when no shard key" }
+  - { from: "pgbouncer", to: "metadata-replicas", protocol: "postgres", mode: "sync", label: "read queries" }
+  - { from: "metadata-shards", to: "metadata-replicas", protocol: "streaming-replication", mode: "async", label: "replication" }
+  - { from: "metadata-shards", to: "livegraph-invalidator", protocol: "postgres-replication", mode: "async", delivery: "at-least-once", label: "single replication stream per shard" }
+  - { from: "livegraph-invalidator", to: "livegraph-cache", protocol: "grpc", mode: "async", delivery: "at-least-once", label: "targeted invalidations to the owning cache shard" }
+  - { from: "figma-client", to: "livegraph-edge", protocol: "wss", mode: "async", label: "view subscriptions" }
+  - { from: "livegraph-edge", to: "livegraph-cache", protocol: "grpc", mode: "sync", label: "expand view into queries, subscribe" }
+  - { from: "livegraph-cache", to: "dbproxy", protocol: "postgres", mode: "sync", label: "read-through on miss or invalidation" }
+  - { from: "livegraph-edge", to: "figma-client", protocol: "wss", mode: "async", delivery: "at-most-once", label: "re-fetched view results" }

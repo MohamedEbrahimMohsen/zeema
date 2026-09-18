@@ -1,8 +1,8 @@
-# Arkore tooling for the `.claude` skills
+# Zeema tooling for the `.claude` skills
 
-Helper scripts used by `.claude/skills/arkore-design-import` and
-`.claude/skills/arkore-catalogue-add`. They are maintenance tooling for the catalogue, not part
-of the Arkore format and not the future linter. v1 of the repository ships no product code;
+Helper scripts used by `.claude/skills/zeema-design-import` and
+`.claude/skills/zeema-catalogue-add`. They are maintenance tooling for the catalogue, not part
+of the Zeema format and not the future linter. v1 of the repository ships no product code;
 these scripts only read and write the YAML, Markdown and SVG that make up the specification.
 
 Setup once (Node 20+ and Python 3 with PyYAML):
@@ -15,17 +15,20 @@ Run everything from the repository root.
 
 | Command | Purpose |
 |---|---|
-| `node .claude/tools/validate.mjs` | Whole repository: schemas, kinds, components, locale both ways, icons, rules, reference designs (must trip exactly their header rules), imported designs under `references/designs/`. Ends with `all checks passed` or lists problems and exits 1. |
+| `node .claude/tools/validate.mjs` | Whole repository: schemas, kinds, components, locale both ways, icons, rules, reference designs (must trip exactly their header rules), imported designs under `designs/imported/`. Ends with `all checks passed` or lists problems and exits 1. |
 | `node .claude/tools/validate.mjs --design <file>` | One design: schema, references, then the rules that fire with their messages. Exits 1 only on structural problems. |
 | `python .claude/tools/catalogue.py find <words>` | Components and inventory rows matching the words (name, id, description). Inventory hits show `skip:` reasons. |
 | `python .claude/tools/catalogue.py component <id>` | Print a component and its effective property set. |
 | `python .claude/tools/catalogue.py kind <id>` / `kinds` / `providers <kind>` | Kind properties and components per provider; all kinds; provider coverage of one kind. |
 | `python .claude/tools/catalogue.py inventory <words>` | Inventory rows only. |
 | `python .claude/tools/install_kinds.py <proposal.yaml>` | Install kind proposals: `kinds/<id>.yaml`, locale entry, glyph in `kindglyphs-extra.mjs`, row in `docs/catalogue-v1.md`. Existing ids are skipped. |
-| `python .claude/tools/arkore_locale.py add <snippet.yaml>` / `check` / `prune` | Merge locale entries into `locales/en.yaml` (kept sorted); report or drop entries without files. |
+| `python .claude/tools/zeema_locale.py add <snippet.yaml>` / `check` / `prune` | Merge locale entries into `locales/en.yaml` (kept sorted); report or drop entries without files. |
+| `node .claude/tools/k8s-icons/convert.mjs <map.json>` | Fit official Kubernetes resource icons (kubernetes/community, Apache-2.0) into the 24-unit contract and install them under `icons/components/k8s/`; `map.json` maps component id to source icon name. |
 | `node .claude/tools/icons.mjs [--force]` | Write missing kind icons and component icons (badge from `badges-extra.json`, then `providers.mjs`, then the provider folder). |
 | `python .claude/tools/design_to_mermaid.py <design.yaml> [-o diagram.md]` | Render a design as a Mermaid flowchart (groups as subgraphs, sync solid, async dotted). |
-| `python .claude/tools/check_fidelity.py references/designs/<name>` | Prove an imported design matches its `mapping.yaml`: counts, every item mapped both ways, labels verbatim, no unmapped items. |
+| `node .claude/tools/check_icon_paths.mjs` | Walk every `d` attribute in `icons/` command by command and fail on a path a browser would refuse to draw. |
+| `python .claude/tools/design_to_svg.py <design.yaml> [-o out.svg]` | Render a design as a standalone SVG: boxes carrying the real component icon, coloured by the kind's category, dashed group frames, solid arrows for sync and dashed for async. Layout is computed (layered ranks, barycentre ordering, group members on one rank); the format stores none. |
+| `python .claude/tools/check_fidelity.py designs/imported/<name>` | Prove an imported design matches its `mapping.yaml`: counts, every item mapped both ways, labels verbatim, no unmapped items. |
 
 Data files:
 

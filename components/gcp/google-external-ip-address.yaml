@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# External IP address: a publicly advertised, internet-reachable address assigned to a Google Cloud resource
+# ("IP addresses" in the VPC documentation). That page states Google Cloud assigns an ephemeral address when
+# you don't specify one and that the address is released when the resource stops or is deleted, that a
+# reserved static address persists until you release it, and that external IPv4 addresses are regional apart
+# from the global external IPv4 addresses used by the premium-tier global load balancers.
+schemaVersion: "1"
+type: "component"
+id: "google-external-ip-address"
+kind: "network-fabric"
+provider: "gcp"
+defaults:
+  managed: true
+  interconnect: "public"
+properties:
+  addressType:
+    type: "enum"
+    values: ["ephemeral", "static"]
+    default: "ephemeral"
+  scope:
+    type: "enum"
+    values: ["regional", "global"]
+    default: "regional"
+  ipVersion:
+    type: "enum"
+    values: ["ipv4", "ipv6"]

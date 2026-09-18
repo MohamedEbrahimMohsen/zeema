@@ -1,0 +1,197 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture: Khan Academy's "Goliath" rewrite — a Python 2 App Engine monolith and
+# ~40 Go services behind one Apollo-federated graphql-gateway that routes each GraphQL field to
+# whichever backend the @migrate directive names, with a memcache-backed content store and a
+# GKE/BigQuery analytics platform fed off the serving path by Pub/Sub.
+#
+# Fixes relative to khan-academy-goliath.broken.yaml:
+#   - exercise attempts are published to exercise-feed-topic (Pub/Sub) and pushed to the
+#     exercise-feed-service, so analytics never sits on the request path
+#   - content-memcache is a cache, not the system of record: content-revisions holds the
+#     durable entities and publish-job rewrites the cache, so it has a rebuild path
+#   - both memcache tiers declare an eviction policy, so an overloaded cache evicts instead of
+#     rejecting writes and pushing every read through to Datastore
+#   - dataflow declares no event-time windowing: the pipelines the source describes load the
+#     warehouse, they do not aggregate event-time windows without a watermark
+# This file MUST trip no rule.
+schemaVersion: "1"
+type: "design"
+id: "khan-academy-goliath"
+
+requirements:
+  availability:
+    multiRegion: false
+  freshness:
+    maxSeconds: 1
+  consistency:
+    model: "ap"
+  data:
+    ownershipExclusive: true
+
+groups:
+  - { id: "fastly-edge-network", kind: "point-of-presence", label: "Fastly edge" }
+  - { id: "google-cloud", kind: "system", label: "Google Cloud" }
+  - { id: "app-engine", kind: "trust-zone", parent: "google-cloud", label: "Google App Engine" }
+  - { id: "gcp-data", kind: "trust-zone", parent: "google-cloud", label: "Datastore and Memcache" }
+  - { id: "analytics", kind: "trust-zone", parent: "google-cloud", label: "Analytics platform (GKE, per-pipeline service accounts)" }
+
+nodes:
+  - id: "browser-client"
+    component: "web-browser"
+    label: "Learner browser (React SPA)"
+    props: { platform: "web", localCache: true }
+
+  - id: "fastly-edge"
+    component: "fastly"
+    group: "fastly-edge-network"
+    label: "Fastly"
+    props: { caching: true, tls: true, managed: true, instantPurge: true }
+
+  - id: "react-ssr"
+    component: "container-service"
+    group: "app-engine"
+    label: "React server-side rendering"
+    props: { stateless: true, runtime: "node", criticality: "high" }
+
+  - id: "graphql-gateway"
+    component: "envoy-gateway"
+    group: "app-engine"
+    label: "graphql-gateway (Apollo Federation)"
+    props: { protocol: "http", tls: true, managed: false, gatewayApi: false }
+
+  - id: "python-monolith"
+    component: "google-app-engine-standard"
+    group: "app-engine"
+    label: "webapp (Python 2 monolith, ~1.04M lines)"
+    props: { runtime: "python2", stateless: true, autoscaling: true, criticality: "high", scalingType: "automatic" }
+
+  - id: "go-services"
+    component: "google-app-engine-standard"
+    group: "app-engine"
+    label: "Go services (~40, gqlgen)"
+    props: { runtime: "go", stateless: true, autoscaling: true, criticality: "high", ownsData: true }
+
+  - id: "content-service"
+    component: "google-app-engine-standard"
+    group: "app-engine"
+    label: "content service (Go)"
+    props: { runtime: "go", stateless: true, autoscaling: true, ownsData: true }
+
+  - id: "migration-config"
+    component: "unleash"
+    group: "app-engine"
+    label: "@migrate state: manual / side-by-side / canary / migrated"
+    props: { stagedRollout: true, killSwitches: true }
+
+  - id: "datastore"
+    component: "nosql-store"
+    group: "gcp-data"
+    label: "Google Cloud Datastore (user, progress, content entities)"
+    props: { model: "document", managed: true, consistency: "eventual" }
+
+  - id: "content-revisions"
+    component: "nosql-store"
+    group: "gcp-data"
+    label: "VideoRevision / ArticleRevision entities (Datastore)"
+    props: { model: "document", managed: true }
+
+  - id: "shared-memcache"
+    component: "memcached"
+    group: "gcp-data"
+    label: "Google Cloud Memcache (queries, preferences, sessions)"
+    props: { managed: true, evictionPolicy: "lru", persistence: false, usedAsPrimaryStore: false }
+
+  - id: "content-memcache"
+    component: "memcached"
+    group: "gcp-data"
+    label: "content store: (content version, content id) -> content item"
+    props: { managed: true, evictionPolicy: "lru", structure: "key-value", materialised: true, usedAsPrimaryStore: false, persistence: false }
+
+  - id: "publish-job"
+    component: "container-worker"
+    group: "app-engine"
+    label: "content publish (frozen models, last_published_commit SHA)"
+    props: { trigger: "manual", idempotent: true }
+
+  - id: "youtube"
+    component: "supplier-api"
+    label: "YouTube"
+    props: { callbackStyle: "none" }
+
+  - id: "video-fallback-store"
+    component: "s3"
+    label: "Amazon S3 (video fallback origin, served through Fastly)"
+    props: { tier: "hot" }
+
+  - id: "exercise-feed-topic"
+    component: "google-pubsub"
+    group: "analytics"
+    label: "exercise feed topic"
+    props: { delivery: "at-least-once", replay: true, managed: true }
+
+  - id: "exercise-feed-service"
+    component: "container-worker"
+    group: "analytics"
+    label: "exercise-feed service (App Engine flexible, push subscription)"
+    props: { trigger: "queue", idempotent: false }
+
+  - id: "bigquery"
+    component: "bigquery"
+    group: "analytics"
+    label: "BigQuery"
+    props: { managed: true }
+
+  - id: "dataflow"
+    component: "google-dataflow"
+    group: "analytics"
+    label: "Cloud Dataflow pipelines"
+    props: { managed: true, windowing: "none" }
+
+  - id: "khanflow"
+    component: "airflow"
+    group: "analytics"
+    label: "Khanflow (Airflow 2.0 on GKE)"
+    props: { pattern: "dag", durable: true }
+
+  - id: "analytics-jobs"
+    component: "container-worker"
+    group: "analytics"
+    label: "pipeline tasks (KhanflowPythonOperator)"
+    props: { trigger: "schedule", orchestrator: "kubernetes" }
+
+  - id: "user-key-store"
+    component: "hashicorp-vault"
+    group: "analytics"
+    label: "per-user encryption key table (deleting the key erases the user)"
+    props: { managed: false }
+
+edges:
+  - { from: "browser-client", to: "fastly-edge", protocol: "https", mode: "sync", label: "first point of contact for all requests" }
+  - { from: "fastly-edge", to: "react-ssr", protocol: "https", mode: "sync", label: "miss: server-rendered page" }
+  - { from: "fastly-edge", to: "graphql-gateway", protocol: "https", mode: "sync", label: "miss: GraphQL query" }
+  - { from: "fastly-edge", to: "video-fallback-store", protocol: "https", mode: "sync", label: "video fallback where YouTube is blocked" }
+  - { from: "browser-client", to: "youtube", protocol: "https", mode: "sync", label: "lesson video playback" }
+  - { from: "react-ssr", to: "graphql-gateway", protocol: "graphql", mode: "sync", label: "page data during render" }
+  - { from: "graphql-gateway", to: "migration-config", protocol: "http", mode: "sync", label: "per-field @migrate state and canary percentage" }
+  - { from: "graphql-gateway", to: "python-monolith", protocol: "graphql", mode: "sync", label: "fields still on Python; side-by-side returns this result" }
+  - { from: "graphql-gateway", to: "go-services", protocol: "graphql", mode: "sync", label: "query plan fan-out; canary share of users" }
+  - { from: "graphql-gateway", to: "content-service", protocol: "graphql", mode: "sync", label: "content fields" }
+  - { from: "go-services", to: "content-service", protocol: "graphql", mode: "sync", label: "300+ cross-service request shapes (genqlient)" }
+  - { from: "python-monolith", to: "datastore", protocol: "datastore-rpc", mode: "sync" }
+  - { from: "go-services", to: "datastore", protocol: "datastore-rpc", mode: "sync", label: "ported models; contention warnings ~100/hr to near zero" }
+  - { from: "python-monolith", to: "shared-memcache", protocol: "memcached", mode: "sync", label: "common queries, user preferences, session data" }
+  - { from: "go-services", to: "shared-memcache", protocol: "memcached", mode: "sync" }
+  - { from: "content-service", to: "content-memcache", protocol: "memcached", mode: "sync", batched: true, label: "items by (version, id), batched with get_many_by_key()" }
+  - { from: "content-service", to: "content-revisions", protocol: "datastore-rpc", mode: "sync", fallback: "degraded", label: "editing head on miss" }
+  - { from: "publish-job", to: "content-revisions", protocol: "datastore-rpc", mode: "sync", idempotent: true, label: "read latest revisions" }
+  - { from: "publish-job", to: "content-memcache", protocol: "memcached", mode: "sync", batched: true, idempotent: true, label: "publish by SHA: whole site updated in ~1 second" }
+  - { from: "python-monolith", to: "exercise-feed-topic", protocol: "pubsub", mode: "async", delivery: "at-least-once", label: "exercise attempt events" }
+  - { from: "go-services", to: "exercise-feed-topic", protocol: "pubsub", mode: "async", delivery: "at-least-once", label: "exercise attempt events" }
+  - { from: "exercise-feed-topic", to: "exercise-feed-service", protocol: "https", mode: "async", delivery: "at-least-once", label: "push subscription, HMAC digest validated" }
+  - { from: "exercise-feed-service", to: "bigquery", protocol: "bigquery", mode: "async", label: "insert; creates the destination table if missing" }
+  - { from: "dataflow", to: "bigquery", protocol: "bigquery", mode: "async", label: "managed pipelines into the warehouse" }
+  - { from: "khanflow", to: "dataflow", protocol: "gcp-api", mode: "async", label: "orchestrated pipeline runs" }
+  - { from: "khanflow", to: "bigquery", protocol: "bigquery", mode: "async", label: "KhanflowBigQueryOperator tasks" }
+  - { from: "khanflow", to: "analytics-jobs", protocol: "gcp-api", mode: "async", label: "DAG tasks, one service account per pipeline" }
+  - { from: "analytics-jobs", to: "bigquery", protocol: "bigquery", mode: "sync", label: "read encrypted personal data" }
+  - { from: "analytics-jobs", to: "user-key-store", protocol: "https", mode: "sync", label: "per-user key lookup" }

@@ -1,0 +1,215 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture: Stripe payment processing, broken variant. Same system as
+# stripe-payments.yaml, built the way a team building it usually builds it first: the SDK
+# retries hard into an API edge with nothing shedding load in front of it, the card-network
+# and bank calls carry no idempotency key, merchant callbacks are pushed straight out of the
+# payment service with no durable queue behind them, the merchant webhook endpoint trusts
+# whatever posts to it, and the routing metadata service every DocDB proxy depends on runs
+# unreplicated.
+#
+# This file MUST trip:
+#   - money-mutation-without-idempotency-key    (payment-service -> card-network and -> acquiring-bank declare no idempotent, correctness.exactlyOnceEffect true)
+#   - retry-without-adaptive-shedding           (merchant-sdk -> api-edge retryPolicy exponential, no circuitBreaker, no rate-limiter in front of api-edge)
+#   - external-call-inline-without-durable-path (payment-service calls card-network and acquiring-bank sync with no queue or workflow engine attached)
+#   - webhook-without-signature-or-idempotency  (merchant-endpoint signatureVerified false, idempotent false)
+#   - shared-dependency-without-redundancy      (routing-metadata replicated false while availability.discoveryRedundant true)
+# and MUST NOT trip:
+#   - money-store-without-double-entry-ledger   (ledger-core is a ledger kind; money.zeroSum satisfied)
+#   - queue-missing-dlq, retry-queue-without-dlq, retry-without-backoff (no queue node is left in this variant)
+#   - fanout-inline-in-request-path             (payment-service hands the merchant event to webhook-dispatcher asynchronously)
+#   - credentials-without-rotation              (security.credentialRotationDays is set)
+#   - datastore-missing-backup, datastore-single-region, single-writer-primary-at-peak-qps,
+#     read-replica-as-sole-scaling              (no sql-database node; DocDB is nosql)
+#   - read-heavy-path-without-cache             (traffic.readWriteRatio is not declared)
+#   - stateful-engine-pinned-to-single-zone     (no availability-zone group in this design)
+#   - sync-chain-too-deep                       (no latency.p95Ms requirement is stated by the sources)
+#   - cache-missing-eviction-policy, cache-as-primary-store-without-persistence,
+#     materialised-cache-without-rebuild-path   (no cache node)
+schemaVersion: "1"
+type: "design"
+id: "stripe-payments"
+
+requirements:
+  availability:
+    sla: "99.999"
+    discoveryRedundant: true
+  consistency:
+    model: "cp"
+  correctness:
+    exactlyOnceEffect: true
+    reproducible: true
+  money:
+    zeroSum: true
+    pci: true
+  data:
+    reconciliation: true
+    immutableAudit: true
+    lossDetection: true
+  isolation:
+    tenancy: "shared"
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "edge", kind: "trust-zone", label: "Public API edge" }
+  - { id: "core", kind: "trust-zone", label: "Stripe internal" }
+  - { id: "docdb", kind: "system", parent: "core", label: "DocDB data plane" }
+  - { id: "control-plane", kind: "system", parent: "core", label: "DocDB control plane" }
+  - { id: "ledger", kind: "system", parent: "core", label: "Ledger" }
+  - { id: "data-platform", kind: "system", parent: "core", label: "Data platform" }
+
+nodes:
+  - id: "merchant-sdk"
+    component: "sdk-client"
+    label: "Merchant integration (stripe-ruby)"
+    props: { platform: "sdk", resendPolicy: "retry", language: "ruby" }
+
+  - id: "api-edge"
+    component: "envoy-gateway"
+    label: "Public API (idempotency layer)"
+    group: "edge"
+    props: { auth: "api-key", tls: true, idempotencyKeys: true, keyTtlHours: 24, rateLimiting: true, concurrencyLimit: true, protocol: "http" }
+
+  - id: "payment-service"
+    component: "container-service"
+    label: "Payment services (PaymentIntent state machines)"
+    group: "core"
+    props: { stateless: true, runtime: "ruby", criticality: "high", ownsData: true }
+
+  - id: "webhook-dispatcher"
+    component: "container-worker"
+    group: "core"
+    props: { trigger: "manual", idempotent: false }
+
+  - id: "merchant-endpoint"
+    component: "webhook-receiver"
+    label: "Merchant webhook endpoint"
+    props: { signatureVerified: false, idempotent: false, retriedByCaller: true, persistBeforeAck: false }
+
+  - id: "card-network"
+    component: "card-network"
+    label: "Card networks (Visa, Mastercard)"
+    props: { handlesMoney: true, idempotent: false, dualMessage: true, callbackStyle: "none" }
+
+  - id: "acquiring-bank"
+    component: "bank-api"
+    label: "Acquiring and settlement banks"
+    props: { handlesMoney: true, idempotent: false, batchSettlement: true, callbackStyle: "poll" }
+
+  - id: "docdb-proxy"
+    component: "mongos"
+    label: "DocDB proxy"
+    group: "docdb"
+    props: { pooling: true, poolSharded: true, routing: "shard-key", scatterGather: true, loadShedding: true }
+
+  - id: "docdb-shards"
+    component: "mongodb"
+    label: "DocDB shards (2,000+ MongoDB replica sets)"
+    group: "docdb"
+    props: { model: "document", consistency: "strong", writeConcernMajority: true, shardedCluster: true, replication: "single-region", encryptionAtRest: true, backupEnabled: true }
+    nfr: { rps: 5000000, consistency: "strong" }
+
+  - id: "idempotency-store"
+    component: "mongodb"
+    label: "Idempotency key collection"
+    group: "docdb"
+    props: { model: "document", consistency: "strong", writeConcernMajority: true, partitionKey: "idempotency_key", tombstoneTtlDays: 1, encryptionAtRest: true, backupEnabled: true }
+    nfr: { consistency: "strong" }
+
+  - id: "routing-metadata"
+    component: "etcd"
+    label: "Routing metadata service"
+    group: "docdb"
+    props: { role: "metadata", consensus: "raft", replicated: false, authEnabled: true }
+
+  - id: "docdb-cdc"
+    component: "debezium"
+    label: "DocDB change data capture"
+    group: "docdb"
+    props: { mode: "log-based", ordered: true }
+
+  - id: "wal-archive"
+    component: "s3"
+    label: "Write-ahead log archive"
+    group: "docdb"
+    props: { versioning: true, encryptionAtRest: true, checksumOnWrite: true }
+
+  - id: "docdb-coordinator"
+    component: "container-service"
+    label: "DocDB control plane"
+    group: "control-plane"
+    props: { stateless: true, criticality: "high", ownsData: false }
+
+  - id: "data-movement-platform"
+    component: "container-worker"
+    label: "Data Movement Platform"
+    group: "control-plane"
+    props: { trigger: "batch", idempotent: true, rateControl: "aimd" }
+
+  - id: "ledger-events"
+    component: "raft-event-log"
+    label: "Ledger event log"
+    group: "ledger"
+    props: { replication: "raft", journaled: true, storage: "rocksdb", role: "journal", nodes: 5 }
+
+  - id: "fund-flow-processor"
+    component: "container-worker"
+    label: "Fund flow state machines"
+    group: "ledger"
+    props: { trigger: "stream", idempotent: true }
+
+  - id: "ledger-core"
+    component: "double-entry-ledger"
+    label: "Ledger (fund flows and balances)"
+    group: "ledger"
+    props: { doubleEntry: true, appendOnly: true, tamperEvident: true, indexConsistency: "strong", multiCurrency: true }
+
+  - id: "dq-platform"
+    component: "observability-stack"
+    label: "Data Quality Platform"
+    group: "ledger"
+    props: { signal: "all", collectorMode: "push", alertGrouping: true }
+
+  - id: "presto"
+    component: "presto"
+    group: "data-platform"
+    props: { storesData: false, queryFederation: true, topology: "coordinator-workers", realtime: false }
+
+  - id: "hadoop-scalding"
+    component: "hadoop-yarn"
+    label: "Hadoop / Scalding"
+    group: "data-platform"
+    props: { engine: "hadoop", scheduler: "capacity", resourceManagerHa: true, aclEnabled: true }
+
+  - id: "accounting-close"
+    component: "cron-job"
+    label: "Reconciliation / accounting close"
+    group: "data-platform"
+    props: { trigger: "schedule", schedule: "0 3 1 * *", idempotent: true, overlapAllowed: false }
+
+edges:
+  - { from: "merchant-sdk", to: "api-edge", protocol: "https", mode: "sync", idempotent: true, retryPolicy: "exponential", label: "POST with Idempotency-Key, retried hard" }
+  - { from: "api-edge", to: "docdb-proxy", protocol: "mongo-wire", mode: "sync", idempotent: true, label: "key lookup, replay stored response" }
+  - { from: "api-edge", to: "payment-service", protocol: "http", mode: "sync", idempotent: true, label: "first request for this key" }
+  - { from: "payment-service", to: "docdb-proxy", protocol: "mongo-wire", mode: "sync", idempotent: true, label: "ACID transaction per phase" }
+  - { from: "docdb-proxy", to: "docdb-shards", protocol: "mongo-wire", mode: "sync", label: "chunk routing, version gated" }
+  - { from: "docdb-proxy", to: "idempotency-store", protocol: "mongo-wire", mode: "sync", label: "key, fingerprint, phase, stored response" }
+  - { from: "docdb-proxy", to: "routing-metadata", protocol: "grpc", mode: "sync", timeoutMs: 100, label: "chunk to shard map" }
+  - { from: "payment-service", to: "card-network", protocol: "https", mode: "sync", timeoutMs: 800, label: "authorise, ambiguous failure retried blind" }
+  - { from: "payment-service", to: "acquiring-bank", protocol: "https", mode: "sync", timeoutMs: 800, label: "capture and settle" }
+  - { from: "payment-service", to: "webhook-dispatcher", protocol: "grpc", mode: "async", delivery: "at-most-once", label: "merchant event, in memory only" }
+  - { from: "webhook-dispatcher", to: "merchant-endpoint", protocol: "https", mode: "async", delivery: "at-least-once", label: "signed event callback, retried" }
+  - { from: "payment-service", to: "ledger-events", protocol: "grpc", mode: "async", delivery: "at-least-once", idempotent: true, label: "money movement events, 5B/day, out of order tolerated" }
+  - { from: "ledger-events", to: "fund-flow-processor", protocol: "grpc", mode: "async", delivery: "at-least-once", label: "replay to any point in time" }
+  - { from: "fund-flow-processor", to: "ledger-core", protocol: "grpc", mode: "sync", idempotent: true, label: "double-entry postings between accounts" }
+  - { from: "fund-flow-processor", to: "dq-platform", protocol: "http", mode: "async", delivery: "at-least-once", label: "clearing, timeliness, completeness" }
+  - { from: "presto", to: "ledger-core", protocol: "sql", mode: "sync", idempotent: true, label: "ad-hoc investigation" }
+  - { from: "docdb-shards", to: "docdb-cdc", protocol: "mongo-oplog", mode: "async", delivery: "at-least-once", label: "write-ahead log" }
+  - { from: "docdb-cdc", to: "wal-archive", protocol: "s3", mode: "async", delivery: "at-least-once", batched: true, label: "WAL archive" }
+  - { from: "docdb-coordinator", to: "data-movement-platform", protocol: "grpc", mode: "async", delivery: "at-least-once", label: "orchestrate a shard move" }
+  - { from: "docdb-coordinator", to: "routing-metadata", protocol: "grpc", mode: "sync", timeoutMs: 1000, label: "register intent, bump metadata version" }
+  - { from: "data-movement-platform", to: "docdb-shards", protocol: "mongo-wire", mode: "async", delivery: "at-least-once", batched: true, label: "snapshot import, bidirectional oplog, verify" }
+  - { from: "data-movement-platform", to: "routing-metadata", protocol: "grpc", mode: "sync", timeoutMs: 1000, label: "chunk ownership, version-gated switch under 2 s" }
+  - { from: "hadoop-scalding", to: "docdb-proxy", protocol: "mongo-wire", mode: "async", delivery: "at-least-once", batched: true, label: "offline Scalding backfill, off the read path" }
+  - { from: "accounting-close", to: "acquiring-bank", protocol: "sftp", mode: "sync", idempotent: true, label: "monthly settlement reports" }
+  - { from: "accounting-close", to: "ledger-core", protocol: "grpc", mode: "sync", idempotent: true, label: "monthly regulatory close against external reports" }

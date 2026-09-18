@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Cloud VPN for VPC: an "IPsec site-to-site tunnel between your VPC and your on-premises
+# private network or another VPC", in route-based mode (static routes or BGP-learned routes,
+# active-backup or active-active) or policy-based mode (active-standby, no BGP)
+# ("About site-to-site VPN gateways"). Neither the mode nor a throughput figure is documented as a
+# default, so only the peer and tunnel type are set.
+schemaVersion: "1"
+type: "component"
+id: "ibm-vpn-gateway"
+kind: "vpn-gateway"
+provider: "ibm"
+defaults:
+  managed: true
+  peerType: "site-to-site"
+  tunnelType: "ipsec"
+properties:
+  mode:
+    type: "enum"
+    values: ["route-based", "policy-based"]
+  haMode:
+    type: "enum"
+    values: ["active-backup", "active-active", "active-standby"]

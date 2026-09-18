@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenStack Barbican: the Key Manager service, providing "secure storage, provisioning and management of secret
+# data. This includes keying material such as Symmetric Keys, Asymmetric Keys, Certificates and raw binary data".
+# Per "Barbican Administration Guide" the secret store is pluggable and PKCS#11 key generation is one option,
+# so no HSM or rotation behaviour is assumed: both depend on the plugin the operator configures.
+schemaVersion: "1"
+type: "component"
+id: "openstack-barbican"
+kind: "key-management"
+provider: "openstack"
+defaults:
+  managed: false
+properties:
+  secretStorePlugin:
+    type: "enum"
+    values: ["simple-crypto", "pkcs11", "kmip", "vault", "dogtag"]
+  secretType:
+    type: "enum"
+    values: ["symmetric", "asymmetric", "certificate", "passphrase", "opaque"]
+  keyGenerationOrders:
+    type: "boolean"
+    default: true

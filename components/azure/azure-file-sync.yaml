@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure File Sync: centralizes Windows file server shares in an Azure file share while each registered server
+# keeps a local cache ("What is Azure File Sync?"). That page states cloud tiering is optional, that changes
+# on any server sync to every other server through the Azure file share, that each server must have the Azure
+# File Sync agent installed and be registered with a Storage Sync Service, and that cloud-side backup is
+# taken through Azure Backup rather than by the service itself.
+schemaVersion: "1"
+type: "component"
+id: "azure-file-sync"
+kind: "file-storage"
+provider: "azure"
+defaults:
+  protocol: "smb"
+  managed: true
+  backupEnabled: false
+properties:
+  cloudTiering:
+    type: "boolean"
+    default: false
+  multiSiteSync:
+    type: "boolean"
+    default: true
+  registeredServerRequired:
+    type: "boolean"
+    default: true

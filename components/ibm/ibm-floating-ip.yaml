@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Floating IP for VPC: a public IPv4 address "provided by the system and reachable from the public
+# internet", associated with the network interface of an instance in the same zone. Unlike a public
+# gateway, instances "can initiate or receive connections to or from the internet" through it, and
+# it can be unassigned and reassigned to another instance ("About floating IPs").
+schemaVersion: "1"
+type: "component"
+id: "ibm-floating-ip"
+kind: "network-fabric"
+provider: "ibm"
+defaults:
+  managed: true
+  interconnect: "public"
+properties:
+  bidirectional:
+    type: "boolean"
+    default: true
+  reassignable:
+    type: "boolean"
+    default: true

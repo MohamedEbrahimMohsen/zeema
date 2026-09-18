@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloud Backup (formerly Hybrid Backup Recovery): vault-based backup and archive for ECS, NAS, OSS,
+# databases, on-premises files and VMware virtual machines. "What is Cloud Backup" and
+# "Cloud Backup:Vault types": backup vaults hold operational recovery points on Standard and Archive
+# tiers while archive vaults hold policy-archived on-premises data, and a vault is zone-redundant in
+# the regions that support it and locally redundant elsewhere. "Features": KMS customer master key
+# encryption, WORM immutable backup and replication to a remote mirror vault are all opt-in.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-hbr"
+kind: "backup-service"
+provider: "alibabacloud"
+defaults:
+  immutable: false
+  crossRegionRestore: false
+  managed: true
+properties:
+  vaultType:
+    type: "enum"
+    values: ["backup-vault", "archive-vault"]
+    default: "backup-vault"
+  storageTier:
+    type: "enum"
+    values: ["standard", "archive", "cold-archive"]
+    default: "standard"
+  mirrorVaultReplication:
+    type: "boolean"
+    default: false
+  kmsEncryption:
+    type: "boolean"
+    default: false

@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# rsyslog: syslog processing engine that receives, parses, filters and forwards messages. Inputs cover
+# UDP (imudp), plain and framed TCP (imtcp, imptcp), RELP (imrelp), DTLS (imdtls), files (imfile),
+# the systemd journal (imjournal), Unix sockets (imuxsock), Kafka and HTTP; TLS is configured per
+# stream driver (gtls, openssl, mbedtls) rather than being on. Queues are per action or per ruleset and
+# can be disk-assisted ("rsyslog 8 daily stable documentation").
+schemaVersion: "1"
+type: "component"
+id: "rsyslog"
+kind: "monitoring"
+provider: "default"
+defaults:
+  managed: false
+  signal: "logs"
+  collectorMode: "push"
+properties:
+  inputProtocol:
+    type: "enum"
+    values: ["udp", "tcp", "relp", "dtls", "file", "journal"]
+  queueType:
+    type: "enum"
+    values: ["direct", "linked-list", "fixed-array", "disk"]
+  diskAssistedQueue:
+    type: "boolean"
+  tls:
+    type: "boolean"

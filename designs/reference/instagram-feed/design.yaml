@@ -1,0 +1,198 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture 8, clean variant: Instagram's photo feed from the 2011 AWS stack
+# (ELB, nginx, Django, sharded Postgres, Redis, Gearman, S3/CloudFront) through the 2018
+# two-continent stack (Cassandra partitioned per continent, TAO with region-local masters).
+#
+# Fixes relative to instagram-feed.broken.yaml:
+#   - cassandra-us holds the activity feed, Direct inbox and fraud logs; redis is a plain cache
+#     again (sessions, photo-id to user-id map) with an lru policy, not the only copy of the feed
+#   - cassandra-us and cassandra-eu are two single-region rings, not one multi-leader ring
+#     spanning the Atlantic, so quorums never cross the ocean
+#   - job-queue declares a dead-letter queue and a persistent backend for the fan-out jobs
+#   - photo-workers index search-index asynchronously instead of Django dual-writing Solr inline
+#   - django reaches Postgres through pgbouncer, which is also the shard-routing hop
+# This file MUST trip no rule.
+schemaVersion: "1"
+type: "design"
+id: "instagram-feed"
+
+requirements:
+  availability:
+    multiRegion: true
+    regions: 6
+  latency:
+    geoDistributed: true
+  consistency:
+    model: "ap"
+    quorumScope: "region"
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "us", kind: "region", label: "US datacenters" }
+  - { id: "eu", kind: "region", label: "EU datacenter" }
+  - { id: "us-edge", kind: "trust-zone", parent: "us" }
+  - { id: "us-core", kind: "trust-zone", parent: "us" }
+  - { id: "us-data", kind: "trust-zone", parent: "us" }
+
+nodes:
+  - id: "mobile-client"
+    component: "mobile-app"
+    props: { os: "both", localCache: true }
+
+  - id: "dns"
+    component: "route53"
+    label: "Route 53"
+    group: "us-edge"
+    props: { anycast: true, routingPolicy: "simple" }
+
+  - id: "elb"
+    component: "aws-classic-load-balancer"
+    label: "Elastic Load Balancer"
+    group: "us-edge"
+    props: { listenerProtocol: "https", crossZone: true, connectionDraining: true }
+
+  - id: "nginx"
+    component: "nginx"
+    group: "us-edge"
+    props: { layer: "l7", hashing: "round-robin" }
+
+  - id: "photo-cdn"
+    component: "cloudfront"
+    label: "CloudFront"
+    group: "us-edge"
+    props: { caching: true, tls: true }
+
+  - id: "django"
+    component: "vm-service"
+    label: "Django / gunicorn"
+    group: "us-core"
+    props: { provider: "aws", stateless: true, instances: 25, criticality: "high", autoscaling: false }
+
+  - id: "pgbouncer"
+    component: "pgbouncer"
+    group: "us-core"
+    props: { pooling: true, poolMode: "transaction", routing: "shard-key", poolSharded: true }
+
+  - id: "job-queue"
+    component: "gearman"
+    label: "Gearman"
+    group: "us-core"
+    props: { delivery: "at-least-once", deadLetterQueue: true, persistence: true, backoff: "exponential-jitter", maxAttempts: 5, role: "work" }
+
+  - id: "photo-workers"
+    component: "container-worker"
+    label: "Gearman Python workers"
+    group: "us-core"
+    props: { trigger: "queue", instances: 200, idempotent: true, fanoutStrategy: "hybrid", concurrency: 200 }
+
+  - id: "akkio"
+    component: "container-worker"
+    label: "Akkio"
+    group: "us-core"
+    props: { trigger: "stream", idempotent: true, rateControl: "aimd" }
+
+  - id: "pyapns"
+    component: "notification-platform"
+    label: "pyapns"
+    group: "us-core"
+    props: { channelPush: true, dedupKey: true }
+
+  - id: "apns"
+    component: "apns"
+    label: "APNs"
+    props: { tokenBasedAuth: true }
+
+  - id: "observability"
+    component: "sentry"
+    label: "Sentry / Munin / PagerDuty"
+    group: "us-core"
+    props: { signal: "all", independentOfMonitored: true, alertGrouping: true }
+
+  - id: "postgres"
+    component: "postgres"
+    label: "PostgreSQL shards"
+    group: "us-data"
+    props: { version: "9", sharded: true, shardKey: "user_id", idEncodesShard: true, replication: "async", backupEnabled: true, backupRetentionDays: 30, managed: false }
+
+  - id: "postgres-replica"
+    component: "postgres"
+    label: "PostgreSQL streaming replicas"
+    group: "us-data"
+    props: { version: "9", sharded: true, shardKey: "user_id", replicaOf: "postgres", replication: "async", backupEnabled: true, backupRetentionDays: 30, managed: false }
+
+  - id: "redis"
+    component: "redis"
+    label: "Redis"
+    group: "us-data"
+    props: { evictionPolicy: "lru", persistence: true, hashing: "consistent", structure: "hash-set", usedAsPrimaryStore: false, materialised: false, replication: "single-az" }
+
+  - id: "memcached"
+    component: "memcached"
+    group: "us-data"
+    props: { evictionPolicy: "lru", hashing: "consistent", replication: "none" }
+
+  - id: "photo-store"
+    component: "s3"
+    label: "S3"
+    group: "us-data"
+    props: { zones: 3, storageClass: "standard", durabilityNines: 11, encryptionAtRest: true }
+
+  - id: "search-index"
+    component: "solr"
+    label: "Solr geo-search"
+    group: "us-core"
+    props: { structure: "geo-cell", geoScheme: "geohash", indexing: "async", shardingStrategy: "geo", replicas: 2 }
+
+  - id: "cassandra-us"
+    component: "cassandra"
+    label: "Cassandra_US (feed, inbox, fraud logs)"
+    group: "us-data"
+    props: { model: "wide-column", consistency: "tunable", replication: "single-region", replicationFactor: 5, quorumWrites: 2, quorumReads: 1, partitionKey: "user_id", conflictResolution: "last-writer-wins", backupEnabled: true, backupRetentionDays: 30, compactionStrategy: "leveled" }
+
+  - id: "cassandra-eu"
+    component: "cassandra"
+    label: "Cassandra_EU"
+    group: "eu"
+    props: { model: "wide-column", consistency: "tunable", replication: "single-region", replicationFactor: 3, quorumWrites: 2, quorumReads: 1, partitionKey: "user_id", conflictResolution: "last-writer-wins", backupEnabled: true, backupRetentionDays: 30, compactionStrategy: "leveled" }
+
+  - id: "tao-us"
+    component: "tao"
+    label: "TAO (US master)"
+    group: "us-data"
+    props: { masterPerShard: true, crossRegionConsistency: "single-leader", writeThrough: true }
+
+  - id: "tao-eu"
+    component: "tao"
+    label: "TAO (EU region-local master)"
+    group: "eu"
+    props: { masterPerShard: true, crossRegionConsistency: "single-leader", writeThrough: true }
+
+edges:
+  - { from: "mobile-client", to: "dns", protocol: "dns", mode: "sync", label: "resolve" }
+  - { from: "mobile-client", to: "elb", protocol: "https", mode: "sync", label: "api call, tls terminated at the elb" }
+  - { from: "mobile-client", to: "photo-cdn", protocol: "https", mode: "sync", label: "photo download" }
+  - { from: "photo-cdn", to: "photo-store", protocol: "https", mode: "sync", timeoutMs: 2000, fallback: "cached", label: "origin fetch" }
+  - { from: "elb", to: "nginx", protocol: "http", mode: "sync", label: "three nginx proxies" }
+  - { from: "nginx", to: "django", protocol: "http", mode: "sync", timeoutMs: 5000, label: "upstream" }
+  - { from: "django", to: "pgbouncer", protocol: "postgres", mode: "sync", timeoutMs: 1000, label: "pooled connection" }
+  - { from: "pgbouncer", to: "postgres", protocol: "postgres", mode: "sync", timeoutMs: 1000, idempotent: true, label: "logical shard routing, the id carries the shard" }
+  - { from: "pgbouncer", to: "postgres-replica", protocol: "postgres", mode: "sync", timeoutMs: 1000, fallback: "degraded", label: "reads" }
+  - { from: "postgres", to: "postgres-replica", protocol: "postgres-streaming", mode: "async", delivery: "at-least-once", label: "streaming replication into another zone" }
+  - { from: "django", to: "memcached", protocol: "memcached", mode: "sync", timeoutMs: 50, fallback: "degraded", label: "object cache" }
+  - { from: "django", to: "redis", protocol: "redis", mode: "sync", timeoutMs: 50, label: "session, photo-id to user-id map" }
+  - { from: "django", to: "photo-store", protocol: "https", mode: "sync", timeoutMs: 10000, idempotent: true, circuitBreaker: true, label: "upload photo" }
+  - { from: "django", to: "job-queue", protocol: "gearman", mode: "async", delivery: "at-least-once", label: "fan-out, sharing, notify" }
+  - { from: "job-queue", to: "photo-workers", protocol: "gearman", mode: "async", delivery: "at-least-once", label: "200 python workers" }
+  - { from: "photo-workers", to: "cassandra-us", protocol: "cql", mode: "sync", timeoutMs: 500, idempotent: true, circuitBreaker: true, batched: true, label: "insert into follower feeds" }
+  - { from: "photo-workers", to: "redis", protocol: "redis", mode: "sync", timeoutMs: 50, label: "refresh photo-id to user-id map" }
+  - { from: "photo-workers", to: "search-index", protocol: "http", mode: "async", delivery: "at-least-once", batched: true, label: "index geo-tagged photo" }
+  - { from: "photo-workers", to: "pyapns", protocol: "http", mode: "async", delivery: "at-least-once", idempotent: true, label: "enqueue push" }
+  - { from: "pyapns", to: "apns", protocol: "apns", mode: "async", delivery: "at-most-once", label: "over a billion push notifications" }
+  - { from: "django", to: "search-index", protocol: "http", mode: "sync", timeoutMs: 300, fallback: "degraded", label: "geo search query" }
+  - { from: "django", to: "cassandra-us", protocol: "cql", mode: "sync", timeoutMs: 200, fallback: "degraded", label: "read feed, quorum inside the region" }
+  - { from: "django", to: "tao-us", protocol: "thrift", mode: "sync", timeoutMs: 100, circuitBreaker: true, label: "social graph, master per shard" }
+  - { from: "tao-eu", to: "tao-us", protocol: "async-queue", mode: "async", delivery: "at-least-once", idempotent: true, label: "cross-region propagation of region-local writes" }
+  - { from: "akkio", to: "cassandra-us", protocol: "internal", mode: "async", delivery: "at-least-once", idempotent: true, label: "microshard placement by access pattern" }
+  - { from: "akkio", to: "cassandra-eu", protocol: "internal", mode: "async", delivery: "at-least-once", idempotent: true, label: "migrate microshard to the user's continent" }
+  - { from: "django", to: "observability", protocol: "http", mode: "async", delivery: "at-most-once", label: "errors and metrics" }

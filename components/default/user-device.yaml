@@ -1,0 +1,11 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# One client box drawn as several device types at once (a laptop and a phone, a TV and a
+# phone). Platform is multi because the drawing commits to no single one.
+schemaVersion: "1"
+type: "component"
+id: "user-device"
+kind: "client"
+provider: "default"
+defaults:
+  platform: "multi"
+  managed: false

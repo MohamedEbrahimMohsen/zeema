@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OAuth2 Proxy: "a reverse proxy and static file server that provides authentication using Providers
+# (Google, GitHub, and others) to validate accounts by email, domain or group". It sits in front of one
+# upstream and delegates the login to that provider rather than holding a user directory itself;
+# sessions are carried in a cookie store by default ("Welcome | OAuth2 Proxy").
+schemaVersion: "1"
+type: "component"
+id: "oauth2-proxy"
+kind: "identity-provider"
+provider: "default"
+defaults:
+  managed: false
+  protocol: "oauth2"
+  centralised: false
+  mfa: false
+properties:
+  mode:
+    type: "enum"
+    values: ["reverse-proxy", "auth-request"]
+    default: "reverse-proxy"
+  sessionStore:
+    type: "enum"
+    values: ["cookie", "redis"]
+    default: "cookie"
+  accountRule:
+    type: "enum"
+    values: ["email", "domain", "group"]

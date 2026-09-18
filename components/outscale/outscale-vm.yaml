@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OUTSCALE VM: a virtual machine booted from an OMI that you patch yourself ("About VMs").
+# The same page states the documented defaults: Subregion A is used when none is specified,
+# a VM in the public Cloud gets a public IP at creation unless the private_only tag is set,
+# VMs run on servers shared with other accounts by default, and the security group a VM must
+# be created behind allows no inbound flow by default.
+schemaVersion: "1"
+type: "component"
+id: "outscale-vm"
+kind: "virtual-machine"
+provider: "outscale"
+defaults:
+  managed: false
+  publicIp: true
+  zoneRedundant: false
+properties:
+  tenancy:
+    type: "enum"
+    values: ["shared", "dedicated"]
+    default: "shared"
+  defaultSubregion:
+    type: "string"
+    default: "a"
+  defaultInboundAccess:
+    type: "boolean"
+    default: false

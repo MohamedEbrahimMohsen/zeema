@@ -1,0 +1,149 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture 30, clean variant: the internals of a log-based distributed message
+# queue - partitioned segment logs replicated to an in-sync replica set, offsets and transaction
+# state kept in compacted internal topics, and exactly-once held to the edge of the log.
+#
+# Fixes relative to distributed-message-queue.broken.yaml:
+#   - coordination-service is a replicated ensemble (ZooKeeper quorum or KRaft), so the metadata
+#     and leader-election dependency every broker shares has no single instance
+#   - quota-enforcer applies the broker's per (user, client-id) byte-rate and request-rate quotas
+#     in front of the log, so a producer retrying with backoff cannot saturate the broker it is
+#     already overloading
+#   - streams-app writes its remote side effect asynchronously and idempotently, because the
+#     transaction covers output topics and offsets only, never a remote store
+#   - security.credentialRotationDays is declared for the volumes that hold every segment file
+# This file MUST trip no rule.
+schemaVersion: "1"
+type: "design"
+id: "distributed-message-queue"
+
+requirements:
+  availability:
+    discoveryRedundant: true
+  messaging:
+    replay: true
+    exactlyOnce: true
+    orderingScope: "partition"
+  durability:
+    minReplicasAcked: 2
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "cluster", kind: "region" }
+  - { id: "producers", kind: "trust-zone", parent: "cluster" }
+  - { id: "brokers", kind: "trust-zone", parent: "cluster" }
+  - { id: "control-plane", kind: "trust-zone", parent: "cluster" }
+  - { id: "consumers", kind: "trust-zone", parent: "cluster" }
+
+nodes:
+  - id: "producer-app"
+    component: "container-service"
+    label: "Producer application"
+    group: "producers"
+    props: { criticality: "high" }
+
+  - id: "producer-client"
+    component: "sdk-client"
+    label: "Producer client (buffer, partitioner, retries)"
+    group: "producers"
+    props: { platform: "sdk", resendPolicy: "retry", localCache: true }
+
+  - id: "quota-enforcer"
+    component: "in-process-limiter"
+    label: "Broker quotas (byte rate, request rate)"
+    group: "brokers"
+    props: { algorithm: "sliding-window", scope: "user", placement: "in-process", distributed: false }
+
+  - id: "broker-cluster"
+    component: "kafka"
+    label: "Broker cluster: partitioned segment logs, leader and ISR"
+    group: "brokers"
+    props: { delivery: "exactly-once", ordering: "per-key", replicationFactor: 3, minInsyncReplicas: 2, acks: "all", retentionHours: 336, idempotentProducer: true, transactions: true, storage: "persistent", consumerGroups: true }
+
+  - id: "segment-storage"
+    component: "block-volume"
+    label: "Segment files on broker disks"
+    group: "brokers"
+    props: { redundancy: "local", encryptionAtRest: true, snapshots: false }
+
+  - id: "offsets-topic"
+    component: "kafka"
+    label: "__consumer_offsets (state storage)"
+    group: "brokers"
+    props: { compaction: true, ordering: "per-key", replicationFactor: 3, minInsyncReplicas: 2, acks: "all", storage: "persistent" }
+
+  - id: "txn-log-topic"
+    component: "kafka"
+    label: "Transaction log (internal topic)"
+    group: "brokers"
+    props: { compaction: true, ordering: "per-key", replicationFactor: 3, minInsyncReplicas: 2, acks: "all", storage: "persistent" }
+
+  - id: "dead-letter-topic"
+    component: "kafka"
+    label: "Dead-letter topic (extension)"
+    group: "brokers"
+    props: { ordering: "per-key", replicationFactor: 3, minInsyncReplicas: 2, acks: "all", retentionHours: 336, storage: "persistent" }
+
+  - id: "group-coordinator"
+    component: "container-service"
+    label: "Consumer group coordinator (broker role)"
+    group: "control-plane"
+    props: { stateless: false, criticality: "high" }
+
+  - id: "transaction-coordinator"
+    component: "container-service"
+    label: "Transaction coordinator (broker role)"
+    group: "control-plane"
+    props: { stateless: false, criticality: "high" }
+
+  - id: "coordination-service"
+    component: "zookeeper"
+    label: "Coordination service and metadata storage (ZooKeeper ensemble or KRaft quorum)"
+    group: "control-plane"
+    props: { role: "metadata", consensus: "zab", replicated: true }
+
+  - id: "consumer-client"
+    component: "sdk-client"
+    label: "Consumer client (pull by offset, read_committed)"
+    group: "consumers"
+    props: { platform: "sdk", resendPolicy: "none", localCache: true }
+
+  - id: "consumer-app"
+    component: "container-worker"
+    label: "Consumer application"
+    group: "consumers"
+    props: { trigger: "stream", idempotent: true }
+
+  - id: "streams-app"
+    component: "kafka-streams"
+    label: "Stream processing application (exactly-once)"
+    group: "consumers"
+    props: { windowing: "none", exactlyOnce: true, stateBackend: "rocksdb", checkpointIntervalSeconds: 1 }
+
+  - id: "remote-store"
+    component: "supplier-api"
+    label: "Remote store updated by a side effect"
+    group: "consumers"
+
+edges:
+  - { from: "producer-app", to: "producer-client", protocol: "in-process", mode: "sync", label: "send record" }
+  - { from: "producer-client", to: "broker-cluster", protocol: "kafka", mode: "async", delivery: "exactly-once", batched: true, idempotent: true, retryPolicy: "exponential-jitter", label: "produce: keyed, batched, acks=all, producer id and sequence number" }
+  - { from: "quota-enforcer", to: "broker-cluster", protocol: "kafka", mode: "sync", label: "throttle produce and fetch per (user, client-id)" }
+  - { from: "broker-cluster", to: "segment-storage", protocol: "file", mode: "sync", label: "append to the segment log, page cache" }
+  - { from: "broker-cluster", to: "coordination-service", protocol: "zookeeper", mode: "sync", label: "cluster metadata, controller and partition leader election" }
+  - { from: "producer-client", to: "transaction-coordinator", protocol: "kafka", mode: "sync", label: "initTransactions, begin, commit" }
+  - { from: "transaction-coordinator", to: "txn-log-topic", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "transaction state" }
+  - { from: "transaction-coordinator", to: "broker-cluster", protocol: "kafka", mode: "sync", label: "write commit or abort markers into every touched partition" }
+  - { from: "transaction-coordinator", to: "coordination-service", protocol: "zookeeper", mode: "sync", label: "coordinator placement" }
+  - { from: "group-coordinator", to: "coordination-service", protocol: "zookeeper", mode: "sync", label: "group membership" }
+  - { from: "consumer-client", to: "group-coordinator", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "join group, heartbeat, rebalance" }
+  - { from: "group-coordinator", to: "offsets-topic", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "group state, compacted" }
+  - { from: "consumer-client", to: "broker-cluster", protocol: "kafka", mode: "sync", batched: true, label: "fetch from offset, read_committed" }
+  - { from: "consumer-client", to: "offsets-topic", protocol: "kafka", mode: "async", delivery: "at-least-once", idempotent: true, label: "commit offset" }
+  - { from: "consumer-client", to: "consumer-app", protocol: "in-process", mode: "sync", label: "deliver records" }
+  - { from: "consumer-app", to: "dead-letter-topic", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "park messages that cannot be processed" }
+  - { from: "broker-cluster", to: "streams-app", protocol: "kafka", mode: "async", delivery: "exactly-once", label: "input topics, read_committed" }
+  - { from: "streams-app", to: "broker-cluster", protocol: "kafka", mode: "async", delivery: "exactly-once", label: "output topics, changelog and consumer offsets in one transaction" }
+  - { from: "streams-app", to: "remote-store", protocol: "https", mode: "async", delivery: "at-least-once", idempotent: true, label: "side effect outside the transaction, so it is made idempotent" }
+  - { from: "dead-letter-topic", to: "consumer-app", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "replay after the defect is fixed" }

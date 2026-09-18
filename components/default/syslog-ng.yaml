@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# syslog-ng Open Source Edition: log collector that routes messages from sources - network, files,
+# systemd-journal, Kubernetes, Kafka, MQTT - through filters, parsers and rewrite rules to
+# destinations including files, Elasticsearch, Kafka, AMQP and databases. JSON, CSV, XML and syslog
+# parsers are built in, TLS supports mutual authentication, and destinations can hold a normal or a
+# reliable disk buffer while an output is unavailable ("Introduction to syslog-ng").
+schemaVersion: "1"
+type: "component"
+id: "syslog-ng"
+kind: "monitoring"
+provider: "default"
+defaults:
+  managed: false
+  signal: "logs"
+  collectorMode: "push"
+properties:
+  diskBuffer:
+    type: "enum"
+    values: ["none", "normal", "reliable"]
+  structuredParsing:
+    type: "boolean"
+    default: true
+  tls:
+    type: "boolean"

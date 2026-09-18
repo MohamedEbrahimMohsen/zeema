@@ -1,0 +1,200 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture 8, broken variant: the same Uber dispatch marketplace as it stood before
+# the 2014-2015 rebuild. One unsharded PostgreSQL primary is the system of record behind an async
+# read replica, the stateful dispatch processes sit on a consistent hash ring that nothing owns,
+# RTAPI looks the ring up on every reconnect with no stampede guard, every call is retried with no
+# circuit breaker, and the in-memory geospatial index is only ever written on the request path.
+#
+# This file MUST trip:
+#   - single-writer-primary-at-peak-qps        (trip-store: multiWriter false, sharded false, 20000 rps)
+#   - read-replica-as-sole-scaling             (trip-store: replication async, not sharded, not distributed, 20000 rps)
+#   - business-updates-without-index-propagation (business-logic writes trip-store sync, geo-index exists, no CDC leaves trip-store)
+#   - stateful-hash-ring-without-ring-manager  (dispatch, supply and demand are on a consistent hash ring with no edge to ringpop)
+#   - reconnect-stampede-without-guard         (rtapi calls ringpop sync on connect with stampedeGuard false)
+#   - retry-without-adaptive-shedding          (rtapi -> dispatch retries exponentially, no circuit breaker, no rate limiter in front of dispatch)
+#   - derived-store-without-cdc-or-rebuild     (geo-index has no async feed from a stream, CDC or worker)
+# and MUST NOT trip:
+#   - datastore-missing-backup                 (trip-store declares backup and retention)
+#   - datastore-single-region                  (trip-store replication is async, not none)
+#   - cache-missing-eviction-policy            (redis-cache declares lru)
+#   - read-heavy-path-without-cache            (traffic.readWriteRatio is not declared; the sources never quantify it)
+#   - credentials-without-rotation             (security.credentialRotationDays is set)
+#   - sync-chain-too-deep                      (no api-gateway node and no latency.p95Ms target)
+#   - stateful-node-without-zone-redundancy, stateful-engine-pinned-to-single-zone (no availability-zone groups)
+#   - shared-host-per-channel-without-isolation (rtapi assigns channels by hash; traffic.skew is not declared)
+#   - stateful-websocket-scale-in-without-drain (rtapi does not autoscale)
+#   - shared-dependency-without-redundancy     (availability.discoveryRedundant is not declared)
+#   - queue-missing-dlq, retry-queue-without-dlq, pubsub-replay-required (no queue or pubsub-topic node)
+#   - money-mutation-without-idempotency-key, money-store-without-double-entry-ledger (no money node)
+#   - cache-as-primary-store-without-persistence, materialised-cache-without-rebuild-path (redis-cache is neither primary nor materialised)
+schemaVersion: "1"
+type: "design"
+id: "uber-dispatch"
+
+requirements:
+  availability:
+    multiRegion: true
+    degradedModeAllowed: true
+  consistency:
+    model: "ap"
+  correctness:
+    exactlyOnceEffect: true
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "uber-dc", kind: "region", label: "Uber datacenter (active, failover twin)" }
+  - { id: "edge-zone", kind: "trust-zone", parent: "uber-dc", label: "Mobile edge" }
+  - { id: "dispatch-system", kind: "system", parent: "uber-dc", label: "Dispatch" }
+  - { id: "platform-services", kind: "system", parent: "uber-dc", label: "Business logic and routing" }
+  - { id: "data-layer", kind: "system", parent: "uber-dc", label: "Marketplace data layer" }
+  - { id: "ops-plane", kind: "system", parent: "uber-dc", label: "Observability" }
+
+nodes:
+  - id: "driver-app"
+    component: "mobile-app"
+    label: "Driver app"
+    props: { platform: "mobile", os: "both", localCache: true, offlineCapable: true, persistentConnection: true, resendPolicy: "retry" }
+
+  - id: "rider-app"
+    component: "mobile-app"
+    label: "Rider app"
+    props: { platform: "mobile", os: "both", localCache: true, persistentConnection: true, resendPolicy: "retry" }
+
+  - id: "rtapi"
+    component: "websocket-gateway"
+    label: "RTAPI"
+    group: "edge-zone"
+    props: { protocol: "websocket", stateful: true, channelAssignment: "hash", drainOnScaleIn: true, stampedeGuard: false, autoscaling: false }
+
+  - id: "dispatch"
+    component: "container-service"
+    label: "Dispatch"
+    group: "dispatch-system"
+    props: { stateless: false, runtime: "nodejs", shardingStrategy: "consistent-hash", criticality: "high", ownsData: true }
+
+  - id: "supply"
+    component: "container-service"
+    label: "Supply"
+    group: "dispatch-system"
+    props: { stateless: false, runtime: "nodejs", shardingStrategy: "consistent-hash", criticality: "high", ownsData: true }
+
+  - id: "demand"
+    component: "container-service"
+    label: "Demand"
+    group: "dispatch-system"
+    props: { stateless: false, runtime: "nodejs", shardingStrategy: "consistent-hash", criticality: "high", ownsData: true }
+
+  - id: "disco"
+    component: "container-service"
+    label: "DISCO"
+    group: "dispatch-system"
+    props: { stateless: true, runtime: "nodejs", criticality: "high", ownsData: false }
+
+  - id: "ringpop"
+    component: "apache-helix"
+    label: "Ringpop"
+    group: "dispatch-system"
+    props: { role: "sharding", consensus: "none", replicated: true, stateModel: "custom" }
+
+  - id: "geo-index"
+    component: "geo-cell-index"
+    label: "Geospatial index"
+    group: "dispatch-system"
+    props: { structure: "geo-cell", shardingStrategy: "geo", geoScheme: "s2", cellLevel: 12, inMemory: true, indexing: "sync" }
+    nfr: { rps: 1000000 }
+
+  - id: "routing-eta"
+    component: "container-service"
+    label: "Routing / ETA"
+    group: "platform-services"
+    props: { stateless: true, runtime: "cpp", criticality: "high", ownsData: false }
+
+  - id: "business-logic"
+    component: "container-service"
+    label: "Business logic services"
+    group: "platform-services"
+    props: { stateless: true, runtime: "python", instances: 100, criticality: "high" }
+
+  - id: "trip-workflows"
+    component: "cadence"
+    label: "Cadence"
+    group: "platform-services"
+    props: { durable: true, pattern: "saga", stepsIdempotent: true, activityRetry: true }
+
+  - id: "post-trip-pipeline"
+    component: "container-worker"
+    label: "Post-trip pipeline"
+    group: "platform-services"
+    props: { trigger: "stream", idempotent: true, orchestrator: "none" }
+
+  - id: "event-hub"
+    component: "kafka"
+    label: "Kafka (data hub)"
+    group: "data-layer"
+    props: { delivery: "at-least-once", ordering: "per-key", storage: "persistent" }
+
+  - id: "dispatch-state"
+    component: "riak"
+    label: "Riak"
+    group: "data-layer"
+    props: { model: "key-value", consistency: "eventual", conflictResolution: "vector-clock", replicationFactor: 3 }
+
+  - id: "trip-store"
+    component: "postgres"
+    label: "PostgreSQL (single primary)"
+    group: "data-layer"
+    props: { replication: "async", sharded: false, multiWriter: false, distributed: false, replicaFanout: 2, backupEnabled: true, backupRetentionDays: 7 }
+    nfr: { rps: 20000, consistency: "strong" }
+
+  - id: "marketplace-store"
+    component: "cassandra"
+    label: "Cassandra"
+    group: "data-layer"
+    props: { model: "wide-column", consistency: "eventual", conflictResolution: "last-writer-wins" }
+
+  - id: "redis-cache"
+    component: "redis"
+    label: "Redis (behind Twemproxy)"
+    group: "data-layer"
+    props: { evictionPolicy: "lru", hashing: "consistent", cluster: true, usedAsPrimaryStore: false, materialised: false, persistence: false }
+
+  - id: "metrics"
+    component: "m3"
+    label: "M3"
+    group: "ops-plane"
+    props: { signal: "metrics", collectorMode: "push" }
+
+  - id: "tracing"
+    component: "jaeger"
+    label: "Jaeger"
+    group: "ops-plane"
+    props: { signal: "traces", collectorMode: "push" }
+
+edges:
+  - { from: "driver-app", to: "rtapi", protocol: "https", mode: "async", delivery: "at-least-once", idempotent: true, label: "location every 4 s" }
+  - { from: "rider-app", to: "rtapi", protocol: "https", mode: "sync", idempotent: true, label: "ride request" }
+  - { from: "rtapi", to: "ringpop", protocol: "tchannel", mode: "sync", label: "ring lookup on every connect" }
+  - { from: "rtapi", to: "dispatch", protocol: "tchannel", mode: "sync", retryPolicy: "exponential", idempotent: true, label: "dispatch request, retried" }
+  - { from: "rtapi", to: "business-logic", protocol: "tchannel", mode: "sync", idempotent: true, label: "trip workflow calls" }
+  - { from: "rtapi", to: "event-hub", protocol: "kafka", mode: "async", delivery: "at-least-once", batched: true, label: "location events" }
+  - { from: "dispatch", to: "supply", protocol: "tchannel", mode: "sync", label: "vehicle capabilities and state" }
+  - { from: "dispatch", to: "demand", protocol: "tchannel", mode: "sync", label: "rider requirements and orders" }
+  - { from: "dispatch", to: "disco", protocol: "tchannel", mode: "sync", label: "optimise the match" }
+  - { from: "dispatch", to: "geo-index", protocol: "tchannel", mode: "sync", idempotent: true, label: "location writes on the request path only" }
+  - { from: "disco", to: "geo-index", protocol: "tchannel", mode: "sync", label: "coarse candidate filter" }
+  - { from: "geo-index", to: "routing-eta", protocol: "tchannel", mode: "sync", label: "candidate ranking, high fan-out" }
+  - { from: "routing-eta", to: "supply", protocol: "tchannel", mode: "sync", label: "driver offers" }
+  - { from: "dispatch", to: "dispatch-state", protocol: "riak", mode: "sync", idempotent: true, label: "persist dispatch state" }
+  - { from: "dispatch", to: "driver-app", protocol: "https", mode: "async", delivery: "at-least-once", label: "encrypted trip state digest" }
+  - { from: "driver-app", to: "dispatch", protocol: "https", mode: "sync", idempotent: true, label: "restore trip state after datacenter failover" }
+  - { from: "business-logic", to: "trip-store", protocol: "postgres", mode: "sync", idempotent: true, label: "every trip, rider and driver row" }
+  - { from: "business-logic", to: "marketplace-store", protocol: "cql", mode: "sync", idempotent: true, label: "marketplace and dispatch state" }
+  - { from: "business-logic", to: "redis-cache", protocol: "redis", mode: "sync", label: "hot reads through Twemproxy" }
+  - { from: "business-logic", to: "geo-index", protocol: "tchannel", mode: "sync", label: "dual write of driver location" }
+  - { from: "business-logic", to: "trip-workflows", protocol: "tchannel", mode: "sync", idempotent: true, label: "start trip workflow" }
+  - { from: "trip-workflows", to: "business-logic", protocol: "tchannel", mode: "sync", retryPolicy: "exponential-jitter", circuitBreaker: true, idempotent: true, label: "activity execution" }
+  - { from: "business-logic", to: "event-hub", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "trip events" }
+  - { from: "event-hub", to: "post-trip-pipeline", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "ratings, receipts, payment scheduling" }
+  - { from: "event-hub", to: "tracing", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "trace spans" }
+  - { from: "dispatch", to: "metrics", protocol: "statsd", mode: "async", delivery: "at-most-once", label: "metrics" }

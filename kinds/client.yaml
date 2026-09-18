@@ -7,7 +7,7 @@ category: "client"
 properties:
   platform:
     type: "enum"
-    values: ["web", "mobile", "desktop", "sdk", "tv", "embedded"]
+    values: ["web", "mobile", "desktop", "sdk", "tv", "embedded", "multi"]
     required: true
   localCache:
     type: "boolean"

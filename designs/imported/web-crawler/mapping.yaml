@@ -1,0 +1,42 @@
+source:
+  file: "source/web-crawler.md"
+  format: "book-figure"
+  figures: ["9-2", "9-4"]
+  counts: { nodes: 11, edges: 13, groups: 0 }
+nodes:
+  - { source: "seed URLs", node: "seed-urls", component: "blob-store", confidence: "assumed", note: "the starting set of URLs, drawn as a plain box with no store icon; no product and no storage type named, modelled as the crawl's input data set in a generic object store" }
+  - { source: "URL Frontier", node: "url-frontier", component: "message-queue", confidence: "close", note: "the book calls it a FIFO queue of URLs to be downloaded; generic queue with role frontier and per-key (per-host) ordering, which is what Figure 9-8 draws. Kept as ONE node: the front/back queues are a separate figure" }
+  - { source: "HTML Downloader", node: "html-downloader", component: "container-worker", confidence: "close", note: "consumes URLs from the frontier and downloads pages; the chapter describes downloader servers running worker threads, so a worker rather than a service" }
+  - { source: "DNS Resolver", node: "dns-resolver", component: "dns-resolver", confidence: "close", note: "generic DNS; no provider named" }
+  - { source: "Content Parser", node: "content-parser", component: "container-service", confidence: "close", note: "generic service box, no product named" }
+  - { source: "Content Seen?", node: "content-seen", component: "container-service", confidence: "close", note: "duplicate-content check drawn as a processing box; no product named" }
+  - { source: "Content Storage", node: "content-storage", component: "blob-store", confidence: "close", note: "cylinder holding HTML pages (30 PB over five years); generic object store" }
+  - { source: "Link Extractor", node: "link-extractor", component: "container-service", confidence: "close", note: "generic service box; the figure's label is Link Extractor, the chapter's component list calls it URL Extractor, the drawn label is kept" }
+  - { source: "URL Filter", node: "url-filter", component: "container-service", confidence: "close", note: "generic service box, no product named" }
+  - { source: "URL Seen?", node: "url-seen", component: "container-service", confidence: "close", note: "bloom filter / hash table check drawn as a processing box; no product named" }
+  - { source: "URL Storage", node: "url-storage", component: "nosql-store", confidence: "close", note: "cylinder holding already visited URLs; a key-value set of URLs, generic NoSQL store with the default key-value model" }
+groups: []
+edges:
+  - { source: "seed URLs -> URL Frontier (1)", from: "seed-urls", to: "url-frontier" }
+  - { source: "URL Frontier -> HTML Downloader (2)", from: "url-frontier", to: "html-downloader" }
+  - { source: "HTML Downloader -> DNS Resolver (3)", from: "html-downloader", to: "dns-resolver" }
+  - { source: "HTML Downloader -> Content Parser (4)", from: "html-downloader", to: "content-parser" }
+  - { source: "Content Parser -> Content Seen? (5)", from: "content-parser", to: "content-seen" }
+  - { source: "Content Seen? <-> Content Storage (6), write side", from: "content-seen", to: "content-storage", note: "double-headed arrow, first of two edges" }
+  - { source: "Content Seen? <-> Content Storage (6), read side", from: "content-storage", to: "content-seen", note: "double-headed arrow, second of two edges" }
+  - { source: "Content Seen? -> Link Extractor (7)", from: "content-seen", to: "link-extractor" }
+  - { source: "Link Extractor -> URL Filter (8)", from: "link-extractor", to: "url-filter" }
+  - { source: "URL Filter -> URL Seen? (9)", from: "url-filter", to: "url-seen" }
+  - { source: "URL Seen? <-> URL Storage (10), write side", from: "url-seen", to: "url-storage", note: "double-headed arrow, first of two edges" }
+  - { source: "URL Seen? <-> URL Storage (10), read side", from: "url-storage", to: "url-seen", note: "double-headed arrow, second of two edges" }
+  - { source: "URL Seen? -> URL Frontier (11)", from: "url-seen", to: "url-frontier" }
+ignored:
+  - { source: "Figure 9-2 / Figure 9-4 caption", reason: "figure caption, not a system element" }
+  - { source: "circled sequence numbers 1-11", reason: "workflow step numbers; kept as edge labels, not boxes" }
+unmapped: []
+gaps:
+  - "Politeness (one page at a time per host, a delay between two downloads) has no expression: the queue kind has ordering and the worker kind has rateControl, but neither says per-host serialisation with a delay."
+  - "Content Storage is described as disk with popular content kept in memory; object-store has tier hot/warm/cold and no memory tier, so the split is not encoded."
+  - "The URL frontier's internal structure (front queues for priority, back queues for politeness, prioritizer, queue routers and selectors, mapping table, worker threads) is a separate figure and cannot be expressed inside one node; it is left out."
+  - "The chapter states 1 billion pages a month, 500 KB per page, 500 TB a month and 30 PB over five years; requirements has no path for stored volume or retention, so only traffic.peakMultiplier could be encoded."
+  - "Freshness (periodic recrawl) is stated without a number, and freshness.maxSeconds needs one."

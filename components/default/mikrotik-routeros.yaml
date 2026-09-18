@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# MikroTik RouterOS: the operating system of MikroTik routing devices ("RouterOS - MikroTik
+# Documentation"). "Firewall - RouterOS - MikroTik Documentation" states the firewall does
+# stateful filtering by utilizing connection tracking as well as stateless packet filtering, and
+# that a packet which has not matched any rule within the chain is accepted, so the shipped
+# posture is allow. No intrusion prevention module appears in the firewall documentation.
+schemaVersion: "1"
+type: "component"
+id: "mikrotik-routeros"
+kind: "firewall"
+provider: "default"
+defaults:
+  managed: false
+  defaultAction: "allow"
+  stateful: true
+  intrusionPrevention: false
+properties:
+  connectionTracking:
+    type: "boolean"
+    default: true
+  module:
+    type: "enum"
+    values: ["filter", "mangle", "nat", "raw"]
+    default: "filter"

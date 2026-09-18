@@ -1,0 +1,216 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture: the Airbnb service-oriented platform behind search — a four-layer
+# service hierarchy over exclusively owned datastores, SpinalTap change data capture into
+# Kafka, derived data in Mussel and Elasticsearch, and authorization centralised in Himeji.
+#
+# Fixes relative to airbnb-search.broken.yaml:
+#   - every mutation leaves its store through SpinalTap: listings-db and dynamo-store both
+#     feed the CDC service, so the search index is never updated by a dual write
+#   - search-indexer consumes kafka-cdc and writes search-index asynchronously, so indexing
+#     is off the request path and the index is rebuildable
+#   - himeji-cache is a look-aside cache over the durable himeji-store (Aurora), invalidated
+#     by CDC events rather than being the only copy of the permission tuples
+#   - user-signals-flink processes one event at a time (windowing none), which is why the
+#     User Signals Platform left Spark Streaming micro-batches
+#   - credential rotation is stated for the datastores the services own
+# This file MUST trip no rule.
+schemaVersion: "1"
+type: "design"
+id: "airbnb-search"
+
+requirements:
+  availability:
+    multiRegion: false
+    sla: "99.999"
+  consistency:
+    model: "ap"
+  messaging:
+    replay: true
+    orderingScope: "partition"
+  data:
+    ownershipExclusive: true
+  correctness:
+    reproducible: true
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "aws-prod", kind: "region" }
+  - { id: "prod-vpc", kind: "vpc", parent: "aws-prod" }
+  - { id: "edge", kind: "trust-zone", parent: "prod-vpc" }
+  - { id: "service-network", kind: "trust-zone", parent: "prod-vpc" }
+  - { id: "data-tier", kind: "trust-zone", parent: "prod-vpc" }
+
+nodes:
+  - id: "client"
+    component: "user-device"
+    label: "Web and mobile clients"
+    props: { platform: "multi" }
+
+  - id: "api-gateway"
+    component: "envoy-gateway"
+    group: "edge"
+    props: { tls: true, protocol: "http" }
+
+  - id: "presentation-service"
+    component: "container-service"
+    label: "Presentation services"
+    group: "service-network"
+    props: { orchestrator: "kubernetes", ownsData: false, runtime: "java", criticality: "high" }
+
+  - id: "middle-tier-service"
+    component: "container-service"
+    label: "Middle-tier utility services"
+    group: "service-network"
+    props: { orchestrator: "kubernetes", ownsData: false, runtime: "java" }
+
+  - id: "derived-data-service"
+    component: "container-service"
+    label: "Derived data services"
+    group: "service-network"
+    props: { orchestrator: "kubernetes", ownsData: true, runtime: "java" }
+
+  - id: "data-service"
+    component: "container-service"
+    label: "Data services"
+    group: "service-network"
+    props: { orchestrator: "kubernetes", ownsData: true, runtime: "java", criticality: "high" }
+
+  - id: "monorail"
+    component: "container-service"
+    label: "Monorail"
+    group: "service-network"
+    props: { orchestrator: "none", ownsData: false, runtime: "ruby-on-rails" }
+
+  - id: "search-ranking-service"
+    component: "container-service"
+    label: "Search ranking"
+    group: "service-network"
+    props: { orchestrator: "kubernetes", ownsData: false, runtime: "java" }
+
+  - id: "search-indexer"
+    component: "container-worker"
+    label: "Search indexing service"
+    group: "service-network"
+    props: { trigger: "stream", orchestrator: "kubernetes" }
+
+  - id: "riverbed"
+    component: "container-worker"
+    label: "Riverbed"
+    group: "service-network"
+    props: { trigger: "stream", orchestrator: "kubernetes" }
+
+  - id: "airstream"
+    component: "spark-streaming"
+    label: "Airstream"
+    group: "service-network"
+    props: { windowing: "processing-time" }
+
+  - id: "user-signals-flink"
+    component: "flink"
+    label: "User Signals Platform"
+    group: "service-network"
+    props: { windowing: "none", instances: 100 }
+    nfr: { rps: 1000000 }
+
+  - id: "spinaltap"
+    component: "debezium"
+    label: "SpinalTap"
+    group: "data-tier"
+    props: { mode: "log-based", ordered: true }
+
+  - id: "zookeeper"
+    component: "zookeeper"
+    group: "data-tier"
+    props: { role: "leader-election", replicated: true }
+
+  - id: "kafka-cdc"
+    component: "kafka"
+    label: "Kafka (CDC cluster)"
+    group: "data-tier"
+    props: { delivery: "at-least-once", ordering: "per-key", storage: "persistent" }
+
+  - id: "kafka-analytics"
+    component: "kafka"
+    label: "Kafka (analytics cluster)"
+    group: "data-tier"
+    props: { delivery: "at-least-once", ordering: "per-key", storage: "persistent" }
+
+  - id: "listings-db"
+    component: "mysql"
+    group: "data-tier"
+    props: { backupEnabled: true, backupRetentionDays: 30 }
+
+  - id: "dynamo-store"
+    component: "dynamodb"
+    group: "data-tier"
+    props: { model: "key-value", streams: true, backupEnabled: true, backupRetentionDays: 30 }
+
+  - id: "himeji"
+    component: "spicedb"
+    label: "Himeji"
+    group: "data-tier"
+    props: { authorizationModel: "rebac", centralised: true, protocol: "custom" }
+    nfr: { rps: 850000 }
+
+  - id: "himeji-cache"
+    component: "cache-cluster"
+    label: "Himeji cache"
+    group: "data-tier"
+    props: { evictionPolicy: "lru", invalidation: "event", hashing: "consistent", usedAsPrimaryStore: false, materialised: false, persistence: false }
+
+  - id: "himeji-store"
+    component: "aurora"
+    label: "Himeji Aurora"
+    group: "data-tier"
+    props: { backupEnabled: true, backupRetentionDays: 30 }
+
+  - id: "mussel"
+    component: "hbase"
+    label: "Mussel"
+    group: "data-tier"
+    props: { model: "key-value", conflictResolution: "last-writer-wins" }
+    nfr: { rps: 100000 }
+
+  - id: "search-index"
+    component: "elasticsearch"
+    group: "data-tier"
+    props: { structure: "inverted", indexing: "async" }
+
+  - id: "hive"
+    component: "hive"
+    group: "data-tier"
+    props: { realtime: false }
+
+edges:
+  - { from: "client", to: "api-gateway", protocol: "https", mode: "sync" }
+  - { from: "client", to: "kafka-analytics", protocol: "https", mode: "async", delivery: "at-most-once", label: "logging events" }
+  - { from: "api-gateway", to: "presentation-service", protocol: "thrift", mode: "sync" }
+  - { from: "api-gateway", to: "monorail", protocol: "http", mode: "sync", label: "endpoints not yet drained" }
+  - { from: "presentation-service", to: "middle-tier-service", protocol: "thrift", mode: "sync", label: "shared validation" }
+  - { from: "presentation-service", to: "derived-data-service", protocol: "thrift", mode: "sync", label: "parallel async RPC" }
+  - { from: "presentation-service", to: "data-service", protocol: "thrift", mode: "sync", label: "parallel async RPC" }
+  - { from: "presentation-service", to: "search-ranking-service", protocol: "thrift", mode: "sync", label: "rank listings" }
+  - { from: "presentation-service", to: "search-index", protocol: "http", mode: "sync", label: "search query" }
+  - { from: "middle-tier-service", to: "data-service", protocol: "thrift", mode: "sync" }
+  - { from: "derived-data-service", to: "data-service", protocol: "thrift", mode: "sync" }
+  - { from: "derived-data-service", to: "mussel", protocol: "hbase", mode: "sync", label: "read derived data" }
+  - { from: "monorail", to: "data-service", protocol: "thrift", mode: "sync", label: "ActiveRecord adapter shim" }
+  - { from: "data-service", to: "himeji", protocol: "grpc", mode: "sync", label: "authorization check per access" }
+  - { from: "data-service", to: "listings-db", protocol: "mysql", mode: "sync", label: "exclusive owner" }
+  - { from: "data-service", to: "dynamo-store", protocol: "dynamodb", mode: "sync", label: "exclusive owner" }
+  - { from: "himeji", to: "himeji-cache", protocol: "internal", mode: "sync", label: "98% hit" }
+  - { from: "himeji-cache", to: "himeji-store", protocol: "mysql", mode: "sync", label: "cache miss" }
+  - { from: "listings-db", to: "spinaltap", protocol: "mysql-binlog", mode: "async", delivery: "at-least-once", label: "binlog" }
+  - { from: "dynamo-store", to: "spinaltap", protocol: "dynamodb-streams", mode: "async", delivery: "at-least-once", label: "streams" }
+  - { from: "spinaltap", to: "zookeeper", protocol: "zookeeper", mode: "sync", label: "checkpoints, leader election" }
+  - { from: "spinaltap", to: "kafka-cdc", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "thrift mutation events" }
+  - { from: "kafka-cdc", to: "search-indexer", protocol: "kafka", mode: "async", delivery: "at-least-once" }
+  - { from: "search-indexer", to: "search-index", protocol: "http", mode: "async", delivery: "at-least-once", batched: true, label: "index" }
+  - { from: "kafka-cdc", to: "himeji-cache", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "invalidation" }
+  - { from: "kafka-cdc", to: "mussel", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "write-ahead log" }
+  - { from: "kafka-cdc", to: "riverbed", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "materialised views" }
+  - { from: "hive", to: "mussel", protocol: "hfile", mode: "async", batched: true, label: "bulk load, merged by timestamp" }
+  - { from: "kafka-analytics", to: "airstream", protocol: "kafka", mode: "async", delivery: "at-least-once" }
+  - { from: "kafka-analytics", to: "user-signals-flink", protocol: "kafka", mode: "async", delivery: "at-least-once" }
+  - { from: "airstream", to: "hive", protocol: "hdfs", mode: "async", batched: true, label: "hourly partitions, HBase dedup" }

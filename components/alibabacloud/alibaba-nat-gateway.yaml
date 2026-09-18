@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# NAT Gateway: address translation for traffic leaving or entering a VPC. "What is NAT Gateway"
+# describes a fully managed network address translation gateway, the Internet NAT gateway that
+# translates private IPv4 addresses to EIPs so multiple ECS instances share one EIP through SNAT, and
+# the VPC NAT gateway that translates addresses inside a VPC; deployment is either cross-zone disaster
+# recovery with automatic failover on a zone failure or single-zone disaster recovery, and the page
+# states no default, so zoneRedundant is left unset. No idle connection timeout is stated.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-nat-gateway"
+kind: "nat-gateway"
+provider: "alibabacloud"
+defaults:
+  managed: true
+properties:
+  gatewayType:
+    type: "enum"
+    values: ["internet", "vpc"]
+  deploymentMode:
+    type: "enum"
+    values: ["cross-zone", "single-zone"]
+  snat:
+    type: "boolean"
+    default: true

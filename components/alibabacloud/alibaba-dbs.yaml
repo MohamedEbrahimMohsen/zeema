@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Database Backup (DBS): continuous backup for databases running on Alibaba Cloud, in enterprise data
+# centres and on third-party clouds. "Database Backup: Real-Time Incremental Backups in Multi-Environment"
+# states that DBS performs incremental backups in real time and lowers RPOs to several seconds, that it
+# backs up databases deployed on ECS instances, in on-premises data centres and in third-party cloud
+# environments, and that encryption is used for data in transit and in storage. The documentation states
+# no default schedule, retention or storage redundancy, so none are set here.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-dbs"
+kind: "backup-service"
+provider: "alibabacloud"
+defaults:
+  managed: true
+properties:
+  realTimeIncrementalBackup:
+    type: "boolean"
+    default: true
+  sourceEnvironment:
+    type: "enum"
+    values: ["alibaba-cloud", "on-premises", "third-party-cloud"]
+  backupEncryption:
+    type: "boolean"
+    default: true

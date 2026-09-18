@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenStack Mistral: workflow service that runs a set of tasks and the relations between them, handling state,
+# sequencing, parallelism and synchronisation. Per "Mistral Workflow Language v2" a workflow is "direct" by
+# default - a graph of tasks with explicit transitions - with the reverse (dependency) type as the alternative,
+# and both the retry policy and join are optional, so a task neither retries nor joins unless declared.
+schemaVersion: "1"
+type: "component"
+id: "openstack-mistral"
+kind: "workflow-engine"
+provider: "openstack"
+defaults:
+  pattern: "dag"
+  managed: false
+properties:
+  workflowType:
+    type: "enum"
+    values: ["direct", "reverse"]
+    default: "direct"
+  retryPolicy:
+    type: "boolean"
+    default: false
+  join:
+    type: "boolean"
+    default: false
+  cronTriggers:
+    type: "boolean"
+    default: false

@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Alibaba Cloud DNS: managed authoritative and private resolution platform whose sub-products are
+# Public Zone, Private Zone, Global Traffic Manager, Recursive Gateway and HTTPDNS.
+# "What is Alibaba Cloud DNS" and "Alibaba Cloud DNS:Edition comparison": the Free and Personal
+# editions resolve on basic region and carrier lines and enforce a minimum TTL of 600 seconds, while
+# Enterprise Ultimate and Premium add province and country level lines, custom lines, DNSSEC,
+# secondary DNS and a one-second minimum TTL; health-checked failover is the separate Global Traffic
+# Manager sub-product.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-dns"
+kind: "dns"
+provider: "alibabacloud"
+defaults:
+  geoRouting: true
+  healthChecked: false
+  redundantProviders: false
+  managed: true
+properties:
+  edition:
+    type: "enum"
+    values: ["free", "personal", "enterprise-ultimate", "premium"]
+    default: "free"
+  minTtlSeconds:
+    type: "integer"
+    default: 600
+  dnssec:
+    type: "boolean"
+    default: false
+  secondaryDns:
+    type: "boolean"
+    default: false

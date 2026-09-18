@@ -1,0 +1,189 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Grab's geo stack, broken variant: Pharos is sharded on a consistent hash ring with no ring
+# manager, its in-memory road-graph index is only ever written on the driver-update request
+# path, dispatch retries into a failing Pharos shard with no breaker, and the routing engine
+# reads the external OpenStreetMap feed inline on a stream it calls exactly-once.
+#
+# This file MUST trip:
+#   - stateful-hash-ring-without-ring-manager   (pharos-proxy and pharos-node use consistent-hash with no coordination-service)
+#   - derived-store-without-cdc-or-rebuild      (pharos-model has no async in-edge from a worker or stream)
+#   - retry-without-adaptive-shedding           (dispatch-service -> pharos-proxy retries with no circuit breaker)
+#   - external-call-inline-without-durable-path (routing-engine calls osm-feed sync with no queue or workflow engine)
+#   - exactly-once-with-external-side-effects   (coban-kafka -> routing-engine claims exactly-once while routing-engine calls osm-feed)
+# and MUST NOT trip:
+#   - credentials-without-rotation              (security.credentialRotationDays is still set)
+#   - fanout-inline-in-request-path             (no app-server calls parquetizer or map-pipeline synchronously)
+#   - cache-missing-eviction-policy, cache-as-primary-store-without-persistence,
+#     materialised-cache-without-rebuild-path   (the design has no cache node)
+#   - datastore-missing-backup, datastore-single-region, read-heavy-path-without-cache,
+#     single-writer-primary-at-peak-qps, read-replica-as-sole-scaling,
+#     business-updates-without-index-propagation (no sql-database node)
+#   - queue-missing-dlq, retry-queue-without-dlq, retry-without-backoff (Kafka is a stream, not a queue)
+#   - pubsub-replay-required                    (no pubsub-topic node)
+#   - cross-cell-call                           (isolation.tenancy is not "cell")
+#   - stateful-node-without-zone-redundancy, stateful-engine-pinned-to-single-zone
+#                                               (no availability-zone groups and no engine kinds)
+#   - reconnect-stampede-without-guard, shared-host-per-channel-without-isolation,
+#     stateful-websocket-scale-in-without-drain (no realtime-gateway node)
+#   - sync-chain-too-deep                       (no api-gateway node and no latency.p95Ms requirement)
+schemaVersion: "1"
+type: "design"
+id: "grab-geo"
+
+requirements:
+  availability:
+    multiRegion: false
+    zones: 3
+    degradedModeAllowed: true
+  consistency:
+    model: "ap"
+  messaging:
+    replay: true
+    orderingScope: "partition"
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "grab-region", kind: "region", label: "AWS region (three availability zones)" }
+  - { id: "dispatch", kind: "system", parent: "grab-region", label: "Dispatch and Pharos" }
+  - { id: "grabmaps", kind: "system", parent: "grab-region", label: "GrabMaps" }
+  - { id: "coban", kind: "system", parent: "grab-region", label: "Coban (Kafka on Kubernetes)" }
+  - { id: "catwalk", kind: "system", parent: "grab-region", label: "Catwalk model serving" }
+
+nodes:
+  - id: "driver-app"
+    component: "mobile-app"
+    label: "Driver app"
+    props: { platform: "mobile", os: "both" }
+
+  - id: "passenger-app"
+    component: "mobile-app"
+    label: "Passenger app"
+    props: { platform: "mobile", os: "both" }
+
+  - id: "location-ingestion"
+    component: "container-service"
+    label: "Location ingestion"
+    group: "dispatch"
+    props: { stateless: true, orchestrator: "kubernetes", runtime: "go", criticality: "high", ownsData: false }
+
+  - id: "dispatch-service"
+    component: "container-service"
+    label: "Dispatch / allocation"
+    group: "dispatch"
+    props: { stateless: true, orchestrator: "kubernetes", runtime: "go", criticality: "high", ownsData: false }
+
+  - id: "pharos-proxy"
+    component: "container-service"
+    label: "Pharos proxy layer"
+    group: "dispatch"
+    props: { stateless: true, shardingStrategy: "consistent-hash", orchestrator: "kubernetes", criticality: "high", ownsData: false }
+
+  - id: "pharos-node"
+    component: "container-service"
+    label: "Pharos node layer"
+    group: "dispatch"
+    props: { stateless: false, shardingStrategy: "consistent-hash", orchestrator: "kubernetes", criticality: "high", ownsData: true }
+
+  - id: "pharos-model"
+    component: "geo-cell-index"
+    label: "Pharos model (road graph per city and vehicle type)"
+    group: "dispatch"
+    props: { shardingStrategy: "geo", geoScheme: "none", inMemory: true, indexing: "sync" }
+    nfr: { consistency: "eventual" }
+
+  - id: "routing-engine"
+    component: "container-service"
+    label: "Routing and ETA engine"
+    group: "grabmaps"
+    props: { stateless: true, orchestrator: "kubernetes", criticality: "high", ownsData: false }
+
+  - id: "osm-feed"
+    component: "maps-api"
+    label: "OpenStreetMap extracts (Geofabrik .pbf)"
+    props: { idempotent: true, billingPerRequest: false }
+
+  - id: "kartaview"
+    component: "blob-store"
+    label: "KartaView imagery"
+    group: "grabmaps"
+    props: { versioning: true, encryptionAtRest: true }
+
+  - id: "parquetizer"
+    component: "container-worker"
+    label: "Parquetizer"
+    group: "grabmaps"
+    props: { trigger: "batch", idempotent: true }
+
+  - id: "map-pipeline"
+    component: "spark-job"
+    label: "GrabMaps pipeline (geohash processing units)"
+    group: "grabmaps"
+    props: { trigger: "batch", idempotent: true, resourceManager: "kubernetes" }
+
+  - id: "coban-kafka"
+    component: "kafka"
+    label: "Coban Kafka (Strimzi on EKS, EBS gp3)"
+    group: "coban"
+    props: { replicationFactor: 3, delivery: "at-least-once", ordering: "per-key", storage: "persistent", consumerGroups: true }
+
+  - id: "node-termination-handler"
+    component: "container-service"
+    label: "AWS Node Termination Handler"
+    group: "coban"
+    props: { stateless: true, orchestrator: "kubernetes", criticality: "medium", ownsData: false }
+
+  - id: "lb-controller"
+    component: "container-service"
+    label: "AWS Load Balancer Controller"
+    group: "coban"
+    props: { stateless: true, orchestrator: "kubernetes", criticality: "medium", ownsData: false }
+
+  - id: "catwalk-proxy"
+    component: "container-service"
+    label: "Catwalk Proxy"
+    group: "catwalk"
+    props: { stateless: true, orchestrator: "kubernetes", criticality: "high", ownsData: false }
+
+  - id: "catwalk-orchestrator"
+    component: "container-service"
+    label: "Catwalk Orchestrator"
+    group: "catwalk"
+    props: { stateless: true, orchestrator: "kubernetes", instances: 200, criticality: "high", ownsData: false }
+
+  - id: "model-servers"
+    component: "tensorflow-serving"
+    label: "Catwalk model servers (TF Serving, ONNX, PyTorch)"
+    group: "catwalk"
+    props: { accelerator: "none", inputs: "live" }
+
+  - id: "amphawa"
+    component: "container-service"
+    label: "Amphawa feature fetching"
+    group: "catwalk"
+    props: { stateless: true, orchestrator: "kubernetes", criticality: "medium", ownsData: false }
+
+edges:
+  - { from: "driver-app", to: "location-ingestion", protocol: "https", mode: "async", delivery: "at-least-once", idempotent: true, label: "location pings" }
+  - { from: "driver-app", to: "dispatch-service", protocol: "https", mode: "sync", idempotent: true, label: "accept allocation" }
+  - { from: "passenger-app", to: "dispatch-service", protocol: "https", mode: "sync", idempotent: true, label: "book a ride" }
+  - { from: "location-ingestion", to: "pharos-proxy", protocol: "grpc", mode: "sync", label: "driver update, p99 10 ms" }
+  - { from: "location-ingestion", to: "coban-kafka", protocol: "kafka", mode: "async", delivery: "at-least-once", batched: true, label: "location events" }
+  - { from: "dispatch-service", to: "pharos-proxy", protocol: "grpc", mode: "sync", retryPolicy: "exponential", label: "K nearest drivers by routing distance, p99 50 ms" }
+  - { from: "pharos-proxy", to: "pharos-node", protocol: "grpc", mode: "sync", label: "route by map id" }
+  - { from: "pharos-node", to: "pharos-model", protocol: "in-process", mode: "sync", label: "serialised writes, snapshot reads" }
+  - { from: "dispatch-service", to: "routing-engine", protocol: "grpc", mode: "sync", circuitBreaker: true, fallback: "degraded", label: "ETA on the road network (Hystrix-Go breaker)" }
+  - { from: "osm-feed", to: "parquetizer", protocol: "https", mode: "async", delivery: "at-least-once", label: "Asia .pbf extract" }
+  - { from: "parquetizer", to: "map-pipeline", protocol: "parquet", mode: "async", delivery: "at-least-once", batched: true, label: "OSM converted to table format" }
+  - { from: "kartaview", to: "map-pipeline", protocol: "s3", mode: "async", delivery: "at-least-once", batched: true, label: "street-level imagery" }
+  - { from: "coban-kafka", to: "map-pipeline", protocol: "kafka", mode: "async", delivery: "at-least-once", batched: true, label: "ride and delivery GPS probes, rack-aware fetch from the closest replica" }
+  - { from: "routing-engine", to: "osm-feed", protocol: "https", mode: "sync", label: "live road-network lookup on the request path" }
+  - { from: "coban-kafka", to: "routing-engine", protocol: "kafka", mode: "async", delivery: "exactly-once", label: "map correction events" }
+  - { from: "map-pipeline", to: "routing-engine", protocol: "load", mode: "async", delivery: "at-least-once", batched: true, label: "hyperlocal map release" }
+  - { from: "dispatch-service", to: "coban-kafka", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "allocation events" }
+  - { from: "node-termination-handler", to: "coban-kafka", protocol: "signal", mode: "async", delivery: "at-most-once", label: "SIGTERM on scale-in, graceful leadership move" }
+  - { from: "lb-controller", to: "coban-kafka", protocol: "https", mode: "async", delivery: "at-least-once", label: "TargetGroupBinding keeps the NLB pointed at broker pod IPs" }
+  - { from: "dispatch-service", to: "catwalk-proxy", protocol: "grpc", mode: "sync", circuitBreaker: true, fallback: "degraded", label: "allocation model scoring" }
+  - { from: "catwalk-proxy", to: "catwalk-orchestrator", protocol: "grpc", mode: "sync", label: "route to the orchestrator" }
+  - { from: "catwalk-orchestrator", to: "model-servers", protocol: "grpc", mode: "sync", label: "multi-model inference" }
+  - { from: "model-servers", to: "amphawa", protocol: "grpc", mode: "sync", label: "feature fetch" }

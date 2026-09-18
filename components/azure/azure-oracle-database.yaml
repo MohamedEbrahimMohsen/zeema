@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle AI Database@Azure: Oracle's database service running on Oracle Cloud Infrastructure hardware
+# colocated in Microsoft datacenters ("Overview - Oracle AI Database@Azure"). That page states the service
+# uses an Azure Virtual Network for networking, takes identity from the Azure tenancy (native or federated),
+# and runs on infrastructure Oracle's operations team patches and updates. No backup, replication or
+# encryption defaults are stated there, so none are set here.
+schemaVersion: "1"
+type: "component"
+id: "azure-oracle-database"
+kind: "sql-database"
+provider: "azure"
+defaults:
+  managed: true
+properties:
+  serviceType:
+    type: "enum"
+    values: ["exadata", "exascale", "autonomous"]
+  identitySource:
+    type: "enum"
+    values: ["azure-native", "federated"]
+  virtualNetworkIntegrated:
+    type: "boolean"
+    default: true

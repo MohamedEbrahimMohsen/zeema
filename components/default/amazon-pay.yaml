@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Pay: hosted checkout and payment API letting buyers pay with the address and payment
+# details already on their Amazon account ("Amazon Pay Documentation", One-time checkout).
+# "Idempotency | Amazon Pay" states a mutating request is made idempotent by setting the
+# x-amz-pay-idempotency-key request header, limited to 32 characters of letters, digits, dashes
+# and underscores with a V4 UUID recommended, and that idempotency keys are unique to each Amazon
+# Pay merchant account and are stored indefinitely, so keys never expire. The same documentation
+# set uses Instant Payment Notifications as the callback channel.
+schemaVersion: "1"
+type: "component"
+id: "amazon-pay"
+kind: "third-party-api"
+provider: "default"
+defaults:
+  managed: true
+  idempotent: true
+  handlesMoney: true
+  callbackStyle: "webhook"
+properties:
+  idempotencyKeyMaxLength:
+    type: "integer"
+    default: 32
+  idempotencyKeysExpire:
+    type: "boolean"
+    default: false

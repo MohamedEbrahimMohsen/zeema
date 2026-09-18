@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Application Gateway for Containers: a managed layer 7 load balancing and ingress service for AKS workloads
+# whose data plane Azure operates outside the cluster ("What is Application Gateway for Containers?"). That
+# page states it routes HTTP, HTTPS, gRPC and inference traffic, lists custom and default health probes among
+# its supported features, and describes two deployment strategies (bring your own resources, or lifecycle
+# managed by ALB Controller) and two configuration surfaces (Ingress and the Gateway API).
+schemaVersion: "1"
+type: "component"
+id: "azure-application-gateway-for-containers"
+kind: "load-balancer"
+provider: "azure"
+defaults:
+  managed: true
+  layer: "l7"
+  healthChecks: true
+properties:
+  deploymentStrategy:
+    type: "enum"
+    values: ["bring-your-own", "alb-controller-managed"]
+  configurationApi:
+    type: "enum"
+    values: ["ingress", "gateway-api"]
+  wafEnabled:
+    type: "boolean"
+  mutualAuthentication:
+    type: "boolean"

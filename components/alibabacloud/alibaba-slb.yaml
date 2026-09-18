@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Server Load Balancer (SLB): a fully managed, pay-as-you-go load balancing family that distributes traffic
+# across backend servers to increase throughput and eliminate single points of failure ("SLB product family
+# overview"). That page splits SLB into Application Load Balancer at layer 7, Network Load Balancer at layer
+# 4 and Classic Load Balancer across both, states health checks detect unhealthy backend servers and stop
+# forwarding traffic to them, and lists weighted round-robin, weighted least connections, source IP hash,
+# 4-tuple hash, consistent hashing and QUIC ID hash without naming a default, so no hashing default is set.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-slb"
+kind: "load-balancer"
+provider: "alibabacloud"
+defaults:
+  managed: true
+  healthChecks: true
+properties:
+  loadBalancerType:
+    type: "enum"
+    values: ["alb", "nlb", "clb"]
+  addressType:
+    type: "enum"
+    values: ["internet-facing", "internal"]
+  tlsOffloading:
+    type: "boolean"

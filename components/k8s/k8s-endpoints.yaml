@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Kubernetes Endpoints: the discovery record listing the backend addresses behind a Service.
+# Deprecated since Kubernetes v1.33 in favour of EndpointSlice, which is what the control plane
+# now creates and manages for every Service that has a selector. Per "EndpointSlices" a slice
+# holds at most 100 endpoints by default (raisable to 1000 with --max-endpoints-per-slice on
+# kube-controller-manager), and IPv4 and IPv6 addresses live in separate slices.
+schemaVersion: "1"
+type: "component"
+id: "k8s-endpoints"
+kind: "coordination-service"
+provider: "k8s"
+defaults:
+  role: "discovery"
+  managed: false
+properties:
+  controlPlaneManaged:
+    type: "boolean"
+    default: true
+  maxEndpointsPerSlice:
+    type: "integer"
+    default: 100
+  addressType:
+    type: "enum"
+    values: ["ipv4", "ipv6", "fqdn"]

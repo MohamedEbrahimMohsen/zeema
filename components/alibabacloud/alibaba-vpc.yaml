@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Virtual Private Cloud (VPC): the isolated private network cloud resources are deployed into.
+# "Virtual Private Cloud:What is VPC" defines a VPC as a secure and isolated virtual network on the
+# cloud, states that secure isolation between VPCs is achieved using tunnel technology, and gives the
+# three building blocks: a private CIDR block, vSwitches that divide the VPC into subnets, and route
+# tables that control traffic routing from the VPC to destinations.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-vpc"
+kind: "network-fabric"
+provider: "alibabacloud"
+defaults:
+  managed: true
+  overlay: true
+  interconnect: "private"
+properties:
+  tunnelIsolation:
+    type: "boolean"
+    default: true
+  vSwitchSubnets:
+    type: "boolean"
+    default: true
+  customRouteTables:
+    type: "boolean"
+    default: true

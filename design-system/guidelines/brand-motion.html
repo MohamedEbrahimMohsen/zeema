@@ -1,0 +1,10 @@
+<!-- @dsCard group="Brand" viewport="700x150" subtitle="Two durations, one easing. Hover shifts line, press does nothing dramatic" name="Motion & states" -->
+<!DOCTYPE html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css">
+<style>body{margin:0;padding:16px;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px}
+.sw{display:flex;flex-direction:column;gap:5px;min-width:0}.chip{height:44px;border-radius:var(--rc);border:1px solid var(--line)}
+.cap{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap}
+.hex{font-family:var(--mono);font-size:10px;color:var(--muted)}</style></head>
+<body><div style="display:flex;gap:20px;align-items:flex-start">
+ <div class="sw"><div style="display:flex;gap:8px"><button style="font:inherit;font-size:0.9em;padding:7px 14px;border-radius:var(--rc);border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);font-weight:500">rest</button><button style="font:inherit;font-size:0.9em;padding:7px 14px;border-radius:var(--rc);border:1px solid var(--accent);background:color-mix(in srgb,var(--accent) 88%,#000);color:var(--accent-ink);font-weight:500">hover</button><button style="font:inherit;font-size:0.9em;padding:7px 14px;border-radius:var(--rc);border:1px solid var(--line);background:var(--panel);color:var(--ink);opacity:.45">disabled</button></div><span class="cap">--dur-fast 90ms · hover darkens 12%</span></div>
+ <div class="sw"><div style="width:110px;height:50px;border-radius:var(--rn);background:var(--t-green-fill);border:2px solid var(--accent);box-shadow:var(--ring-focus)"></div><span class="cap">--dur 150ms · --ease cubic-bezier(.2,0,.2,1)</span></div>
+ </div></body></html>

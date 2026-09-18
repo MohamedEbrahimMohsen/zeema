@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Compute Gallery: a versioned store for VM images and VM applications that replicates them to the
+# regions you target ("Overview of Azure Compute Gallery"). That page states the default storage account type
+# is Standard LRS, that a gallery and its resources stay private under your subscription unless you share
+# them by RBAC, a direct shared gallery or a community gallery, and that an image version can have at most
+# 100 replicas.
+schemaVersion: "1"
+type: "component"
+id: "azure-compute-gallery"
+kind: "artifact-repository"
+provider: "azure"
+defaults:
+  artifactType: "generic"
+  visibility: "private"
+  managed: true
+properties:
+  storageAccountType:
+    type: "enum"
+    values: ["standard-lrs", "standard-zrs", "premium-lrs"]
+    default: "standard-lrs"
+  sharingModel:
+    type: "enum"
+    values: ["rbac", "direct-shared", "community"]
+  maxReplicasPerVersion:
+    type: "integer"
+    default: 100

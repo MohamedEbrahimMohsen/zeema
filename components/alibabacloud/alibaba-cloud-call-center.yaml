@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloud Call Center, documented today as Cloud Contact Center: "an enterprise-grade omnichannel intelligent
+# contact center" on a cloud-native architecture ("What is Cloud Contact Center"). That page states it covers
+# phone hotlines, websites, mini-programs and apps, provides graphical IVR setup, 100% call recording,
+# predictive outbound dialling, intelligent quality inspection and call routing by customer segment and
+# business type, which is why voice, chat, outbound dialling, skills-based routing and recording are all on.
+# No recording retention period is documented, so none is set.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-cloud-call-center"
+kind: "contact-center"
+provider: "alibabacloud"
+defaults:
+  managed: true
+  channelVoice: true
+  channelChat: true
+  outboundDialing: true
+  routing: "skills-based"
+  callRecording: true
+properties:
+  ivr:
+    type: "boolean"
+    default: true
+  predictiveDialing:
+    type: "boolean"
+    default: false
+  aiQualityInspection:
+    type: "boolean"
+    default: false

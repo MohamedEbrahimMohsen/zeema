@@ -1,0 +1,176 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture: the Cloudflare edge network, broken variant. The same anycast PoP, but
+# the Quicksilver tier has been collapsed into an unbounded in-memory cache on every server that
+# the configuration API writes to directly, the per-PoP Consul is a single unreplicated instance,
+# and the edge proxy retries into a struggling customer origin with nothing to shed the load.
+#
+# This file MUST trip:
+#   - cache-missing-eviction-policy              (quicksilver-proxy declares evictionPolicy none)
+#   - cache-as-primary-store-without-persistence (quicksilver-proxy is the only copy of the config, persistence false)
+#   - materialised-cache-without-rebuild-path    (quicksilver-proxy holds materialised config with no durable or worker feed)
+#   - shared-dependency-without-redundancy       (consul replicated false while discovery must be redundant)
+#   - retry-without-adaptive-shedding            (edge-proxy -> customer-origin retries with no circuit breaker or limiter)
+# and MUST NOT trip:
+#   - read-heavy-path-without-cache              (traffic.readWriteRatio is not stated by the source, so it is not set)
+#   - datastore-missing-backup, datastore-single-region, single-writer-primary-at-peak-qps,
+#     read-replica-as-sole-scaling, business-updates-without-index-propagation (no sql-database node)
+#   - stateful-node-without-zone-redundancy, stateful-engine-pinned-to-single-zone
+#                                                (the boundaries here are points of presence, not availability zones)
+#   - external-call-inline-without-durable-path, fanout-inline-in-request-path
+#                                                (no app-server calls a third party or a worker synchronously)
+#   - credentials-without-rotation               (security.credentialRotationDays is set)
+#   - sync-chain-too-deep                        (no api-gateway node, and no p95 latency target is stated)
+#   - queue-missing-dlq, pubsub-replay-required, derived-store-without-cdc-or-rebuild,
+#     multi-leader-store-without-conflict-policy (no queue, topic, search index or multi-leader store)
+schemaVersion: "1"
+type: "design"
+id: "cloudflare-edge"
+
+requirements:
+  availability:
+    multiRegion: true
+    discoveryRedundant: true
+  latency:
+    geoDistributed: true
+  consistency:
+    model: "ap"
+  traffic:
+    skew: "heavy-tail"
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "internet", kind: "trust-zone", label: "Internet" }
+  - { id: "customer-network", kind: "trust-zone", label: "Customer network" }
+  - { id: "edge-pop", kind: "point-of-presence", label: "Anycast PoP (one of 200+ cities; MCP sites add a spine layer)" }
+  - { id: "edge-server", kind: "trust-zone", parent: "edge-pop", label: "Every server runs every service" }
+  - { id: "control-plane", kind: "system", label: "Cloudflare control plane" }
+
+nodes:
+  - id: "end-user"
+    component: "web-browser"
+    group: "internet"
+    props: { platform: "web", localCache: true }
+
+  - id: "customer-origin"
+    component: "supplier-api"
+    group: "customer-network"
+    label: "Customer origin server"
+    props: { callbackStyle: "none" }
+
+  - id: "anycast-edge-router"
+    component: "cisco-router"
+    group: "edge-pop"
+    label: "Anycast BGP edge router"
+    props: { role: "service-provider", interconnect: "public", formFactor: "hardware", managed: false }
+
+  - id: "spine-fabric"
+    component: "spine-leaf-fabric"
+    group: "edge-pop"
+    label: "MCP spine layer (Clos)"
+    props: { interconnect: "private", redundantSpines: true, overlay: false }
+
+  - id: "l4drop"
+    component: "cloudflare-ddos-protection"
+    group: "edge-server"
+    label: "l4drop (XDP attack mitigation)"
+    props: { scope: "network", alwaysOn: true, mitigationAction: "block", telemetry: true, managed: true }
+
+  - id: "unimog-xdpd"
+    component: "load-balancer-tier"
+    group: "edge-server"
+    label: "Unimog xdpd (in-kernel L4)"
+    props: { layer: "l4", hashing: "maglev", connectionPreserving: true, healthChecks: true, global: false, managed: false }
+
+  - id: "multimog"
+    component: "load-balancer-tier"
+    group: "edge-pop"
+    label: "Multimog (inter-server forwarding)"
+    props: { layer: "l4", hashing: "maglev", connectionPreserving: true, healthChecks: true, global: false, managed: false }
+
+  - id: "conductor"
+    component: "container-service"
+    group: "edge-pop"
+    label: "Conductor (per-PoP control plane)"
+    props: { stateless: false, singleWriter: true, ownsData: false, criticality: "high", autoscaling: false, orchestrator: "none" }
+
+  - id: "consul"
+    component: "consul"
+    group: "edge-pop"
+    props: { role: "discovery", consensus: "raft", replicated: false, managed: false }
+
+  - id: "prometheus"
+    component: "prometheus"
+    group: "edge-pop"
+    props: { signal: "metrics", collectorMode: "pull", managed: false }
+
+  - id: "edge-proxy"
+    component: "nginx"
+    group: "edge-server"
+    label: "FL / Pingora edge proxy"
+    props: { layer: "l7", hashing: "round-robin", healthChecks: true, managed: false, plus: false }
+
+  - id: "waf"
+    component: "cloudflare-waf"
+    group: "edge-server"
+    label: "WAF managed rulesets"
+    props: { mode: "prevention", managedRuleSet: "cloudflare-managed-ruleset", rateLimiting: true, managed: true }
+
+  - id: "cdn-cache"
+    component: "cloudflare-cdn"
+    group: "edge-server"
+    props: { caching: true, edgeCompute: true, tls: true, managed: true }
+
+  - id: "authoritative-dns"
+    component: "cloudflare-dns"
+    group: "edge-server"
+    props: { anycast: true, proxied: true, redundantProviders: true, managed: true }
+
+  - id: "workers-runtime"
+    component: "cloudflare-workers"
+    group: "edge-server"
+    label: "Workers (V8 isolates)"
+    props: { stateless: true, runtime: "javascript", autoscaling: true, ownsData: false, criticality: "high", managed: true }
+
+  - id: "spectrum"
+    component: "cloudflare-spectrum"
+    group: "edge-server"
+    props: { layer: "l4", protocol: "tcp", global: true, managed: true }
+
+  - id: "quicksilver-proxy"
+    component: "cache-cluster"
+    group: "edge-server"
+    label: "Quicksilver leaf cache (only copy)"
+    props: { evictionPolicy: "none", persistence: false, structure: "key-value", tier: "edge", invalidation: "event", usedAsPrimaryStore: true, materialised: true, replication: "none", managed: false }
+    nfr: { rps: 3000000000 }
+
+  - id: "config-api"
+    component: "container-service"
+    group: "control-plane"
+    label: "Dashboard and configuration API"
+    props: { stateless: true, ownsData: false, criticality: "high", orchestrator: "none" }
+
+edges:
+  - { from: "end-user", to: "anycast-edge-router", protocol: "ip", mode: "sync", label: "anycast: BGP steers to the nearest PoP" }
+  - { from: "anycast-edge-router", to: "spine-fabric", protocol: "ecmp", mode: "sync", label: "Clos mesh inside an MCP site" }
+  - { from: "spine-fabric", to: "l4drop", protocol: "ip", mode: "sync", label: "packets reach a server NIC" }
+  - { from: "l4drop", to: "unimog-xdpd", protocol: "xdp", mode: "sync", label: "attack packets dropped first, the rest passed" }
+  - { from: "unimog-xdpd", to: "multimog", protocol: "xdp", mode: "sync", label: "forwarding table by 4-tuple, at most one extra hop" }
+  - { from: "multimog", to: "edge-proxy", protocol: "tcp", mode: "sync", label: "deliver to the chosen server" }
+  - { from: "multimog", to: "authoritative-dns", protocol: "dns", mode: "sync", label: "authoritative and resolver queries" }
+  - { from: "multimog", to: "spectrum", protocol: "tcp", mode: "sync", label: "Spectrum TCP and UDP applications" }
+  - { from: "conductor", to: "prometheus", protocol: "http", mode: "sync", label: "per-server CPU and load" }
+  - { from: "conductor", to: "consul", protocol: "http", mode: "sync", label: "server and service health; writes forwarding tables to KV" }
+  - { from: "consul", to: "unimog-xdpd", protocol: "http", mode: "async", delivery: "at-least-once", label: "blocking query delivers the new forwarding table" }
+  - { from: "consul", to: "multimog", protocol: "http", mode: "async", delivery: "at-least-once", label: "blocking query delivers the new forwarding table" }
+  - { from: "edge-proxy", to: "waf", protocol: "in-process", mode: "sync", label: "evaluate managed rulesets" }
+  - { from: "edge-proxy", to: "cdn-cache", protocol: "in-process", mode: "sync", label: "cache lookup" }
+  - { from: "edge-proxy", to: "workers-runtime", protocol: "in-process", mode: "sync", label: "run the customer isolate" }
+  - { from: "edge-proxy", to: "customer-origin", protocol: "https", mode: "sync", retryPolicy: "exponential", label: "origin fetch on cache miss, retried" }
+  - { from: "spectrum", to: "customer-origin", protocol: "tcp", mode: "sync", label: "proxy to the customer application" }
+  - { from: "waf", to: "quicksilver-proxy", protocol: "local-read", mode: "sync", label: "ruleset for this zone" }
+  - { from: "cdn-cache", to: "quicksilver-proxy", protocol: "local-read", mode: "sync", label: "zone cache settings" }
+  - { from: "authoritative-dns", to: "quicksilver-proxy", protocol: "local-read", mode: "sync", label: "zone records" }
+  - { from: "workers-runtime", to: "quicksilver-proxy", protocol: "local-read", mode: "sync", label: "script and route lookup" }
+  - { from: "config-api", to: "quicksilver-proxy", protocol: "http", mode: "async", delivery: "at-least-once", label: "push every rule change to every server, globally in one go" }
+  - { from: "config-api", to: "spine-fabric", protocol: "netconf", mode: "async", delivery: "at-least-once", label: "BGP policy change, the 2022 outage path" }

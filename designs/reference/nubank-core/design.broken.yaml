@@ -1,0 +1,231 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture: Nubank's core banking platform, broken variant: the same platform with
+# the mistakes a team building it commonly makes. Money leaves the bank on a hop with no
+# idempotency key, the transfer feed claims exactly-once as if that covered the SOAP call to the
+# payments hub, the settlement service has nowhere to park a failed message, service-to-service
+# retries have no circuit breaker, the Avalanche event-time windows have no watermark, and the
+# Datomic store is left unbacked-up because "Datomic never loses anything".
+#
+# This file MUST trip:
+#   - money-mutation-without-idempotency-key    (settlement-service -> payments-hub, correctness.exactlyOnceEffect true)
+#   - exactly-once-with-external-side-effects   (global-router -> settlement-service claims exactly-once; settlement-service calls payments-hub sync)
+#   - external-call-inline-without-durable-path (settlement-service calls the hub inline with no queue behind it)
+#   - retry-without-adaptive-shedding           (clojure-microservices -> investment-service retries with no circuit breaker)
+#   - windowed-aggregation-without-watermark    (avalanche-flink windows by event time with no watermarkSeconds)
+#   - datastore-missing-backup                  (datomic-transactor: backupEnabled false, no retention)
+# and MUST NOT trip:
+#   - queue-missing-dlq, retry-queue-without-dlq, retry-without-backoff (the mortician is role dlq and declares deadLetterQueue)
+#   - money-store-without-double-entry-ledger   (accounting-ledger is a ledger node)
+#   - credentials-without-rotation              (the HSM is a key-management node)
+#   - cross-cell-call                           (isolation.tenancy is not declared; the scalability unit is a boundary, not a promise)
+#   - datastore-single-region                   (availability.multiRegion is false; no region failover is claimed)
+#   - single-writer-primary-at-peak-qps, read-replica-as-sole-scaling (no rps is published for any store)
+#   - cache-missing-eviction-policy, materialised-cache-without-rebuild-path (no cache-kind node; the evergreen cache is a DynamoDB store)
+#   - derived-store-without-cdc-or-rebuild, business-updates-without-index-propagation (no search index in this design)
+#   - stateful-node-without-zone-redundancy, stateful-engine-pinned-to-single-zone (no availability-zone groups; the sources never state the AZ topology)
+#   - object-store-single-zone-with-durability-target (no durability target is declared)
+schemaVersion: "1"
+type: "design"
+id: "nubank-core"
+
+requirements:
+  availability:
+    multiRegion: false
+    degradedModeAllowed: true
+  messaging:
+    replay: true
+    orderingScope: "partition"
+  consistency:
+    model: "ap"
+  correctness:
+    exactlyOnceEffect: true
+    reproducible: true
+  money:
+    zeroSum: true
+  data:
+    immutableAudit: true
+
+groups:
+  - { id: "payment-dc", kind: "trust-zone", label: "Physical payment data centre (Brazil)" }
+  - { id: "aws-cloud", kind: "trust-zone", label: "AWS cloud" }
+  - { id: "global-layer", kind: "system", parent: "aws-cloud", label: "Global, non-sharded layer" }
+  - { id: "scalability-unit", kind: "cell", parent: "aws-cloud", label: "Scalability unit (120+ services, databases, Kafka clusters)" }
+  - { id: "analytics", kind: "trust-zone", parent: "aws-cloud", label: "Analytics environment" }
+
+nodes:
+  - id: "nubank-app"
+    component: "mobile-app"
+    label: "Nubank mobile app"
+    props: { platform: "mobile", os: "both", localCache: true }
+
+  - id: "card-network"
+    component: "card-network"
+    label: "Mastercard / Visa card scheme"
+    props: { handlesMoney: true }
+
+  - id: "authorizer"
+    component: "container-service"
+    label: "Authorizer (Clojure, in-memory state)"
+    group: "payment-dc"
+    props: { orchestrator: "none", stateless: false, ownsData: true, criticality: "high" }
+
+  - id: "hsm"
+    component: "thales-luna-hsm"
+    label: "HSM (vendor not stated)"
+    group: "payment-dc"
+    props: { hsm: true, formFactor: "network" }
+
+  - id: "kafka-backbone"
+    component: "kafka"
+    label: "Kafka bridge and backbone"
+    group: "aws-cloud"
+    props: { storage: "persistent", ordering: "per-key", delivery: "at-least-once", consumerGroups: true }
+
+  - id: "snapshot-generator"
+    component: "container-worker"
+    label: "Snapshot generator"
+    group: "aws-cloud"
+    props: { trigger: "stream", orchestrator: "kubernetes" }
+
+  - id: "authorizer-snapshots"
+    component: "s3"
+    label: "S3 authorizer snapshot store"
+    group: "aws-cloud"
+
+  - id: "mortician"
+    component: "message-queue"
+    label: "Mortician (dead-letter topic and triage)"
+    group: "aws-cloud"
+    props: { role: "dlq", deadLetterQueue: true, delivery: "at-least-once", persistence: true, replay: true }
+
+  - id: "global-router"
+    component: "container-service"
+    label: "Global routing service"
+    group: "global-layer"
+    props: { orchestrator: "kubernetes", shardingStrategy: "lookup", criticality: "high" }
+
+  - id: "settlement-service"
+    component: "container-service"
+    label: "Settlement service (idempotent)"
+    group: "global-layer"
+    props: { orchestrator: "kubernetes", criticality: "high" }
+
+  - id: "clojure-microservices"
+    component: "container-service"
+    label: "Clojure microservices (hexagonal, Finagle)"
+    group: "scalability-unit"
+    props: { orchestrator: "kubernetes", criticality: "high" }
+
+  - id: "investment-service"
+    component: "container-service"
+    label: "Investment / savings service"
+    group: "scalability-unit"
+    props: { orchestrator: "kubernetes" }
+
+  - id: "accounting-ledger"
+    component: "double-entry-ledger"
+    label: "Real-time double-entry accounting"
+    group: "scalability-unit"
+    props: { doubleEntry: true, appendOnly: true, indexConsistency: "eventual", backingStore: "datomic-transactor" }
+
+  - id: "datomic-transactor"
+    component: "relational-database"
+    label: "Datomic"
+    group: "scalability-unit"
+    props: { appendOnly: true, multiWriter: false, commitProtocol: "single", sharded: true, shardKey: "customer", backupEnabled: false, encryptionAtRest: true }
+
+  - id: "datomic-storage-nonpii"
+    component: "dynamodb"
+    label: "Datomic storage, non-PII"
+    group: "scalability-unit"
+    props: { model: "key-value", encryptionAtRest: true }
+
+  - id: "datomic-storage-pii"
+    component: "aws-rds"
+    label: "Datomic storage, PII (RDS PostgreSQL)"
+    group: "scalability-unit"
+    props: { engine: "postgres", encryptionAtRest: true, backupEnabled: true, backupRetentionDays: 30, publiclyAccessible: false }
+
+  - id: "evergreen-balance-cache"
+    component: "dynamodb"
+    label: "Evergreen balance cache"
+    group: "scalability-unit"
+    props: { model: "key-value", partitionKey: "account-id/event-counter", encryptionAtRest: true }
+
+  - id: "payments-hub"
+    component: "bank-api"
+    label: "Brazilian payments hub (SOAP)"
+    props: { handlesMoney: true }
+
+  - id: "datomic-log-tailer"
+    component: "container-worker"
+    label: "Datomic log tailer"
+    group: "analytics"
+    props: { trigger: "stream", orchestrator: "kubernetes" }
+
+  - id: "data-lake"
+    component: "blob-store"
+    label: "Data lake"
+    group: "analytics"
+    props: { tier: "warm", encryptionAtRest: true }
+
+  - id: "spark-etl"
+    component: "spark-cluster"
+    label: "Scala + Spark ETL cluster"
+    group: "analytics"
+    props: { engine: "spark" }
+
+  - id: "avalanche-flink"
+    component: "flink"
+    label: "Avalanche stream enrichment"
+    group: "analytics"
+    props: { windowing: "event-time" }
+
+  - id: "avalanche-pinot"
+    component: "pinot"
+    label: "Avalanche real-time serving"
+    group: "analytics"
+    props: { realtime: true, streamIngestion: true }
+
+  - id: "prometheus"
+    component: "prometheus"
+    label: "Prometheus + Grafana"
+    group: "aws-cloud"
+    props: { signal: "metrics", collectorMode: "pull" }
+
+edges:
+  - { from: "nubank-app", to: "global-router", protocol: "https", mode: "sync", label: "login; credential validation returns shard-anchoring hypermedia links" }
+  - { from: "nubank-app", to: "clojure-microservices", protocol: "https", mode: "sync", label: "shard-anchored product requests" }
+  - { from: "card-network", to: "authorizer", protocol: "iso-8583", mode: "sync", label: "authorization over TCP via the Mastercard Interface Device" }
+  - { from: "authorizer", to: "hsm", protocol: "hsm", mode: "sync", label: "chip cryptogram validation" }
+  - { from: "authorizer-snapshots", to: "authorizer", protocol: "s3", mode: "sync", label: "bootstrap: load the latest snapshot" }
+  - { from: "kafka-backbone", to: "authorizer", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "tail the log from the snapshot checkpoint" }
+  - { from: "authorizer", to: "kafka-backbone", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "authorization outcomes back into the cloud" }
+  - { from: "kafka-backbone", to: "snapshot-generator", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "second consumer of the same log" }
+  - { from: "snapshot-generator", to: "authorizer-snapshots", protocol: "s3", mode: "async", label: "periodic snapshot plus checkpoint offset" }
+  - { from: "clojure-microservices", to: "kafka-backbone", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "state mutations as events" }
+  - { from: "kafka-backbone", to: "clojure-microservices", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "consume with offsets" }
+  - { from: "clojure-microservices", to: "investment-service", protocol: "thrift", mode: "sync", retryPolicy: "exponential", label: "Finagle RPC; liquidate the invested balance before a transfer" }
+  - { from: "clojure-microservices", to: "datomic-transactor", protocol: "datomic", mode: "sync", label: "transact; one writer per database" }
+  - { from: "clojure-microservices", to: "datomic-storage-nonpii", protocol: "dynamodb", mode: "sync", label: "in-process peer reads segments" }
+  - { from: "clojure-microservices", to: "evergreen-balance-cache", protocol: "dynamodb", mode: "sync", label: "read-through by account-id/event-counter" }
+  - { from: "datomic-transactor", to: "datomic-storage-nonpii", protocol: "dynamodb", mode: "sync", label: "durable write, non-PII" }
+  - { from: "datomic-transactor", to: "datomic-storage-pii", protocol: "postgres", mode: "sync", label: "durable write, PII on EBS-encrypted volumes" }
+  - { from: "kafka-backbone", to: "accounting-ledger", protocol: "kafka", mode: "async", delivery: "at-least-once", idempotent: true, label: "financially relevant events from 90+ services" }
+  - { from: "accounting-ledger", to: "datomic-transactor", protocol: "datomic", mode: "sync", label: "entries and movements, append-only" }
+  - { from: "clojure-microservices", to: "mortician", protocol: "kafka", mode: "async", label: "failed consumption: original message plus error metadata" }
+  - { from: "mortician", to: "clojure-microservices", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "republish after the fix" }
+  - { from: "clojure-microservices", to: "global-router", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "transfers published out of every shard" }
+  - { from: "global-router", to: "clojure-microservices", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "dispatch external events into the owning unit" }
+  - { from: "global-router", to: "settlement-service", protocol: "kafka", mode: "async", delivery: "exactly-once", label: "transfers from every shard, exactly-once assumed to be enough" }
+  - { from: "settlement-service", to: "payments-hub", protocol: "soap", mode: "sync", label: "external transfer onto the real-time settlement rail" }
+  - { from: "settlement-service", to: "accounting-ledger", protocol: "kafka", mode: "async", delivery: "at-least-once", idempotent: true, label: "ledger observes settlement events" }
+  - { from: "settlement-service", to: "investment-service", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "compensating transaction re-invests the funds" }
+  - { from: "datomic-transactor", to: "datomic-log-tailer", protocol: "datomic-log", mode: "async", delivery: "at-least-once", label: "transaction log tail" }
+  - { from: "datomic-log-tailer", to: "data-lake", protocol: "https", mode: "async", batched: true, label: "chunked and format-converted" }
+  - { from: "kafka-backbone", to: "data-lake", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "data that never lands in Datomic" }
+  - { from: "data-lake", to: "spark-etl", protocol: "s3", mode: "async", batched: true, label: "Datalog queries fanned across Spark nodes" }
+  - { from: "kafka-backbone", to: "avalanche-flink", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "event-time windows, stateful joins" }
+  - { from: "avalanche-flink", to: "avalanche-pinot", protocol: "pinot", mode: "async", label: "real-time OLAP ingestion" }
+  - { from: "avalanche-pinot", to: "clojure-microservices", protocol: "sql", mode: "sync", label: "fraud and risk scoring within milliseconds" }
+  - { from: "clojure-microservices", to: "prometheus", protocol: "http", mode: "async", label: "metrics scrape, canary gating and alerts" }

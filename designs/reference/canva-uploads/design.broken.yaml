@@ -1,0 +1,219 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Canva's media platform, broken variant: perceptual hashing runs inline on the upload request,
+# one replication worker drains both priority queues with neither queue parked on a dead-letter
+# queue, the cold media tier is a single-zone class, and the first MySQL shard has no backup.
+#
+# This file MUST trip:
+#   - fanout-inline-in-request-path                    (media-service calls phash-worker synchronously on upload)
+#   - shared-worker-pool-across-queues                 (replication-worker drains both SQS queues while isolation.perQueue is required)
+#   - queue-missing-dlq                                (sqs-high-priority and sqs-low-priority take async traffic with deadLetterQueue false)
+#   - object-store-single-zone-with-durability-target  (s3-standard-ia moved to one-zone-ia, zones 1, while durability.annualNines is 11)
+#   - datastore-missing-backup                         (mysql-primary has backupEnabled false)
+# and MUST NOT trip:
+#   - datastore-single-region                          (availability.multiRegion is not declared)
+#   - single-writer-primary-at-peak-qps, read-replica-as-sole-scaling (both MySQL shards declare sharded true and no node states rps above 5000)
+#   - read-heavy-path-without-cache                    (traffic.readWriteRatio is not declared; the sources state no ratio)
+#   - credentials-without-rotation                     (security.credentialRotationDays is declared)
+#   - multi-leader-store-without-conflict-policy       (the DynamoDB tables stay single-region)
+#   - business-updates-without-index-propagation, derived-store-without-cdc-or-rebuild (no search-index node)
+#   - cache-as-primary-store-without-persistence, cache-missing-eviction-policy, materialised-cache-without-rebuild-path (no cache node)
+#   - reconnect-stampede-without-guard, stateful-websocket-scale-in-without-drain, shared-host-per-channel-without-isolation (no realtime-gateway)
+#   - retry-without-adaptive-shedding, retry-without-backoff, retry-queue-without-dlq (no retry policy and no retry queue)
+#   - sync-chain-too-deep                              (no api-gateway node and no latency.p95Ms target)
+#   - stateful-node-without-zone-redundancy, stateful-engine-pinned-to-single-zone (no availability-zone group)
+schemaVersion: "1"
+type: "design"
+id: "canva-uploads"
+
+requirements:
+  availability:
+    degradedModeAllowed: true
+  consistency:
+    model: "ap"
+  traffic:
+    skew: "heavy-tail"
+  durability:
+    annualNines: 11
+  isolation:
+    perQueue: true
+  data:
+    ownershipExclusive: true
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "edge", kind: "trust-zone", label: "Cloudflare edge" }
+  - { id: "backend", kind: "trust-zone", label: "JVM backend microservices" }
+  - { id: "compute-isolation", kind: "system", parent: "backend", label: "Compute Service autoscaling group" }
+  - { id: "data", kind: "trust-zone", label: "AWS data stores" }
+
+nodes:
+  - id: "canva-client"
+    component: "web-browser"
+    label: "Canva client (web, mobile, WebView)"
+    props: { platform: "multi", localCache: true }
+
+  - id: "cloudflare-waf"
+    component: "cloudflare-waf"
+    label: "Cloudflare WAF / Bot Management"
+    group: "edge"
+    props: { mode: "prevention", botProtection: true, rateLimiting: true, plan: "enterprise" }
+
+  - id: "cloudflare-cdn"
+    component: "cloudflare-cdn"
+    label: "Cloudflare CDN + Workers"
+    group: "edge"
+    props: { caching: true, edgeCompute: true, tls: true }
+
+  - id: "client-alb"
+    component: "alb"
+    label: "Elastic Load Balancer"
+    group: "backend"
+    props: { layer: "l7", healthChecks: true, crossZone: true }
+
+  - id: "media-service"
+    component: "vm-service"
+    label: "Media service"
+    group: "backend"
+    props: { provider: "aws", runtime: "jvm", stateless: true, autoscaling: true, criticality: "high", ownsData: true }
+
+  - id: "dual-read-comparator"
+    component: "vm-service"
+    label: "Dual read and comparison"
+    group: "backend"
+    props: { provider: "aws", runtime: "jvm", stateless: true, ownsData: false }
+
+  - id: "compute-service-elb"
+    component: "aws-classic-load-balancer"
+    label: "Compute Service ELB"
+    group: "compute-isolation"
+
+  - id: "compute-service"
+    component: "vm-service"
+    label: "Compute Service (c4.large)"
+    group: "compute-isolation"
+    props: { provider: "aws", runtime: "jvm", stateless: true, autoscaling: true, instances: 4, ownsData: false }
+
+  - id: "feature-flags"
+    component: "flipt"
+    label: "Flag system"
+    group: "backend"
+    props: { killSwitches: true, stagedRollout: true, persistsEntityData: false }
+
+  - id: "replication-worker"
+    component: "container-worker"
+    label: "Replication worker"
+    group: "backend"
+    props: { trigger: "queue", idempotent: true }
+
+  - id: "backfill-scanner"
+    component: "container-worker"
+    label: "Backfill scanner"
+    group: "backend"
+    props: { trigger: "batch", idempotent: true }
+
+  - id: "phash-worker"
+    component: "container-worker"
+    label: "pHash computation"
+    group: "backend"
+    props: { idempotent: true }
+
+  - id: "sqs-high-priority"
+    component: "sqs"
+    label: "High-priority replication queue"
+    group: "data"
+    props: { delivery: "at-least-once", ordering: "none", deadLetterQueue: false, role: "work" }
+
+  - id: "sqs-low-priority"
+    component: "sqs"
+    label: "Low-priority replication queue"
+    group: "data"
+    props: { delivery: "at-least-once", ordering: "none", deadLetterQueue: false, role: "work" }
+
+  - id: "mysql-primary"
+    component: "aws-rds"
+    label: "media.primary (RDS MySQL 5.6)"
+    group: "data"
+    props: { engine: "mysql", sharded: true, shardKey: "media_id", idEncodesShard: true, replication: "async", backupEnabled: false, backupRetentionDays: 7, multiAz: true, publiclyAccessible: false, storageType: "gp2" }
+
+  - id: "mysql-primary-1"
+    component: "aws-rds"
+    label: "media.primary-1 (second shard)"
+    group: "data"
+    props: { engine: "mysql", sharded: true, shardKey: "media_id", idEncodesShard: true, backupEnabled: true, backupRetentionDays: 7, multiAz: true, publiclyAccessible: false, storageType: "gp2" }
+
+  - id: "mysql-replicas"
+    component: "aws-rds"
+    label: "RDS read replicas"
+    group: "data"
+    props: { engine: "mysql", replication: "async", replicaOf: "mysql-primary", backupEnabled: true, backupRetentionDays: 7, publiclyAccessible: false, storageType: "gp2" }
+
+  - id: "dynamodb-media"
+    component: "dynamodb"
+    label: "DynamoDB media table"
+    group: "data"
+    props: { model: "key-value", consistency: "eventual", replication: "single-region", backupEnabled: true }
+
+  - id: "dynamodb-gsi"
+    component: "dynamodb"
+    label: "Composite global secondary indexes"
+    group: "data"
+    props: { model: "key-value", consistency: "eventual", replication: "single-region" }
+
+  - id: "content-matching-index"
+    component: "dynamodb"
+    label: "Perceptual-hash content matching index"
+    group: "data"
+    props: { model: "key-value", consistency: "eventual", replication: "single-region", partitionKey: "part_n_hash_segment", bucketing: true }
+    nfr: { rps: 2000, latencyP95Ms: 60 }
+
+  - id: "s3-standard"
+    component: "s3"
+    label: "S3 Standard (fresh uploads and stock library)"
+    group: "data"
+    props: { storageClass: "standard", tier: "hot", zones: 3, versioning: false }
+
+  - id: "s3-standard-ia"
+    component: "s3"
+    label: "S3 Standard-IA"
+    group: "data"
+    props: { storageClass: "one-zone-ia", tier: "warm", zones: 1, versioning: false }
+
+  - id: "s3-glacier-ir"
+    component: "aws-s3-glacier"
+    label: "S3 Glacier Instant Retrieval"
+    group: "data"
+    props: { storageClass: "glacier-instant-retrieval", tier: "cold", zones: 3, realTimeAccess: true, minStorageDurationDays: 90 }
+
+edges:
+  - { from: "canva-client", to: "cloudflare-waf", protocol: "https", mode: "sync", label: "ingress: WAF, bot management, DDoS" }
+  - { from: "cloudflare-waf", to: "cloudflare-cdn", protocol: "https", mode: "sync", label: "filtered traffic" }
+  - { from: "cloudflare-cdn", to: "client-alb", protocol: "https", mode: "sync", label: "origin" }
+  - { from: "cloudflare-cdn", to: "s3-standard", protocol: "https", mode: "sync", label: "signed-URL media fetch" }
+  - { from: "client-alb", to: "media-service", protocol: "http", mode: "sync", label: "media API" }
+  - { from: "media-service", to: "s3-standard", protocol: "s3", mode: "sync", label: "store bytes, record storage location" }
+  - { from: "media-service", to: "mysql-primary", protocol: "mysql", mode: "sync", label: "shard 0: media id below cut point" }
+  - { from: "media-service", to: "mysql-primary-1", protocol: "mysql", mode: "sync", label: "shard 1: media id at or above cut point" }
+  - { from: "mysql-primary", to: "mysql-replicas", protocol: "mysql-replication", mode: "async", delivery: "at-least-once", label: "replication rate was the write ceiling" }
+  - { from: "media-service", to: "sqs-high-priority", protocol: "sqs", mode: "async", delivery: "at-least-once", idempotent: true, label: "payload-free create/update notification" }
+  - { from: "media-service", to: "sqs-low-priority", protocol: "sqs", mode: "async", delivery: "at-least-once", idempotent: true, label: "payload-free read notification (lazy migration)" }
+  - { from: "backfill-scanner", to: "mysql-primary", protocol: "mysql", mode: "sync", label: "scan all media, newest first" }
+  - { from: "backfill-scanner", to: "sqs-low-priority", protocol: "sqs", mode: "async", delivery: "at-least-once", idempotent: true, label: "enqueue behind live traffic" }
+  - { from: "sqs-high-priority", to: "replication-worker", protocol: "sqs", mode: "async", delivery: "at-least-once", label: "live changes first" }
+  - { from: "sqs-low-priority", to: "replication-worker", protocol: "sqs", mode: "async", delivery: "at-least-once", label: "lazy and backfill" }
+  - { from: "replication-worker", to: "mysql-primary", protocol: "mysql", mode: "sync", idempotent: true, label: "read current state, not the message body" }
+  - { from: "replication-worker", to: "dynamodb-media", protocol: "dynamodb", mode: "sync", idempotent: true, label: "write only when it differs" }
+  - { from: "media-service", to: "dynamodb-media", protocol: "dynamodb", mode: "sync", idempotent: true, label: "post-cutover read/write path" }
+  - { from: "media-service", to: "dynamodb-gsi", protocol: "dynamodb", mode: "sync", label: "list by owner via concatenated composite key" }
+  - { from: "media-service", to: "dual-read-comparator", protocol: "http", mode: "sync", label: "dual read on live traffic" }
+  - { from: "dual-read-comparator", to: "mysql-primary", protocol: "mysql", mode: "sync", label: "old store result" }
+  - { from: "dual-read-comparator", to: "dynamodb-media", protocol: "dynamodb", mode: "sync", label: "new store result, compared" }
+  - { from: "media-service", to: "feature-flags", protocol: "https", mode: "sync", label: "which store serves reads; revert in seconds" }
+  - { from: "media-service", to: "compute-service-elb", protocol: "http", mode: "sync", fallback: "degraded", label: "sign URL / hash password; cannot be made async" }
+  - { from: "compute-service-elb", to: "compute-service", protocol: "http", mode: "sync" }
+  - { from: "compute-service", to: "canva-client", protocol: "https", mode: "sync", label: "SHA1-signed temporary URL for private media" }
+  - { from: "media-service", to: "phash-worker", protocol: "http", mode: "sync", timeoutMs: 5000, label: "hash the uploaded image inline" }
+  - { from: "phash-worker", to: "content-matching-index", protocol: "dynamodb", mode: "sync", idempotent: true, label: "one write per hash segment" }
+  - { from: "media-service", to: "content-matching-index", protocol: "dynamodb", mode: "sync", label: "one query per hash segment, then Hamming filter" }
+  - { from: "s3-standard", to: "s3-standard-ia", protocol: "s3-lifecycle", mode: "async", label: "lifecycle transition at 30 days" }
+  - { from: "s3-standard-ia", to: "s3-glacier-ir", protocol: "s3-lifecycle", mode: "async", label: "buckets averaging 400 KB or more" }

@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# ApsaraDB for OceanBase: managed OceanBase Database, a distributed relational database. In maintenance
+# mode: "Service Update: ApsaraDB for OceanBase Moving to Alibaba Cloud Marketplace" states that from
+# 1 April 2025 new customers order through the Alibaba Cloud Marketplace, that existing customers can
+# migrate to the OceanBase console from the ApsaraDB for OceanBase console, and that the service is
+# completely discontinued on 1 July 2027. "What is OceanBase Database?" gives the multi-replica storage
+# strategy, where the failure of a few replicas does not affect data availability, and compatibility
+# with common MySQL and Oracle features and with the MySQL and Oracle frontend and backend protocols.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-oceanbase"
+kind: "sql-database"
+provider: "alibabacloud"
+defaults:
+  managed: true
+  distributed: true
+properties:
+  compatibilityMode:
+    type: "enum"
+    values: ["mysql", "oracle"]
+  multiReplica:
+    type: "boolean"
+    default: true

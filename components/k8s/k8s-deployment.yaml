@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Kubernetes Deployment: declarative controller that owns ReplicaSets and rolls Pods forward.
+# Per "Deployment" (DeploymentSpec reference) replicas defaults to 1, strategy.type defaults to
+# RollingUpdate with maxSurge and maxUnavailable both 25%, revisionHistoryLimit 10,
+# progressDeadlineSeconds 600 and minReadySeconds 0. Horizontal scaling is a separate HPA object,
+# so a Deployment on its own does not autoscale, and a cluster runs it, so managed is false.
+schemaVersion: "1"
+type: "component"
+id: "k8s-deployment"
+kind: "app-server"
+provider: "k8s"
+defaults:
+  managed: false
+  stateless: true
+  instances: 1
+  autoscaling: false
+properties:
+  strategy:
+    type: "enum"
+    values: ["rolling-update", "recreate"]
+    default: "rolling-update"
+  maxSurgePercent:
+    type: "integer"
+    default: 25
+  maxUnavailablePercent:
+    type: "integer"
+    default: 25
+  revisionHistoryLimit:
+    type: "integer"
+    default: 10
+  progressDeadlineSeconds:
+    type: "integer"
+    default: 600
+  minReadySeconds:
+    type: "integer"
+    default: 0

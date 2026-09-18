@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenStack Zaqar: multi-tenant messaging service. Per the "Getting Started Guide" only one worker can claim a
+# message so no other worker duplicates the work, and a worker that will go offline can retire the claim TTL,
+# "putting the message back into the queue for another worker to claim" - at-least-once delivery. Zaqar "is not
+# responsible for the ordering of messages" except with a single producer; subscriptions add broadcast observers.
+schemaVersion: "1"
+type: "component"
+id: "openstack-zaqar"
+kind: "queue"
+provider: "openstack"
+defaults:
+  delivery: "at-least-once"
+  ordering: "none"
+  role: "work"
+  managed: false
+properties:
+  claimBased:
+    type: "boolean"
+    default: true
+  publishSubscribe:
+    type: "boolean"
+    default: false
+  messageTtlExpiry:
+    type: "boolean"
+    default: true

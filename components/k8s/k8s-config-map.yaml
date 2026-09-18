@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Kubernetes ConfigMap: non-confidential key-value configuration consumed by Pods as environment
+# variables, command-line arguments or files in a volume. Per "ConfigMaps" it provides no secrecy
+# and no encryption, is capped at 1 MiB, is mutable unless immutable: true is set (a field added in
+# v1.19), and a mounted ConfigMap is refreshed automatically when its data changes. It carries no
+# targeting or rollout semantics, so staged rollout and kill switches are both off.
+schemaVersion: "1"
+type: "component"
+id: "k8s-config-map"
+kind: "feature-flag-service"
+provider: "k8s"
+defaults:
+  managed: false
+  stagedRollout: false
+  killSwitches: false
+properties:
+  maxSizeBytes:
+    type: "integer"
+    default: 1048576
+  immutable:
+    type: "boolean"
+    default: false
+  encrypted:
+    type: "boolean"
+    default: false
+  mountedFilesAutoUpdate:
+    type: "boolean"
+    default: true
+  consumedAs:
+    type: "enum"
+    values: ["env-var", "command-arg", "volume-file", "api"]

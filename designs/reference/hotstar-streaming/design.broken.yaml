@@ -1,0 +1,232 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture: Disney+ Hotstar / JioHotstar live cricket at record concurrency, broken
+# variant. The front-end fleet is sized for the tsunami but the database behind it is still one
+# unsharded primary, the distributed cache is the only copy of the ad frequency-cap state, the ad
+# service calls a programmatic SSP and the SSAI stitcher inline on the request path, and the
+# scaling controller answers a throttled EKS control plane with bare exponential retries.
+#
+# This file MUST trip:
+#   - single-writer-primary-at-peak-qps        (service-db: unsharded single writer at 125000 rps, the 2017 meltdown)
+#   - cache-as-primary-store-without-persistence (multi-layer-cache: usedAsPrimaryStore true, persistence false)
+#   - external-call-inline-without-durable-path  (ad-decisioning calls ssp synchronously with no queue or workflow engine)
+#   - fanout-inline-in-request-path              (ad-decisioning calls the ssai-stitcher worker synchronously)
+#   - retry-without-adaptive-shedding            (scaling-controller -> eks-cluster retries with no circuit breaker or rate limiter)
+# and MUST NOT trip:
+#   - datastore-missing-backup                   (service-db still declares backups and 30-day retention)
+#   - cache-missing-eviction-policy              (multi-layer-cache still declares lru)
+#   - materialised-cache-without-rebuild-path    (the cache holds no materialised views)
+#   - read-replica-as-sole-scaling               (service-db declares no async replication)
+#   - datastore-single-region                    (availability.multiRegion is false, as the sources describe)
+#   - credentials-without-rotation               (security.credentialRotationDays is declared)
+#   - read-heavy-path-without-cache              (a cache exists and no read/write ratio is claimed)
+#   - sync-chain-too-deep                        (no latency.p95Ms requirement is stated by any source)
+#   - queue-missing-dlq, pubsub-replay-required  (no queue, topic or stream node: no source names a broker)
+#   - reconnect-stampede-without-guard, stateful-websocket-scale-in-without-drain (no realtime gateway)
+#   - stateful-node-without-zone-redundancy      (no availability-zone group is drawn)
+schemaVersion: "1"
+type: "design"
+id: "hotstar-streaming"
+
+requirements:
+  availability:
+    multiRegion: false
+    zones: 3
+    degradedModeAllowed: true
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "cdn-edge", kind: "point-of-presence", label: "CDN edge (external API gateway)" }
+  - { id: "video-edge", kind: "point-of-presence", label: "Video CDN edges" }
+  - { id: "aws-region", kind: "region", label: "AWS region" }
+  - { id: "core-vpc", kind: "vpc", parent: "aws-region", label: "Private VPC" }
+  - { id: "data-center", kind: "system", parent: "core-vpc", label: "Data Center (six EKS clusters)" }
+
+nodes:
+  - id: "client-app"
+    component: "user-device"
+    label: "Client apps (Android, iOS, web, connected TV)"
+    props: { platform: "multi", localCache: true }
+
+  - id: "external-api-gateway"
+    component: "content-delivery-network"
+    label: "External API gateway (CDN)"
+    group: "cdn-edge"
+    props: { caching: true, tls: true, edgeCompute: true, managed: true }
+    nfr: { rps: 1000000 }
+
+  - id: "cacheable-cdn"
+    component: "content-delivery-network"
+    label: "Cacheable-path CDN domain"
+    group: "cdn-edge"
+    props: { caching: true, tls: true, managed: true }
+
+  - id: "alb-fleet"
+    component: "alb"
+    label: "Shared ALB fleet"
+    group: "core-vpc"
+    props: { layer: "l7", healthChecks: true, crossZone: true, managed: true }
+
+  - id: "internal-gateway"
+    component: "envoy-gateway"
+    label: "Internal API gateway (Envoy)"
+    group: "data-center"
+    props: { rateLimiting: true, concurrencyLimit: true, tls: true, managed: false }
+
+  - id: "eks-cluster"
+    component: "aws-eks"
+    label: "EKS clusters (six in production)"
+    group: "data-center"
+    props: { managed: true, autoscaling: false, nodeCount: 400, computeMode: "standard" }
+
+  - id: "scaling-controller"
+    component: "container-service"
+    label: "Custom scaling controller (pre-warm on request count and concurrency)"
+    group: "data-center"
+    props: { stateless: true, orchestrator: "kubernetes" }
+
+  - id: "nat-gateway"
+    component: "aws-nat-gateway"
+    label: "NAT gateways (one per subnet)"
+    group: "core-vpc"
+    props: { managed: true, logging: true }
+
+  - id: "backend-services"
+    component: "container-service"
+    label: "Backend microservices (200+)"
+    group: "data-center"
+    props: { stateless: true, orchestrator: "kubernetes" }
+
+  - id: "tier1-service"
+    component: "container-service"
+    label: "Login / subscription / watch (P0)"
+    group: "data-center"
+    props: { stateless: true, orchestrator: "kubernetes", criticality: "high" }
+    nfr: { rps: 125000 }
+
+  - id: "ad-decisioning"
+    component: "container-service"
+    label: "Ad decisioning service"
+    group: "data-center"
+    props: { stateless: true, orchestrator: "kubernetes", criticality: "high" }
+    nfr: { latencyP95Ms: 100 }
+
+  - id: "ssp"
+    component: "supplier-api"
+    label: "Programmatic SSPs"
+    props: { authScheme: "oauth2", callbackStyle: "none" }
+
+  - id: "qos-routing-manager"
+    component: "container-service"
+    label: "QoS Routing Manager"
+    group: "data-center"
+    props: { stateless: true, orchestrator: "kubernetes" }
+
+  - id: "cms"
+    component: "container-service"
+    label: "Content Metadata System (CMS)"
+    group: "data-center"
+    props: { stateless: true, orchestrator: "kubernetes", ownsData: true }
+
+  - id: "validation-orchestrator"
+    component: "container-service"
+    label: "Video Validation Orchestrator"
+    group: "data-center"
+    props: { stateless: true, orchestrator: "kubernetes" }
+
+  - id: "video-encoders"
+    component: "ffmpeg"
+    label: "Live encoders (12 languages, 5 camera angles)"
+    group: "aws-region"
+    props: { mode: "live" }
+
+  - id: "ssai-stitcher"
+    component: "container-worker"
+    label: "SSAI manifest stitchers"
+    group: "aws-region"
+    props: { trigger: "stream", orchestrator: "kubernetes" }
+
+  - id: "video-validator"
+    component: "container-worker"
+    label: "Video Validator (manifest, SSAI cue and CDN parity checks)"
+    group: "data-center"
+    props: { trigger: "schedule", orchestrator: "kubernetes" }
+
+  - id: "play-portal"
+    component: "container-worker"
+    label: "Play Portal (synthetic playback on real devices)"
+    props: { trigger: "schedule" }
+
+  - id: "akamai-cdn"
+    component: "akamai"
+    label: "Akamai (video CDN)"
+    group: "video-edge"
+    props: { caching: true, tls: true, managed: true }
+
+  - id: "cloudfront-cdn"
+    component: "cloudfront"
+    label: "Amazon CloudFront (video CDN)"
+    group: "video-edge"
+    props: { caching: true, tls: true, managed: true }
+
+  - id: "argus"
+    component: "observability-stack"
+    label: "ARGUS (in-house OLAP telemetry)"
+    group: "data-center"
+    props: { signal: "metrics", collectorMode: "push" }
+
+  - id: "grafana"
+    component: "grafana"
+    label: "Grafana dashboards / match TV wall"
+    group: "data-center"
+    props: { signal: "all", collectorMode: "pull", alertGrouping: true }
+
+  - id: "service-db"
+    component: "relational-database"
+    label: "One managed primary behind the whole fleet"
+    group: "core-vpc"
+    props: { sharded: false, multiWriter: false, replication: "none", backupEnabled: true, backupRetentionDays: 30 }
+    nfr: { rps: 125000 }
+
+  - id: "multi-layer-cache"
+    component: "cache-cluster"
+    label: "Distributed cache holding the only copy of the frequency caps"
+    group: "core-vpc"
+    props: { evictionPolicy: "lru", usedAsPrimaryStore: true, persistence: false, replication: "multi-az", invalidation: "ttl" }
+
+edges:
+  - { from: "client-app", to: "external-api-gateway", protocol: "https", mode: "sync", label: "API calls, security and rate rules at the edge" }
+  - { from: "client-app", to: "cacheable-cdn", protocol: "https", mode: "sync", label: "scorecard, concurrency, key moments" }
+  - { from: "external-api-gateway", to: "alb-fleet", protocol: "https", mode: "sync", label: "forward non-cached API calls" }
+  - { from: "cacheable-cdn", to: "alb-fleet", protocol: "https", mode: "sync", label: "origin fetch for cacheable paths" }
+  - { from: "alb-fleet", to: "internal-gateway", protocol: "http", mode: "sync", label: "pod-IP targets" }
+  - { from: "internal-gateway", to: "backend-services", protocol: "http", mode: "sync", label: "auth, rate limiting, load shedding" }
+  - { from: "internal-gateway", to: "tier1-service", protocol: "http", mode: "sync", label: "login, subscription, watch" }
+  - { from: "internal-gateway", to: "ad-decisioning", protocol: "http", mode: "sync", label: "ad request" }
+  - { from: "internal-gateway", to: "qos-routing-manager", protocol: "http", mode: "sync", label: "playback CDN weights" }
+  - { from: "backend-services", to: "tier1-service", protocol: "http", mode: "sync", label: "intra-DC endpoint" }
+  - { from: "backend-services", to: "service-db", protocol: "sql", mode: "sync" }
+  - { from: "tier1-service", to: "service-db", protocol: "sql", mode: "sync", label: "every login hits the primary" }
+  - { from: "backend-services", to: "multi-layer-cache", protocol: "cache", mode: "sync" }
+  - { from: "tier1-service", to: "multi-layer-cache", protocol: "cache", mode: "sync" }
+  - { from: "ad-decisioning", to: "multi-layer-cache", protocol: "cache", mode: "sync", label: "frequency caps live here only" }
+  - { from: "ad-decisioning", to: "ssp", protocol: "https", mode: "sync", label: "programmatic auction, inline" }
+  - { from: "ad-decisioning", to: "ssai-stitcher", protocol: "http", mode: "sync", label: "stitch the winning ad before replying" }
+  - { from: "backend-services", to: "nat-gateway", protocol: "https", mode: "sync", label: "egress from private subnets" }
+  - { from: "scaling-controller", to: "eks-cluster", protocol: "aws-api", mode: "sync", retryPolicy: "exponential", label: "scale the whole step at once and retry the throttled API" }
+  - { from: "video-encoders", to: "ssai-stitcher", protocol: "hls", mode: "sync", label: "live variants per language, angle and device" }
+  - { from: "ssai-stitcher", to: "akamai-cdn", protocol: "http", mode: "sync", label: "stitched manifest ingest" }
+  - { from: "ssai-stitcher", to: "cloudfront-cdn", protocol: "http", mode: "sync", label: "stitched manifest ingest" }
+  - { from: "client-app", to: "akamai-cdn", protocol: "https", mode: "sync", label: "HLS/DASH playback" }
+  - { from: "client-app", to: "cloudfront-cdn", protocol: "https", mode: "sync", label: "HLS/DASH playback" }
+  - { from: "client-app", to: "argus", protocol: "heartbeat", mode: "async", delivery: "at-most-once", label: "device heartbeats: PFR, rebuffering, RTT" }
+  - { from: "argus", to: "qos-routing-manager", protocol: "http", mode: "async", delivery: "at-least-once", label: "telemetry, smoothed by EWMA" }
+  - { from: "qos-routing-manager", to: "akamai-cdn", protocol: "http", mode: "async", delivery: "at-least-once", label: "per-cohort traffic weights" }
+  - { from: "qos-routing-manager", to: "cloudfront-cdn", protocol: "http", mode: "async", delivery: "at-least-once", label: "per-cohort traffic weights" }
+  - { from: "validation-orchestrator", to: "cms", protocol: "http", mode: "sync", label: "poll schedule and publish state" }
+  - { from: "validation-orchestrator", to: "video-validator", protocol: "http", mode: "async", delivery: "at-least-once", label: "dispatch before match start" }
+  - { from: "validation-orchestrator", to: "play-portal", protocol: "http", mode: "async", delivery: "at-least-once", label: "dispatch real-device checks" }
+  - { from: "video-validator", to: "akamai-cdn", protocol: "http", mode: "sync", label: "manifest and chunk parity per edge" }
+  - { from: "video-validator", to: "cloudfront-cdn", protocol: "http", mode: "sync", label: "manifest and chunk parity per edge" }
+  - { from: "video-validator", to: "grafana", protocol: "metrics", mode: "async", delivery: "at-most-once" }
+  - { from: "play-portal", to: "grafana", protocol: "metrics", mode: "async", delivery: "at-most-once" }

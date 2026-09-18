@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenStack Manila: the Shared File Systems service, which provisions remote file systems users mount over the
+# network. Per "Share management" NFS, CIFS, GlusterFS, HDFS, CephFS or MAPRFS protocols are supported and "by
+# default, the share is private"; a share cannot be mounted until an access rule (ip, user, cert or cephx) is
+# added. Per "Share types" every share type must declare driver_handles_share_servers.
+schemaVersion: "1"
+type: "component"
+id: "openstack-manila"
+kind: "file-storage"
+provider: "openstack"
+defaults:
+  protocol: "multi"
+  publicAccess: false
+  managed: false
+properties:
+  driverHandlesShareServers:
+    type: "boolean"
+  accessRuleRequired:
+    type: "boolean"
+    default: true
+  accessRuleType:
+    type: "enum"
+    values: ["ip", "user", "cert", "cephx"]
+  accessLevel:
+    type: "enum"
+    values: ["rw", "ro"]

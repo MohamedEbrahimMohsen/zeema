@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OUTSCALE DirectLink: a dedicated physical link between your network and an OUTSCALE
+# DirectLink location, bypassing the internet ("About DirectLink"). The same page states the
+# documented facts behind the defaults: the connection is private, it carries private virtual
+# interfaces whose MTU is limited to 1500 bytes, it requires a BGP-capable router, and it is
+# sold as a 1-Gb or 10-Gb Ethernet fiber-optic port.
+schemaVersion: "1"
+type: "component"
+id: "outscale-directlink"
+kind: "network-fabric"
+provider: "outscale"
+defaults:
+  managed: true
+  interconnect: "private"
+  multicast: false
+  overlay: false
+properties:
+  portSpeed:
+    type: "enum"
+    values: ["1-gbps", "10-gbps"]
+  virtualInterfaceType:
+    type: "enum"
+    values: ["private"]
+    default: "private"
+  bgpRequired:
+    type: "boolean"
+    default: true
+  mtuBytes:
+    type: "integer"
+    default: 1500

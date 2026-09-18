@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Cloud Hardware Firewall: an appliance placed upstream of classic infrastructure servers that
+# "blocks unwanted traffic from a server before the traffic ever reaches the server", using
+# stateful packet inspection, with up to 79 rules and interface speeds of 100, 200, 1000 and
+# 2000 Mbps ("About Hardware Firewall"). End of marketing 17 December 2025, end of support
+# 31 December 2026. No default rule posture is documented, so defaultAction is left unset.
+schemaVersion: "1"
+type: "component"
+id: "ibm-firewall"
+kind: "firewall"
+provider: "ibm"
+defaults:
+  managed: true
+  stateful: true
+properties:
+  throughputMbps:
+    type: "integer"
+  maxRules:
+    type: "integer"
+    default: 79

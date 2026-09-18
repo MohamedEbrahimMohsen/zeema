@@ -1,0 +1,11 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Generic file store: files or configuration on a filesystem the design does not attribute
+# to a product. Access is the host's own filesystem, not an exported NFS or SMB share.
+schemaVersion: "1"
+type: "component"
+id: "file-store"
+kind: "file-storage"
+provider: "default"
+defaults:
+  protocol: "native"
+  managed: false

@@ -1,0 +1,189 @@
+# Intake: Datadog Husky — the third-generation event store and the intake pipeline in front of it
+
+## Source
+- Primary: https://www.datadoghq.com/blog/engineering/introducing-husky/ (Datadog engineering blog, written by the Husky team, 2022) — the architecture post: three generations of the event store, the Writers/Compactors/Readers split, FoundationDB metadata, S3 blob storage.
+- Primary: https://www.datadoghq.com/blog/engineering/husky-deep-dive/ ("Husky: Exactly-once ingestion and multi-tenancy at scale", Daniel Intskirveli and Cecilia Watt, Datadog engineers, Datadog engineering blog, 2023-02-22) — Shard Router, Sharding Allocator, Autosharder, writer-side deduplication, shard placements.
+- Primary: https://www.datadoghq.com/blog/engineering/husky-query-architecture/ ("Inside Husky's query engine: Real-time access to 100 trillion events", Datadog engineering blog, 2025) — Query Planner, Query Orchestrator, Metadata Service, Reader Service, the three caches, pruning funnel, latency percentiles.
+- Primary: https://www.datadoghq.com/blog/engineering/husky-storage-compaction/ ("Husky: Efficient compaction at Datadog scale", Datadog engineering blog) — fragment file format, row groups, size-tiered and locality compaction, regex pruning metadata.
+- Primary: https://www.datadoghq.com/blog/engineering/streaming-platform-kafka-custom-abstractions/ ("Achieving relentless Kafka reliability at scale with the Streaming Platform", Datadog engineering blog, 2025) — Streams, stream lanes, Assigner, libstreaming, DLQ lane, Kafka scale.
+- Primary: https://www.datadoghq.com/blog/engineering/timeseries-indexing-at-scale/ ("Timeseries indexing at scale", Datadog engineering blog) — the metrics platform: intake, Timeseries Index Service, Timeseries Database Service, query engine.
+- Primary: https://www.datadoghq.com/blog/engineering/data-pipeline-completeness/ ("How we measure data completeness at scale", Datadog engineering blog) — the intake -> Kafka -> processing -> router pipeline and its per-segment create/ack accounting.
+- Primary (postmortem): https://www.datadoghq.com/blog/2023-03-08-multiregion-infrastructure-connectivity-issue/ (Datadog official root-cause analysis of the 2023-03-08 global outage, 2023).
+- Primary (postmortem): https://www.datadoghq.com/blog/engineering/2023-03-08-deep-dive-into-platform-level-impact/ (Datadog engineering blog, deep dive into the platform-level impact of the same incident, 2023).
+- Secondary (authorship/date corroboration only, no facts taken): https://www.plushcap.com/content/datadog/blog/engineering-husky-deep-dive
+- Verified by: nine posts on Datadog's own engineering blog and official incident-response blog, all fetched in full. Fetch log at `work/research/datadog-husky/verify.md`.
+- Confidence: high
+- Date of source: 2022 (Husky introduction), 2023 (exactly-once deep dive; 2023-03-08 postmortems), 2025 (query engine, streaming platform), undated-but-current (compaction, timeseries indexing, pipeline completeness)
+
+## System in three lines
+Husky is the storage engine underneath Datadog Logs, APM traces, RUM, Network Performance Monitoring, Continuous Profiler and every other multi-kilobyte observability event product — "an unbundled, distributed, schemaless, vectorized column store with hybrid analytics/search capabilities, designed from the ground up around commodity object storage" (introducing-husky). Events arrive from millions of customer Agents, are routed deterministically into Kafka shards, written as immutable columnar *fragments* into S3 by stateless Writers, compacted in the background, and served by stateless Readers coordinated through a strongly consistent FoundationDB metadata store. It is hard because a single multi-tenant system must ingest hundreds of trillions of events a day exactly once, keep them queryable in seconds, and stop any one of millions of tenants from degrading the others.
+
+## Scale (only if stated)
+- Events: "more than 100 trillion events…every day" across logs, traces, network data and more (https://www.datadoghq.com/blog/engineering/husky-query-architecture/)
+- Queries: "billions of queries every day" (https://www.datadoghq.com/blog/engineering/husky-query-architecture/)
+- Kafka: "hundreds of trillions of observability events ingested daily", "terabytes of traffic per second", hundreds of clusters, thousands of topics, "millions of partitions", hundreds of consumer groups (https://www.datadoghq.com/blog/engineering/streaming-platform-kafka-custom-abstractions/)
+- Intake pipeline: "billions of payloads per second flow through hundreds of distributed pipelines"; "hundreds of millions of unique payload identifiers stored per second"; retention of the completeness index "several hours" over "dozens of terabytes" (https://www.datadoghq.com/blog/engineering/data-pipeline-completeness/)
+- Metrics platform: "billions of events from millions of hosts every minute"; data volume grew 30x between 2017 and 2022 (https://www.datadoghq.com/blog/engineering/timeseries-indexing-at-scale/)
+- Fragment-query latency inside Readers: "p50 and p75 at 2.01 ms, p90 at 6.04 ms, p95 at 19.93 ms, and p99 at 257.36 ms" over 6.44 trillion recorded points (https://www.datadoghq.com/blog/engineering/husky-query-architecture/)
+- Query pruning funnel, per 1,000 sample fragment queries: 300 pruned at metadata level, 560 answered from the result cache, 78 by column metadata, 28 by other caches — "Only 3.4% of queries end up scanning real data, and just 0.4% of them need to hit blob storage" (https://www.datadoghq.com/blog/engineering/husky-query-architecture/)
+- Cache hit ratios: result cache "hits about 80% of the time"; blob range cache "around 70%"; predicate cache "around 3%" hit ratio but an efficiency of "around 11" (https://www.datadoghq.com/blog/engineering/husky-query-architecture/)
+- Zone-map pruning removes fragments "by up to 60% for structured events and around 30% on average" (https://www.datadoghq.com/blog/engineering/husky-query-architecture/)
+- Fragment sizes: Writer output starts at roughly 1,000 rows per fragment and compaction consolidates toward roughly 1,000,000 rows per fragment; a single compacted fragment can hold "hundreds of thousands (if not millions) of columns" (https://www.datadoghq.com/blog/engineering/husky-storage-compaction/)
+- Shard placements are "valid for a specific range of time: usually just a few minutes" (https://www.datadoghq.com/blog/engineering/husky-deep-dive/)
+- Timeseries index: eight RocksDB shards per node on 32-core nodes; "20 times higher cardinality metrics on the same hardware" and a "99% reduction of query timeouts" after the inverted-index rewrite; Go-to-Rust cut CPU-intensive operations "up to 6x", Go having spent "nearly 30% of CPU resources on garbage collection" (https://www.datadoghq.com/blog/engineering/timeseries-indexing-at-scale/)
+- 2023-03-08 outage: five regions (US1, EU1, US3, US4, US5) on three cloud providers; "tens of thousands of nodes"; on AWS "more than 8 percent of our instances were terminated every 10 minutes between 06:00 and 07:00 UTC. By 08:00, AWS had terminated and replaced approximately 60 percent of the instances in the region"; "90+ percent" of the fleet ran Ubuntu 22.04; 450 to 750 incident responders across four shifts; full resolution 2023-03-10 06:25 UTC (https://www.datadoghq.com/blog/2023-03-08-multiregion-infrastructure-connectivity-issue/, https://www.datadoghq.com/blog/engineering/2023-03-08-deep-dive-into-platform-level-impact/)
+
+## Requirements stated or clearly implied
+- Availability target: multi-region (US1, EU1, US3, US4, US5 named in the postmortem), each region on a single cloud provider but across multiple availability zones; the Streaming Platform provides "multi-cluster, multi-AZ resilient pipelines" with "live traffic failovers" that create topics and reroute traffic "without application reconfiguration" (streaming-platform post). The 2023-03-08 postmortem is explicit that the regions were *not* isolated from each other by this failure because they shared an update channel.
+- Consistency: strictly serializable for metadata — FoundationDB was chosen for "Strictly serializable and interactive transactions with no fine print", and the metadata store is "the strongly consistent source of truth for the set of files currently visible to each customer" (introducing-husky). Data visibility is therefore atomic: a fragment exists for queries only once its metadata commit lands.
+- Delivery semantics: **exactly-once ingestion end-to-end**, built on top of an at-least-once transport. Kafka delivery is at-least-once with "relaxed ordering guarantees…enabling massive parallelism"; ordering is "re-established later downstream in our event store" (streaming-platform post). Husky Writers then deduplicate on event ID, and "We commit tenant event data and event IDs in the same atomic transaction" (husky-deep-dive).
+- Latency target: no published SLO. Stated behaviour: fragment queries answer at p50 2.01 ms / p99 257.36 ms inside Readers; results "stream back progressively" so the UI refines as data arrives; the acceptable end-to-end cost of moving to remote storage was "a few hundred milliseconds" added to the median.
+- Ordering needs: none globally. Per-shard determinism instead: "an event with a given timestamp and ID is *always* routed to the exact same shard, regardless of when or how often it is ingested" (husky-deep-dive). Within a table, fragments are sorted by a 3-4 column sort schema plus timestamp.
+- Replay or reprocessing needs: implied and central — the whole exactly-once design exists so that Kafka replays (retries, writer restarts, shard reassignment) do not duplicate stored events. On writer conflict "the contents of the local ID cache are discarded and consumer progress is reset to the latest committed fragment" (husky-deep-dive).
+- Retention: not stated per product. Fragments are immutable and time-bucketed; deletion and update are handled "during background compaction". The completeness-accounting index keeps "several hours".
+- Compliance / residency: regions are named and separate (US1, US3, US4, US5, EU1) and tenants are region-pinned; the sources do not discuss PCI/GDPR mechanics.
+
+## Boundaries
+- Regions / zones: US1, EU1, US3, US4, US5, each on one of three different cloud providers (AWS, Google Cloud, Azure), each spanning multiple availability zones (2023-03-08 postmortem). Kafka Streams are described as multi-cluster and multi-AZ.
+- Trust zones: customer hosts running the Datadog Agent (untrusted, outside) -> public load balancer / intake endpoints -> internal Kafka and processing plane -> storage plane (FoundationDB metadata, S3 blob storage) -> query plane reachable through the public API and web app.
+- Tenancy boundary: the unit of isolation is the **shard**, not the tenant. Husky deliberately "allocates multiple shards per tenant and distributes tenants across shards", to minimise "the number of unique tenants and indexes that an individual storage node was exposed to" (husky-deep-dive). On the query side the boundary is a **shuffle shard**: "assign a subset of nodes (a 'shard') to each tenant", with shard size "inferred from their usage patterns" (query-architecture).
+- Resource-pool boundary: queries "can run in a single resource pool, be partitioned by product, or isolated per-tenant", and automated monitoring queries can be isolated from human queries (introducing-husky).
+- Named subsystems: the Streaming Platform (Streams, stream lanes, Assigner, libstreaming, DLQ lane), the Shard Router, the Sharding Allocator, the Autosharder, Husky Writers, Husky Compactors, Husky Readers, the Metadata Service over FoundationDB, blob storage, the Query Planner and Query Orchestrator; alongside Husky, the separate metrics platform (metrics intake, Timeseries Index Service, Timeseries Database Service).
+- Data units (not boxes): *fragment* (an immutable columnar file in blob storage, Parquet-like with column headers and a skip list of column offsets), *row group* (fixed-size set of consecutive column values bounding compaction memory), *zone map*, *posting list*, *shard placement*.
+
+## Components
+| # | Box name in source | Role (one line) | Real product if named | Candidate kind | Properties stated (partitions, TTL, replication, DLQ, sharding key, eviction...) |
+|---|---|---|---|---|---|
+| 1 | Datadog Agent / customer sources | Runs on customer hosts, ships logs, traces, RUM, NPM and profiler events plus metrics | Datadog Agent | client | "billions of events from millions of hosts every minute"; events are "multi-kilobyte"; data is "roughly ordered in time" |
+| 2 | Load balancer | Fronts the public intake endpoints | not stated | load-balancer | in the metrics path: "Agent through a load balancer to metrics intake" |
+| 3 | Intake service | Terminates payloads at the edge of the pipeline and publishes them onward | in-house | app-server | first measured segment is "intake-in to intake-out"; rate limiting that "only rejects requests targeting slow or unavailable partitions" |
+| 4 | Kafka (Streaming Platform clusters) | The durable buffer every observability event crosses before storage | Apache Kafka | stream | hundreds of clusters, thousands of topics, "millions of partitions"; "terabytes of traffic per second"; at-least-once; relaxed ordering |
+| 5 | Streams / stream lanes | Datadog's abstraction over Kafka topology: multi-cluster, multi-AZ pipelines with per-priority lanes | in-house | pubsub-topic | "multi-cluster, multi-AZ resilient pipelines decoupling applications from Kafka topology"; independent lanes per priority for QoS isolation; live traffic failover with automatic topic creation |
+| 6 | DLQ lane | Dedicated lane taking poison-pill events out of the partition | in-house (lane within a Stream) | queue | "When an event causes an unrecoverable error, it is copied to the DLQ so the rest of the partition can continue processing" |
+| 7 | Assigner | Real-time multi-cluster partition coordinator replacing Kafka's default group coordinator | in-house | coordination-service | reacts "in seconds rather than waiting for Kafka timeouts"; balances on real metrics such as CPU load; computes lag over millions of partitions in real time |
+| 8 | libstreaming | Custom Kafka client embedded in every producer/consumer instead of a central proxy | in-house, Rust with Java/Go/Python bindings | app-server (client library, not a deployable node) | chosen over a gRPC proxy because centralising would add "significant latency and bottlenecks"; carries an "advanced commit log" tracking multiple offsets/ranges per partition in commit metadata |
+| 9 | Shard Router | Deterministically maps each event to a shard and republishes it to the Kafka partition backing that shard | in-house | stream-processor | sits upstream of the shard Kafka topics; sharding key is (tenant ID, event timestamp); "an event with a given timestamp and ID is *always* routed to the exact same shard"; second-generation version "reads from Kafka and writes back to a new Kafka cluster… with the data organized into 'shards'" |
+| 10 | Sharding Allocator | Owns the immutable, time-bounded mapping from (tenant, time window) to a shard list | in-house, over FoundationDB | coordination-service | placements immutable and non-overlapping, "valid for a specific range of time: usually just a few minutes"; "it will always return the *exact same placement* for any given tuple of tenant ID and timestamp"; consistent hashing `H(tenant_id, totalShards) = tenantShard` with a per-tenant salt to shift placement without changing the tenant hash; population-variance balancer with a configured "maximum number of moves it can make on each run" |
+| 11 | Autosharder | Raises and lowers each tenant's shard count from observed throughput | in-house | worker | "periodically fetches [throughput] metrics and adjusts configured shard counts on a tenant-by-tenant basis"; upscales fast on bursts, downscales slowly |
+| 12 | Husky Writers | Consume a shard's Kafka partitions, buffer briefly in memory, write fragments to blob storage, commit metadata, deduplicate event IDs | in-house | worker | "Completely stateless and can autoscale"; never receive query traffic; dedupe by storing event IDs in separate Husky tables per shard; "We commit tenant event data and event IDs in the same atomic transaction"; page in ID intervals from blob storage at "~2 orders of magnitude higher" rates than they process events, with page-in rates "several orders of magnitude lower than a Writer's actual rate"; output fragments of roughly 1,000 rows |
+| 13 | Husky Compactors | Background service merging small fragments into larger, better-sorted ones | in-house | worker | "a distributed, autoscaling service"; LSM-style size-tiered levels from ~1,000 to ~1,000,000 rows; k-way merge on a sort schema of "typically 3-4 columns plus timestamp"; "1 GET request to storage per input fragment, then stream the data in parallel"; memory bounded per CPU by row-group size, restarts "from scratch with a smaller row group size" when a column is too heavy; also performs updates and deletions; emits regex/FSA pruning metadata |
+| 14 | Metadata store | Strongly consistent record of which fragments are visible to which tenant, and of committed ingestion progress | FoundationDB | nosql-database | "the strongly consistent source of truth for the set of files currently visible to each customer"; chosen for being "Distributed and horizontally scalable by default", "Strictly serializable and interactive transactions with no fine print", "Highly resilient when faced with extremely aggressive workloads"; hard five-second transaction limit |
+| 15 | Metadata Service | Service layer in front of FoundationDB that the query and write paths call | in-house | app-server | exists because FoundationDB enforces a "hard five-second limit on transactions", so long metadata scans must be chunked behind an abstraction |
+| 16 | Blob storage | Holds every fragment, raw and compacted; the only copy of the data | AWS S3 | object-store | durability and replication deliberately offloaded — "battle-tested systems like FoundationDB and S3"; fragments immutable; "no distinction between 'historical' data and 'fresh' data" |
+| 17 | Husky Readers (Reader Service / leaf nodes) | Execute a fragment query and return partial aggregates for re-aggregation | in-house | worker | "Almost stateless and can be scaled up or down without issues"; queries can "temporarily 'burst' into a huge number of Reader nodes if we have spare capacity"; row groups returned as "a lazy reference… Nothing is actually read or decoded until the data is accessed"; fragment-query p50 2.01 ms, p99 257.36 ms |
+| 18 | Query Planner | Accepts the user query, optimises it, splits it over time, merges sub-results | in-house | app-server | "breaks a seven-day query into smaller, time-based steps"; merges progressively streamed sub-results |
+| 19 | Query Orchestrator | Fetches fragment metadata, prunes, and dispatches fragment queries to Readers | in-house | app-server | zone-map pruning "by up to 60% for structured events and around 30% on average"; dispatch by consistent hashing with shuffle sharding; load-aware routing to "a consistently chosen secondary node" if the primary is overloaded; a typical query fans out over "1,000 fragments" |
+| 20 | Result Cache | Caches whole fragment-query results | in-house, in-memory plus disk-persisted | cache | "hits about 80% of the time" |
+| 21 | Blob Range Cache | Caches byte ranges fetched from blob storage on reader nodes | RocksDB-based | cache | hit ratio "around 70%" |
+| 22 | Predicate Cache | Per-fragment, per-reader-node cache of evaluated predicates | in-house | cache | hit ratio "around 3%", efficiency "around 11" (saves roughly ten times the work of caching it) |
+| 23 | Metrics intake + Timeseries Index Service | Separate metrics platform: indexes tags and timeseries identifiers, inverted index over every tag | in-house, RocksDB, rewritten Go to Rust | search-index | every tag unconditionally indexed so "every possible query now always has a partial index available"; intranode sharding, eight RocksDB shards on 32-core nodes; consumes from Kafka |
+| 24 | Timeseries Database Service | Stores `<timeseries_id, timestamp, float64>` tuples for the metrics platform | in-house | timeseries-database | consumes from Kafka; separated from the tag index so cardinality and value volume scale independently |
+| 25 | Kubernetes node fleet with Cilium CNI | The compute substrate every stateless role runs on; autoscaled by the Watermark Pod Autoscaler | Kubernetes, Cilium CNI, Watermark Pod Autoscaler, Ubuntu 22.04 | container-orchestrator | WPA "quickly upscales when observed values cross a threshold" on "vital metrics like CPU usage"; shard exclusions shed load from an overloaded shard; "90+ percent" of the fleet on Ubuntu 22.04 at the time of the 2023-03-08 outage |
+
+## Edges
+| From | To | Protocol | sync / async | Delivery guarantee | Notes (fan-out, batch, retry, idempotency) |
+|---|---|---|---|---|---|
+| Datadog Agent | Load balancer | https | sync | not stated | batched payloads from millions of hosts |
+| Load balancer | Intake service | http | sync | not stated | |
+| Intake service | Kafka (Streams) | Kafka protocol via libstreaming | async | at-least-once | rate limiting "only rejects requests targeting slow or unavailable partitions"; first completeness segment measured here |
+| Kafka | Shard Router | Kafka consume via libstreaming | async | at-least-once | |
+| Shard Router | Sharding Allocator | RPC (not stated) | sync | — | asks for the placement for (tenant ID, timestamp); answer is deterministic and immutable |
+| Sharding Allocator | FoundationDB metadata store | FoundationDB client | sync | strictly serializable | stores all historical shard placements as atomic transactions |
+| Autosharder | Sharding Allocator config | not stated | async | — | adjusts per-tenant shard counts from throughput metrics |
+| Shard Router | Kafka shard topics | Kafka produce | async | at-least-once | "publishes traffic to specific partitions corresponding to a shard placement allocated for some tenant data stream" |
+| Kafka shard topics | Husky Writers | Kafka consume | async | at-least-once, deduplicated downstream | one writer owns a shard's partitions; ordering relaxed, "re-established later downstream in our event store" |
+| Any Stream consumer | DLQ lane | Kafka produce | async | at-least-once | poison-pill event copied aside "so the rest of the partition can continue processing" |
+| Assigner | Stream consumers | control plane RPC | async | — | assigns partitions across clusters, reacts "in seconds rather than waiting for Kafka timeouts" |
+| Husky Writers | Blob storage (S3) | S3 API | sync | durable once acked | uploads the fragment in Husky's custom columnar format before committing metadata |
+| Husky Writers | FoundationDB metadata store | FoundationDB transaction (via Metadata Service) | sync | strictly serializable, exactly-once | event data and event IDs committed "in the same atomic transaction"; versioned updates reject out-of-order commits |
+| Husky Writers | Blob storage (S3) | S3 GET | sync | — | page in previously written event-ID intervals to rebuild the dedupe cache after restart |
+| Husky Compactors | FoundationDB metadata store | FoundationDB transaction | sync | strictly serializable | scan for small fragments, then atomically swap inputs for outputs |
+| Husky Compactors | Blob storage (S3) | S3 GET / PUT | sync | — | "1 GET request to storage per input fragment, then stream the data in parallel"; writes the merged fragment |
+| Query client (web app / API) | Query Planner | https | sync | — | |
+| Query Planner | Query Orchestrator | RPC (not stated) | sync | — | one orchestration per time-sliced step of the query |
+| Query Orchestrator | Metadata Service | RPC (not stated) | sync | — | fetch fragment metadata; chunked because of FoundationDB's five-second transaction limit |
+| Metadata Service | FoundationDB metadata store | FoundationDB client | sync | strictly serializable | |
+| Query Orchestrator | Husky Readers | RPC (not stated) | sync, results streamed back | — | fan-out over ~1,000 fragments; consistent hashing plus shuffle sharding per tenant; failover to "a consistently chosen secondary node" when the primary is loaded |
+| Husky Readers | Result / Blob range / Predicate caches | local | sync | — | 80% / ~70% / ~3% hit ratios; only 3.4% of fragment queries scan real data |
+| Husky Readers | Blob storage (S3) | S3 GET (byte ranges) | sync | — | "just 0.4% of them need to hit blob storage" |
+| Husky Readers | Query Orchestrator | streaming RPC | async (progressive) | — | partial aggregates streamed back so "data loads progressively" |
+| Query Orchestrator | Query Planner | streaming RPC | async | — | planner merges sub-results into the final response |
+| Metrics intake | Kafka | Kafka produce | async | at-least-once | separate metrics path |
+| Kafka | Timeseries Index Service | Kafka consume | async | at-least-once | indexes tags and identifiers |
+| Kafka | Timeseries Database Service | Kafka consume | async | at-least-once | stores `<timeseries_id, timestamp, float64>` |
+| Metrics query engine | Timeseries Index Service | RPC (not stated) | sync | — | resolve tags to timeseries ids |
+| Metrics query engine | Timeseries Database Service | RPC (not stated) | sync | — | fetch points |
+| Pipeline services | Completeness accounting | async events | async | idempotent by time bucket + payload id | create/ack events per segment; ratio = acks / creates per bucket |
+
+## Failure modes, incidents, tradeoffs the source discusses
+- **Generation 1 — colocated tenants in a search cluster cascade.** A single misbehaving node could "disrupt the experience of all tenants—and in the worst case, make the entire cluster unavailable." (https://www.datadoghq.com/blog/engineering/introducing-husky/)
+- **Generation 2 — blast radius bounded but not eliminated.** After the Shard Router split data into shards, "None of the individual nodes know about each other… a single misbehaving node can only ever disrupt as many tenants as we've assigned to the shard it owns." Still, tenants sharing a shard degraded each other, and coupling storage to compute meant scaling one forced scaling the other. (introducing-husky)
+- **Migration tradeoff — median latency traded for tail latency.** Moving from local SSDs to remote object storage raised the "latency floor"; median query latency rose "a few hundred milliseconds", while p95, p99 and max fell by "seconds, tens of seconds, and hundreds of seconds" respectively. The team concluded "a few hundred milliseconds increase in median latency was the right decision." (introducing-husky)
+- **Exactly-once is built, not bought.** The transport is at-least-once with "relaxed ordering guarantees"; correctness is recovered in the store. Determinism is the mechanism: "an event with a given timestamp and ID is *always* routed to the exact same shard, regardless of when or how often it is ingested." (husky-deep-dive)
+- **Split-brain between IDs and data avoided by one transaction.** Rather than a separate dedupe store, "Metadata remains our single source of truth. We commit tenant event data and event IDs in the same atomic transaction." (husky-deep-dive)
+- **Shard ping-pong on writer restart.** When a shard is reassigned back and forth, "the worker is notified of the conflict and triggers a reconciliation process—the contents of the local ID cache are discarded and consumer progress is reset to the latest committed fragment." (husky-deep-dive)
+- **Head-of-line blocking in a partition.** "If even one event…causes a delay, it blocks the entire partition" — answered with the DLQ lane and per-priority stream lanes. (streaming-platform)
+- **Decompression bomb.** The team hit zstd-compressed batches that expanded to "several gigabytes" on decompression, causing "catastrophic failures in consumers." (streaming-platform)
+- **Why no central Kafka proxy.** Routing every producer through a gRPC proxy would introduce "significant latency and bottlenecks" at their throughput, so libstreaming is embedded in each application to "maintain low-latency access." (streaming-platform)
+- **Compaction memory is bounded by the fattest column.** For logs the `message` field can reach 75 KiB, so 15,000 such events need over 1 GiB in memory; the compactor "restarts from scratch with a smaller row group size" when it detects this. (husky-storage-compaction)
+- **Locality compaction paid for itself in query cost.** Rolling out LSM-style locality compaction produced "a 30% reduction in query worker replicas", cutting the most expensive component of the system. (husky-storage-compaction)
+- **Streaming results complicate retries.** "If a failure happens mid-query, retries are harder…we need a checkpointing system to ensure we don't duplicate results." (husky-query-architecture)
+- **FoundationDB's five-second transaction ceiling** forces every long metadata scan behind a service abstraction rather than a direct client transaction. (husky-query-architecture)
+- **Immutability cuts both ways.** Immutable fragments make every cache layer safe, but updates and deletions can only happen during background compaction. (husky-query-architecture, husky-storage-compaction)
+- **Indexing by query log left holes.** The first metrics index built materialized indexes only for expensive observed queries, so "user-facing queries…often fell back to full table scans"; unconditional inverted indexing removed the cliff — "every possible query now always has a partial index available", 20x cardinality on the same hardware, "99% reduction of query timeouts". (timeseries-indexing-at-scale)
+- **2023-03-08, the correlated global outage.** A security update to systemd, applied automatically through a legacy update channel on Ubuntu 22.04, caused `systemd-networkd` on restart to forcibly delete the routes managed by the Cilium CNI plugin: "when nodes running Ubuntu 22.04—having downloaded the new systemd version—ran the unattended upgrade between 06:00 and 07:00 UTC on March 8, 2023, they lost host connectivity on all providers and pod connectivity on AWS and Azure." Regions US1, EU1, US3, US4 and US5 failed simultaneously across three different cloud providers because they shared the update channel, not the infrastructure. On AWS, "more than 8 percent of our instances were terminated every 10 minutes between 06:00 and 07:00 UTC"; by 08:00 roughly 60 percent of a region's instances had been replaced. EU1 packet volume "went from hundreds of millions of packets sent per second to almost 0 between 06:00 and 07:00". (https://www.datadoghq.com/blog/2023-03-08-multiregion-infrastructure-connectivity-issue/, https://www.datadoghq.com/blog/engineering/2023-03-08-deep-dive-into-platform-level-impact/)
+- **The latency in the 2023-03-08 bug was three years old.** systemd v248, in December 2020, introduced flushing of IP rules it does not know about on start-up; it never showed because "during a normal boot sequence systemd-networkd always starts before routing rules are installed by the CNI plugin" — neither a fresh node nor a rebooted node reproduced it. Only an in-place restart did.
+- **Recovery took longer than the fault.** Outage began 06:03 UTC 2023-03-08; first public status 06:31; first recovery signs 09:13; all services operational 2023-03-09 08:58 UTC; fully resolved after backfill 2023-03-10 06:25 UTC; "450 to 750 incident responders active throughout the incident" across four shifts. Remediation: disable the legacy security update channel in all regions, reconfigure `systemd-networkd` to leave the routing table unchanged on restart, audit for other such channels.
+- **Load shedding must not corrupt its own measurement.** The intake rate limiter "only rejects requests targeting slow or unavailable partitions", specifically so completeness accounting is not distorted. (data-pipeline-completeness)
+
+## Unknowns
+- Where the region boundary sits inside Husky: whether a Husky deployment (FoundationDB cluster, S3 buckets, reader fleet) is per-region, and whether any metadata or fragments cross regions. The sources never say.
+- The wire protocols between Husky's internal services (Planner -> Orchestrator -> Reader, Router -> Allocator). Only "streaming" and "RPC" behaviour is described; no protocol named.
+- Kafka consumer-offset semantics under the exactly-once scheme: the deep dive emphasises FoundationDB-committed progress and "the latest committed fragment", but never states whether Kafka offsets are committed at all or ignored in favour of metadata-recorded progress.
+- Retention policy and its enforcement: how TTL expiry is expressed in metadata and who deletes expired fragments from S3.
+- Replication and durability configuration of the FoundationDB clusters (redundancy mode, cluster count, size).
+- Node counts, instance types and fleet sizes for Writers, Compactors and Readers. Only "autoscaling" and "burst" are stated.
+- How the 2023-03-08 outage specifically affected Husky ingestion and query: the platform-level deep dive covers connectivity and instance churn but does not quantify event backlog, Kafka lag, or how much data needed backfilling.
+- Whether the Husky query engine and the metrics query engine share any component, or are two entirely separate stacks that only meet in the UI.
+- The unit and lifecycle of a "Husky table" and how schemaless columns are discovered and typed.
+
+## Candidates
+- New kinds: none required — every box maps to an existing kind. `columnar-store` or `lakehouse-table` would be a better fit than `object-store` + `worker` for the Husky storage plane if a future card repeats the pattern; note it as a second sighting alongside Snowflake/Procella-style designs.
+- New properties on existing kinds:
+  - `object-store.immutableFiles` (boolean) and `object-store.compaction` (none | size-tiered | leveled | locality)
+  - `worker.stateless` (boolean, already implied) and `worker.role` (writer | compactor | reader)
+  - `stream.orderingGuarantee` (global | per-partition | relaxed) and `stream.dlqLane` (boolean)
+  - `stream.deliveryGuarantee` = at-least-once with a paired `consumer.dedupeStrategy` (none | id-table | offset)
+  - `nosql-database.transactionTimeoutMs` (FoundationDB's 5,000 ms is load-bearing here)
+  - `cache.hitRatio` (float) and `cache.tier` (result | range | predicate)
+  - `app-server.shuffleSharded` (boolean) and `app-server.shardSizePolicy` (fixed | usage-inferred)
+  - `worker.autoscaler` (hpa | wpa | none)
+- New requirement paths:
+  - `delivery.exactlyOnce` (boolean) with `delivery.dedupeWindow`
+  - `isolation.tenancyUnit` (tenant | shard | shuffle-shard | pool)
+  - `isolation.workloadClasses` (e.g. automated vs human queries)
+  - `storage.separationOfStorageAndCompute` (boolean)
+  - `latency.tailPriority` (boolean — "we accepted a worse median for a far better p99")
+- New rules (name + one-line condition):
+  - `at-least-once-stream-without-dedupe`: a stream edge with deliveryGuarantee at-least-once feeding a store that declares no dedupeStrategy
+  - `metadata-store-single-point-of-truth-without-strong-consistency`: a node acting as the visibility source of truth whose consistency is not strict/serializable
+  - `shared-partition-without-dlq`: a stream consumed by a worker with no DLQ declared, where a poison pill blocks the partition
+  - `object-store-backed-query-without-cache-tier`: reader nodes fetching from an object-store with no cache declared in front
+  - `fan-out-query-without-shuffle-sharding`: a multi-tenant query fan-out over a shared worker pool with no per-tenant subset
+  - `correlated-fleet-update-channel`: all regions/zones sharing one automatic package-update channel — the literal 2023-03-08 root cause, a cross-boundary dependency that defeats region isolation
+  - `compaction-memory-unbounded-by-row-group`: a compaction worker with no bound on per-merge memory
+  - `long-scan-over-bounded-transaction-store`: a metadata scan issued directly against a store with a hard transaction time limit
+
+## Verification 2026-09-14
+
+Spot check of the two primary posts that carry most of the boxes and numbers used here (the
+card itself was written from sources fetched the same day, so a full re-fetch was not run).
+
+| URL | Reachable | Outcome |
+|---|---|---|
+| https://www.datadoghq.com/blog/engineering/husky-deep-dive/ | yes | Shard Router, Sharding Allocator, Autosharder, Writers, event-ID dedupe in separate Husky tables, "IDs and event data are committed to the Metadata Service at the same time (and in the same FoundationDB transaction)", placements "only valid for a specific range of time: usually just a few minutes", per-tenant salt in the hash key — all present as the card states. |
+| https://www.datadoghq.com/blog/engineering/husky-query-architecture/ | yes | "more than 100 trillion events and billions of queries every day"; Query Planner, Query Orchestrator, Metadata Service, Reader Service; result cache ~80%, blob range cache ~70%, predicate cache ~3% with efficiency ~11; p50 2.01 ms and p99 257.36 ms; zone-map pruning up to 60% / ~30% average; "3.4% of queries end up scanning real data, and just 0.4% of them need to hit blob storage"; FoundationDB "hard five-second limit on transactions"; shuffle sharding — all present as the card states. |
+| the other seven posts on the card | not re-fetched | Facts used as the card states them. |
+
+Nothing the card states was contradicted, and nothing could not be confirmed. Full log:
+`work/designs/datadog-husky/verify.md`.

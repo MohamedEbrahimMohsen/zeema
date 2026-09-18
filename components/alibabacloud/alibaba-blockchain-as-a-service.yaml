@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Blockchain as a Service (BaaS): a managed blockchain platform built on Kubernetes on which enterprises
+# deploy blockchain networks across regions; Alibaba Cloud manages the platform operations - resource
+# provisioning, configuration, monitoring and certificate management ("Architecture"). That page names the
+# three supported engines, Ant Blockchain, Hyperledger Fabric 2.2 LTS and Enterprise Ethereum Quorum, and
+# the five architectural layers. A blockchain ledger is append-only and tamper-evident, not a double-entry
+# accounting book, so doubleEntry is turned off.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-blockchain-as-a-service"
+kind: "ledger"
+provider: "alibabacloud"
+defaults:
+  managed: true
+  appendOnly: true
+  tamperEvident: true
+  doubleEntry: false
+properties:
+  framework:
+    type: "enum"
+    values: ["ant-blockchain", "hyperledger-fabric", "quorum"]
+  networkScope:
+    type: "enum"
+    values: ["consortium", "private"]
+    default: "consortium"

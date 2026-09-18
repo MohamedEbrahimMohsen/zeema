@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Pomerium: open source identity-aware proxy built around BeyondCorp and zero trust that verifies
+# user identity, device state and request context before granting access ("What is Pomerium?").
+# The same page gives three editions: Pomerium Core, self-managed; Pomerium Zero, a managed
+# control plane with a self-run data plane; and Pomerium Enterprise, a self-hosted control plane.
+# "TCP over HTTP Support" documents non-HTTP targets reached by tunnelling TCP over an HTTP
+# CONNECT stream (SSH, RDP, Postgres, MySQL, Redis), with native SSH access as a separate,
+# non-tunnelled path. Session recording and audit logs are listed capabilities, not stated
+# defaults, so neither is defaulted here.
+schemaVersion: "1"
+type: "component"
+id: "pomerium"
+kind: "bastion-host"
+provider: "default"
+defaults:
+  managed: false
+  protocols: "both"
+properties:
+  edition:
+    type: "enum"
+    values: ["core", "zero", "enterprise"]
+    default: "core"
+  tcpOverHttp:
+    type: "boolean"
+    default: true
+  nativeSsh:
+    type: "boolean"
+    default: false

@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Nextcloud Server: "a highly versatile and scalable open-source platform for file synchronization and
+# content collaboration", serving files over its own HTTP/WebDAV interface rather than NFS or SMB.
+# Server-side encryption is off until an administrator ticks "Enable server-side encryption"; once on,
+# the "Master Key (default)" mode encrypts everything with one central server-controlled key
+# ("Server-side Encryption - Nextcloud Administration Manual").
+schemaVersion: "1"
+type: "component"
+id: "nextcloud"
+kind: "file-storage"
+provider: "default"
+defaults:
+  managed: false
+  protocol: "native"
+  backupEnabled: false
+properties:
+  serverSideEncryption:
+    type: "boolean"
+    default: false
+  encryptionKeyMode:
+    type: "enum"
+    values: ["master-key", "user-key"]
+    default: "master-key"
+  externalStorage:
+    type: "boolean"
+    default: false

@@ -1,4 +1,4 @@
-# Arkore format specification, v1
+# Zeema format specification, v1
 
 This is the authoritative description of every document type. The JSON Schemas in
 `schema/` are the machine-readable form of this page; if they disagree, this page is wrong
@@ -84,7 +84,7 @@ properties:
 | Field | Required | Meaning |
 |---|---|---|
 | `kind` | yes | Id of exactly one kind. |
-| `provider` | yes | Vendor that owns the product: `aws`, `azure`, `gcp`, `oci`, `cloudflare` or `default`. The file lives in `components/<provider>/`. `default` is open source, in-house generic, or SaaS (Stripe, Datadog). Hosting is not ownership: `postgres` is `default` even on RDS, `aurora` is `aws`. |
+| `provider` | yes | Vendor that owns the product: `aws`, `azure`, `gcp`, `oci`, `cloudflare`, `ibm`, `alibabacloud`, `digitalocean`, `openstack`, `outscale`, `k8s` or `default`. The file lives in `components/<provider>/`. `default` is open source, in-house generic, or SaaS (Stripe, Datadog). Hosting is not ownership: `postgres` is `default` even on RDS, `aurora` is `aws`. |
 | `defaults` | no | Values for kind properties that this implementation changes. Every key must exist on the kind. |
 | `properties` | no | Additional properties specific to this implementation. Same definition shape as a kind property. Must not redefine a kind property. |
 

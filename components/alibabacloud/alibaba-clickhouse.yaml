@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# ApsaraDB for ClickHouse: "a fully managed, cloud-native Online Analytical Processing (OLAP) database
+# service built on the open-source ClickHouse project" ("What is ApsaraDB for ClickHouse?"). That page states
+# the service uses column-oriented storage; "Introduction to ApsaraDB for ClickHouse" describes it as a
+# distributed column-oriented database service that provides real-time analysis, and both pages name the
+# Enterprise Edition and the Community-compatible Edition.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-clickhouse"
+kind: "data-warehouse"
+provider: "alibabacloud"
+defaults:
+  managed: true
+  realtime: true
+  format: "columnar"
+properties:
+  edition:
+    type: "enum"
+    values: ["enterprise", "community-compatible"]

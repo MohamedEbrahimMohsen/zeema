@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Alibaba Cloud Domain Names: registrar platform for registering, monitoring and protecting domain
+# names. "What is Alibaba Cloud Domain Names?": registration requires a registrant profile and
+# identity verification, resolution is delegated to Alibaba Cloud DNS, expiring names are renewed or
+# recovered during the redemption period, update locks and transfer locks are switched on per domain,
+# and domain brokerage acquires names that are already registered.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-domains"
+kind: "dns"
+provider: "alibabacloud"
+defaults:
+  managed: true
+properties:
+  registrantProfileRequired:
+    type: "boolean"
+    default: true
+  identityVerificationRequired:
+    type: "boolean"
+    default: true
+  updateLock:
+    type: "boolean"
+    default: false
+  transferLock:
+    type: "boolean"
+    default: false
+  brokerageAvailable:
+    type: "boolean"
+    default: true

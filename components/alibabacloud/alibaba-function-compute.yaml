@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Function Compute (FC): "an event-driven, fully managed computing service" where you upload code and the
+# platform runs it with no servers to manage ("What is Function Compute?"). That page states functions
+# execute only when triggered - by HTTP requests, OSS events, message queues and so on - resources are
+# released immediately afterwards, and the service is highly elastic under traffic spikes, which is why
+# autoscaling is on and scale-to-zero is the documented resting state.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-function-compute"
+kind: "app-server"
+provider: "alibabacloud"
+defaults:
+  managed: true
+  autoscaling: true
+properties:
+  invocationMode:
+    type: "enum"
+    values: ["event", "http"]
+  scaleToZero:
+    type: "boolean"
+    default: true

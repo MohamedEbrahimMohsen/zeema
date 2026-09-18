@@ -1,0 +1,512 @@
+/* The canvas page. Every colour is a token from globals.css, so the scene follows the theme
+   toggle; --f-* (what the scene draws with) alias the taxonomy tokens there. */
+.zeema-canvas {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: calc(100vh - 49px);
+  min-height: 480px;
+  font-size: var(--fs);
+}
+
+/* toolbar */
+.zeema-canvas .toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-0-5);
+  padding: var(--sp-1) var(--sp-1-5);
+  border-bottom: var(--border) solid var(--line);
+  background: var(--panel);
+  font-size: var(--fs-small);
+  flex-wrap: wrap;
+}
+.zeema-canvas .toolbar .group {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-0-5);
+}
+.zeema-canvas .toolbar .sep {
+  width: 1px;
+  height: 20px;
+  background: var(--line);
+  margin: 0 var(--sp-1);
+}
+.zeema-canvas .toolbar .btn {
+  padding: calc(var(--p) * 0.55) calc(var(--p) * 1.2);
+  font-size: var(--fs-small);
+}
+.zeema-canvas .toolbar .btn kbd {
+  font-family: var(--mono);
+  font-size: var(--fs-micro);
+  color: var(--muted);
+}
+.zeema-canvas .toolbar .btn-primary kbd {
+  color: var(--accent-ink);
+  opacity: 0.75;
+}
+.zeema-canvas .toolbar .doc-title {
+  font-weight: var(--fw-medium);
+  font-size: var(--fs-body);
+  padding: 0 var(--sp-1);
+  max-width: 28ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.zeema-canvas.is-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  height: 100vh;
+  min-height: 0;
+  background: var(--bg);
+}
+.zeema-canvas .toolbar .doc-title-btn {
+  font: inherit;
+  font-weight: var(--fw-medium);
+  font-size: var(--fs-body);
+  border: var(--border) solid transparent;
+  border-radius: var(--rc);
+  background: transparent;
+  color: inherit;
+  cursor: text;
+}
+.zeema-canvas .toolbar .doc-title-btn:hover {
+  border-color: var(--line);
+}
+.zeema-canvas .toolbar .doc-title-input {
+  font-weight: var(--fw-medium);
+  font-size: var(--fs-body);
+  padding: 2px var(--sp-1);
+  width: 28ch;
+}
+.zeema-canvas .toolbar .auto {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-0-5);
+  font-size: var(--fs-meta);
+  color: var(--muted);
+  padding: 0 var(--sp-0-5);
+}
+
+.zeema-canvas .body {
+  display: grid;
+  grid-template-columns: 260px 1fr 320px;
+  min-height: 0;
+}
+.zeema-canvas .pane {
+  background: var(--panel);
+  overflow: auto;
+  min-height: 0;
+  font-size: var(--fs-small);
+}
+.zeema-canvas .pane-left {
+  border-right: var(--border) solid var(--line);
+  display: flex;
+  flex-direction: column;
+}
+.zeema-canvas .pane-right {
+  border-left: var(--border) solid var(--line);
+  padding: var(--sp-1-5);
+}
+.zeema-canvas .scene-wrap {
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(circle, var(--canvas-dot) 1px, transparent 1px) 0 0 / var(--canvas-dot-gap)
+    var(--canvas-dot-gap),
+    var(--bg);
+}
+.zeema-canvas svg.scene {
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+  user-select: none;
+  font-family: var(--sans);
+}
+.zeema-canvas svg.scene.hand {
+  cursor: grab;
+}
+.zeema-canvas svg.scene.panning {
+  cursor: grabbing;
+}
+
+/* nodes — fill is category, border is selection, corner dot is findings */
+.zeema-canvas .node-box {
+  cursor: grab;
+}
+.zeema-canvas .node-box rect.body {
+  stroke-width: 1;
+  transition: stroke var(--dur) var(--ease);
+}
+.zeema-canvas .node-box.selected rect.body {
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+.zeema-canvas .node-box.primary rect.body {
+  stroke-width: 2.4;
+}
+.zeema-canvas .node-box.wire-target rect.body {
+  stroke: var(--accent);
+  stroke-width: 2.5;
+}
+.zeema-canvas .node-box.wire-source rect.body {
+  stroke-dasharray: 4 3;
+}
+.zeema-canvas .node-box text.name {
+  font-size: 14px;
+  font-weight: 500;
+  fill: var(--ink);
+}
+.zeema-canvas .node-box text.comp {
+  font-size: 11px;
+  font-family: var(--mono);
+  fill: var(--muted);
+}
+.zeema-canvas .node-box .glyph {
+  color: var(--ink);
+}
+
+/* boundaries — dashed, never filled */
+.zeema-canvas .frame {
+  fill: none;
+  stroke: var(--frame);
+  stroke-width: 1;
+  stroke-dasharray: 5 4;
+}
+.zeema-canvas .frame.selected {
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-dasharray: 6 3;
+}
+.zeema-canvas .frame-hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 16;
+  pointer-events: stroke;
+  cursor: move;
+}
+.zeema-canvas .frame-label {
+  font-size: 11px;
+  font-family: var(--mono);
+  fill: var(--muted);
+  cursor: move;
+}
+
+/* edges — dashed is asynchronous, solid is a call */
+.zeema-canvas .edge {
+  stroke: var(--muted);
+  stroke-width: 1.2;
+  fill: none;
+}
+.zeema-canvas .edge.async {
+  stroke-dasharray: 6 4;
+}
+.zeema-canvas .edge.selected {
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+.zeema-canvas .edge-hit {
+  stroke: transparent;
+  stroke-width: 12;
+  fill: none;
+  cursor: pointer;
+}
+.zeema-canvas .edge-label {
+  font-size: 11px;
+  font-family: var(--mono);
+  fill: var(--muted);
+  paint-order: stroke;
+  stroke: var(--bg);
+  stroke-width: 3px;
+  cursor: pointer;
+}
+.zeema-canvas .handle {
+  fill: var(--panel);
+  stroke: var(--accent);
+  stroke-width: 1.5;
+  cursor: crosshair;
+}
+.zeema-canvas .badge-error {
+  fill: var(--err);
+  stroke: var(--panel);
+  stroke-width: 2;
+}
+.zeema-canvas .badge-warn {
+  fill: var(--warn);
+  stroke: var(--panel);
+  stroke-width: 2;
+}
+.zeema-canvas .marquee {
+  fill: var(--accent);
+  fill-opacity: 0.07;
+  stroke: var(--accent);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+}
+.zeema-canvas .wire {
+  stroke: var(--muted);
+  stroke-width: 1.4;
+  fill: none;
+  stroke-dasharray: 4 4;
+  pointer-events: none;
+}
+.zeema-canvas .wire.live {
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-dasharray: none;
+}
+.zeema-canvas .inline-edit {
+  position: absolute;
+  z-index: 5;
+  padding: 3px 6px;
+  font: 14px var(--sans);
+  border: var(--border) solid var(--accent);
+  border-radius: var(--rc);
+  background: var(--panel);
+  color: var(--ink);
+  outline: none;
+}
+.zeema-canvas .empty-state {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  color: var(--muted);
+  text-align: center;
+  padding: var(--sp-4);
+}
+.zeema-canvas .help {
+  position: absolute;
+  right: var(--sp-1-5);
+  top: var(--sp-1-5);
+  z-index: 10;
+  width: 320px;
+  padding: var(--sp-1-5);
+  font-size: var(--fs-small);
+  box-shadow: var(--shadow-float);
+}
+.zeema-canvas .help ul {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: var(--sp-1);
+}
+.zeema-canvas .help kbd {
+  font-family: var(--mono);
+  font-size: var(--fs-micro);
+  color: var(--muted);
+}
+
+/* palette */
+.zeema-canvas .pal-search {
+  margin: var(--sp-1);
+  width: calc(100% - var(--sp-2));
+}
+.zeema-canvas .pal-results {
+  overflow: auto;
+  padding: 0 var(--sp-0-5) var(--sp-1);
+  flex: 1;
+}
+.zeema-canvas .pal-group {
+  font-family: var(--lab-font);
+  text-transform: var(--lab-tt);
+  letter-spacing: var(--lab-ls);
+  font-size: var(--fs-micro);
+  color: var(--muted);
+  margin: var(--sp-1-5) var(--sp-1) var(--sp-0-5);
+}
+.zeema-canvas .pal-row {
+  width: 100%;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  display: grid;
+  grid-template-columns: var(--icon) 1fr auto;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: calc(var(--p) * 0.6) var(--sp-1);
+  border-radius: var(--rc);
+  cursor: grab;
+}
+.zeema-canvas .pal-row:hover {
+  background: var(--bg);
+}
+.zeema-canvas .pal-row svg {
+  width: var(--icon);
+  height: var(--icon);
+  color: var(--ink);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.zeema-canvas .pal-row .kind {
+  font-family: var(--mono);
+  font-size: var(--fs-micro);
+  color: var(--muted);
+}
+.zeema-canvas .pal-row .name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* inspector — a field is label, control, resolved hint */
+.zeema-canvas .field {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  align-items: center;
+  gap: 2px var(--sp-1);
+  margin: calc(var(--p) * 0.6) 0;
+}
+.zeema-canvas .field .field-name {
+  color: var(--muted);
+  font-size: 0.8em;
+  font-weight: var(--fw-regular);
+}
+.zeema-canvas .field.set .field-name {
+  color: var(--ink);
+  font-weight: var(--fw-semibold);
+}
+.zeema-canvas .field .resolved {
+  grid-column: 2;
+  font-family: var(--mono);
+  font-size: var(--fs-micro);
+  color: var(--muted);
+}
+.zeema-canvas .field input,
+.zeema-canvas .field select {
+  width: 100%;
+  font: inherit;
+  font-size: 0.9em;
+  padding: calc(var(--p) * 0.5) calc(var(--p) * 0.9);
+  border: var(--border) solid var(--line);
+  border-radius: var(--rc);
+  background: var(--panel);
+  color: var(--ink);
+}
+.zeema-canvas .field input:focus,
+.zeema-canvas .field select:focus {
+  outline: none;
+  box-shadow: var(--ring-focus);
+}
+.zeema-canvas h2 {
+  font-family: var(--lab-font);
+  text-transform: var(--lab-tt);
+  letter-spacing: var(--lab-ls);
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-regular);
+  color: var(--muted);
+  margin: var(--sp-2) 0 var(--sp-0-5);
+}
+.zeema-canvas h2:first-child {
+  margin-top: 0;
+}
+.zeema-canvas .pane-right details > summary {
+  cursor: pointer;
+  font-size: var(--fs-small);
+  color: var(--muted);
+  padding: 4px 0;
+}
+
+/* findings */
+.zeema-canvas .finding {
+  width: 100%;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  display: grid;
+  grid-template-columns: 10px 1fr;
+  gap: var(--sp-1);
+  padding: calc(var(--p) * 0.5) var(--sp-0-5);
+  cursor: pointer;
+  border-radius: var(--rc);
+  align-items: start;
+}
+.zeema-canvas .finding:hover {
+  background: var(--bg);
+}
+.zeema-canvas .finding .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-top: 6px;
+  background: var(--muted);
+}
+.zeema-canvas .finding.error .dot {
+  background: var(--err);
+}
+.zeema-canvas .finding.warning .dot {
+  background: var(--warn);
+}
+.zeema-canvas .finding .rule {
+  font-family: var(--mono);
+  font-size: var(--fs-micro);
+  color: var(--muted);
+}
+.zeema-canvas .finding.error .rule {
+  color: var(--err);
+}
+.zeema-canvas .finding.warning .rule {
+  color: var(--warn);
+}
+
+/* context menu — one of the few things that floats */
+.zeema-menu {
+  position: fixed;
+  z-index: 50;
+  min-width: 190px;
+  padding: 4px;
+  background: var(--panel);
+  border: var(--border) solid var(--line);
+  border-radius: var(--rc);
+  box-shadow: var(--shadow-float);
+  font-size: var(--fs-small);
+}
+.zeema-menu button {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  padding: 5px 10px;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  border-radius: calc(var(--rc) - 2px);
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+}
+.zeema-menu button:hover:not([disabled]) {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+.zeema-menu button:hover:not([disabled]) .hint {
+  color: inherit;
+  opacity: 0.8;
+}
+.zeema-menu button[disabled] {
+  opacity: 0.5;
+  cursor: default;
+}
+.zeema-menu button.danger {
+  color: var(--err);
+}
+.zeema-menu .hint {
+  font-family: var(--mono);
+  color: var(--muted);
+  font-size: var(--fs-micro);
+}
+.zeema-menu .sep {
+  height: 1px;
+  margin: 4px 2px;
+  background: var(--line);
+}

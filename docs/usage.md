@@ -1,6 +1,6 @@
 # Using the format
 
-How a team describes a system in Arkore and what happens to that description.
+How a team describes a system in Zeema and what happens to that description.
 
 ## 1. One design per system
 
@@ -47,7 +47,7 @@ validates it against `schema/design.schema.json` and autocompletes enum values. 
 consumer repository gets the same by adding the first-line comment:
 
 ```yaml
-# yaml-language-server: $schema=https://raw.githubusercontent.com/<org>/arkore/main/schema/design.schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/<org>/zeema/main/schema/design.schema.json
 ```
 
 ## 3. Groups and boundaries
@@ -90,7 +90,7 @@ The GitHub Action is a later deliverable. Its output shape is fixed now so that 
 and rules are written towards it:
 
 ```
-arkore lint architecture/checkout.yaml
+zeema lint architecture/checkout.yaml
 
   error    queue-missing-dlq         Queue 'orders-queue' receives async traffic but has no dead-letter queue.
   error    datastore-missing-backup  Datastore 'orders-db' has no backup or no retention policy declared.
@@ -125,10 +125,10 @@ When no generic component exists for a kind, that is a gap; record it in
 ## 8. Importing an existing design
 
 A design that already exists as a picture, a draw.io or Mermaid file, or infrastructure code
-does not have to be retyped. The `arkore-design-import` skill in `.claude/skills/` converts
-it into `references/designs/<name>/`: the original file, the Arkore design with every box,
+does not have to be retyped. The `zeema-design-import` skill in `.claude/skills/` converts
+it into `designs/imported/<name>/`: the original under `source/`, `design.yaml` with every box,
 arrow and boundary preserved (`label` keeps the source text), a `mapping.yaml` that records
 where each item went, a Mermaid rendering and notes. A box with no matching component is
-added to the catalogue first, through the `arkore-catalogue-add` skill, in every provider
+added to the catalogue first, through the `zeema-catalogue-add` skill, in every provider
 where the product exists. The result is checked mechanically: counts and labels must match
 the source, and the rules that fire are reported rather than silenced.

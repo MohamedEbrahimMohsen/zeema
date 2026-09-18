@@ -1,0 +1,223 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture: the PayPal payment platform, clean variant. A public Orders/Payments
+# REST edge and a GraphQL gateway in front of the checkout estate, whose shared organs are
+# JunoDB (proxy, leaderless quorum storage, etcd shard map), HERA in front of the relational
+# systems of record, Aerospike for real-time risk, and a multi-tenant Kafka bus mirrored into a
+# second data centre and security zone.
+#
+# Fixes relative to paypal-payments.broken.yaml:
+#   - the relational systems of record replicate asynchronously with automatic transaction
+#     failover to a replica, and are backed up, so one data centre does not hold the only copy
+#   - junodb-storage replicates leaderlessly under a quorum protocol rather than accepting
+#     writes in two data centres with no declared conflict policy
+#   - every application reaches the databases through a proxy tier: junodb-lb -> junodb-proxy
+#     and hera-mux, never straight into the per-database worker processes
+#   - the Kafka security library issues and rotates the SSL certificates and per-application
+#     tokens, instead of long-lived credentials pasted into each application
+# This file MUST trip no rule.
+schemaVersion: "1"
+type: "design"
+id: "paypal-payments"
+
+requirements:
+  availability:
+    multiRegion: true
+    sla: "99.99"
+  consistency:
+    model: "cp"
+  correctness:
+    exactlyOnceEffect: true
+  messaging:
+    orderingScope: "partition"
+  isolation:
+    tenancy: "shared"
+
+groups:
+  - { id: "dc-primary", kind: "region", label: "Primary data centre" }
+  - { id: "dc-secondary", kind: "region", label: "Secondary data centre" }
+  - { id: "edge", kind: "trust-zone", parent: "dc-primary", label: "PayPal public edge" }
+  - { id: "core", kind: "trust-zone", parent: "dc-primary", label: "PayPal internal" }
+  - { id: "juno", kind: "system", parent: "core", label: "JunoDB" }
+  - { id: "data-access", kind: "system", parent: "core", label: "HERA and systems of record" }
+  - { id: "risk", kind: "system", parent: "core", label: "Real-time risk" }
+  - { id: "kafka-zone-a", kind: "trust-zone", parent: "dc-primary", label: "Kafka security zone A" }
+  - { id: "kafka-zone-b", kind: "trust-zone", parent: "dc-secondary", label: "Kafka security zone B" }
+
+nodes:
+  - id: "buyer-browser"
+    component: "web-browser"
+    label: "Buyer browser / PayPal JS SDK"
+    props: { platform: "web", localCache: true }
+
+  - id: "merchant-server"
+    component: "sdk-client"
+    label: "Merchant server (Orders v2 integration)"
+    props: { platform: "sdk", resendPolicy: "retry" }
+
+  - id: "paypal-rest-api"
+    component: "envoy-gateway"
+    label: "PayPal REST API (Orders v2 / Payments v2)"
+    group: "edge"
+    props: { auth: "oauth2", tls: true, protocol: "http", idempotencyKeys: true, keyTtlHours: 6 }
+
+  - id: "graphql-gateway"
+    component: "krakend"
+    label: "Checkout GraphQL gateway"
+    group: "edge"
+    props: { auth: "oauth2", tls: true, protocol: "http", stateless: true, responseAggregation: true }
+
+  - id: "checkout-services"
+    component: "container-service"
+    label: "Checkout orchestration services"
+    group: "core"
+    props: { stateless: true, criticality: "high", ownsData: false }
+
+  - id: "core-backend-services"
+    component: "container-service"
+    label: "Core backend services (login, risk, transaction processing)"
+    group: "core"
+    props: { stateless: true, criticality: "high", ownsData: true }
+
+  - id: "junodb-lb"
+    component: "load-balancer-tier"
+    label: "JunoDB load balancer"
+    group: "juno"
+    props: { layer: "l4", healthChecks: true }
+
+  - id: "junodb-proxy"
+    component: "vitess"
+    label: "JunoDB proxy (junoserv)"
+    group: "juno"
+    props: { pooling: true, poolSharded: true, routing: "shard-key", scatterGather: false }
+
+  - id: "junodb-storage"
+    component: "nosql-store"
+    label: "JunoDB storage server (junostorageserv)"
+    group: "juno"
+    props: { model: "key-value", consistency: "strong", replication: "leaderless", encryptionAtRest: true }
+    nfr: { rps: 4000000, consistency: "strong" }
+
+  - id: "junodb-etcd"
+    component: "etcd"
+    label: "JunoDB cluster config (junoclusterserv)"
+    group: "juno"
+    props: { role: "sharding", consensus: "raft", replicated: true }
+
+  - id: "hera-mux"
+    component: "proxysql"
+    label: "HERA data access gateway (mux)"
+    group: "data-access"
+    props: { pooling: true, routing: "none", readWriteSplit: true, loadShedding: true, queryCache: false }
+
+  - id: "hera-worker"
+    component: "container-worker"
+    label: "HERA workers (mysqlworker, oracleworker, postgresworker)"
+    group: "data-access"
+    props: { trigger: "manual", idempotent: true, rateControl: "fixed" }
+
+  - id: "systems-of-record"
+    component: "oracle-db"
+    label: "Relational systems of record (Oracle, MySQL)"
+    group: "data-access"
+    props: { replication: "async", backupEnabled: true, backupRetentionDays: 30, encryptionAtRest: true, concurrencyControl: "pessimistic" }
+    nfr: { consistency: "strong" }
+
+  - id: "risk-services"
+    component: "container-service"
+    label: "Risk and fraud decisioning services"
+    group: "risk"
+    props: { stateless: true, criticality: "high", ownsData: false }
+
+  - id: "risk-feature-store"
+    component: "aerospike"
+    label: "Risk feature store (Aerospike hybrid memory)"
+    group: "risk"
+    props: { model: "key-value", storageEngine: "device", replication: "single-region", encryptionAtRest: true }
+    nfr: { rps: 8000000 }
+
+  - id: "risk-models"
+    component: "kserve"
+    label: "Risk model execution"
+    group: "risk"
+    props: { training: "batch", inputs: "live", accelerator: "none" }
+
+  - id: "kafka-brokers"
+    component: "kafka"
+    label: "Kafka brokers (85+ clusters, 1,500+ brokers, 20,000+ topics)"
+    group: "kafka-zone-a"
+    props: { delivery: "at-least-once", ordering: "per-key", replicationFactor: 3, storage: "persistent" }
+    nfr: { rps: 21000000 }
+
+  - id: "zookeeper-ensemble"
+    component: "zookeeper"
+    label: "ZooKeeper ensemble"
+    group: "kafka-zone-a"
+    props: { role: "metadata", consensus: "zab", replicated: true }
+
+  - id: "kafka-config-service"
+    component: "consul"
+    label: "Kafka Config Service"
+    group: "kafka-zone-a"
+    props: { role: "config", consensus: "raft", replicated: true }
+
+  - id: "kafka-security-library"
+    component: "cert-manager"
+    label: "Kafka security library (SSL certificates, per-application tokens)"
+    group: "kafka-zone-a"
+    props: { rotationAutomated: true, issuerScope: "cluster" }
+
+  - id: "kafka-monitoring"
+    component: "observability-stack"
+    label: "Metrics library and SignalFX"
+    group: "kafka-zone-a"
+    props: { signal: "all", collectorMode: "push" }
+
+  - id: "topic-onboarding"
+    component: "container-service"
+    label: "Topic onboarding and capacity workflow"
+    group: "kafka-zone-a"
+    props: { stateless: true, criticality: "medium", ownsData: false }
+
+  - id: "mirrormaker"
+    component: "kafka-streams"
+    label: "MirrorMaker (close to 2,000 nodes)"
+    group: "kafka-zone-a"
+    props: { windowing: "none", exactlyOnce: false, instances: 2000 }
+
+  - id: "kafka-brokers-dr"
+    component: "kafka"
+    label: "Kafka brokers, second data centre and security zone"
+    group: "kafka-zone-b"
+    props: { delivery: "at-least-once", ordering: "per-key", replicationFactor: 3, storage: "persistent" }
+
+edges:
+  - { from: "merchant-server", to: "paypal-rest-api", protocol: "https", mode: "sync", idempotent: true, label: "create order, PayPal-Request-Id deduped for 6 h" }
+  - { from: "paypal-rest-api", to: "buyer-browser", protocol: "https", mode: "sync", label: "payer-action link, order in PAYER_ACTION_REQUIRED" }
+  - { from: "buyer-browser", to: "paypal-rest-api", protocol: "https", mode: "sync", label: "buyer approves on PayPal" }
+  - { from: "merchant-server", to: "graphql-gateway", protocol: "https", mode: "sync", idempotent: true, label: "authorize or capture inside the 3 h order window" }
+  - { from: "buyer-browser", to: "graphql-gateway", protocol: "https", mode: "sync", label: "one typed query, exactly the requested fields" }
+  - { from: "paypal-rest-api", to: "checkout-services", protocol: "http", mode: "sync", idempotent: true, label: "orders and payments" }
+  - { from: "graphql-gateway", to: "checkout-services", protocol: "http", mode: "sync", label: "one round trip replaces many REST calls" }
+  - { from: "checkout-services", to: "core-backend-services", protocol: "http", mode: "sync", label: "per-domain services behind checkout" }
+  - { from: "core-backend-services", to: "risk-services", protocol: "http", mode: "sync", label: "risk checkpoint: login, purchase, transfer, withdrawal" }
+  - { from: "risk-services", to: "risk-feature-store", protocol: "aerospike", mode: "sync", timeoutMs: 50, label: "feature reads, ~75% of decisions under 50 ms" }
+  - { from: "risk-services", to: "risk-models", protocol: "grpc", mode: "sync", label: "one or more models per checkpoint, sequential or parallel" }
+  - { from: "core-backend-services", to: "junodb-lb", protocol: "tcp-tls", mode: "sync", label: "store, retrieve and update through the JunoDB client library" }
+  - { from: "junodb-lb", to: "junodb-proxy", protocol: "tcp-tls", mode: "sync", label: "drives proxy instances, accepts cross-site replication" }
+  - { from: "junodb-proxy", to: "junodb-etcd", protocol: "grpc", mode: "sync", label: "shard map and cluster topology" }
+  - { from: "junodb-proxy", to: "junodb-storage", protocol: "juno", mode: "sync", idempotent: true, label: "quorum protocol and two-phase commit to the replication group" }
+  - { from: "junodb-storage", to: "junodb-storage", protocol: "juno-replication", mode: "async", delivery: "at-least-once", label: "one replica per logical zone" }
+  - { from: "core-backend-services", to: "hera-mux", protocol: "hera", mode: "sync", label: "connection multiplexing onto a small pool" }
+  - { from: "hera-mux", to: "hera-worker", protocol: "ipc", mode: "sync", label: "read/write split, bad-query eviction" }
+  - { from: "hera-worker", to: "systems-of-record", protocol: "sql", mode: "sync", idempotent: true, label: "transactional, automatic failover to a replica" }
+  - { from: "core-backend-services", to: "kafka-config-service", protocol: "http", mode: "sync", label: "bootstrap servers and standard config at startup" }
+  - { from: "core-backend-services", to: "kafka-security-library", protocol: "https", mode: "sync", label: "SSL certificate and token retrieval" }
+  - { from: "core-backend-services", to: "kafka-brokers", protocol: "kafka-sasl-ssl", mode: "async", delivery: "at-least-once", label: "produce, declared producer intent per topic" }
+  - { from: "kafka-brokers", to: "core-backend-services", protocol: "kafka-sasl-ssl", mode: "async", delivery: "at-least-once", label: "consume, declared consumer intent per topic" }
+  - { from: "kafka-brokers", to: "zookeeper-ensemble", protocol: "zookeeper", mode: "sync", label: "cluster metadata" }
+  - { from: "topic-onboarding", to: "kafka-brokers", protocol: "kafka-admin", mode: "sync", label: "capacity review, cluster assignment, token, ACL" }
+  - { from: "kafka-brokers", to: "mirrormaker", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "source cluster" }
+  - { from: "mirrormaker", to: "kafka-brokers-dr", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "disaster recovery and cross-security-zone hop" }
+  - { from: "kafka-brokers", to: "kafka-monitoring", protocol: "http", mode: "async", delivery: "at-least-once", batched: true, label: "Micrometer metrics, one SOP per alert" }
+  - { from: "zookeeper-ensemble", to: "kafka-monitoring", protocol: "http", mode: "async", delivery: "at-least-once", batched: true }
+  - { from: "mirrormaker", to: "kafka-monitoring", protocol: "http", mode: "async", delivery: "at-least-once", batched: true }

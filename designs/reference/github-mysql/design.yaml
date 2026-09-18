@@ -1,0 +1,213 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# GitHub's core serving path: GLB's split L4 director / L7 HAProxy tier in front of the Rails
+# monolith, MySQL clusters whose primary identity is published through Consul, Spokes three-replica
+# Git storage, and a Kafka-backed background job platform.
+#
+# Fixes relative to github-mysql.broken.yaml:
+#   - mysql1 is split vertically by schema domain: vtgate fronts the clusters, a destination
+#     cluster primary receives the moved tables, and no single primary carries the whole load
+#   - mysql-primary replicates semi-synchronously (500ms timeout) instead of leaning on async
+#     read replicas as its only way to scale
+#   - consul is replicated, so the identity of every cluster primary survives the loss of a node
+#   - the job queueing service records work durably and parks poison jobs in a dead-letter queue
+#   - the Rails monolith enqueues asynchronously; the dispatcher, not the request path, hands
+#     jobs to workers, and dispatch retries are not modelled as an unguarded retry loop
+# This file MUST trip no rule.
+schemaVersion: "1"
+type: "design"
+id: "github-mysql"
+
+requirements:
+  availability:
+    multiRegion: false
+    discoveryRedundant: true
+    degradedModeAllowed: true
+  consistency:
+    model: "cp"
+    readAfterWrite: true
+  durability:
+    minReplicasAcked: 2
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "us-east-dc", kind: "region", label: "US East Coast primary data center" }
+  - { id: "us-west-dc", kind: "region", label: "US West Coast data center" }
+  - { id: "edge", kind: "trust-zone", parent: "us-east-dc", label: "GLB tiers" }
+  - { id: "app-tier", kind: "trust-zone", parent: "us-east-dc" }
+  - { id: "data-tier", kind: "trust-zone", parent: "us-east-dc" }
+  - { id: "control-plane", kind: "trust-zone", parent: "us-east-dc" }
+
+nodes:
+  - id: "client"
+    component: "user-device"
+    label: "HTTP, Git and SSH clients"
+    props: { platform: "multi", persistentConnection: true }
+
+  - id: "ecmp-routers"
+    component: "spine-leaf-fabric"
+    group: "edge"
+    label: "ECMP routers"
+    props: { interconnect: "public" }
+
+  - id: "glb-director"
+    component: "load-balancer-tier"
+    group: "edge"
+    label: "GLB director"
+    props: { layer: "l4", hashing: "consistent", connectionPreserving: true, healthChecks: true }
+
+  - id: "glb-healthcheck"
+    component: "observability-stack"
+    group: "edge"
+    label: "glb-healthcheck"
+    props: { signal: "alerts", collectorMode: "pull" }
+
+  - id: "glb-proxy"
+    component: "haproxy"
+    group: "edge"
+    label: "GLB proxy tier (HAProxy)"
+    props: { layer: "l7", healthChecks: true, connectionPreserving: true }
+
+  - id: "rails-monolith"
+    component: "container-service"
+    group: "app-tier"
+    label: "github.com Rails monolith"
+    props: { stateless: true, criticality: "high" }
+
+  - id: "spokes-proxy"
+    component: "container-service"
+    group: "app-tier"
+    label: "Spokes proxy"
+    props: { stateless: true, criticality: "high" }
+
+  - id: "vtgate"
+    component: "vitess"
+    group: "data-tier"
+    label: "Vitess VTGate"
+    props: { routing: "shard-key", scatterGather: true, pooling: true }
+
+  - id: "proxysql"
+    component: "proxysql"
+    group: "data-tier"
+    label: "ProxySQL"
+    props: { pooling: true, routing: "lookup" }
+
+  - id: "haproxy-writer-pool"
+    component: "haproxy"
+    group: "data-tier"
+    label: "HAProxy writer pool"
+    props: { layer: "l4", healthChecks: true }
+
+  - id: "mysql-primary"
+    component: "mysql"
+    group: "data-tier"
+    label: "MySQL cluster primary"
+    props: { replication: "sync", sharded: true, shardKey: "schema_domain", backupEnabled: true, backupRetentionDays: 30 }
+
+  - id: "mysql-partition-target"
+    component: "mysql"
+    group: "data-tier"
+    label: "Destination cluster primary"
+    props: { replication: "sync", sharded: true, shardKey: "schema_domain", backupEnabled: true, backupRetentionDays: 30 }
+
+  - id: "mysql-replica"
+    component: "mysql"
+    group: "us-west-dc"
+    label: "MySQL replicas and promotion candidates"
+    props: { replication: "async", replicaOf: "mysql-primary", sharded: true, shardKey: "schema_domain", backupEnabled: true, backupRetentionDays: 30 }
+
+  - id: "orchestrator"
+    component: "apache-helix"
+    group: "control-plane"
+    label: "orchestrator/raft"
+    props: { role: "leader-election", consensus: "raft", replicated: true, stateModel: "leader-standby" }
+
+  - id: "consul"
+    component: "consul"
+    group: "control-plane"
+    label: "Consul (per DC KV)"
+    props: { role: "discovery", consensus: "raft", replicated: true }
+
+  - id: "spokes-fileservers"
+    component: "file-store"
+    group: "data-tier"
+    label: "Spokes/DGit fileservers"
+    props: { protocol: "native", backupEnabled: true }
+
+  - id: "spokes-repair"
+    component: "container-worker"
+    group: "data-tier"
+    label: "Spokes repair and rebalance"
+    props: { trigger: "schedule", idempotent: true }
+
+  - id: "job-queueing-service"
+    component: "message-queue"
+    group: "data-tier"
+    label: "Job queueing service"
+    props: { delivery: "at-least-once", role: "work", persistence: true, deadLetterQueue: true }
+
+  - id: "kafka"
+    component: "kafka"
+    group: "data-tier"
+    label: "Kafka cluster (background jobs)"
+    props: { delivery: "at-least-once", consumerGroups: true, storage: "persistent" }
+
+  - id: "zookeeper"
+    component: "zookeeper"
+    group: "data-tier"
+    label: "ZooKeeper ensemble"
+    props: { role: "leader-election", consensus: "zab", replicated: true }
+
+  - id: "job-dispatcher"
+    component: "container-worker"
+    group: "data-tier"
+    label: "Job dispatcher (Kafka consumer group)"
+    props: { trigger: "stream" }
+
+  - id: "job-workers"
+    component: "container-worker"
+    group: "data-tier"
+    label: "Background job workers"
+    props: { trigger: "queue" }
+
+  - id: "webhook-delivery"
+    component: "container-worker"
+    group: "data-tier"
+    label: "Webhook delivery workers"
+    props: { trigger: "queue" }
+
+  - id: "pages-builder"
+    component: "container-worker"
+    group: "data-tier"
+    label: "GitHub Pages build workers"
+    props: { trigger: "queue" }
+
+edges:
+  - { from: "client", to: "ecmp-routers", protocol: "tcp", mode: "sync", label: "https, git, ssh to one announced IP" }
+  - { from: "ecmp-routers", to: "glb-director", protocol: "ip", mode: "sync", label: "ECMP hash over the 4-tuple" }
+  - { from: "glb-director", to: "glb-proxy", protocol: "gue", mode: "sync", label: "forwarding table lookup, secondary proxy in the GUE private data" }
+  - { from: "glb-healthcheck", to: "glb-proxy", protocol: "gue", mode: "sync", label: "tunnel and http checks, swaps primary and secondary" }
+  - { from: "glb-proxy", to: "rails-monolith", protocol: "http", mode: "sync", label: "l7 termination" }
+  - { from: "rails-monolith", to: "vtgate", protocol: "mysql", mode: "sync", label: "queries, instead of direct connections to MySQL" }
+  - { from: "rails-monolith", to: "proxysql", protocol: "mysql", mode: "sync", label: "routing during a write cutover" }
+  - { from: "rails-monolith", to: "haproxy-writer-pool", protocol: "mysql", mode: "sync", label: "writes, anycast to the local DC" }
+  - { from: "haproxy-writer-pool", to: "mysql-primary", protocol: "mysql", mode: "sync", label: "exactly one backend per cluster" }
+  - { from: "vtgate", to: "mysql-primary", protocol: "mysql", mode: "sync", label: "vertical sharding by keyspace" }
+  - { from: "vtgate", to: "mysql-partition-target", protocol: "mysql", mode: "sync", label: "moved schema domain" }
+  - { from: "proxysql", to: "mysql-partition-target", protocol: "mysql", mode: "sync", label: "cutover step 5 repoints routing" }
+  - { from: "mysql-primary", to: "mysql-replica", protocol: "mysql-replication", mode: "sync", timeoutMs: 500, label: "semi-sync, 500ms timeout, async tree below" }
+  - { from: "mysql-primary", to: "mysql-partition-target", protocol: "mysql-replication", mode: "async", delivery: "at-least-once", label: "table copy, GTID checkpoint confirmed at cutover" }
+  - { from: "orchestrator", to: "mysql-primary", protocol: "mysql", mode: "sync", label: "holistic failure detection" }
+  - { from: "orchestrator", to: "mysql-replica", protocol: "mysql", mode: "sync", label: "promote the ideal candidate, no cooperation from the dead primary" }
+  - { from: "orchestrator", to: "consul", protocol: "http", mode: "sync", label: "write the new primary identity into the local DC KV" }
+  - { from: "consul", to: "haproxy-writer-pool", protocol: "http", mode: "async", delivery: "at-least-once", fallback: "cached", label: "consul-template watch, reload with hard-stop-after" }
+  - { from: "rails-monolith", to: "spokes-proxy", protocol: "internal", mode: "sync", label: "all git reads and writes" }
+  - { from: "spokes-proxy", to: "spokes-fileservers", protocol: "git", mode: "sync", label: "three-phase commit, committed at 2 of 3 replicas" }
+  - { from: "spokes-repair", to: "spokes-fileservers", protocol: "git", mode: "async", delivery: "at-least-once", idempotent: true, label: "recreate repositories with fewer than three replicas" }
+  - { from: "rails-monolith", to: "job-queueing-service", protocol: "internal", mode: "async", delivery: "at-least-once", label: "enqueue; work is recorded even when dispatch stalls" }
+  - { from: "job-queueing-service", to: "kafka", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "the log behind the job system" }
+  - { from: "kafka", to: "job-dispatcher", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "consumer group" }
+  - { from: "kafka", to: "zookeeper", protocol: "zookeeper", mode: "sync", label: "controller election" }
+  - { from: "job-dispatcher", to: "job-workers", protocol: "internal", mode: "async", delivery: "at-least-once", label: "dispatch job" }
+  - { from: "job-dispatcher", to: "webhook-delivery", protocol: "internal", mode: "async", delivery: "at-least-once", label: "dispatch hook event" }
+  - { from: "job-dispatcher", to: "pages-builder", protocol: "internal", mode: "async", delivery: "at-least-once", label: "dispatch Pages build" }

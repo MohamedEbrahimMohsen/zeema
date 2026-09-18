@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Filebeat: "a lightweight shipper for forwarding and centralizing log data", a harvester per watched
+# file feeding libbeat. "Filebeat guarantees that events will be delivered to the configured output at
+# least once and with no data loss": it keeps each file's offset in an on-disk registry and "will keep
+# trying to send events until the output acknowledges that it has received the events"
+# ("How Filebeat works").
+schemaVersion: "1"
+type: "component"
+id: "filebeat"
+kind: "monitoring"
+provider: "default"
+defaults:
+  managed: false
+  signal: "logs"
+  collectorMode: "push"
+properties:
+  atLeastOnceDelivery:
+    type: "boolean"
+    default: true
+  registryOnDisk:
+    type: "boolean"
+    default: true
+  output:
+    type: "enum"
+    values: ["elasticsearch", "logstash"]

@@ -282,6 +282,7 @@ covered by a cloud provider folder.
 | Redpanda Connect | redpanda-connect | stream-processor | done | https://docs.redpanda.com/redpanda-connect/components/buffers/about/ |
 | Hazelcast Jet | â€” | â€” | skip: merged into the Hazelcast Platform, covered by hazelcast | https://docs.hazelcast.com/ |
 | Apache Heron | â€” | â€” | skip: last release 0.20.4 (2021), unmaintained | https://heron.apache.org/ |
+| Norikra | norikra | stream-processor | done | https://norikra.github.io/ |
 
 ## Data catalog and BI
 
@@ -328,6 +329,7 @@ covered by a cloud provider folder.
 | H2O.ai | h2o | ml-platform | done | https://docs.h2o.ai/h2o/latest-stable/h2o-docs/starting-h2o.html |
 | Apache Mesos | â€” | â€” | skip: moved to the Apache Attic in 2021 | https://attic.apache.org/projects/mesos.html |
 | SageMaker / Vertex AI / Azure ML | â€” | â€” | skip: covered by the aws, gcp and azure provider folders | https://docs.aws.amazon.com/sagemaker/ |
+| Polyaxon | polyaxon | ml-platform | done | https://polyaxon.com/docs/ |
 
 ## ML serving
 
@@ -368,6 +370,7 @@ covered by a cloud provider folder.
 | LangSmith | langsmith | monitoring | done | https://docs.langchain.com/langsmith/administration-overview |
 | LangChain / LlamaIndex | â€” | â€” | skip: application frameworks linked into the app-server | https://python.langchain.com/docs/ |
 | Google Gemini API / Amazon Bedrock | â€” | â€” | skip: covered by the gcp and aws provider folders | https://ai.google.dev/gemini-api/docs |
+| Recombee | recombee | ai-service | done | https://docs.recombee.com/ |
 
 ## Object storage
 
@@ -414,6 +417,10 @@ covered by a cloud provider folder.
 | Veeam Kasten | kasten | backup-service | done | https://docs.kasten.io/latest/usage/protect.html |
 | Rook | â€” | â€” | skip: Kubernetes operator that deploys Ceph; the drawn nodes are ceph-rbd and cephfs | https://rook.io/docs/rook/latest-release/Getting-Started/intro/ |
 | rsync | â€” | â€” | skip: file transfer utility, not a running node | https://rsync.samba.org/documentation.html |
+| Block volume | block-volume | block-storage | done | https://en.wikipedia.org/wiki/Block-level_storage |
+| Tape library | tape-library | backup-service | done | https://en.wikipedia.org/wiki/Tape_library |
+| Nextcloud | nextcloud | file-storage | done | https://docs.nextcloud.com/server/latest/admin_manual/ |
+| Portworx | portworx | block-storage | done | https://docs.portworx.com/ |
 
 ## Load balancers, proxies and API gateways
 
@@ -462,6 +469,7 @@ covered by a cloud provider folder.
 | Netlify | netlify | cdn | done | https://docs.netlify.com/manage/domains/secure-domains-with-https/https-ssl/ |
 | StackPath CDN | â€” | â€” | skip: CDN service shut down in 2023 | https://www.stackpath.com/ |
 | Cloudflare CDN / Amazon Route 53 | â€” | â€” | skip: covered by the cloudflare and aws provider folders | https://developers.cloudflare.com/cache/ |
+| ExternalDNS | external-dns | dns | done | https://kubernetes-sigs.github.io/external-dns/latest/ |
 
 ## Service mesh, coordination and network fabric
 
@@ -484,6 +492,8 @@ covered by a cloud provider folder.
 | ngrok | ngrok | network-fabric | done | https://ngrok.com/docs/universal-gateway/ |
 | Open Service Mesh | â€” | â€” | skip: archived by CNCF in 2024 | https://github.com/openservicemesh/osm |
 | Traefik Mesh | â€” | â€” | skip: archived in 2023 | https://github.com/traefik/mesh |
+| Cisco Router | cisco-router | network-fabric | done | https://www.cisco.com/c/en/us/products/routers/index.html |
+| Cisco switch | cisco-switch | network-fabric | done | https://www.cisco.com/c/en/us/products/switches/index.html |
 
 ## Firewalls, WAF and DDoS
 
@@ -503,6 +513,9 @@ covered by a cloud provider folder.
 | NETSCOUT Arbor DDoS | netscout-arbor | ddos-protection | done | https://www.netscout.com/product/arbor-edge-defense |
 | Radware DefensePro | radware-defensepro | ddos-protection | done | https://webhelp.radware.com/dp/v6.14/index/DefensePro.htm |
 | Cloudflare WAF | â€” | â€” | skip: covered by the cloudflare provider folder | https://developers.cloudflare.com/waf/ |
+| Firewall appliance | firewall-appliance | firewall | done | https://en.wikipedia.org/wiki/Firewall_(computing) |
+| MikroTik RouterOS | mikrotik-routeros | firewall | done | https://help.mikrotik.com/docs/spaces/ROS/overview |
+| VyOS | vyos | firewall | done | https://docs.vyos.io/en/latest/ |
 
 ## VPN, bastion and remote access
 
@@ -518,6 +531,7 @@ covered by a cloud provider folder.
 | HashiCorp Boundary | boundary | bastion-host | done | https://developer.hashicorp.com/boundary/docs/overview/what-is-boundary |
 | OpenSSH jump host | ssh-jump-host | bastion-host | done | https://man.openbsd.org/sshd_config |
 | Headscale | â€” | â€” | skip: self-hosted control server for Tailscale clients, drawn as tailscale | https://headscale.net/stable/ |
+| Pomerium | pomerium | bastion-host | done | https://www.pomerium.com/docs |
 
 ## Container orchestration and PaaS
 
@@ -543,6 +557,7 @@ covered by a cloud provider folder.
 | Talos Linux / Flatcar | â€” | â€” | skip: operating systems for Kubernetes nodes | https://www.talos.dev/latest/ |
 | Backstage | â€” | â€” | skip: internal developer portal web app, drawn as an app-server | https://backstage.io/docs/ |
 | EKS / AKS / GKE | â€” | â€” | skip: covered by the aws, azure and gcp provider folders | https://docs.aws.amazon.com/eks/ |
+| Apache OpenWhisk | openwhisk | app-server | done | https://openwhisk.apache.org/documentation.html |
 
 ## Virtualization and edge
 
@@ -582,6 +597,10 @@ covered by a cloud provider folder.
 | Node.js / Deno / Bun | â€” | â€” | skip: language runtimes, drawn as the app-server they run | https://nodejs.org/docs/latest/api/ |
 | Gunicorn / uWSGI / Puma | â€” | â€” | skip: process managers inside an app-server node | https://docs.gunicorn.org/ |
 | Spring Boot / Django / Rails / Express | â€” | â€” | skip: application frameworks, not deployable products | https://spring.io/projects/spring-boot |
+| Eclipse GlassFish | glassfish | app-server | done | https://glassfish.org/documentation |
+| Mattermost | mattermost | app-server | done | https://docs.mattermost.com/ |
+| Rocket.Chat | rocket-chat | app-server | done | https://docs.rocket.chat/ |
+| Gunicorn | — | — | skip: already recorded as a skip in docs/inventory/default.md ("Gunicorn / uWSGI / Puma — process managers inside an app-server node") | https://docs.gunicorn.org/en/stable/ |
 
 ## Registries and artifact repositories
 
@@ -604,6 +623,7 @@ covered by a cloud provider folder.
 | Bitbucket | bitbucket | artifact-repository | done | https://support.atlassian.com/bitbucket-cloud/docs/create-a-git-repository/ |
 | CNCF Dragonfly | â€” | â€” | skip: peer-to-peer image distribution accelerator for a registry; the id dragonfly is taken by the cache | https://d7y.io/docs/ |
 | Artifact Hub | â€” | â€” | skip: public index of Helm charts and operators, not a deployed node | https://artifacthub.io/docs/ |
+| Apache Subversion | subversion | artifact-repository | done | https://subversion.apache.org/docs/ |
 
 ## CI/CD and configuration management
 
@@ -633,6 +653,8 @@ covered by a cloud provider folder.
 | Terraform CLI | â€” | â€” | skip: infrastructure-as-code CLI, not a runtime node | https://developer.hashicorp.com/terraform/docs |
 | Argo Rollouts | â€” | â€” | skip: progressive delivery controller, part of the argo-cd delivery path | https://argo-rollouts.readthedocs.io/ |
 | Cloud Native Buildpacks | â€” | â€” | skip: image build specification used inside a pipeline | https://buildpacks.io/docs/ |
+| Zuul | zuul-ci | ci-pipeline | done | https://zuul-ci.org/docs/zuul/latest/ |
+| Atlantis | atlantis | ci-pipeline | done | https://www.runatlantis.io/docs/ |
 
 ## Workflow and orchestration engines
 
@@ -659,6 +681,8 @@ covered by a cloud provider folder.
 | Trigger.dev | trigger-dev | workflow-engine | done | https://trigger.dev/docs/introduction |
 | Zeebe | â€” | â€” | skip: the workflow engine inside Camunda 8, covered by camunda | https://docs.camunda.io/docs/components/zeebe/zeebe-overview/ |
 | Activiti | â€” | â€” | skip: superseded by Flowable, which the original team maintains | https://www.activiti.org/ |
+| Digdag | digdag | workflow-engine | done | https://docs.digdag.io/ |
+| Apache Airflow | airflow | workflow-engine | done | https://airflow.apache.org/docs/apache-airflow/stable/index.html |
 
 ## Observability A â€” metrics, tracing and profiling
 
@@ -728,6 +752,8 @@ covered by a cloud provider folder.
 | Clerk | clerk | identity-provider | done | https://clerk.com/docs/guides/organizations/control-access/roles-and-permissions |
 | Stytch | stytch | identity-provider | done | https://stytch.com/docs/get-started/guides/authentication |
 | Amazon Cognito / Firebase Auth / Entra ID | â€” | â€” | skip: covered by the aws, gcp and azure provider folders | https://docs.aws.amazon.com/cognito/ |
+| OAuth2 Proxy | oauth2-proxy | identity-provider | done | https://oauth2-proxy.github.io/oauth2-proxy/ |
+| Dex | dex | identity-provider | done | https://dexidp.io/docs/ |
 
 ## Authorization and policy engines
 
@@ -742,6 +768,7 @@ covered by a cloud provider folder.
 | Permit.io | permit-io | policy-engine | done | https://docs.permit.io/concepts/pdp/overview/ |
 | Casbin | â€” | â€” | skip: authorization library linked into the application | https://casbin.org/docs/overview |
 | Cloud Custodian | â€” | â€” | skip: policy-as-code CLI run from a pipeline | https://cloudcustodian.io/docs/ |
+| SonarQube Server | sonarqube | policy-engine | done | https://docs.sonarsource.com/sonarqube-server/latest/ |
 
 ## Secrets, keys and certificates
 
@@ -762,6 +789,7 @@ covered by a cloud provider folder.
 | Sealed Secrets | sealed-secrets | key-management | done | https://github.com/bitnami-labs/sealed-secrets |
 | Let's Encrypt | lets-encrypt | third-party-api | done | https://letsencrypt.org/docs/rate-limits/ |
 | SOPS | â€” | â€” | skip: file encryption CLI used in a repository, not a running node | https://getsops.io/docs/ |
+| Bitwarden | bitwarden | key-management | done | https://bitwarden.com/help/ |
 
 ## Feature flags and configuration
 
@@ -807,6 +835,13 @@ covered by a cloud provider folder.
 | Iterable | iterable | notification-service | done | https://support.iterable.com/hc/en-us/articles/204780529-Message-Channels-and-Message-Types-Overview |
 | Slack API | slack | third-party-api | done | https://docs.slack.dev/apis/web-api/rate-limits |
 | Amazon SES / Firebase Cloud Messaging | â€” | â€” | skip: covered by the aws and gcp provider folders | https://docs.aws.amazon.com/ses/ |
+| Windows Push Notification Service | wns | third-party-api | done | https://learn.microsoft.com/en-us/windows/apps/windows-app-sdk/notifications/push-notifications/ |
+| Pushover | pushover | notification-service | done | https://pushover.net/api |
+| Discord API | discord | third-party-api | done | https://docs.discord.com/developers/intro |
+| LINE Messaging API | line | third-party-api | done | https://developers.line.biz/en/docs/messaging-api/ |
+| Messenger Platform | messenger | third-party-api | done | https://developers.facebook.com/docs/messenger-platform/ |
+| Microsoft Teams | microsoft-teams | third-party-api | done | https://learn.microsoft.com/en-us/microsoftteams/platform/ |
+| Telegram Bot API | telegram | third-party-api | done | https://core.telegram.org/bots/api |
 
 ## Payments and financial rails
 
@@ -827,6 +862,7 @@ covered by a cloud provider folder.
 | Card network | card-network | third-party-api | done | https://www.iso.org/standard/31482.html |
 | Bank API | bank-api | third-party-api | done | https://www.openbanking.org.uk/standards/ |
 | Supplier API | supplier-api | third-party-api | done | https://en.wikipedia.org/wiki/Business-to-business |
+| Amazon Pay | amazon-pay | third-party-api | done | https://developer.amazon.com/docs/amazon-pay/intro.html |
 
 ## Ledgers, matching, id generation and rate limiting
 
@@ -844,8 +880,13 @@ covered by a cloud provider folder.
 | NGINX limit_req | nginx-limit-req | rate-limiter | done | https://nginx.org/en/docs/http/ngx_http_limit_req_module.html |
 | Redis rate limiter | redis-rate-limiter | rate-limiter | done | https://redis.io/docs/latest/develop/use/patterns/ |
 | In-process rate limiter | in-process-limiter | rate-limiter | done | https://en.wikipedia.org/wiki/Token_bucket |
+| Hyperledger Fabric | hyperledger-fabric | ledger | done | https://hyperledger-fabric.readthedocs.io/en/release-2.5/ |
 
 ## Event stores and generic runtime nodes
+
+Generic nodes carry no vendor. They exist so a design that draws an unlabelled box ("Cache",
+"Database", "Message queue") can be encoded without inventing a product; they assert nothing
+beyond what the role itself implies, so the lint rules still fire on them.
 
 | resource | id | kind | status | source |
 |---|---|---|---|---|
@@ -856,6 +897,19 @@ covered by a cloud provider folder.
 | Container worker | container-worker | worker | done | https://kubernetes.io/docs/concepts/workloads/controllers/job/ |
 | Cron job | cron-job | worker | done | https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/ |
 | Fanout daemon | fanout-daemon | worker | done | https://en.wikipedia.org/wiki/Fan-out_(software) |
+| Message queue | message-queue | queue | done | generic node drawn without a vendor; no product documentation |
+| Cache cluster | cache-cluster | cache | done | generic node drawn without a vendor; no product documentation |
+| Relational database | relational-database | sql-database | done | generic node drawn without a vendor; no product documentation |
+| NoSQL store | nosql-store | nosql-database | done | generic node drawn without a vendor; no product documentation |
+| Blob store | blob-store | object-store | done | generic node drawn without a vendor; no product documentation |
+| Content delivery network | content-delivery-network | cdn | done | generic node drawn without a vendor; no product documentation |
+| Load balancer | load-balancer-tier | load-balancer | done | generic node drawn without a vendor; no product documentation |
+| DNS | dns-resolver | dns | done | generic node drawn without a vendor; no product documentation |
+| Observability stack | observability-stack | monitoring | done | generic node drawn without a vendor; no product documentation |
+| Automation pipeline | automation-pipeline | ci-pipeline | done | generic node drawn without a vendor; no product documentation |
+| File store | file-store | file-storage | done | generic node drawn without a vendor; no product documentation |
+| Graph store | graph-store | graph-database | done | generic node drawn without a vendor; no product documentation |
+| User device | user-device | client | done | generic node drawn without a vendor; no product documentation |
 | Chronicle Queue / Marten | â€” | â€” | skip: embedded event-log libraries, not deployable nodes | https://chronicle.software/queue/ |
 
 ## Media transcoding and realtime communications
@@ -978,6 +1032,9 @@ covered by a cloud provider folder.
 | Zendesk API | zendesk | third-party-api | done | https://developer.zendesk.com/api-reference/introduction/rate-limits/ |
 | Shopify API | shopify | third-party-api | done | https://shopify.dev/docs/api/usage/rate-limits |
 | Google Analytics | â€” | â€” | skip: covered by the gcp provider folder | https://developers.google.com/analytics |
+| Intercom | intercom | third-party-api | done | https://developers.intercom.com/docs |
+| Facebook Graph API | facebook | third-party-api | done | https://developers.facebook.com/docs/graph-api/ |
+| X API | x-api | third-party-api | done | https://docs.x.com/x-api/introduction |
 
 ## Clients and load generators
 
@@ -1016,7 +1073,102 @@ Two mapping decisions worth recording:
 - Forward and reverse HTTP caches (Varnish, Squid) use `cache`; Apache Traffic Server is
   listed as `cdn` because it is deployed as an edge delivery tier.
 
+## Data movement — CDC and ingestion
+
+| resource | id | kind | status | source |
+|---|---|---|---|---|
+| Elastic Agent | elastic-agent | monitoring | done | https://www.elastic.co/guide/en/fleet/current/index.html |
+| Auditbeat | auditbeat | monitoring | done | https://www.elastic.co/guide/en/beats/auditbeat/current/index.html |
+| Filebeat | filebeat | monitoring | done | https://www.elastic.co/guide/en/beats/filebeat/current/index.html |
+| Heartbeat | heartbeat | monitoring | done | https://www.elastic.co/guide/en/beats/heartbeat/current/index.html |
+| Metricbeat | metricbeat | monitoring | done | https://www.elastic.co/guide/en/beats/metricbeat/current/index.html |
+| Packetbeat | packetbeat | monitoring | done | https://www.elastic.co/guide/en/beats/packetbeat/current/index.html |
+| Winlogbeat | winlogbeat | monitoring | done | https://www.elastic.co/guide/en/beats/winlogbeat/current/index.html |
+| rsyslog | rsyslog | monitoring | done | https://www.rsyslog.com/doc/ |
+| syslog-ng | syslog-ng | monitoring | done | https://syslog-ng.github.io/admin-guide/ |
+| Embulk | embulk | worker | done | https://www.embulk.org/docs/ |
+| Stitch | stitch | worker | done | https://www.stitchdata.com/docs/ |
+
+## Observability B — logs, alerting and incident response
+
+| resource | id | kind | status | source |
+|---|---|---|---|---|
+| Elastic Defend | elastic-defend | monitoring | done | https://www.elastic.co/guide/en/security/current/install-endpoint.html |
+| Elastic Security | elastic-security | monitoring | done | https://www.elastic.co/docs/solutions/security |
+| CrowdStrike Falcon LogScale | falcon-logscale | monitoring | done | https://library.humio.com/ |
+| SolarWinds Papertrail | papertrail | monitoring | done | https://www.papertrail.com/ |
+| xMatters | xmatters | notification-service | done | https://help.xmatters.com/ondemand/ |
+
+## Chaos engineering
+
+| resource | id | kind | status | source |
+|---|---|---|---|---|
+| Chaos Mesh | chaos-mesh | worker | done | https://chaos-mesh.org/docs/ |
+| Litmus | litmus | worker | done | https://docs.litmuschaos.io/ |
+
+## Observability A — metrics, tracing and profiling
+
+| resource | id | kind | status | source |
+|---|---|---|---|---|
+| CrowdStrike Falcon | crowdstrike-falcon | monitoring | done | https://www.crowdstrike.com/en-us/platform/endpoint-security/ |
+
+## Mingrammer nodes not catalogued
+
+| resource | id | kind | status | source |
+|---|---|---|---|---|
+| Fleet | — | — | skip: Agent management plane inside Kibana; the drawn node is elastic-agent. | https://www.elastic.co/guide/en/fleet/current/manage-agents-in-fleet.html |
+| Elastic Integrations | — | — | skip: Packaged input and dashboard configuration for Elastic Agent, not a node. | https://www.elastic.co/docs/reference/integrations/ |
+| Functionbeat | — | — | skip: Reached End of Support on 18 October 2023; replaced by Elastic Serverless Forwarder. | https://www.elastic.co/guide/en/beats/functionbeat/current/index.html |
+| Alerting | — | — | skip: Rules and connectors feature inside Kibana, not a separate node. | https://www.elastic.co/docs/explore-analyze/alerts-cases |
+| Beats | — | — | skip: Umbrella brand covering Filebeat, Metricbeat, Packetbeat, Heartbeat, Auditbeat and Winlogbeat, each added separately. | https://www.elastic.co/guide/en/beats/libbeat/current/beats-reference.html |
+| Logstash pipeline | — | — | skip: Configuration inside Logstash; the drawn node is logstash. | https://www.elastic.co/guide/en/logstash/current/configuration.html |
+| Machine learning | — | — | skip: Anomaly detection and inference feature of Elasticsearch and Kibana, not a separate product. | https://www.elastic.co/docs/explore-analyze/machine-learning |
+| Elastic Maps Service | — | — | skip: Hosted basemap tile and boundary service backing the Kibana Maps app, not a node a designer places. | https://www.elastic.co/docs/explore-analyze/visualize/maps/maps-connect-to-ems |
+| Maps | — | — | skip: Geospatial visualisation app inside Kibana, not a separate node. | https://www.elastic.co/docs/explore-analyze/visualize/maps |
+| Stack Monitoring | — | — | skip: Self-monitoring feature of the Elastic Stack, not a separate node. | https://www.elastic.co/docs/deploy-manage/monitor/stack-monitoring |
+| Searchable snapshots | — | — | skip: Storage tier feature of Elasticsearch; snapshots are a property of the cluster, not a node. | https://www.elastic.co/docs/deploy-manage/tools/snapshot-and-restore/searchable-snapshots |
+| Security settings | — | — | skip: Configuration object, not a node. | https://www.elastic.co/docs/deploy-manage/security |
+| Elasticsearch SQL | — | — | skip: Query interface of Elasticsearch, not a separate node. | https://www.elastic.co/docs/explore-analyze/query-filter/languages/sql |
+| Elastic Stack | — | — | skip: Umbrella brand covering Elasticsearch, Kibana, Logstash and Beats. | https://www.elastic.co/elastic-stack |
+| Elastic App Search | — | — | skip: Standalone product discontinued; last shipped in 8.19 and not available in Elastic 9.x. | https://www.elastic.co/guide/en/app-search/current/index.html |
+| Web crawler | — | — | skip: Content ingestion tool inside the discontinued standalone Enterprise Search, not a placeable runtime node. | https://www.elastic.co/guide/en/enterprise-search/current/crawler.html |
+| Elastic Enterprise Search | — | — | skip: Standalone product discontinued; last shipped in 8.19 and not available in Elastic 9.x. | https://www.elastic.co/guide/en/enterprise-search/current/index.html |
+| Site Search | — | — | skip: Swiftype Site Search, retired by Elastic and superseded by App Search, itself discontinued. | https://www.elastic.co/guide/en/swiftype/index.html |
+| Elastic Workplace Search | — | — | skip: Standalone product discontinued; last shipped in 8.19 and not available in Elastic 9.x. | https://www.elastic.co/guide/en/workplace-search/current/index.html |
+| Logs | — | — | skip: Log Explorer app inside Kibana, not a separate node. | https://www.elastic.co/docs/solutions/observability/logs |
+| Metrics | — | — | skip: Infrastructure metrics app inside Kibana, not a separate node. | https://www.elastic.co/docs/solutions/observability/infra-and-hosts |
+| Elastic Observability | — | — | skip: Umbrella solution name covering APM, logs, metrics and synthetics. | https://www.elastic.co/docs/solutions/observability |
+| Uptime | — | — | skip: Synthetics and uptime app inside Kibana; the shipper is heartbeat. | https://www.elastic.co/docs/solutions/observability/synthetics |
+| Elastic Cloud Enterprise | — | — | skip: Self-managed orchestration platform that deploys Elastic Stack deployments; the drawn nodes are elasticsearch and kibana. | https://www.elastic.co/docs/deploy-manage/deploy/cloud-enterprise |
+| Elastic Cloud on Kubernetes | — | — | skip: Kubernetes operator that deploys the Elastic Stack; the drawn node is elasticsearch (same call as the Strimzi skip). | https://www.elastic.co/docs/deploy-manage/deploy/cloud-on-k8s |
+| Elastic | — | — | skip: Vendor logo, not a node. | https://www.elastic.co/ |
+| SIEM | — | — | skip: Duplicate of security/Security; SIEM is the detection engine inside Elastic Security. | https://www.elastic.co/docs/solutions/security |
+| XDR | — | — | skip: Duplicate of security/Security; XDR is the positioning of Elastic Security, not a separate product. | https://www.elastic.co/docs/solutions/security |
+| Power BI | — | — | skip: covered by the azure and gcp provider folders | https://learn.microsoft.com/en-us/power-bi/ |
+| Singer | — | — | skip: open specification for ETL taps and targets; the deployable node is the runner that executes them (meltano) | https://www.singer.io/ |
+| BuzzFeed sso | — | — | skip: archived by BuzzFeed and no longer maintained; upstream points users at other SSO proxies | https://github.com/buzzfeed/sso |
+| Tekton CLI | — | — | skip: command-line client for Tekton, not a runtime node | https://tekton.dev/docs/cli/ |
+| User | — | — | skip: people icon for an actor; the placeable node is the generic client (`user-device`) | https://diagrams.mingrammer.com/docs/nodes/onprem |
+| Users | — | — | skip: people icon for an actor; the placeable node is the generic client (`user-device`) | https://diagrams.mingrammer.com/docs/nodes/onprem |
+| containerd | — | — | skip: container runtime on a node, not a drawn resource | https://containerd.io/docs/ |
+| CRI-O | — | — | skip: container runtime on a node, not a drawn resource | https://cri-o.io/ |
+| gVisor | — | — | skip: container runtime (sandboxed runsc) on a node, not a drawn resource | https://gvisor.dev/docs/ |
+| LXC | — | — | skip: host container runtime, the drawn node is the container service | https://linuxcontainers.org/lxc/documentation/ |
+| rkt | — | — | skip: container runtime; project ended and archived by the CNCF in February 2020 | https://github.com/rkt/rkt |
+| Flagger | — | — | skip: progressive delivery controller, part of the flux delivery path (as Argo Rollouts is for argo-cd) | https://fluxcd.io/flagger/ |
+| Ansible | — | — | skip: agentless configuration-management CLI run from a control node; the deployable node is Ansible AWX (`awx`) | https://docs.ansible.com/ |
+| Pulumi | — | — | skip: infrastructure-as-code CLI, not a runtime node (same call as the existing Terraform CLI row) | https://www.pulumi.com/docs/ |
+| Terraform | — | — | skip: infrastructure-as-code CLI, not a runtime node (the hosted service is `hcp-terraform`) | https://developer.hashicorp.com/terraform/docs |
+| Prometheus Operator | — | — | skip: Kubernetes operator that deploys Prometheus; the placed node is Prometheus itself | https://diagrams.mingrammer.com/docs/nodes/onprem |
+| Cisco Switch (Layer 3) | — | — | skip: Layer variant of the same device; the L2/L3 distinction is a property of cisco-switch | https://diagrams.mingrammer.com/docs/nodes/onprem |
+| Internet | — | — | skip: Generic boundary icon, not a product a designer configures | https://diagrams.mingrammer.com/docs/nodes/onprem |
+| Ocelot | — | — | skip: .NET library embedded in an ASP.NET app, not a deployed gateway product | https://diagrams.mingrammer.com/docs/nodes/onprem |
+| YARP | — | — | skip: .NET reverse proxy library compiled into an app, not a deployed product | https://diagrams.mingrammer.com/docs/nodes/onprem |
+| Trivy | — | — | skip: Vulnerability scanner CLI run in a pipeline, not a placed runtime node | https://diagrams.mingrammer.com/docs/nodes/onprem |
+| Ceph OSD | — | — | skip: Internal daemon of a Ceph cluster, not a separately placed product | https://diagrams.mingrammer.com/docs/nodes/onprem |
+| Git | — | — | skip: Version control tool and protocol; the placed node is the hosting server | https://diagrams.mingrammer.com/docs/nodes/onprem |
+| Twilio | — | — | skip: umbrella brand; the placeable products are twilio-sms, twilio-video, twilio-flex and segment | https://diagrams.mingrammer.com/docs/nodes/saas |
 
 ## Counts
 
-total 747, todo 0, done 658, skip 89.
+total 871, todo 0, done 729, skip 142.

@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# ApsaraDB for Memcache: "a high-performance managed Memcached database service" that keeps frequently
+# accessed data in memory in front of a backend database, with Alibaba Cloud handling node lists, clusters,
+# updates and patches ("ApsaraDB for Memcache: Managed Memory Based Caching Service"). That page states
+# instances store data in their memory and cannot be used for persistent data storage, and that a distributed
+# clustering and load balancing design replaces unhealthy nodes to avoid a single point of failure. No
+# eviction policy is documented, so none is set.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-apsaradb-memcache"
+kind: "cache"
+provider: "alibabacloud"
+defaults:
+  managed: true
+  structure: "key-value"
+  persistence: false
+  usedAsPrimaryStore: false
+properties:
+  automaticNodeReplacement:
+    type: "boolean"
+    default: true
+  accessControlList:
+    type: "boolean"

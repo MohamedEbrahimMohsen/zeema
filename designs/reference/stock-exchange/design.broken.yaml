@@ -1,0 +1,221 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture: an electronic stock exchange, broken variant. Same shape as
+# stock-exchange.yaml but with the mistakes the sources warn about: reporting I/O called
+# synchronously from the order path (LMAX: no I/O inside the business logic), member
+# positions kept in an ordinary table instead of a double-entry ledger, a post-trade
+# clearing call with no idempotency key, a regulatory reporting store with no backup, and
+# gap-fill requests that retry without a circuit breaker or a limiter in front.
+#
+# This file MUST trip:
+#   - fanout-inline-in-request-path          (order-manager calls the reporter synchronously)
+#   - money-store-without-double-entry-ledger (wallet-db is a plain table; money.zeroSum is true)
+#   - money-mutation-without-idempotency-key (reporter -> clearing-house declares no idempotent)
+#   - datastore-missing-backup               (reporting-db: backupEnabled false, no retention)
+#   - retry-without-adaptive-shedding        (broker-client -> retransmission-server retries with
+#                                             no circuit breaker and no rate limiter in front)
+# and MUST NOT trip:
+#   - credentials-without-rotation           (security.credentialRotationDays is set)
+#   - stateful-engine-pinned-to-single-zone  (no availability-zone group; engines declare failover)
+#   - stateful-node-without-zone-redundancy  (same: the design has no availability-zone group)
+#   - datastore-single-region                (availability.multiRegion is false)
+#   - read-heavy-path-without-cache, single-writer-primary-at-peak-qps,
+#     read-replica-as-sole-scaling           (no readWriteRatio and no rps on any sql-database)
+#   - queue-missing-dlq, retry-queue-without-dlq, retry-without-backoff, pubsub-replay-required
+#                                            (no queue and no pubsub-topic in this design)
+#   - cache-missing-eviction-policy, cache-as-primary-store-without-persistence,
+#     materialised-cache-without-rebuild-path (no cache node)
+#   - derived-store-without-cdc-or-rebuild, business-updates-without-index-propagation
+#                                            (no search-index node)
+#   - external-call-inline-without-durable-path (the clearing call is made by a worker, async)
+#   - exactly-once-with-external-side-effects (no edge claims exactly-once delivery)
+#   - sync-chain-too-deep                    (the design states latency.p99Us, not latency.p95Ms)
+#   - reconnect-stampede-without-guard, shared-host-per-channel-without-isolation,
+#     stateful-websocket-scale-in-without-drain (the multicast feed does not autoscale, assigns
+#                                             no channels and calls no coordination service)
+#   - cross-cell-call, shared-worker-pool-across-queues, shared-dependency-without-redundancy,
+#     object-store-single-zone-with-durability-target, multi-leader-store-without-conflict-policy,
+#     push-fanout-without-celebrity-path, stateful-hash-ring-without-ring-manager,
+#     webhook-without-signature-or-idempotency, windowed-aggregation-without-watermark
+#                                            (no such node, group or requirement)
+schemaVersion: "1"
+type: "design"
+id: "stock-exchange"
+
+requirements:
+  availability:
+    multiRegion: false
+    regions: 2
+  latency:
+    p99Us: 10
+  messaging:
+    replay: true
+    orderingScope: "global"
+  consistency:
+    model: "cp"
+  correctness:
+    reproducible: true
+    exactlyOnceEffect: true
+  money:
+    zeroSum: true
+  data:
+    immutableAudit: true
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "primary-dc", kind: "region" }
+  - { id: "dr-site", kind: "region" }
+  - { id: "member-zone", kind: "trust-zone", parent: "primary-dc" }
+  - { id: "edge-zone", kind: "trust-zone", parent: "primary-dc" }
+  - { id: "trading-core", kind: "trust-zone", parent: "primary-dc" }
+  - { id: "post-trade", kind: "trust-zone", parent: "primary-dc" }
+
+nodes:
+  - id: "broker-client"
+    component: "sdk-client"
+    group: "member-zone"
+    label: "Broker / member"
+    props: { platform: "sdk", persistentConnection: true }
+
+  - id: "client-gateway"
+    component: "envoy-gateway"
+    group: "edge-zone"
+    label: "Client gateway (ports)"
+    props: { protocol: "fix", tls: true, rateLimiting: true, concurrencyLimit: true }
+
+  - id: "order-manager"
+    component: "container-service"
+    group: "trading-core"
+    label: "Order manager"
+    props: { stateless: false, criticality: "high", ownsData: true }
+
+  - id: "risk-manager"
+    component: "container-service"
+    group: "trading-core"
+    label: "Risk manager"
+    props: { criticality: "high" }
+
+  - id: "sequencer"
+    component: "raft-event-log"
+    group: "trading-core"
+    label: "Sequencer"
+    props: { role: "sequencer", journaled: true, storage: "mmap", replication: "primary-replica", nodes: 3 }
+
+  - id: "matching-engine-primary"
+    component: "order-book-matcher"
+    group: "trading-core"
+    label: "Matching engine (primary)"
+    props: { singleThreaded: true, deterministic: true, algorithm: "price-time", role: "primary", failover: "automatic", replayFromJournal: true }
+    nfr: { rps: 6000000, consistency: "strong" }
+
+  - id: "matching-engine-standby"
+    component: "order-book-matcher"
+    group: "trading-core"
+    label: "Matching engine (warm standby)"
+    props: { singleThreaded: true, deterministic: true, algorithm: "price-time", role: "standby", failover: "automatic", replayFromJournal: true }
+
+  - id: "matching-engine-dr"
+    component: "order-book-matcher"
+    group: "dr-site"
+    label: "Matching engine (DR)"
+    props: { singleThreaded: true, deterministic: true, algorithm: "price-time", role: "standby", failover: "manual", replayFromJournal: true }
+
+  - id: "replication-bus"
+    component: "multicast-domain"
+    group: "trading-core"
+    label: "Replicator (IP multicast)"
+    props: { multicast: true, kernelBypass: true, interconnect: "private", pimMode: "ssm" }
+
+  - id: "market-data-publisher"
+    component: "multicast-feed"
+    group: "edge-zone"
+    label: "Market data publisher"
+    props: { protocol: "udp-multicast", stateful: false, sequenceNumbers: true, gapRecovery: "retransmission", lineArbitration: true }
+
+  - id: "market-data-plant"
+    component: "multicast-domain"
+    group: "edge-zone"
+    label: "Market data multicast plant"
+    props: { multicast: true, kernelBypass: true, interconnect: "private", pimMode: "ssm" }
+
+  - id: "retransmission-server"
+    component: "container-worker"
+    group: "edge-zone"
+    label: "Retransmission servers"
+    props: { trigger: "stream", idempotent: true }
+
+  - id: "reporter"
+    component: "container-worker"
+    group: "post-trade"
+    label: "Reporter"
+    props: { trigger: "stream", idempotent: true }
+
+  - id: "snapshot-job"
+    component: "cron-job"
+    group: "trading-core"
+    label: "Nightly snapshot job"
+    props: { trigger: "schedule", schedule: "nightly", idempotent: true, overlapAllowed: false }
+
+  - id: "exchange-monitoring"
+    component: "observability-stack"
+    group: "edge-zone"
+    label: "Latency and gap monitoring"
+    props: { signal: "all", collectorMode: "push" }
+
+  - id: "journal"
+    component: "raft-event-log"
+    group: "trading-core"
+    label: "Journal (mmap, append-only)"
+    props: { role: "journal", journaled: true, storage: "mmap", replication: "primary-replica", nodes: 3 }
+
+  - id: "wallet-db"
+    component: "relational-database"
+    group: "trading-core"
+    label: "Wallet / positions"
+    props: { appendOnly: false, replication: "async", backupEnabled: true, backupRetentionDays: 2555, encryptionAtRest: true }
+
+  - id: "snapshot-store"
+    component: "blob-store"
+    group: "trading-core"
+    label: "Snapshot store"
+    props: { versioning: true, checksumOnWrite: true, encryptionAtRest: true }
+
+  - id: "reporting-db"
+    component: "relational-database"
+    group: "post-trade"
+    label: "Reporting DB"
+    props: { appendOnly: true, replication: "async", backupEnabled: false, encryptionAtRest: true }
+
+  - id: "clearing-house"
+    component: "bank-api"
+    label: "Clearing / settlement"
+    props: { handlesMoney: true, batchSettlement: true, callbackStyle: "poll" }
+
+edges:
+  - { from: "broker-client", to: "client-gateway", protocol: "fix", mode: "sync", label: "submit order, ack inline" }
+  - { from: "client-gateway", to: "order-manager", protocol: "udp", mode: "async", delivery: "at-least-once", label: "validated order" }
+  - { from: "order-manager", to: "risk-manager", protocol: "in-process", mode: "sync", label: "pre-trade limits and kill switch" }
+  - { from: "order-manager", to: "wallet-db", protocol: "sql", mode: "sync", label: "funds and position check" }
+  - { from: "order-manager", to: "reporter", protocol: "grpc", mode: "sync", timeoutMs: 2000, label: "write the fill before acking the broker" }
+  - { from: "order-manager", to: "sequencer", protocol: "in-process", mode: "async", delivery: "at-least-once", label: "accepted order" }
+  - { from: "sequencer", to: "journal", protocol: "mmap-append", mode: "sync", label: "journal before publish" }
+  - { from: "sequencer", to: "matching-engine-primary", protocol: "ring-buffer", mode: "async", delivery: "at-least-once", label: "sequenced input" }
+  - { from: "matching-engine-primary", to: "sequencer", protocol: "ring-buffer", mode: "async", delivery: "at-least-once", label: "executions, sequenced too" }
+  - { from: "sequencer", to: "order-manager", protocol: "ring-buffer", mode: "async", delivery: "at-least-once", label: "execution reports" }
+  - { from: "order-manager", to: "client-gateway", protocol: "udp", mode: "async", delivery: "at-least-once", label: "fills back to the broker" }
+  - { from: "sequencer", to: "replication-bus", protocol: "udp-multicast", mode: "async", delivery: "at-least-once", label: "replicate sequenced input" }
+  - { from: "replication-bus", to: "matching-engine-standby", protocol: "udp-multicast", mode: "async", delivery: "at-least-once", label: "same stream, same state" }
+  - { from: "replication-bus", to: "matching-engine-dr", protocol: "udp-multicast", mode: "async", delivery: "at-least-once", label: "DR replica" }
+  - { from: "sequencer", to: "market-data-publisher", protocol: "ring-buffer", mode: "async", delivery: "at-least-once", label: "executions and book updates" }
+  - { from: "market-data-publisher", to: "market-data-plant", protocol: "udp-multicast", mode: "async", delivery: "at-most-once", label: "sequenced feed" }
+  - { from: "market-data-plant", to: "broker-client", protocol: "udp-multicast", mode: "async", delivery: "at-most-once", label: "simultaneous delivery to every member" }
+  - { from: "sequencer", to: "retransmission-server", protocol: "ring-buffer", mode: "async", delivery: "at-least-once", label: "stream kept for gap fill" }
+  - { from: "broker-client", to: "retransmission-server", protocol: "tcp", mode: "sync", retryPolicy: "exponential", label: "gap fill by sequence number" }
+  - { from: "reporter", to: "reporting-db", protocol: "sql", mode: "sync", idempotent: true, label: "fills, orders, positions" }
+  - { from: "reporter", to: "clearing-house", protocol: "https", mode: "async", delivery: "at-least-once", label: "post-trade clearing" }
+  - { from: "snapshot-job", to: "journal", protocol: "mmap-read", mode: "sync", label: "read the journal for the day" }
+  - { from: "snapshot-job", to: "snapshot-store", protocol: "s3", mode: "sync", idempotent: true, label: "nightly snapshot" }
+  - { from: "snapshot-store", to: "matching-engine-primary", protocol: "file", mode: "async", delivery: "at-least-once", label: "restore snapshot on restart" }
+  - { from: "journal", to: "matching-engine-primary", protocol: "mmap-read", mode: "async", delivery: "at-least-once", label: "replay from start of day" }
+  - { from: "matching-engine-primary", to: "exchange-monitoring", protocol: "otlp", mode: "async", delivery: "at-most-once", label: "latency histograms" }
+  - { from: "market-data-publisher", to: "exchange-monitoring", protocol: "otlp", mode: "async", delivery: "at-most-once", label: "gap detection" }

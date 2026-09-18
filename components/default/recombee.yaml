@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Recombee: hosted recommender as a service with an admin UI ("Introduction"), fed an item
+# catalog and user interactions and queried for recommendations. "Getting Started" documents a
+# per-database region passed when the client is constructed, and two access tokens: a public
+# token for client-side calls from the browser or app, and a private token that server-side
+# catalog writes require. No request quota, content filtering behaviour or data retention period
+# is documented, so none is set.
+schemaVersion: "1"
+type: "component"
+id: "recombee"
+kind: "ai-service"
+provider: "default"
+defaults:
+  managed: true
+  modality: "structured"
+  publicEndpoint: true
+properties:
+  tokenType:
+    type: "enum"
+    values: ["public", "private"]
+  region:
+    type: "string"

@@ -16,7 +16,7 @@ properties:
     default: "eventual"
   replication:
     type: "enum"
-    values: ["single-region", "multi-region-single-leader", "multi-region-multi-leader"]
+    values: ["single-region", "multi-region-single-leader", "multi-region-multi-leader", "leaderless"]
     default: "single-region"
   replicationFactor:
     type: "integer"

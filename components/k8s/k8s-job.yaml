@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Kubernetes Job: runs Pods to completion and tracks how many succeeded. Per "Jobs" and the
+# JobSpec reference backoffLimit defaults to 6 retries before the Job is marked failed,
+# completionMode defaults to NonIndexed, parallelism and completions default to 1, suspend
+# defaults to false, and the Pod template restartPolicy must be Never or OnFailure.
+schemaVersion: "1"
+type: "component"
+id: "k8s-job"
+kind: "worker"
+provider: "k8s"
+defaults:
+  trigger: "batch"
+  managed: false
+  concurrency: 1
+properties:
+  backoffLimit:
+    type: "integer"
+    default: 6
+  completions:
+    type: "integer"
+    default: 1
+  completionMode:
+    type: "enum"
+    values: ["non-indexed", "indexed"]
+    default: "non-indexed"
+  restartPolicy:
+    type: "enum"
+    values: ["never", "on-failure"]
+  suspend:
+    type: "boolean"
+    default: false

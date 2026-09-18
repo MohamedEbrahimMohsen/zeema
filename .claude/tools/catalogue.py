@@ -1,4 +1,4 @@
-"""Catalogue lookup for the Arkore skills.
+"""Catalogue lookup for the Zeema skills.
 
   python catalogue.py find <words...>        components / inventory rows matching the words (name, id, description)
   python catalogue.py component <id>         print the component file and its effective property set
@@ -14,7 +14,7 @@ from pathlib import Path
 import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
-PROVIDERS = ["azure", "aws", "default", "gcp", "cloudflare", "oci"]
+PROVIDERS = ["azure", "aws", "default", "gcp", "cloudflare", "oci", "ibm", "alibabacloud", "digitalocean", "openstack", "outscale", "k8s"]
 
 def locale(): return yaml.safe_load((ROOT / "locales" / "en.yaml").read_text(encoding="utf-8"))
 
@@ -39,7 +39,7 @@ def inventory_rows():
             rows.append({"provider": prov, "family": family, "resource": cells[0], "id": cells[1], "kind": cells[2], "status": cells[3], "source": cells[4] if len(cells) > 4 else ""})
     return rows
 
-STOP = {"account", "accounts", "service", "services", "azure", "aws", "amazon", "google", "gcp", "cloud", "oci", "oracle", "microsoft", "cloudflare", "the", "a", "an", "of", "for"}
+STOP = {"account", "accounts", "service", "services", "azure", "aws", "amazon", "google", "gcp", "cloud", "oci", "oracle", "microsoft", "cloudflare", "ibm", "alibaba", "digitalocean", "openstack", "outscale", "kubernetes", "k8s", "the", "a", "an", "of", "for"}
 def tokens(s):
     t = [t for t in re.split(r"[^a-z0-9]+", s.lower()) if t]
     return [x for x in t if x not in STOP] or t

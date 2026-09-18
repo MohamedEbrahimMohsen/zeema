@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Microsoft Teams: hosted collaboration service your application integrates with rather than
+# operates. "Microsoft Teams Platform developer documentation" lists the extension points: agents
+# and bots, tab apps, message extensions and apps for meetings, published through the Teams Store
+# after validation. "Activity Handlers and Agent Logic" states Teams delivers activities to the
+# agent endpoint and, if an activity takes more than 15 seconds to process, sends a retry request
+# to that endpoint, so duplicate deliveries are expected and no idempotency is provided; the same
+# page states the Teams platform only supports TLS 1.2.
+schemaVersion: "1"
+type: "component"
+id: "microsoft-teams"
+kind: "third-party-api"
+provider: "default"
+defaults:
+  managed: true
+  callbackStyle: "webhook"
+  idempotent: false
+  hostedPage: false
+  handlesMoney: false
+properties:
+  appCapability:
+    type: "enum"
+    values: ["bot", "tab", "message-extension", "meeting-app"]
+    default: "bot"
+  activityTimeoutSeconds:
+    type: "integer"
+    default: 15
+  scope:
+    type: "enum"
+    values: ["personal", "group-chat", "channel"]

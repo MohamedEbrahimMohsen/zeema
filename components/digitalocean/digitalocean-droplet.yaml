@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# DigitalOcean Droplet: "Linux-based virtual machines (VMs) that run on top of virtualized
+# hardware", one per datacenter region, patched by you ("Droplets"). "Droplet Features" lists the
+# Basic, General Purpose, CPU-, Memory- and Storage-Optimized and GPU plan families over Linux
+# images; "Droplets Limits" gives 2 Gbps network throughput on standard and 10 Gbps on premium
+# CPU Droplets, at most 10 Droplets created at once, and treats a public address as the norm by
+# carving out Private Droplets, which cannot take reserved or BYOIP addresses. Backups are an
+# opt-in service you enable per Droplet ("How to Enable Backups").
+schemaVersion: "1"
+type: "component"
+id: "digitalocean-droplet"
+kind: "virtual-machine"
+provider: "digitalocean"
+defaults:
+  managed: false
+  os: "linux"
+  publicIp: true
+  zoneRedundant: false
+properties:
+  plan:
+    type: "enum"
+    values: ["basic", "general-purpose", "cpu-optimized", "memory-optimized", "storage-optimized", "gpu"]
+    default: "basic"
+  backups:
+    type: "boolean"
+    default: false
+  networkThroughputGbps:
+    type: "integer"
+    default: 2
+  maxConcurrentCreate:
+    type: "integer"
+    default: 10

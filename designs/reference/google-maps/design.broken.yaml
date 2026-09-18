@@ -1,0 +1,206 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture 29, broken variant: the same Google Maps pipeline with the traffic
+# aggregator windowing by event time and dropping every late location ping, rendered tiles that
+# exist only inside the tile cache, a map-edit queue with nowhere to park a poison edit, and a
+# routing engine that retries the ETA model at full tilt.
+#
+# This file MUST trip:
+#   - windowed-aggregation-without-watermark   (traffic-aggregator: event-time windows, no watermarkSeconds)
+#   - cache-as-primary-store-without-persistence (tile-cache: usedAsPrimaryStore true, persistence false)
+#   - materialised-cache-without-rebuild-path  (tile-cache is materialised; only a cdn and an app-server feed it)
+#   - queue-missing-dlq                        (edit-queue takes async edits with deadLetterQueue false)
+#   - retry-without-adaptive-shedding          (routing-engine -> eta-model retries with no circuit breaker)
+# and MUST NOT trip:
+#   - cache-missing-eviction-policy            (tile-cache still declares lru)
+#   - read-heavy-path-without-cache            (a cache exists, and no readWriteRatio is stated)
+#   - derived-store-without-cdc-or-rebuild, business-updates-without-index-propagation (no search index)
+#   - datastore-missing-backup, datastore-single-region, read-replica-as-sole-scaling,
+#     single-writer-primary-at-peak-qps        (no sql-database node, and no rps is stated anywhere)
+#   - sync-chain-too-deep                      (no latency.p95Ms requirement, and the deepest sync chain is 3)
+#   - pubsub-replay-required                   (replay is required but there is no pubsub-topic)
+#   - credentials-without-rotation             (the design still states credentialRotationDays)
+#   - stateful-node-without-zone-redundancy, stateful-engine-pinned-to-single-zone (no availability-zone group)
+#   - multi-leader-store-without-conflict-policy (every store is multi-region-single-leader)
+#   - external-call-inline-without-durable-path (no app-server calls a third-party-api synchronously)
+schemaVersion: "1"
+type: "design"
+id: "google-maps"
+
+requirements:
+  availability:
+    multiRegion: true
+  consistency:
+    model: "ap"
+  messaging:
+    replay: true
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "google", kind: "region", label: "Google infrastructure (global)" }
+  - { id: "serving", kind: "trust-zone", parent: "google", label: "Serving" }
+  - { id: "mapmaking", kind: "trust-zone", parent: "google", label: "Map building" }
+  - { id: "traffic", kind: "trust-zone", parent: "google", label: "Traffic and routing" }
+  - { id: "external", kind: "trust-zone", label: "Third-party data providers" }
+
+nodes:
+  - id: "maps-client"
+    component: "mobile-app"
+    label: "Google Maps app and web"
+    props: { platform: "multi", os: "both", localCache: true }
+
+  - id: "street-view-fleet"
+    component: "iot-device"
+    label: "Street View cars and trekkers"
+    props: { platform: "embedded", connectivity: "cellular", powerConstrained: false, localCache: true, resendPolicy: "store-and-forward" }
+
+  - id: "satellite-imagery-providers"
+    component: "supplier-api"
+    label: "Satellite and aerial imagery providers"
+    group: "external"
+    props: { idempotent: true, authScheme: "api-key" }
+
+  - id: "authoritative-sources"
+    component: "supplier-api"
+    label: "1,000+ authoritative data sources"
+    group: "external"
+    props: { idempotent: true, authScheme: "api-key" }
+
+  - id: "maps-platform-api"
+    component: "envoy-gateway"
+    label: "Google Maps Platform API"
+    group: "serving"
+    props: { auth: "api-key", rateLimiting: true, tls: true }
+
+  - id: "tile-cdn"
+    component: "content-delivery-network"
+    label: "Tile serving edge"
+    group: "serving"
+    props: { caching: true, tls: true, originShield: true }
+
+  - id: "tile-cache"
+    component: "cache-cluster"
+    label: "Rendered tile cache"
+    group: "serving"
+    props: { structure: "key-value", evictionPolicy: "lru", invalidation: "ttl", materialised: true, usedAsPrimaryStore: true, persistence: false, replication: "multi-az", tier: "edge" }
+
+  - id: "tile-renderer"
+    component: "container-service"
+    label: "On-demand tile renderer"
+    group: "serving"
+    props: { stateless: true, autoscaling: true, criticality: "high", ownsData: false }
+
+  - id: "routing-engine"
+    component: "container-service"
+    label: "Routing engine"
+    group: "serving"
+    props: { stateless: true, autoscaling: true, criticality: "high", ownsData: false }
+
+  - id: "imagery-store"
+    component: "blob-store"
+    label: "Imagery store"
+    group: "mapmaking"
+    props: { tier: "warm", replication: "erasure-coded", versioning: true, checksumOnWrite: true, encryptionAtRest: true }
+
+  - id: "photogrammetry"
+    component: "container-worker"
+    label: "Photogrammetry alignment and stitching"
+    group: "mapmaking"
+    props: { trigger: "batch", idempotent: true }
+
+  - id: "ml-extraction"
+    component: "container-worker"
+    label: "ML feature extraction"
+    group: "mapmaking"
+    props: { trigger: "batch", idempotent: true, accelerator: "gpu" }
+
+  - id: "authoritative-ingest"
+    component: "container-worker"
+    label: "Authoritative data ingestion"
+    group: "mapmaking"
+    props: { trigger: "schedule", idempotent: true }
+
+  - id: "edit-queue"
+    component: "message-queue"
+    label: "Pending map edits"
+    group: "mapmaking"
+    props: { delivery: "at-least-once", ordering: "none", deadLetterQueue: false, replay: true, retentionDays: 30, role: "work", persistence: true }
+
+  - id: "edit-review"
+    component: "container-worker"
+    label: "Data-ops review and publish"
+    group: "mapmaking"
+    props: { trigger: "queue", idempotent: true }
+
+  - id: "map-base-data"
+    component: "nosql-store"
+    label: "Map base data"
+    group: "mapmaking"
+    props: { model: "wide-column", consistency: "eventual", replication: "multi-region-single-leader", backupEnabled: true, backupRetentionDays: 30, encryptionAtRest: true }
+
+  - id: "traffic-aggregator"
+    component: "beam"
+    label: "Traffic aggregation, anonymised"
+    group: "traffic"
+    props: { windowing: "event-time", lateDataPolicy: "drop", stateBackend: "memory", exactlyOnce: false }
+
+  - id: "live-traffic-state"
+    component: "nosql-store"
+    label: "Live traffic state"
+    group: "traffic"
+    props: { model: "key-value", consistency: "eventual", replication: "multi-region-single-leader", encryptionAtRest: true }
+
+  - id: "historical-traffic"
+    component: "nosql-store"
+    label: "Historical traffic patterns"
+    group: "traffic"
+    props: { model: "wide-column", consistency: "eventual", replication: "multi-region-single-leader", backupEnabled: true, backupRetentionDays: 30, encryptionAtRest: true }
+
+  - id: "route-analyser"
+    component: "container-worker"
+    label: "Route analyser, Supersegment builder"
+    group: "traffic"
+    props: { trigger: "batch", idempotent: true }
+
+  - id: "eta-model"
+    component: "tensorflow-serving"
+    label: "GNN ETA model"
+    group: "traffic"
+    props: { training: "batch", inputs: "both", accelerator: "asic", batching: true }
+
+  - id: "incident-queue"
+    component: "message-queue"
+    label: "Incident reports"
+    group: "traffic"
+    props: { delivery: "at-least-once", ordering: "none", deadLetterQueue: true, replay: false, retentionDays: 7, role: "work", persistence: true }
+
+edges:
+  - { from: "maps-client", to: "maps-platform-api", protocol: "https", mode: "sync", label: "routes, ETAs, places" }
+  - { from: "maps-client", to: "tile-cdn", protocol: "https", mode: "sync", label: "map tiles" }
+  - { from: "tile-cdn", to: "tile-cache", protocol: "http", mode: "sync", label: "tile origin lookup" }
+  - { from: "tile-renderer", to: "tile-cache", protocol: "redis", mode: "sync", label: "render once, keep only in the cache" }
+  - { from: "tile-renderer", to: "map-base-data", protocol: "grpc", mode: "sync", label: "read the base map to render" }
+  - { from: "maps-platform-api", to: "tile-renderer", protocol: "http", mode: "sync", label: "tile render request" }
+  - { from: "maps-platform-api", to: "routing-engine", protocol: "http", mode: "sync", label: "route request" }
+  - { from: "routing-engine", to: "map-base-data", protocol: "grpc", mode: "sync", label: "road graph: quality, size, speed limits, restrictions" }
+  - { from: "routing-engine", to: "eta-model", protocol: "grpc", mode: "sync", retryPolicy: "exponential", label: "rank candidate routes" }
+  - { from: "eta-model", to: "live-traffic-state", protocol: "grpc", mode: "sync", batched: true, label: "current conditions per supersegment" }
+  - { from: "eta-model", to: "historical-traffic", protocol: "grpc", mode: "sync", batched: true, label: "time-of-day patterns" }
+  - { from: "maps-client", to: "incident-queue", protocol: "https", mode: "async", delivery: "at-least-once", label: "report closure, construction, hazard" }
+  - { from: "incident-queue", to: "routing-engine", protocol: "amqp", mode: "async", delivery: "at-least-once", label: "live incidents" }
+  - { from: "maps-client", to: "traffic-aggregator", protocol: "https", mode: "async", delivery: "at-most-once", label: "aggregated anonymised location data" }
+  - { from: "traffic-aggregator", to: "live-traffic-state", protocol: "grpc", mode: "async", delivery: "at-least-once", idempotent: true, label: "live road conditions" }
+  - { from: "traffic-aggregator", to: "historical-traffic", protocol: "grpc", mode: "async", delivery: "at-least-once", idempotent: true, label: "append to historical patterns" }
+  - { from: "historical-traffic", to: "route-analyser", protocol: "batch", mode: "async", delivery: "at-least-once", label: "terabytes of travel data" }
+  - { from: "route-analyser", to: "eta-model", protocol: "batch", mode: "async", delivery: "at-least-once", label: "supersegment graphs for training" }
+  - { from: "street-view-fleet", to: "imagery-store", protocol: "https", mode: "async", delivery: "at-least-once", idempotent: true, label: "nine-camera imagery and lidar" }
+  - { from: "satellite-imagery-providers", to: "imagery-store", protocol: "https", mode: "async", delivery: "at-least-once", idempotent: true, label: "satellite and aerial imagery" }
+  - { from: "imagery-store", to: "photogrammetry", protocol: "batch", mode: "async", delivery: "at-least-once", label: "align and stitch billions of images" }
+  - { from: "imagery-store", to: "ml-extraction", protocol: "batch", mode: "async", delivery: "at-least-once", label: "building outlines, addresses, signs" }
+  - { from: "photogrammetry", to: "map-base-data", protocol: "grpc", mode: "async", delivery: "at-least-once", idempotent: true, label: "roads, lanes, buildings" }
+  - { from: "ml-extraction", to: "edit-queue", protocol: "amqp", mode: "async", delivery: "at-least-once", label: "candidate features for review" }
+  - { from: "authoritative-sources", to: "authoritative-ingest", protocol: "https", mode: "async", delivery: "at-least-once", label: "vetted pull" }
+  - { from: "authoritative-ingest", to: "map-base-data", protocol: "grpc", mode: "async", delivery: "at-least-once", idempotent: true, label: "vetted authoritative data" }
+  - { from: "maps-platform-api", to: "edit-queue", protocol: "amqp", mode: "async", delivery: "at-least-once", label: "Send Feedback and Local Guides edits" }
+  - { from: "edit-queue", to: "edit-review", protocol: "amqp", mode: "async", delivery: "at-least-once", label: "review queue" }
+  - { from: "edit-review", to: "map-base-data", protocol: "grpc", mode: "sync", idempotent: true, label: "publish only on a high degree of confidence" }

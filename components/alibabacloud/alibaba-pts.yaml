@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Performance Testing Service (PTS): "a commercial performance testing tool that allows you to initiate
+# stress testing tasks on demand" ("PTS 3.0 overview"). That page states load generators schedule Alibaba
+# Cloud CDN points of presence across hundreds of cities and carrier networks to drive traffic at the system
+# under test, and that scenarios come either from visual orchestration or from an uploaded Apache JMeter test
+# plan. It is a synthetic client outside the system it exercises, hence the client kind.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-pts"
+kind: "client"
+provider: "alibabacloud"
+defaults:
+  managed: true
+  platform: "multi"
+properties:
+  scenarioSource:
+    type: "enum"
+    values: ["visual-orchestration", "jmeter-script"]
+    default: "visual-orchestration"
+  distributedLoadGenerators:
+    type: "boolean"
+    default: true

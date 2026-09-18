@@ -1,0 +1,37 @@
+/* ── Type ───────────────────────────────────────────────────────────────
+   Two families, strictly divided by meaning:
+     sans  — prose, labels a human reads
+     mono  — anything the *system* owns: ids, slugs, rule names, keys, types
+   Section labels are mono, uppercase, tracked out (the Blueprint signature). */
+
+:root {
+  --sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; /* @kind font */
+  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; /* @kind font */
+
+  /* base size — every other size is em-relative to this, so a density swap
+     rescales the whole sheet from one declaration */
+  --fs: 14px;
+
+  --fs-micro: 0.7em;    /* token captions, kbd hints                */
+  --fs-meta: 0.75em;    /* section labels, pill text                */
+  --fs-small: 0.85em;   /* secondary prose, card descriptions       */
+  --fs-body: 1em;
+  --fs-lead: 1.1em;     /* dialog + empty-state titles              */
+  --fs-title: 1.35em;   /* wordmark, panel titles                   */
+  --fs-display: 1.75em; /* the one headline size                    */
+
+  --fw-regular: 400; /* @kind font */
+  --fw-medium: 500; /* @kind font */     /* names, active items — the default emphasis */
+  --fw-semibold: 600; /* @kind font */   /* headlines, wordmark                        */
+
+  --lh-tight: 1.15; /* @kind font */
+  --lh-body: 1.45; /* @kind font */
+
+  --ls-display: -0.02em; /* @kind font */
+  --ls-title: -0.01em; /* @kind font */
+
+  /* section-label recipe */
+  --lab-font: var(--mono);
+  --lab-tt: uppercase; /* @kind font */
+  --lab-ls: 0.08em; /* @kind font */
+}

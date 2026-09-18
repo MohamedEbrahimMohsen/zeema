@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Elastic Container Instance (ECI): "a serverless container service that runs containers on Alibaba Cloud
+# without requiring you to provision or manage servers" ("What is Elastic Container Instance?"). That page
+# states you deploy and manage individual containers without cluster overhead and pay only for container
+# resource consumption, each container runs in a CIPU-based sandbox that gives VM-level security, and ECI is
+# normally consumed through an ACK Serverless or standard ACK cluster rather than through its API directly.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-eci"
+kind: "app-server"
+provider: "alibabacloud"
+defaults:
+  managed: true
+properties:
+  integrationMode:
+    type: "enum"
+    values: ["ack-serverless", "ack-virtual-node", "self-managed-kubernetes", "direct-api"]
+    default: "ack-serverless"
+  sandboxIsolation:
+    type: "boolean"
+    default: true

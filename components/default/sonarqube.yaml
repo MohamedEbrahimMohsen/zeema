@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# SonarQube Server: self-hosted code quality and security analysis server whose quality gate
+# decides whether an analysed project passes. "Managing quality gates" states the built-in Sonar
+# way gate is provided by Sonar, activated by default and read-only, and that every project not
+# explicitly assigned to another gate uses the instance default gate. The same page gives the
+# Sonar way conditions on new code: no new issues, no reliability, security or maintainability
+# rating worse than A, security hotspots reviewed at 100%, coverage at or above 80% and
+# duplicated lines at or below 3%. The gate reports a pass or fail status; blocking a pipeline on
+# it is the CI system's choice, so the effect is audit.
+schemaVersion: "1"
+type: "component"
+id: "sonarqube"
+kind: "policy-engine"
+provider: "default"
+defaults:
+  managed: false
+  effect: "audit"
+  enforcementMode: "enforced"
+  scope: "resource"
+  remediation: false
+properties:
+  defaultQualityGate:
+    type: "string"
+    default: "Sonar way"
+  newCodeCoveragePercent:
+    type: "integer"
+    default: 80
+  newCodeDuplicationPercent:
+    type: "integer"
+    default: 3
+  securityHotspotsReviewedPercent:
+    type: "integer"
+    default: 100

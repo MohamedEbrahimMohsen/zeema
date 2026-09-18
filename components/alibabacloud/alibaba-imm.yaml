@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Intelligent Media Management: processing service that analyses, transcodes and indexes documents,
+# images, audio and video held in Alibaba Cloud storage. "What is IMM": it attaches to OSS buckets
+# and converts documents across more than forty formats, transcodes audio and video for PC, TV and
+# mobile targets, streams while transcoding, extracts media metadata such as resolution, bitrate and
+# frame rate, and runs tag, face, body and QR code detection plus watermarking on images.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-imm"
+kind: "media-transcoder"
+provider: "alibabacloud"
+defaults:
+  mode: "file"
+  managed: true
+properties:
+  documentConversion:
+    type: "boolean"
+    default: true
+  streamWhileTranscoding:
+    type: "boolean"
+    default: true
+  mediaMetadataExtraction:
+    type: "boolean"
+    default: true
+  imageAnalysis:
+    type: "boolean"
+    default: true

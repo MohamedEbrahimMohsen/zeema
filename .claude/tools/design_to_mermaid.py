@@ -1,4 +1,4 @@
-"""Render an Arkore design as a Mermaid flowchart (for the fidelity check and the import folder).
+"""Render a Zeema design as a Mermaid flowchart (for the fidelity check and the import folder).
 
   python design_to_mermaid.py <design.yaml> [-o diagram.md] [--direction TD|LR]
 

@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Cloud VPC subnet: a range carved out of the VPC address prefix, confined to a single
+# availability zone while remaining "routable throughout your VPC across an entire region", sized
+# from /29 to /9 ("About subnets"). The same page states that attaching a public gateway is what
+# "allows all attached resources to communicate with the public internet", so a subnet has none.
+schemaVersion: "1"
+type: "component"
+id: "ibm-subnet"
+kind: "network-fabric"
+provider: "ibm"
+defaults:
+  managed: true
+  interconnect: "private"
+properties:
+  zonal:
+    type: "boolean"
+    default: true
+  internetAccess:
+    type: "enum"
+    values: ["none", "public-gateway", "floating-ip"]
+    default: "none"

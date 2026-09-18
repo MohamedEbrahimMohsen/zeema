@@ -1,0 +1,10 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Generic object (blob) store whose product the design does not name. No replication,
+# versioning, object lock or encryption is assumed.
+schemaVersion: "1"
+type: "component"
+id: "blob-store"
+kind: "object-store"
+provider: "default"
+defaults:
+  managed: false

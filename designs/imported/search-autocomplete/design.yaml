@@ -1,0 +1,51 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Imported 2026-09-08 from source/search-autocomplete.md, a transcription of figures 13-9
+# (data gathering service) and 13-11 (query service) of chapter 13 of "System Design
+# Interview - An Insider's Guide" by Alex Xu, pages 200-219. The two figures are the two
+# halves of one system and are imported as their union; Trie DB and Trie Cache appear in
+# both figures and are one node each.
+# Assumptions, all recorded in mapping.yaml and notes.md:
+#   - The book draws unbranded boxes, so the generic default components are used
+#     (observability-stack, container-worker, relational-database, nosql-store,
+#     cache-cluster, load-balancer-tier, container-service, web-browser, mobile-app).
+#   - Trie DB stays generic: the figure labels it "Trie DB". The prose offers MongoDB as one
+#     of two options (document store or key-value store) but the picture names no product.
+#   - The dashed outlines around Aggregators, Workers and API servers are the book's
+#     server-farm icon, not boundaries; only "User" is a group.
+#   - The offline pipeline arrows (Analytics Logs -> ... -> Trie DB -> Trie Cache) are
+#     modelled async: they are weekly batch flows, nobody waits on them.
+schemaVersion: "1"
+type: "design"
+id: "search-autocomplete"
+
+requirements:
+  latency:   { p95Ms: 100 }
+  traffic:   { peakMultiplier: 2 }
+  freshness: { maxSeconds: 604800 }
+
+groups:
+  - { id: "user", kind: "trust-zone", label: "User" }
+
+nodes:
+  - { id: "web-browser", component: "web-browser", label: "Web browser", group: "user" }
+  - { id: "mobile-app", component: "mobile-app", label: "Mobile app", group: "user" }
+  - { id: "load-balancer", component: "load-balancer-tier", label: "Load balancer", nfr: { rps: 24000, latencyP95Ms: 100 } }
+  - { id: "api-servers", component: "container-service", label: "API servers" }
+  - { id: "trie-cache", component: "cache-cluster", label: "Trie Cache" }
+  - { id: "trie-db", component: "nosql-store", label: "Trie DB" }
+  - { id: "analytics-logs", component: "observability-stack", label: "Analytics Logs", props: { signal: "logs" } }
+  - { id: "aggregators", component: "container-worker", label: "Aggregators", props: { trigger: "batch" } }
+  - { id: "aggregated-data", component: "relational-database", label: "Aggregated Data" }
+  - { id: "workers", component: "container-worker", label: "Workers", props: { trigger: "schedule", schedule: "weekly" } }
+
+edges:
+  - { from: "web-browser", to: "load-balancer", protocol: "https", mode: "sync" }
+  - { from: "mobile-app", to: "load-balancer", protocol: "https", mode: "sync" }
+  - { from: "load-balancer", to: "api-servers", protocol: "http", mode: "sync" }
+  - { from: "api-servers", to: "trie-cache", protocol: "cache", mode: "sync" }
+  - { from: "trie-cache", to: "trie-db", protocol: "nosql", mode: "sync" }
+  - { from: "analytics-logs", to: "aggregators", protocol: "file", mode: "async" }
+  - { from: "aggregators", to: "aggregated-data", protocol: "sql", mode: "async" }
+  - { from: "aggregated-data", to: "workers", protocol: "sql", mode: "async" }
+  - { from: "workers", to: "trie-db", protocol: "nosql", mode: "async", label: "Update weekly" }
+  - { from: "trie-db", to: "trie-cache", protocol: "nosql", mode: "async", label: "Weekly snapshot of DB" }

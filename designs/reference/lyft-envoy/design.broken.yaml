@@ -1,0 +1,232 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Lyft's Envoy service mesh, broken variant: the same mesh with the mistakes a team adopting it
+# makes. Services reach Aurora and Elasticsearch directly instead of through the sidecar, so the
+# mesh sees none of it; the Envoy-to-Envoy hop retries without breaking the circuit; the rate
+# limit counters run on a Redis with no eviction policy; the search index is dual-written from
+# application code with no change data capture behind it; and the feature pipeline windows by
+# event time with no watermark.
+#
+# This file MUST trip:
+#   - retry-without-adaptive-shedding             (api-service-sidecar -> pricing-service-sidecar retries with no circuitBreaker, and the target has no rate limiter in front of it)
+#   - cache-missing-eviction-policy               (ratelimit-redis declares no evictionPolicy)
+#   - business-updates-without-index-propagation  (api-service writes rides-db synchronously, a search index exists, no change-data-capture leaves rides-db)
+#   - derived-store-without-cdc-or-rebuild        (search-index is only written synchronously by api-service)
+#   - windowed-aggregation-without-watermark      (feature-pipeline windows by event time with no watermarkSeconds)
+# and MUST NOT trip:
+#   - credentials-without-rotation                (security.credentialRotationDays is still declared)
+#   - datastore-missing-backup                    (rides-db keeps backupEnabled and a retention period)
+#   - read-heavy-path-without-cache               (no traffic.readWriteRatio requirement, and the design has caches)
+#   - datastore-single-region, object-store-single-zone-with-durability-target
+#     (no availability.multiRegion and no durability.annualNines requirement)
+#   - sync-chain-too-deep                         (no latency.p95Ms requirement)
+#   - shared-dependency-without-redundancy, stateful-engine-pinned-to-single-zone
+#     (no availability.discoveryRedundant requirement and no availability-zone group)
+#   - fanout-inline-in-request-path, external-call-inline-without-durable-path
+#     (no app-server calls a worker or a third-party API synchronously)
+#   - queue-missing-dlq, retry-queue-without-dlq, pubsub-replay-required
+#     (the design has no queue and no pubsub-topic; the event bus is a replayable stream)
+#   - cache-as-primary-store-without-persistence, materialised-cache-without-rebuild-path
+#     (neither cache is materialised or used as a primary store)
+schemaVersion: "1"
+type: "design"
+id: "lyft-envoy"
+
+requirements:
+  availability:
+    degradedModeAllowed: true
+  consistency:
+    model: "ap"
+  messaging:
+    replay: true
+    orderingScope: "partition"
+  freshness:
+    maxSeconds: 60
+  isolation:
+    tenancy: "shared"
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "lyft-vpc", kind: "vpc", label: "AWS VPC" }
+  - { id: "public-edge", kind: "trust-zone", parent: "lyft-vpc", label: "public edge" }
+  - { id: "mesh", kind: "trust-zone", parent: "lyft-vpc", label: "service-to-service mesh" }
+  - { id: "control-plane", kind: "system", parent: "lyft-vpc", label: "discovery and control plane" }
+  - { id: "data", kind: "trust-zone", parent: "lyft-vpc", label: "datastores" }
+  - { id: "streaming", kind: "system", parent: "lyft-vpc", label: "event bus and streaming compute" }
+
+nodes:
+  - id: "lyft-mobile-app"
+    component: "mobile-app"
+    label: "Lyft rider and driver apps (Envoy Mobile)"
+    props: { platform: "mobile", os: "both", localCache: true, resendPolicy: "retry" }
+
+  - id: "edge-envoy"
+    component: "envoy-gateway"
+    label: "front Envoy"
+    group: "public-edge"
+    props: { tls: true, rateLimiting: true, protocol: "http", gatewayApi: false }
+    nfr: { rps: 5000000 }
+
+  - id: "api-service-sidecar"
+    component: "envoy-sidecar"
+    label: "sidecar Envoy (ingress 9211, egress 9001)"
+    group: "mesh"
+    props: { sidecar: true, xds: true, retries: true, circuitBreaking: true, controlPlanes: 1 }
+
+  - id: "api-service"
+    component: "container-service"
+    label: "Python microservice"
+    group: "mesh"
+    props: { orchestrator: "kubernetes", runtime: "python", autoscaling: true, criticality: "high" }
+
+  - id: "pricing-service-sidecar"
+    component: "envoy-sidecar"
+    label: "sidecar Envoy (ingress 9211, egress 9001)"
+    group: "mesh"
+    props: { sidecar: true, xds: true, retries: true, circuitBreaking: true, controlPlanes: 1 }
+
+  - id: "pricing-service"
+    component: "container-service"
+    label: "Go microservice"
+    group: "mesh"
+    props: { orchestrator: "kubernetes", runtime: "go", autoscaling: true, criticality: "high" }
+
+  - id: "rate-limit-service"
+    component: "envoy-ratelimit"
+    label: "global rate limit service"
+    group: "mesh"
+    props: { algorithm: "fixed-window", placement: "sidecar", scope: "global", backend: "redis", failMode: "open", distributed: true }
+
+  - id: "ratelimit-redis"
+    component: "redis"
+    label: "rate limit counters"
+    group: "data"
+    props: { hashing: "consistent", cluster: true, structure: "key-value" }
+
+  - id: "xds-control-plane"
+    component: "k8s-endpoints"
+    label: "discovery / xDS control plane (LDS, CDS, RDS, EDS)"
+    group: "control-plane"
+    props: { role: "discovery", replicated: true, consensus: "none", controlPlaneManaged: true }
+
+  - id: "kubernetes"
+    component: "kubernetes"
+    label: "Kubernetes clusters (cni-ipvlan-vpc-k8s)"
+    group: "control-plane"
+    props: { cniPlugin: "none", autoscaling: true, ingressController: false }
+
+  - id: "tracing-stack"
+    component: "zipkin"
+    label: "stats, logs and tracing sinks"
+    group: "control-plane"
+    props: { signal: "all", collectorMode: "push", independentOfMonitored: true }
+
+  - id: "rides-db"
+    component: "aurora"
+    label: "Aurora / RDS OLTP"
+    group: "data"
+    props: { engine: "postgresql", replication: "async", backupEnabled: true, backupRetentionDays: 7, encryptionAtRest: true }
+
+  - id: "sessions-store"
+    component: "dynamodb"
+    label: "DynamoDB"
+    group: "data"
+    props: { model: "key-value", streams: true, onDemandCapacity: true, consistency: "eventual", encryptionAtRest: true }
+
+  - id: "mongo-store"
+    component: "mongodb"
+    label: "MongoDB (L7 sniffed by Envoy)"
+    group: "data"
+    props: { model: "document", shardedCluster: true, replication: "single-region", backupEnabled: true, backupRetentionDays: 7 }
+
+  - id: "service-cache"
+    component: "redis"
+    label: "Redis behind the Envoy Redis proxy"
+    group: "data"
+    props: { evictionPolicy: "lru", hashing: "consistent", cluster: true, structure: "key-value" }
+
+  - id: "cdc-tailer"
+    component: "debezium"
+    label: "CDC tailers (DynamoDBTailer, AuroraTailer)"
+    group: "streaming"
+    props: { mode: "log-based", ordered: true, deployment: "server", schemaEvolution: true }
+
+  - id: "cdc-bus"
+    component: "kafka"
+    label: "Kafka event bus, one topic per source table"
+    group: "streaming"
+    props: { ordering: "per-key", delivery: "at-least-once", consumerGroups: true, storage: "persistent", acks: "all" }
+
+  - id: "cdc-adapter"
+    component: "container-worker"
+    label: "multi-tenant CDC adapter"
+    group: "streaming"
+    props: { trigger: "stream", orchestrator: "kubernetes", idempotent: true, rateControl: "aimd" }
+
+  - id: "search-index"
+    component: "elasticsearch"
+    label: "Elasticsearch sink"
+    group: "streaming"
+    props: { structure: "inverted", indexing: "async", shardingStrategy: "time" }
+
+  - id: "archive-firehose"
+    component: "aws-firehose"
+    label: "Kinesis Data Firehose"
+    group: "streaming"
+    props: { destination: "s3", serverSideEncryption: true }
+
+  - id: "stream-archive"
+    component: "s3"
+    label: "S3 (topic backup, Flink checkpoints and savepoints)"
+    group: "streaming"
+    props: { storageClass: "standard", versioning: true, zones: 3 }
+
+  - id: "feature-pipeline"
+    component: "beam"
+    label: "feature generation (Beam on Flink)"
+    group: "streaming"
+    props: { runner: "flink", sdk: "python", stateBackend: "external", checkpointIntervalSeconds: 60, windowing: "event-time" }
+
+  - id: "model-pipeline"
+    component: "flink"
+    label: "model execution"
+    group: "streaming"
+    props: { stateBackend: "external", checkpointIntervalSeconds: 60 }
+
+edges:
+  - { from: "lyft-mobile-app", to: "edge-envoy", protocol: "https", mode: "sync", label: "rider and driver traffic, TLS terminated at the edge" }
+  - { from: "edge-envoy", to: "api-service-sidecar", protocol: "http2", mode: "sync", label: "into the mesh on ingress port 9211" }
+  - { from: "edge-envoy", to: "xds-control-plane", protocol: "grpc", mode: "async", delivery: "at-least-once", label: "xDS subscription" }
+  - { from: "edge-envoy", to: "tracing-stack", protocol: "statsd", mode: "async", delivery: "at-most-once", label: "per-hop stats and traces" }
+  - { from: "api-service-sidecar", to: "api-service", protocol: "http", mode: "sync", label: "ingress listener to the local app port" }
+  - { from: "api-service", to: "api-service-sidecar", protocol: "http", mode: "sync", label: "egress via localhost:9001" }
+  - { from: "api-service-sidecar", to: "pricing-service-sidecar", protocol: "http2", mode: "sync", retryPolicy: "exponential-jitter", label: "Envoy to Envoy, retries on, circuit breaking left at the default" }
+  - { from: "pricing-service-sidecar", to: "pricing-service", protocol: "http", mode: "sync", label: "ingress listener to the local app port" }
+  - { from: "pricing-service", to: "pricing-service-sidecar", protocol: "http", mode: "sync", label: "egress via localhost:9001" }
+  - { from: "api-service-sidecar", to: "rate-limit-service", protocol: "grpc", mode: "sync", fallback: "static", label: "domain plus descriptors, allow or deny" }
+  - { from: "pricing-service-sidecar", to: "rate-limit-service", protocol: "grpc", mode: "sync", fallback: "static", label: "domain plus descriptors, allow or deny" }
+  - { from: "rate-limit-service", to: "ratelimit-redis", protocol: "redis", mode: "sync", label: "composed cache key per descriptor" }
+  - { from: "api-service-sidecar", to: "xds-control-plane", protocol: "grpc", mode: "async", delivery: "at-least-once", label: "eventually consistent, lossy by design" }
+  - { from: "pricing-service-sidecar", to: "xds-control-plane", protocol: "grpc", mode: "async", delivery: "at-least-once", label: "eventually consistent, lossy by design" }
+  - { from: "api-service-sidecar", to: "pricing-service-sidecar", protocol: "http", mode: "async", delivery: "at-most-once", label: "active health checks outrank discovery data" }
+  - { from: "xds-control-plane", to: "kubernetes", protocol: "kubernetes-watch", mode: "async", delivery: "at-least-once", label: "pod and endpoint events; offloaded-deploy pods filtered out" }
+  - { from: "xds-control-plane", to: "sessions-store", protocol: "dynamodb", mode: "sync", label: "discovery backing store" }
+  - { from: "api-service-sidecar", to: "mongo-store", protocol: "mongodb", mode: "sync", label: "L7 sniffed, Envoy produces the stats" }
+  - { from: "api-service-sidecar", to: "service-cache", protocol: "redis", mode: "sync", label: "Envoy Redis proxy" }
+  - { from: "api-service", to: "rides-db", protocol: "postgres", mode: "sync", label: "OLTP straight from the application, bypassing the sidecar" }
+  - { from: "api-service", to: "search-index", protocol: "http", mode: "sync", label: "index inline (dual write)" }
+  - { from: "api-service-sidecar", to: "tracing-stack", protocol: "statsd", mode: "async", delivery: "at-most-once", label: "identical stats at every hop" }
+  - { from: "pricing-service-sidecar", to: "sessions-store", protocol: "https", mode: "sync", label: "dedicated external egress port, for example localhost:9250" }
+  - { from: "pricing-service-sidecar", to: "tracing-stack", protocol: "statsd", mode: "async", delivery: "at-most-once", label: "identical stats at every hop" }
+  - { from: "api-service-sidecar", to: "cdc-bus", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "analytic event stream" }
+  - { from: "sessions-store", to: "cdc-tailer", protocol: "dynamodb-streams", mode: "async", delivery: "at-least-once", label: "DynamoDBTailer" }
+  - { from: "cdc-tailer", to: "cdc-bus", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "events as-is, one topic per source table" }
+  - { from: "cdc-bus", to: "cdc-adapter", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "one consumer group across every adapter pod" }
+  - { from: "cdc-adapter", to: "archive-firehose", protocol: "https", mode: "async", delivery: "at-least-once", label: "archive sink" }
+  - { from: "archive-firehose", to: "stream-archive", protocol: "https", mode: "async", delivery: "at-least-once", label: "topic backup, replay between two timestamps" }
+  - { from: "cdc-bus", to: "feature-pipeline", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "tens of millions of events per second" }
+  - { from: "feature-pipeline", to: "cdc-bus", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "feature topics" }
+  - { from: "cdc-bus", to: "model-pipeline", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "tens of thousands of events per minute, isolated cluster" }
+  - { from: "model-pipeline", to: "pricing-service-sidecar", protocol: "http2", mode: "async", delivery: "at-least-once", label: "sync decision variables to their services" }
+  - { from: "feature-pipeline", to: "stream-archive", protocol: "s3", mode: "async", delivery: "at-least-once", label: "checkpoints and savepoints" }
+  - { from: "model-pipeline", to: "stream-archive", protocol: "s3", mode: "async", delivery: "at-least-once", label: "checkpoints and savepoints" }

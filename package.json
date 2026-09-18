@@ -1,13 +1,26 @@
 {
-  "name": "arkore",
-  "version": "0.0.1",
-  "description": "Architecture as typed, queryable data: schema, curated components, and lint rules",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
+  "name": "zeema-monorepo",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Zeema: software architecture as typed, queryable data",
   "license": "MIT",
-  "type": "commonjs"
+  "type": "module",
+  "packageManager": "pnpm@12.3.4",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "validate": "pnpm --filter @zeema/catalogue validate",
+    "bundle": "pnpm --filter @zeema/catalogue bundle",
+    "lint": "biome check .",
+    "format": "biome format --write .",
+    "dev": "pnpm --filter @zeema/web dev",
+    "gate": "pnpm validate && pnpm test && pnpm lint"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.13",
+    "turbo": "2.10.12",
+    "typescript": "5.9.3",
+    "vitest": "5.0.0"
+  }
 }

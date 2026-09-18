@@ -1,0 +1,229 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture: the Monzo banking platform, clean variant. Roughly 2,500 Go
+# microservices on Kubernetes in AWS behind an in-house edge, Envoy sidecars as the RPC mesh,
+# one shared Cassandra cluster with a keyspace per service, Kafka carrying queue semantics with
+# per-consumer-group deadletter and retry topics, default-deny Calico networking, Envoy egress
+# gateways as the only route out, and Monzo Stand-in on GCP fed by an eventually consistent syncer.
+#
+# Fixes relative to monzo-platform.broken.yaml:
+#   - asynchronous work rides Kafka, which deadletters after maxAttempts into a per-consumer-group
+#     topic and can be replayed through a retry topic, instead of NSQ with no durability and no
+#     deadletter path
+#   - no service calls a third party inline: go-microservices reach card-network only through the
+#     Envoy egress gateway, which CoreDNS and NetworkPolicy gate
+#   - etcd is a replicated raft cluster, so the lock and discovery dependency every service shares
+#     is not a single instance
+#   - the design does not publish a p95 budget it cannot hold across a four-hop synchronous
+#     authorisation chain; the sources state no numeric latency SLO
+#   - money movements do not claim an exactly-once effect the at-least-once queue cannot deliver
+# This file MUST trip no rule.
+schemaVersion: "1"
+type: "design"
+id: "monzo-platform"
+
+requirements:
+  availability:
+    multiRegion: false
+    degradedModeAllowed: true
+  messaging:
+    replay: true
+    exactlyOnce: false
+  consistency:
+    model: "ap"
+  money:
+    zeroSum: true
+    pci: true
+  data:
+    ownershipExclusive: true
+  isolation:
+    tenancy: "shared"
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "primary-platform", kind: "system", label: "Primary Platform (AWS)" }
+  - { id: "public-edge", kind: "trust-zone", parent: "primary-platform", label: "edge" }
+  - { id: "pod-network", kind: "trust-zone", parent: "primary-platform", label: "Kubernetes pod network" }
+  - { id: "data-plane", kind: "trust-zone", parent: "primary-platform", label: "stateful tier outside Kubernetes" }
+  - { id: "stand-in-platform", kind: "system", label: "Monzo Stand-in (GCP)" }
+
+nodes:
+  - id: "monzo-app"
+    component: "mobile-app"
+    label: "Monzo app"
+    props: { platform: "mobile", os: "both", localCache: true }
+
+  - id: "staff-tooling"
+    component: "web-browser"
+    label: "customer operations tooling"
+    props: { platform: "web" }
+
+  - id: "aws-load-balancer"
+    component: "alb"
+    group: "public-edge"
+    label: "AWS load balancer"
+    props: { layer: "l7", healthChecks: true, managed: true, crossZone: true }
+
+  - id: "edge"
+    component: "envoy-gateway"
+    group: "public-edge"
+    label: "edge"
+    props: { protocol: "http", tls: true }
+
+  - id: "internal-edge"
+    component: "envoy-gateway"
+    group: "public-edge"
+    label: "internal edge"
+    props: { protocol: "http", tls: true }
+
+  - id: "envoy-sidecar"
+    component: "envoy-sidecar"
+    group: "pod-network"
+    label: "Envoy sidecar (was linkerd daemonset)"
+    props: { sidecar: true, retries: true, circuitBreaking: true, xds: true }
+
+  - id: "go-microservices"
+    component: "container-service"
+    group: "pod-network"
+    label: "~2,500 Go microservices"
+    props: { orchestrator: "kubernetes", stateless: true, autoscaling: true, ownsData: true }
+
+  - id: "payment-service"
+    component: "container-service"
+    group: "pod-network"
+    label: "card payment services"
+    props: { orchestrator: "kubernetes", stateless: true, criticality: "high" }
+
+  - id: "account-service"
+    component: "container-service"
+    group: "pod-network"
+    label: "account service"
+    props: { orchestrator: "kubernetes", stateless: true, criticality: "high" }
+
+  - id: "fraud-service"
+    component: "container-service"
+    group: "pod-network"
+    label: "fraud and financial crime services"
+    props: { orchestrator: "kubernetes", stateless: true }
+
+  - id: "sca-service"
+    component: "container-service"
+    group: "pod-network"
+    label: "Strong Customer Authentication services"
+    props: { orchestrator: "kubernetes", stateless: true }
+
+  - id: "ledger-service"
+    component: "double-entry-ledger"
+    group: "pod-network"
+    label: "ledger service"
+    props: { doubleEntry: true, appendOnly: true, multiCurrency: true, indexConsistency: "eventual" }
+
+  - id: "queue-consumer"
+    component: "container-worker"
+    group: "pod-network"
+    label: "Kafka queue library consumers (400+ services)"
+    props: { trigger: "stream", orchestrator: "kubernetes", rateControl: "fixed" }
+
+  - id: "egress-gateway"
+    component: "envoy"
+    group: "pod-network"
+    label: "Envoy egress gateway"
+    props: { layer: "l4", healthChecks: true }
+
+  - id: "calico-policy"
+    component: "k8s-network-policy"
+    group: "pod-network"
+    label: "Calico NetworkPolicy generated by rpcmap"
+    props: { defaultAction: "deny", policyScope: "ingress-egress", ruleCount: 9300, logging: true }
+
+  - id: "prometheus"
+    component: "prometheus"
+    group: "pod-network"
+    label: "Prometheus and Grafana"
+    props: { signal: "metrics", collectorMode: "pull" }
+
+  - id: "cassandra"
+    component: "cassandra"
+    group: "data-plane"
+    label: "shared Cassandra cluster, one keyspace per service"
+    props: { model: "wide-column", consistency: "tunable", replication: "leaderless", replicationFactor: 3, quorumReads: 2, quorumWrites: 2, backupEnabled: true }
+    nfr: { consistency: "eventual" }
+
+  - id: "etcd"
+    component: "etcd"
+    group: "data-plane"
+    label: "etcd behind the lock service"
+    props: { role: "lock", consensus: "raft", replicated: true }
+
+  - id: "kafka"
+    component: "kafka"
+    group: "data-plane"
+    label: "Kafka: replicated commit log"
+    props: { delivery: "at-least-once", ordering: "per-key", storage: "persistent", consumerGroups: true }
+
+  - id: "deadletter-topics"
+    component: "kafka"
+    group: "data-plane"
+    label: "deadletter topic per consumer group"
+    props: { delivery: "at-least-once", storage: "persistent", consumerGroups: true }
+
+  - id: "retry-topics"
+    component: "kafka"
+    group: "data-plane"
+    label: "retry topic per consumer group"
+    props: { delivery: "at-least-once", storage: "persistent", consumerGroups: true }
+
+  - id: "stand-in-services"
+    component: "container-service"
+    group: "stand-in-platform"
+    label: "Monzo Stand-in: 18 services"
+    props: { orchestrator: "kubernetes", stateless: true, instances: 18, criticality: "high" }
+
+  - id: "stand-in-syncer"
+    component: "container-worker"
+    group: "stand-in-platform"
+    label: "Stand-in Data Syncer"
+    props: { trigger: "stream", idempotent: true, orchestrator: "kubernetes" }
+
+  - id: "stand-in-store"
+    component: "nosql-store"
+    group: "stand-in-platform"
+    label: "Stand-in datastore"
+    props: { consistency: "eventual" }
+    nfr: { consistency: "eventual" }
+
+  - id: "card-network"
+    component: "card-network"
+    label: "Mastercard and Faster Payments"
+    props: { handlesMoney: true, dualMessage: true }
+
+edges:
+  - { from: "monzo-app", to: "aws-load-balancer", protocol: "https", mode: "sync", label: "app traffic" }
+  - { from: "aws-load-balancer", to: "edge", protocol: "http", mode: "sync" }
+  - { from: "staff-tooling", to: "internal-edge", protocol: "https", mode: "sync", label: "customer operations tooling" }
+  - { from: "edge", to: "envoy-sidecar", protocol: "http", mode: "sync", label: "every hop goes through the local Envoy" }
+  - { from: "internal-edge", to: "envoy-sidecar", protocol: "http", mode: "sync" }
+  - { from: "envoy-sidecar", to: "go-microservices", protocol: "http", mode: "sync", label: "fan-out of 20+ services per app request" }
+  - { from: "envoy-sidecar", to: "payment-service", protocol: "http", mode: "sync", label: "~80 services touched per card payment" }
+  - { from: "card-network", to: "edge", protocol: "scheme", mode: "sync", label: "authorisation request in, accept or decline out" }
+  - { from: "payment-service", to: "account-service", protocol: "http", mode: "sync", label: "account type lookup decides the route" }
+  - { from: "payment-service", to: "fraud-service", protocol: "http", mode: "sync", label: "conditional screening" }
+  - { from: "payment-service", to: "sca-service", protocol: "http", mode: "sync", label: "SCA check where legislation requires it" }
+  - { from: "payment-service", to: "ledger-service", protocol: "http", mode: "sync", idempotent: true, label: "debit sender, credit recipient" }
+  - { from: "ledger-service", to: "cassandra", protocol: "cql", mode: "sync", label: "quorum write, 2 of 3" }
+  - { from: "go-microservices", to: "cassandra", protocol: "cql", mode: "sync", label: "one keyspace per service; index table plus canonical table" }
+  - { from: "go-microservices", to: "etcd", protocol: "http", mode: "sync", label: "distributed locks, quotas, rate limits" }
+  - { from: "go-microservices", to: "kafka", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "publish events" }
+  - { from: "kafka", to: "queue-consumer", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "concurrent consumption inside a partition" }
+  - { from: "queue-consumer", to: "deadletter-topics", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "after maxAttempts" }
+  - { from: "deadletter-topics", to: "retry-topics", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "operator CLI: replay or discard" }
+  - { from: "retry-topics", to: "queue-consumer", protocol: "kafka", mode: "async", delivery: "at-least-once", idempotent: true, label: "redeliver to the failing consumer group only" }
+  - { from: "go-microservices", to: "egress-gateway", protocol: "tcp", mode: "sync", label: "CoreDNS hijacks the external lookup" }
+  - { from: "egress-gateway", to: "card-network", protocol: "tls", mode: "sync", label: "gateway resolves the real destination and forwards" }
+  - { from: "calico-policy", to: "go-microservices", protocol: "networkpolicy", mode: "sync", label: "default deny; about 6 allowed callees per service" }
+  - { from: "go-microservices", to: "prometheus", protocol: "http", mode: "async", label: "scrape: HTTP, Cassandra and lock metrics" }
+  - { from: "kafka", to: "stand-in-syncer", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "Primary Platform events" }
+  - { from: "stand-in-syncer", to: "stand-in-store", protocol: "db", mode: "async", delivery: "at-least-once", idempotent: true, label: "Correlation IDs prevent double counting" }
+  - { from: "stand-in-services", to: "stand-in-store", protocol: "db", mode: "sync", label: "independent database, queue and locking" }
+  - { from: "monzo-app", to: "stand-in-services", protocol: "https", mode: "sync", fallback: "degraded", label: "app polls both platforms, simplified UI when Stand-in is live" }
+  - { from: "card-network", to: "stand-in-services", protocol: "scheme", mode: "sync", label: "direct when the Primary Platform is fully unavailable" }

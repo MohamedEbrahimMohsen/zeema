@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# YIDA: "a low-code development platform to make work easier", hosted by Alibaba Cloud, where applications
+# are assembled visually from components instead of written ("YiDA, Simplifying Application Building"). That
+# page states YIDA builds three application types - forms, approval processes and reports - from 80+ prebuilt
+# components and 100+ system connectors, and integrates with DingTalk. The platform hosts and runs the
+# applications, so managed is true.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-yida"
+kind: "app-server"
+provider: "alibabacloud"
+defaults:
+  managed: true
+properties:
+  applicationType:
+    type: "enum"
+    values: ["form", "process", "report"]
+  dingtalkIntegration:
+    type: "boolean"
+    default: true

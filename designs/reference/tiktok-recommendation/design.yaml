@@ -1,0 +1,155 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture 10, clean variant: the Monolith online-training loop behind the TikTok feed —
+# actions and features logged to Kafka, joined in Flink against an on-disk store for late labels,
+# trained into a parameter server that a sync worker pushes to the serving side every minute —
+# beside ByteGraph, the three-layer graph database that holds the social and interaction graphs.
+#
+# Fixes relative to tiktok-recommendation.broken.yaml:
+#   - flink-joiner parks features that outlive the memory window in late-label-store and sidelines
+#     late data instead of dropping it, so a label arriving hours later still produces a sample
+#   - param-sync is a real worker: it reads touched sparse keys from training-ps every minute and
+#     pushes them to serving-ps, so serving-ps is rebuildable and is not the only copy of a parameter
+#   - training-ps is the system of record for parameters and is snapshotted daily into snapshot-store
+#   - bytegraph-kv and its remote replica declare last-writer-wins, the conflict policy the ByteGraph
+#     paper states, instead of letting multi-leader writes reconcile by accident
+# This file MUST trip no rule.
+schemaVersion: "1"
+type: "design"
+id: "tiktok-recommendation"
+
+requirements:
+  availability:
+    multiRegion: true
+    regions: 2
+  consistency:
+    model: "ap"
+  messaging:
+    replay: true
+  freshness:
+    maxSeconds: 60
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "region-a", kind: "region" }
+  - { id: "region-b", kind: "region" }
+  - { id: "serving", kind: "trust-zone", parent: "region-a" }
+  - { id: "training", kind: "trust-zone", parent: "region-a" }
+  - { id: "bytegraph-primary", kind: "system", parent: "region-a" }
+  - { id: "bytegraph-remote", kind: "system", parent: "region-b" }
+
+nodes:
+  - id: "mobile-client"
+    component: "mobile-app"
+    label: "TikTok / Douyin app"
+    props: { platform: "mobile", os: "both", localCache: true }
+
+  - id: "model-server"
+    component: "tensorflow-serving"
+    label: "Monolith model server"
+    group: "serving"
+    props: { training: "online", inputs: "live", embeddingSyncMinutes: 1, snapshotToObjectStore: false, batching: true }
+
+  - id: "serving-ps"
+    component: "cache-cluster"
+    label: "Serving parameter server"
+    group: "serving"
+    props: { structure: "key-value", evictionPolicy: "ttl", invalidation: "event", materialised: true, usedAsPrimaryStore: false, persistence: false }
+
+  - id: "training-worker"
+    component: "container-worker"
+    label: "Monolith training worker"
+    group: "training"
+    props: { trigger: "stream", idempotent: false, accelerator: "gpu" }
+
+  - id: "param-sync"
+    component: "container-worker"
+    label: "Parameter synchroniser"
+    group: "training"
+    props: { trigger: "schedule", schedule: "every minute", idempotent: true, rateControl: "fixed" }
+
+  - id: "flink-joiner"
+    component: "flink"
+    label: "Online feature joiner"
+    group: "training"
+    props: { windowing: "none", stateBackend: "external", lateDataPolicy: "sideline", exactlyOnce: false }
+
+  - id: "kafka-actions"
+    component: "kafka"
+    label: "User action log"
+    group: "training"
+    props: { delivery: "at-least-once", ordering: "per-key", storage: "persistent" }
+
+  - id: "kafka-features"
+    component: "kafka"
+    label: "Feature log"
+    group: "training"
+    props: { delivery: "at-least-once", ordering: "per-key", storage: "persistent" }
+
+  - id: "kafka-training"
+    component: "kafka"
+    label: "Joined training examples"
+    group: "training"
+    props: { delivery: "at-least-once", ordering: "per-key", storage: "persistent" }
+
+  - id: "training-ps"
+    component: "nosql-store"
+    label: "Training parameter server"
+    group: "training"
+    props: { model: "key-value", consistency: "eventual", replication: "single-region", backupEnabled: true, backupRetentionDays: 1 }
+
+  - id: "late-label-store"
+    component: "nosql-store"
+    label: "On-disk key-value storage"
+    group: "training"
+    props: { model: "key-value", consistency: "strong", replication: "single-region" }
+
+  - id: "snapshot-store"
+    component: "blob-store"
+    label: "Daily parameter snapshots"
+    group: "training"
+    props: { tier: "warm", versioning: true, checksumOnWrite: true }
+
+  - id: "bytegraph-bge"
+    component: "graph-store"
+    label: "ByteGraph BGE"
+    group: "bytegraph-primary"
+    props: { inMemory: false, crossRegionConsistency: "last-writer-wins-hlc" }
+
+  - id: "bytegraph-bgs"
+    component: "graph-store"
+    label: "ByteGraph BGS"
+    group: "bytegraph-primary"
+    props: { inMemory: true, masterPerShard: true, crossRegionConsistency: "last-writer-wins-hlc" }
+
+  - id: "bytegraph-kv"
+    component: "nosql-store"
+    label: "ByteGraph persistent KV"
+    group: "bytegraph-primary"
+    props: { model: "key-value", consistency: "eventual", replication: "multi-region-multi-leader", conflictResolution: "last-writer-wins", tombstoneTtlDays: 7, backupEnabled: true, backupRetentionDays: 7 }
+
+  - id: "bytegraph-kv-remote"
+    component: "nosql-store"
+    label: "ByteGraph persistent KV, second region"
+    group: "bytegraph-remote"
+    props: { model: "key-value", consistency: "eventual", replication: "multi-region-multi-leader", conflictResolution: "last-writer-wins", tombstoneTtlDays: 7, backupEnabled: true, backupRetentionDays: 7 }
+
+edges:
+  - { from: "mobile-client", to: "model-server", protocol: "grpc", mode: "sync", label: "feed request" }
+  - { from: "model-server", to: "serving-ps", protocol: "grpc", mode: "sync", batched: true, label: "sparse embedding lookup" }
+  - { from: "model-server", to: "bytegraph-bge", protocol: "grpc", mode: "sync", label: "social and interaction lookups" }
+  - { from: "mobile-client", to: "kafka-actions", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "watch, like, follow" }
+  - { from: "model-server", to: "kafka-features", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "features of the served request" }
+  - { from: "kafka-actions", to: "flink-joiner", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "labels, keyed by request id" }
+  - { from: "kafka-features", to: "flink-joiner", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "features, keyed by request id" }
+  - { from: "flink-joiner", to: "late-label-store", protocol: "rocksdb", mode: "sync", idempotent: true, label: "park features waiting for a late label" }
+  - { from: "late-label-store", to: "flink-joiner", protocol: "rocksdb", mode: "sync", label: "re-read when the label finally arrives" }
+  - { from: "flink-joiner", to: "kafka-training", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "joined training example" }
+  - { from: "kafka-training", to: "training-worker", protocol: "kafka", mode: "async", delivery: "at-least-once" }
+  - { from: "training-worker", to: "training-ps", protocol: "grpc", mode: "sync", timeoutMs: 1000, retryPolicy: "exponential-jitter", circuitBreaker: true, label: "apply sparse and dense gradients" }
+  - { from: "param-sync", to: "training-ps", protocol: "grpc", mode: "sync", timeoutMs: 1000, batched: true, label: "read touched sparse keys" }
+  - { from: "param-sync", to: "serving-ps", protocol: "grpc", mode: "async", delivery: "at-least-once", batched: true, idempotent: true, label: "sparse push per minute, dense per day" }
+  - { from: "training-ps", to: "snapshot-store", protocol: "https", mode: "async", delivery: "at-least-once", label: "daily snapshot" }
+  - { from: "bytegraph-bge", to: "bytegraph-bgs", protocol: "grpc", mode: "sync", label: "two-phase commit, predicate pushdown" }
+  - { from: "bytegraph-bgs", to: "bytegraph-kv", protocol: "grpc", mode: "sync", label: "edge-tree pages and write-ahead log" }
+  - { from: "bytegraph-kv", to: "bytegraph-kv-remote", protocol: "replication", mode: "async", delivery: "at-least-once", label: "multi-leader, last-write-wins on hybrid logical clocks" }

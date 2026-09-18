@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Cloud Monitoring: metric collection and alerting for IBM Cloud and Kubernetes workloads.
+# Agents deployed on hosts and clusters "collect and forward data to an Monitoring instance"
+# ("Getting started with IBM Cloud Monitoring"), so collection is push. "Managing data" states
+# that data is retained at 1-day resolution for 15 months; finer resolutions are kept for
+# shorter periods, so a single retentionDays figure is not set.
+schemaVersion: "1"
+type: "component"
+id: "ibm-cloud-monitoring"
+kind: "monitoring"
+provider: "ibm"
+defaults:
+  managed: true
+  signal: "metrics"
+  collectorMode: "push"
+properties:
+  plan:
+    type: "enum"
+    values: ["lite", "graduated-tier"]
+  maxRetentionMonths:
+    type: "integer"
+    default: 15

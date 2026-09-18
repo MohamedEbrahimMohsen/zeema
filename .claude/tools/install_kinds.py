@@ -10,13 +10,13 @@ docs/catalogue-v1.md. Existing kinds are skipped. Run icons.mjs afterwards.
 import json, re, sys
 from pathlib import Path
 import yaml
-import arkore_locale
+import zeema_locale
 
 ROOT = Path(__file__).resolve().parents[2]
 TOOLS = Path(__file__).resolve().parent
 GLYPHS = TOOLS / "kindglyphs-extra.mjs"
 CAT = ROOT / "docs" / "catalogue-v1.md"
-CATEGORIES = set(arkore_locale.CATEGORIES)
+CATEGORIES = set(zeema_locale.CATEGORIES)
 
 def q(s): return '"' + str(s).replace('"', "'") + '"'
 def val(v):
@@ -26,7 +26,7 @@ def val(v):
 
 def install(files):
     glyphs = GLYPHS.read_text(encoding="utf-8"); cat = CAT.read_text(encoding="utf-8")
-    locale = arkore_locale.load(); installed, skipped = [], []
+    locale = zeema_locale.load(); installed, skipped = [], []
     for f in files:
         for kid, spec in (yaml.safe_load(Path(f).read_text(encoding="utf-8")) or {}).items():
             kp = ROOT / "kinds" / (kid + ".yaml")
@@ -60,7 +60,7 @@ def install(files):
                 cat = cat[:m.end()] + row + cat[m.end():]
             installed.append(kid)
     GLYPHS.write_text(glyphs, encoding="utf-8", newline="\n"); CAT.write_text(cat, encoding="utf-8", newline="\n")
-    arkore_locale.write(locale)
+    zeema_locale.write(locale)
     return installed, skipped
 
 if __name__ == "__main__":

@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OUTSCALE Internet Service: the component you attach to a Net so its VMs talk directly to the
+# internet ("About Internet Services"). That page states the documented behaviour behind the
+# defaults: it is a public edge that network-address-translates between the private IPs of VMs
+# and their public IPs, it needs a route and a public IP per VM to carry traffic, and the MTU
+# towards the internet is limited to 1500 bytes.
+schemaVersion: "1"
+type: "component"
+id: "outscale-internet-service"
+kind: "network-fabric"
+provider: "outscale"
+defaults:
+  managed: true
+  interconnect: "public"
+  multicast: false
+  overlay: false
+properties:
+  attachedToNet:
+    type: "boolean"
+    default: true
+  publicIpPerVmRequired:
+    type: "boolean"
+    default: true
+  networkAddressTranslation:
+    type: "boolean"
+    default: true
+  mtuBytes:
+    type: "integer"
+    default: 1500

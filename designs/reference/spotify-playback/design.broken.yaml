@@ -1,0 +1,194 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture: Spotify playback and event delivery, broken variant. The same system
+# with the mistakes the Spotify posts describe: topics that keep nothing, so a failed hour cannot
+# be re-read; an event-time ETL with no watermark, the "watermark unpredictability" of part III;
+# an access point that autoscales in without draining its sockets; a single-provider SRV lookup
+# that every client and every service goes through; and a relational store with no backup and no
+# stated credential rotation. The mobile client is back to the fire-and-forget sender the 2021
+# post replaced.
+#
+# This file MUST trip:
+#   - pubsub-replay-required                     (event-topics keep no history while the design asks for reprocessing)
+#   - windowed-aggregation-without-watermark     (event-etl windows by event time with nothing to close the hour)
+#   - stateful-websocket-scale-in-without-drain  (access-point scales in on top of live connections)
+#   - shared-dependency-without-redundancy       (service-discovery has one provider under a redundant-discovery promise)
+#   - datastore-missing-backup                   (user-db keeps no copy and states no retention)
+#   - credentials-without-rotation               (the design holds data, names no rotation period and has no key vault)
+# and MUST NOT trip:
+#   - cache-missing-eviction-policy              (object-cache still declares lru)
+#   - multi-leader-store-without-conflict-policy (metadata-store still declares last-writer-wins)
+#   - read-heavy-path-without-cache              (no read/write ratio is claimed, and a cache exists)
+#   - object-store-single-zone-with-durability-target (no durability target is claimed)
+#   - queue-missing-dlq, retry-queue-without-dlq, retry-without-backoff (no queue in this design)
+#   - derived-store-without-cdc-or-rebuild, business-updates-without-index-propagation (no search index)
+#   - sync-chain-too-deep                        (the access point is a realtime gateway, not an api-gateway)
+#   - shared-host-per-channel-without-isolation, reconnect-stampede-without-guard (no heavy-tail claim,
+#     and the access point talks to DNS, not to a coordination service)
+#   - stateful-node-without-zone-redundancy, cross-cell-call (no zone or cell boundaries are drawn)
+#   - shared-worker-pool-across-queues           (isolation is per event type, not per queue)
+schemaVersion: "1"
+type: "design"
+id: "spotify-playback"
+
+requirements:
+  availability:
+    multiRegion: true
+    discoveryRedundant: true
+    degradedModeAllowed: true
+  messaging:
+    replay: true
+  correctness:
+    reproducible: true
+  data:
+    lossDetection: true
+  isolation:
+    perEventType: true
+  freshness:
+    maxSeconds: 3600
+
+groups:
+  - { id: "edge", kind: "trust-zone", label: "Edge" }
+  - { id: "serving-platform", kind: "system", label: "Serving platform" }
+  - { id: "event-delivery", kind: "system", label: "Event delivery" }
+  - { id: "data-platform", kind: "system", label: "Data platform" }
+
+nodes:
+  - id: "spotify-mobile"
+    component: "mobile-app"
+    label: "Mobile client"
+    props: { platform: "mobile", os: "both", localCache: true, offlineCapable: false, persistentConnection: true, resendPolicy: "none" }
+
+  - id: "spotify-web"
+    component: "web-browser"
+    label: "Web player"
+    props: { platform: "web", localCache: true, persistentConnection: true, resendPolicy: "none" }
+
+  - id: "access-point"
+    component: "websocket-gateway"
+    group: "edge"
+    label: "Access Point"
+    props: { protocol: "websocket", stateful: true, autoscaling: true, drainOnScaleIn: false, stampedeGuard: true, channelAssignment: "hash" }
+
+  - id: "service-discovery"
+    component: "dns-resolver"
+    group: "edge"
+    label: "DNS SRV service discovery"
+    props: { redundantProviders: false, healthChecked: false }
+
+  - id: "audio-cdn"
+    component: "content-delivery-network"
+    group: "edge"
+    label: "Audio CDN"
+    props: { caching: true, tls: true, originShield: false }
+
+  - id: "microservices"
+    component: "container-service"
+    group: "serving-platform"
+    label: "Squad-owned microservices"
+    props: { stateless: true, criticality: "high", autoscaling: true }
+
+  - id: "metadata-store"
+    component: "cassandra"
+    group: "serving-platform"
+    props: { model: "wide-column", consistency: "tunable", replication: "multi-region-multi-leader", conflictResolution: "last-writer-wins", backupEnabled: true, backupRetentionDays: 30, encryptionAtRest: true }
+
+  - id: "user-db"
+    component: "postgres"
+    group: "serving-platform"
+    props: { replication: "async", backupEnabled: false, encryptionAtRest: false, managed: false }
+
+  - id: "object-cache"
+    component: "memcached"
+    group: "serving-platform"
+    props: { evictionPolicy: "lru", hashing: "consistent", invalidation: "ttl" }
+
+  - id: "audio-store"
+    component: "blob-store"
+    group: "serving-platform"
+    label: "Audio storage"
+    props: { tier: "hot", encryptionAtRest: true }
+
+  - id: "event-delivery-service"
+    component: "container-service"
+    group: "event-delivery"
+    label: "Event Delivery Service"
+    props: { stateless: true, autoscaling: true, orchestrator: "kubernetes", criticality: "high", ownsData: false }
+    nfr: { rps: 8000000 }
+
+  - id: "schema-registry"
+    component: "google-pubsub-schema"
+    group: "event-delivery"
+    label: "Avro schema registry"
+    props: { schemaType: "avro", compatibility: "none", enforced: true }
+
+  - id: "event-topics"
+    component: "google-pubsub"
+    group: "event-delivery"
+    label: "One topic per event type"
+    props: { delivery: "at-least-once", replay: false, topicPerEventType: true, ordering: "none" }
+    nfr: { rps: 8000000 }
+
+  - id: "event-etl"
+    component: "google-dataflow"
+    group: "event-delivery"
+    label: "Per event type ETL (Scio on Dataflow)"
+    props: { windowing: "event-time", lateDataPolicy: "drop", exactlyOnce: false, streamingEngine: true }
+
+  - id: "raw-datasets"
+    component: "gcs"
+    group: "data-platform"
+    label: "Hourly datasets on Cloud Storage"
+    props: { storageClass: "standard", locationType: "region", versioning: false }
+
+  - id: "warehouse"
+    component: "bigquery"
+    group: "data-platform"
+    props: { format: "columnar" }
+
+  - id: "batch-pipelines"
+    component: "container-worker"
+    group: "data-platform"
+    label: "38,000 scheduled pipelines"
+    props: { trigger: "schedule", orchestrator: "kubernetes", idempotent: false }
+
+  - id: "streaming-pipelines"
+    component: "flink"
+    group: "data-platform"
+    label: "Flink streaming pipelines"
+    props: { stateBackend: "memory" }
+
+  - id: "liveness-monitoring"
+    component: "observability-stack"
+    group: "data-platform"
+    label: "Liveness and watermark lag monitoring"
+    props: { signal: "metrics", independentOfMonitored: false, alertGrouping: false }
+
+edges:
+  - { from: "spotify-mobile", to: "service-discovery", protocol: "dns", mode: "sync", label: "SRV lookup for the access point" }
+  - { from: "spotify-web", to: "service-discovery", protocol: "dns", mode: "sync", label: "SRV lookup for the access point" }
+  - { from: "spotify-mobile", to: "access-point", protocol: "hermes", mode: "sync", label: "persistent connection to the nearest datacentre" }
+  - { from: "spotify-web", to: "access-point", protocol: "https", mode: "sync", label: "persistent connection to the nearest datacentre" }
+  - { from: "access-point", to: "service-discovery", protocol: "dns", mode: "sync", label: "SRV lookup for the target service" }
+  - { from: "access-point", to: "microservices", protocol: "hermes", mode: "sync", label: "request-reply routing" }
+  - { from: "microservices", to: "service-discovery", protocol: "dns", mode: "sync", label: "service to service lookup" }
+  - { from: "microservices", to: "metadata-store", protocol: "cql", mode: "sync", label: "metadata, playlists" }
+  - { from: "microservices", to: "user-db", protocol: "postgres", mode: "sync" }
+  - { from: "microservices", to: "object-cache", protocol: "memcached", mode: "sync" }
+  - { from: "spotify-mobile", to: "audio-cdn", protocol: "https", mode: "sync", label: "audio" }
+  - { from: "spotify-web", to: "audio-cdn", protocol: "https", mode: "sync", label: "audio" }
+  - { from: "audio-cdn", to: "audio-store", protocol: "https", mode: "sync", label: "origin fetch" }
+  - { from: "spotify-mobile", to: "event-delivery-service", protocol: "https", mode: "sync", batched: false, label: "fire and forget, no resend" }
+  - { from: "spotify-web", to: "event-delivery-service", protocol: "https", mode: "sync", batched: false, label: "fire and forget, no resend" }
+  - { from: "microservices", to: "event-delivery-service", protocol: "https", mode: "async", delivery: "at-most-once", label: "service side events" }
+  - { from: "event-delivery-service", to: "schema-registry", protocol: "http", mode: "sync", timeoutMs: 500, label: "validate the event type" }
+  - { from: "event-delivery-service", to: "event-topics", protocol: "pubsub", mode: "async", delivery: "at-least-once", label: "publish to the topic of this event type" }
+  - { from: "event-topics", to: "event-etl", protocol: "pubsub", mode: "async", delivery: "at-least-once", label: "pull, one job per event type" }
+  - { from: "event-etl", to: "schema-registry", protocol: "http", mode: "sync", timeoutMs: 500, label: "Avro schema for this event type" }
+  - { from: "event-etl", to: "raw-datasets", protocol: "gcs", mode: "async", label: "hourly buckets by event time" }
+  - { from: "event-etl", to: "warehouse", protocol: "bigquery", mode: "async", label: "load the closed hour" }
+  - { from: "event-etl", to: "liveness-monitoring", protocol: "http", mode: "async", delivery: "at-most-once", label: "watermark lag per event type" }
+  - { from: "event-topics", to: "streaming-pipelines", protocol: "pubsub", mode: "async", delivery: "at-least-once", label: "streaming jobs" }
+  - { from: "raw-datasets", to: "batch-pipelines", protocol: "gcs", mode: "async", label: "scheduled read of the raw hour" }
+  - { from: "warehouse", to: "batch-pipelines", protocol: "bigquery", mode: "async", label: "scheduled SQL" }
+  - { from: "batch-pipelines", to: "warehouse", protocol: "bigquery", mode: "async", label: "derived datasets" }
+  - { from: "streaming-pipelines", to: "warehouse", protocol: "bigquery", mode: "async", label: "streaming output" }

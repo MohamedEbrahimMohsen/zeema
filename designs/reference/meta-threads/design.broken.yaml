@@ -1,0 +1,229 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture, broken variant: the same Threads stack, but the onboarding follow
+# import is wired as push fan-out straight from the worker pool onto the social graph, the
+# Central Rate Limiter is gone, and failed function calls land in a side retry queue that the
+# same pool also drains.
+#
+# This file MUST trip:
+#   - push-fanout-without-celebrity-path   (xfaas-worker pushes with no fanoutThreshold; tao is a graph-database)
+#   - retry-without-adaptive-shedding      (xfaas-worker -> tao retries with no circuit breaker and nothing limits tao)
+#   - shared-worker-pool-across-queues     (xfaas-worker drains durableq and retry-queue while isolation.perQueue is true)
+#   - retry-without-backoff                (retry-queue declares no backoff)
+#   - retry-queue-without-dlq              (retry-queue has no dead-letter queue)
+# and MUST NOT trip:
+#   - queue-missing-dlq                    (neither queue has an async in-edge; both are filled synchronously)
+#   - datastore-missing-backup, datastore-single-region (mysql is backed up and replicated synchronously by Raft)
+#   - read-heavy-path-without-cache, sync-chain-too-deep (no readWriteRatio and no p95 latency target are stated)
+#   - credentials-without-rotation         (the design declares a 90-day rotation period)
+#   - cache-as-primary-store-without-persistence, materialised-cache-without-rebuild-path (no cache node)
+#   - derived-store-without-cdc-or-rebuild, business-updates-without-index-propagation (no search-index node)
+#   - multi-leader-store-without-conflict-policy (zippydb is multi-region single-leader)
+#   - stateful-node-without-zone-redundancy, stateful-engine-pinned-to-single-zone (no availability-zone groups)
+#   - cross-cell-call, shared-dependency-without-redundancy, pubsub-replay-required (no cells, no discovery requirement, no replay requirement)
+schemaVersion: "1"
+type: "design"
+id: "meta-threads"
+
+requirements:
+  availability:
+    multiRegion: true
+  consistency:
+    model: "ap"
+    readAfterWrite: true
+    quorumScope: "region"
+  messaging:
+    orderingScope: "partition"
+  isolation:
+    perQueue: true
+    tenancy: "shared"
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "meta-region", kind: "region", label: "Meta datacenter region" }
+  - { id: "product-tier", kind: "trust-zone", parent: "meta-region", label: "Instagram-shared product tier" }
+  - { id: "data-plane", kind: "trust-zone", parent: "meta-region", label: "Meta internal data plane" }
+  - { id: "async-platform", kind: "system", parent: "meta-region", label: "Async / XFaaS" }
+  - { id: "fediverse", kind: "trust-zone", label: "Fediverse (external ActivityPub servers)" }
+
+nodes:
+  - id: "threads-app"
+    component: "mobile-app"
+    label: "Threads iOS / Android"
+    props: { os: "both", platform: "mobile", localCache: true }
+
+  - id: "django-api"
+    component: "container-service"
+    label: "Threads / Instagram Django tier"
+    group: "product-tier"
+    props: { stateless: true, runtime: "python-django", criticality: "high" }
+
+  - id: "meta-monolith"
+    component: "container-service"
+    label: "Meta monolith (HHVM / Hack, GraphQL)"
+    group: "product-tier"
+    props: { stateless: true, runtime: "hhvm-hack" }
+
+  - id: "instagram-identity"
+    component: "container-service"
+    label: "Instagram login / privacy / security / integrity"
+    group: "product-tier"
+    props: { stateless: true, criticality: "high" }
+
+  - id: "feed-ranking"
+    component: "container-service"
+    label: "Feed ranking and feed state"
+    group: "product-tier"
+    props: { stateless: true }
+
+  - id: "search-service"
+    component: "container-service"
+    label: "Keyword search (deferred past launch)"
+    group: "product-tier"
+    props: { stateless: true }
+
+  - id: "threads-federation"
+    component: "container-service"
+    label: "ActivityPub federation (2024)"
+    group: "product-tier"
+    props: { stateless: true }
+
+  - id: "xfaas-submitter"
+    component: "container-service"
+    label: "Async submitter"
+    group: "async-platform"
+    props: { stateless: true }
+
+  - id: "queue-lb"
+    component: "load-balancer-tier"
+    label: "QueueLB"
+    group: "async-platform"
+    props: { global: true, hashing: "random" }
+
+  - id: "durableq"
+    component: "message-queue"
+    label: "DurableQ"
+    group: "async-platform"
+    props: { delivery: "at-least-once", ordering: "per-key", persistence: true, role: "work" }
+
+  - id: "retry-queue"
+    component: "message-queue"
+    label: "Failed-call retry queue"
+    group: "async-platform"
+    props: { delivery: "at-least-once", persistence: true, role: "retry", deadLetterQueue: false }
+
+  - id: "xfaas-scheduler"
+    component: "container-service"
+    label: "Async scheduler (FuncBuffers, RunQ)"
+    group: "async-platform"
+    props: { stateless: true }
+
+  - id: "worker-lb"
+    component: "load-balancer-tier"
+    label: "WorkerLB"
+    group: "async-platform"
+    props: { hashing: "random" }
+
+  - id: "xfaas-worker"
+    component: "container-worker"
+    label: "XFaaS worker pool (per namespace)"
+    group: "async-platform"
+    props: { trigger: "queue", idempotent: true, fanoutStrategy: "push" }
+
+  - id: "xfaas-controllers"
+    component: "container-service"
+    label: "Global Traffic Conductor / Locality Optimizer / Utilization Controller"
+    group: "async-platform"
+    props: { stateless: true }
+
+  - id: "notification-service"
+    component: "notification-platform"
+    label: "Notification system"
+    group: "product-tier"
+    props: { channelPush: true }
+
+  - id: "tao"
+    component: "tao"
+    label: "TAO"
+    group: "data-plane"
+    props: { masterPerShard: true, writeThrough: true, followerTiers: 1, crossRegionConsistency: "single-leader", inMemory: true }
+    nfr: { rps: 1000000000, consistency: "eventual" }
+
+  - id: "mysql"
+    component: "mysql"
+    label: "MySQL (MySQL Raft / FlexiRaft)"
+    group: "data-plane"
+    props: { sharded: true, replication: "sync", backupEnabled: true, backupRetentionDays: 30, storageEngine: "innodb" }
+
+  - id: "zippydb"
+    component: "nosql-store"
+    label: "ZippyDB (counters, feed ranking/state, search)"
+    group: "data-plane"
+    props: { model: "key-value", consistency: "tunable", replication: "multi-region-single-leader", partitionKey: "micro-shard" }
+
+  - id: "shardmanager"
+    component: "apache-helix"
+    label: "ShardManager"
+    group: "data-plane"
+    props: { role: "sharding", stateModel: "leader-standby" }
+
+  - id: "akkio"
+    component: "container-worker"
+    label: "Akkio"
+    group: "data-plane"
+    props: { trigger: "stream", idempotent: true }
+
+  - id: "configerator"
+    component: "container-service"
+    label: "Configerator"
+    group: "data-plane"
+    props: { stateless: true }
+
+  - id: "launch-dashboards"
+    component: "observability-stack"
+    label: "ODS / Scuba"
+    group: "data-plane"
+    props: { signal: "all", collectorMode: "push" }
+
+  - id: "fediverse-servers"
+    component: "supplier-api"
+    label: "External ActivityPub servers"
+    group: "fediverse"
+    props: { callbackStyle: "webhook" }
+
+edges:
+  - { from: "threads-app", to: "django-api", protocol: "https", mode: "sync", label: "REST, Instagram's API surface reused" }
+  - { from: "threads-app", to: "meta-monolith", protocol: "https", mode: "sync", label: "GraphQL for parts of the experience" }
+  - { from: "django-api", to: "instagram-identity", protocol: "thrift", mode: "sync", label: "sign in with the Instagram account" }
+  - { from: "django-api", to: "tao", protocol: "thrift", mode: "sync", label: "posts, replies and the follow graph" }
+  - { from: "django-api", to: "zippydb", protocol: "thrift", mode: "sync", label: "counters" }
+  - { from: "django-api", to: "feed-ranking", protocol: "thrift", mode: "sync", label: "rank the home feed" }
+  - { from: "django-api", to: "search-service", protocol: "thrift", mode: "sync", label: "keyword search" }
+  - { from: "django-api", to: "threads-federation", protocol: "thrift", mode: "async", delivery: "at-least-once", label: "publish an opted-in public post" }
+  - { from: "feed-ranking", to: "zippydb", protocol: "thrift", mode: "sync", label: "feed ranking and feed state keyspace" }
+  - { from: "search-service", to: "zippydb", protocol: "thrift", mode: "sync", label: "search keyspace" }
+  - { from: "tao", to: "mysql", protocol: "mysql", mode: "sync", label: "leader cache to one database per shard" }
+  - { from: "shardmanager", to: "zippydb", protocol: "internal", mode: "async", delivery: "at-least-once", label: "epoch lease leadership, renewed by heartbeat" }
+  - { from: "akkio", to: "zippydb", protocol: "internal", mode: "async", delivery: "at-least-once", idempotent: true, label: "move micro-shards to the region that reads them" }
+  - { from: "configerator", to: "zippydb", protocol: "config", mode: "async", delivery: "at-least-once", label: "logical-to-physical shard map, live config change" }
+  - { from: "configerator", to: "queue-lb", protocol: "config", mode: "async", delivery: "at-least-once", label: "source-region to destination-region policy" }
+  - { from: "configerator", to: "xfaas-scheduler", protocol: "config", mode: "async", delivery: "at-least-once", label: "region-to-region traffic matrix" }
+  - { from: "configerator", to: "worker-lb", protocol: "config", mode: "async", delivery: "at-least-once", label: "locality groups" }
+  - { from: "xfaas-controllers", to: "configerator", protocol: "internal", mode: "async", delivery: "at-least-once", label: "traffic matrix, locality groups, utilisation multiplier" }
+  - { from: "django-api", to: "xfaas-submitter", protocol: "thrift", mode: "async", delivery: "at-least-once", label: "follow import and notification jobs, non-blocking" }
+  - { from: "xfaas-submitter", to: "queue-lb", protocol: "thrift", mode: "sync", batched: true, label: "batched writes, oversized arguments spilled to a key-value store" }
+  - { from: "queue-lb", to: "durableq", protocol: "thrift", mode: "sync", label: "sharded by random UUID, may cross regions" }
+  - { from: "durableq", to: "xfaas-scheduler", protocol: "thrift", mode: "async", delivery: "at-least-once", label: "poll calls whose start time has passed; ACK removes, NACK or timeout redelivers" }
+  - { from: "xfaas-scheduler", to: "worker-lb", protocol: "thrift", mode: "sync", label: "RunQ dispatch, criticality then execution deadline" }
+  - { from: "worker-lb", to: "xfaas-worker", protocol: "thrift", mode: "sync", label: "power of two random choices inside the locality group" }
+  - { from: "durableq", to: "xfaas-worker", protocol: "thrift", mode: "async", delivery: "at-least-once", label: "the pool also polls DurableQ directly" }
+  - { from: "xfaas-worker", to: "retry-queue", protocol: "thrift", mode: "sync", label: "park the failed call" }
+  - { from: "retry-queue", to: "xfaas-worker", protocol: "thrift", mode: "async", delivery: "at-least-once", label: "drain the retries on the same pool" }
+  - { from: "xfaas-worker", to: "tao", protocol: "thrift", mode: "sync", timeoutMs: 500, retryPolicy: "exponential", label: "push every imported follow onto the social graph" }
+  - { from: "xfaas-worker", to: "notification-service", protocol: "thrift", mode: "async", delivery: "at-least-once", idempotent: true, label: "notification fan-out, rate limited by Async" }
+  - { from: "notification-service", to: "threads-app", protocol: "push", mode: "async", delivery: "at-most-once", label: "follow and activity notifications" }
+  - { from: "django-api", to: "launch-dashboards", protocol: "https", mode: "async", delivery: "at-most-once", label: "time to new content, QPS and success rate" }
+  - { from: "xfaas-scheduler", to: "launch-dashboards", protocol: "https", mode: "async", delivery: "at-most-once", label: "async job queue lengths" }
+  - { from: "zippydb", to: "launch-dashboards", protocol: "https", mode: "async", delivery: "at-most-once", label: "launch-day metrics" }
+  - { from: "threads-federation", to: "fediverse-servers", protocol: "https", mode: "async", delivery: "at-least-once", label: "ActivityPub S2S, opted-in public profiles aged 18+" }
+  - { from: "fediverse-servers", to: "threads-federation", protocol: "https", mode: "async", delivery: "at-least-once", label: "inbound replies, phased in after the initial release" }

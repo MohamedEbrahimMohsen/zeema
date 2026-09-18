@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Content Moderation: metered moderation endpoint for user-generated content. "Introduction to AI
+# Guardrails" states that the service intelligently moderates multimedia content such as images,
+# videos and text in various scenarios to improve content moderation efficiency, the quality of
+# platform content and the user experience, and lists the moderation services as Text Moderation 2.0,
+# Image Moderation 2.0, Video Moderation 2.0 and Voice Moderation 2.0, reached through its API and SDK.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-content-moderation"
+kind: "ai-service"
+provider: "alibabacloud"
+defaults:
+  managed: true
+  modality: "multimodal"
+  contentFiltering: true
+properties:
+  moderationType:
+    type: "enum"
+    values: ["text", "image", "video", "voice"]

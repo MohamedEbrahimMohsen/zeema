@@ -1,0 +1,21 @@
+/* Element defaults. Kept deliberately thin — Zeema styles components, not tags. */
+
+:root { color-scheme: light; }
+[data-theme="dark"] { color-scheme: dark; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: var(--fs);
+  line-height: var(--lh-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }
+
+code, kbd, samp, pre { font-family: var(--mono); }
+::selection { background: color-mix(in srgb, var(--accent) 25%, transparent); }
+:focus-visible { outline: none; box-shadow: var(--ring-focus); border-radius: var(--rc); }

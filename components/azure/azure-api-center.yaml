@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure API Center: a central inventory of an organization's APIs with their versions, definitions,
+# deployments and metadata ("Azure API Center - Overview"). That page states API Center is a design-time
+# governance and discovery solution and that runtime governance is API Management's job, so it enforces no
+# access policy itself. Linting and analysis, linking an API Management instance and the API Center portal
+# are all things you set up; the service is offered in a Free and a Standard plan.
+schemaVersion: "1"
+type: "component"
+id: "azure-api-center"
+kind: "data-catalog"
+provider: "azure"
+defaults:
+  managed: true
+  accessPolicyEnforcement: false
+properties:
+  plan:
+    type: "enum"
+    values: ["free", "standard"]
+  linting:
+    type: "boolean"
+    default: false
+  apiManagementLinked:
+    type: "boolean"
+    default: false
+  portalEnabled:
+    type: "boolean"
+    default: false

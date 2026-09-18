@@ -1,0 +1,209 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture: the amazon.com order path, broken variant. Same system with the five
+# mistakes the sources themselves warn about: Herd's workflow state left on the single-writer
+# Oracle fleet, a synchronous fallback from cell-a into cell-b, an SQS queue with no dead-letter
+# queue, and the storefront calling a background worker inline.
+#
+# This file MUST trip:
+#   - single-writer-primary-at-peak-qps  (orders-oracle is unsharded, single writer, declared at 20000 rps)
+#   - read-replica-as-sole-scaling       (orders-oracle scales on async replicas only, not sharded, not distributed)
+#   - cross-cell-call                    (order-service -> herd-b is sync while isolation.tenancy is cell)
+#   - queue-missing-dlq                  (order-events receives async traffic with deadLetterQueue false)
+#   - fanout-inline-in-request-path      (service-fleet calls order-workers synchronously)
+# and MUST NOT trip:
+#   - datastore-missing-backup                   (orders-oracle and transactions-db declare backup and retention)
+#   - datastore-single-region                    (availability.multiRegion is false)
+#   - retry-without-adaptive-shedding            (every retrying activity edge declares circuitBreaker true)
+#   - credentials-without-rotation               (security.credentialRotationDays is set)
+#   - cache-missing-eviction-policy, cache-as-primary-store-without-persistence,
+#     materialised-cache-without-rebuild-path    (product-cache declares lru, is not primary and is not materialised)
+#   - shared-worker-pool-across-queues           (isolation.perQueue is not required and order-workers drains one queue)
+#   - push-fanout-without-celebrity-path         (order-workers declares no push fan-out and there is no graph database)
+#   - business-updates-without-index-propagation, derived-store-without-cdc-or-rebuild (no search index)
+#   - read-heavy-path-without-cache              (traffic.readWriteRatio is not stated by any source)
+#   - sync-chain-too-deep                        (no api-gateway node; CloudFront is a cdn)
+#   - stateful-node-without-zone-redundancy      (no availability-zone group, and the fleet sits in a cell)
+schemaVersion: "1"
+type: "design"
+id: "amazon-order"
+
+requirements:
+  availability:
+    multiRegion: false
+    degradedModeAllowed: false
+  latency:
+    p95Ms: 300
+  consistency:
+    model: "ap"
+  isolation:
+    tenancy: "cell"
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "us-east-1", kind: "region" }
+  - { id: "cell-a", kind: "cell", parent: "us-east-1" }
+  - { id: "cell-b", kind: "cell", parent: "us-east-1" }
+  - { id: "storefront", kind: "trust-zone", parent: "cell-a" }
+  - { id: "order-path", kind: "trust-zone", parent: "cell-a" }
+
+nodes:
+  - id: "customer-web"
+    component: "web-browser"
+    group: "cell-a"
+    props: { platform: "web", localCache: true }
+
+  - id: "customer-app"
+    component: "mobile-app"
+    group: "cell-a"
+    props: { platform: "mobile", localCache: true, os: "both" }
+
+  - id: "cloudfront"
+    component: "cloudfront"
+    label: "Amazon CloudFront"
+    group: "storefront"
+    props: { caching: true, tls: true, managed: true }
+
+  - id: "rendering-engine"
+    component: "container-service"
+    label: "Page rendering engine"
+    group: "storefront"
+    props: { stateless: true, criticality: "high", autoscaling: true }
+
+  - id: "service-fleet"
+    component: "container-service"
+    label: "150+ owning services"
+    group: "storefront"
+    props: { stateless: true, criticality: "high", autoscaling: true, ownsData: true }
+    nfr: { rps: 500, latencyP95Ms: 300 }
+
+  - id: "cart-service"
+    component: "container-service"
+    label: "Shopping cart service"
+    group: "storefront"
+    props: { stateless: true, criticality: "high", autoscaling: true, ownsData: true }
+
+  - id: "cart-store"
+    component: "nosql-store"
+    label: "Dynamo"
+    group: "storefront"
+    props: { model: "key-value", consistency: "eventual", replication: "leaderless", replicationFactor: 3, quorumWrites: 2, quorumReads: 2, conflictResolution: "vector-clock", managed: false }
+    nfr: { consistency: "eventual" }
+
+  - id: "product-cache"
+    component: "aws-elasticache"
+    label: "Amazon ElastiCache"
+    group: "storefront"
+    props: { evictionPolicy: "lru", usedAsPrimaryStore: false, materialised: false, persistence: false, managed: true }
+
+  - id: "rufus-inference"
+    component: "sagemaker-endpoint"
+    label: "Rufus on Inferentia and Trainium"
+    group: "storefront"
+    props: { accelerator: "asic", inputs: "live", autoscaling: true, managed: true }
+
+  - id: "order-service"
+    component: "container-service"
+    group: "order-path"
+    props: { stateless: true, criticality: "high", ownsData: true }
+
+  - id: "herd"
+    component: "cadence"
+    label: "Herd"
+    group: "order-path"
+    props: { durable: true, pattern: "saga", stepsIdempotent: true, activityRetry: true, compensation: true }
+
+  - id: "timer-service"
+    component: "message-queue"
+    label: "TimerService"
+    group: "order-path"
+    props: { delivery: "at-least-once", ordering: "per-key", role: "work", deadLetterQueue: true, persistence: true }
+
+  - id: "view-service"
+    component: "observability-stack"
+    label: "ViewService"
+    group: "order-path"
+    props: { signal: "all", collectorMode: "push" }
+
+  - id: "orders-oracle"
+    component: "oracle-db"
+    label: "Oracle fleet behind Herd"
+    group: "order-path"
+    props: { backupEnabled: true, backupRetentionDays: 30, replication: "async", replicaFanout: 6, sharded: false, distributed: false, multiWriter: false, encryptionAtRest: true }
+    nfr: { rps: 20000 }
+
+  - id: "order-events"
+    component: "sqs"
+    label: "Amazon SQS"
+    group: "order-path"
+    props: { delivery: "at-least-once", role: "work", deadLetterQueue: false, retentionDays: 4, managed: true }
+
+  - id: "order-workers"
+    component: "container-worker"
+    label: "Order event workers"
+    group: "order-path"
+    props: { trigger: "queue", instances: 200, idempotent: false, concurrency: 16 }
+
+  - id: "payment-service"
+    component: "container-service"
+    group: "order-path"
+    props: { stateless: true, criticality: "high", ownsData: true }
+
+  - id: "inventory-service"
+    component: "container-service"
+    group: "order-path"
+    props: { stateless: true, criticality: "high", ownsData: true }
+
+  - id: "fulfilment-service"
+    component: "container-service"
+    label: "Fulfilment center systems"
+    group: "order-path"
+    props: { stateless: true, criticality: "high", ownsData: true }
+
+  - id: "transactions-db"
+    component: "aurora"
+    label: "Amazon Aurora"
+    group: "order-path"
+    props: { backupEnabled: true, backupRetentionDays: 35, replication: "async", encryptionAtRest: true, managed: true }
+
+  - id: "herd-b"
+    component: "cadence"
+    label: "Herd, cell-b"
+    group: "cell-b"
+    props: { durable: true, pattern: "saga", stepsIdempotent: true, activityRetry: true, compensation: true }
+
+  - id: "workflow-store-b"
+    component: "dynamodb"
+    label: "Amazon DynamoDB, cell-b"
+    group: "cell-b"
+    props: { model: "key-value", replication: "single-region", encryptionAtRest: true, onDemandCapacity: true, managed: true }
+
+edges:
+  - { from: "customer-web", to: "cloudfront", protocol: "https", mode: "sync" }
+  - { from: "customer-app", to: "cloudfront", protocol: "https", mode: "sync" }
+  - { from: "cloudfront", to: "rendering-engine", protocol: "https", mode: "sync", label: "storefront page request" }
+  - { from: "rendering-engine", to: "service-fleet", protocol: "rpc", mode: "sync", timeoutMs: 300, label: "over 150 service calls per page, 300 ms at the 99.9th percentile each" }
+  - { from: "rendering-engine", to: "cart-service", protocol: "rpc", mode: "sync", timeoutMs: 300, label: "cart widget" }
+  - { from: "rendering-engine", to: "rufus-inference", protocol: "rpc", mode: "sync", timeoutMs: 300, fallback: "static", label: "Rufus shopping assistant" }
+  - { from: "cart-service", to: "cart-store", protocol: "rpc", mode: "sync", idempotent: true, label: "W=2 of N=3, sloppy quorum and hinted handoff on failure" }
+  - { from: "service-fleet", to: "product-cache", protocol: "redis", mode: "sync", label: "cached catalogue reads" }
+  - { from: "service-fleet", to: "transactions-db", protocol: "sql", mode: "sync", label: "transactional reads and writes" }
+  - { from: "service-fleet", to: "order-service", protocol: "rpc", mode: "sync", timeoutMs: 300, label: "place order" }
+  - { from: "order-service", to: "herd", protocol: "rpc", mode: "async", delivery: "at-least-once", idempotent: true, label: "start order workflow" }
+  - { from: "order-service", to: "herd-b", protocol: "rpc", mode: "sync", timeoutMs: 2000, fallback: "degraded", label: "fall back into cell-b when cell-a is unhealthy" }
+  - { from: "herd", to: "orders-oracle", protocol: "sql", mode: "sync", idempotent: true, label: "workflow state on the Oracle fleet" }
+  - { from: "herd", to: "timer-service", protocol: "rpc", mode: "async", delivery: "at-least-once", label: "schedule next step" }
+  - { from: "timer-service", to: "herd", protocol: "poll", mode: "async", delivery: "at-least-once", label: "due timers in priority order" }
+  - { from: "herd", to: "payment-service", protocol: "rpc", mode: "async", delivery: "at-least-once", retryPolicy: "exponential-jitter", circuitBreaker: true, idempotent: true, label: "activity: authorise payment" }
+  - { from: "herd", to: "inventory-service", protocol: "rpc", mode: "async", delivery: "at-least-once", retryPolicy: "exponential-jitter", circuitBreaker: true, idempotent: true, label: "activity: reserve inventory" }
+  - { from: "herd", to: "fulfilment-service", protocol: "rpc", mode: "async", delivery: "at-least-once", retryPolicy: "exponential-jitter", circuitBreaker: true, idempotent: true, label: "activity: pick, pack and ship" }
+  - { from: "herd", to: "view-service", protocol: "http", mode: "async", delivery: "at-most-once", label: "workflow backlog" }
+  - { from: "herd-b", to: "view-service", protocol: "http", mode: "async", delivery: "at-most-once", label: "workflow backlog, cell-b" }
+  - { from: "herd-b", to: "workflow-store-b", protocol: "rpc", mode: "sync", idempotent: true, label: "workflow state, cell-b" }
+  - { from: "service-fleet", to: "order-events", protocol: "sqs", mode: "async", delivery: "at-least-once", label: "domain events" }
+  - { from: "service-fleet", to: "order-workers", protocol: "rpc", mode: "sync", timeoutMs: 5000, label: "run the projection job inline" }
+  - { from: "order-events", to: "order-workers", protocol: "poll", mode: "async", delivery: "at-least-once", label: "event-driven jobs" }
+  - { from: "order-workers", to: "orders-oracle", protocol: "sql", mode: "sync", idempotent: true, label: "order projections" }
+  - { from: "payment-service", to: "transactions-db", protocol: "sql", mode: "sync", label: "payment records" }
+  - { from: "inventory-service", to: "transactions-db", protocol: "sql", mode: "sync", label: "inventory records" }
+  - { from: "fulfilment-service", to: "order-events", protocol: "sqs", mode: "async", delivery: "at-least-once", label: "shipment events" }

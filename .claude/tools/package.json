@@ -1,7 +1,7 @@
 {
-  "name": "arkore-tools",
+  "name": "zeema-tools",
   "private": true,
-  "description": "Helper scripts for the .claude skills (validator, icon generation, kind installer). Not part of the Arkore format.",
+  "description": "Helper scripts for the .claude skills (validator, icon generation, kind installer). Not part of the Zeema format.",
   "type": "module",
   "dependencies": {
     "ajv": "^8.20.0",

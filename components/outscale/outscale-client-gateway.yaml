@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OUTSCALE client gateway: the resource that represents the router, firewall or VM on your own
+# side of a VPN connection ("About Client Gateways"). That page states it needs a static public
+# IP and either static routing or a BGP ASN, and that several client gateways may share one IP
+# with different ASNs; "About VPN Connections" states the tunnel is encrypted with IPsec.
+schemaVersion: "1"
+type: "component"
+id: "outscale-client-gateway"
+kind: "vpn-gateway"
+provider: "outscale"
+defaults:
+  managed: false
+  peerType: "site-to-site"
+  tunnelType: "ipsec"
+properties:
+  staticPublicIpRequired:
+    type: "boolean"
+    default: true
+  routing:
+    type: "enum"
+    values: ["static", "bgp"]
+  tunnelInitiatedByClientGateway:
+    type: "boolean"
+    default: true

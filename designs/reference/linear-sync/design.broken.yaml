@@ -1,0 +1,191 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Linear's sync engine and backend, broken variant: the pre-multi-region shape, with a single
+# unreplicated Cloud SQL instance behind a multi-region promise, a Pub/Sub task topic with
+# replay turned off, WebSocket fleets that autoscale without draining, background work called
+# inline from the mutation path, and a browser store left on the vendor eviction default.
+#
+# This file MUST trip:
+#   - datastore-single-region                  (primary-postgres: replication none, one region, multiRegion required)
+#   - pubsub-replay-required                   (task-topic: replay false while messaging.replay is true)
+#   - stateful-websocket-scale-in-without-drain (public-sync-ws and private-sync-ws autoscale with drainOnScaleIn false)
+#   - fanout-inline-in-request-path            (public-graphql-api calls task-runners synchronously)
+#   - cache-missing-eviction-policy            (workspace-indexeddb declares evictionPolicy none)
+# and MUST NOT trip:
+#   - datastore-missing-backup                 (Cloud SQL keeps backups on with seven days retention)
+#   - cache-as-primary-store-without-persistence (workspace-indexeddb persists and is not the primary store)
+#   - materialised-cache-without-rebuild-path  (neither cache is marked materialised)
+#   - credentials-without-rotation             (security.credentialRotationDays is set)
+#   - webhook-without-signature-or-idempotency (customer-webhooks verifies signatures and deduplicates)
+#   - derived-store-without-cdc-or-rebuild, business-updates-without-index-propagation (no search-index node; turbopuffer is a vector-database)
+#   - read-replica-as-sole-scaling, single-writer-primary-at-peak-qps, read-heavy-path-without-cache (no rps or read/write ratio is stated anywhere)
+#   - sync-chain-too-deep                      (no api-gateway node and no p95 latency target)
+#   - queue-missing-dlq, retry-queue-without-dlq, retry-without-backoff (no queue node)
+#   - stateful-engine-pinned-to-single-zone, stateful-node-without-zone-redundancy (the sources state no availability-zone layout, so the design declares none)
+schemaVersion: "1"
+type: "design"
+id: "linear-sync"
+
+requirements:
+  availability:
+    multiRegion: true
+    regions: 2
+  messaging:
+    replay: true
+    orderingScope: "partition"
+  correctness:
+    reproducible: true
+  data:
+    immutableAudit: true
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "edge", kind: "point-of-presence", label: "Cloudflare edge" }
+  - { id: "global", kind: "trust-zone", label: "Global services" }
+  - { id: "us-east1", kind: "region", label: "Google Cloud us-east1" }
+  - { id: "backend", kind: "trust-zone", parent: "us-east1", label: "Regional backend" }
+  - { id: "data", kind: "trust-zone", parent: "us-east1", label: "Regional data stores" }
+
+nodes:
+  - id: "linear-client"
+    component: "desktop-app"
+    label: "Linear client (web and desktop)"
+    props: { platform: "multi", localCache: true, offlineCapable: true, persistentConnection: true, resendPolicy: "store-and-forward" }
+
+  - id: "workspace-indexeddb"
+    component: "cache-cluster"
+    label: "IndexedDB workspace database"
+    props: { evictionPolicy: "none", persistence: true, usedAsPrimaryStore: false, materialised: false, structure: "key-value", invalidation: "event" }
+
+  - id: "region-proxy"
+    component: "cloudflare-workers"
+    label: "Region proxy Worker"
+    group: "edge"
+    props: { plan: "paid", stateless: true, autoscaling: true, ownsData: false, criticality: "high" }
+
+  - id: "global-auth-service"
+    component: "container-service"
+    label: "Global authentication service"
+    group: "global"
+    props: { orchestrator: "kubernetes", stateless: true, ownsData: true, criticality: "high", autoscaling: true }
+
+  - id: "public-graphql-api"
+    component: "container-service"
+    label: "Public GraphQL API"
+    group: "backend"
+    props: { orchestrator: "kubernetes", runtime: "node", stateless: true, autoscaling: true, criticality: "high" }
+
+  - id: "private-graphql-api"
+    component: "container-service"
+    label: "Private GraphQL API"
+    group: "backend"
+    props: { orchestrator: "kubernetes", runtime: "node", stateless: true, autoscaling: true }
+
+  - id: "delta-sync-read-service"
+    component: "container-service"
+    label: "Delta-sync read path"
+    group: "backend"
+    props: { orchestrator: "kubernetes", runtime: "node", stateless: true, autoscaling: true, criticality: "high" }
+
+  - id: "public-sync-ws"
+    component: "websocket-gateway"
+    label: "Public sync WebSocket servers"
+    group: "backend"
+    props: { protocol: "websocket", stateful: true, autoscaling: true, drainOnScaleIn: false, sequenceNumbers: true }
+
+  - id: "private-sync-ws"
+    component: "websocket-gateway"
+    label: "Private sync WebSocket servers"
+    group: "backend"
+    props: { protocol: "websocket", stateful: true, autoscaling: true, drainOnScaleIn: false, sequenceNumbers: true }
+
+  - id: "task-runners"
+    component: "container-worker"
+    label: "Task runners"
+    group: "backend"
+    props: { orchestrator: "kubernetes", trigger: "queue", idempotent: true }
+
+  - id: "task-topic"
+    component: "google-pubsub"
+    label: "Google Pub/Sub background tasks"
+    group: "data"
+    props: { delivery: "at-least-once", replay: false, ordering: "none", retentionDays: 7 }
+
+  - id: "redis-event-bus"
+    component: "google-memorystore"
+    label: "Memorystore for Redis (event bus and cache)"
+    group: "data"
+    props: { evictionPolicy: "lru", persistence: false, usedAsPrimaryStore: false, materialised: false, structure: "key-value" }
+
+  - id: "sync-cdc-pipeline"
+    component: "debezium"
+    label: "Sync action CDC pipeline"
+    group: "backend"
+    props: { mode: "log-based", ordered: true }
+
+  - id: "sync-action-log"
+    component: "raft-event-log"
+    label: "Sync action log"
+    group: "data"
+    props: { storage: "database", journaled: true, replication: "primary-replica", role: "journal", nodes: 1 }
+
+  - id: "primary-postgres"
+    component: "google-cloud-sql"
+    label: "Cloud SQL for PostgreSQL (primary)"
+    group: "data"
+    props: { engine: "postgres", availabilityType: "zonal", replication: "none", backupEnabled: true, backupRetentionDays: 7, encryptionAtRest: true, pointInTimeRecovery: true, concurrencyControl: "optimistic" }
+
+  - id: "turbopuffer-index"
+    component: "turbopuffer"
+    label: "turbopuffer sync action index"
+    group: "data"
+    props: { deployment: "multi-tenant", storageBackend: "object-storage", namespaces: true, metadataFiltering: true, managed: true }
+
+  - id: "issue-vectors"
+    component: "pgvector"
+    label: "pgvector issue embeddings"
+    group: "data"
+    props: { metadataFiltering: true, managed: true, vectorType: "vector" }
+
+  - id: "openai-embeddings"
+    component: "openai-api"
+    label: "OpenAI embeddings"
+    props: { modality: "text", publicEndpoint: true, managed: true }
+
+  - id: "customer-webhooks"
+    component: "webhook-receiver"
+    label: "Customer webhook endpoints"
+    props: { signatureVerified: true, idempotent: true, retriedByCaller: true }
+
+edges:
+  - { from: "linear-client", to: "workspace-indexeddb", protocol: "indexeddb", mode: "sync", idempotent: true, label: "models, _meta and _transaction" }
+  - { from: "linear-client", to: "region-proxy", protocol: "https", mode: "sync", idempotent: true, label: "GraphQL mutations and sync HTTP" }
+  - { from: "region-proxy", to: "global-auth-service", protocol: "https", mode: "sync", label: "signed JWT and target region" }
+  - { from: "region-proxy", to: "public-graphql-api", protocol: "https", mode: "sync", label: "forward with pre-signed header" }
+  - { from: "region-proxy", to: "private-sync-ws", protocol: "wss", mode: "async", label: "unmodified fetch pass-through" }
+  - { from: "region-proxy", to: "public-sync-ws", protocol: "wss", mode: "async", label: "unmodified fetch pass-through" }
+  - { from: "region-proxy", to: "delta-sync-read-service", protocol: "https", mode: "sync", label: "sync bootstrap and batch hydration" }
+  - { from: "private-sync-ws", to: "linear-client", protocol: "wss", mode: "async", delivery: "at-least-once", label: "delta packets ordered by sync id" }
+  - { from: "private-sync-ws", to: "delta-sync-read-service", protocol: "https", mode: "sync", label: "catch up from checkpoint sync id" }
+  - { from: "public-sync-ws", to: "delta-sync-read-service", protocol: "https", mode: "sync", label: "catch up from checkpoint sync id" }
+  - { from: "public-graphql-api", to: "primary-postgres", protocol: "postgres", mode: "sync", idempotent: true, label: "mutation" }
+  - { from: "public-graphql-api", to: "sync-action-log", protocol: "postgres", mode: "sync", label: "append sync actions in the same transaction" }
+  - { from: "public-graphql-api", to: "redis-event-bus", protocol: "redis", mode: "async", delivery: "at-least-once", label: "publish new sync actions" }
+  - { from: "redis-event-bus", to: "private-sync-ws", protocol: "redis", mode: "async", delivery: "at-least-once", label: "fan-out to connected clients" }
+  - { from: "redis-event-bus", to: "public-sync-ws", protocol: "redis", mode: "async", delivery: "at-least-once", label: "fan-out to connected clients" }
+  - { from: "sync-action-log", to: "sync-cdc-pipeline", protocol: "postgres-logical-replication", mode: "async", delivery: "at-least-once", label: "1 s p50, a few seconds p95" }
+  - { from: "sync-cdc-pipeline", to: "turbopuffer-index", protocol: "https", mode: "async", delivery: "at-least-once", batched: true, label: "sync action metadata only" }
+  - { from: "delta-sync-read-service", to: "turbopuffer-index", protocol: "https", mode: "sync", fallback: "degraded", label: "stage 1: metadata scan over posting lists" }
+  - { from: "delta-sync-read-service", to: "sync-action-log", protocol: "postgres", mode: "sync", label: "stage 2: late enrichment, head of log, turbopuffer fallback" }
+  - { from: "task-runners", to: "task-topic", protocol: "pubsub", mode: "async", delivery: "at-least-once", label: "schedule one-to-many background task" }
+  - { from: "task-topic", to: "task-runners", protocol: "pubsub", mode: "async", delivery: "at-least-once", label: "run the task in every region" }
+  - { from: "task-runners", to: "primary-postgres", protocol: "postgres", mode: "sync", label: "background jobs" }
+  - { from: "task-runners", to: "openai-embeddings", protocol: "https", mode: "async", label: "issue embeddings" }
+  - { from: "task-runners", to: "issue-vectors", protocol: "postgres", mode: "sync", label: "store embeddings" }
+  - { from: "task-runners", to: "private-graphql-api", protocol: "https", mode: "sync", label: "service to service GraphQL (Zeus client)" }
+  - { from: "public-graphql-api", to: "task-runners", protocol: "https", mode: "sync", timeoutMs: 30000, label: "run background job inline" }
+  - { from: "public-graphql-api", to: "issue-vectors", protocol: "postgres", mode: "sync", label: "similar issue search at creation" }
+  - { from: "private-graphql-api", to: "global-auth-service", protocol: "https", mode: "sync", label: "create shared record, reuse returned id" }
+  - { from: "private-graphql-api", to: "global-auth-service", protocol: "https", mode: "async", delivery: "at-least-once", label: "shared record updates through the sync engine" }
+  - { from: "private-graphql-api", to: "primary-postgres", protocol: "postgres", mode: "sync", label: "workspace data" }
+  - { from: "public-graphql-api", to: "customer-webhooks", protocol: "https", mode: "async", delivery: "at-least-once", idempotent: true, label: "workspace events" }

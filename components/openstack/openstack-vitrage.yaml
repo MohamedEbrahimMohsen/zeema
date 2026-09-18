@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenStack Vitrage: root cause analysis service for organizing, analyzing and expanding OpenStack alarms and
+# events. Per "Welcome to Vitrage" it builds an entity graph from Nova, Cinder, Neutron, Heat and Aodh plus
+# external monitors (Nagios, Zabbix, collectd), derives deduced alarms and states through an evaluator, and
+# notifies out through Nova, Mistral, SNMP or HTTP webhooks. It correlates alarms rather than storing metrics.
+schemaVersion: "1"
+type: "component"
+id: "openstack-vitrage"
+kind: "monitoring"
+provider: "openstack"
+defaults:
+  signal: "alerts"
+  alertGrouping: true
+  managed: false
+properties:
+  externalMonitor:
+    type: "enum"
+    values: ["nagios", "zabbix", "collectd"]
+  rootCauseAnalysis:
+    type: "boolean"
+    default: true
+  deducedAlarms:
+    type: "boolean"
+    default: true
+  notifier:
+    type: "enum"
+    values: ["nova", "mistral", "snmp", "webhook"]

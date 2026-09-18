@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Cloud Bare Metal Servers (classic): an "hourly or monthly, single-tenant server that is
+# dedicated to you", ordered preconfigured for fast provisioning or customised
+# ("Bare Metal Server options", "Getting started with bare metal servers"). One physical server
+# sits in one data centre, and the operating system is yours to patch; disk encryption is not
+# documented as a default, so it is omitted.
+schemaVersion: "1"
+type: "component"
+id: "ibm-bare-metal-server"
+kind: "virtual-machine"
+provider: "ibm"
+defaults:
+  managed: false
+  zoneRedundant: false
+properties:
+  billing:
+    type: "enum"
+    values: ["hourly", "monthly"]
+  provisioning:
+    type: "enum"
+    values: ["preconfigured", "custom"]

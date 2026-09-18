@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Stitch (Qlik Talend Cloud): hosted ELT service that extracts rows from integrations and loads
+# them into a destination data lake or warehouse. "Stitch Documentation" documents a per
+# integration Replication Frequency set with Anchor Scheduling or an Advanced cron expression, so
+# the job is schedule-triggered, and three replication methods: log-based incremental, key-based
+# incremental and full table. No default frequency, concurrency or idempotency guarantee is
+# stated, so none is set.
+schemaVersion: "1"
+type: "component"
+id: "stitch"
+kind: "worker"
+provider: "default"
+defaults:
+  managed: true
+  trigger: "schedule"
+properties:
+  replicationMethod:
+    type: "enum"
+    values: ["log-based-incremental", "key-based-incremental", "full-table"]
+  scheduling:
+    type: "enum"
+    values: ["anchor", "cron"]

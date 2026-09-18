@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Zuul: "A Project Gating System". Changes are tested before they merge, speculatively and together
+# with the other changes queued ahead of them, in dependent pipelines; independent pipelines test each
+# change on its own. Triggers come from Gerrit, GitHub, GitLab, timers and webhooks, and jobs run on
+# executor nodes with mergers handling repository operations ("Zuul - A Project Gating System").
+schemaVersion: "1"
+type: "component"
+id: "zuul-ci"
+kind: "ci-pipeline"
+provider: "default"
+defaults:
+  managed: false
+  trigger: "pull-request"
+  selfHostedRunners: true
+properties:
+  pipelineManager:
+    type: "enum"
+    values: ["dependent", "independent"]
+  speculativeMerge:
+    type: "boolean"
+    default: true
+  crossProjectDependencies:
+    type: "boolean"
+    default: true
+  codeReviewSystem:
+    type: "enum"
+    values: ["gerrit", "github", "gitlab"]

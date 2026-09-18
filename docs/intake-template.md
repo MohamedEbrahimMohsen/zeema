@@ -2,7 +2,7 @@
 
 One card per reference system. Copy this file to `docs/intake/<system-id>.md` and fill
 every section. Write "not stated" rather than guessing. The card is the raw material for
-`designs/<system-id>.yaml`, for new kinds, and for new rules. Capture everything the
+`designs/reference/<system-id>/design.yaml`, for new kinds, and for new rules. Capture everything the
 source says; decide nothing here.
 
 ```markdown

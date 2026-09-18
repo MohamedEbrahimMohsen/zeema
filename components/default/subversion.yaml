@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apache Subversion: centralised version control server. "Version Control Basics" describes a
+# repository that is the central store of the system's data, with any number of clients
+# connecting to read from or write to it; that server is the node a design places. "Apache
+# Subversion Documentation" describes the product as a collection of modular libraries written in
+# C whose API is stable within a major release stream. Neither page states a default repository
+# visibility or retention, so neither is set.
+schemaVersion: "1"
+type: "component"
+id: "subversion"
+kind: "artifact-repository"
+provider: "default"
+defaults:
+  managed: false
+  artifactType: "source"
+  upstreamProxy: false
+properties:
+  centralised:
+    type: "boolean"
+    default: true
+  accessProtocol:
+    type: "enum"
+    values: ["file", "svn", "svn-ssh", "http"]

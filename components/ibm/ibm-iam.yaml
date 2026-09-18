@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Cloud IAM: the account-wide access system that grants roles through policies attached to
+# users, service IDs, trusted profiles and access groups ("Getting started with IBM Cloud IAM").
+# The same page describes trusted profiles that consume SAML attributes from an external identity
+# provider, and context-based restrictions layered on top of policies. Account-level control makes
+# it centralised; roles and policies make the model RBAC.
+schemaVersion: "1"
+type: "component"
+id: "ibm-iam"
+kind: "identity-provider"
+provider: "ibm"
+defaults:
+  managed: true
+  protocol: "iam"
+  authorizationModel: "rbac"
+  centralised: true
+properties:
+  accessScope:
+    type: "enum"
+    values: ["account", "resource-group", "service-instance"]
+  contextBasedRestrictions:
+    type: "boolean"
+  trustedProfiles:
+    type: "boolean"

@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenStack Tacker: NFV orchestration service with a general purpose VNF Manager that deploys and operates
+# Virtual Network Functions and Network Services on an NFV platform. Per "Welcome to Tacker" it follows the
+# ETSI MANO architectural framework and ships two implementations, the ETSI NFV-SOL one and the legacy one,
+# driving lifecycle management from uploaded VNF packages. No trigger, approval or signing behaviour is stated.
+schemaVersion: "1"
+type: "component"
+id: "openstack-tacker"
+kind: "ci-pipeline"
+provider: "openstack"
+defaults:
+  managed: false
+properties:
+  implementation:
+    type: "enum"
+    values: ["etsi-nfv-sol", "legacy"]
+  vnfLifecycleManagement:
+    type: "boolean"
+    default: true
+  vnfPackages:
+    type: "boolean"
+    default: true

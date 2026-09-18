@@ -1,0 +1,209 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture: digital wallet (Xu vol 2 ch 11/12) with Uber LedgerStore as the
+# production ledger. Clean variant: every transfer command is appended to a per-shard
+# Raft-replicated event log, balances are derived by a deterministic state machine, cross-shard
+# transfers run as a saga with compensations, and money is recorded in an append-only
+# double-entry ledger whose sealed time ranges are signed and tiered to cold storage.
+#
+# Fixes relative to digital-wallet.broken.yaml:
+#   - balances are not kept in a Redis shard set that is the only copy; the event log is the
+#     system of record and balance-read-store holds derived CQRS views rebuilt by read-view-builder
+#   - money is recorded in ledger-store, an append-only double-entry ledger (tamperEvident,
+#     sealed, tiering), not in relational balance shards behind a blocking 2PC coordinator
+#   - cross-shard transfers use saga-coordinator (pattern saga, compensation, idempotent steps)
+#     instead of X/Open XA two-phase commit
+#   - event-log is Raft-replicated over three nodes with mmap segments and periodic snapshots,
+#     not a single unreplicated journal pinned to one availability zone
+#   - the migration backfill runs behind backfill-limiter, an adaptive (AIMD) rate limiter in
+#     front of ledger-store, so retried batches are shed instead of amplified
+#   - every hop that posts money into the ledger declares an idempotency key
+# This file MUST trip no rule.
+schemaVersion: "1"
+type: "design"
+id: "digital-wallet"
+
+requirements:
+  availability:
+    multiRegion: false
+    sla: "99.99"
+  consistency:
+    model: "cp"
+    readAfterWrite: true
+  correctness:
+    exactlyOnceEffect: true
+    reproducible: true
+    tamperEvident: true
+  money:
+    zeroSum: true
+  data:
+    immutableAudit: true
+    reconciliation: true
+    lossDetection: true
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "edge", kind: "trust-zone", label: "Client edge" }
+  - { id: "internal", kind: "trust-zone", label: "Wallet internal" }
+  - { id: "wallet-core", kind: "system", parent: "internal", label: "Wallet core (event sourcing, CQRS)" }
+  - { id: "ledgerstore", kind: "system", parent: "internal", label: "LedgerStore" }
+  - { id: "migration", kind: "system", parent: "internal", label: "DynamoDB to LedgerStore migration" }
+
+nodes:
+  - id: "wallet-client"
+    component: "user-device"
+    label: "Wallet clients"
+    props: { platform: "multi", resendPolicy: "retry" }
+
+  - id: "wallet-api"
+    component: "container-service"
+    label: "Wallet service (transfer API)"
+    group: "edge"
+    props: { stateless: true, criticality: "high", ownsData: false, orchestrator: "kubernetes" }
+    nfr: { rps: 1000000 }
+
+  - id: "shard-map"
+    component: "zookeeper"
+    label: "ZooKeeper shard map"
+    group: "wallet-core"
+    props: { role: "sharding", consensus: "zab", replicated: true }
+
+  - id: "saga-coordinator"
+    component: "cadence"
+    label: "Saga coordinator"
+    group: "wallet-core"
+    props: { durable: true, pattern: "saga", stepsIdempotent: true, compensation: true }
+
+  - id: "command-queue"
+    component: "message-queue"
+    label: "Transfer command queue"
+    group: "wallet-core"
+    props: { delivery: "at-least-once", ordering: "per-key", role: "work", deadLetterQueue: true, persistence: true }
+
+  - id: "state-machine"
+    component: "container-service"
+    label: "Wallet state machine (per shard)"
+    group: "wallet-core"
+    props: { stateless: false, singleWriter: true, criticality: "high", ownsData: true, shardingStrategy: "lookup", orchestrator: "kubernetes" }
+
+  - id: "event-log"
+    component: "raft-event-log"
+    label: "Per-shard event log (Raft, mmap)"
+    group: "wallet-core"
+    props: { replication: "raft", journaled: true, storage: "mmap", role: "journal", nodes: 3 }
+
+  - id: "snapshot-store"
+    component: "blob-store"
+    label: "Snapshot store"
+    group: "wallet-core"
+    props: { tier: "hot", checksumOnWrite: true }
+
+  - id: "read-view-builder"
+    component: "container-worker"
+    label: "CQRS read-view state machines"
+    group: "wallet-core"
+    props: { trigger: "stream", idempotent: true, orchestrator: "kubernetes" }
+
+  - id: "balance-read-store"
+    component: "nosql-store"
+    label: "Read-only balance views"
+    group: "wallet-core"
+    props: { model: "key-value", consistency: "eventual", partitionKey: "account_id" }
+    nfr: { consistency: "eventual" }
+
+  - id: "replayer"
+    component: "container-worker"
+    label: "Reproducibility replayer"
+    group: "wallet-core"
+    props: { trigger: "batch", idempotent: true }
+
+  - id: "ledger-store"
+    component: "double-entry-ledger"
+    label: "LedgerStore (LSG)"
+    group: "ledgerstore"
+    props: { doubleEntry: true, appendOnly: true, tamperEvident: true, sealed: true, indexConsistency: "strong", tiering: true, multiCurrency: true }
+    nfr: { consistency: "strong" }
+
+  - id: "docstore"
+    component: "nosql-store"
+    label: "Docstore (LedgerStore backing store)"
+    group: "ledgerstore"
+    props: { model: "document", consistency: "strong", replication: "single-region", encryptionAtRest: true }
+    nfr: { consistency: "strong" }
+
+  - id: "eventual-indexes"
+    component: "nosql-store"
+    label: "Eventually consistent indexes (Docstore materialised views)"
+    group: "ledgerstore"
+    props: { model: "document", consistency: "eventual", replication: "single-region" }
+    nfr: { consistency: "eventual" }
+
+  - id: "sealing-service"
+    component: "cron-job"
+    label: "Sealing service (30-minute windows, signed manifests)"
+    group: "ledgerstore"
+    props: { trigger: "schedule", schedule: "*/30 * * * *", idempotent: true, overlapAllowed: false }
+
+  - id: "cold-tier"
+    component: "blob-store"
+    label: "Cold tier (TerraBlob)"
+    group: "ledgerstore"
+    props: { tier: "cold", objectLock: true, checksumOnWrite: true }
+
+  - id: "backfill-limiter"
+    component: "in-process-limiter"
+    label: "Backfill RateLimiter (AIMD)"
+    group: "ledgerstore"
+    props: { algorithm: "adaptive", scope: "global", failMode: "closed", placement: "in-process" }
+
+  - id: "legacy-dynamodb"
+    component: "dynamodb"
+    label: "DynamoDB (legacy ledger store, 12 weeks hot)"
+    group: "migration"
+    props: { model: "key-value", consistency: "strong", backupEnabled: true, backupRetentionDays: 30, encryptionAtRest: true }
+    nfr: { consistency: "strong" }
+
+  - id: "backfill-worker"
+    component: "container-worker"
+    label: "Migration backfill workers"
+    group: "migration"
+    props: { trigger: "batch", idempotent: true, rateControl: "aimd" }
+
+  - id: "shadow-validator"
+    component: "container-worker"
+    label: "Shadow validation (target 99.99% complete and correct)"
+    group: "migration"
+    props: { trigger: "stream", idempotent: true }
+
+  - id: "offline-validator"
+    component: "spark-job"
+    label: "Offline validation (760B records, 70 TB)"
+    group: "migration"
+    props: { trigger: "batch", idempotent: true, resourceManager: "yarn" }
+
+edges:
+  - { from: "wallet-client", to: "wallet-api", protocol: "https", mode: "sync", idempotent: true, label: "transfer command with client-supplied command id" }
+  - { from: "wallet-api", to: "shard-map", protocol: "zookeeper", mode: "sync", label: "account to partition lookup" }
+  - { from: "wallet-api", to: "command-queue", protocol: "queue", mode: "async", delivery: "at-least-once", label: "enqueue command to the owning shard" }
+  - { from: "wallet-api", to: "saga-coordinator", protocol: "grpc", mode: "async", delivery: "at-least-once", idempotent: true, label: "start cross-shard transfer saga" }
+  - { from: "wallet-api", to: "balance-read-store", protocol: "grpc", mode: "sync", label: "read balance from the CQRS view" }
+  - { from: "command-queue", to: "state-machine", protocol: "queue", mode: "async", delivery: "at-least-once", idempotent: true, label: "dedup by command id" }
+  - { from: "saga-coordinator", to: "state-machine", protocol: "grpc", mode: "sync", idempotent: true, label: "one local transaction per shard, compensate on failure" }
+  - { from: "state-machine", to: "event-log", protocol: "raft", mode: "sync", idempotent: true, label: "append command and event, quorum ack" }
+  - { from: "state-machine", to: "snapshot-store", protocol: "file", mode: "async", delivery: "at-least-once", batched: true, label: "periodic state snapshot" }
+  - { from: "state-machine", to: "ledger-store", protocol: "grpc", mode: "sync", idempotent: true, label: "double-entry posting for the transfer" }
+  - { from: "event-log", to: "read-view-builder", protocol: "grpc", mode: "async", delivery: "at-least-once", label: "project events into read-only views" }
+  - { from: "read-view-builder", to: "balance-read-store", protocol: "grpc", mode: "async", delivery: "at-least-once", batched: true, label: "derived balances" }
+  - { from: "replayer", to: "snapshot-store", protocol: "file", mode: "async", delivery: "at-least-once", label: "load the nearest snapshot" }
+  - { from: "replayer", to: "event-log", protocol: "grpc", mode: "async", delivery: "at-least-once", label: "replay the tail to any past state" }
+  - { from: "ledger-store", to: "docstore", protocol: "grpc", mode: "sync", idempotent: true, label: "index intent, then record, then commit intents" }
+  - { from: "docstore", to: "eventual-indexes", protocol: "grpc", mode: "async", delivery: "at-least-once", label: "materialised views built off the write path" }
+  - { from: "sealing-service", to: "ledger-store", protocol: "grpc", mode: "async", delivery: "at-least-once", idempotent: true, label: "close a 30-minute range, sign the manifest" }
+  - { from: "ledger-store", to: "cold-tier", protocol: "blob", mode: "async", delivery: "at-least-once", batched: true, label: "tier sealed ranges to cold storage" }
+  - { from: "backfill-limiter", to: "ledger-store", protocol: "grpc", mode: "sync", idempotent: true, label: "AIMD rate control in front of the backfill" }
+  - { from: "legacy-dynamodb", to: "backfill-worker", protocol: "dynamodb", mode: "async", delivery: "at-least-once", batched: true, label: "read three years of historical entries" }
+  - { from: "backfill-worker", to: "ledger-store", protocol: "grpc", mode: "async", delivery: "at-least-once", idempotent: true, batched: true, retryPolicy: "exponential", label: "checkpointed batches, retried on RPC timeout" }
+  - { from: "shadow-validator", to: "ledger-store", protocol: "grpc", mode: "sync", idempotent: true, label: "compare live reads" }
+  - { from: "shadow-validator", to: "legacy-dynamodb", protocol: "dynamodb", mode: "sync", idempotent: true, label: "compare live reads" }
+  - { from: "offline-validator", to: "ledger-store", protocol: "grpc", mode: "async", delivery: "at-least-once", idempotent: true, batched: true, label: "full offline diff of 760B records" }
+  - { from: "offline-validator", to: "cold-tier", protocol: "blob", mode: "async", delivery: "at-least-once", batched: true, label: "read 70 TB of compressed sealed data" }

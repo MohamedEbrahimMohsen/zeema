@@ -1,0 +1,37 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OUTSCALE Net: a logically isolated virtual network holding your Subnets and VMs
+# ("About Nets"). That page states what drives the defaults: the IP range is a private RFC
+# 1918 block with a prefix between /16 and /28 that cannot be changed after creation, a main
+# route table and a default security group are created with the Net and every Subnet is
+# associated with the main route table, tenancy is fixed at creation, Subnets carry no
+# broadcast or multicast traffic, and OUTSCALE reserves 100.64.0.0/10 plus the first four and
+# the last address of each Subnet.
+schemaVersion: "1"
+type: "component"
+id: "outscale-net"
+kind: "network-fabric"
+provider: "outscale"
+defaults:
+  managed: true
+  interconnect: "private"
+  multicast: false
+properties:
+  tenancy:
+    type: "enum"
+    values: ["default", "dedicated"]
+    default: "default"
+  cidrPrefixMin:
+    type: "integer"
+    default: 16
+  cidrPrefixMax:
+    type: "integer"
+    default: 28
+  mainRouteTableCreated:
+    type: "boolean"
+    default: true
+  defaultSecurityGroupCreated:
+    type: "boolean"
+    default: true
+  reservedIpsPerSubnet:
+    type: "integer"
+    default: 5

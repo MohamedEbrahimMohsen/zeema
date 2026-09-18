@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Portworx Enterprise: software defined storage overlay that keeps containerised stateful
+# applications highly available across nodes, cloud instances, regions and data centers, and
+# provisions volumes into Kubernetes through its CSI driver ("Welcome to Portworx
+# Documentation"). "Create and manage volumes using pxctl" gives the HA factor as repl=[1,2,3],
+# so three replicas is the ceiling, and documents read-only snapshots created with pxctl volume
+# snapshot create with an implementation limit of 64 snapshots per volume. Encryption is opt-in
+# through a passphrase, and no default replication factor, media type or capacity is stated.
+schemaVersion: "1"
+type: "component"
+id: "portworx"
+kind: "block-storage"
+provider: "default"
+defaults:
+  managed: false
+  snapshots: true
+properties:
+  replicationFactor:
+    type: "integer"
+  maxSnapshotsPerVolume:
+    type: "integer"
+    default: 64
+  csiProvisioned:
+    type: "boolean"
+    default: true

@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Simple Application Server (SWAS): "a cloud server built for standalone application scenarios" that bundles
+# computing, storage, networking, application deployment, DNS, security and monitoring into one ready-to-use
+# package ("What is Simple Application Server?"). That page states it runs on the same infrastructure as ECS
+# with curated application and operating-system images from Alibaba Cloud Marketplace, and supports one-click
+# application deployment, domain name resolution, security management and monitoring. You still own the
+# operating system, so managed is false.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-simple-application-server"
+kind: "virtual-machine"
+provider: "alibabacloud"
+defaults:
+  managed: false
+properties:
+  imageType:
+    type: "enum"
+    values: ["application-image", "os-image", "custom-image"]
+    default: "application-image"
+  oneClickDeployment:
+    type: "boolean"
+    default: true
+  bundledDataTransfer:
+    type: "boolean"
+    default: true

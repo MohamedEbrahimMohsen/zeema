@@ -1,0 +1,252 @@
+// Edge geometry, derived from node positions alone. The layout engine places boxes; this places
+// the lines between them, and it has to run again on every drag, so it is separate from ranking.
+// The rules it follows are the ones the repository's renderer already uses, because the editor
+// and the renderer must draw the same picture: centre to centre, clipped at the box border,
+// parallel and reciprocal edges spread perpendicular, and a quadratic bend around the first box
+// the straight line would cut through.
+//
+// Edges carry no id in the format, so nothing here goes into the design file. The one thing a
+// person can adjust by hand, an edge's bow, lives in the layout sidecar under a key derived from
+// the pair; everything else is recomputed from the boxes on every frame.
+
+export const OFFSET_STEP = 16;
+export const BEND_REACH = 46;
+
+function clip(box, towardX, towardY) {
+  const [x, y, w, h] = box;
+  const cx = x + w / 2,
+    cy = y + h / 2;
+  const dx = towardX - cx,
+    dy = towardY - cy;
+  if (dx === 0 && dy === 0) return [cx, cy];
+  const sx = dx ? w / 2 / Math.abs(dx) : 1e9;
+  const sy = dy ? h / 2 / Math.abs(dy) : 1e9;
+  const s = Math.min(sx, sy);
+  return [cx + dx * s, cy + dy * s];
+}
+
+// Segment against rectangle, with the renderer's 6px slack, by the slab method.
+function hits(x1, y1, x2, y2, box) {
+  const [bx, by, bw, bh] = box;
+  const rx0 = bx - 6,
+    ry0 = by - 6,
+    rx1 = bx + bw + 6,
+    ry1 = by + bh + 6;
+  let t0 = 0,
+    t1 = 1;
+  const dx = x2 - x1,
+    dy = y2 - y1;
+  const edges = [
+    [-dx, x1 - rx0],
+    [dx, rx1 - x1],
+    [-dy, y1 - ry0],
+    [dy, ry1 - y1],
+  ];
+  for (const [p, q] of edges) {
+    if (p === 0) {
+      if (q < 0) return false;
+      continue;
+    }
+    const t = q / p;
+    if (p < 0) {
+      if (t > t1) return false;
+      t0 = Math.max(t0, t);
+    } else {
+      if (t < t0) return false;
+      t1 = Math.min(t1, t);
+    }
+  }
+  return t0 <= t1;
+}
+
+// An edge has no id in the format and two edges between the same pair are indistinguishable, so
+// a manual adjustment is keyed by the pair plus its position among that pair's own edges. The key
+// survives edits elsewhere in the document and is dropped on load when it no longer resolves.
+export function edgeKeys(doc) {
+  const seen = new Map();
+  return (doc.edges || []).map((e) => {
+    const pair = `${e.from}>${e.to}`;
+    const n = seen.get(pair) || 0;
+    seen.set(pair, n + 1);
+    return n ? `${pair}#${n}` : pair;
+  });
+}
+
+// `bows` maps an edge key to a perpendicular offset in pixels for the curve's control point.
+// A bow of zero means the edge is drawn automatically, which includes the bend it takes around
+// any box the straight line would cut through.
+export function edgeGeometry(doc, boxes, bows = {}) {
+  const keys = edgeKeys(doc);
+  const edges = doc.edges || [];
+  const buckets = new Map();
+  edges.forEach((e, i) => {
+    const key = [e.from, e.to].sort().join("\u0000");
+    if (!buckets.has(key)) buckets.set(key, []);
+    buckets.get(key).push(i);
+  });
+  const out = [];
+  for (const indices of buckets.values()) {
+    indices.forEach((i, k) => {
+      const e = edges[i];
+      const a = boxes[e.from],
+        b = boxes[e.to];
+      if (!a || !b) return;
+      let ax = a[0] + a[2] / 2,
+        ay = a[1] + a[3] / 2;
+      let bx = b[0] + b[2] / 2,
+        by = b[1] + b[3] / 2;
+      const off = indices.length === 1 ? 0 : (k - (indices.length - 1) / 2) * OFFSET_STEP;
+      const dx = bx - ax,
+        dy = by - ay;
+      const len = Math.hypot(dx, dy) || 1;
+      const ox = (-dy / len) * off,
+        oy = (dx / len) * off;
+      ax += ox;
+      ay += oy;
+      bx += ox;
+      by += oy;
+      const [x1, y1] = clip(a, bx, by);
+      const [x2, y2] = clip(b, ax, ay);
+      const bow = Number(bows[keys[i]]) || 0;
+      let bend = null;
+      if (bow) {
+        const sx = x1 + ox,
+          sy = y1 + oy,
+          tx = x2 + ox,
+          ty = y2 + oy;
+        const ddx = tx - sx,
+          ddy = ty - sy;
+        const l = Math.hypot(ddx, ddy) || 1;
+        bend = [(sx + tx) / 2 + (-ddy / l) * bow, (sy + ty) / 2 + (ddx / l) * bow];
+      }
+      for (const [id, box] of Object.entries(boxes)) {
+        if (bend) break; // a manual bow wins over the automatic bend
+        if (id === e.from || id === e.to) continue;
+        if (!hits(x1 + ox, y1 + oy, x2 + ox, y2 + oy, box)) continue;
+        const mx = (x1 + x2) / 2 + ox,
+          my = (y1 + y2) / 2 + oy;
+        const ocx = box[0] + box[2] / 2,
+          ocy = box[1] + box[3] / 2;
+        const ddx = x2 - x1,
+          ddy = y2 - y1;
+        const l = Math.hypot(ddx, ddy) || 1;
+        const px = -ddy / l,
+          py = ddx / l;
+        const side = px * (mx - ocx) + py * (my - ocy) >= 0 ? 1 : -1;
+        const reach = (box[2] / 2 + BEND_REACH) * side;
+        bend = [mx + px * reach, my + py * reach];
+        break;
+      }
+      const points = bend
+        ? [[x1 + ox, y1 + oy], bend, [x2 + ox, y2 + oy]]
+        : [
+            [x1 + ox, y1 + oy],
+            [x2 + ox, y2 + oy],
+          ];
+      out.push({
+        i,
+        key: keys[i],
+        from: e.from,
+        to: e.to,
+        points,
+        bow,
+        mid: midpointOf(points),
+        dashed: e.mode === "async",
+        label: e.label || e.protocol || null,
+      });
+    });
+  }
+  return out.sort((p, q) => p.i - q.i);
+}
+
+// Where the line actually is, halfway along. For a curve that is not the control point: the
+// control point sits twice as far out as the curve it pulls, so a label placed there drifts away
+// from its own edge as the edge is bowed. This is the quadratic at t = 0.5.
+export function midpointOf(points) {
+  if (points.length === 3) {
+    const [[x1, y1], [cx, cy], [x2, y2]] = points;
+    return [x1 * 0.25 + cx * 0.5 + x2 * 0.25, y1 * 0.25 + cy * 0.5 + y2 * 0.25];
+  }
+  const [[x1, y1], [x2, y2]] = points;
+  return [(x1 + x2) / 2, (y1 + y2) / 2];
+}
+
+export function pathOf(points) {
+  if (points.length === 3) {
+    const [[x1, y1], [cx, cy], [x2, y2]] = points;
+    return `M${x1.toFixed(1)} ${y1.toFixed(1)} Q${cx.toFixed(1)} ${cy.toFixed(1)} ${x2.toFixed(1)} ${y2.toFixed(1)}`;
+  }
+  const [[x1, y1], [x2, y2]] = points;
+  return `M${x1.toFixed(1)} ${y1.toFixed(1)} L${x2.toFixed(1)} ${y2.toFixed(1)}`;
+}
+
+// Group frames are the bounding box of members and child groups, exactly as the renderer draws
+// them, so a frame never has to be stored and can never drift from the membership.
+export function groupFrames(doc, boxes) {
+  const groups = doc.groups || [];
+  const frames = {};
+  const members = {},
+    children = {};
+  for (const g of groups) {
+    members[g.id] = [];
+    children[g.id] = [];
+  }
+  for (const n of doc.nodes) if (n.group && members[n.group]) members[n.group].push(n.id);
+  for (const g of groups) if (g.parent && children[g.parent]) children[g.parent].push(g.id);
+  const done = new Set();
+  const frameOf = (gid) => {
+    if (done.has(gid)) return frames[gid] || null;
+    done.add(gid);
+    const rects = [];
+    for (const c of children[gid] || []) {
+      const f = frameOf(c);
+      if (f) rects.push(f);
+    }
+    for (const id of members[gid] || []) if (boxes[id]) rects.push(boxes[id]);
+    if (!rects.length) return null;
+    const x0 = Math.min(...rects.map((r) => r[0])) - 16;
+    const y0 = Math.min(...rects.map((r) => r[1])) - 32;
+    const x1 = Math.max(...rects.map((r) => r[0] + r[2])) + 16;
+    const y1 = Math.max(...rects.map((r) => r[1] + r[3])) + 16;
+    frames[gid] = [x0, y0, x1 - x0, y1 - y0];
+    return frames[gid];
+  };
+  for (const g of groups) frameOf(g.id);
+  return frames;
+}
+
+// Which group frame contains a point, innermost first. Membership changes on drop use this, and
+// only this, so a drag can never re-parent a node by accident mid-move.
+export function innermostFrameAt(frames, x, y) {
+  let best = null,
+    bestArea = Infinity;
+  for (const [gid, f] of Object.entries(frames)) {
+    if (x < f[0] || y < f[1] || x > f[0] + f[2] || y > f[1] + f[3]) continue;
+    const area = f[2] * f[3];
+    if (area < bestArea) {
+      best = gid;
+      bestArea = area;
+    }
+  }
+  return best;
+}
+
+// How far a pointer sits from the straight line between two boxes, measured along the
+// perpendicular at the midpoint. This is the value a drag writes, so dragging an edge away from
+// its twin separates them and dragging it back returns it to the automatic path.
+export function bowAt(boxes, from, to, x, y) {
+  const a = boxes[from],
+    b = boxes[to];
+  if (!a || !b) return 0;
+  const ax = a[0] + a[2] / 2,
+    ay = a[1] + a[3] / 2;
+  const bx = b[0] + b[2] / 2,
+    by = b[1] + b[3] / 2;
+  const dx = bx - ax,
+    dy = by - ay;
+  const len = Math.hypot(dx, dy) || 1;
+  const mx = (ax + bx) / 2,
+    my = (ay + by) / 2;
+  const value = ((-dy / len) * (x - mx) + (dx / len) * (y - my)) * 2;
+  return Math.max(-1200, Math.min(1200, Math.round(value)));
+}

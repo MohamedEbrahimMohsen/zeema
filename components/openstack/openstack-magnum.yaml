@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenStack Magnum: makes container orchestration engines available as first class resources in OpenStack,
+# with ClusterTemplates, Keystone multi-tenancy, Neutron isolation and Cinder persistent volumes. Per the
+# "Magnum User Guide" the supported COE is kubernetes, master-count and node-count both default to 1, and the
+# Heat driver "is deprecated in favor of the k8s_capi_helm or k8s_cluster_api driver".
+schemaVersion: "1"
+type: "component"
+id: "openstack-magnum"
+kind: "container-orchestrator"
+provider: "openstack"
+defaults:
+  nodeCount: 1
+  managed: false
+properties:
+  coe:
+    type: "enum"
+    values: ["kubernetes"]
+    default: "kubernetes"
+  masterCount:
+    type: "integer"
+    default: 1
+  driver:
+    type: "enum"
+    values: ["heat", "k8s-capi-helm", "k8s-cluster-api"]
+  cinderPersistentVolumes:
+    type: "boolean"
+    default: false

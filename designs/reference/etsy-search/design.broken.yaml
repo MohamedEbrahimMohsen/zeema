@@ -1,0 +1,231 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture: Etsy search, broken variant. The same system as etsy-search.yaml with
+# the mistakes the Code as Craft posts themselves describe: the ORM writing the shards directly
+# after looking every record up in one unsharded index database, the render path owning the
+# Ketama ring for the cache pool with nothing to manage it, a per-query cache of personalised
+# ranked results that nothing can rebuild, Kafka and ZooKeeper packed into one zone to save
+# inter-zone network cost, and Franz retrying into those brokers without a circuit breaker.
+#
+# This file MUST trip:
+#   - single-writer-primary-at-peak-qps           (index-database is unsharded and takes 1.7M rps in front of every shard query)
+#   - business-updates-without-index-propagation  (mysql-shards and index-database are written sync by web-render-path, a search index exists, no CDC leaves them)
+#   - materialised-cache-without-rebuild-path     (ranking-cache is materialised, written only by an app-server and a model server)
+#   - stateful-engine-pinned-to-single-zone       (zookeeper sits in zone-a with replicated false)
+#   - stateful-hash-ring-without-ring-manager     (web-render-path shards by consistent hash with no coordination-service edge)
+#   - retry-without-adaptive-shedding             (franz retries into kafka with no circuit breaker and no rate limiter in front)
+# and MUST NOT trip:
+#   - cache-as-primary-store-without-persistence  (neither cache is usedAsPrimaryStore)
+#   - cache-missing-eviction-policy               (varnish, memcached and ranking-cache all declare lru)
+#   - datastore-missing-backup                    (both SQL stores declare backups and retention)
+#   - datastore-single-region                     (availability.multiRegion is false)
+#   - read-replica-as-sole-scaling                (neither SQL store declares async replication)
+#   - derived-store-without-cdc-or-rebuild        (index-primary is fed by search-indexer and listings-search by torrent-replicator, both async workers)
+#   - fanout-inline-in-request-path               (web-render-path reaches franz asynchronously)
+#   - read-heavy-path-without-cache               (traffic.readWriteRatio is not stated, and caches exist)
+#   - credentials-without-rotation                (security.credentialRotationDays is stated)
+#   - stateful-node-without-zone-redundancy       (nothing in zone-a is a stateful compute node)
+#   - sync-chain-too-deep                         (no api-gateway node and no latency.p95Ms)
+#   - queue-missing-dlq, retry-queue-without-dlq, pubsub-replay-required (no queue or pubsub topic in this design)
+#   - windowed-aggregation-without-watermark      (no stream-processor node)
+#   - shared-dependency-without-redundancy        (availability.discoveryRedundant is not required)
+#   - push-fanout-without-celebrity-path, cross-cell-call, object-store-single-zone-with-durability-target,
+#     multi-leader-store-without-conflict-policy, external-call-inline-without-durable-path (no such node, cell or store)
+schemaVersion: "1"
+type: "design"
+id: "etsy-search"
+
+requirements:
+  availability:
+    multiRegion: false
+    zones: 1
+  consistency:
+    model: "ap"
+  messaging:
+    replay: true
+    orderingScope: "partition"
+  traffic:
+    skew: "heavy-tail"
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "gcp-prod", kind: "region", label: "Google Cloud, single region" }
+  - { id: "zone-a", kind: "availability-zone", label: "Zone a", parent: "gcp-prod" }
+  - { id: "render-path", kind: "trust-zone", label: "Production render path", parent: "gcp-prod" }
+  - { id: "search-tier", kind: "trust-zone", label: "Search services on GKE", parent: "gcp-prod" }
+  - { id: "data-tier", kind: "trust-zone", label: "Data tier", parent: "gcp-prod" }
+  - { id: "relevance-offline", kind: "system", label: "Offline relevance pipeline", parent: "gcp-prod" }
+
+nodes:
+  - id: "buyer-client"
+    component: "user-device"
+    label: "Buyers on web, mobile web and app"
+    props: { platform: "multi" }
+
+  - id: "web-render-path"
+    component: "container-service"
+    label: "Production render path (PHP)"
+    group: "render-path"
+    props: { orchestrator: "kubernetes", runtime: "php", ownsData: true, criticality: "high", instances: 1000, shardingStrategy: "consistent-hash" }
+
+  - id: "internal-api"
+    component: "container-service"
+    label: "Internal http API cluster"
+    group: "render-path"
+    props: { orchestrator: "kubernetes", ownsData: false, criticality: "high" }
+    nfr: { rps: 300000 }
+
+  - id: "varnish"
+    component: "varnish"
+    label: "Varnish"
+    group: "render-path"
+    props: { evictionPolicy: "lru", invalidation: "ttl", persistence: false, usedAsPrimaryStore: false, materialised: false }
+
+  - id: "memcached"
+    component: "memcached"
+    label: "memcached pools"
+    group: "data-tier"
+    props: { evictionPolicy: "lru", hashing: "consistent", persistence: false, usedAsPrimaryStore: false, materialised: false, replication: "none" }
+    nfr: { rps: 20000000 }
+
+  - id: "ranking-cache"
+    component: "memcached"
+    label: "Ranked results cached per query"
+    group: "search-tier"
+    props: { evictionPolicy: "lru", hashing: "consistent", persistence: false, usedAsPrimaryStore: false, materialised: true, replication: "none" }
+
+  - id: "index-database"
+    component: "mysql"
+    label: "Index database, record id to shard"
+    group: "data-tier"
+    props: { sharded: false, backupEnabled: true, backupRetentionDays: 30, encryptionAtRest: true, multiWriter: false, distributed: false, replication: "none" }
+    nfr: { rps: 1700000, consistency: "strong" }
+
+  - id: "mysql-shards"
+    component: "mysql"
+    label: "Sharded MySQL, ~1,000 shards"
+    group: "data-tier"
+    props: { sharded: true, shardKey: "shop_id", backupEnabled: true, backupRetentionDays: 30, encryptionAtRest: true, multiWriter: false, distributed: false }
+    nfr: { rps: 1700000, consistency: "strong" }
+
+  - id: "search-app"
+    component: "container-service"
+    label: "Search application"
+    group: "search-tier"
+    props: { orchestrator: "kubernetes", runtime: "java-scala", ownsData: false, criticality: "high" }
+
+  - id: "spell-correction"
+    component: "container-service"
+    label: "spell_correction"
+    group: "search-tier"
+    props: { orchestrator: "kubernetes", ownsData: false }
+
+  - id: "mixer"
+    component: "container-service"
+    label: "mixer"
+    group: "search-tier"
+    props: { orchestrator: "kubernetes", ownsData: false }
+
+  - id: "listings-search"
+    component: "solr"
+    label: "listings_search replicas, candidate retrieval"
+    group: "search-tier"
+    props: { structure: "inverted", indexing: "async", replicas: 11, cloudMode: false }
+
+  - id: "index-primary"
+    component: "solr"
+    label: "Index build primary"
+    group: "search-tier"
+    props: { structure: "inverted", indexing: "batch", replicas: 1, rebuildCadenceHours: 24 }
+
+  - id: "torrent-replicator"
+    component: "container-worker"
+    label: "BitTorrent index replication"
+    group: "search-tier"
+    props: { trigger: "schedule", idempotent: true, orchestrator: "none" }
+
+  - id: "ranking-service"
+    component: "tensorflow-serving"
+    label: "Second-pass ranking, TF Ranking"
+    group: "search-tier"
+    props: { training: "batch", inputs: "both", batching: false }
+
+  - id: "relevance-student"
+    component: "tensorflow-serving"
+    label: "Semantic relevance student, two-tower BERT"
+    group: "search-tier"
+    props: { training: "batch", inputs: "live", batching: false }
+
+  - id: "relevance-teacher"
+    component: "vllm"
+    label: "Qwen 3 VL teacher, offline labelling"
+    group: "relevance-offline"
+    props: { training: "batch", inputs: "historical", accelerator: "gpu" }
+
+  - id: "search-indexer"
+    component: "container-worker"
+    label: "Search indexing streaming applications"
+    group: "search-tier"
+    props: { trigger: "stream", idempotent: true, orchestrator: "kubernetes" }
+
+  - id: "kafka"
+    component: "kafka"
+    label: "Kafka, single zone"
+    group: "zone-a"
+    props: { replicationFactor: 3, delivery: "at-least-once", ordering: "per-key", storage: "persistent" }
+
+  - id: "franz"
+    component: "container-worker"
+    label: "Franz, the primary Kafka producer"
+    group: "data-tier"
+    props: { trigger: "stream", orchestrator: "kubernetes" }
+
+  - id: "zookeeper"
+    component: "zookeeper"
+    label: "ZooKeeper"
+    group: "zone-a"
+    props: { role: "metadata", replicated: false, consensus: "zab" }
+
+  - id: "gke-search"
+    component: "google-gke"
+    label: "Search GKE cluster, search-flip and search-flop"
+    group: "search-tier"
+    props: { locationType: "zonal", zonesSpanned: 1, rbac: true }
+
+  - id: "deploy-pipeline"
+    component: "jenkins"
+    label: "Deployinator to Jenkins"
+    props: { trigger: "manual", credentialsStore: "jenkins-internal", selfHostedRunners: true }
+
+  - id: "metrics"
+    component: "observability-stack"
+    label: "StatsD relays and metrics"
+    props: { signal: "all", collectorMode: "push" }
+
+edges:
+  - { from: "buyer-client", to: "web-render-path", protocol: "https", mode: "sync", label: "search query from web, mobile web or app" }
+  - { from: "web-render-path", to: "varnish", protocol: "http", mode: "sync", label: "internal API call keyed on url, query and Vary" }
+  - { from: "varnish", to: "internal-api", protocol: "http", mode: "sync", label: "miss forwards to the downstream server" }
+  - { from: "web-render-path", to: "memcached", protocol: "memcached", mode: "sync", label: "look-aside, ring owned by the application" }
+  - { from: "web-render-path", to: "index-database", protocol: "mysql", mode: "sync", label: "look up record to shard before every sharded query" }
+  - { from: "web-render-path", to: "mysql-shards", protocol: "mysql", mode: "sync", label: "ORM writes the shard directly" }
+  - { from: "web-render-path", to: "search-app", protocol: "http", mode: "sync", label: "search request" }
+  - { from: "search-app", to: "spell-correction", protocol: "http", mode: "sync", label: "correct the query" }
+  - { from: "search-app", to: "mixer", protocol: "http", mode: "sync" }
+  - { from: "search-app", to: "listings-search", protocol: "http", mode: "sync", label: "first pass: top 1,000 of millions of listings" }
+  - { from: "search-app", to: "ranking-cache", protocol: "memcached", mode: "sync", label: "read the ranking cached for this query" }
+  - { from: "listings-search", to: "ranking-service", protocol: "grpc", mode: "sync", label: "second pass: rank the candidate set per user and query" }
+  - { from: "ranking-service", to: "ranking-cache", protocol: "memcached", mode: "sync", label: "store the ordered ranking per query" }
+  - { from: "ranking-service", to: "relevance-student", protocol: "grpc", mode: "sync", timeoutMs: 10, label: "filter, feature, loss weight and boost" }
+  - { from: "web-render-path", to: "franz", protocol: "http", mode: "async", delivery: "at-least-once", label: "marketplace change events" }
+  - { from: "franz", to: "kafka", protocol: "kafka", mode: "async", delivery: "at-least-once", retryPolicy: "fixed", label: "unlimited in-memory retries" }
+  - { from: "kafka", to: "search-indexer", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "one zone, so an outage stales the index" }
+  - { from: "search-indexer", to: "index-primary", protocol: "http", mode: "async", delivery: "at-least-once", batched: true, label: "index listing changes" }
+  - { from: "index-primary", to: "torrent-replicator", protocol: "http", mode: "async", label: "hash the optimized index into a torrent" }
+  - { from: "torrent-replicator", to: "listings-search", protocol: "bittorrent", mode: "async", label: "replicas download then seed" }
+  - { from: "kafka", to: "zookeeper", protocol: "zookeeper", mode: "sync", label: "cluster metadata, same zone as the brokers" }
+  - { from: "search-app", to: "relevance-teacher", protocol: "https", mode: "async", batched: true, label: "sampled search requests replayed daily" }
+  - { from: "relevance-teacher", to: "relevance-student", protocol: "https", mode: "async", batched: true, label: "millions of query-listing labels distilled into the student" }
+  - { from: "deploy-pipeline", to: "gke-search", protocol: "kubectl", mode: "sync", label: "build, push and kubectl apply per search service, in parallel" }
+  - { from: "web-render-path", to: "metrics", protocol: "statsd", mode: "async", delivery: "at-most-once" }
+  - { from: "search-app", to: "metrics", protocol: "statsd", mode: "async", delivery: "at-most-once" }

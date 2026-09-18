@@ -1,0 +1,42 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Imported 2026-09-08 from source/rate-limiter.md, a transcription of Figure 4-13 ("detailed
+# design", page 65) of Chapter 4 "Design a Rate Limiter" in "System Design Interview - An
+# Insider's Guide" by Alex Xu. The book is not copied into the repository.
+# Assumptions, all recorded in mapping.yaml and notes.md:
+#   - Client is one box drawn with a laptop and a phone; it becomes one web-browser node.
+#   - Rate limiter middleware -> redis-rate-limiter: no product is named for the limiter, but
+#     the figure and the chapter put its counters in the Redis box.
+#   - Rules (configuration files on disk) -> blob-store: the catalogue has no generic on-disk
+#     configuration or file store.
+#   - The "Request dropped" droplet is an outcome marker, not a runtime element; it and the
+#     "option 1" arrow into it are in mapping.yaml under ignored.
+#   - The double-headed line between the middleware and Redis is two edges.
+schemaVersion: "1"
+type: "design"
+id: "rate-limiter"
+
+requirements:
+  availability: { multiRegion: true, degradedModeAllowed: true }
+  latency:      { geoDistributed: true }
+  consistency:  { model: "ap" }
+
+nodes:
+  - { id: "client", component: "user-device", label: "Client" }
+  - { id: "rate-limiter-middleware", component: "redis-rate-limiter", label: "Rate limiter middleware" }
+  - { id: "cached-rules", component: "cache-cluster", label: "Cached rules" }
+  - { id: "rules", component: "file-store", label: "Rules" }
+  - { id: "workers", component: "container-worker", label: "Workers" }
+  - { id: "api-servers", component: "container-service", label: "API Servers" }
+  - { id: "redis", component: "redis", label: "Redis" }
+  - { id: "message-queue", component: "message-queue", label: "Message queue" }
+
+edges:
+  - { from: "client", to: "rate-limiter-middleware", protocol: "http", mode: "sync" }
+  - { from: "rate-limiter-middleware", to: "cached-rules", protocol: "cache", mode: "sync" }
+  - { from: "workers", to: "cached-rules", protocol: "cache", mode: "sync" }
+  - { from: "workers", to: "rules", protocol: "file", mode: "sync" }
+  - { from: "rate-limiter-middleware", to: "api-servers", protocol: "http", mode: "sync", label: "success" }
+  - { from: "rate-limiter-middleware", to: "redis", protocol: "redis", mode: "sync" }
+  - { from: "redis", to: "rate-limiter-middleware", protocol: "redis", mode: "sync" }
+  - { from: "rate-limiter-middleware", to: "client", protocol: "http", mode: "sync", label: "rate limited / 429: too many requests" }
+  - { from: "rate-limiter-middleware", to: "message-queue", protocol: "queue", mode: "async", delivery: "at-least-once", label: "option 2" }

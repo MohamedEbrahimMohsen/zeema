@@ -1,0 +1,37 @@
+source:
+  file: "source/rate-limiter.md"
+  format: "book-figure"
+  figures: ["4-13"]
+  counts: { nodes: 8, edges: 9, groups: 0 }
+  note: "Figure 4-13 draws 9 boxes and 10 arrows; the 'Request dropped' droplet and the 'option 1' arrow into it are listed under ignored (an outcome marker, not a runtime element), so the counted totals are 8 boxes and 9 arrows."
+nodes:
+  - { source: "Client", node: "client", component: "user-device", confidence: "close", note: "one box drawn with a laptop icon and a phone icon; mapped to the generic user-device component, whose platform is multi" }
+  - { source: "Rate limiter middleware", node: "rate-limiter-middleware", component: "redis-rate-limiter", confidence: "close", note: "standalone limiter tier, no product named; the figure draws its counters in the Redis box and the chapter states counters are read and incremented in Redis with Lua scripts, which is what redis-rate-limiter models; in-process-limiter would contradict the distributed design" }
+  - { source: "Cached rules", node: "cached-rules", component: "cache-cluster", confidence: "close", note: "generic CACHE box holding the rules, no product named" }
+  - { source: "Rules", node: "rules", component: "file-store", confidence: "close", note: "rate limiting rules as configuration files on disk; the generic file store, no product named" }
+  - { source: "Workers", node: "workers", component: "container-worker", confidence: "close", note: "generic worker pool that pulls the rules from disk into the cache" }
+  - { source: "API Servers", node: "api-servers", component: "container-service", confidence: "close", note: "generic service tier behind the limiter" }
+  - { source: "Redis", node: "redis", component: "redis", confidence: "exact", note: "drawn with the Redis logo and named Redis; counter store" }
+  - { source: "Message queue", node: "message-queue", component: "message-queue", confidence: "close", note: "generic queue box, no broker named" }
+groups: []
+edges:
+  - { source: "Client -> Rate limiter middleware", from: "client", to: "rate-limiter-middleware" }
+  - { source: "Rate limiter middleware -> Cached rules", from: "rate-limiter-middleware", to: "cached-rules", note: "the middleware loads the rules from the cache" }
+  - { source: "Workers -> Cached rules", from: "workers", to: "cached-rules", note: "workers store the rules they pulled into the cache" }
+  - { source: "Workers -> Rules", from: "workers", to: "rules", note: "drawn pointing at Rules; the workers pull the rule files from disk" }
+  - { source: "Rate limiter middleware -> API Servers (success)", from: "rate-limiter-middleware", to: "api-servers" }
+  - { source: "Rate limiter middleware -> Redis", from: "rate-limiter-middleware", to: "redis", note: "first head of the double-headed line: fetch and increment the counter" }
+  - { source: "Redis -> Rate limiter middleware", from: "redis", to: "rate-limiter-middleware", note: "second head of the same double-headed line: counter and last request timestamp come back" }
+  - { source: "Rate limiter middleware -> Client (rate limited / 429: too many requests)", from: "rate-limiter-middleware", to: "client" }
+  - { source: "Rate limiter middleware -> Message queue (option 2)", from: "rate-limiter-middleware", to: "message-queue", note: "rate limited requests kept to be processed later" }
+ignored:
+  - { source: "Request dropped", reason: "a droplet marking an outcome of the rate limited path, not a runtime element; no component represents a discarded request" }
+  - { source: "Rate limiter middleware -> Request dropped (option 1)", reason: "the arrow into the 'Request dropped' outcome marker; its target is not a node" }
+  - { source: "rate limited", reason: "label on the red trunk that the three red arrows leave from, not a box; kept on the arrow labels" }
+  - { source: "Figure 4-13", reason: "figure caption" }
+unmapped: []
+gaps:
+  - "An outcome box such as 'Request dropped' has no representation: a design is nodes and edges, and a terminal state that is not a runtime element can only be dropped to `ignored`."
+  - "No generic on-disk configuration or file store exists in the catalogue; the 'Rules' file store on disk had to be mapped to blob-store (object-store kind), which implies remote object storage the figure does not show."
+  - "A double-headed arrow has to become two edges, so the single request/response line between the middleware and Redis is counted twice in the design."
+  - "The red trunk label 'rate limited' applies to three arrows at once; edge labels are per edge, so the trunk label was folded into the label of the arrow back to the client and does not appear on the queue arrow."

@@ -1,0 +1,146 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture: Discord message storage and real-time gateway, broken variant.
+# The gateway assigns guilds to hosts at random, autoscales without draining sockets and
+# looks the guild node up in the registry on every reconnect with nothing limiting
+# concurrency, the guild ring has no owner, the API monolith talks to Cassandra directly,
+# and the migrator checkpoints into an unbacked-up local SQLite file.
+#
+# This file MUST trip:
+#   - reconnect-stampede-without-guard          (session-gateway calls guild-registry sync, stampedeGuard false)
+#   - shared-host-per-channel-without-isolation (session-gateway channelAssignment random, traffic.skew heavy-tail)
+#   - stateful-websocket-scale-in-without-drain (session-gateway autoscaling true, drainOnScaleIn false)
+#   - stateful-hash-ring-without-ring-manager   (guild-process is on a consistent hash ring with no edge to guild-registry)
+#   - datastore-missing-backup                  (migrator-checkpoints: SQLite, backupEnabled false, no retention)
+# and MUST NOT trip:
+#   - read-heavy-path-without-cache             (traffic.readWriteRatio is not stated, so the rule never arms)
+#   - datastore-single-region, multi-leader-store-without-conflict-policy (no multiRegion requirement, no multi-leader store)
+#   - single-writer-primary-at-peak-qps, read-replica-as-sole-scaling (the SQLite checkpoint file carries no rps)
+#   - credentials-without-rotation              (security.credentialRotationDays is set)
+#   - queue-missing-dlq, pubsub-replay-required, retry-queue-without-dlq (no queue or topic in this design)
+#   - cache-missing-eviction-policy, materialised-cache-without-rebuild-path, cache-as-primary-store-without-persistence (no cache node)
+#   - sync-chain-too-deep                       (no api-gateway node starts the chain)
+#   - stateful-node-without-zone-redundancy     (the design declares no availability zones)
+schemaVersion: "1"
+type: "design"
+id: "discord-messages"
+
+requirements:
+  latency:
+    p95Ms: 80
+  consistency:
+    model: "ap"
+  traffic:
+    skew: "heavy-tail"
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "gateway", kind: "system" }
+  - { id: "api", kind: "system" }
+  - { id: "data-services", kind: "system" }
+  - { id: "storage", kind: "system" }
+  - { id: "migration", kind: "system" }
+
+nodes:
+  - id: "desktop-client"
+    component: "desktop-app"
+    label: "Discord desktop app"
+    props: { platform: "desktop", persistentConnection: true, localCache: true }
+
+  - id: "web-client"
+    component: "web-browser"
+    label: "Discord web app"
+    props: { platform: "web", persistentConnection: true }
+
+  - id: "mobile-client"
+    component: "mobile-app"
+    label: "Discord mobile app"
+    props: { platform: "mobile", persistentConnection: true }
+
+  - id: "session-gateway"
+    component: "websocket-gateway"
+    label: "Session processes"
+    group: "gateway"
+    props: { protocol: "websocket", stateful: true, channelAssignment: "random", autoscaling: true, drainOnScaleIn: false, stampedeGuard: false }
+
+  - id: "guild-process"
+    component: "erlang-node"
+    label: "Guild processes"
+    group: "gateway"
+    props: { stateless: false, instancePerEntity: true, shardingStrategy: "consistent-hash", criticality: "high", clustered: true }
+
+  - id: "guild-registry"
+    component: "apache-helix"
+    label: "Guild registry"
+    group: "gateway"
+    props: { role: "sharding", consensus: "none", replicated: true, nodes: 10 }
+
+  - id: "presence-service"
+    component: "erlang-node"
+    label: "Presence"
+    group: "gateway"
+    props: { stateless: false, instancePerEntity: false, criticality: "high", clustered: true }
+
+  - id: "api-monolith"
+    component: "container-service"
+    label: "API monolith"
+    group: "api"
+    props: { stateless: true, runtime: "python", criticality: "high" }
+
+  - id: "snowflake-generator"
+    component: "snowflake-id"
+    label: "Snowflake ids"
+    group: "api"
+    props: { strategy: "snowflake", central: false, timeSortable: true }
+
+  - id: "data-services"
+    component: "container-service"
+    label: "Data services"
+    group: "data-services"
+    props: { stateless: true, runtime: "rust", criticality: "high" }
+
+  - id: "message-store"
+    component: "scylladb"
+    label: "ScyllaDB"
+    group: "storage"
+    props: { model: "wide-column", consistency: "eventual", partitionKey: "channel_id", bucketing: true, tombstoneTtlDays: 2 }
+
+  - id: "legacy-message-store"
+    component: "cassandra"
+    label: "Cassandra"
+    group: "storage"
+    props: { model: "wide-column", consistency: "eventual", partitionKey: "channel_id", bucketing: true, tombstoneTtlDays: 2 }
+
+  - id: "migrator"
+    component: "container-worker"
+    label: "Migrator"
+    group: "migration"
+    props: { trigger: "batch", idempotent: true }
+    nfr: { rps: 3200000 }
+
+  - id: "migrator-checkpoints"
+    component: "sqlite"
+    label: "Checkpoint file"
+    group: "migration"
+    props: { replication: "none", backupEnabled: false, journalMode: "wal" }
+
+edges:
+  - { from: "desktop-client", to: "session-gateway", protocol: "wss", mode: "async", delivery: "at-most-once", label: "persistent WebSocket" }
+  - { from: "web-client", to: "session-gateway", protocol: "wss", mode: "async", delivery: "at-most-once", label: "persistent WebSocket" }
+  - { from: "mobile-client", to: "session-gateway", protocol: "wss", mode: "async", delivery: "at-most-once", label: "persistent WebSocket" }
+  - { from: "desktop-client", to: "api-monolith", protocol: "https", mode: "sync", label: "send message" }
+  - { from: "web-client", to: "api-monolith", protocol: "https", mode: "sync", label: "send message" }
+  - { from: "mobile-client", to: "api-monolith", protocol: "https", mode: "sync", label: "send message" }
+  - { from: "session-gateway", to: "guild-registry", protocol: "erlang", mode: "sync", label: "guild node lookup on every reconnect" }
+  - { from: "session-gateway", to: "guild-process", protocol: "erlang", mode: "async", delivery: "at-most-once", label: "subscribe to guild" }
+  - { from: "guild-process", to: "session-gateway", protocol: "erlang", mode: "async", delivery: "at-most-once", batched: true, label: "fan-out via Manifold" }
+  - { from: "session-gateway", to: "presence-service", protocol: "erlang", mode: "async", delivery: "at-most-once", label: "presence change" }
+  - { from: "presence-service", to: "guild-process", protocol: "erlang", mode: "async", delivery: "at-most-once", label: "presence updates" }
+  - { from: "api-monolith", to: "snowflake-generator", protocol: "in-process", mode: "sync", label: "message id" }
+  - { from: "api-monolith", to: "data-services", protocol: "grpc", mode: "sync", label: "consistent-hash routed by channel_id" }
+  - { from: "data-services", to: "message-store", protocol: "cql", mode: "sync", batched: true, label: "coalesced reads and writes" }
+  - { from: "data-services", to: "legacy-message-store", protocol: "cql", mode: "sync", batched: true, label: "coalesced reads during migration" }
+  - { from: "api-monolith", to: "legacy-message-store", protocol: "cql", mode: "sync", label: "direct read, hot partition risk" }
+  - { from: "migrator", to: "legacy-message-store", protocol: "cql", mode: "sync", label: "read token ranges" }
+  - { from: "migrator", to: "message-store", protocol: "cql", mode: "sync", batched: true, label: "write up to 3.2M messages/sec" }
+  - { from: "migrator", to: "migrator-checkpoints", protocol: "sqlite", mode: "sync", label: "token range checkpoints" }

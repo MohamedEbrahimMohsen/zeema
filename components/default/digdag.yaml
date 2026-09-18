@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Digdag: open source orchestration engine sponsored by Treasure Data. "What's Digdag?" describes
+# a tool that builds, runs, schedules and monitors complex pipelines of tasks whose infrastructure
+# is a directed acyclic graph, with workflows written as *.dig files, automatic retrying of failed
+# tasks, and both a local mode and a server mode. No compensation or human-review step is
+# documented, so the kind defaults stand.
+schemaVersion: "1"
+type: "component"
+id: "digdag"
+kind: "workflow-engine"
+provider: "default"
+defaults:
+  managed: false
+  pattern: "dag"
+properties:
+  mode:
+    type: "enum"
+    values: ["local", "server"]
+  workflowFormat:
+    type: "string"
+    default: "dig"

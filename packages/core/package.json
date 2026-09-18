@@ -1,0 +1,20 @@
+{
+  "name": "@zeema/core",
+  "version": "0.1.0",
+  "description": "The Zeema engine: parse, serialise, document operations, structure checks, rules, layout, geometry. No dependencies, no environment.",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.js",
+    "./yaml": "./src/yaml.js",
+    "./document": "./src/document.js",
+    "./structure": "./src/structure.js",
+    "./rules": "./src/rules.js",
+    "./layout": "./src/layout.js",
+    "./geometry": "./src/geometry.js",
+    "./render": "./src/render.js"
+  },
+  "files": ["src"],
+  "scripts": { "test": "vitest run" },
+  "devDependencies": { "vitest": "5.0.0", "yaml": "2.8.2" }
+}

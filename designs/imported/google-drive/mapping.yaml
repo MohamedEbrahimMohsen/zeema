@@ -1,0 +1,39 @@
+source:
+  file: "source/google-drive.md"
+  format: "book-figure"
+  figures: ["15-10"]
+  counts: { nodes: 10, edges: 11, groups: 0 }
+nodes:
+  - { source: "User", node: "user", component: "user-device", confidence: "close", note: "one box drawn with a laptop and a phone icon; the generic user-device component, platform multi" }
+  - { source: "Block servers", node: "block-servers", component: "container-service", confidence: "close", note: "generic service tier that splits, compresses and encrypts blocks; no product named" }
+  - { source: "Cloud storage", node: "cloud-storage", component: "s3", confidence: "exact", note: "box is generic but the chapter names the storage system: blocks are stored in S3 and 'Amazon S3 is used for file storage'. crossRegionReplication from 'files are replicated in two separate geographical regions'." }
+  - { source: "Cold storage", node: "cold-storage", component: "blob-store", confidence: "close", note: "generic box; the chapter names Amazon S3 Glacier only as an example ('cold storage like ...'), so the generic blob store with tier cold" }
+  - { source: "Load balancer", node: "load-balancer", component: "load-balancer-tier", confidence: "close", note: "generic load balancer, no product named" }
+  - { source: "API servers", node: "api-servers", component: "container-service", confidence: "close", note: "generic service tier; the chapter calls it a stateless service" }
+  - { source: "Metadata Cache", node: "metadata-cache", component: "cache-cluster", confidence: "close", note: "generic cache tier, no product named; invalidation set to event from 'invalidate caches on database write'" }
+  - { source: "Metadata DB", node: "metadata-db", component: "relational-database", confidence: "close", note: "the chapter chooses a relational database for native ACID but names no engine; replication and sharding are stated, the replication mode is not (async assumed)" }
+  - { source: "Notification Service", node: "notification-service", component: "websocket-gateway", confidence: "close", note: "the generic in-house realtime gateway; the chapter's notification service is the tier every online client holds a long poll connection to, so protocol is long-poll. Not notification-platform, which is a push/email/SMS platform." }
+  - { source: "Offline backup Queue", node: "offline-backup-queue", component: "message-queue", confidence: "close", note: "generic queue, no broker named; role offline-mailbox because it stores changes for clients that are offline" }
+groups: []
+edges:
+  - { source: "User -> Block servers", from: "user", to: "block-servers" }
+  - { source: "User -> Load balancer", from: "user", to: "load-balancer" }
+  - { source: "User -> Notification Service (long polling)", from: "user", to: "notification-service" }
+  - { source: "Block servers -> Cloud storage", from: "block-servers", to: "cloud-storage" }
+  - { source: "Cloud storage -> Load balancer", from: "cloud-storage", to: "load-balancer", note: "the upload completion callback; drawn into the load balancer, which forwards it to the API servers" }
+  - { source: "Cloud storage -> Cold storage", from: "cloud-storage", to: "cold-storage" }
+  - { source: "Load balancer -> API servers", from: "load-balancer", to: "api-servers" }
+  - { source: "API servers -> Metadata Cache", from: "api-servers", to: "metadata-cache" }
+  - { source: "API servers -> Metadata DB", from: "api-servers", to: "metadata-db" }
+  - { source: "API servers -> Notification Service", from: "api-servers", to: "notification-service", note: "publish of a file change into a publisher/subscriber system, so async" }
+  - { source: "Notification Service -> Offline backup Queue", from: "notification-service", to: "offline-backup-queue" }
+ignored:
+  - { source: "Figure 15-10", reason: "caption, not a system element" }
+  - { source: "(dashed outline around the Block servers icons)", reason: "cluster styling of the Block servers box itself; it contains no other labelled box, so it is not a boundary" }
+  - { source: "(dashed outline around the API servers icons)", reason: "cluster styling of the API servers box itself; it contains no other labelled box, so it is not a boundary" }
+unmapped: []
+gaps:
+  - "One client box stands for two platforms (browser and mobile app). The client kind's platform property takes a single value and a box may not be split, so the node is web-browser only."
+  - "The metadata database states replication without a mode; the replication enum forces a choice, so async is assumed rather than left unstated."
+  - "A long poll is a held request: the client calls and waits, but the payload is a server-initiated event. Edge mode is sync or async with nothing in between, so the drawn direction (client -> service) is modelled sync."
+  - "The upload completion callback from cloud storage is an object-store event delivered as an HTTP request; there is no edge mode for 'event delivered synchronously', so it is sync."

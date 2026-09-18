@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OUTSCALE Object Storage (OOS): S3-API-compatible buckets and objects built on Scality RING
+# ("Introduction to OOS"). That page states versioning, server-side encryption and object lock
+# are settings you enable rather than defaults, and that OOS is not compatible with EIM users;
+# "OOS Resilience Mechanisms" states data is protected by erasure coding for larger data sets
+# and by replication across availability zones for smaller ones, with chunks spread over
+# locations, servers and drives of the same Region.
+schemaVersion: "1"
+type: "component"
+id: "outscale-oos"
+kind: "object-store"
+provider: "outscale"
+defaults:
+  managed: true
+  replication: "erasure-coded"
+  versioning: false
+  objectLock: false
+  encryptionAtRest: false
+properties:
+  s3ApiCompatible:
+    type: "boolean"
+    default: true
+  resilienceMechanism:
+    type: "enum"
+    values: ["erasure-coding", "replication"]
+    default: "erasure-coding"
+  objectKeyMaxBytes:
+    type: "integer"
+    default: 1024
+  bucketNameMaxLength:
+    type: "integer"
+    default: 63
+  eimUserSupport:
+    type: "boolean"
+    default: false

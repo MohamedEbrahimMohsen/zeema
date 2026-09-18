@@ -1,0 +1,224 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture: Zerodha Kite, clean variant. A cache-first retail trading platform —
+# every Kite read comes out of a hot Redis cache filled off the request path, orders pass through
+# Veto before they reach the vendor OMS, and NATS fans market ticks out over the ticker sockets.
+#
+# Fixes relative to zerodha-kite.broken.yaml:
+#   - cache-populators fill hot-redis-cache and etag-map asynchronously from the Postgres system of
+#     record, so the cache is rebuildable and is not the only copy of orders and positions
+#   - hot-redis-cache declares usedAsPrimaryStore false: Kite reads it, but Postgres owns the data
+#   - veto sits in front of the vendor OMS and rejects orders in place, so no application server
+#     calls the opaque third party inline, and the public API's synchronous chain stays at 3 hops
+#   - the primary Postgres is sharded across four postgres_fdw nodes rather than one primary
+#     absorbing the whole 40-50k QPS peak behind async failover replicas
+# This file MUST trip no rule.
+schemaVersion: "1"
+type: "design"
+id: "zerodha-kite"
+
+requirements:
+  availability:
+    multiRegion: false
+    degradedModeAllowed: false
+  latency:
+    p95Ms: 40
+  consistency:
+    model: "cp"
+    readAfterWrite: false
+  correctness:
+    tamperEvident: true
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "colo", kind: "region", label: "Zerodha data centres (exchange leased lines)" }
+  - { id: "exchange-zone", kind: "trust-zone", parent: "colo", label: "Exchange-facing" }
+  - { id: "aws", kind: "region", label: "AWS (P2P leased lines to the racks)" }
+  - { id: "public-edge", kind: "trust-zone", parent: "aws", label: "Public edge" }
+  - { id: "core-vpc", kind: "vpc", parent: "aws", label: "Core VPC" }
+
+nodes:
+  - id: "kite-web"
+    component: "web-browser"
+    label: "Kite web"
+    props: { platform: "web", localCache: true }
+
+  - id: "kite-mobile"
+    component: "mobile-app"
+    label: "Kite mobile"
+    props: { platform: "mobile", os: "both", localCache: true }
+
+  - id: "partner-apps"
+    component: "sdk-client"
+    label: "Third-party Kite Connect apps"
+    props: { platform: "sdk", persistentConnection: true }
+
+  - id: "edge-proxy"
+    component: "haproxy"
+    label: "HAProxy / NGINX"
+    group: "public-edge"
+    props: { layer: "l7", healthChecks: true }
+
+  - id: "kite-connect"
+    component: "envoy-gateway"
+    label: "Kite Connect"
+    group: "public-edge"
+    props: { auth: "oauth2", tls: true, protocol: "http" }
+
+  - id: "ticker"
+    component: "websocket-gateway"
+    label: "Ticker"
+    group: "public-edge"
+    props: { protocol: "websocket", stateful: true, subscriptionsPerUser: 3000 }
+
+  - id: "kite-backend"
+    component: "container-service"
+    label: "Kite backend"
+    group: "core-vpc"
+    props: { stateless: true, runtime: "go", criticality: "high", ownsData: false }
+
+  - id: "cache-populators"
+    component: "container-worker"
+    label: "Cache populators"
+    group: "core-vpc"
+    props: { trigger: "stream", idempotent: true }
+
+  - id: "veto"
+    component: "opa"
+    label: "Veto"
+    group: "core-vpc"
+    props: { effect: "deny", enforcementMode: "enforced", scope: "resource", deploymentMode: "daemon" }
+
+  - id: "veto-build"
+    component: "container-worker"
+    label: "Veto compiler and validation servers"
+    group: "core-vpc"
+    props: { trigger: "manual", orchestrator: "kubernetes" }
+
+  - id: "console"
+    component: "container-service"
+    label: "Console"
+    group: "core-vpc"
+    props: { stateless: true, runtime: "go", ownsData: false }
+
+  - id: "dungbeetle"
+    component: "container-worker"
+    label: "DungBeetle (sql-jobber)"
+    group: "core-vpc"
+    props: { trigger: "queue", rateControl: "fixed" }
+
+  - id: "contract-note-workers"
+    component: "container-worker"
+    label: "EOD contract-note workers (Tasqueue)"
+    group: "core-vpc"
+    props: { trigger: "schedule", schedule: "nightly", instances: 40, orchestrator: "nomad" }
+
+  - id: "market-data-bus"
+    component: "nats-jetstream"
+    label: "NATS market-data transport"
+    group: "core-vpc"
+    props: { delivery: "at-most-once", storage: "ephemeral", ordering: "global" }
+
+  - id: "kafka"
+    component: "kafka"
+    label: "Kafka central bus"
+    group: "core-vpc"
+    props: { delivery: "at-least-once", storage: "persistent" }
+
+  - id: "hot-redis-cache"
+    component: "redis"
+    label: "Hot Redis cache"
+    group: "core-vpc"
+    props: { persistence: false, evictionPolicy: "ttl", invalidation: "event", structure: "key-value", materialised: true, usedAsPrimaryStore: false }
+
+  - id: "etag-map"
+    component: "redis"
+    label: "E-Tag map"
+    group: "core-vpc"
+    props: { persistence: false, evictionPolicy: "ttl", invalidation: "event", structure: "hash-set", usedAsPrimaryStore: false }
+
+  - id: "primary-postgres"
+    component: "postgres"
+    label: "Primary Postgres shards"
+    group: "core-vpc"
+    props: { sharded: true, shardKey: "financial-year", replication: "async", backupEnabled: true, backupRetentionDays: 30, managed: false }
+    nfr: { rps: 50000, consistency: "strong" }
+
+  - id: "hot-cache-db"
+    component: "cache-cluster"
+    label: "Hot-cache Postgres"
+    group: "core-vpc"
+    props: { persistence: false, evictionPolicy: "ttl", invalidation: "event", materialised: true, usedAsPrimaryStore: false, replication: "none" }
+
+  - id: "clickhouse"
+    component: "clickhouse"
+    label: "ClickHouse"
+    group: "core-vpc"
+    props: { format: "columnar", realtime: true, managed: false }
+
+  - id: "log-pipeline"
+    component: "vector"
+    label: "Vector agents and aggregators"
+    group: "core-vpc"
+    props: { signal: "logs", collectorMode: "push", role: "aggregator", retentionDays: 90 }
+
+  - id: "prometheus"
+    component: "prometheus"
+    label: "Prometheus"
+    group: "core-vpc"
+    props: { signal: "metrics", collectorMode: "pull", remoteWrite: true }
+
+  - id: "contract-note-store"
+    component: "s3"
+    label: "Contract-note object store"
+    group: "aws"
+    props: { tier: "hot", encryptionAtRest: true }
+
+  - id: "oms"
+    component: "supplier-api"
+    label: "OMS (vendor)"
+    group: "exchange-zone"
+    props: { callbackStyle: "webhook", authScheme: "api-key" }
+
+  - id: "exchange"
+    component: "supplier-api"
+    label: "NSE / BSE / MCX"
+    group: "exchange-zone"
+    props: { callbackStyle: "none", authScheme: "mtls" }
+
+edges:
+  - { from: "kite-web", to: "edge-proxy", protocol: "https", mode: "sync", label: "E-Tag sent, 304 when unchanged" }
+  - { from: "kite-mobile", to: "edge-proxy", protocol: "https", mode: "sync", label: "E-Tag sent, 304 when unchanged" }
+  - { from: "partner-apps", to: "kite-connect", protocol: "https", mode: "sync", label: "OAuth-like token" }
+  - { from: "edge-proxy", to: "kite-backend", protocol: "http", mode: "sync", label: "pooled connections" }
+  - { from: "kite-backend", to: "hot-redis-cache", protocol: "redis", mode: "sync", label: "byte blob straight to the socket" }
+  - { from: "kite-backend", to: "etag-map", protocol: "redis", mode: "sync", label: "E-Tag per user per resource" }
+  - { from: "kite-backend", to: "primary-postgres", protocol: "postgres", mode: "sync", label: "ACID system of record" }
+  - { from: "kite-backend", to: "veto", protocol: "http", mode: "sync", label: "every order" }
+  - { from: "kite-connect", to: "veto", protocol: "http", mode: "sync", label: "POST /orders/:variety" }
+  - { from: "veto", to: "oms", protocol: "http-xml", mode: "sync", fallback: "none", label: "reject in place or proxy upstream" }
+  - { from: "oms", to: "exchange", protocol: "leased-line", mode: "sync", label: "exchange protocol over leased line" }
+  - { from: "oms", to: "kite-backend", protocol: "postback", mode: "async", delivery: "at-least-once", label: "COMPLETE, REJECTED, CANCELLED, UPDATE" }
+  - { from: "veto-build", to: "veto", protocol: "http", mode: "async", delivery: "at-most-once", label: "push .so plugin, hot reload" }
+  - { from: "primary-postgres", to: "cache-populators", protocol: "postgres", mode: "async", delivery: "at-least-once", label: "source of the cached state" }
+  - { from: "kafka", to: "cache-populators", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "consume the bus" }
+  - { from: "cache-populators", to: "hot-redis-cache", protocol: "redis", mode: "async", delivery: "at-least-once", label: "populate off the request path" }
+  - { from: "cache-populators", to: "etag-map", protocol: "redis", mode: "async", delivery: "at-least-once", label: "delete tag on invalidation" }
+  - { from: "kite-backend", to: "kafka", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "central bus, systems unaware of each other" }
+  - { from: "exchange", to: "market-data-bus", protocol: "nats", mode: "async", delivery: "at-most-once", label: "~16M ticks/sec" }
+  - { from: "market-data-bus", to: "ticker", protocol: "nats", mode: "async", delivery: "at-most-once", label: "last-value stream" }
+  - { from: "kite-web", to: "ticker", protocol: "wss", mode: "async", delivery: "at-most-once", label: "binary ticks, 3000 instruments per connection" }
+  - { from: "kite-mobile", to: "ticker", protocol: "wss", mode: "async", delivery: "at-most-once", label: "binary ticks" }
+  - { from: "partner-apps", to: "ticker", protocol: "wss", mode: "async", delivery: "at-most-once", label: "wss://ws.kite.trade" }
+  - { from: "ticker", to: "partner-apps", protocol: "wss", mode: "async", delivery: "at-most-once", label: "postbacks and alerts on the same socket" }
+  - { from: "kite-connect", to: "partner-apps", protocol: "https", mode: "async", delivery: "at-most-once", label: "postback signed with SHA-256" }
+  - { from: "console", to: "dungbeetle", protocol: "http", mode: "async", delivery: "at-least-once", label: "heavy SQL read jobs queued, not run inline" }
+  - { from: "dungbeetle", to: "primary-postgres", protocol: "postgres", mode: "sync", label: "load-capped by the queue" }
+  - { from: "dungbeetle", to: "hot-cache-db", protocol: "postgres", mode: "async", delivery: "at-least-once", label: "one ephemeral table per result set" }
+  - { from: "console", to: "hot-cache-db", protocol: "postgres", mode: "sync", label: "user filters and sorts" }
+  - { from: "console", to: "clickhouse", protocol: "http", mode: "sync", label: "immutable financial data" }
+  - { from: "contract-note-workers", to: "primary-postgres", protocol: "postgres", mode: "async", delivery: "at-least-once", batched: true, label: "EOD, 99% of all writes" }
+  - { from: "contract-note-workers", to: "contract-note-store", protocol: "https", mode: "async", delivery: "at-least-once", label: "5.3k req/s, fixed prefix partitioning" }
+  - { from: "kite-backend", to: "log-pipeline", protocol: "vector", mode: "async", delivery: "at-most-once", label: "agents ship, aggregators batch" }
+  - { from: "log-pipeline", to: "clickhouse", protocol: "http", mode: "async", delivery: "at-least-once", batched: true, label: "batched INSERTs" }
+  - { from: "kite-backend", to: "prometheus", protocol: "http", mode: "async", delivery: "at-most-once", label: "scrape, EC2 SD by tag" }

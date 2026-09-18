@@ -1,0 +1,80 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture: the distributed unique-id layer of Xu volume 1 chapter 7, built the way
+# Twitter Snowflake was: each datacenter runs its own generator that packs a 41-bit millisecond
+# timestamp, a configured 10-bit machine id and a 12-bit sequence into 64 bits, with no coordination
+# on the hot path and a refusal to issue ids while the clock runs backwards.
+#
+# Fixes relative to unique-id-generator.broken.yaml:
+#   - no central ticket server and no relational auto-increment row on the id path; every datacenter
+#     generates locally with snowflake-id, so the single point of failure the book warns about is gone
+#   - both generators are snowflake-id with clockRollbackGuard true and timeSortable true; the
+#     UUID fallback that produced 128-bit unordered ids in the second datacenter is removed
+#   - worker-id-registry is a replicated ensemble spanning the internal zone rather than one
+#     ZooKeeper instance pinned to a single availability zone
+#   - the id path has no datastore behind it at all, so nothing on it needs backups or read replicas
+# This file MUST trip no rule.
+schemaVersion: "1"
+type: "design"
+id: "unique-id-generator"
+
+requirements:
+  availability:
+    discoveryRedundant: true
+  latency:
+    p95Ms: 2
+  consistency:
+    model: "ap"
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "internal", kind: "trust-zone" }
+  - { id: "dc-a", kind: "region", parent: "internal" }
+  - { id: "dc-b", kind: "region", parent: "internal" }
+
+nodes:
+  - id: "app-tier-a"
+    component: "container-service"
+    label: "Client services (datacenter A)"
+    group: "dc-a"
+    props: { stateless: true, criticality: "high" }
+
+  - id: "app-tier-b"
+    component: "container-service"
+    label: "Client services (datacenter B)"
+    group: "dc-b"
+    props: { stateless: true, criticality: "high" }
+
+  - id: "id-generator-a"
+    component: "snowflake-id"
+    label: "Snowflake (datacenter A)"
+    group: "dc-a"
+    props: { strategy: "snowflake", central: false, replicated: false, timeSortable: true, clockRollbackGuard: true, workerIdBits: 10, sequenceBits: 12 }
+    nfr: { rps: 10000, latencyP95Ms: 2 }
+
+  - id: "id-generator-b"
+    component: "snowflake-id"
+    label: "Snowflake (datacenter B)"
+    group: "dc-b"
+    props: { strategy: "snowflake", central: false, replicated: false, timeSortable: true, clockRollbackGuard: true, workerIdBits: 10, sequenceBits: 12 }
+    nfr: { rps: 10000, latencyP95Ms: 2 }
+
+  - id: "worker-id-registry"
+    component: "zookeeper"
+    label: "Worker-id assignment"
+    group: "internal"
+    props: { role: "config", consensus: "zab", replicated: true }
+
+  - id: "entity-store"
+    component: "cassandra"
+    label: "Entity store keyed by id"
+    group: "internal"
+    props: { model: "wide-column", consistency: "tunable", encryptionAtRest: true }
+
+edges:
+  - { from: "app-tier-a", to: "id-generator-a", protocol: "thrift", mode: "sync", label: "next id, 2 ms" }
+  - { from: "app-tier-b", to: "id-generator-b", protocol: "thrift", mode: "sync", label: "next id, 2 ms" }
+  - { from: "id-generator-a", to: "worker-id-registry", protocol: "zookeeper", mode: "sync", label: "datacenter and machine id at startup" }
+  - { from: "id-generator-b", to: "worker-id-registry", protocol: "zookeeper", mode: "sync", label: "datacenter and machine id at startup" }
+  - { from: "app-tier-a", to: "entity-store", protocol: "cql", mode: "sync", idempotent: true, label: "write row keyed by the id" }
+  - { from: "app-tier-b", to: "entity-store", protocol: "cql", mode: "sync", idempotent: true, label: "write row keyed by the id" }

@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Elastic Defend: the endpoint integration that Elastic Agent runs to monitor host events and feed the
+# Elastic Security app. Every traditional endpoint preset except Data Collection enables malware,
+# ransomware, memory threat, malicious behaviour and credential theft prevention by default; the cloud
+# workload presets ship with preventions off ("Install the Elastic Defend integration").
+schemaVersion: "1"
+type: "component"
+id: "elastic-defend"
+kind: "monitoring"
+provider: "default"
+defaults:
+  managed: false
+  signal: "logs"
+  collectorMode: "push"
+properties:
+  preset:
+    type: "enum"
+    values: ["data-collection", "ngav", "essential-edr", "complete-edr", "cloud-all-events", "cloud-interactive-only"]
+  malwarePrevention:
+    type: "boolean"
+    default: true
+  ransomwarePrevention:
+    type: "boolean"
+    default: true
+  memoryThreatPrevention:
+    type: "boolean"
+    default: true
+  maliciousBehaviourPrevention:
+    type: "boolean"
+    default: true
+  credentialTheftPrevention:
+    type: "boolean"
+    default: true

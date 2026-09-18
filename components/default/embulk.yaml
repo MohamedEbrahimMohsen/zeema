@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Embulk: bulk data loader run as a batch job, assembled from plugins - input, output, filter, parser,
+# formatter, decoder and encoder - around a local executor. The guess executor infers the schema and
+# parser settings of a sample before the load runs ("Embulk: Docs").
+schemaVersion: "1"
+type: "component"
+id: "embulk"
+kind: "worker"
+provider: "default"
+defaults:
+  managed: false
+  trigger: "batch"
+  idempotent: false
+properties:
+  pluginType:
+    type: "enum"
+    values: ["input", "output", "filter", "parser", "formatter", "decoder", "encoder"]
+  guess:
+    type: "boolean"
+    default: true

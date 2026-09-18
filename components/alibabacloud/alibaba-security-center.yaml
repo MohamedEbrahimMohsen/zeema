@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Security Center: the workload protection and alerting plane for servers and cloud assets.
+# "What is Security Center" describes a cloud-native workload protection platform running a closed
+# loop of asset inventory, risk discovery, security hardening, real-time protection and proactive
+# detection and response; it states that the Agent is installed on servers to bring them under unified
+# protection, that Security Center detects and automatically blocks viruses, Trojans, unauthorized
+# logons and malicious files, and that every Alibaba Cloud account automatically gets the Free Edition
+# with basic vulnerability scanning, threat detection and abnormal logon alerts, above which the
+# Anti-virus, Advanced, Enterprise and Ultimate editions are sold. No log retention period is stated.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-security-center"
+kind: "monitoring"
+provider: "alibabacloud"
+defaults:
+  managed: true
+  signal: "alerts"
+  collectorMode: "push"
+  independentOfMonitored: false
+properties:
+  edition:
+    type: "enum"
+    values: ["free", "anti-virus", "advanced", "enterprise", "ultimate"]
+    default: "free"
+  agentRequired:
+    type: "boolean"
+    default: true
+  vulnerabilityScanning:
+    type: "boolean"
+    default: true

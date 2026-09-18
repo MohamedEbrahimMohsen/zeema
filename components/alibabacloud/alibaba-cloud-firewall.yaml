@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloud Firewall: SaaS firewall that isolates and controls traffic across cloud network borders.
+# The Cloud Firewall documentation describes unified security isolation and control across the
+# Internet border, VPC border, NAT border, host border and DNS border, integrating the Internet
+# firewall, VPC firewall, NAT firewall, host firewall and DNS firewall; it states that Cloud Firewall
+# integrates an intrusion prevention system (IPS) using real-time traffic inspection, virtual patching,
+# outbound threat protection and threat intelligence correlation, and that an enabled VPC firewall
+# filters traffic using deep packet inspection, intrusion prevention, threat intelligence, virtual
+# patching and access control policies. No default access control action is stated, so none is set.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-cloud-firewall"
+kind: "firewall"
+provider: "alibabacloud"
+defaults:
+  managed: true
+  intrusionPrevention: true
+properties:
+  firewallType:
+    type: "enum"
+    values: ["internet", "vpc", "nat", "host", "dns"]
+  threatIntelligence:
+    type: "boolean"
+    default: true
+  virtualPatching:
+    type: "boolean"
+    default: true

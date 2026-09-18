@@ -1,20 +1,11 @@
-# Arkore
+# Zeema
 
-Architecture as typed, queryable data.
+Software architecture as **typed, queryable data**.
 
-## The problem
-
-Architecture diagrams are pictures. A PNG, a draw.io file, even a Structurizr model knows
-that a box is labelled "Kafka". Nothing knows what Kafka *is*: that it can replay, that
-SNS cannot, that a queue without a dead-letter queue drops poison messages. So no tool can
-tell you that your design promises replay and uses a topic that cannot deliver it.
-
-Arkore replaces the picture with a model. A node is not a box named Kafka. It is a
-`kafka` component, which is a `queue`, which has a delivery guarantee, an ordering, a
-dead-letter queue flag and a replay flag. Rules read those properties. Renderers draw them.
-Agents reason over them instead of guessing from a screenshot.
-
-## Ten lines
+A diagram is a picture. A Zeema design is a model: every box is a catalogued component with
+real properties, every promise the system makes is written down under `requirements`, and rules
+check the two against each other. A linter finds design mistakes deterministically, a diff in a
+pull request is readable, and any renderer can draw the same design.
 
 ```yaml
 schemaVersion: "1"
@@ -29,40 +20,48 @@ edges:
 ```
 
 The rule `pubsub-replay-required` fires: the design requires replay, and SNS cannot replay.
-A diagram of the same system says nothing.
 
 ## What is here
 
-This repository is the **format**, not yet the tool.
-
-| Folder | Contents |
+| Path | What |
 |---|---|
-| `schema/` | JSON Schema for each document type; drives editor validation and autocomplete |
-| `kinds/` | Abstract vocabulary: 71 kinds across messaging, compute, data, edge, external, client, ops and security (see `docs/catalogue-v1.md`) |
-| `components/<provider>/` | Concrete products implementing a kind, 1610 in total, grouped by owning vendor: `aws/` (285), `azure/` (174), `gcp/` (227), `oci/` (168), `cloudflare/` (98), `default/` (658); coverage checklists per provider in `docs/inventory/` |
-| `rules/` | Deterministic lint rules written as declarative YAML predicates |
-| `designs/` | Reference architectures, each in a clean and a deliberately broken variant |
-| `locales/` | Display names and descriptions, keyed by id |
-| `icons/` | One 24x24 SVG glyph per kind and per component, plus the provider marks used as badges |
-| `docs/` | The specification, governance, usage guide, and the gap log |
-| `references/designs/` | Designs imported from real sources, each with its original, its Arkore encoding and the mapping between them |
-| `.claude/` | Skills and helper scripts for maintaining the catalogue and importing designs; tooling, not the format |
+| `kinds/` `components/` `rules/` `locales/` `icons/` `schema/` | The catalogue: 71 kinds, 1,855 components across twelve providers, 36 rules, display text, icons, JSON Schemas |
+| `designs/` | Reference designs (each with a deliberately broken twin), imported designs (with fidelity mappings), authored designs |
+| `packages/core` | The engine: span-preserving YAML, document operations, structural checks, rules, layout, geometry, renderers. Zero dependencies, no environment |
+| `packages/catalogue` | Loads the catalogue, builds the client bundle, runs the repository gate |
+| `packages/cli` | `zeema lint / validate / render / catalogue / init` |
+| `apps/web` | The community platform: browse, drag-and-drop canvas, YAML editor, own, publish, clone, export; GitHub sign-in |
+| `docs/` | The format specification, governance, usage, the full product plan (`docs/final-plan.md`), intake cards, provider inventories |
 
-Start with [docs/format.md](docs/format.md) for the specification and
-[docs/governance.md](docs/governance.md) for how the vocabulary is curated.
+## Run it
 
-## The thesis being tested
+```bash
+pnpm install
+pnpm validate            # the repository gate
+pnpm test                # every package's tests
+pnpm dev                 # the web app on http://localhost:3000 (embedded Postgres, local sign-in)
+```
 
-A typed architecture model can catch design problems that a picture cannot. If the rules
-in `rules/` find real issues in real designs, the thesis holds. If they turn out trivial
-or unenforceable, that is worth knowing early.
+The web app needs nothing installed: without `DATABASE_URL` it uses an embedded Postgres under
+`apps/web/.pglite`, and with `AUTH_DEV_LOGIN=1` it offers a local account. For a real deployment
+set `DATABASE_URL`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` and `APP_ORIGIN` (see
+`apps/web/.env.example`).
 
-## Status
+## Lint a design in your own repository
 
-Pre-implementation. The format is being shaped against real architectures before any
-code is written. The linter, the `npx arkore lint` command and the GitHub Action come
-after the format stops changing.
+```bash
+npx @zeema/cli init     # starter design, config, editor schema mapping, CI workflow
+npx @zeema/cli lint     # exit 1 on structural errors or rules of severity error
+```
+
+## Documents
+
+- `docs/format.md`: every field of every document type.
+- `docs/final-plan.md`: the complete product plan, requirements and milestones.
+- `docs/deploy.md`: how to run the platform for real (Postgres, GitHub OAuth app, Docker).
+- `docs/governance.md`: how the vocabulary is curated and extended.
+- `AGENTS.md`: how to work in this repository, for people and for coding agents.
 
 ## License
 
-MIT.
+MIT. See `LICENSE`. Icon provenance is recorded in `icons/README.md`.

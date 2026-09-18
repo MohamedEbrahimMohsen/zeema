@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# PolarDB-X (PolarDB for Xscale): cloud-native distributed database fully compatible with MySQL.
+# "What is PolarDB for Xscale?" states that transparent distribution shards on the primary key by
+# default, that a self-developed Paxos algorithm gives zero RPO and an RTO under 10 seconds, and that
+# a Timestamp Oracle and distributed MVCC hold isolation and consistency across distributed
+# transactions; the same page lists hybrid transactional and analytical processing. "PolarDB-X
+# architecture and key advantages" gives the compute node and data node split and two-phase commit
+# coordination for distributed transactions.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-polardb-x"
+kind: "sql-database"
+provider: "alibabacloud"
+defaults:
+  managed: true
+  distributed: true
+  sharded: true
+  shardKey: "primary-key"
+  commitProtocol: "two-phase"
+  replication: "sync"
+properties:
+  mysqlCompatible:
+    type: "boolean"
+    default: true
+  transparentSharding:
+    type: "boolean"
+    default: true
+  htap:
+    type: "boolean"
+    default: true

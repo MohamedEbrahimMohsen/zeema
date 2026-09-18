@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenSearch: "a one-stop platform used to develop commercial intelligent search services", a PaaS built on
+# the large-scale distributed search engine that serves Taobao, Tmall and Cainiao ("What is OpenSearch?").
+# "Introduction to Retrieval Engine Edition" describes an online search system that loads indexes and serves
+# retrieval and an offline indexing system that builds full, incremental and real-time indexes. The product
+# ships several editions, including a Vector Search Edition and an LLM-based Conversational Search Edition.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-open-search"
+kind: "search-index"
+provider: "alibabacloud"
+defaults:
+  managed: true
+  structure: "inverted"
+properties:
+  edition:
+    type: "enum"
+    values: ["retrieval-engine", "vector-search", "llm-conversational-search", "industry-algorithm", "high-performance-search"]
+    default: "retrieval-engine"
+  indexBuild:
+    type: "enum"
+    values: ["full", "incremental", "real-time"]

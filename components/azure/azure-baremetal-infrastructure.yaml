@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure BareMetal Infrastructure: dedicated bare-metal instances provisioned by Microsoft and surfaced in the
+# Azure portal through the Microsoft.BareMetalInfrastructure resource provider ("Work with Azure Large
+# Instances in the Azure portal", which states that BareMetal Infrastructure and BareMetal Instances are
+# synonyms for Azure Large Instances). That page states each deployed tenant gets an automatically created
+# proximity placement group and that each instance records an ExpressRoute circuit ID among its properties;
+# "az baremetalinstance" gives the instance SKUs (S72 to S960m) and the hardware types.
+schemaVersion: "1"
+type: "component"
+id: "azure-baremetal-infrastructure"
+kind: "virtual-machine"
+provider: "azure"
+defaults:
+  managed: true
+properties:
+  instanceSize:
+    type: "string"
+  hardwareType:
+    type: "enum"
+    values: ["cisco-ucs", "hpe", "sdflex"]
+  proximityPlacementGroup:
+    type: "boolean"
+    default: true
+  expressRouteConnected:
+    type: "boolean"
+    default: true

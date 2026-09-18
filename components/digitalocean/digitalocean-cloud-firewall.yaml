@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# DigitalOcean Cloud Firewall: a "network-based, stateful firewall service for Droplets" applied
+# outside the Droplet at no additional cost; rules carry allow and deny actions and deny takes
+# precedence over an allow matching the same traffic ("Cloud Firewalls"). "Firewalls Limits":
+# firewalls "block all traffic that isn't expressly permitted by a rule", and one firewall covers
+# at most 10 Droplets and 5 tags with 50 inbound and outbound rules combined and 1,000 entries in
+# a rule's sources or destinations.
+schemaVersion: "1"
+type: "component"
+id: "digitalocean-cloud-firewall"
+kind: "firewall"
+provider: "digitalocean"
+defaults:
+  managed: true
+  stateful: true
+  defaultAction: "deny"
+properties:
+  maxRules:
+    type: "integer"
+    default: 50
+  maxDroplets:
+    type: "integer"
+    default: 10
+  maxTags:
+    type: "integer"
+    default: 5
+  maxSourceEntriesPerRule:
+    type: "integer"
+    default: 1000
+  denyRules:
+    type: "boolean"
+    default: true

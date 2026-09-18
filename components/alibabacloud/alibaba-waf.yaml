@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Web Application Firewall 3.0: inspects HTTP and HTTPS traffic for protected objects such as ALB,
+# CLB, ECS and Function Compute, or for domains pointed at it by CNAME. "What is Web Application
+# Firewall": modules for web attack protection, HTTP flood protection, bot management, fine-grained
+# access control, API security and AI application protection. "Configure core web protection rules
+# and rule groups": the rule protection module is enabled by default with the Medium rule group in
+# Block mode, semantic protection defaults to Log mode with complete SQL statement detection on,
+# and the intelligent O&M module is off.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-waf"
+kind: "waf"
+provider: "alibabacloud"
+defaults:
+  mode: "prevention"
+  managedRuleSet: "medium"
+  managed: true
+properties:
+  semanticProtectionMode:
+    type: "enum"
+    values: ["log", "block"]
+    default: "log"
+  completeSqlStatementDetection:
+    type: "boolean"
+    default: true
+  intelligentOps:
+    type: "boolean"
+    default: false

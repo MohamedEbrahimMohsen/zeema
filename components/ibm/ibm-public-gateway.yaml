@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Public gateway for VPC: source NAT for the subnets of one zone. "All of your public gateway
+# traffic flows out of the floating IP address that is associated with your public gateway", one
+# address per gateway; "only one public gateway per zone is allowed in a VPC, but that public
+# gateway can be attached to multiple subnets in the zone"; and it "provides only outbound
+# connectivity to virtual server instances" ("About public gateways").
+schemaVersion: "1"
+type: "component"
+id: "ibm-public-gateway"
+kind: "nat-gateway"
+provider: "ibm"
+defaults:
+  managed: true
+  staticIpCount: 1
+  zoneRedundant: false
+properties:
+  inboundConnections:
+    type: "boolean"
+    default: false
+  sharedAcrossSubnets:
+    type: "boolean"
+    default: true

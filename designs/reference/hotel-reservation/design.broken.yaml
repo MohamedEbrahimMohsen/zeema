@@ -1,0 +1,185 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture, broken variant: the same hotel reservation system with the booking
+# workflow removed. The reservation service calls fraud, payment and the supplier inline, the
+# charge carries no idempotency key, the availability cache is written only by the application,
+# and the optimistic-lock retry on the inventory shard has nothing to stop it storming.
+#
+# This file MUST trip:
+#   - external-call-inline-without-durable-path  (payment-service -> psp and reservation-service -> supplier-api are sync with no workflow engine or queue anywhere)
+#   - money-mutation-without-idempotency-key     (payment-service -> psp does not declare idempotent while correctness.exactlyOnceEffect is true)
+#   - materialised-cache-without-rebuild-path    (inventory-cache is materialised and only reservation-service, an app-server, writes it)
+#   - cache-missing-eviction-policy              (price-cache declares evictionPolicy none)
+#   - retry-without-adaptive-shedding            (reservation-service -> reservation-db retries with no circuit breaker and no rate limiter in front of the shard)
+# and MUST NOT trip:
+#   - cache-as-primary-store-without-persistence (both caches keep usedAsPrimaryStore false; reservation-db is still the source of truth)
+#   - read-heavy-path-without-cache              (inventory-cache and price-cache still exist; that rule is design-wide)
+#   - datastore-missing-backup, datastore-single-region (both databases declare backups and retention; multiRegion is false)
+#   - credentials-without-rotation               (security.credentialRotationDays is still declared)
+#   - single-writer-primary-at-peak-qps, read-replica-as-sole-scaling (reservation-db is sharded; neither store is declared above 5000 rps)
+#   - derived-store-without-cdc-or-rebuild, business-updates-without-index-propagation (no search-index node)
+#   - queue-missing-dlq, retry-queue-without-dlq, pubsub-replay-required (no queue or topic in this design)
+#   - sync-chain-too-deep                        (no latency.p95Ms requirement is stated by the sources)
+#   - stateful-node-without-zone-redundancy, shared-dependency-without-redundancy,
+#     object-store-single-zone-with-durability-target, multi-leader-store-without-conflict-policy (no such nodes)
+schemaVersion: "1"
+type: "design"
+id: "hotel-reservation"
+
+requirements:
+  availability:
+    multiRegion: false
+  consistency:
+    model: "cp"
+    readAfterWrite: true
+  correctness:
+    exactlyOnceEffect: true
+  traffic:
+    readWriteRatio: 100
+  security:
+    credentialRotationDays: 90
+
+groups:
+  - { id: "primary-dc", kind: "region" }
+  - { id: "edge", kind: "trust-zone", parent: "primary-dc" }
+  - { id: "core", kind: "trust-zone", parent: "primary-dc" }
+  - { id: "partners", kind: "trust-zone" }
+
+nodes:
+  - id: "web-client"
+    component: "web-browser"
+    props: { platform: "web" }
+
+  - id: "mobile-client"
+    component: "mobile-app"
+    props: { platform: "mobile", os: "both" }
+
+  - id: "static-cdn"
+    component: "content-delivery-network"
+    group: "edge"
+    props: { caching: true, tls: true }
+
+  - id: "api-gateway"
+    component: "envoy-gateway"
+    group: "edge"
+    props: { auth: "oauth2", rateLimiting: true, tls: true, idempotencyKeys: false, protocol: "http" }
+    nfr: { rps: 300 }
+
+  - id: "hotel-service"
+    component: "container-service"
+    group: "core"
+    props: { orchestrator: "kubernetes", autoscaling: true, criticality: "medium" }
+    nfr: { rps: 300 }
+
+  - id: "rate-service"
+    component: "container-service"
+    group: "core"
+    props: { orchestrator: "kubernetes", autoscaling: true, criticality: "medium" }
+    nfr: { rps: 300 }
+
+  - id: "price-search-service"
+    component: "container-service"
+    group: "core"
+    props: { orchestrator: "kubernetes", autoscaling: true, criticality: "medium" }
+
+  - id: "reservation-service"
+    component: "container-service"
+    group: "core"
+    props: { orchestrator: "kubernetes", autoscaling: true, criticality: "high" }
+    nfr: { rps: 3, consistency: "strong" }
+
+  - id: "fraud-service"
+    component: "container-service"
+    group: "core"
+    props: { orchestrator: "kubernetes", criticality: "high" }
+
+  - id: "payment-service"
+    component: "container-service"
+    group: "core"
+    props: { orchestrator: "kubernetes", criticality: "high" }
+
+  - id: "hotel-management-service"
+    component: "container-service"
+    group: "core"
+    props: { orchestrator: "kubernetes", criticality: "medium" }
+
+  - id: "smart-ttl"
+    component: "tensorflow-serving"
+    group: "core"
+    label: "SmartTTL"
+    props: { training: "batch", inputs: "both", batching: true }
+
+  - id: "smart-scheduler"
+    component: "cron-job"
+    group: "core"
+    label: "SmartScheduler"
+    props: { trigger: "schedule", idempotent: true, rateControl: "fixed", overlapAllowed: false, missedRunPolicy: "skip" }
+
+  - id: "supplier-quota-limiter"
+    component: "in-process-limiter"
+    group: "core"
+    props: { algorithm: "token-bucket", scope: "global", failMode: "closed", placement: "sidecar", distributed: true, perReplicaQuotaDivision: true }
+
+  - id: "inventory-cache"
+    component: "redis"
+    group: "core"
+    props: { cluster: true, evictionPolicy: "lru", invalidation: "none", structure: "hash-set", materialised: true, usedAsPrimaryStore: false, persistence: false, replication: "multi-az" }
+    nfr: { rps: 300 }
+
+  - id: "price-cache"
+    component: "cache-cluster"
+    group: "core"
+    label: "Price DB"
+    props: { evictionPolicy: "none", invalidation: "ttl", structure: "key-value", materialised: false, usedAsPrimaryStore: false, persistence: false, replication: "multi-az" }
+
+  - id: "reservation-db"
+    component: "relational-database"
+    group: "core"
+    label: "Reservation + room_type_inventory"
+    props: { sharded: true, shardKey: "hotel_id", concurrencyControl: "optimistic", replication: "async", backupEnabled: true, backupRetentionDays: 30, encryptionAtRest: true, commitProtocol: "single" }
+    nfr: { rps: 300, consistency: "strong" }
+
+  - id: "hotel-rate-db"
+    component: "relational-database"
+    group: "core"
+    label: "Hotel + room_type_rate"
+    props: { sharded: false, replication: "async", backupEnabled: true, backupRetentionDays: 30, encryptionAtRest: true }
+    nfr: { rps: 600 }
+
+  - id: "supplier-api"
+    component: "supplier-api"
+    group: "partners"
+    props: { authScheme: "api-key", callbackStyle: "none", idempotent: false, handlesMoney: false }
+
+  - id: "psp"
+    component: "payment-service-provider"
+    group: "partners"
+    props: { idempotent: true, handlesMoney: true, callbackStyle: "webhook", signedCallbacks: true, hostedPage: true }
+
+edges:
+  - { from: "web-client", to: "static-cdn", protocol: "https", mode: "sync", label: "static assets" }
+  - { from: "mobile-client", to: "static-cdn", protocol: "https", mode: "sync", label: "static assets" }
+  - { from: "web-client", to: "api-gateway", protocol: "https", mode: "sync" }
+  - { from: "mobile-client", to: "api-gateway", protocol: "https", mode: "sync" }
+  - { from: "api-gateway", to: "hotel-service", protocol: "grpc", mode: "sync", timeoutMs: 1000, label: "hotel and room type detail" }
+  - { from: "api-gateway", to: "rate-service", protocol: "grpc", mode: "sync", timeoutMs: 1000, label: "room type rates" }
+  - { from: "api-gateway", to: "price-search-service", protocol: "grpc", mode: "sync", timeoutMs: 2000, label: "search supplier prices" }
+  - { from: "api-gateway", to: "reservation-service", protocol: "grpc", mode: "sync", timeoutMs: 3000, label: "reserve" }
+  - { from: "api-gateway", to: "hotel-management-service", protocol: "grpc", mode: "sync", timeoutMs: 3000, label: "admin crud on hotels and inventory" }
+  - { from: "hotel-service", to: "hotel-rate-db", protocol: "sql", mode: "sync", timeoutMs: 500, label: "hotel and room type rows" }
+  - { from: "rate-service", to: "hotel-rate-db", protocol: "sql", mode: "sync", timeoutMs: 500, label: "room_type_rate rows" }
+  - { from: "hotel-management-service", to: "hotel-rate-db", protocol: "sql", mode: "sync", timeoutMs: 1000, label: "hotel crud" }
+  - { from: "hotel-management-service", to: "reservation-db", protocol: "sql", mode: "sync", timeoutMs: 1000, label: "total_inventory updates" }
+  - { from: "reservation-service", to: "inventory-cache", protocol: "redis", mode: "sync", timeoutMs: 50, label: "availability check" }
+  - { from: "reservation-service", to: "inventory-cache", protocol: "redis", mode: "async", label: "decrement available count from application code" }
+  - { from: "reservation-service", to: "reservation-db", protocol: "sql", mode: "sync", timeoutMs: 1000, retryPolicy: "exponential", label: "insert reservation, retry on version conflict" }
+  - { from: "reservation-service", to: "fraud-service", protocol: "grpc", mode: "sync", timeoutMs: 2000, label: "fraud check inline" }
+  - { from: "reservation-service", to: "supplier-api", protocol: "https", mode: "sync", timeoutMs: 10000, label: "confirm supplier booking inline" }
+  - { from: "reservation-service", to: "payment-service", protocol: "grpc", mode: "sync", timeoutMs: 5000, label: "charge inline" }
+  - { from: "payment-service", to: "psp", protocol: "https", mode: "sync", timeoutMs: 10000, label: "charge card" }
+  - { from: "price-search-service", to: "price-cache", protocol: "redis", mode: "sync", timeoutMs: 50, label: "itinerary price lookup" }
+  - { from: "price-search-service", to: "smart-ttl", protocol: "grpc", mode: "sync", timeoutMs: 100, fallback: "static", label: "predict ttl for this search cluster" }
+  - { from: "smart-ttl", to: "price-cache", protocol: "redis", mode: "sync", timeoutMs: 50, label: "write learned per-itinerary ttl" }
+  - { from: "price-search-service", to: "supplier-quota-limiter", protocol: "http", mode: "sync", timeoutMs: 100, fallback: "cached", label: "on price cache miss" }
+  - { from: "smart-scheduler", to: "supplier-quota-limiter", protocol: "http", mode: "async", delivery: "at-least-once", label: "prefetch high-value itineraries at constant qps" }
+  - { from: "supplier-quota-limiter", to: "supplier-api", protocol: "https", mode: "sync", timeoutMs: 5000, fallback: "cached", label: "fetch price within supplier qps quota" }
+  - { from: "supplier-quota-limiter", to: "price-cache", protocol: "redis", mode: "async", delivery: "at-least-once", label: "store fetched price" }

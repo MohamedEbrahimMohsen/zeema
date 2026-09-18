@@ -121,6 +121,7 @@ Status: `done` = component exists in `components/aws/`. `todo` = to be written.
 Amazon RDS is one row: MySQL, PostgreSQL, MariaDB, Oracle, SQL Server and Db2 are an engine
 property of the instance, not separate nodes. The same holds for ElastiCache (Valkey, Redis
 OSS, Memcached) and Amazon MQ (ActiveMQ, RabbitMQ).
+| Amazon DynamoDB Streams | aws-dynamodb-streams | change-data-capture | done | https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Streams.html |
 
 ## Networking A — VPC and connectivity
 
@@ -532,6 +533,220 @@ Amazon Pinpoint is retained as a component although it is in sunset with end of 
 | media-transcoder | An encoder or transcoder has an input source, an output bitrate ladder with per-rendition codecs and resolutions, a job queue with reserved or on-demand pricing, and a channel state (running/idle) for live encoders. `media-router` carries a transport path and `worker` carries a generic job; neither can express renditions or codecs, which are exactly what a delivery rule needs (for example: every ABR ladder must have a sub-1 Mbps rendition, or every live channel must have a redundant pipeline). Used by AWS Elemental MediaConvert and MediaLive. |
 | contact-center | A contact center has inbound and outbound phone numbers, contact flows, agent queues with concurrency limits, recording and transcript retention, and a routing profile per agent group. `notification-service` sends one-way messages and has no queue, agent or recording property; `media-router` carries streams but no routing rules or agent capacity. A rule that checks call recording retention against a compliance policy, or that an emergency-calling number is configured, needs a kind that holds these. Used by Amazon Connect. |
 
+## Mingrammer nodes not catalogued
+
+| resource | id | kind | status | source |
+|---|---|---|---|---|
+| Analytics | — | — | skip: Service family icon, not a product. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Amazon CloudSearch search documents | — | — | skip: Search document artifact uploaded to a CloudSearch domain, not a node. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Data lake | — | — | skip: Generic architecture-pattern icon, not a product. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Amazon EMR MapR M3 engine | — | — | skip: Retired MapR distribution option of an EMR cluster, not a separate node. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Amazon EMR MapR M5 engine | — | — | skip: Retired MapR distribution option of an EMR cluster, not a separate node. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Amazon EMR MapR M7 engine | — | — | skip: Retired MapR distribution option of an EMR cluster, not a separate node. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Amazon EMR engine | — | — | skip: Application engine installed on an EMR cluster, a property of the cluster. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Amazon EMR HDFS cluster | — | — | skip: Storage layer of an EMR cluster, a property of the cluster. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Amazon Kinesis | — | — | skip: Service family icon; the individual Kinesis services are separate components. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Amazon Redshift dense compute node | — | — | skip: Node type of a Redshift cluster, a property of the cluster. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Amazon Redshift dense storage node | — | — | skip: Node type of a Redshift cluster, a property of the cluster. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AR and VR | — | — | skip: Service family icon, not a product. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Amazon Sumerian | — | — | skip: skip: full shutdown 2021-2023 | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Blockchain resource | — | — | skip: Generic resource icon for the blockchain family, not a product. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Blockchain | — | — | skip: Service family icon, not a product. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Alexa for Business | — | — | skip: Retired, end of support 31 March 2024; superseded by Alexa Smart Properties. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Business applications | — | — | skip: Service family icon, not a product. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Amazon Chime | — | — | skip: skip: superseded by the Amazon Chime SDK | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Application Auto Scaling | — | — | skip: skip: scaling policy attached to other resources | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Bottlerocket | — | — | skip: Container host operating system image, not a placeable resource. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Compute | — | — | skip: Service family icon, not a product. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Amazon Machine Image (AMI) | — | — | skip: skip: machine image and configuration artifacts | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Amazon ECR image | — | — | skip: Container image artifact stored in a registry, not a node. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| EC2Rescue | — | — | skip: Diagnostic utility run on an instance, not a placeable resource. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS Elastic Beanstalk application | — | — | skip: Application container grouping Beanstalk environments; the environment is the placed node. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS Elastic Beanstalk deployment | — | — | skip: Deployment action of a Beanstalk environment, not a node. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Amazon ECS container | — | — | skip: Container inside an ECS task; the ECS cluster is the placed node. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Amazon ECS service | — | — | skip: Deployment unit inside an ECS cluster; the cluster is the placed node. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Amazon ECS task | — | — | skip: Running unit of an ECS task definition; the cluster is the placed node. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS Thinkbox Draft | — | — | skip: Desktop rendering and compositing software, not a placeable cloud resource. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS Thinkbox Frost | — | — | skip: 3D content-creation plugin software, not a placeable cloud resource. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS Thinkbox Krakatoa | — | — | skip: 3D content-creation plugin software, not a placeable cloud resource. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS Thinkbox Sequoia | — | — | skip: Desktop point-cloud processing software, not a placeable cloud resource. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS Thinkbox Stoke | — | — | skip: 3D content-creation plugin software, not a placeable cloud resource. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS Thinkbox XMesh | — | — | skip: 3D content-creation plugin software, not a placeable cloud resource. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| VMware Cloud on AWS | — | — | skip: Third-party VMware offering; AWS resale ended 30 April 2024, superseded by Amazon Elastic VMware Service (aws-evs). | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS Wavelength | — | — | skip: skip: infrastructure location, not a resource | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS Budgets | — | — | skip: skip: billing and cost management | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS Cost and Usage Report | — | — | skip: skip: billing and cost management | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS Cost Explorer | — | — | skip: skip: billing and cost management | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS Cost Management | — | — | skip: skip: billing and cost management | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Reserved Instance reporting | — | — | skip: skip: billing and cost management | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Savings Plans | — | — | skip: skip: billing and cost management; a purchasing commitment, not a resource | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Amazon Aurora DB instance | — | — | skip: DB instance inside an Aurora cluster; the cluster is the placed node. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS DMS database migration workflow | — | — | skip: Migration task inside a DMS replication instance, not a node. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Database | — | — | skip: Service family icon, not a product. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Amazon DynamoDB attribute | — | — | skip: Data model element of a DynamoDB item, not a node. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Amazon DynamoDB attributes | — | — | skip: Data model element of a DynamoDB item, not a node. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Amazon DynamoDB global secondary index | — | — | skip: Index of a DynamoDB table, a property of the table. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Amazon DynamoDB item | — | — | skip: Data model element of a DynamoDB table, not a node. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Amazon DynamoDB items | — | — | skip: Data model element of a DynamoDB table, not a node. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Amazon ElastiCache cache node | — | — | skip: Node inside an ElastiCache cluster, a property of the cluster. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Amazon RDS on VMware | — | — | skip: Retired deployment option of Amazon RDS. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS Cloud Development Kit (CDK) | — | — | skip: skip: developer tooling over CloudFormation | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS Cloud9 environment | — | — | skip: Resource-variant icon of AWS Cloud9; the environment is aws-cloud9. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS CloudShell | — | — | skip: skip: portal and CLI environment | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS Command Line Interface | — | — | skip: Command line tool, not a node. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Developer Tools | — | — | skip: Service family icon, not a product. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Tools and SDKs | — | — | skip: SDK and tooling icon, not a node. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Customer Enablement | — | — | skip: Service family icon, not a product. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS Managed Services | — | — | skip: skip: support offerings | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS Professional Services | — | — | skip: Consulting offering, not a node. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS Support | — | — | skip: skip: support offerings | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Desktop and app streaming | — | — | skip: Service family icon, not a product. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Amazon WorkLink | — | — | skip: skip: full shutdown 2021-2023 | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Customer engagement | — | — | skip: Service family icon, not a product. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Amazon SES email | — | — | skip: Email message artifact sent through SES, not a node. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Game Tech | — | — | skip: Service family icon, not a product. | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Forums | — | — | skip: community forum icon, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| General | — | — | skip: blank generic shape, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Office building | — | — | skip: location icon, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| SAML token | — | — | skip: credential artefact, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| SDK | — | — | skip: SDK, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Internet | — | — | skip: internet symbol, a boundary rather than a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Multimedia | — | — | skip: media file icon, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| SSL padlock | — | — | skip: padlock symbol, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Toolkit | — | — | skip: developer toolkit icon, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| User | — | — | skip: people icon, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Users | — | — | skip: people icon, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Application Integration | — | — | skip: AWS service category icon, not a product | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS Console Mobile Application | — | — | skip: console application, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Event | — | — | skip: an event payload, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| EventBridge event | — | — | skip: an event payload, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| EventBridge rule | — | — | skip: routing rule configured on an event bus, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| SNS email notification | — | — | skip: delivery protocol of an SNS subscription, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| SNS HTTP notification | — | — | skip: delivery protocol of an SNS subscription, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| SQS message | — | — | skip: a message payload, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Internet of Things | — | — | skip: AWS service category icon, not a product | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS IoT 1-Click | — | — | skip: full shutdown 2022-2025 | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS IoT rule action | — | — | skip: rule action configured inside AWS IoT Core, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Alexa skill | — | — | skip: voice application package, not an infrastructure node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Alexa Voice Service | — | — | skip: Amazon consumer Alexa service, outside the AWS resource catalogue | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS IoT Analytics channel | — | — | skip: full shutdown 15 December 2025 | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS IoT Analytics data set | — | — | skip: full shutdown 15 December 2025 | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS IoT Analytics data store | — | — | skip: full shutdown 15 December 2025 | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS IoT Analytics notebook | — | — | skip: full shutdown 15 December 2025 | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS IoT Analytics pipeline | — | — | skip: full shutdown 15 December 2025 | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Bank | — | — | skip: industry pictogram, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Bicycle | — | — | skip: industry pictogram, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS IoT Button | — | — | skip: hardware button retired with AWS IoT 1-Click | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS IoT device certificate | — | — | skip: X.509 credential attached to a thing, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Device shadow desired state | — | — | skip: state document inside AWS IoT Core, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS IoT device gateway | — | — | skip: MQTT endpoint inside AWS IoT Core, not a separate node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Factory | — | — | skip: industry pictogram, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS IoT Greengrass connector | — | — | skip: software component of a Greengrass deployment, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| House | — | — | skip: location pictogram, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| HTTP | — | — | skip: protocol icon, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| HTTP/2 | — | — | skip: protocol icon, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS IoT Jobs | — | — | skip: remote operation feature of AWS IoT Device Management, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Medical emergency | — | — | skip: industry pictogram, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| MQTT | — | — | skip: protocol icon, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS IoT over-the-air update | — | — | skip: OTA job of AWS IoT Device Management, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS IoT policy | — | — | skip: configuration object, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Device shadow reported state | — | — | skip: state document inside AWS IoT Core, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS IoT rule | — | — | skip: rules engine configuration inside AWS IoT Core, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS IoT Device Shadow | — | — | skip: state document inside AWS IoT Core, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| IoT Device Simulator | — | — | skip: reference solution for load testing, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS IoT Things Graph | — | — | skip: full shutdown 2022-2025 | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS IoT MQTT topic | — | — | skip: topic name inside AWS IoT Core, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Travel | — | — | skip: industry pictogram, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Utility | — | — | skip: industry pictogram, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Wind farm | — | — | skip: industry pictogram, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS Auto Scaling | — | — | skip: scaling policy attached to other resources | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS CloudFormation change set | — | — | skip: deployment control plane | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS CloudFormation stack | — | — | skip: deployment control plane | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS CloudFormation template | — | — | skip: deployment control plane | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Amazon CloudWatch alarm | — | — | skip: alarm configured on a CloudWatch metric, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Amazon CloudWatch Events rule | — | — | skip: prior name of an EventBridge rule, a configuration object | https://diagrams.mingrammer.com/docs/nodes/aws |
+| DevOps agent | — | — | skip: generic agent icon, not a product | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Management and Governance | — | — | skip: AWS service category icon, not a product | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS Management Console | — | — | skip: portal and CLI environment | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS OpsWorks app | — | — | skip: full shutdown 1 May 2024 | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS OpsWorks deployment | — | — | skip: full shutdown 1 May 2024 | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS OpsWorks instance | — | — | skip: full shutdown 1 May 2024 | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS OpsWorks layer | — | — | skip: full shutdown 1 May 2024 | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS OpsWorks monitoring | — | — | skip: full shutdown 1 May 2024 | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS OpsWorks permissions | — | — | skip: full shutdown 1 May 2024 | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS OpsWorks resources | — | — | skip: full shutdown 1 May 2024 | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS OpsWorks stack | — | — | skip: full shutdown 1 May 2024 | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS OpsWorks | — | — | skip: full shutdown 1 May 2024 | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS account | — | — | skip: account is a boundary, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Organizational unit | — | — | skip: organizational unit is a boundary, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS Health Dashboard | — | — | skip: platform status dashboard | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS Elemental Conductor | — | — | skip: on-premises hardware appliance, not a cloud resource | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS Elemental Delta | — | — | skip: on-premises hardware appliance, discontinued | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS Elemental Live | — | — | skip: on-premises hardware appliance; the cloud service is AWS Elemental MediaLive | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS Elemental Server | — | — | skip: on-premises hardware appliance, not a cloud resource | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS Media Services | — | — | skip: category icon for the AWS media services family | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS DataSync agent | — | — | skip: on-premises agent of AWS DataSync, deployed not drawn | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Migration and Transfer | — | — | skip: category icon | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS Snowball Edge | — | — | skip: physical offline transfer appliance; full shutdown 12 November 2025 | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS Snowball | — | — | skip: physical offline transfer appliance; full shutdown 12 November 2025 | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Apache MXNet on AWS | — | — | skip: deep learning framework, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS Deep Learning AMIs | — | — | skip: machine image, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS Deep Learning Containers | — | — | skip: container image, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS DeepComposer | — | — | skip: full shutdown 2024-2025 | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS DeepLens | — | — | skip: full shutdown 2024-2025 | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Amazon Elastic Inference | — | — | skip: retired, end of support 15 April 2024 | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Amazon Machine Learning | — | — | skip: retired predecessor of SageMaker | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Amazon SageMaker Ground Truth | — | — | skip: maintenance since 30 June 2026, SageMaker feature not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Amazon SageMaker AI model | — | — | skip: model configuration resource served through a SageMaker endpoint, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Amazon SageMaker AI notebook instance | — | — | skip: managed notebook development environment, not a runtime node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| TensorFlow on AWS | — | — | skip: deep learning framework, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Amazon API Gateway endpoint | — | — | skip: endpoint icon variant of Amazon API Gateway | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Front-End Web and Mobile | — | — | skip: category icon | https://diagrams.mingrammer.com/docs/nodes/aws |
+| CloudFront edge location | — | — | skip: infrastructure location of CloudFront, not a resource | https://diagrams.mingrammer.com/docs/nodes/aws |
+| CloudFront RTMP streaming distribution | — | — | skip: RTMP streaming distributions discontinued 31 December 2020 | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Elastic Load Balancing | — | — | skip: brand covering ALB, NLB, GWLB and CLB | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Endpoint | — | — | skip: generic endpoint marker icon, not a product | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Networking and Content Delivery | — | — | skip: category icon | https://diagrams.mingrammer.com/docs/nodes/aws |
+| VPC route table | — | — | skip: routing configuration of a VPC | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Transit gateway attachment | — | — | skip: attachment of a VPC or VPN to a Transit Gateway, a connection not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Customer gateway | — | — | skip: on-premises endpoint configuration of a Site-to-Site VPN connection | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Elastic Network Adapter | — | — | skip: network adapter hardware feature of an EC2 instance | https://diagrams.mingrammer.com/docs/nodes/aws |
+| VPC Flow Logs | — | — | skip: logging configuration on a subnet | https://diagrams.mingrammer.com/docs/nodes/aws |
+| VPC router | — | — | skip: implicit router of a VPC, part of the VPC itself | https://diagrams.mingrammer.com/docs/nodes/aws |
+| VPC Traffic Mirroring | — | — | skip: mirroring session configured on an elastic network interface | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Quantum Technologies | — | — | skip: category icon | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS RoboMaker ROS cloud extensions | — | — | skip: full shutdown 10 September 2025 | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS RoboMaker development environment | — | — | skip: full shutdown 10 September 2025 | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS RoboMaker fleet management | — | — | skip: full shutdown 10 September 2025 | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS RoboMaker simulation | — | — | skip: full shutdown 10 September 2025 | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Robotics | — | — | skip: category icon | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Satellite | — | — | skip: category icon | https://diagrams.mingrammer.com/docs/nodes/aws |
+| IAM add-on | — | — | skip: decorative add-on badge for the IAM icon | https://diagrams.mingrammer.com/docs/nodes/aws |
+| IAM data encryption key | — | — | skip: key material artifact, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| IAM encrypted data | — | — | skip: data state icon, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| IAM long-term security credential | — | — | skip: credential artifact, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| IAM MFA token | — | — | skip: credential artifact, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| IAM permissions | — | — | skip: policy document, configuration object not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| IAM role | — | — | skip: IAM configuration object, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| IAM temporary security credential | — | — | skip: credential artifact, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Amazon Inspector agent | — | — | skip: agent installed on a scanned instance, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Security Hub finding | — | — | skip: finding produced by AWS Security Hub, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Security, Identity and Compliance | — | — | skip: category icon | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS WAF rule | — | — | skip: filtering rule configured on a web ACL | https://diagrams.mingrammer.com/docs/nodes/aws |
+| EFS Infrequent Access | — | — | skip: storage class background decoration icon | https://diagrams.mingrammer.com/docs/nodes/aws |
+| EFS Standard | — | — | skip: storage class background decoration icon | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Amazon EBS snapshot | — | — | skip: snapshot is a property of the volume | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Amazon FSx | — | — | skip: brand covering FSx for Windows File Server, Lustre, NetApp ONTAP and OpenZFS | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Multiple volumes | — | — | skip: generic multi-resource decoration icon | https://diagrams.mingrammer.com/docs/nodes/aws |
+| S3 access points | — | — | skip: access endpoints on an existing bucket | https://diagrams.mingrammer.com/docs/nodes/aws |
+| S3 Glacier archive | — | — | skip: an archive is an object stored in a vault | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Amazon S3 object | — | — | skip: an object stored in a bucket, not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| AWS Snowball import/export job | — | — | skip: physical offline transfer appliance; full shutdown 12 November 2025 | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Storage Gateway cached volume | — | — | skip: gateway type of AWS Storage Gateway, a property not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Storage Gateway stored volume | — | — | skip: gateway type of AWS Storage Gateway, a property not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Storage Gateway Tape Gateway | — | — | skip: gateway type of AWS Storage Gateway, a property not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
+| Storage | — | — | skip: category icon | https://diagrams.mingrammer.com/docs/nodes/aws |
+
 ## Counts
 
-total 393, todo 0, done 285, skip 108.
+total 607, todo 0, done 286, skip 317.

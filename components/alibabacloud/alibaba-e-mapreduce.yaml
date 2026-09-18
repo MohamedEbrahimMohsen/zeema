@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# E-MapReduce (EMR): a big data platform that runs Apache Hadoop, Spark, Flink, Hive and StarRocks on
+# Alibaba Cloud ECS instances with data in OSS ("What is EMR on ECS"). That page states EMR on ECS is
+# semi-managed - cluster resources belong to your own account and you are responsible for the routine O&M of
+# the open-source services - so managed is false, and that cluster resources scale up or down based on load
+# or on a schedule. "Introduction to E-MapReduce" lists the EMR on ACK and EMR Serverless deployments.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-e-mapreduce"
+kind: "big-data-cluster"
+provider: "alibabacloud"
+defaults:
+  managed: false
+properties:
+  deploymentMode:
+    type: "enum"
+    values: ["emr-on-ecs", "emr-on-ack", "emr-serverless-spark", "emr-serverless-starrocks"]
+    default: "emr-on-ecs"
+  storageBackend:
+    type: "enum"
+    values: ["hdfs", "oss"]

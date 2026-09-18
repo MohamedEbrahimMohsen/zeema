@@ -1,0 +1,183 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture 8, broken variant: the same WhatsApp messaging core built with the
+# mistakes the 2014 talk describes having made or nearly made - clients that reconnect at full
+# speed after a router drops a VLAN, an offline write-back cache with no eviction that
+# group-heavy users pollute, an offline mailbox with nowhere to park undeliverable messages,
+# chat servers that autoscale and cut live connections on the way down, a push service that
+# calls APNs and FCM inline off the chat path, and no stated rotation for the credentials that
+# reach Mnesia and the media store.
+#
+# This file MUST trip:
+#   - retry-without-adaptive-shedding            (whatsapp-client reconnects with a fixed retry, no breaker, no limiter in front of connection-balancer)
+#   - cache-missing-eviction-policy              (offline-cache declares no eviction; group-heavy users fill it)
+#   - queue-missing-dlq                          (offline-store takes async writes and declares no dead letter queue)
+#   - stateful-websocket-scale-in-without-drain  (chat-server autoscales and does not drain live connections)
+#   - external-call-inline-without-durable-path  (push-service is called from chat-server and pushes to apns and fcm synchronously, with no queue behind it)
+#   - credentials-without-rotation               (the design holds user state but states no rotation period and has no key management node)
+# and MUST NOT trip:
+#   - cache-as-primary-store-without-persistence (the write-back cache is not the only copy; the mailbox behind it is durable)
+#   - materialised-cache-without-rebuild-path    (the cache holds no materialised view)
+#   - reconnect-stampede-without-guard           (no coordination service is modelled; Erlang pg2 has no component)
+#   - shared-host-per-channel-without-isolation  (the design declares no traffic skew)
+#   - fanout-inline-in-request-path              (no worker node exists in this design)
+#   - read-heavy-path-without-cache              (outbound to inbound is 2:1, not read heavy, and a cache exists)
+#   - multi-leader-store-without-conflict-policy (Mnesia and the registered users set are single region)
+#   - datastore-missing-backup, single-writer-primary-at-peak-qps (no relational store in this design)
+#   - object-store-single-zone-with-durability-target (the design states no durability target)
+schemaVersion: "1"
+type: "design"
+id: "whatsapp-messaging"
+
+requirements:
+  availability:
+    multiRegion: true
+    regions: 2
+  consistency:
+    model: "ap"
+  traffic:
+    readWriteRatio: 2
+
+groups:
+  - { id: "dc-primary", kind: "region", label: "SoftLayer datacenter" }
+  - { id: "chat-tier", kind: "trust-zone", parent: "dc-primary" }
+  - { id: "service-tier", kind: "trust-zone", parent: "dc-primary" }
+  - { id: "media-tier", kind: "trust-zone", parent: "dc-primary" }
+  - { id: "signal-cds", kind: "system", label: "Signal contact discovery" }
+  - { id: "sgx-enclave", kind: "trust-zone", parent: "signal-cds", label: "Intel SGX enclave" }
+
+nodes:
+  - id: "whatsapp-client"
+    component: "mobile-app"
+    label: "Mobile client"
+    props: { platform: "mobile", os: "both", persistentConnection: true, offlineCapable: true, localCache: true, resendPolicy: "retry" }
+
+  - id: "signal-client"
+    component: "mobile-app"
+    label: "Signal client"
+    props: { platform: "mobile", os: "both", localCache: true }
+
+  - id: "connection-balancer"
+    component: "load-balancer-tier"
+    group: "chat-tier"
+    props: { layer: "l4", connectionPreserving: false, healthChecks: true }
+
+  - id: "chat-server"
+    component: "websocket-gateway"
+    label: "Chat server (Erlang)"
+    group: "chat-tier"
+    props: { stateful: true, autoscaling: true, drainOnScaleIn: false, stampedeGuard: false, pushFallback: true, maxConnectionsPerNode: 2000000 }
+    nfr: { rps: 342000 }
+
+  - id: "offline-cache"
+    component: "cache-cluster"
+    label: "Offline write-back cache"
+    group: "chat-tier"
+    props: { persistence: false, usedAsPrimaryStore: false, invalidation: "none", structure: "key-value" }
+
+  - id: "offline-store"
+    component: "message-queue"
+    label: "Offline message store"
+    group: "chat-tier"
+    props: { delivery: "at-least-once", ordering: "per-key", role: "offline-mailbox", deadLetterQueue: false, persistence: true, replay: false }
+
+  - id: "mnesia"
+    component: "nosql-store"
+    label: "Mnesia"
+    group: "service-tier"
+    props: { model: "key-value", consistency: "eventual", replication: "single-region", replicationFactor: 2, encryptionAtRest: false }
+    nfr: { rps: 712000, consistency: "eventual" }
+
+  - id: "account-service"
+    component: "erlang-node"
+    label: "Account"
+    group: "service-tier"
+    props: { clustered: true, stateless: false, criticality: "high" }
+
+  - id: "profile-service"
+    component: "erlang-node"
+    label: "Profile"
+    group: "service-tier"
+    props: { clustered: true, stateless: false }
+
+  - id: "group-service"
+    component: "erlang-node"
+    label: "Group"
+    group: "service-tier"
+    props: { clustered: true, stateless: false, criticality: "high" }
+
+  - id: "presence-service"
+    component: "erlang-node"
+    label: "Presence"
+    group: "service-tier"
+    props: { clustered: true, stateless: false }
+
+  - id: "push-service"
+    component: "erlang-node"
+    label: "Push"
+    group: "service-tier"
+    props: { clustered: true, stateless: false }
+
+  - id: "apns"
+    component: "apns"
+    props: { idempotent: false, tokenBasedAuth: true }
+
+  - id: "fcm"
+    component: "fcm"
+    props: { idempotent: false, collapsible: false }
+
+  - id: "mms-server"
+    component: "erlang-node"
+    label: "Multimedia server"
+    group: "media-tier"
+    props: { clustered: true, stateless: true, instances: 250 }
+
+  - id: "media-store"
+    component: "blob-store"
+    group: "media-tier"
+    props: { tier: "hot", checksumOnWrite: true }
+
+  - id: "cds-frontend"
+    component: "container-service"
+    label: "Contact discovery host (untrusted)"
+    group: "signal-cds"
+    props: { orchestrator: "none", stateless: true, ownsData: false }
+
+  - id: "contact-matcher"
+    component: "vm-service"
+    label: "Enclave matcher"
+    group: "sgx-enclave"
+    props: { provider: "on-prem", stateless: true, criticality: "high" }
+
+  - id: "registered-users"
+    component: "nosql-store"
+    label: "Registered users set (plain RAM)"
+    group: "signal-cds"
+    props: { model: "key-value", consistency: "strong", replication: "single-region", encryptionAtRest: false }
+
+edges:
+  - { from: "whatsapp-client", to: "connection-balancer", protocol: "tcp", mode: "sync", timeoutMs: 10000, retryPolicy: "fixed", label: "reconnect immediately, forever" }
+  - { from: "connection-balancer", to: "chat-server", protocol: "tcp", mode: "sync", label: "place connection on a chat node" }
+  - { from: "whatsapp-client", to: "chat-server", protocol: "funxmpp", mode: "async", delivery: "at-least-once", idempotent: true, label: "send message on the persistent connection" }
+  - { from: "chat-server", to: "whatsapp-client", protocol: "funxmpp", mode: "async", delivery: "at-least-once", label: "deliver to a connected device" }
+  - { from: "chat-server", to: "chat-server", protocol: "wandist", mode: "async", delivery: "at-least-once", label: "wandist: route to the recipient's connection node" }
+  - { from: "chat-server", to: "offline-cache", protocol: "erlang", mode: "sync", label: "write-back cache, never evicted" }
+  - { from: "offline-cache", to: "offline-store", protocol: "erlang", mode: "async", delivery: "at-least-once", batched: true, label: "write behind to the mailbox" }
+  - { from: "offline-store", to: "chat-server", protocol: "erlang", mode: "async", delivery: "at-least-once", label: "drain on reconnect" }
+  - { from: "chat-server", to: "push-service", protocol: "erlang", mode: "sync", timeoutMs: 3000, label: "wake the device inline" }
+  - { from: "push-service", to: "apns", protocol: "https", mode: "sync", timeoutMs: 3000, label: "push to iOS inline" }
+  - { from: "push-service", to: "fcm", protocol: "https", mode: "sync", timeoutMs: 3000, label: "push to Android inline" }
+  - { from: "chat-server", to: "account-service", protocol: "erlang-cast", mode: "async", delivery: "at-most-once", label: "cast" }
+  - { from: "chat-server", to: "profile-service", protocol: "erlang-cast", mode: "async", delivery: "at-most-once", label: "cast" }
+  - { from: "chat-server", to: "group-service", protocol: "erlang-cast", mode: "async", delivery: "at-most-once", label: "cast, group fan-out" }
+  - { from: "chat-server", to: "presence-service", protocol: "erlang-cast", mode: "async", delivery: "at-most-once", label: "cast, online and last-seen" }
+  - { from: "chat-server", to: "mnesia", protocol: "mnesia", mode: "sync", timeoutMs: 1000, label: "session lookup" }
+  - { from: "account-service", to: "mnesia", protocol: "mnesia", mode: "sync", timeoutMs: 1000, label: "async_dirty" }
+  - { from: "profile-service", to: "mnesia", protocol: "mnesia", mode: "sync", timeoutMs: 1000, label: "async_dirty" }
+  - { from: "group-service", to: "mnesia", protocol: "mnesia", mode: "sync", timeoutMs: 1000, label: "async_dirty" }
+  - { from: "presence-service", to: "mnesia", protocol: "mnesia", mode: "sync", timeoutMs: 1000, label: "async_dirty" }
+  - { from: "whatsapp-client", to: "mms-server", protocol: "https", mode: "sync", label: "upload media, get URL" }
+  - { from: "mms-server", to: "media-store", protocol: "https", mode: "sync", label: "store blob" }
+  - { from: "whatsapp-client", to: "media-store", protocol: "https", mode: "sync", label: "download by URL" }
+  - { from: "signal-client", to: "cds-frontend", protocol: "https", mode: "sync", label: "attested TLS, encrypted contacts in" }
+  - { from: "cds-frontend", to: "contact-matcher", protocol: "sgx-ecall", mode: "sync", label: "relay the attested session into the enclave" }
+  - { from: "contact-matcher", to: "registered-users", protocol: "memory", mode: "sync", label: "oblivious linear scan over every registered user" }

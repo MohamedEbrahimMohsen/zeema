@@ -1,0 +1,10 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Generic graph store whose engine the design does not name. Nothing is assumed about
+# in-memory operation, sharding or cross-region consistency.
+schemaVersion: "1"
+type: "component"
+id: "graph-store"
+kind: "graph-database"
+provider: "default"
+defaults:
+  managed: false

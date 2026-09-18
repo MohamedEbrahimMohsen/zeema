@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Intelligent Robot (Chatbot): "a dialogue platform that enables smart dialogue through various
+# dialogue-enabling clients, such as websites, mobile apps, and robots", powered by natural language
+# processing ("Intelligent Robot: Smart Conversation Platform Based on NLP"). That page states it recognises
+# and processes Chinese and English text, ships an ontology-based knowledge base with preset domain packages,
+# and that the Bot Framework configures multi-round dialogue and integrates third-party APIs.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-intelligent-robot"
+kind: "ai-service"
+provider: "alibabacloud"
+defaults:
+  managed: true
+  modality: "text"
+properties:
+  knowledgeBase:
+    type: "boolean"
+    default: true
+  multiTurnDialogue:
+    type: "boolean"
+    default: true
+  thirdPartyApiCallout:
+    type: "boolean"
+    default: false

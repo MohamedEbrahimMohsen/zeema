@@ -1,0 +1,39 @@
+source:
+  file: "source/key-value-store.md"
+  format: "book-figure"
+  figures: ["6-17"]
+  counts: { nodes: 9, edges: 8, groups: 1 }
+nodes:
+  - { source: "Client", node: "client", component: "sdk-client", confidence: "close", note: "unbranded client box; the chapter says clients call the store through the get(key) / put(key, value) API, so an SDK client rather than a browser or a phone" }
+  - { source: "n6", node: "n6", component: "nosql-store", confidence: "close", note: "circle on the ring, annotated 'coordinator'; the chapter says the system is completely decentralised and every node has the same set of responsibilities, so n6 is a store node that proxies this request, not a separate tier" }
+  - { source: "n0", node: "n0", component: "nosql-store", confidence: "close", note: "shaded circle: one of the three replicas holding the key in this illustration" }
+  - { source: "n1", node: "n1", component: "nosql-store", confidence: "close", note: "shaded circle: one of the three replicas holding the key in this illustration" }
+  - { source: "n2", node: "n2", component: "nosql-store", confidence: "close", note: "shaded circle: one of the three replicas holding the key in this illustration" }
+  - { source: "n3", node: "n3", component: "nosql-store", confidence: "close", note: "circle on the ring, not addressed by this request" }
+  - { source: "n4", node: "n4", component: "nosql-store", confidence: "close", note: "circle on the ring, not addressed by this request" }
+  - { source: "n5", node: "n5", component: "nosql-store", confidence: "close", note: "circle on the ring, not addressed by this request" }
+  - { source: "n7", node: "n7", component: "nosql-store", confidence: "close", note: "circle on the ring, not addressed by this request" }
+groups:
+  - { source: "(unlabelled thick grey circle carrying n0-n7)", group: "hash-ring", kind: "system", note: "the consistent-hash ring; no text on the boundary, so no label. v1 has no ring or cluster group kind, system is the closest" }
+edges:
+  - { source: "Client -> n6 (read/write, solid)", from: "client", to: "n6" }
+  - { source: "n6 -> Client (response, dashed)", from: "n6", to: "client", note: "the response to the read/write call; drawn as its own arrow, so counted as its own edge" }
+  - { source: "n6 -> n0 (solid)", from: "n6", to: "n0" }
+  - { source: "n0 -> n6 (dashed)", from: "n0", to: "n6", note: "replica answer to the coordinator" }
+  - { source: "n6 -> n1 (solid)", from: "n6", to: "n1" }
+  - { source: "n1 -> n6 (dashed)", from: "n1", to: "n6", note: "replica answer to the coordinator" }
+  - { source: "n6 -> n2 (solid)", from: "n6", to: "n2" }
+  - { source: "n2 -> n6 (dashed)", from: "n2", to: "n6", note: "replica answer to the coordinator" }
+ignored:
+  - { source: "coordinator", reason: "role annotation printed under the n6 circle, not a box of its own" }
+  - { source: "Figure 6-17", reason: "figure caption" }
+  - { source: "Figure 6-18 (node responsibilities: Client API, Conflict resolution, Replication, Failure detection, Failure repair mechanism, Storage engine)", reason: "the inside of one ring node, not placeable elements beside it" }
+  - { source: "Figures 6-19 / 6-20 / 6-21 (Server, MEMORY, DISK, Commit log, Memory cache, SSTables, Bloom filter, Result data)", reason: "write path and read path drawn inside one storage node; they are the storage engine of a node already present as n0-n7, not separate nodes of the architecture" }
+unmapped: []
+gaps:
+  - "No group kind for a consistent-hash ring (or a cluster of peer nodes generally): the ring is the whole store, its members are peers rather than a containment hierarchy. Mapped to `system`."
+  - "No way to say that n0-n7 are members of one clustered store rather than nine independent stores; cluster-level properties (replicationFactor, quorum sizes, conflict resolution) had to be repeated on every node."
+  - "No way to mark an edge as the response to another edge. The four dashed reply arrows of Figure 6-17 are ordinary directed edges, so the design shows eight edges where the picture shows four request/response pairs."
+  - "No way to express node-internal structure. Figures 6-18 to 6-21 draw the inside of a single node (client API, conflict resolution, replication, failure detection, storage engine; commit log, memory cache, SSTable, bloom filter). Those are sub-parts of one node, not placeable nodes, and the format has neither node-internal parts nor a 'storage engine internals' property, so they were left out entirely."
+  - "The nosql-database `replication` enum has no leaderless value. Dynamo-style quorum replication with no leader was recorded as `multi-region-multi-leader`, which is the closest of `single-region`, `multi-region-single-leader`, `multi-region-multi-leader`."
+  - "No property records the failure-detection or anti-entropy mechanism (gossip, hinted handoff, sloppy quorum, Merkle trees), which are the chapter's main design decisions for these nodes."

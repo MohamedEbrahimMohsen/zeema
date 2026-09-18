@@ -1,0 +1,224 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture 28, broken variant: the same Booking.com search and reservation path,
+# but Elasticsearch is kept up to date by dual writes from the services instead of by change
+# data capture off the binlog, the two mesh control planes hang off a single unreplicated
+# ZooKeeper while the design promises redundant discovery, the sidecars retry with neither a
+# circuit breaker nor a limiter in front of the callee, and nothing states how the database
+# credentials rotate.
+#
+# This file MUST trip:
+#   - shared-dependency-without-redundancy     (service-discovery: replicated false, discoveryRedundant required)
+#   - business-updates-without-index-propagation (mysql-primary and mysql-replicas are written or read by app-servers, a search index exists, no CDC leaves them)
+#   - derived-store-without-cdc-or-rebuild     (search-index has only sync in-edges from services)
+#   - retry-without-adaptive-shedding          (the three sidecar-routed edges retry with no circuitBreaker and no rate-limiter in front)
+#   - credentials-without-rotation             (data nodes, no security.credentialRotationDays, no key-management node)
+# and MUST NOT trip:
+#   - datastore-missing-backup                 (both MySQL nodes keep backups with a retention)
+#   - datastore-single-region                  (multiRegion is required but replication is async, not none)
+#   - read-heavy-path-without-cache            (no traffic.readWriteRatio is stated, so the rule cannot fire although there is no cache)
+#   - read-replica-as-sole-scaling, single-writer-primary-at-peak-qps (no nfr.rps is stated on any node)
+#   - sync-chain-too-deep                      (no latency.p95Ms requirement)
+#   - fanout-inline-in-request-path            (event-proxy, the only worker, is fed asynchronously)
+#   - cache-missing-eviction-policy, cache-as-primary-store-without-persistence,
+#     materialised-cache-without-rebuild-path  (this estate has no cache at all, by choice)
+#   - queue-missing-dlq, retry-queue-without-dlq, retry-without-backoff, pubsub-replay-required (no queue or pubsub-topic)
+#   - stateful-node-without-zone-redundancy, stateful-engine-pinned-to-single-zone (no availability-zone groups)
+#   - multi-leader-store-without-conflict-policy (cassandra is single-region with last-writer-wins)
+#   - object-store-single-zone-with-durability-target (no durability.annualNines requirement; the catalogue spans 3 zones)
+schemaVersion: "1"
+type: "design"
+id: "booking-search"
+
+requirements:
+  availability:
+    multiRegion: true
+    discoveryRedundant: true
+  consistency:
+    model: "ap"
+  messaging:
+    replay: true
+    orderingScope: "partition"
+
+groups:
+  - { id: "booking-dc", kind: "region", label: "Booking.com data centres" }
+  - { id: "aws", kind: "region", label: "AWS" }
+  - { id: "edge", kind: "trust-zone", parent: "booking-dc", label: "Edge" }
+  - { id: "mesh", kind: "trust-zone", parent: "booking-dc", label: "Service mesh" }
+  - { id: "data-platform", kind: "system", parent: "booking-dc", label: "Data platform" }
+  - { id: "observability", kind: "system", parent: "booking-dc", label: "Observability platform" }
+
+nodes:
+  - id: "web-client"
+    component: "web-browser"
+    props: { platform: "web" }
+
+  - id: "mobile-client"
+    component: "mobile-app"
+    props: { platform: "mobile", os: "both" }
+
+  - id: "cdn"
+    component: "cloudfront"
+    group: "aws"
+    label: "Amazon CloudFront"
+    props: { caching: true, tls: true, managed: true }
+
+  - id: "edge-lb"
+    component: "haproxy"
+    group: "edge"
+    label: "HAProxy edge"
+    props: { layer: "l7", healthChecks: true, managed: false }
+
+  - id: "graphql-gateway"
+    component: "envoy-gateway"
+    group: "edge"
+    label: "Federated GraphQL gateway"
+    props: { protocol: "http", tls: true, managed: false }
+
+  - id: "service-mesh"
+    component: "envoy-sidecar"
+    group: "mesh"
+    label: "Envoy service mesh"
+    props: { sidecar: true, xds: true, retries: true, circuitBreaking: false, controlPlanes: 2, managed: false }
+
+  - id: "mesh-control-plane-metal"
+    component: "container-service"
+    group: "mesh"
+    label: "xDS control plane (bare metal)"
+    props: { orchestrator: "none", stateless: true, criticality: "high" }
+
+  - id: "mesh-control-plane-cloud"
+    component: "container-service"
+    group: "mesh"
+    label: "xDS control plane (Kubernetes and cloud)"
+    props: { orchestrator: "kubernetes", stateless: true, criticality: "high" }
+
+  - id: "service-discovery"
+    component: "zookeeper"
+    group: "mesh"
+    label: "ZooKeeper (single node)"
+    props: { role: "discovery", consensus: "zab", replicated: false, managed: false }
+
+  - id: "accommodation-service"
+    component: "container-service"
+    group: "mesh"
+    label: "Accommodation services (ex-monolith)"
+    props: { orchestrator: "kubernetes", stateless: true, autoscaling: true, criticality: "high" }
+
+  - id: "ranking-platform"
+    component: "container-service"
+    group: "mesh"
+    label: "Ranking platform"
+    props: { orchestrator: "kubernetes", stateless: true, autoscaling: true, criticality: "high" }
+
+  - id: "booking-service"
+    component: "container-service"
+    group: "mesh"
+    label: "Booking and payment services"
+    props: { orchestrator: "kubernetes", stateless: true, criticality: "high" }
+
+  - id: "fraud-service"
+    component: "container-service"
+    group: "mesh"
+    label: "Fraud detection service"
+    props: { orchestrator: "kubernetes", stateless: true, criticality: "high" }
+
+  - id: "event-proxy"
+    component: "container-worker"
+    group: "observability"
+    label: "Event-proxy (host daemon)"
+    props: { trigger: "stream", orchestrator: "kubernetes", idempotent: true }
+
+  - id: "events-kafka"
+    component: "kafka"
+    group: "data-platform"
+    label: "Events Kafka (Confluent Platform)"
+    props: { delivery: "at-least-once", ordering: "per-key", storage: "persistent", managed: false }
+
+  - id: "mysql-primary"
+    component: "mysql"
+    group: "data-platform"
+    label: "MySQL primaries (250+ clusters)"
+    props: { replication: "async", backupEnabled: true, backupRetentionDays: 30, sharded: false, multiWriter: false, managed: false }
+
+  - id: "binlog-server"
+    component: "maxscale"
+    group: "data-platform"
+    label: "Binlog server"
+    props: { router: "binlogrouter", routing: "none", pooling: false, managed: false }
+
+  - id: "mysql-replicas"
+    component: "mysql"
+    group: "data-platform"
+    label: "MySQL replicas (read path, 50+ per topology)"
+    props: { replication: "async", replicaOf: "mysql-primary", replicaFanout: 50, backupEnabled: true, backupRetentionDays: 30, sharded: false, multiWriter: false, managed: false }
+
+  - id: "backup-catalogue"
+    component: "s3"
+    group: "aws"
+    label: "Backup catalogue"
+    props: { zones: 3, versioning: true, encryptionAtRest: true, managed: true }
+
+  - id: "cassandra"
+    component: "cassandra"
+    group: "data-platform"
+    label: "Cassandra"
+    props: { model: "wide-column", consistency: "tunable", replication: "single-region", conflictResolution: "last-writer-wins", backupEnabled: true, backupRetentionDays: 30 }
+
+  - id: "fraud-graph"
+    component: "janusgraph"
+    group: "data-platform"
+    label: "JanusGraph fraud graph"
+    props: { storageBackend: "cassandra", indexBackend: "elasticsearch", inMemory: false, managed: false }
+
+  - id: "search-index"
+    component: "elasticsearch"
+    group: "data-platform"
+    label: "Elasticsearch"
+    props: { structure: "inverted", indexing: "sync", managed: false }
+
+  - id: "nanotube"
+    component: "observability-stack"
+    group: "observability"
+    label: "Nanotube metrics router"
+    props: { signal: "metrics", collectorMode: "push", managed: false }
+
+  - id: "observability-platform"
+    component: "observability-stack"
+    group: "observability"
+    label: "Event consumers (tracing, APM metrics, logging)"
+    props: { signal: "all", collectorMode: "push", managed: false }
+
+edges:
+  - { from: "web-client", to: "cdn", protocol: "https", mode: "sync", label: "search and book" }
+  - { from: "mobile-client", to: "cdn", protocol: "https", mode: "sync", label: "search and book" }
+  - { from: "cdn", to: "edge-lb", protocol: "https", mode: "sync", label: "origin fetch" }
+  - { from: "edge-lb", to: "graphql-gateway", protocol: "http", mode: "sync", label: "load balanced to origin" }
+  - { from: "graphql-gateway", to: "service-mesh", protocol: "http", mode: "sync", label: "federated query enters the mesh" }
+  - { from: "service-mesh", to: "accommodation-service", protocol: "http", mode: "sync", retryPolicy: "exponential", label: "sidecar-routed call, retried on gateway-error" }
+  - { from: "service-mesh", to: "booking-service", protocol: "http", mode: "sync", retryPolicy: "exponential", label: "sidecar-routed call, retried on gateway-error" }
+  - { from: "service-mesh", to: "fraud-service", protocol: "grpc", mode: "sync", retryPolicy: "exponential", label: "sidecar-routed call, retried on gateway-error" }
+  - { from: "mesh-control-plane-metal", to: "service-mesh", protocol: "xds", mode: "async", delivery: "at-least-once", label: "config for the bare-metal platform" }
+  - { from: "mesh-control-plane-cloud", to: "service-mesh", protocol: "xds", mode: "async", delivery: "at-least-once", label: "config for the cloud platform" }
+  - { from: "mesh-control-plane-metal", to: "service-discovery", protocol: "zookeeper", mode: "sync", label: "service discovery and configuration" }
+  - { from: "mesh-control-plane-cloud", to: "service-discovery", protocol: "zookeeper", mode: "sync", label: "service discovery and configuration" }
+  - { from: "accommodation-service", to: "ranking-platform", protocol: "grpc", mode: "sync", label: "rank the result set" }
+  - { from: "accommodation-service", to: "mysql-replicas", protocol: "mysql", mode: "sync", label: "reads on replicas instead of caches" }
+  - { from: "ranking-platform", to: "search-index", protocol: "http", mode: "sync", label: "retrieval" }
+  - { from: "accommodation-service", to: "search-index", protocol: "http", mode: "sync", label: "search, and index inline (dual write)" }
+  - { from: "accommodation-service", to: "cassandra", protocol: "cql", mode: "sync", label: "polyglot store" }
+  - { from: "booking-service", to: "mysql-primary", protocol: "mysql", mode: "sync", idempotent: true, label: "reservation and payment writes" }
+  - { from: "booking-service", to: "mysql-replicas", protocol: "mysql", mode: "sync", label: "reads on replicas instead of caches" }
+  - { from: "booking-service", to: "search-index", protocol: "http", mode: "sync", label: "index inline (dual write)" }
+  - { from: "fraud-service", to: "fraud-graph", protocol: "gremlin", mode: "sync", label: "linked identifier lookup" }
+  - { from: "fraud-graph", to: "cassandra", protocol: "cql", mode: "sync", label: "graph storage backend" }
+  - { from: "mysql-primary", to: "binlog-server", protocol: "mysql-replication", mode: "async", delivery: "at-least-once", label: "binlog stream" }
+  - { from: "binlog-server", to: "mysql-replicas", protocol: "mysql-replication", mode: "async", delivery: "at-least-once", label: "relayed fan-out, no intermediate master" }
+  - { from: "mysql-primary", to: "backup-catalogue", protocol: "backup", mode: "async", label: "backup catalogue for 250+ clusters" }
+  - { from: "booking-service", to: "events-kafka", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "booking and payment events" }
+  - { from: "accommodation-service", to: "event-proxy", protocol: "local", mode: "async", delivery: "at-least-once", label: "events from the host" }
+  - { from: "booking-service", to: "event-proxy", protocol: "local", mode: "async", delivery: "at-least-once", label: "events from the host" }
+  - { from: "event-proxy", to: "events-kafka", protocol: "kafka", mode: "async", delivery: "at-least-once", batched: true, label: "split into small messages" }
+  - { from: "events-kafka", to: "observability-platform", protocol: "kafka", mode: "async", delivery: "at-least-once", label: "tracing, APM metrics, event logging" }
+  - { from: "accommodation-service", to: "nanotube", protocol: "metrics", mode: "async", delivery: "at-most-once", label: "metric data points" }
+  - { from: "booking-service", to: "nanotube", protocol: "metrics", mode: "async", delivery: "at-most-once", label: "metric data points" }
+  - { from: "nanotube", to: "observability-platform", protocol: "metrics", mode: "async", delivery: "at-most-once", label: "routed metric points" }

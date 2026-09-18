@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenStack Glance: the Image service, where users "upload and discover data assets" - virtual machine images
+# and the metadefs catalog - through a REST API. Per "Multi Store Support" the backends are file, http, rbd,
+# swift, cinder and vmware and default_backend has no value until the operator sets one; per "Using Glance's
+# Image Public APIs" an image with no is_public flag "is assumed to be not public and owned by a user".
+schemaVersion: "1"
+type: "component"
+id: "openstack-glance"
+kind: "artifact-repository"
+provider: "openstack"
+defaults:
+  artifactType: "generic"
+  visibility: "private"
+  upstreamProxy: false
+  managed: false
+properties:
+  store:
+    type: "enum"
+    values: ["file", "http", "rbd", "swift", "cinder", "vmware"]
+  multiStore:
+    type: "boolean"
+    default: false
+  metadefsCatalog:
+    type: "boolean"
+    default: true
