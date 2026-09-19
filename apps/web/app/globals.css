@@ -1116,6 +1116,37 @@ kbd.key {
   max-width: 100%;
 }
 
+/* The address in the breadcrumb reads as text until it is hovered, like the title above it. */
+.slug-btn {
+  font: inherit;
+  padding: 0 3px;
+  margin: 0 -3px;
+  border: var(--border) solid transparent;
+  border-radius: var(--rc);
+  background: transparent;
+  color: inherit;
+  cursor: text;
+}
+.slug-btn:hover:not(:disabled) {
+  border-color: var(--line);
+}
+.slug-btn:disabled {
+  opacity: 0.55;
+}
+.slug-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  flex-wrap: wrap;
+}
+.slug-input {
+  font: inherit;
+  height: 24px;
+  padding: 0 6px;
+  min-width: 14ch;
+  max-width: 100%;
+}
+
 /* ── browse listing ───────────────────────────────────────────────── */
 
 /* The listing sets its own type scale in px rather than inheriting the app's 14px em scale:

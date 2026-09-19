@@ -5,8 +5,9 @@ import { createDesign } from "@/lib/designs";
 
 export const dynamic = "force-dynamic";
 
-// A new design starts as one component on the canvas: private, autosaved, named
-// <username>-<random> until its owner renames it from the canvas title.
+// A new design starts as one component on the canvas: private, autosaved, and called a draft
+// until its owner names it. The address is draft-<random> rather than a counted draft-1: a
+// number would have to be looked up, and the owner renames it from the design page anyway.
 const STARTER = `schemaVersion: "1"
 type: "design"
 id: "new-design"
@@ -18,10 +19,9 @@ edges: []
 export default async function NewPage() {
   const viewer = await currentUser();
   if (!viewer) redirect("/signin?next=/new");
-  const name = `${viewer.username}-${randomBytes(3).toString("hex")}`;
   const { design } = await createDesign(viewer, {
-    title: name,
-    slug: name,
+    title: "Untitled design",
+    slug: `draft-${randomBytes(3).toString("hex")}`,
     visibility: "private",
     yaml: STARTER,
     message: "created",

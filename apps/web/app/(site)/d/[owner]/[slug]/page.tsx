@@ -4,6 +4,7 @@ import { parse } from "@zeema/core/yaml";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { DesignActions } from "@/components/DesignActions";
+import { EditableSlug } from "@/components/EditableSlug";
 import { EditableTitle } from "@/components/EditableTitle";
 import { Findings } from "@/components/Findings";
 import { Icon } from "@/components/Icon";
@@ -89,7 +90,12 @@ export default async function DesignPage({
               <span>zeema · {view.design.origin}</span>
             )}
             {" / "}
-            <span className="mono">{view.design.slug}</span>
+            <EditableSlug
+              owner={ownerSeg}
+              slug={view.design.slug}
+              canWrite={view.can.write}
+              published={Boolean(view.design.publishedAt)}
+            />
           </div>
           <h1 className="display flex items-baseline gap-3 flex-wrap">
             <EditableTitle
