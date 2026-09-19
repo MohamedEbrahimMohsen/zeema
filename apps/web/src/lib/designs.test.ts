@@ -117,3 +117,28 @@ describe("renaming", () => {
     expect(back.slug).toBe("loop");
   });
 });
+
+describe("deleting", () => {
+  it("removes an unpublished design outright and frees its name", async () => {
+    const { createDesign, deleteDesign, getTombstone } = await lib();
+    const hugo = await makeUser("hugo");
+    await createDesign(hugo as never, { title: "Draft", yaml: YAML });
+    const res = await deleteDesign("hugo", "draft", hugo as never);
+    expect(res.tombstoned).toBe(false);
+    expect(await getTombstone("hugo", "draft")).toBeNull();
+    const again = await createDesign(hugo as never, { title: "Draft", yaml: YAML });
+    expect(again.design.slug).toBe("draft");
+  });
+
+  it("leaves a tombstone at a published address and keeps the name reserved", async () => {
+    const { createDesign, deleteDesign, getTombstone } = await lib();
+    const iris = await makeUser("iris");
+    await createDesign(iris as never, { title: "Shipped", yaml: YAML });
+    await (await lib()).patchDesign("iris", "shipped", iris as never, { visibility: "public" });
+    const res = await deleteDesign("iris", "shipped", iris as never);
+    expect(res.tombstoned).toBe(true);
+    expect((await getTombstone("iris", "shipped"))?.title).toBe("Shipped");
+    const again = await createDesign(iris as never, { title: "Shipped", yaml: YAML });
+    expect(again.design.slug).toBe("shipped-2");
+  });
+});

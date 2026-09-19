@@ -12,6 +12,7 @@ import { getCatalogue, getIcons } from "@/lib/catalogue";
 import {
   getBrokenVersion,
   getDesign,
+  getTombstone,
   listVersions,
   ownerSegment,
   recordEvent,
@@ -45,6 +46,10 @@ export default async function DesignPage({
       // The design may have been renamed: an old address redirects to the current one.
       const now = await resolveAlias(owner, slug);
       if (now) redirect(`/d/${owner}/${now}`);
+      // Or it was published and then removed, in which case say so rather than pretending the
+      // address never existed: people arriving from an old link deserve to know what happened.
+      const gone = await getTombstone(owner, slug);
+      if (gone) return <Tombstone gone={gone} />;
       notFound();
     }
     throw e;
@@ -250,6 +255,30 @@ export default async function DesignPage({
             </section>
           ) : null}
         </aside>
+      </div>
+    </div>
+  );
+}
+
+// A removed design keeps its address so old links do not quietly resolve to someone else's work.
+// The page is noindex rather than a 410: the App Router has no way to set that status from a
+// page, and keeping crawlers off it is what the status would have been for.
+function Tombstone({ gone }: { gone: NonNullable<Awaited<ReturnType<typeof getTombstone>>> }) {
+  return (
+    <div className="flex flex-col gap-4">
+      <meta name="robots" content="noindex" />
+      <h1 className="title">{gone.title}</h1>
+      <p className="muted">
+        This design was removed by its author on {when(gone.deletedAt)}. The address stays reserved,
+        so links to it will not lead anywhere else.
+      </p>
+      <div className="flex gap-2">
+        <Link href="/" className="btn btn-primary no-underline">
+          Browse designs
+        </Link>
+        <Link href={`/u/${gone.owner}`} className="btn no-underline">
+          More from @{gone.owner}
+        </Link>
       </div>
     </div>
   );

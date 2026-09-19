@@ -731,15 +731,65 @@ export async function patchDesign(owner: string, slug: string, viewer: Viewer, i
   return design;
 }
 
+/** An author may always remove their own work. What that costs depends on who could have seen it.
+ *
+ *  A design that was never published has no address anyone could have linked to, so it is removed
+ *  outright and its name goes back to its owner. One that was published leaves a tombstone: the
+ *  row stays, marked deleted, and its reserved address keeps answering, because links to it exist
+ *  and pointing them at somebody else's design later would be worse than a dead end.
+ *
+ *  Clones are unaffected either way. A clone copies the YAML when it is made and `sourceDesignId`
+ *  carries no foreign key, so deleting a source orphans a pointer and breaks nothing.
+ */
 export async function deleteDesign(owner: string, slug: string, viewer: Viewer) {
   const db = await getDb();
   const view = await getDesign(owner, slug, viewer);
   if (!view.can.write) throw new ServiceError(403, "you cannot delete this design");
-  await db
-    .update(schema.designs)
-    .set({ deletedAt: new Date() })
-    .where(eq(schema.designs.id, view.design.id));
+  const wasPublic = Boolean(view.design.publishedAt);
+  if (wasPublic) {
+    await db
+      .update(schema.designs)
+      .set({ deletedAt: new Date(), visibility: "private" })
+      .where(eq(schema.designs.id, view.design.id));
+  } else {
+    await db
+      .delete(schema.designVersions)
+      .where(eq(schema.designVersions.designId, view.design.id));
+    await db.delete(schema.designEvents).where(eq(schema.designEvents.designId, view.design.id));
+    await db.delete(schema.designStats).where(eq(schema.designStats.designId, view.design.id));
+    await db.delete(schema.designSlugs).where(eq(schema.designSlugs.designId, view.design.id));
+    await db.delete(schema.designs).where(eq(schema.designs.id, view.design.id));
+  }
   countWrite("delete");
+  return { tombstoned: wasPublic };
+}
+
+export type Tombstone = { title: string; owner: string; slug: string; deletedAt: Date };
+
+/** What used to be at an address: a design its author removed after publishing it. */
+export async function getTombstone(owner: string, slug: string): Promise<Tombstone | null> {
+  const db = await getDb();
+  const rows = await db
+    .select({ design: schema.designs, username: schema.users.username })
+    .from(schema.designs)
+    .leftJoin(schema.users, eq(schema.users.id, schema.designs.ownerId))
+    .where(
+      and(
+        eq(sql`lower(coalesce(${schema.users.username}, 'zeema'))`, owner.toLowerCase()),
+        eq(sql`lower(${schema.designs.slug})`, slug.toLowerCase()),
+        isNotNull(schema.designs.deletedAt),
+        isNotNull(schema.designs.publishedAt),
+      ),
+    )
+    .limit(1);
+  const hit = rows[0];
+  if (!hit?.design.deletedAt) return null;
+  return {
+    title: hit.design.title,
+    owner: hit.username ?? "zeema",
+    slug: hit.design.slug,
+    deletedAt: hit.design.deletedAt,
+  };
 }
 
 export type CloneInput = { slug?: string; title?: string; yaml?: string; layout?: unknown };
