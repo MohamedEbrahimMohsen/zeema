@@ -16,19 +16,17 @@ export async function Nav() {
       <NavTabs />
       <div className="ml-auto flex items-center gap-3">
         <ThemeToggle />
+        <Link href="/new" className="btn btn-sm no-underline">
+          New design
+        </Link>
         {user ? (
-          <>
-            <Link href="/new" className="btn btn-primary btn-sm no-underline">
-              New design
-            </Link>
-            <UserMenu
-              username={user.username}
-              displayName={user.displayName}
-              avatarUrl={user.avatarUrl}
-              isAdmin={isAdmin(user)}
-              actingAdmin={actingAdmin(user)}
-            />
-          </>
+          <UserMenu
+            username={user.username}
+            displayName={user.displayName}
+            avatarUrl={user.avatarUrl}
+            isAdmin={isAdmin(user)}
+            actingAdmin={actingAdmin(user)}
+          />
         ) : (
           <Link href="/signin" className="btn btn-primary btn-sm no-underline">
             Sign in

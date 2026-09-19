@@ -61,6 +61,9 @@ export type DesignSummary = {
   stats: { viewCount: number; cloneCount: number; exportCount: number };
   providers: string[];
   nodeCount: number;
+  /** Edges and open findings of the shown version, for the browse listing's columns. */
+  edgeCount: number;
+  findingCount: number;
   /** Brand mark inner-SVG for a well-known product, else null. */
   brand: string | null;
   /** The engine's layout of the current version, for the card thumbnail. */
@@ -214,6 +217,8 @@ export type ListOptions = {
   provider?: string;
   kind?: string;
   owner?: string;
+  /** Curation tier: reference and imported are the seeded designs, authored are people's own. */
+  origin?: "authored" | "imported" | "reference";
   sort?: "updated" | "created" | "clones" | "exports";
   page?: number;
   pageSize?: number;
@@ -222,6 +227,18 @@ export type ListOptions = {
   /** With scope `all`: restrict to one visibility. */
   visibility?: "public" | "private";
 };
+
+// Edges and findings are read off the version the listing shows rather than stored on the row,
+// so a catalogue change is reflected without rewriting every design. Only errors and warnings
+// count: info findings are suggestions, and a row that flagged them would never read clean.
+function countsOf(yaml: string | null, cat: Catalogue) {
+  if (!yaml) return { edgeCount: 0, findingCount: 0 };
+  const { doc, findings } = analyse(yaml, cat);
+  return {
+    edgeCount: doc?.edges.length ?? 0,
+    findingCount: findings.filter((f) => f.severity !== "info").length,
+  };
+}
 
 /** Browse. Visibility is inside the query, never filtered afterwards. */
 export async function listDesigns(
@@ -261,6 +278,7 @@ export async function listDesigns(
         )!,
       );
   }
+  if (opts.origin) conds.push(eq(schema.designs.origin, opts.origin));
   if (opts.provider) conds.push(ilike(schema.designs.searchText, `%provider:${opts.provider}%`));
   if (opts.kind) conds.push(ilike(schema.designs.searchText, `%kind:${opts.kind}%`));
   const where = and(...conds);
@@ -312,6 +330,7 @@ export async function listDesigns(
         ...new Set((design.searchText.match(/provider:([a-z]+)/g) ?? []).map((m) => m.slice(9))),
       ],
       nodeCount: Number(/nodes:(\d+)/.exec(design.searchText)?.[1] ?? 0),
+      ...countsOf(yaml, cat),
       brand: brandMarkFor(design.slug),
       sketch: yaml ? sketchOf(yaml, cat) : null,
     })),
@@ -319,6 +338,30 @@ export async function listDesigns(
     page,
     pageSize,
   };
+}
+
+/** The owner handles the search box offers after `@`. `zeema` stands for the curated designs,
+ *  which have no owner row; the rest are people with at least one design the viewer can see. */
+export async function listOwners(viewer: Viewer): Promise<string[]> {
+  const db = await getDb();
+  const rows = await db
+    .select({ username: schema.users.username })
+    .from(schema.designs)
+    .innerJoin(schema.users, eq(schema.users.id, schema.designs.ownerId))
+    .where(
+      and(
+        isNull(schema.designs.deletedAt),
+        actingAdmin(viewer)
+          ? undefined
+          : viewer
+            ? or(eq(schema.designs.visibility, "public"), eq(schema.designs.ownerId, viewer.id))
+            : eq(schema.designs.visibility, "public"),
+      ),
+    )
+    .groupBy(schema.users.username)
+    .orderBy(schema.users.username)
+    .limit(50);
+  return ["zeema", ...rows.map((r) => r.username)];
 }
 
 // ---------------------------------------------------------------- writes

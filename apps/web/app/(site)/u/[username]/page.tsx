@@ -50,7 +50,7 @@ export default async function Profile({ params }: { params: Promise<{ username: 
                   Create a design
                 </Link>
                 , or clone one from{" "}
-                <Link href="/browse" className="link">
+                <Link href="/" className="link">
                   Browse
                 </Link>
                 .

@@ -8,7 +8,7 @@ export default function NotFound() {
         <p className="small muted">
           There is no design or person at this address, or it is private.
         </p>
-        <Link href="/browse" className="btn btn-sm no-underline">
+        <Link href="/" className="btn btn-sm no-underline">
           Browse designs
         </Link>
       </div>

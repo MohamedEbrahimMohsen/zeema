@@ -50,7 +50,7 @@ export function UserMenu({ username, displayName, avatarUrl, isAdmin, actingAdmi
       if (res.ok) {
         setOpen(false);
         // Leaving admin on an admin-only page: go somewhere a member can be.
-        if (!admin && pathname.startsWith("/admin")) router.push("/browse");
+        if (!admin && pathname.startsWith("/admin")) router.push("/");
         router.refresh();
       }
     } finally {

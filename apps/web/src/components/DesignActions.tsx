@@ -81,7 +81,7 @@ export function DesignActions({
   const remove = async () => {
     if (!confirm("Delete this design? It disappears from every listing immediately.")) return;
     const res = await call("delete", () => fetch(base, { method: "DELETE" }));
-    if (res) router.push("/browse?owner=me");
+    if (res) router.push("/?owner=me");
   };
   const exportSvg = async () => {
     fetch(`${base}/events`, {

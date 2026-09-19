@@ -17,9 +17,13 @@
   --line-soft: #e4e4df;
   --frame: #b4b4ae;
 
-  /* accent */
+  /* accent — --accent is the text/line blue and lightens in dark so it stays readable there;
+     --accent-solid is the brand blue for filled surfaces, identical in both themes, because
+     white on it is legible either way and the fill is what people recognise as the brand. */
   --accent: #3f4fc4;
   --accent-ink: #ffffff;
+  --accent-solid: #3f4fc4;
+  --accent-solid-ink: #ffffff;
 
   /* status — text, dots and borders only, never fills */
   --ok: #2e7d4f;
@@ -116,6 +120,8 @@
   --frame: #55555c;
   --accent: #98a6f2;
   --accent-ink: #0f1526;
+  --accent-solid: #3f4fc4;
+  --accent-solid-ink: #ffffff;
   --ok: #6fc28f;
   --warn: #e0a23d;
   --err: #ef7d75;
@@ -389,14 +395,14 @@ img.provider {
   cursor: not-allowed;
 }
 .btn-primary {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--accent-ink);
+  background: var(--accent-solid);
+  border-color: var(--accent-solid);
+  color: var(--accent-solid-ink);
   font-weight: var(--fw-medium);
 }
 .btn-primary:hover {
-  background: color-mix(in srgb, var(--accent) 88%, #000);
-  border-color: color-mix(in srgb, var(--accent) 88%, #000);
+  background: color-mix(in srgb, var(--accent-solid) 88%, #000);
+  border-color: color-mix(in srgb, var(--accent-solid) 88%, #000);
 }
 .btn-danger {
   color: var(--err);
@@ -508,9 +514,9 @@ input[type="radio"] {
   color: var(--err);
 }
 .tag-accent {
-  border-color: var(--accent);
-  background: var(--accent);
-  color: var(--accent-ink);
+  border-color: var(--accent-solid);
+  background: var(--accent-solid);
+  color: var(--accent-solid-ink);
 }
 
 .status {
@@ -788,7 +794,7 @@ button.finding:hover .msg {
   transition: transform var(--dur-fast) var(--ease);
 }
 .switch.on {
-  background: var(--accent);
+  background: var(--accent-solid);
 }
 .switch.on::after {
   transform: translateX(12px);
@@ -1108,4 +1114,351 @@ kbd.key {
   padding: 0 4px;
   min-width: 16ch;
   max-width: 100%;
+}
+
+/* ── browse listing ───────────────────────────────────────────────── */
+
+/* The listing sets its own type scale in px rather than inheriting the app's 14px em scale:
+   at 14px the numbers and slugs shrink below the point where a dense table is comfortable to
+   scan, so these are the sizes the design was drawn at. */
+
+.browse {
+  font-size: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.browse-head h1 {
+  font-size: 1.7rem;
+  font-weight: var(--fw-semibold);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+.browse-facts {
+  /* Its own line under the title, whatever else sits in the head row. */
+  flex-basis: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+  margin-top: -2px;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+.browse-facts b {
+  color: var(--ink);
+  font-weight: var(--fw-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.browse-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 0;
+  border-block: var(--border) solid var(--line);
+}
+.browse-tools .input {
+  height: 36px;
+  font-size: 0.95rem;
+}
+.browse-tools select.input {
+  height: 34px;
+}
+.browse-tools .btn {
+  height: 34px;
+  font-size: 0.9rem;
+}
+.browse-tools .tag {
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 11px;
+  font-size: 0.8rem;
+}
+
+.rows {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+}
+.row-cols,
+.row {
+  display: grid;
+  grid-template-columns: 88px 1fr 90px 90px 110px 70px;
+  gap: 20px;
+  align-items: center;
+}
+.row-cols {
+  padding: 10px 12px;
+  font-size: 0.76rem;
+  color: var(--muted);
+  font-family: var(--lab-font);
+  text-transform: var(--lab-tt);
+  letter-spacing: var(--lab-ls);
+}
+.row-cols span:nth-child(n + 3) {
+  text-align: right;
+}
+.row {
+  padding: 12px;
+  border-radius: 12px;
+  color: inherit;
+  transition: background var(--dur-fast) var(--ease);
+}
+.row:hover {
+  background: var(--panel);
+  text-decoration: none;
+}
+/* Rules between rows, drawn as a shadow so the hover fill can erase its own two. */
+.rows li + li .row {
+  box-shadow: 0 -1px 0 var(--line);
+}
+.rows li:hover + li .row,
+.row:hover {
+  box-shadow: none;
+}
+
+.row-thumb {
+  width: 88px;
+  height: 58px;
+  border-radius: 8px;
+  border: var(--border) solid var(--line);
+  background: var(--bg);
+  overflow: hidden;
+  position: relative;
+}
+.row-thumb svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.row-mark,
+.row-plate {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+.row-mark {
+  background: repeating-linear-gradient(135deg, var(--bg) 0 8px, var(--panel) 8px 16px);
+}
+.row-mark svg {
+  width: 44%;
+  height: 44%;
+}
+.row-plate {
+  background: var(--t-blue-fill);
+  font-weight: var(--fw-semibold);
+  font-size: 1.1rem;
+  text-transform: uppercase;
+}
+
+.row-name strong {
+  display: block;
+  font-size: 1rem;
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-title);
+}
+.row-slug {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.row-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+.row-tags .tag {
+  font-size: 0.72rem;
+  padding: 1px 7px;
+}
+.row-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--fw-medium);
+}
+.row-num small {
+  display: none;
+}
+.row-find {
+  justify-self: end;
+  white-space: nowrap;
+  font-size: 0.8rem;
+  font-weight: var(--fw-semibold);
+  padding: 3px 9px;
+  border-radius: 999px;
+}
+.row-find.is-ok {
+  color: var(--ok);
+  background: color-mix(in srgb, var(--ok) 11%, transparent);
+}
+.row-find.is-warn {
+  color: var(--warn);
+  background: color-mix(in srgb, var(--warn) 13%, transparent);
+}
+.row-clones {
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.row-clones svg {
+  width: 14px;
+  height: 14px;
+}
+
+@media (min-width: 861px) {
+  .row-meta {
+    display: contents;
+  }
+}
+@media (max-width: 860px) {
+  .row-cols {
+    display: none;
+  }
+  .row {
+    grid-template-columns: 76px 1fr;
+    grid-template-areas: "t n" "t m";
+    column-gap: 14px;
+    row-gap: 8px;
+  }
+  .row-thumb {
+    grid-area: t;
+    width: 76px;
+    height: 56px;
+    align-self: start;
+  }
+  .row-name {
+    grid-area: n;
+  }
+  .row-meta {
+    grid-area: m;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 16px;
+  }
+  .row-num {
+    text-align: left;
+    font-size: 0.84rem;
+  }
+  .row-num small {
+    display: inline;
+    color: var(--muted);
+    font-weight: var(--fw-regular);
+  }
+  .row-find,
+  .row-clones {
+    justify-self: start;
+  }
+}
+
+/* ── search box ───────────────────────────────────────────────────── */
+
+.searchbox {
+  position: relative;
+  flex: 1 1 280px;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 12px;
+  border: var(--border) solid var(--line);
+  border-radius: var(--rp);
+  background: var(--panel);
+}
+.searchbox:focus-within {
+  border-color: color-mix(in srgb, var(--accent) 60%, var(--line));
+  box-shadow: var(--ring-focus);
+}
+.searchbox > svg {
+  width: 15px;
+  height: 15px;
+  flex: none;
+  color: var(--muted);
+}
+.searchbox-input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: none;
+  outline: none;
+  font: inherit;
+  color: inherit;
+}
+.searchbox-input::placeholder {
+  color: var(--muted);
+}
+/* The wrapper already draws the focus ring; without this the global :focus-visible rule draws
+   a second one around the bare input, inside the first. */
+.searchbox-input:focus-visible {
+  box-shadow: none;
+  border-radius: 0;
+}
+.searchbox-list {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  border: var(--border) solid var(--line);
+  border-radius: var(--rp);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.18);
+}
+.searchbox-option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: var(--rc);
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: 0.86rem;
+}
+.searchbox-option.is-active {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+.searchbox-hint {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+/* Active filters, one removable pill each, so the toolbar itself stays a single line. */
+.browse-pills {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: -4px;
+}
+.pill-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: var(--border) solid color-mix(in srgb, var(--accent) 45%, var(--line));
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: inherit;
+  font-size: 0.78rem;
+}
+.pill-filter:hover {
+  border-color: var(--accent);
+  text-decoration: none;
 }
