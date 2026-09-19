@@ -674,10 +674,13 @@ export async function cloneDesign(
   const view = await getDesign(owner, slug, viewer);
   const yaml = input.yaml ?? view.version?.yaml;
   if (!yaml) throw new ServiceError(400, "nothing to clone");
-  const title = input.title ?? `${view.design.title} (copy)`;
+  // The clone keeps the name it was cloned from. Slugs are unique per owner, not globally, so
+  // @you/youtube and @zeema/youtube are different addresses and there is nothing to disambiguate
+  // unless the cloner already has a design by that name, which `uniqueSlug` handles.
+  const title = input.title ?? view.design.title;
   const created = await createDesign(viewer, {
     title,
-    slug: input.slug ?? `${view.design.slug}-copy`,
+    slug: input.slug ?? view.design.slug,
     summary: view.design.summary ?? undefined,
     visibility: "private",
     yaml,
