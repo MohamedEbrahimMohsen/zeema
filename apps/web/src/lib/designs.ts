@@ -3,6 +3,7 @@
 // their own state ("can I edit this?") from the answers these functions give.
 import { createHash } from "node:crypto";
 import { and, desc, eq, ilike, isNotNull, isNull, or, sql } from "drizzle-orm";
+import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import { getDb, schema } from "@/db";
 import type { Design, DesignVersion } from "@/db/schema";
 import { brandMarkFor } from "./brand";
@@ -115,6 +116,29 @@ async function resolveDesign(owner: string, slug: string) {
     )
     .limit(1);
   return rows[0] ?? { design: null, owner: null };
+}
+
+/** An address the design used to answer to, for the redirect. Null if this is its current one. */
+export async function resolveAlias(owner: string, slug: string): Promise<string | null> {
+  const db = await getDb();
+  const rows = await db
+    .select({ design: schema.designs, username: schema.users.username })
+    .from(schema.designSlugs)
+    .innerJoin(schema.designs, eq(schema.designs.id, schema.designSlugs.designId))
+    .leftJoin(schema.users, eq(schema.users.id, schema.designs.ownerId))
+    .where(
+      and(
+        eq(sql`lower(coalesce(${schema.users.username}, 'zeema'))`, owner.toLowerCase()),
+        eq(sql`lower(${schema.designSlugs.slug})`, slug.toLowerCase()),
+      ),
+    )
+    .limit(1);
+  const hit = rows[0];
+  // The row points at the design, not at the next name, so however many renames happened the
+  // current address is one read away and there is no chain to follow.
+  if (!hit || hit.design.deletedAt) return null;
+  if (hit.design.slug.toLowerCase() === slug.toLowerCase()) return null;
+  return hit.design.slug;
 }
 
 /** A design by address, or a 404 for anything the viewer may not see (private designs never 403). */
@@ -395,24 +419,63 @@ function validateOrThrow(yaml: string, cat: Catalogue) {
   return doc;
 }
 
-async function uniqueSlug(ownerId: string | null, wanted: string) {
+// Owner-less rows are the curated designs, so "this owner" always means IS NULL for them.
+const ownerIs = (col: AnyPgColumn, ownerId: string | null) =>
+  ownerId ? eq(col, ownerId) : isNull(col);
+
+/** Whether this owner may put a design at this address. `self` is a design reclaiming its own. */
+async function slugTaken(ownerId: string | null, slug: string, self?: string) {
   const db = await getDb();
+  const live = await db
+    .select({ id: schema.designs.id })
+    .from(schema.designs)
+    .where(
+      and(
+        ownerIs(schema.designs.ownerId, ownerId),
+        eq(sql`lower(${schema.designs.slug})`, slug),
+        isNull(schema.designs.deletedAt),
+      ),
+    )
+    .limit(1);
+  if (live[0] && live[0].id !== self) return true;
+  const held = await db
+    .select({ designId: schema.designSlugs.designId })
+    .from(schema.designSlugs)
+    .where(
+      and(
+        ownerIs(schema.designSlugs.ownerId, ownerId),
+        eq(sql`lower(${schema.designSlugs.slug})`, slug),
+      ),
+    )
+    .limit(1);
+  return Boolean(held[0] && held[0].designId !== self);
+}
+
+async function uniqueSlug(ownerId: string | null, wanted: string) {
   const base = toSlug(wanted);
   for (let n = 0; n < 100; n++) {
     const candidate = n ? `${base}-${n + 1}` : base;
-    const rows = await db
-      .select({ id: schema.designs.id })
-      .from(schema.designs)
-      .where(
-        and(
-          ownerId ? eq(schema.designs.ownerId, ownerId) : isNull(schema.designs.ownerId),
-          eq(sql`lower(${schema.designs.slug})`, candidate),
-        ),
-      )
-      .limit(1);
-    if (!rows[0]) return candidate;
+    if (!(await slugTaken(ownerId, candidate))) return candidate;
   }
   throw new ServiceError(409, "no free slug");
+}
+
+/** Reserves an address for a design. Idempotent: publishing twice reserves once. */
+async function reserveSlug(ownerId: string | null, slug: string, designId: string) {
+  const db = await getDb();
+  if (await slugTaken(ownerId, slug, designId)) return;
+  const held = await db
+    .select({ id: schema.designSlugs.id })
+    .from(schema.designSlugs)
+    .where(
+      and(
+        ownerIs(schema.designSlugs.ownerId, ownerId),
+        eq(sql`lower(${schema.designSlugs.slug})`, slug.toLowerCase()),
+      ),
+    )
+    .limit(1);
+  if (held[0]) return;
+  await db.insert(schema.designSlugs).values({ ownerId, slug, designId });
 }
 
 export type CreateInput = {
@@ -604,12 +667,16 @@ export async function publishDesign(
     })
     .where(eq(schema.designs.id, view.design.id))
     .returning();
+  // A released address is public property from here on: reserved against every other design,
+  // including this owner's own later ones, so a link out in the world never changes meaning.
+  await reserveSlug(view.design.ownerId, view.design.slug, view.design.id);
   countWrite("publish");
   return { design, version, unchanged: false };
 }
 
 export type PatchInput = {
   title?: string;
+  slug?: string;
   summary?: string;
   visibility?: "public" | "private";
   tags?: string[];
@@ -625,12 +692,27 @@ export async function patchDesign(owner: string, slug: string, viewer: Viewer, i
       throw new ServiceError(400, "title must be 1 to 120 characters");
     set.title = input.title;
   }
+  // Renaming is allowed, the way it is on GitHub: the old address is reserved and redirects, so
+  // links already in the world keep working and nothing else can ever take that name.
+  if (input.slug !== undefined) {
+    const wanted = toSlug(input.slug);
+    if (!wanted) throw new ServiceError(400, "name must contain a letter or number");
+    if (wanted !== view.design.slug.toLowerCase()) {
+      if (await slugTaken(view.design.ownerId, wanted, view.design.id))
+        throw new ServiceError(409, "that name is taken, or was used by a published design");
+      if (view.design.publishedAt)
+        await reserveSlug(view.design.ownerId, view.design.slug, view.design.id);
+      set.slug = wanted;
+    }
+  }
   if (input.summary !== undefined) set.summary = input.summary.slice(0, 280) || null;
   if (input.visibility !== undefined) {
     if (!["public", "private"].includes(input.visibility))
       throw new ServiceError(400, "visibility must be public or private");
     set.visibility = input.visibility;
     if (input.visibility === "public" && !view.design.publishedAt) set.publishedAt = new Date();
+    if (input.visibility === "public")
+      await reserveSlug(view.design.ownerId, set.slug ?? view.design.slug, view.design.id);
     // Going public with nothing released yet releases the head, so the page is not empty.
     if (input.visibility === "public" && !view.design.publishedVersionId && view.version) {
       set.publishedVersionId = view.version.id;

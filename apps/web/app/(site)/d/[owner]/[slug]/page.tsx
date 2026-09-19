@@ -2,7 +2,7 @@ import { normalize } from "@zeema/core/document";
 import { toSvg } from "@zeema/core/render";
 import { parse } from "@zeema/core/yaml";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { DesignActions } from "@/components/DesignActions";
 import { EditableTitle } from "@/components/EditableTitle";
 import { Findings } from "@/components/Findings";
@@ -15,6 +15,7 @@ import {
   listVersions,
   ownerSegment,
   recordEvent,
+  resolveAlias,
   ServiceError,
 } from "@/lib/designs";
 import { analyse } from "@/lib/lint";
@@ -40,7 +41,12 @@ export default async function DesignPage({
   try {
     view = await getDesign(owner, slug, viewer, { version: sp.v });
   } catch (e) {
-    if (e instanceof ServiceError && e.status === 404) notFound();
+    if (e instanceof ServiceError && e.status === 404) {
+      // The design may have been renamed: an old address redirects to the current one.
+      const now = await resolveAlias(owner, slug);
+      if (now) redirect(`/d/${owner}/${now}`);
+      notFound();
+    }
     throw e;
   }
   const cat = getCatalogue();

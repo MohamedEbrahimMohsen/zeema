@@ -71,3 +71,49 @@ describe("names", () => {
     expect(cloned.design.title).toBe("Stripe Payments");
   });
 });
+
+describe("renaming", () => {
+  it("redirects the old address and refuses to hand the name to anything else", async () => {
+    const { createDesign, patchDesign, resolveAlias, getDesign } = await lib();
+    const erin = await makeUser("erin");
+    const d = await createDesign(erin as never, { title: "Notes", yaml: YAML });
+    await patchDesign("erin", "notes", erin as never, { visibility: "public" });
+    await patchDesign("erin", "notes", erin as never, { slug: "notebook" });
+
+    expect(await resolveAlias("erin", "notes")).toBe("notebook");
+    expect((await getDesign("erin", "notebook", erin as never)).design.id).toBe(d.design.id);
+
+    // The owner's own later design cannot take the released name back.
+    const other = await createDesign(erin as never, { title: "Notes", yaml: YAML });
+    expect(other.design.slug).toBe("notes-2");
+    await expect(
+      patchDesign("erin", other.design.slug, erin as never, { slug: "notes" }),
+    ).rejects.toMatchObject({ status: 409 });
+  });
+
+  it("answers in one hop however many times it was renamed", async () => {
+    const { createDesign, patchDesign, resolveAlias } = await lib();
+    const frank = await makeUser("frank");
+    await createDesign(frank as never, { title: "One", yaml: YAML });
+    await patchDesign("frank", "one", frank as never, { visibility: "public" });
+    const names = ["two", "three", "four", "five"];
+    let from = "one";
+    for (const to of names) {
+      await patchDesign("frank", from, frank as never, { slug: to });
+      from = to;
+    }
+    for (const old of ["one", "two", "three", "four"]) {
+      expect(await resolveAlias("frank", old)).toBe("five");
+    }
+  });
+
+  it("lets a design take back a name it used to hold", async () => {
+    const { createDesign, patchDesign } = await lib();
+    const gina = await makeUser("gina");
+    await createDesign(gina as never, { title: "Loop", yaml: YAML });
+    await patchDesign("gina", "loop", gina as never, { visibility: "public" });
+    await patchDesign("gina", "loop", gina as never, { slug: "circle" });
+    const back = await patchDesign("gina", "circle", gina as never, { slug: "loop" });
+    expect(back.slug).toBe("loop");
+  });
+});

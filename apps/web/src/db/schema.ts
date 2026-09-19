@@ -114,6 +114,31 @@ export const designs = pgTable(
   ],
 );
 
+// Every address a design has ever answered to once it was public. A rename writes the old slug
+// here and a first publish writes the current one, so a released address keeps resolving and is
+// never claimable by anything else -- including by its own owner, whose new design under an old
+// name would silently serve different content to every link already out there.
+//
+// Rows point at the design, not at the next name, so a design renamed ten times still resolves
+// every old address in one hop with no chain to walk or repair.
+export const designSlugs = pgTable(
+  "design_slugs",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    ownerId: uuid("owner_id").references(() => users.id),
+    slug: text("slug").notNull(),
+    designId: uuid("design_id").notNull(),
+    reservedAt: timestamp("reserved_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("design_slugs_owner_slug").on(
+      sql`coalesce(${t.ownerId}::text, '')`,
+      sql`lower(${t.slug})`,
+    ),
+    index("design_slugs_design").on(t.designId),
+  ],
+);
+
 export const designVersions = pgTable(
   "design_versions",
   {
