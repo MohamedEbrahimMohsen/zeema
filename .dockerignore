@@ -10,6 +10,9 @@ dist
 **/dist
 work
 coverage
+# Database dumps. Gitignored, but Docker's context does not read .gitignore, so without
+# this line they are baked into the image along with every user row and session token.
+backups
 **/coverage
 apps/web/.pglite
 apps/web/data
