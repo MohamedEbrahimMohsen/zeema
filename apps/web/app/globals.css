@@ -1053,18 +1053,17 @@ kbd.key {
 
 /* ── loading ──────────────────────────────────────────────────────── */
 
-@keyframes ark-build {
-  0%,
-  8% {
-    opacity: 0;
+/* The Z of the mark drawing itself through the braces: in, hold, out. */
+@keyframes zee-draw {
+  0% {
+    stroke-dashoffset: 20;
   }
-  30%,
-  72% {
-    opacity: 1;
+  45%,
+  62% {
+    stroke-dashoffset: 0;
   }
-  88%,
   100% {
-    opacity: 0;
+    stroke-dashoffset: -20;
   }
 }
 .route-spinner {

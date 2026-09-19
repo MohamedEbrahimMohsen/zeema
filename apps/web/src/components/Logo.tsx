@@ -1,12 +1,19 @@
-// The Zeema mark: an arch of seven blocks on the 24-grid, the keystone in the accent colour.
-// `Mark` is the static logo; `Spinner` assembles the arch block by block, keystone last, on a
-// 1.6 s cycle (keyframes `ark-build` in globals.css). Both inherit `currentColor` for the blocks
-// and `--accent` for the keystone, so they follow the theme.
+// The Zeema mark: a Z inside braces — the letter as a value, the braces as the schema around
+// it. Two colours only, the brand blue and white, so the mark is the same object everywhere
+// rather than a different drawing per surface.
+//
+// `Mark` is the tile: white strokes reversed out of the blue field, which is what makes it
+// legible down to favicon size where open strokes would break up. `Spinner` keeps the braces
+// and draws the Z through them on a 1.4 s loop (keyframes `zee-draw` in globals.css).
 
-const ARCH =
-  "M2.5 1H5.5A1.5 1.5 0 0 1 7 2.5V5.5A1.5 1.5 0 0 1 5.5 7H2.5A1.5 1.5 0 0 1 1 5.5V2.5A1.5 1.5 0 0 1 2.5 1ZM18.5 1H21.5A1.5 1.5 0 0 1 23 2.5V5.5A1.5 1.5 0 0 1 21.5 7H18.5A1.5 1.5 0 0 1 17 5.5V2.5A1.5 1.5 0 0 1 18.5 1ZM2.5 9H5.5A1.5 1.5 0 0 1 7 10.5V13.5A1.5 1.5 0 0 1 5.5 15H2.5A1.5 1.5 0 0 1 1 13.5V10.5A1.5 1.5 0 0 1 2.5 9ZM18.5 9H21.5A1.5 1.5 0 0 1 23 10.5V13.5A1.5 1.5 0 0 1 21.5 15H18.5A1.5 1.5 0 0 1 17 13.5V10.5A1.5 1.5 0 0 1 18.5 9ZM2.5 17H5.5A1.5 1.5 0 0 1 7 18.5V21.5A1.5 1.5 0 0 1 5.5 23H2.5A1.5 1.5 0 0 1 1 21.5V18.5A1.5 1.5 0 0 1 2.5 17ZM18.5 17H21.5A1.5 1.5 0 0 1 23 18.5V21.5A1.5 1.5 0 0 1 21.5 23H18.5A1.5 1.5 0 0 1 17 21.5V18.5A1.5 1.5 0 0 1 18.5 17Z";
-const KEYSTONE =
-  "M10.5 1H13.5A1.5 1.5 0 0 1 15 2.5V5.5A1.5 1.5 0 0 1 13.5 7H10.5A1.5 1.5 0 0 1 9 5.5V2.5A1.5 1.5 0 0 1 10.5 1Z";
+const BRACE_LEFT =
+  "M7.3 5C5.9 5 5.6 5.8 5.6 7.1V10.2C5.6 11.3 4.9 11.9 3.6 12C4.9 12.1 5.6 12.7 5.6 13.8V16.9C5.6 18.2 5.9 19 7.3 19";
+const BRACE_RIGHT =
+  "M16.7 5C18.1 5 18.4 5.8 18.4 7.1V10.2C18.4 11.3 19.1 11.9 20.4 12C19.1 12.1 18.4 12.7 18.4 13.8V16.9C18.4 18.2 18.1 19 16.7 19";
+const ZED = "M8.9 8.1H15.1L8.9 15.9H15.1";
+
+const BLUE = "#3f4fc4";
+const STROKE = { strokeWidth: 2.3, strokeLinecap: "round", strokeLinejoin: "round" } as const;
 
 export function Mark({ size = 20, className }: { size?: number; className?: string }) {
   return (
@@ -18,22 +25,15 @@ export function Mark({ size = 20, className }: { size?: number; className?: stri
       aria-hidden="true"
       style={{ display: "block", flex: "none" }}
     >
-      <path d={ARCH} fill="currentColor" />
-      <path d={KEYSTONE} fill="var(--accent)" />
+      <rect width="24" height="24" rx="5" fill={BLUE} />
+      <g fill="none" stroke="#fff" {...STROKE}>
+        <path d={BRACE_LEFT} />
+        <path d={BRACE_RIGHT} />
+        <path d={ZED} />
+      </g>
     </svg>
   );
 }
-
-// Build order bottom-up, keystone last: [x, y, delay step].
-const BLOCKS: Array<[number, number, number]> = [
-  [1, 17, 0],
-  [17, 17, 0],
-  [1, 9, 1],
-  [17, 9, 1],
-  [1, 1, 2],
-  [17, 1, 2],
-  [9, 1, 3],
-];
 
 export function Spinner({ size = 16, label = "Loading" }: { size?: number; label?: string }) {
   return (
@@ -45,21 +45,19 @@ export function Spinner({ size = 16, label = "Loading" }: { size?: number; label
       aria-label={label}
       style={{ display: "block", flex: "none" }}
     >
-      {BLOCKS.map(([x, y, step], i) => (
-        <rect
-          key={`${x}-${y}`}
-          x={x}
-          y={y}
-          width={6}
-          height={6}
-          rx={1.5}
-          fill={i === 6 ? "var(--accent)" : "currentColor"}
-          style={{
-            animation: "ark-build 1.6s cubic-bezier(0.2, 0, 0.2, 1) infinite",
-            animationDelay: `${step * 0.18}s`,
-          }}
+      <rect width="24" height="24" rx="5" fill={BLUE} />
+      <g fill="none" stroke="#fff" {...STROKE}>
+        <g opacity={0.45}>
+          <path d={BRACE_LEFT} />
+          <path d={BRACE_RIGHT} />
+        </g>
+        <path
+          d={ZED}
+          // The path is a shade under 20 units long; the dash carries the whole stroke.
+          strokeDasharray={20}
+          style={{ animation: "zee-draw 1.4s cubic-bezier(0.4, 0, 0.3, 1) infinite" }}
         />
-      ))}
+      </g>
     </svg>
   );
 }
