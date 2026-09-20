@@ -22,6 +22,7 @@ import {
   listTags,
   listVersions,
   ownerSegment,
+  publishSlugFor,
   recordEvent,
   resolveAlias,
   ServiceError,
@@ -160,25 +161,9 @@ export default async function DesignPage({
           isCurated={view.design.origin !== "authored"}
           unpublished={view.unpublished}
           neverPublished={!view.published}
+          plannedSlug={publishSlugFor({ slug: view.design.slug, title: view.design.title })}
         />
       </div>
-      {view.can.write && view.unpublished ? (
-        <div className="small muted">
-          {view.published
-            ? "This is your draft. Readers see the release from "
-            : "Not released yet. Readers see nothing until you publish"}
-          {view.published ? (
-            <>
-              {when(view.published.publishedAt ?? view.published.createdAt)}
-              {view.design.visibility === "public" ? "" : " (once the design is public)"}.
-            </>
-          ) : view.design.visibility === "public" ? (
-            "."
-          ) : (
-            " and make the design public."
-          )}
-        </div>
-      ) : null}
       {hasBroken ? (
         <div className="small">
           {broken ? (

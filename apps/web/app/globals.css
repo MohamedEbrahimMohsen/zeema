@@ -1695,29 +1695,37 @@ kbd.key {
   color: var(--ink);
 }
 
-/* The YAML panel. The toolbar sits beside the summary rather than inside it, so it can be used
-   while the block is closed and a click on Copy does not fold the section away. */
-.yaml-section {
+/* One shape for the About and YAML panels: a head row with the label on the left and an icon
+   toolbar on the right. The toolbar sits beside the <summary> rather than inside it, so it can
+   be used while the block is closed and a click on Copy does not fold the section away. */
+.doc-section {
   position: relative;
   padding: var(--sp-1) var(--sp-1-5);
 }
-.yaml-summary {
-  cursor: pointer;
+.doc-head {
   list-style: none;
   font-weight: var(--fw-medium);
   padding: var(--sp-0-5) 0;
   /* room for the toolbar, which floats over the right of this row */
   padding-right: 160px;
 }
-.yaml-summary::-webkit-details-marker {
+/* Only the YAML head opens something, so only it takes the pointer. */
+summary.doc-head {
+  cursor: pointer;
+}
+/* A head whose own controls sit in the row (the README editor) needs no room reserved. */
+.doc-head-full {
+  padding-right: 0;
+}
+.doc-head::-webkit-details-marker {
   display: none;
 }
-.yaml-section .yaml-summary .count {
+.doc-section .doc-head .count {
   color: var(--muted);
   font-weight: var(--fw-regular);
   margin-left: var(--sp-1);
 }
-.yaml-actions {
+.doc-actions {
   position: absolute;
   top: var(--sp-1);
   right: var(--sp-1);
@@ -1725,7 +1733,7 @@ kbd.key {
   align-items: center;
   gap: 2px;
 }
-.yaml-body {
+.doc-body {
   margin-top: var(--sp-1);
 }
 .copy-btn {
@@ -1894,7 +1902,7 @@ pre.yaml {
 
 /* The section already draws the panel, so the block inside it drops its own frame. Placed last
    so it outranks the plain `pre.yaml` rule above rather than descending beneath it. */
-.yaml-body pre.yaml {
+.doc-body pre.yaml {
   border: 0;
   padding: var(--sp-1) 0 0;
   background: transparent;

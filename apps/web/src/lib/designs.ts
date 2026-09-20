@@ -11,7 +11,7 @@ import { type Catalogue, getCatalogue } from "./catalogue";
 import { analyse } from "./lint";
 import { countExport, countWrite } from "./metrics";
 import { type Sketch, sketchOf } from "./sketch";
-import { toSlug, toTag } from "./slug";
+import { publishSlugFor, toSlug, toTag } from "./slug";
 import { actingAdmin, type SessionUser } from "./viewer";
 
 export class ServiceError extends Error {
@@ -25,7 +25,7 @@ export class ServiceError extends Error {
 }
 
 export const contentHash = (yaml: string) => createHash("sha256").update(yaml).digest("hex");
-export { toSlug, toTag } from "./slug";
+export { publishSlugFor, toSlug, toTag } from "./slug";
 
 const MAX_YAML = 512 * 1024;
 /** The README is prose, not a document: long enough for a real write-up, short of a book. */
@@ -689,18 +689,30 @@ export async function publishDesign(
     .set({ publishedAt: now, message: input.note?.slice(0, 200) || head.message })
     .where(eq(schema.designVersions.id, head.id))
     .returning();
+  // A draft still sitting at its minted `draft-xxxxxx` address grows into its title as it is
+  // released, so the first public link reads like the design. An address the owner chose by hand
+  // is never touched, and a title that slugifies to nothing leaves the draft name standing.
+  const wanted = publishSlugFor({ slug: view.design.slug, title: view.design.title });
+  const slugNow =
+    wanted === view.design.slug ? view.design.slug : await uniqueSlug(view.design.ownerId, wanted);
   const [design] = await db
     .update(schema.designs)
     .set({
       publishedVersionId: head.id,
       publishedAt: view.design.publishedAt ?? now,
+      slug: slugNow,
       updatedAt: now,
     })
     .where(eq(schema.designs.id, view.design.id))
     .returning();
   // A released address is public property from here on: reserved against every other design,
   // including this owner's own later ones, so a link out in the world never changes meaning.
-  await reserveSlug(view.design.ownerId, view.design.slug, view.design.id);
+  // When publishing moved the design, the draft address is reserved too and keeps resolving
+  // through `resolveAlias`, exactly as a rename does — a link shared before the release still
+  // lands on the design.
+  if (slugNow !== view.design.slug)
+    await reserveSlug(view.design.ownerId, view.design.slug, view.design.id);
+  await reserveSlug(view.design.ownerId, slugNow, view.design.id);
   countWrite("publish");
   return { design, version, unchanged: false };
 }

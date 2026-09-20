@@ -118,6 +118,70 @@ describe("renaming", () => {
   });
 });
 
+describe("publishing a draft address", () => {
+  const draft = async (username: string, title: string) => {
+    const { createDesign } = await lib();
+    const { newDraftSlug } = await import("./slug");
+    const user = await makeUser(username);
+    const d = await createDesign(user as never, { title, slug: newDraftSlug(), yaml: YAML });
+    return { user, slug: d.design.slug };
+  };
+
+  it("grows a draft address into its title and keeps the old one resolving", async () => {
+    const { publishDesign, resolveAlias, getDesign } = await lib();
+    const { user, slug } = await draft("hana", "YouTube copy");
+    expect(slug).toMatch(/^draft-[0-9a-f]{6}$/);
+
+    const out = await publishDesign("hana", slug, user as never);
+    expect(out.design.slug).toBe("youtube-copy");
+    // Both addresses are reserved: the new one is public property, the old one still points home.
+    expect(await resolveAlias("hana", slug)).toBe("youtube-copy");
+    expect((await getDesign("hana", "youtube-copy", user as never)).design.id).toBe(out.design.id);
+  });
+
+  it("numbers the second draft that wants the same title", async () => {
+    const { publishDesign } = await lib();
+    const { createDesign } = await lib();
+    const { newDraftSlug } = await import("./slug");
+    const ian = await makeUser("ian");
+    const first = await createDesign(ian as never, {
+      title: "YouTube copy",
+      slug: newDraftSlug(),
+      yaml: YAML,
+    });
+    const second = await createDesign(ian as never, {
+      title: "YouTube copy",
+      slug: newDraftSlug(),
+      yaml: YAML,
+    });
+    expect((await publishDesign("ian", first.design.slug, ian as never)).design.slug).toBe(
+      "youtube-copy",
+    );
+    expect((await publishDesign("ian", second.design.slug, ian as never)).design.slug).toBe(
+      "youtube-copy-2",
+    );
+  });
+
+  it("leaves an address the owner chose alone", async () => {
+    const { createDesign, patchDesign, publishDesign } = await lib();
+    const jo = await makeUser("jo");
+    const { newDraftSlug } = await import("./slug");
+    const d = await createDesign(jo as never, {
+      title: "YouTube copy",
+      slug: newDraftSlug(),
+      yaml: YAML,
+    });
+    await patchDesign("jo", d.design.slug, jo as never, { slug: "my-thing" });
+    expect((await publishDesign("jo", "my-thing", jo as never)).design.slug).toBe("my-thing");
+  });
+
+  it("keeps the draft address when the title slugifies to nothing", async () => {
+    const { publishDesign } = await lib();
+    const { user, slug } = await draft("kim", "!!! ???");
+    expect((await publishDesign("kim", slug, user as never)).design.slug).toBe(slug);
+  });
+});
+
 describe("deleting", () => {
   it("removes an unpublished design outright and frees its name", async () => {
     const { createDesign, deleteDesign, getTombstone } = await lib();

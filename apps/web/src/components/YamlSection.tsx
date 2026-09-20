@@ -5,30 +5,8 @@
 //
 // Server-rendered; CopyButton is the only client island.
 import { CopyButton } from "@/components/CopyButton";
+import { Download, Pencil, Raw } from "@/components/Glyphs";
 import { YamlView } from "@/components/YamlView";
-
-const Raw = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
-    <path d="M14 4h6v6" />
-    <path d="M20 4 11 13" />
-    <path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" />
-  </svg>
-);
-
-const Download = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
-    <path d="M12 3v12" />
-    <path d="m7 11 5 5 5-5" />
-    <path d="M4 20h16" />
-  </svg>
-);
-
-const Pencil = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
-    <path d="M4 20h4L19.5 8.5a2.1 2.1 0 0 0-3-3L5 17v3Z" />
-    <path d="M15 6.5 17.5 9" />
-  </svg>
-);
 
 type Props = {
   owner: string;
@@ -43,16 +21,16 @@ export function YamlSection({ owner, slug, yaml, canWrite, version }: Props) {
   const raw = `/api/v1/designs/${owner}/${slug}/yaml${version ? `?version=${version}` : ""}`;
   const download = `${raw}${version ? "&" : "?"}download=1`;
   return (
-    <section className="panel yaml-section">
-      <details className="yaml-details">
-        <summary className="yaml-summary">
+    <section className="panel doc-section">
+      <details className="doc-details">
+        <summary className="doc-head">
           YAML <span className="count mono">{yaml.split("\n").length} lines</span>
         </summary>
-        <div className="yaml-body">
+        <div className="doc-body">
           <YamlView source={yaml} copy={false} />
         </div>
       </details>
-      <div className="yaml-actions">
+      <div className="doc-actions">
         <CopyButton text={yaml} className="btn-icon" />
         <a
           className="btn-icon"

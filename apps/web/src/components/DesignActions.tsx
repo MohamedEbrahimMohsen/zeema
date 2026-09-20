@@ -15,6 +15,8 @@ type Props = {
   unpublished: boolean;
   /** Never released yet (a private draft). */
   neverPublished: boolean;
+  /** The address publishing will move this design to, when that differs from where it sits. */
+  plannedSlug: string;
 };
 
 export function DesignActions({
@@ -27,6 +29,7 @@ export function DesignActions({
   isCurated,
   unpublished,
   neverPublished,
+  plannedSlug,
 }: Props) {
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
@@ -58,9 +61,17 @@ export function DesignActions({
       router.push(body.design.address);
     }
   };
+  // Publishing an unnamed draft also moves it to an address made from its title, so the owner is
+  // told which address that is before they agree to it rather than discovering it afterwards.
+  const moving = plannedSlug !== slug;
   const publish = async () => {
+    if (moving && !confirm(`Publish this design at /d/${owner}/${plannedSlug}?`)) return;
     const res = await call("publish", () => fetch(`${base}/publish`, { method: "POST" }));
-    if (res) router.refresh();
+    if (!res) return;
+    const body = await res.json().catch(() => null);
+    const next = body?.design?.slug;
+    if (next && next !== slug) router.replace(`/d/${owner}/${next}`);
+    router.refresh();
   };
   const toggleVisibility = async () => {
     const next = visibility === "public" ? "private" : "public";
@@ -107,11 +118,11 @@ export function DesignActions({
           className="btn btn-sm btn-primary"
           onClick={publish}
           disabled={busy !== null}
-          title={
+          title={`${
             neverPublished
               ? "Release this version; it shows to others once the design is public"
               : "Release the current draft; readers see the previous release until then"
-          }
+          }${moving ? `. This draft moves to /d/${owner}/${plannedSlug}` : ""}`}
         >
           {busy === "publish" ? "publishing…" : "Publish"}
         </button>

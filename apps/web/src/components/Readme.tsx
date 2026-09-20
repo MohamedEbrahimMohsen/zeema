@@ -2,12 +2,14 @@
 
 // The About section. Readers get the server-rendered Markdown passed in as `children`, so
 // nothing about reading a design waits on JavaScript; the owner gets an Edit button that swaps
-// in a textarea with a live preview beside it.
+// in a textarea with a live preview beside it. It wears the same panel-and-toolbar shape as the
+// YAML section below it (`.doc-section`), so the two read as one pair rather than two designs.
 //
 // Ctrl+Enter saves, Escape cancels, and the counter warns before the limit rather than after,
 // because losing the end of a long write-up to a silent truncation would be the worst outcome.
 import { useRouter } from "next/navigation";
 import { type ReactNode, useRef, useState } from "react";
+import { Pencil } from "@/components/Glyphs";
 import { Markdown } from "@/components/Markdown";
 
 export const MAX_README = 20_000;
@@ -68,31 +70,40 @@ export function Readme({ owner, slug, readme, canWrite, children }: Props) {
 
   if (!editing)
     return (
-      <section className="flex flex-col gap-2">
-        <div className="flex items-center gap-3">
-          <span className="label">About</span>
-          {canWrite && readme ? (
-            <button type="button" className="btn btn-sm ml-auto" onClick={open}>
-              Edit
+      <section className="panel doc-section">
+        <div className="doc-head">About</div>
+        {canWrite ? (
+          <div className="doc-actions">
+            <button
+              type="button"
+              className="btn-icon btn-icon-text"
+              onClick={open}
+              aria-label="Edit the README"
+              title="Edit"
+            >
+              <Pencil />
+              <span>Edit</span>
             </button>
-          ) : null}
+          </div>
+        ) : null}
+        <div className="doc-body">
+          {readme ? (
+            children
+          ) : (
+            <button type="button" className="readme-empty" onClick={open}>
+              Write a README for this design — Markdown supported
+            </button>
+          )}
         </div>
-        {readme ? (
-          <div className="panel p-4">{children}</div>
-        ) : (
-          <button type="button" className="readme-empty" onClick={open}>
-            Write a README for this design — Markdown supported
-          </button>
-        )}
         {error ? <span className="status status-err small">{error}</span> : null}
       </section>
     );
 
   const over = draft.length > MAX_README;
   return (
-    <section className="flex flex-col gap-2">
-      <div className="flex items-center gap-3">
-        <span className="label">About</span>
+    <section className="panel doc-section">
+      <div className="doc-head doc-head-full flex items-center gap-3">
+        <span>About</span>
         <span
           className={`small ml-auto ${over ? "status-err" : draft.length > WARN_AT ? "status-warn" : "muted"}`}
         >
@@ -110,43 +121,45 @@ export function Readme({ owner, slug, readme, canWrite, children }: Props) {
           Cancel
         </button>
       </div>
-      <div className="readme-edit">
-        <textarea
-          ref={(el) => {
-            box.current = el;
-            grow();
-          }}
-          className="input mono readme-box"
-          rows={12}
-          maxLength={MAX_README}
-          spellCheck
-          aria-label="README, in Markdown"
-          value={draft}
-          placeholder={"# Overview\n\nWhat this design is, and why it is shaped this way."}
-          // biome-ignore lint/a11y/noAutofocus: the field appears on the user's own click
-          autoFocus
-          onChange={(e) => {
-            setDraft(e.target.value);
-            grow();
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-              e.preventDefault();
-              void save();
-            }
-            if (e.key === "Escape") setEditing(false);
-          }}
-        />
-        <div className="panel p-4 readme-preview">
-          {draft.trim() ? (
-            <Markdown>{draft}</Markdown>
-          ) : (
-            <span className="muted small">The preview appears as you write.</span>
-          )}
+      <div className="doc-body flex flex-col gap-2">
+        <div className="readme-edit">
+          <textarea
+            ref={(el) => {
+              box.current = el;
+              grow();
+            }}
+            className="input mono readme-box"
+            rows={12}
+            maxLength={MAX_README}
+            spellCheck
+            aria-label="README, in Markdown"
+            value={draft}
+            placeholder={"# Overview\n\nWhat this design is, and why it is shaped this way."}
+            // biome-ignore lint/a11y/noAutofocus: the field appears on the user's own click
+            autoFocus
+            onChange={(e) => {
+              setDraft(e.target.value);
+              grow();
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                e.preventDefault();
+                void save();
+              }
+              if (e.key === "Escape") setEditing(false);
+            }}
+          />
+          <div className="panel p-4 readme-preview">
+            {draft.trim() ? (
+              <Markdown>{draft}</Markdown>
+            ) : (
+              <span className="muted small">The preview appears as you write.</span>
+            )}
+          </div>
         </div>
+        <span className="meta">Markdown, with tables and task lists. Ctrl+Enter saves.</span>
+        {error ? <span className="status status-err small">{error}</span> : null}
       </div>
-      <span className="meta">Markdown, with tables and task lists. Ctrl+Enter saves.</span>
-      {error ? <span className="status status-err small">{error}</span> : null}
     </section>
   );
 }
