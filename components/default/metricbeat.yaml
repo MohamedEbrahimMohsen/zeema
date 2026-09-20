@@ -8,6 +8,7 @@ type: "component"
 id: "metricbeat"
 kind: "monitoring"
 provider: "default"
+docs: "https://www.elastic.co/guide/en/beats/metricbeat/current/index.html"
 defaults:
   managed: false
   signal: "metrics"

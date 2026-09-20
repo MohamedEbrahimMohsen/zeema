@@ -5,6 +5,7 @@ type: "component"
 id: "hbase"
 kind: "nosql-database"
 provider: "default"
+docs: "https://hbase.apache.org/book.html"
 defaults:
   model: "wide-column"
   consistency: "strong"

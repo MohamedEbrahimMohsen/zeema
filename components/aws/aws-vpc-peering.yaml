@@ -7,6 +7,7 @@ type: "component"
 id: "aws-vpc-peering"
 kind: "network-fabric"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/vpc/latest/peering/what-is-vpc-peering.html"
 defaults:
   managed: true
   interconnect: "cloud-backbone"

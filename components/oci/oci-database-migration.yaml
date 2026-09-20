@@ -8,6 +8,7 @@ type: "component"
 id: "oci-database-migration"
 kind: "worker"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/database-migration/doc/overview-oracle-cloud-infrastructure-database-migration.html"
 defaults:
   managed: true
   trigger: "manual"

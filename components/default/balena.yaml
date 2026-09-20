@@ -8,6 +8,7 @@ type: "component"
 id: "balena"
 kind: "edge-appliance"
 provider: "default"
+docs: "https://docs.balena.io/learn/introduction/primer.md"
 defaults:
   managed: true
   cloudManaged: true

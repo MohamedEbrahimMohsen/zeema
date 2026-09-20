@@ -6,6 +6,7 @@ type: "component"
 id: "azure-bot-service"
 kind: "app-server"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/bot-service/bot-overview?view=azure-bot-service-4.0"
 defaults:
   managed: true
   stateless: true

@@ -6,6 +6,7 @@ type: "component"
 id: "db2"
 kind: "sql-database"
 provider: "default"
+docs: "https://www.ibm.com/docs/en/db2/11.5.x?topic=dcp-hadr-syncmode-hadr-synchronization-mode-log-writes-in-peer-state"
 defaults:
   replication: "none"
   concurrencyControl: "pessimistic"

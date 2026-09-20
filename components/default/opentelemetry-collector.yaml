@@ -5,6 +5,7 @@ type: "component"
 id: "opentelemetry-collector"
 kind: "monitoring"
 provider: "default"
+docs: "https://opentelemetry.io/docs/collector/"
 defaults:
   signal: "all"
   collectorMode: "push"

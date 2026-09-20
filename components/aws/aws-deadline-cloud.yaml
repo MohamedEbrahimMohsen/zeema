@@ -9,6 +9,7 @@ type: "component"
 id: "aws-deadline-cloud"
 kind: "worker"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/deadline-cloud/latest/userguide/concepts-terminology.html"
 defaults:
   managed: true
   trigger: "batch"

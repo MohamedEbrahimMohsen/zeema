@@ -7,6 +7,7 @@ type: "component"
 id: "cloudflare-one-identity-provider"
 kind: "identity-provider"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/cloudflare-one/integrations/identity-providers/"
 defaults:
   managed: true
   centralised: true

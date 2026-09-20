@@ -7,6 +7,7 @@ type: "component"
 id: "google-solar-api"
 kind: "third-party-api"
 provider: "gcp"
+docs: "https://developers.google.com/maps/documentation/solar/usage-and-billing"
 defaults:
   managed: true
   idempotent: true

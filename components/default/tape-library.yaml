@@ -8,6 +8,7 @@ type: "component"
 id: "tape-library"
 kind: "backup-service"
 provider: "default"
+docs: "https://en.wikipedia.org/wiki/Tape_library"
 defaults:
   managed: false
   crossRegionRestore: false

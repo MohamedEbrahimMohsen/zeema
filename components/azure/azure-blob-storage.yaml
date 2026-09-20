@@ -6,6 +6,7 @@ type: "component"
 id: "azure-blob-storage"
 kind: "object-store"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/storage/blobs/storage-blobs-introduction"
 defaults:
   zones: 1
   durabilityNines: 11

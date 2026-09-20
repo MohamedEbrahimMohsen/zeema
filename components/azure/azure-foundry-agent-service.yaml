@@ -6,6 +6,7 @@ type: "component"
 id: "azure-foundry-agent-service"
 kind: "ai-service"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/ai-foundry/agents/overview"
 defaults:
   managed: true
   modality: "multimodal"

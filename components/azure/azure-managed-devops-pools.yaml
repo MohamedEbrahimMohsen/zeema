@@ -8,6 +8,7 @@ type: "component"
 id: "azure-managed-devops-pools"
 kind: "ci-pipeline"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/devops/managed-devops-pools/overview"
 defaults:
   managed: true
   selfHostedRunners: false

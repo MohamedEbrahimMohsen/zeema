@@ -11,6 +11,7 @@ type: "component"
 id: "digitalocean-load-balancer"
 kind: "load-balancer"
 provider: "digitalocean"
+docs: "https://docs.digitalocean.com/products/networking/load-balancers/"
 defaults:
   managed: true
   layer: "l7"

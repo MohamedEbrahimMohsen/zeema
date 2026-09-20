@@ -7,6 +7,7 @@ type: "component"
 id: "mimir"
 kind: "timeseries-database"
 provider: "default"
+docs: "https://grafana.com/docs/mimir/latest/references/architecture/components/compactor/"
 defaults:
   downsampling: false
   tiers: "hot-cold"

@@ -2,6 +2,7 @@
 // no DOM, no file system, no network. Every consumer (command line, canvas, platform, tests)
 // imports these same modules, so there is exactly one implementation of each behaviour.
 
+export * as describe from "./describe.js";
 export * as document from "./document.js";
 export * as geometry from "./geometry.js";
 export * as layout from "./layout.js";

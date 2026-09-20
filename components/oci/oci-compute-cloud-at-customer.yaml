@@ -10,6 +10,7 @@ type: "component"
 id: "oci-compute-cloud-at-customer"
 kind: "edge-appliance"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/compute-cloud-at-customer/ccc/overview-of-compute-cloud-at-customer.htm"
 defaults:
   formFactor: "rack"
   connectivity: "connected"

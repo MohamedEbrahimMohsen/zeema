@@ -5,6 +5,7 @@ type: "component"
 id: "onesignal"
 kind: "notification-service"
 provider: "default"
+docs: "https://documentation.onesignal.com/"
 defaults:
   managed: true
   channelPush: true

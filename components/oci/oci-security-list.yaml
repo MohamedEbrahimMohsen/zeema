@@ -7,6 +7,7 @@ type: "component"
 id: "oci-security-list"
 kind: "firewall"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/Network/Concepts/securitylists.htm"
 defaults:
   managed: true
   defaultAction: "deny"

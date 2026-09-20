@@ -9,6 +9,7 @@ type: "component"
 id: "aws-acm"
 kind: "key-management"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/acm/latest/userguide/acm-concepts.html"
 defaults:
   managed: true
   hsm: false

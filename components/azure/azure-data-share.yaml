@@ -8,6 +8,7 @@ type: "component"
 id: "azure-data-share"
 kind: "worker"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/data-share/overview"
 defaults:
   trigger: "manual"
   managed: true

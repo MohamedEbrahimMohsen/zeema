@@ -8,6 +8,7 @@ type: "component"
 id: "azure-red-hat-openshift"
 kind: "container-orchestrator"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/openshift/intro-openshift"
 defaults:
   managed: true
   nodeCount: 3

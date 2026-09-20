@@ -8,6 +8,7 @@ type: "component"
 id: "google-distributed-cloud-connected"
 kind: "edge-appliance"
 provider: "gcp"
+docs: "https://docs.cloud.google.com/distributed-cloud/edge/latest/docs/overview"
 defaults:
   connectivity: "connected"
   formFactor: "rack"

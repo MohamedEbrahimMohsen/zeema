@@ -8,6 +8,7 @@ type: "component"
 id: "oci-ai-speech"
 kind: "ai-service"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/speech/using/speech.htm"
 defaults:
   modality: "speech"
   publicEndpoint: true

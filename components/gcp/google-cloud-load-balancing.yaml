@@ -5,6 +5,7 @@ type: "component"
 id: "google-cloud-load-balancing"
 kind: "load-balancer"
 provider: "gcp"
+docs: "https://cloud.google.com/load-balancing/docs/load-balancing-overview"
 defaults:
   layer: "l7"
   managed: true

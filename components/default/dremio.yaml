@@ -7,6 +7,7 @@ type: "component"
 id: "dremio"
 kind: "data-warehouse"
 provider: "default"
+docs: "https://docs.dremio.com/current/reference/sql/commands/apache-iceberg-tables/"
 defaults:
   realtime: false
   upsert: true

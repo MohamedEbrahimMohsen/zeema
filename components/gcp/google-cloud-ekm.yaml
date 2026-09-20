@@ -8,6 +8,7 @@ type: "component"
 id: "google-cloud-ekm"
 kind: "key-management"
 provider: "gcp"
+docs: "https://cloud.google.com/kms/docs/ekm"
 defaults:
   managed: true
   hsm: false

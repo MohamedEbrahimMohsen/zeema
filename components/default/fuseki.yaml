@@ -7,6 +7,7 @@ type: "component"
 id: "fuseki"
 kind: "graph-database"
 provider: "default"
+docs: "https://jena.apache.org/documentation/fuseki2/fuseki-configuration.html"
 defaults:
   inMemory: false
   masterPerShard: false

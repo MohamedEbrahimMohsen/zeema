@@ -7,6 +7,7 @@ type: "component"
 id: "oci-waf"
 kind: "waf"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/WAF/Concepts/overview.htm"
 defaults:
   managed: true
   customRuleCount: 0

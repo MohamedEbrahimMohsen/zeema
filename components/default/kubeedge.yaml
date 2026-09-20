@@ -7,6 +7,7 @@ type: "component"
 id: "kubeedge"
 kind: "edge-appliance"
 provider: "default"
+docs: "https://kubeedge.io/docs/architecture/edge/metamanager/"
 defaults:
   managed: false
   cloudManaged: true

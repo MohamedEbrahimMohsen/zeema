@@ -9,6 +9,7 @@ type: "component"
 id: "outscale-directlink"
 kind: "network-fabric"
 provider: "outscale"
+docs: "https://docs.outscale.com/en/userguide/About-DirectLink.html"
 defaults:
   managed: true
   interconnect: "private"

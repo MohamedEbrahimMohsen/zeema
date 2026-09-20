@@ -9,6 +9,7 @@ type: "component"
 id: "posthog"
 kind: "bi-service"
 provider: "default"
+docs: "https://posthog.com/docs/product-analytics/sharing"
 defaults:
   managed: true
   capacityMode: "shared"

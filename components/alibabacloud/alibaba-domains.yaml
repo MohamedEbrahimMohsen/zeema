@@ -9,6 +9,7 @@ type: "component"
 id: "alibaba-domains"
 kind: "dns"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/dws/"
 defaults:
   managed: true
 properties:

@@ -8,6 +8,7 @@ type: "component"
 id: "awx"
 kind: "ci-pipeline"
 provider: "default"
+docs: "https://docs.ansible.com/projects/awx/en/latest/"
 defaults:
   trigger: "manual"
   approvalRequired: false

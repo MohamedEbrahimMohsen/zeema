@@ -8,6 +8,7 @@ type: "component"
 id: "nominatim"
 kind: "third-party-api"
 provider: "default"
+docs: "https://nominatim.org/release-docs/latest/admin/Installation/"
 defaults:
   managed: false
   idempotent: true

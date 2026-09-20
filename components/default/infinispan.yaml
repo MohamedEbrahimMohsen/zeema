@@ -7,6 +7,7 @@ type: "component"
 id: "infinispan"
 kind: "cache"
 provider: "default"
+docs: "https://infinispan.org/docs/stable/titles/configuring/configuring.html"
 defaults:
   persistence: false
   hashing: "consistent"

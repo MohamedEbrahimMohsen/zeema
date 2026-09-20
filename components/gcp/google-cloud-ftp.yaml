@@ -8,6 +8,7 @@ type: "component"
 id: "google-cloud-ftp"
 kind: "app-server"
 provider: "gcp"
+docs: "https://cloud.google.com/cloud-ftp/overview"
 defaults:
   managed: true
   stateless: true

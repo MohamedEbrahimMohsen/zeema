@@ -8,6 +8,7 @@ type: "component"
 id: "artifactory"
 kind: "artifact-repository"
 provider: "default"
+docs: "https://docs.jfrog.com/artifactory/docs/repository-management"
 defaults:
   artifactType: "package"
   managed: false

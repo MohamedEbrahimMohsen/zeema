@@ -7,6 +7,7 @@ type: "component"
 id: "google-apigee-hybrid"
 kind: "api-gateway"
 provider: "gcp"
+docs: "https://cloud.google.com/apigee/docs/hybrid/latest/what-is-hybrid"
 defaults:
   managed: false
   tls: true

@@ -5,6 +5,7 @@ type: "component"
 id: "redis-rate-limiter"
 kind: "rate-limiter"
 provider: "default"
+docs: "https://redis.io/docs/latest/develop/use/patterns/"
 defaults:
   distributed: true
   atomicOps: true

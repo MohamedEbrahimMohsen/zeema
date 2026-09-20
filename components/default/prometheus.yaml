@@ -5,6 +5,7 @@ type: "component"
 id: "prometheus"
 kind: "monitoring"
 provider: "default"
+docs: "https://prometheus.io/docs/"
 defaults:
   signal: "metrics"
   collectorMode: "pull"

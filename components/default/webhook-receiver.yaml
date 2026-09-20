@@ -6,6 +6,7 @@ type: "component"
 id: "webhook-receiver"
 kind: "webhook-endpoint"
 provider: "default"
+docs: "https://www.rfc-editor.org/rfc/rfc9421.html"
 defaults:
   signatureVerified: false
   idempotent: false

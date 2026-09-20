@@ -9,6 +9,7 @@ type: "component"
 id: "rsyslog"
 kind: "monitoring"
 provider: "default"
+docs: "https://www.rsyslog.com/doc/"
 defaults:
   managed: false
   signal: "logs"

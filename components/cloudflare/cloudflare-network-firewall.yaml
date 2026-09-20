@@ -7,6 +7,7 @@ type: "component"
 id: "cloudflare-network-firewall"
 kind: "firewall"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/cloudflare-network-firewall/about/ruleset-logic/"
 defaults:
   managed: true
   defaultAction: "allow"

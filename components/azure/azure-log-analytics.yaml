@@ -8,6 +8,7 @@ type: "component"
 id: "azure-log-analytics"
 kind: "monitoring"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/azure-monitor/logs/log-analytics-workspace-overview"
 defaults:
   managed: true
   signal: "logs"

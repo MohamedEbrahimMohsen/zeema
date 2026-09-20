@@ -6,6 +6,7 @@ type: "component"
 id: "kafka-streams"
 kind: "stream-processor"
 provider: "default"
+docs: "https://kafka.apache.org/documentation/streams/"
 defaults:
   windowing: "event-time"
   checkpointIntervalSeconds: 30

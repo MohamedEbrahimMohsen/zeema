@@ -5,6 +5,7 @@ type: "component"
 id: "keycloak"
 kind: "identity-provider"
 provider: "default"
+docs: "https://www.keycloak.org/documentation"
 defaults:
   protocol: "oidc"
   authorizationModel: "rbac"

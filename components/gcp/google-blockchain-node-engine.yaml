@@ -8,6 +8,7 @@ type: "component"
 id: "google-blockchain-node-engine"
 kind: "ledger"
 provider: "gcp"
+docs: "https://cloud.google.com/blockchain-node-engine/docs/create-node-ethereum"
 defaults:
   managed: true
   doubleEntry: false

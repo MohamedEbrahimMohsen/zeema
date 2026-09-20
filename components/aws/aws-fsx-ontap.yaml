@@ -8,6 +8,7 @@ type: "component"
 id: "aws-fsx-ontap"
 kind: "file-storage"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/fsx/latest/ONTAPGuide/what-is-fsx-ontap.html"
 defaults:
   protocol: "multi"
   publicAccess: false

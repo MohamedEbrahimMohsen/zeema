@@ -6,6 +6,7 @@ type: "component"
 id: "activemq"
 kind: "queue"
 provider: "default"
+docs: "https://activemq.apache.org/components/artemis/documentation/"
 defaults:
   delivery: "at-least-once"
   ordering: "none"

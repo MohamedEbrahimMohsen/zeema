@@ -8,6 +8,7 @@ type: "component"
 id: "azure-dev-box"
 kind: "virtual-desktop"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/dev-box/overview-what-is-microsoft-dev-box"
 defaults:
   sessionMode: "personal"
   maxSessionsPerHost: 1

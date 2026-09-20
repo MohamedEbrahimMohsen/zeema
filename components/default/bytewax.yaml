@@ -8,6 +8,7 @@ type: "component"
 id: "bytewax"
 kind: "stream-processor"
 provider: "default"
+docs: "https://docs.bytewax.io/latest/guide/concepts/recovery.html"
 defaults:
   managed: false
   windowing: "none"

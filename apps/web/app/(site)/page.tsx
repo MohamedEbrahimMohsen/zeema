@@ -3,7 +3,7 @@ import { DesignRow } from "@/components/DesignRow";
 import { SearchBox, type Suggestion } from "@/components/SearchBox";
 import { actingAdmin, currentUser } from "@/lib/auth";
 import { getCatalogue } from "@/lib/catalogue";
-import { listDesigns, listOwners } from "@/lib/designs";
+import { listDesigns, listOwners, listTags } from "@/lib/designs";
 import { isTier, parseQuery, providersOf, TIERS, withoutToken } from "@/lib/search-query";
 
 export const dynamic = "force-dynamic";
@@ -31,11 +31,12 @@ export default async function Browse({ searchParams }: { searchParams: Promise<S
   const mine = owner === "me" || (viewer ? owner === viewer.username : false);
   const admin = actingAdmin(viewer);
   const adminScope = admin && (sp.scope === "all" || sp.scope === "private") ? sp.scope : null;
-  const [result, owners] = await Promise.all([
+  const [result, owners, usedTags] = await Promise.all([
     listDesigns(viewer, {
       q: parsed.text,
       provider: parsed.provider ?? sp.provider,
       kind: parsed.kind ?? sp.kind,
+      tag: parsed.tag,
       origin: parsed.origin ?? (isTier(sp.origin) ? sp.origin : undefined),
       owner: mine ? undefined : owner,
       scope: mine ? "mine" : adminScope ? "all" : "public",
@@ -44,6 +45,7 @@ export default async function Browse({ searchParams }: { searchParams: Promise<S
       page: Number(sp.page ?? 1),
     }),
     listOwners(viewer),
+    listTags(viewer),
   ]);
   const pages = Math.max(1, Math.ceil(result.total / result.pageSize));
   const link = (patch: Partial<Search>) => {
@@ -53,12 +55,19 @@ export default async function Browse({ searchParams }: { searchParams: Promise<S
     return s ? `/?${s}` : "/";
   };
   // Tiers first: they are the three words most people want, and the provider list is long.
-  const tags: Suggestion[] = [
+  const catalogueTags: Suggestion[] = [
     ...TIERS.map((t) => ({ value: `#${t}`, hint: "tier" })),
     ...[...providersOf(cat)].sort().map((p) => ({ value: `#${p}`, hint: "provider" })),
     ...Object.keys(cat.kinds)
       .sort()
       .map((k) => ({ value: `#${k}`, hint: "kind" })),
+  ];
+  // Authors' own words come last, and only where the catalogue has not already claimed the
+  // name — the parser resolves a shared name to the catalogue, so offering it twice would lie.
+  const claimed = new Set(catalogueTags.map((t) => t.value));
+  const tags: Suggestion[] = [
+    ...catalogueTags,
+    ...usedTags.map((t) => ({ value: `#${t}`, hint: "tag" })).filter((t) => !claimed.has(t.value)),
   ];
   const heading = mine
     ? "My designs"
@@ -110,7 +119,7 @@ export default async function Browse({ searchParams }: { searchParams: Promise<S
           defaultValue={sp.q ?? ""}
           owners={owners}
           tags={tags}
-          placeholder="Search designs — @owner, #aws, #reference"
+          placeholder="Search designs — @owner, #aws, #reference, #your-tag"
         />
         <select
           className="input"

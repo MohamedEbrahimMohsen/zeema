@@ -9,6 +9,7 @@ type: "component"
 id: "aws-network-firewall"
 kind: "firewall"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/network-firewall/latest/developerguide/what-is-aws-network-firewall.html"
 defaults:
   managed: true
   stateful: true

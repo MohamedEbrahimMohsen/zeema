@@ -8,6 +8,7 @@ type: "component"
 id: "elevenlabs"
 kind: "ai-service"
 provider: "default"
+docs: "https://elevenlabs.io/docs/models"
 defaults:
   managed: true
   modality: "speech"

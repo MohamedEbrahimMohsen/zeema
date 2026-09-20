@@ -7,6 +7,7 @@ type: "component"
 id: "icecast"
 kind: "media-router"
 provider: "default"
+docs: "https://icecast.org/docs/icecast-2.4.1/config-file.html"
 defaults:
   managed: false
   mode: "ingest"

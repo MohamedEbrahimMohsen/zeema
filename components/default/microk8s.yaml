@@ -7,6 +7,7 @@ type: "component"
 id: "microk8s"
 kind: "container-orchestrator"
 provider: "default"
+docs: "https://microk8s.io/docs/multi-user"
 defaults:
   managed: false
   autoscaling: false

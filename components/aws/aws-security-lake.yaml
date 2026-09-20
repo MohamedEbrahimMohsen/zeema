@@ -9,6 +9,7 @@ type: "component"
 id: "aws-security-lake"
 kind: "object-store"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/security-lake/latest/userguide/what-is-security-lake.html"
 defaults:
   zones: 3
   durabilityNines: 11

@@ -8,6 +8,7 @@ type: "component"
 id: "google-firebase-hosting"
 kind: "cdn"
 provider: "gcp"
+docs: "https://firebase.google.com/docs/hosting/manage-cache"
 defaults:
   caching: true
   tls: true

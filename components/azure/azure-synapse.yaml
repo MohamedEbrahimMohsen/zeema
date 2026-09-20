@@ -6,6 +6,7 @@ type: "component"
 id: "azure-synapse"
 kind: "data-warehouse"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/synapse-analytics/overview-what-is"
 defaults:
   realtime: false
   upsert: false

@@ -7,6 +7,7 @@ type: "component"
 id: "solace"
 kind: "queue"
 provider: "default"
+docs: "https://docs.solace.com/Basics/Direct-Messages.htm"
 defaults:
   delivery: "at-most-once"
   ordering: "none"

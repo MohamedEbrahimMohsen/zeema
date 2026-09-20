@@ -7,6 +7,7 @@ type: "component"
 id: "restic"
 kind: "backup-service"
 provider: "default"
+docs: "https://restic.readthedocs.io/en/stable/100_references.html"
 defaults:
   managed: false
   crossRegionRestore: false

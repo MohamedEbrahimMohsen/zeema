@@ -7,6 +7,7 @@ type: "component"
 id: "couchdb"
 kind: "nosql-database"
 provider: "default"
+docs: "https://docs.couchdb.org/en/stable/cluster/theory.html"
 defaults:
   model: "document"
   consistency: "eventual"

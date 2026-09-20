@@ -9,6 +9,7 @@ type: "component"
 id: "hyperledger-fabric"
 kind: "ledger"
 provider: "default"
+docs: "https://hyperledger-fabric.readthedocs.io/en/release-2.5/"
 defaults:
   managed: false
   doubleEntry: false

@@ -6,6 +6,7 @@ type: "component"
 id: "cadence"
 kind: "workflow-engine"
 provider: "default"
+docs: "https://cadenceworkflow.io/docs/"
 defaults:
   durable: true
   pattern: "saga"

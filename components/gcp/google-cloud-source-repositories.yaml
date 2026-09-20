@@ -7,6 +7,7 @@ type: "component"
 id: "google-cloud-source-repositories"
 kind: "artifact-repository"
 provider: "gcp"
+docs: "https://cloud.google.com/source-repositories/docs"
 defaults:
   managed: true
   artifactType: "source"

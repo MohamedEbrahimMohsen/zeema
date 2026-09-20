@@ -9,6 +9,7 @@ type: "component"
 id: "google-external-ip-address"
 kind: "network-fabric"
 provider: "gcp"
+docs: "https://cloud.google.com/vpc/docs/ip-addresses"
 defaults:
   managed: true
   interconnect: "public"

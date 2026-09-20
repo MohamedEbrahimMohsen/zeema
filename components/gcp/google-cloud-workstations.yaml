@@ -8,6 +8,7 @@ type: "component"
 id: "google-cloud-workstations"
 kind: "virtual-desktop"
 provider: "gcp"
+docs: "https://cloud.google.com/workstations/docs/customize-development-environment"
 defaults:
   managed: true
   sessionMode: "personal"

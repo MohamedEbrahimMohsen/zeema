@@ -6,6 +6,7 @@ type: "component"
 id: "spark-streaming"
 kind: "stream-processor"
 provider: "default"
+docs: "https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html"
 defaults:
   windowing: "processing-time"
   exactlyOnce: false

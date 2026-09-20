@@ -7,6 +7,7 @@ type: "component"
 id: "aws-license-manager"
 kind: "policy-engine"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/license-manager/latest/userguide/license-manager.html"
 defaults:
   scope: "account"
   remediation: false

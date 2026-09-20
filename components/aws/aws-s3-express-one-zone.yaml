@@ -7,6 +7,7 @@ type: "component"
 id: "aws-s3-express-one-zone"
 kind: "object-store"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-express-one-zone.html"
 defaults:
   zones: 1
   durabilityNines: 11

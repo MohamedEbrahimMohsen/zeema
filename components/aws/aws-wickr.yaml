@@ -9,6 +9,7 @@ type: "component"
 id: "aws-wickr"
 kind: "notification-service"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/wickr/latest/adminguide/what-is-wickr.html"
 defaults:
   managed: true
 properties:

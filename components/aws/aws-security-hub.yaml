@@ -10,6 +10,7 @@ type: "component"
 id: "aws-security-hub"
 kind: "monitoring"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/securityhub/latest/userguide/what-is-securityhub.html"
 defaults:
   signal: "alerts"
   collectorMode: "push"

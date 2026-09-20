@@ -10,6 +10,7 @@ type: "component"
 id: "k8s-persistent-volume-claim"
 kind: "block-storage"
 provider: "k8s"
+docs: "https://kubernetes.io/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims"
 defaults:
   managed: false
 properties:

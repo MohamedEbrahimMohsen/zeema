@@ -8,6 +8,7 @@ type: "component"
 id: "gitea"
 kind: "artifact-repository"
 provider: "default"
+docs: "https://docs.gitea.com/administration/config-cheat-sheet"
 defaults:
   artifactType: "source"
   managed: false

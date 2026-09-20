@@ -7,6 +7,7 @@ type: "component"
 id: "thanos"
 kind: "timeseries-database"
 provider: "default"
+docs: "https://thanos.io/tip/components/compact.md/"
 defaults:
   downsampling: true
   tiers: "hot-cold"

@@ -9,6 +9,7 @@ type: "component"
 id: "google-telecom-subscriber-insights"
 kind: "ai-service"
 provider: "gcp"
+docs: "https://docs.cloud.google.com/telecom-subscriber-insights/docs"
 defaults:
   modality: "structured"
   publicEndpoint: false

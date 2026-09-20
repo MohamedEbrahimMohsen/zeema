@@ -6,6 +6,7 @@ type: "component"
 id: "notification-platform"
 kind: "notification-service"
 provider: "default"
+docs: "https://en.wikipedia.org/wiki/Push_technology"
 defaults:
   channelPush: true
   channelEmail: false

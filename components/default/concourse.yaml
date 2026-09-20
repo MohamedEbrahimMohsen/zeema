@@ -8,6 +8,7 @@ type: "component"
 id: "concourse"
 kind: "ci-pipeline"
 provider: "default"
+docs: "https://concourse-ci.org/docs/resources/"
 defaults:
   trigger: "commit"
   selfHostedRunners: true

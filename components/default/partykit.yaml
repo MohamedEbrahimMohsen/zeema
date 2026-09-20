@@ -7,6 +7,7 @@ type: "component"
 id: "partykit"
 kind: "realtime-gateway"
 provider: "default"
+docs: "https://docs.partykit.io/"
 defaults:
   managed: true
   protocol: "websocket"

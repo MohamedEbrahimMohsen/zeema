@@ -7,6 +7,7 @@ type: "component"
 id: "google-bigquery-data-transfer"
 kind: "worker"
 provider: "gcp"
+docs: "https://docs.cloud.google.com/bigquery/docs/dts-introduction"
 defaults:
   managed: true
   trigger: "schedule"

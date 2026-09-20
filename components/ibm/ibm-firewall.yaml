@@ -9,6 +9,7 @@ type: "component"
 id: "ibm-firewall"
 kind: "firewall"
 provider: "ibm"
+docs: "https://cloud.ibm.com/docs/hardware-firewall-shared?topic=hardware-firewall-shared-about-hardware-firewall-shared"
 defaults:
   managed: true
   stateful: true

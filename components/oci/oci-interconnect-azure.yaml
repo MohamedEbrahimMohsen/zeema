@@ -8,6 +8,7 @@ type: "component"
 id: "oci-interconnect-azure"
 kind: "network-fabric"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/Network/Concepts/azure.htm"
 defaults:
   managed: true
   interconnect: "private"

@@ -11,6 +11,7 @@ type: "component"
 id: "outscale-bsu"
 kind: "block-storage"
 provider: "outscale"
+docs: "https://docs.outscale.com/en/userguide/About-Volumes.html"
 defaults:
   managed: true
   snapshots: true

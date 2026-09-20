@@ -8,6 +8,7 @@ type: "component"
 id: "fluent-bit"
 kind: "monitoring"
 provider: "default"
+docs: "https://docs.fluentbit.io/manual/about/what-is-fluent-bit.md"
 defaults:
   managed: false
   signal: "all"

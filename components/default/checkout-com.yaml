@@ -6,6 +6,7 @@ type: "component"
 id: "checkout-com"
 kind: "third-party-api"
 provider: "default"
+docs: "https://www.checkout.com/docs/developer-resources/api/idempotency"
 defaults:
   managed: true
   idempotent: true

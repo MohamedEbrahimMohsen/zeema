@@ -6,6 +6,7 @@ type: "component"
 id: "google-secure-web-proxy"
 kind: "firewall"
 provider: "gcp"
+docs: "https://cloud.google.com/secure-web-proxy/docs/overview"
 defaults:
   managed: true
   defaultAction: "deny"

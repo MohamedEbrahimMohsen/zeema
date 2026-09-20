@@ -5,6 +5,7 @@ type: "component"
 id: "janus"
 kind: "media-router"
 provider: "default"
+docs: "https://janus.conf.meetecho.com/docs/"
 defaults:
   managed: false
   mode: "sfu"

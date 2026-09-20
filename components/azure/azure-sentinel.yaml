@@ -8,6 +8,7 @@ type: "component"
 id: "azure-sentinel"
 kind: "monitoring"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/sentinel/overview"
 defaults:
   managed: true
   signal: "all"

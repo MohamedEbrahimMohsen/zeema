@@ -5,6 +5,7 @@ type: "component"
 id: "google-cloud-monitoring"
 kind: "monitoring"
 provider: "gcp"
+docs: "https://cloud.google.com/monitoring/docs/monitoring-overview"
 defaults:
   signal: "all"
   collectorMode: "push"

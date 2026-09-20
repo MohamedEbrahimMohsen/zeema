@@ -5,6 +5,7 @@ type: "component"
 id: "kong"
 kind: "api-gateway"
 provider: "default"
+docs: "https://developer.konghq.com/gateway/"
 defaults:
   managed: false
   rateLimiting: false

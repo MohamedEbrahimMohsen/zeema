@@ -7,6 +7,7 @@ type: "component"
 id: "azure-cdn"
 kind: "cdn"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/cdn/cdn-overview"
 defaults:
   managed: true
   caching: true

@@ -6,6 +6,7 @@ type: "component"
 id: "erlang-node"
 kind: "app-server"
 provider: "default"
+docs: "https://www.erlang.org/docs"
 defaults:
   stateless: false
   runtime: "beam"

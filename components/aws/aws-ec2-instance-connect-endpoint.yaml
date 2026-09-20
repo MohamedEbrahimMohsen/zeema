@@ -8,6 +8,7 @@ type: "component"
 id: "aws-ec2-instance-connect-endpoint"
 kind: "bastion-host"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/connect-using-eice.html"
 defaults:
   managed: true
   protocols: "both"

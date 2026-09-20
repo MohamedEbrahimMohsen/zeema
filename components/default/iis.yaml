@@ -8,6 +8,7 @@ type: "component"
 id: "iis"
 kind: "app-server"
 provider: "default"
+docs: "https://learn.microsoft.com/en-us/iis/get-started/introduction-to-iis/introduction-to-iis-architecture"
 defaults:
   managed: false
   runtime: "dotnet"

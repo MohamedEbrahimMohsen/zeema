@@ -8,6 +8,7 @@ type: "component"
 id: "oci-boot-volume"
 kind: "block-storage"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/Block/Concepts/bootvolumes.htm"
 defaults:
   managed: true
   sizeGib: 50

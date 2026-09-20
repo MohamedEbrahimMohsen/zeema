@@ -11,6 +11,7 @@ type: "component"
 id: "alibaba-oceanbase"
 kind: "sql-database"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/apsaradb-for-oceanbase"
 defaults:
   managed: true
   distributed: true

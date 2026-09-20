@@ -6,6 +6,7 @@ type: "component"
 id: "moosefs"
 kind: "file-storage"
 provider: "default"
+docs: "https://docs.moosefs.com/"
 defaults:
   protocol: "native"
   managed: false

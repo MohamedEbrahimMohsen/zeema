@@ -9,6 +9,7 @@ type: "component"
 id: "five9"
 kind: "contact-center"
 provider: "default"
+docs: "https://www.five9.com/products"
 defaults:
   managed: true
   channelVoice: true

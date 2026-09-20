@@ -6,6 +6,7 @@ type: "component"
 id: "azure-service-bus"
 kind: "queue"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-messaging-overview"
 defaults:
   managed: true
   delivery: "at-least-once"

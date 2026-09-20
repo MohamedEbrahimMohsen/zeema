@@ -5,6 +5,7 @@ type: "component"
 id: "rds-proxy"
 kind: "database-proxy"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/rds-proxy.html"
 defaults:
   managed: true
   pooling: true

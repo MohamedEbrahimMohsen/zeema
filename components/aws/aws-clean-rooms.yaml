@@ -8,6 +8,7 @@ type: "component"
 id: "aws-clean-rooms"
 kind: "big-data-cluster"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/clean-rooms/latest/userguide/what-is.html"
 defaults:
   managed: true
   autoscaling: true

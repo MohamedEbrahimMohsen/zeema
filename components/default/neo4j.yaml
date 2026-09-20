@@ -5,6 +5,7 @@ type: "component"
 id: "neo4j"
 kind: "graph-database"
 provider: "default"
+docs: "https://neo4j.com/docs/"
 defaults:
   inMemory: false
   crossRegionConsistency: "none"

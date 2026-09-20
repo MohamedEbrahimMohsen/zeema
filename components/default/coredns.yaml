@@ -5,6 +5,7 @@ type: "component"
 id: "coredns"
 kind: "dns"
 provider: "default"
+docs: "https://coredns.io/manual/toc/"
 defaults:
   managed: false
   anycast: false

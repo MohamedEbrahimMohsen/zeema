@@ -10,6 +10,7 @@ type: "component"
 id: "aws-connect"
 kind: "contact-center"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/connect/latest/adminguide/amazon-connect-instances.html"
 defaults:
   managed: true
   channelVoice: true

@@ -8,6 +8,7 @@ type: "component"
 id: "oci-data-transforms"
 kind: "worker"
 provider: "oci"
+docs: "https://docs.oracle.com/en/database/data-integration/data-transforms/using/introduction-oracle-data-transforms.html"
 defaults:
   managed: true
   trigger: "schedule"

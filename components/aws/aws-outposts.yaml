@@ -8,6 +8,7 @@ type: "component"
 id: "aws-outposts"
 kind: "edge-appliance"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/outposts/latest/userguide/what-is-outposts.html"
 defaults:
   managed: true
   cloudManaged: true

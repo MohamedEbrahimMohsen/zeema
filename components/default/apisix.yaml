@@ -7,6 +7,7 @@ type: "component"
 id: "apisix"
 kind: "api-gateway"
 provider: "default"
+docs: "https://apisix.apache.org/docs/apisix/admin-api/"
 defaults:
   managed: false
   rateLimiting: false

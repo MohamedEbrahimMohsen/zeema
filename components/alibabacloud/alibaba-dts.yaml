@@ -10,6 +10,7 @@ type: "component"
 id: "alibaba-dts"
 kind: "change-data-capture"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/dts/product-overview/what-is-dts"
 defaults:
   managed: true
   mode: "log-based"

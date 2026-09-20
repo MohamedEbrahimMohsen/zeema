@@ -6,6 +6,7 @@ type: "component"
 id: "elastic-apm"
 kind: "monitoring"
 provider: "default"
+docs: "https://www.elastic.co/docs/solutions/observability/apm/index-lifecycle-management"
 defaults:
   signal: "all"
   collectorMode: "push"

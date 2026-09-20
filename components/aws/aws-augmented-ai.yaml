@@ -8,6 +8,7 @@ type: "component"
 id: "aws-augmented-ai"
 kind: "workflow-engine"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_HumanLoopConfig.html"
 defaults:
   managed: true
   humanReview: true

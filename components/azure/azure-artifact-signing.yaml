@@ -8,6 +8,7 @@ type: "component"
 id: "azure-artifact-signing"
 kind: "key-management"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/artifact-signing/overview"
 defaults:
   managed: true
   hsm: true

@@ -7,6 +7,7 @@ type: "component"
 id: "cloudflare-mesh"
 kind: "network-fabric"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-mesh/"
 defaults:
   managed: true
   overlay: true

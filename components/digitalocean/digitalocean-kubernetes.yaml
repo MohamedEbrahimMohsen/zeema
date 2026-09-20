@@ -12,6 +12,7 @@ type: "component"
 id: "digitalocean-kubernetes"
 kind: "container-orchestrator"
 provider: "digitalocean"
+docs: "https://docs.digitalocean.com/products/kubernetes/"
 defaults:
   managed: true
   nodeCount: 3

@@ -5,6 +5,7 @@ type: "component"
 id: "hazelcast"
 kind: "cache"
 provider: "default"
+docs: "https://docs.hazelcast.com/"
 defaults:
   persistence: false
   hashing: "consistent"

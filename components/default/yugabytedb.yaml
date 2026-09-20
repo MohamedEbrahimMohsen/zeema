@@ -6,6 +6,7 @@ type: "component"
 id: "yugabytedb"
 kind: "sql-database"
 provider: "default"
+docs: "https://docs.yugabyte.com/stable/architecture/docdb-replication/replication/"
 defaults:
   distributed: true
   sharded: true

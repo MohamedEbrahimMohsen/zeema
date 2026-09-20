@@ -8,6 +8,7 @@ type: "component"
 id: "google-confidential-vm"
 kind: "virtual-machine"
 provider: "gcp"
+docs: "https://cloud.google.com/confidential-computing/confidential-vm/docs/confidential-vm-overview"
 defaults:
   managed: false
   diskEncryption: true

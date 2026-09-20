@@ -9,6 +9,7 @@ type: "component"
 id: "google-openshift-cluster-services"
 kind: "container-orchestrator"
 provider: "gcp"
+docs: "https://cloud.google.com/openshift-cluster/overview"
 defaults:
   managed: false
 properties:

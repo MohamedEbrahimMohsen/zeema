@@ -7,6 +7,7 @@ type: "component"
 id: "cloudflare-web3"
 kind: "third-party-api"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/web3/"
 defaults:
   managed: true
   callbackStyle: "none"

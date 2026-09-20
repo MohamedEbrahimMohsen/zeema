@@ -9,6 +9,7 @@ type: "component"
 id: "outscale-virtual-gateway"
 kind: "vpn-gateway"
 provider: "outscale"
+docs: "https://docs.outscale.com/en/userguide/About-Virtual-Gateways.html"
 defaults:
   managed: true
   peerType: "site-to-site"

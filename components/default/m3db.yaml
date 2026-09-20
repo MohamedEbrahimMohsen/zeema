@@ -6,6 +6,7 @@ type: "component"
 id: "m3db"
 kind: "timeseries-database"
 provider: "default"
+docs: "https://m3db.io/docs/"
 defaults:
   downsampling: false
   tiers: "single"

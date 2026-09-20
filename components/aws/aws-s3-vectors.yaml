@@ -8,6 +8,7 @@ type: "component"
 id: "aws-s3-vectors"
 kind: "vector-database"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-vectors.html"
 defaults:
   metadataFiltering: true
   hybridSearch: false

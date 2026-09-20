@@ -6,6 +6,7 @@ type: "component"
 id: "samba"
 kind: "file-storage"
 provider: "default"
+docs: "https://www.samba.org/samba/docs/current/man-html/smbd.8.html"
 defaults:
   protocol: "smb"
   managed: false

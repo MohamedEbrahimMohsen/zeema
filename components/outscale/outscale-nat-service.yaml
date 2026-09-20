@@ -9,6 +9,7 @@ type: "component"
 id: "outscale-nat-service"
 kind: "nat-gateway"
 provider: "outscale"
+docs: "https://docs.outscale.com/en/userguide/About-NAT-Services.html"
 defaults:
   managed: true
   staticIpCount: 1

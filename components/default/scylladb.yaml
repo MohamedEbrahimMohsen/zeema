@@ -5,6 +5,7 @@ type: "component"
 id: "scylladb"
 kind: "nosql-database"
 provider: "default"
+docs: "https://docs.scylladb.com/"
 defaults:
   model: "wide-column"
   consistency: "tunable"

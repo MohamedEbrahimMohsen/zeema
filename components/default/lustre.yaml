@@ -6,6 +6,7 @@ type: "component"
 id: "lustre"
 kind: "file-storage"
 provider: "default"
+docs: "https://doc.lustre.org/lustre_manual.xhtml"
 defaults:
   protocol: "lustre"
   managed: false

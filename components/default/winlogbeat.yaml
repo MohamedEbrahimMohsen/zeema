@@ -8,6 +8,7 @@ type: "component"
 id: "winlogbeat"
 kind: "monitoring"
 provider: "default"
+docs: "https://www.elastic.co/guide/en/beats/winlogbeat/current/index.html"
 defaults:
   managed: false
   signal: "logs"

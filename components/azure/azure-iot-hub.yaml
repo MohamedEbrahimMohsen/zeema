@@ -7,6 +7,7 @@ type: "component"
 id: "azure-iot-hub"
 kind: "iot-hub"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/iot-hub/iot-concepts-and-iot-hub"
 defaults:
   managed: true
   protocol: "multi"

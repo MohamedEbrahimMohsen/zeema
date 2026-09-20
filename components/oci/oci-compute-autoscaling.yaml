@@ -8,6 +8,7 @@ type: "component"
 id: "oci-compute-autoscaling"
 kind: "virtual-machine"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/Compute/Tasks/autoscalinginstancepools.htm"
 defaults:
   managed: true
 properties:

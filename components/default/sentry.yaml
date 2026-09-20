@@ -5,6 +5,7 @@ type: "component"
 id: "sentry"
 kind: "monitoring"
 provider: "default"
+docs: "https://docs.sentry.io/"
 defaults:
   signal: "all"
   collectorMode: "push"

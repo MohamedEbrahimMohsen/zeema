@@ -5,6 +5,7 @@ type: "component"
 id: "azure-data-factory"
 kind: "worker"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/data-factory/introduction"
 defaults:
   managed: true
   trigger: "manual"

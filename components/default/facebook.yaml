@@ -10,6 +10,7 @@ type: "component"
 id: "facebook"
 kind: "third-party-api"
 provider: "default"
+docs: "https://developers.facebook.com/docs/graph-api/"
 defaults:
   managed: true
   hostedPage: false

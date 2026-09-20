@@ -10,6 +10,7 @@ type: "component"
 id: "ibm-virtual-server"
 kind: "virtual-machine"
 provider: "ibm"
+docs: "https://cloud.ibm.com/docs/vpc?topic=vpc-about-advanced-virtual-servers"
 defaults:
   managed: false
   diskEncryption: true

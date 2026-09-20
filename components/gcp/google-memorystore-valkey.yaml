@@ -7,6 +7,7 @@ type: "component"
 id: "google-memorystore-valkey"
 kind: "cache"
 provider: "gcp"
+docs: "https://cloud.google.com/memorystore/docs/valkey/product-overview"
 defaults:
   replication: "none"
   persistence: false

@@ -10,6 +10,7 @@ type: "component"
 id: "recombee"
 kind: "ai-service"
 provider: "default"
+docs: "https://docs.recombee.com/"
 defaults:
   managed: true
   modality: "structured"

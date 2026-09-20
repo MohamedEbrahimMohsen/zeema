@@ -8,6 +8,7 @@ type: "component"
 id: "oci-zero-trust-packet-routing"
 kind: "policy-engine"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/zero-trust-packet-routing/overview.htm"
 defaults:
   managed: true
   effect: "deny"

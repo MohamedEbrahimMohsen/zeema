@@ -9,6 +9,7 @@ type: "component"
 id: "syslog-ng"
 kind: "monitoring"
 provider: "default"
+docs: "https://syslog-ng.github.io/admin-guide/"
 defaults:
   managed: false
   signal: "logs"

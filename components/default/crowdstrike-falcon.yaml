@@ -10,6 +10,7 @@ type: "component"
 id: "crowdstrike-falcon"
 kind: "monitoring"
 provider: "default"
+docs: "https://www.crowdstrike.com/en-us/platform/endpoint-security/"
 defaults:
   managed: true
   signal: "alerts"

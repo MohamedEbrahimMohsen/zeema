@@ -6,6 +6,7 @@ type: "component"
 id: "raft-event-log"
 kind: "event-store"
 provider: "default"
+docs: "https://raft.github.io/"
 defaults:
   replication: "raft"
   journaled: true

@@ -1,19 +1,15 @@
-import type { PropertyDef } from "@/lib/catalogue";
+import type { PropRow } from "@/lib/reference";
 
 const fmt = (v: unknown) => (v === undefined ? "—" : typeof v === "string" ? v : JSON.stringify(v));
 
-/** A kind's schema — every cell is mono, because every cell is machine-owned. */
-export function PropertyTable({
-  properties,
-  overrides = {},
-}: {
-  properties: Record<string, PropertyDef>;
-  /** Component defaults, shown against the kind's own default. */
-  overrides?: Record<string, unknown>;
-}) {
-  const names = Object.keys(properties).sort();
-  if (!names.length) return <div className="empty">No properties.</div>;
-  const hasOverrides = Object.keys(overrides).length > 0;
+/**
+ * A kind's schema, or a component's view of it. Every cell is mono, because every cell is
+ * machine-owned. Rows come from the one reference model, so the HTML table and the markdown
+ * table below it always carry the same columns.
+ */
+export function PropertyTable({ rows }: { rows: PropRow[] }) {
+  if (!rows.length) return <div className="empty">No properties.</div>;
+  const hasOverrides = rows.some((r) => r.overridden);
   return (
     <div className="list">
       <table className="table mono">
@@ -21,29 +17,30 @@ export function PropertyTable({
           <tr>
             <th>property</th>
             <th>type</th>
+            <th>values</th>
+            <th>required</th>
             <th>{hasOverrides ? "kind default" : "default"}</th>
             {hasOverrides ? <th>this component</th> : null}
           </tr>
         </thead>
         <tbody>
-          {names.map((n) => {
-            const d = properties[n];
-            const type = d.type === "enum" ? (d.values ?? []).join(" | ") : d.type;
-            return (
-              <tr key={n}>
-                <td>{n}</td>
-                <td className="muted">{type}</td>
-                <td className={d.required ? "sev-error" : "muted"}>
-                  {d.required && d.default === undefined ? "required" : fmt(d.default)}
+          {rows.map((r) => (
+            <tr key={r.name}>
+              <td>
+                {r.name}
+                {r.componentProperty ? <span className="meta"> · component property</span> : null}
+              </td>
+              <td className="muted">{r.type}</td>
+              <td className="muted">{r.values?.length ? r.values.join(" | ") : "—"}</td>
+              <td className={r.required ? "sev-error" : "muted"}>{r.required ? "yes" : "no"}</td>
+              <td className="muted">{fmt(r.kindDefault)}</td>
+              {hasOverrides ? (
+                <td className={r.overridden ? "sev-info" : "muted"}>
+                  {r.overridden ? `▸ ${fmt(r.override)}` : "inherited"}
                 </td>
-                {hasOverrides ? (
-                  <td className={n in overrides ? "" : "muted"}>
-                    {n in overrides ? fmt(overrides[n]) : "inherited"}
-                  </td>
-                ) : null}
-              </tr>
-            );
-          })}
+              ) : null}
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>

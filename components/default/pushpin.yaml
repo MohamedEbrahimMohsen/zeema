@@ -8,6 +8,7 @@ type: "component"
 id: "pushpin"
 kind: "realtime-gateway"
 provider: "default"
+docs: "https://pushpin.org/docs/about/"
 defaults:
   protocol: "websocket"
   stateful: false

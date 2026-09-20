@@ -8,6 +8,7 @@ type: "component"
 id: "teamcity"
 kind: "ci-pipeline"
 provider: "default"
+docs: "https://www.jetbrains.com/help/teamcity/licensing-policy.html"
 defaults:
   selfHostedRunners: true
   approvalRequired: false

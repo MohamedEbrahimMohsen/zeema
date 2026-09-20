@@ -5,6 +5,7 @@ type: "component"
 id: "minio"
 kind: "object-store"
 provider: "default"
+docs: "https://docs.min.io/"
 defaults:
   replication: "erasure-coded"
   strongReadAfterWrite: true

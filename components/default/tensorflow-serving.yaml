@@ -5,6 +5,7 @@ type: "component"
 id: "tensorflow-serving"
 kind: "ml-inference"
 provider: "default"
+docs: "https://www.tensorflow.org/tfx/guide/serving"
 defaults:
   training: "batch"
   inputs: "live"

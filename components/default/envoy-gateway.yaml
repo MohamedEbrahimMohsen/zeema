@@ -5,6 +5,7 @@ type: "component"
 id: "envoy-gateway"
 kind: "api-gateway"
 provider: "default"
+docs: "https://gateway.envoyproxy.io/docs/"
 defaults:
   managed: false
   rateLimiting: false

@@ -7,6 +7,7 @@ type: "component"
 id: "google-memorystore-memcached"
 kind: "cache"
 provider: "gcp"
+docs: "https://cloud.google.com/memorystore/docs/memcached/memcached-overview"
 defaults:
   replication: "none"
   persistence: false

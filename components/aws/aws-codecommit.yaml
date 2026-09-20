@@ -7,6 +7,7 @@ type: "component"
 id: "aws-codecommit"
 kind: "artifact-repository"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/codecommit/latest/userguide/welcome.html"
 defaults:
   artifactType: "source"
   visibility: "private"

@@ -8,6 +8,7 @@ type: "component"
 id: "google-distributed-cloud-air-gapped"
 kind: "edge-appliance"
 provider: "gcp"
+docs: "https://docs.cloud.google.com/distributed-cloud/hosted/docs/latest/gdch/overview"
 defaults:
   connectivity: "disconnected"
   offlineMode: true

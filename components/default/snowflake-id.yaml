@@ -6,6 +6,7 @@ type: "component"
 id: "snowflake-id"
 kind: "id-generator"
 provider: "default"
+docs: "https://en.wikipedia.org/wiki/Snowflake_ID"
 defaults:
   strategy: "snowflake"
   central: false

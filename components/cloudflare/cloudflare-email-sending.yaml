@@ -8,6 +8,7 @@ type: "component"
 id: "cloudflare-email-sending"
 kind: "notification-service"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/email-service/platform/limits/"
 defaults:
   managed: true
   channelEmail: true

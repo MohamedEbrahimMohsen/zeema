@@ -9,6 +9,7 @@ type: "component"
 id: "aws-workmail"
 kind: "notification-service"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/workmail/latest/adminguide/what_is.html"
 defaults:
   managed: true
   channelPush: false

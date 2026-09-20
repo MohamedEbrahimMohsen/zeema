@@ -5,6 +5,7 @@ type: "component"
 id: "cloudflare-rate-limiting"
 kind: "rate-limiter"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/waf/rate-limiting-rules/"
 defaults:
   managed: true
   algorithm: "fixed-window"

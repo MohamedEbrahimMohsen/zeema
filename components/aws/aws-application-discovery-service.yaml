@@ -7,6 +7,7 @@ type: "component"
 id: "aws-application-discovery-service"
 kind: "data-catalog"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/application-discovery/latest/userguide/what-is-appdiscovery.html"
 defaults:
   managed: true
 properties:

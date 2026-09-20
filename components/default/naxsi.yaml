@@ -7,6 +7,7 @@ type: "component"
 id: "naxsi"
 kind: "waf"
 provider: "default"
+docs: "https://github.com/wargio/naxsi/wiki"
 defaults:
   managed: false
   managedRuleSet: "naxsi-core-rules"

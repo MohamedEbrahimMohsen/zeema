@@ -8,6 +8,7 @@ type: "component"
 id: "oci-globally-distributed-autonomous-database"
 kind: "sql-database"
 provider: "oci"
+docs: "https://docs.oracle.com/en/cloud/paas/globally-distributed-autonomous-database/user/overview-distributed-adb1.html"
 defaults:
   managed: true
   sharded: true

@@ -6,6 +6,7 @@ type: "component"
 id: "glusterfs"
 kind: "file-storage"
 provider: "default"
+docs: "https://docs.gluster.org/en/latest/Administrator-Guide/Setting-Up-Volumes/"
 defaults:
   protocol: "multi"
   managed: false

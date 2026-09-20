@@ -6,6 +6,7 @@ type: "component"
 id: "dynamodb"
 kind: "nosql-database"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Introduction.html"
 defaults:
   model: "key-value"
   consistency: "eventual"

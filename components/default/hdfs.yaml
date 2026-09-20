@@ -6,6 +6,7 @@ type: "component"
 id: "hdfs"
 kind: "file-storage"
 provider: "default"
+docs: "https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/hdfs-default.xml"
 defaults:
   protocol: "native"
   managed: false

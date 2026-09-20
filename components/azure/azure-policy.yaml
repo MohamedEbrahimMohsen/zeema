@@ -9,6 +9,7 @@ type: "component"
 id: "azure-policy"
 kind: "policy-engine"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/governance/policy/overview"
 defaults:
   managed: true
   enforcementMode: "enforced"

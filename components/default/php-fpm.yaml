@@ -8,6 +8,7 @@ type: "component"
 id: "php-fpm"
 kind: "app-server"
 provider: "default"
+docs: "https://www.php.net/manual/en/install.fpm.configuration.php"
 defaults:
   managed: false
   runtime: "php"

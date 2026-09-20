@@ -8,6 +8,7 @@ type: "component"
 id: "evidence"
 kind: "bi-service"
 provider: "default"
+docs: "https://docs.evidence.dev/"
 defaults:
   managed: false
   publicSharing: true

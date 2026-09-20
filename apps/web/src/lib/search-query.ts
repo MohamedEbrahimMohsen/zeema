@@ -1,14 +1,17 @@
 // One search box instead of a wall of filter chips. The box takes three kinds of word:
 //
 //   @owner   the designs of one person, or @zeema for the curated ones
-//   #tag     a provider (#aws), a tier (#reference) or a catalogue kind (#sql-database)
+//   #tag     a provider (#aws), a tier (#reference), a catalogue kind (#sql-database), or a
+//            word an author put on their own design (#billing)
 //   text     matched against the title, summary and component names
 //
-// A tag that matches nothing in the catalogue is left in the text, so a stray `#` never
-// silently swallows what someone typed. Parsing happens on the server, so the filters work
-// with JavaScript off and a pasted URL is the whole state.
+// The catalogue words win where a name is both: `#aws` is the provider, never somebody's tag.
+// Anything else after a `#` is read as an author's tag, which is the only reading left once the
+// catalogue has been asked. Parsing happens on the server, so the filters work with JavaScript
+// off and a pasted URL is the whole state.
 
 import type { Catalogue } from "./catalogue";
+import { toTag } from "./slug";
 
 export type ParsedQuery = {
   text: string;
@@ -16,8 +19,10 @@ export type ParsedQuery = {
   provider?: string;
   kind?: string;
   origin?: "authored" | "imported" | "reference";
+  /** A word an author put on their design, which the catalogue knows nothing about. */
+  tag?: string;
   /** Every recognised token, in the order typed, for rendering the removable pills. */
-  tokens: Array<{ raw: string; type: "owner" | "provider" | "kind" | "tier" }>;
+  tokens: Array<{ raw: string; type: "owner" | "provider" | "kind" | "tier" | "tag" }>;
 };
 
 export const TIERS = ["reference", "imported", "authored"] as const;
@@ -52,6 +57,15 @@ export function parseQuery(q: string | undefined, cat: Catalogue): ParsedQuery {
         out.provider = value;
         out.tokens.push({ raw: w.toLowerCase(), type: "provider" });
         continue;
+      }
+      // Whatever is left is an author's own word. It is not checked against anything: a tag
+      // nobody has used simply matches no design, which is the honest answer to asking for it.
+      if (!out.tag) {
+        out.tag = toTag(value);
+        if (out.tag) {
+          out.tokens.push({ raw: w.toLowerCase(), type: "tag" });
+          continue;
+        }
       }
     }
     words.push(w);

@@ -7,6 +7,7 @@ type: "component"
 id: "ns1"
 kind: "dns"
 provider: "default"
+docs: "https://www.ibm.com/products/ns1-connect"
 defaults:
   managed: true
   anycast: true

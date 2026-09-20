@@ -6,6 +6,7 @@ type: "component"
 id: "confluent-schema-registry"
 kind: "schema-registry"
 provider: "default"
+docs: "https://docs.confluent.io/platform/current/schema-registry/index.html"
 defaults:
   compatibility: "backward"
   enforced: false

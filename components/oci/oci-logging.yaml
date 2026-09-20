@@ -6,6 +6,7 @@ type: "component"
 id: "oci-logging"
 kind: "monitoring"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/Logging/Task/enabling_logging.htm"
 defaults:
   managed: true
   signal: "logs"

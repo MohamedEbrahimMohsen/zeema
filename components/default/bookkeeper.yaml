@@ -7,6 +7,7 @@ type: "component"
 id: "bookkeeper"
 kind: "event-store"
 provider: "default"
+docs: "https://bookkeeper.apache.org/docs/reference/config"
 defaults:
   journaled: true
   role: "journal"

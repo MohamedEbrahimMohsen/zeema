@@ -5,6 +5,7 @@ type: "component"
 id: "redis-pubsub"
 kind: "pubsub-topic"
 provider: "default"
+docs: "https://redis.io/docs/latest/develop/interact/pubsub/"
 defaults:
   delivery: "at-most-once"
   ordering: "per-key"

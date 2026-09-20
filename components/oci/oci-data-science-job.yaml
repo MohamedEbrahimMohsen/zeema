@@ -9,6 +9,7 @@ type: "component"
 id: "oci-data-science-job"
 kind: "worker"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/data-science/using/jobs-about.htm"
 defaults:
   trigger: "manual"
   accelerator: "none"

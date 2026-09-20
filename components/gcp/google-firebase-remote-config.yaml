@@ -8,6 +8,7 @@ type: "component"
 id: "google-firebase-remote-config"
 kind: "feature-flag-service"
 provider: "gcp"
+docs: "https://firebase.google.com/docs/remote-config/android/get-started"
 defaults:
   stagedRollout: true
   killSwitches: true

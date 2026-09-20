@@ -8,6 +8,7 @@ type: "component"
 id: "groq"
 kind: "ai-service"
 provider: "default"
+docs: "https://console.groq.com/docs/rate-limits"
 defaults:
   managed: true
   modality: "multimodal"

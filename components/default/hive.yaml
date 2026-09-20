@@ -6,6 +6,7 @@ type: "component"
 id: "hive"
 kind: "data-warehouse"
 provider: "default"
+docs: "https://hive.apache.org/docs/"
 defaults:
   realtime: false
   upsert: false

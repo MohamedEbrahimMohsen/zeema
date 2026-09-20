@@ -6,6 +6,7 @@ type: "component"
 id: "s3"
 kind: "object-store"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html"
 defaults:
   zones: 3
   durabilityNines: 11

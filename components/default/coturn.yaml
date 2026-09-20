@@ -7,6 +7,7 @@ type: "component"
 id: "coturn"
 kind: "media-router"
 provider: "default"
+docs: "https://github.com/coturn/coturn/wiki/turnserver"
 defaults:
   managed: false
   mode: "p2p"

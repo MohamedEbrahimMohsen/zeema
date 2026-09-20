@@ -7,6 +7,7 @@ type: "component"
 id: "google-dataproc-metastore"
 kind: "data-catalog"
 provider: "gcp"
+docs: "https://docs.cloud.google.com/dataproc-metastore/docs/service-tier"
 defaults:
   managed: true
 properties:

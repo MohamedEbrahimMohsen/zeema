@@ -7,6 +7,7 @@ type: "component"
 id: "azure-container-apps"
 kind: "app-server"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/container-apps/overview"
 defaults:
   managed: true
   stateless: true

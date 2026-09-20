@@ -6,6 +6,7 @@ type: "component"
 id: "spanner"
 kind: "sql-database"
 provider: "gcp"
+docs: "https://cloud.google.com/spanner/docs/overview"
 defaults:
   managed: true
   distributed: true

@@ -6,6 +6,7 @@ type: "component"
 id: "ticket-server"
 kind: "id-generator"
 provider: "default"
+docs: "https://en.wikipedia.org/wiki/Auto-increment"
 defaults:
   strategy: "counter"
   central: true

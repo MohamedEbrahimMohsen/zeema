@@ -6,6 +6,7 @@ type: "component"
 id: "sumo-logic"
 kind: "monitoring"
 provider: "default"
+docs: "https://www.sumologic.com/help/docs/get-started/"
 defaults:
   signal: "all"
   collectorMode: "push"

@@ -7,6 +7,7 @@ type: "component"
 id: "druid"
 kind: "data-warehouse"
 provider: "default"
+docs: "https://druid.apache.org/docs/latest/design/"
 defaults:
   realtime: true
   upsert: false

@@ -8,6 +8,7 @@ type: "component"
 id: "github-actions"
 kind: "ci-pipeline"
 provider: "default"
+docs: "https://docs.github.com/en/actions/reference/limits"
 defaults:
   trigger: "commit"
   approvalRequired: false

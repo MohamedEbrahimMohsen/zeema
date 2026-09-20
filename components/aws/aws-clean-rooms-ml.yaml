@@ -8,6 +8,7 @@ type: "component"
 id: "aws-clean-rooms-ml"
 kind: "ml-platform"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/clean-rooms/latest/userguide/machine-learning.html"
 defaults:
   managed: true
   modelRegistry: false

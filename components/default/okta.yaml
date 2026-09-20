@@ -5,6 +5,7 @@ type: "component"
 id: "okta"
 kind: "identity-provider"
 provider: "default"
+docs: "https://help.okta.com/"
 defaults:
   protocol: "oidc"
   authorizationModel: "rbac"

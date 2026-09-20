@@ -7,6 +7,7 @@ type: "component"
 id: "oci-network-path-analyzer"
 kind: "monitoring"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/Network/Concepts/path_analyzer.htm"
 defaults:
   managed: true
   collectorMode: "pull"

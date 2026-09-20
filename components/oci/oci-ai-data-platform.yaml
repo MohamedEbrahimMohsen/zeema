@@ -9,6 +9,7 @@ type: "component"
 id: "oci-ai-data-platform"
 kind: "big-data-cluster"
 provider: "oci"
+docs: "https://docs.oracle.com/en/cloud/paas/ai-data-platform/aidug/get-started-oracle-ai-data-platform.html"
 defaults:
   managed: true
   engine: "spark"

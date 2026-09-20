@@ -8,6 +8,7 @@ type: "component"
 id: "ibm-subnet"
 kind: "network-fabric"
 provider: "ibm"
+docs: "https://cloud.ibm.com/docs/vpc?topic=vpc-about-subnets-vpc"
 defaults:
   managed: true
   interconnect: "private"

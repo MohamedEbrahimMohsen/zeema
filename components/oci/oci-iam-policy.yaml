@@ -7,6 +7,7 @@ type: "component"
 id: "oci-iam-policy"
 kind: "policy-engine"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/Identity/policieshow/Policy_Basics.htm"
 defaults:
   managed: true
   enforcementMode: "enforced"

@@ -8,6 +8,7 @@ type: "component"
 id: "lightdash"
 kind: "bi-service"
 provider: "default"
+docs: "https://docs.lightdash.com/references/user-attributes"
 defaults:
   managed: false
   rowLevelSecurity: false

@@ -10,6 +10,7 @@ type: "component"
 id: "azure-baremetal-infrastructure"
 kind: "virtual-machine"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/azure-large-instances/work-with-azure-large-instances-in-azure-portal"
 defaults:
   managed: true
 properties:

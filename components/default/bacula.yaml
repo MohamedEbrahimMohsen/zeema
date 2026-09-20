@@ -6,6 +6,7 @@ type: "component"
 id: "bacula"
 kind: "backup-service"
 provider: "default"
+docs: "https://www.bacula.org/documentation/documentation/"
 defaults:
   managed: false
   crossRegionRestore: false

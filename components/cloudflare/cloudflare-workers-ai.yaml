@@ -7,6 +7,7 @@ type: "component"
 id: "cloudflare-workers-ai"
 kind: "ml-inference"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/workers-ai/platform/pricing/"
 defaults:
   managed: true
   accelerator: "gpu"

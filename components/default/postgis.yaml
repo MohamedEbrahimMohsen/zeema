@@ -6,6 +6,7 @@ type: "component"
 id: "postgis"
 kind: "sql-database"
 provider: "default"
+docs: "https://postgis.net/documentation/getting_started/"
 defaults:
   replication: "none"
 properties:

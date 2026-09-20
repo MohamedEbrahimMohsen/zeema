@@ -8,6 +8,7 @@ type: "component"
 id: "amundsen"
 kind: "data-catalog"
 provider: "default"
+docs: "https://github.com/amundsen-io/amundsen"
 defaults:
   managed: false
   scanSchedule: "manual"

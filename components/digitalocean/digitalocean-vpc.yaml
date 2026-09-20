@@ -10,6 +10,7 @@ type: "component"
 id: "digitalocean-vpc"
 kind: "network-fabric"
 provider: "digitalocean"
+docs: "https://docs.digitalocean.com/products/networking/vpc/"
 defaults:
   managed: true
   overlay: true

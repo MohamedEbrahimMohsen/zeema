@@ -8,6 +8,7 @@ type: "component"
 id: "metabase"
 kind: "bi-service"
 provider: "default"
+docs: "https://www.metabase.com/docs/latest/permissions/row-and-column-security"
 defaults:
   managed: false
   publicSharing: true

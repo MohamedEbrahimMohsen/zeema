@@ -5,6 +5,7 @@ type: "component"
 id: "alb"
 kind: "load-balancer"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/elasticloadbalancing/latest/application/introduction.html"
 defaults:
   layer: "l7"
   managed: true

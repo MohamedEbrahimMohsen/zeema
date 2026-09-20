@@ -8,6 +8,7 @@ type: "component"
 id: "litellm"
 kind: "api-gateway"
 provider: "default"
+docs: "https://docs.litellm.ai/docs/routing"
 defaults:
   managed: false
   auth: "api-key"

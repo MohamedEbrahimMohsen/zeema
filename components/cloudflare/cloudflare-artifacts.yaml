@@ -7,6 +7,7 @@ type: "component"
 id: "cloudflare-artifacts"
 kind: "artifact-repository"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/artifacts/platform/limits/"
 defaults:
   managed: true
   artifactType: "source"

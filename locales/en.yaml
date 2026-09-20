@@ -6,6 +6,8 @@ categories:
     name: "Client"
   compute:
     name: "Compute"
+  custom:
+    name: "Custom"
   data:
     name: "Data"
   edge:
@@ -80,6 +82,9 @@ kinds:
   coordination-service:
     name: "Coordination service"
     description: "Strongly consistent service for metadata, locks, discovery and placement."
+  custom:
+    name: "Custom"
+    description: "Something the catalogue does not name yet. It is a real node with a real id, edges and label, but it has no properties, so no rule can judge it."
   data-catalog:
     name: "Data catalog"
     description: "Scans data sources and holds their classifications, lineage and glossary."
@@ -256,6 +261,9 @@ components:
   agora:
     name: "Agora"
     description: "Hosted realtime video and voice SDK routed over the global SD-RTN network."
+  ai-service:
+    name: "Generic AI service"
+    description: "Vendor-neutral AI service. Use when the real product is not in the catalogue; every rule for this kind still applies."
   airbyte:
     name: "Airbyte"
     description: "Connector-based EL platform running scheduled syncs from sources to destinations."
@@ -508,6 +516,9 @@ components:
   apache-httpd:
     name: "Apache HTTP Server"
     description: "Modular web server that reverse-proxies and balances traffic with mod_proxy."
+  api-gateway:
+    name: "Generic API gateway"
+    description: "Vendor-neutral API gateway. Use when the real product is not in the catalogue; every rule for this kind still applies."
   apicurio:
     name: "Apicurio Registry"
     description: "Open-source schema and API registry with no compatibility rule by default."
@@ -523,6 +534,9 @@ components:
   apollo-config:
     name: "Apollo Config"
     description: "Self-hosted configuration centre for microservices with grayscale release."
+  app-server:
+    name: "Generic application server"
+    description: "Vendor-neutral application server. Use when the real product is not in the catalogue; every rule for this kind still applies."
   appdynamics:
     name: "Cisco AppDynamics"
     description: "APM whose agents report metrics and snapshots to a Controller."
@@ -538,6 +552,9 @@ components:
   arroyo:
     name: "Arroyo"
     description: "Rust stream processing engine running SQL pipelines with checkpointed state."
+  artifact-repository:
+    name: "Generic artifact repository"
+    description: "Vendor-neutral artifact repository. Use when the real product is not in the catalogue; every rule for this kind still applies."
   artifactory:
     name: "JFrog Artifactory"
     description: "Binary repository manager with local, remote, virtual and federated repositories for every package type."
@@ -1966,6 +1983,9 @@ components:
   backblaze-b2:
     name: "Backblaze B2 Cloud Storage"
     description: "S3-compatible cloud object storage that keeps every file version by default."
+  backup-service:
+    name: "Generic backup vault"
+    description: "Vendor-neutral backup vault. Use when the real product is not in the catalogue; every rule for this kind still applies."
   bacula:
     name: "Bacula"
     description: "Network backup suite of a Director, storage and file daemons and a catalog database."
@@ -1981,6 +2001,9 @@ components:
   bareos:
     name: "Bareos"
     description: "Open-source backup suite forked from Bacula, with Director, storage and file daemons."
+  bastion-host:
+    name: "Generic bastion host"
+    description: "Vendor-neutral bastion host. Use when the real product is not in the catalogue; every rule for this kind still applies."
   beam:
     name: "Apache Beam"
     description: "Unified batch and streaming programming model executed by a pluggable runner."
@@ -1993,6 +2016,12 @@ components:
   bentoml:
     name: "BentoML"
     description: "Python framework packaging models as HTTP services with adaptive batching."
+  bi-service:
+    name: "Generic BI service"
+    description: "Vendor-neutral BI service. Use when the real product is not in the catalogue; every rule for this kind still applies."
+  big-data-cluster:
+    name: "Generic big data cluster"
+    description: "Vendor-neutral big data cluster. Use when the real product is not in the catalogue; every rule for this kind still applies."
   bigquery:
     name: "Google BigQuery"
     description: "Serverless columnar data warehouse."
@@ -2014,6 +2043,9 @@ components:
   blob-store:
     name: "Blob store"
     description: "Object storage drawn without naming a product."
+  block-storage:
+    name: "Generic block storage volume"
+    description: "Vendor-neutral block storage volume. Use when the real product is not in the catalogue; every rule for this kind still applies."
   block-volume:
     name: "Block volume"
     description: "Generic raw block device attached to one host and formatted by it."
@@ -2023,6 +2055,9 @@ components:
   borgbackup:
     name: "BorgBackup"
     description: "Deduplicating backup program with optional compression and authenticated encryption."
+  bot-management:
+    name: "Generic bot management"
+    description: "Vendor-neutral bot management. Use when the real product is not in the catalogue; every rule for this kind still applies."
   boundary:
     name: "HashiCorp Boundary"
     description: "Identity-aware proxy brokering just-in-time sessions to targets without exposing the network."
@@ -2047,6 +2082,9 @@ components:
   bytewax:
     name: "Bytewax"
     description: "Python stream processing framework built on Timely Dataflow."
+  cache:
+    name: "Generic cache"
+    description: "Vendor-neutral cache. Use when the real product is not in the catalogue; every rule for this kind still applies."
   cache-cluster:
     name: "Cache cluster"
     description: "In-memory cache tier drawn without naming a product."
@@ -2068,6 +2106,9 @@ components:
   cassandra:
     name: "Apache Cassandra"
     description: "Leaderless wide-column store with tunable consistency and last-writer-wins resolution."
+  cdn:
+    name: "Generic CDN"
+    description: "Vendor-neutral CDN. Use when the real product is not in the catalogue; every rule for this kind still applies."
   cdn77:
     name: "CDN77"
     description: "Managed CDN with InstantSSL certificates and origin protection shielding."
@@ -2089,6 +2130,9 @@ components:
   cert-manager:
     name: "cert-manager"
     description: "Kubernetes controller that issues X.509 certificates and renews them before expiry."
+  change-data-capture:
+    name: "Generic change data capture"
+    description: "Vendor-neutral change data capture. Use when the real product is not in the catalogue; every rule for this kind still applies."
   chaos-mesh:
     name: "Chaos Mesh"
     description: "Kubernetes chaos engineering platform that injects faults declared as custom resources."
@@ -2104,6 +2148,9 @@ components:
   chroma:
     name: "Chroma"
     description: "Embedded open-source vector database using HNSW with squared L2 distance on a single node."
+  ci-pipeline:
+    name: "Generic CI/CD pipeline"
+    description: "Vendor-neutral CI/CD pipeline. Use when the real product is not in the catalogue; every rule for this kind still applies."
   cilium:
     name: "Cilium"
     description: "eBPF CNI and sidecar-free service mesh with L7 policy, Hubble observability and optional transparent encryption."
@@ -2131,6 +2178,9 @@ components:
   clickhouse:
     name: "ClickHouse"
     description: "Columnar OLAP database with real-time inserts and MergeTree storage."
+  client:
+    name: "Generic client"
+    description: "Vendor-neutral client. Use when the real product is not in the catalogue; every rule for this kind still applies."
   cloud-foundry:
     name: "Cloud Foundry"
     description: "Open source application PaaS whose Diego scheduler places buildpack-built app instances across host VMs."
@@ -2476,6 +2526,15 @@ components:
   consul-connect:
     name: "Consul Connect"
     description: "Consul's built-in service mesh with mTLS and intentions."
+  contact-center:
+    name: "Generic contact center"
+    description: "Vendor-neutral contact center. Use when the real product is not in the catalogue; every rule for this kind still applies."
+  container-orchestrator:
+    name: "Generic container orchestrator"
+    description: "Vendor-neutral container orchestrator. Use when the real product is not in the catalogue; every rule for this kind still applies."
+  container-registry:
+    name: "Generic container registry"
+    description: "Vendor-neutral container registry. Use when the real product is not in the catalogue; every rule for this kind still applies."
   container-service:
     name: "Container service"
     description: "Generic containerised service you own, on any orchestrator."
@@ -2485,12 +2544,18 @@ components:
   content-delivery-network:
     name: "Content delivery network"
     description: "Content delivery network drawn without naming a vendor."
+  content-repository:
+    name: "Generic content repository"
+    description: "Vendor-neutral content repository. Use when the real product is not in the catalogue; every rule for this kind still applies."
   contour:
     name: "Contour"
     description: "Kubernetes ingress controller that configures Envoy through HTTPProxy and Gateway API."
   coolify:
     name: "Coolify"
     description: "Self-hosted PaaS that deploys Docker workloads to SSH-connected servers behind a Traefik proxy with automatic TLS."
+  coordination-service:
+    name: "Generic coordination service"
+    description: "Vendor-neutral coordination service. Use when the real product is not in the catalogue; every rule for this kind still applies."
   coraza:
     name: "Coraza"
     description: "Go web application firewall library with ModSecurity SecLang compatibility and no bundled rules."
@@ -2527,6 +2592,9 @@ components:
   cubefs:
     name: "CubeFS"
     description: "CNCF distributed storage serving the same data over POSIX, S3 and HDFS interfaces."
+  custom:
+    name: "Custom"
+    description: "Untyped and unjudged: a node the catalogue has no word for. Use it to keep the diagram complete, then replace it with a catalogue component or contribute one."
   customer-io:
     name: "Customer.io"
     description: "Messaging and journeys platform with email, in-app, push and SMS plus a subscription center."
@@ -2539,6 +2607,15 @@ components:
   dask:
     name: "Dask"
     description: "Parallel Python cluster of a scheduler and workers for dataframe and array workloads."
+  data-catalog:
+    name: "Generic data catalog"
+    description: "Vendor-neutral data catalog. Use when the real product is not in the catalogue; every rule for this kind still applies."
+  data-warehouse:
+    name: "Generic data warehouse"
+    description: "Vendor-neutral data warehouse. Use when the real product is not in the catalogue; every rule for this kind still applies."
+  database-proxy:
+    name: "Generic database proxy"
+    description: "Vendor-neutral database proxy. Use when the real product is not in the catalogue; every rule for this kind still applies."
   databricks:
     name: "Databricks"
     description: "Managed lakehouse platform running Spark compute clusters and jobs."
@@ -2557,6 +2634,9 @@ components:
   db2:
     name: "IBM Db2"
     description: "Enterprise relational database with optional HADR standby replication."
+  ddos-protection:
+    name: "Generic DDoS protection plan"
+    description: "Vendor-neutral DDoS protection plan. Use when the real product is not in the catalogue; every rule for this kind still applies."
   debezium:
     name: "Debezium"
     description: "Open-source log-based change data capture connectors, usually deployed on Kafka Connect."
@@ -2614,6 +2694,9 @@ components:
   ditto:
     name: "Eclipse Ditto"
     description: "Digital twin backend holding last-known device state behind policy-based access control."
+  dns:
+    name: "Generic DNS"
+    description: "Vendor-neutral DNS. Use when the real product is not in the catalogue; every rule for this kind still applies."
   dns-resolver:
     name: "DNS"
     description: "Domain name resolution drawn without naming a provider."
@@ -2665,6 +2748,9 @@ components:
   dynatrace:
     name: "Dynatrace"
     description: "SaaS observability platform fed by OneAgent and stored in Grail."
+  edge-appliance:
+    name: "Generic edge appliance"
+    description: "Vendor-neutral edge appliance. Use when the real product is not in the catalogue; every rule for this kind still applies."
   ejbca:
     name: "EJBCA"
     description: "Open-source PKI certificate authority with ACME, EST, CMP and SCEP enrollment."
@@ -2689,6 +2775,9 @@ components:
   elevenlabs:
     name: "ElevenLabs"
     description: "Speech API for text to speech, speech to text and voice cloning."
+  email-security-gateway:
+    name: "Generic email security gateway"
+    description: "Vendor-neutral email security gateway. Use when the real product is not in the catalogue; every rule for this kind still applies."
   embulk:
     name: "Embulk"
     description: "Plugin-based bulk data loader run as a batch job, with schema guessing."
@@ -2728,6 +2817,9 @@ components:
   evcache:
     name: "EVCache"
     description: "Netflix's memcached-based cache replicating every write to all zones."
+  event-store:
+    name: "Generic event store"
+    description: "Vendor-neutral event store. Use when the real product is not in the catalogue; every rule for this kind still applies."
   eventstoredb:
     name: "EventStoreDB"
     description: "Purpose-built event-sourcing database with streams, subscriptions and projections."
@@ -2764,9 +2856,15 @@ components:
   feast:
     name: "Feast"
     description: "Open source feature store serving the same features to training and online inference."
+  feature-flag-service:
+    name: "Generic feature flag service"
+    description: "Vendor-neutral feature flag service. Use when the real product is not in the catalogue; every rule for this kind still applies."
   ffmpeg:
     name: "FFmpeg"
     description: "Command line transcoder and stream converter for audio and video."
+  file-storage:
+    name: "Generic file share"
+    description: "Vendor-neutral file share. Use when the real product is not in the catalogue; every rule for this kind still applies."
   file-store:
     name: "File store"
     description: "Files or configuration on a filesystem, drawn without naming a product."
@@ -2785,6 +2883,9 @@ components:
   firestore:
     name: "Google Cloud Firestore"
     description: "Managed strongly consistent document store for mobile and web backends."
+  firewall:
+    name: "Generic firewall"
+    description: "Vendor-neutral firewall. Use when the real product is not in the catalogue; every rule for this kind still applies."
   firewall-appliance:
     name: "Firewall appliance"
     description: "Generic network firewall that permits or discards traffic by rule."
@@ -3568,6 +3669,9 @@ components:
   grafana-cloud:
     name: "Grafana Cloud"
     description: "Managed observability platform for metrics, logs, traces and profiles."
+  graph-database:
+    name: "Generic graph database"
+    description: "Vendor-neutral graph database. Use when the real product is not in the catalogue; every rule for this kind still applies."
   graph-store:
     name: "Graph store"
     description: "Graph database drawn without naming an engine."
@@ -3727,6 +3831,12 @@ components:
   icinga:
     name: "Icinga 2"
     description: "Distributed availability monitoring with notifications and escalations."
+  id-generator:
+    name: "Generic ID generator"
+    description: "Vendor-neutral ID generator. Use when the real product is not in the catalogue; every rule for this kind still applies."
+  identity-provider:
+    name: "Generic identity provider"
+    description: "Vendor-neutral identity provider. Use when the real product is not in the catalogue; every rule for this kind still applies."
   ignite:
     name: "Apache Ignite"
     description: "In-memory data grid with partitioned caches, rendezvous affinity and optional native persistence."
@@ -3769,6 +3879,9 @@ components:
   iot-device:
     name: "IoT device"
     description: "Embedded or IoT device client with intermittent connectivity."
+  iot-hub:
+    name: "Generic IoT hub"
+    description: "Vendor-neutral IoT hub. Use when the real product is not in the catalogue; every rule for this kind still applies."
   iotdb:
     name: "Apache IoTDB"
     description: "IoT time-series database storing data in the columnar TsFile format."
@@ -3898,6 +4011,9 @@ components:
   kestra:
     name: "Kestra"
     description: "Declarative YAML orchestrator backed by a relational database queue and repository."
+  key-management:
+    name: "Generic key management"
+    description: "Vendor-neutral key management. Use when the real product is not in the catalogue; every rule for this kind still applies."
   keycdn:
     name: "KeyCDN"
     description: "Managed CDN with pull and push zones, free TLS and instant purge."
@@ -3967,6 +4083,9 @@ components:
   launchdarkly:
     name: "LaunchDarkly"
     description: "SaaS feature management with streaming SDKs."
+  ledger:
+    name: "Generic ledger"
+    description: "Vendor-neutral ledger. Use when the real product is not in the catalogue; every rule for this kind still applies."
   lets-encrypt:
     name: "Let's Encrypt"
     description: "Free public ACME certificate authority for automated TLS certificates."
@@ -3994,6 +4113,9 @@ components:
   livekit:
     name: "LiveKit"
     description: "Open source WebRTC SFU for realtime audio, video and agent sessions."
+  load-balancer:
+    name: "Generic load balancer"
+    description: "Vendor-neutral load balancer. Use when the real product is not in the catalogue; every rule for this kind still applies."
   load-balancer-tier:
     name: "Load balancer"
     description: "Load balancer drawn without naming a product."
@@ -4048,6 +4170,9 @@ components:
   marqo:
     name: "Marqo"
     description: "Open-source tensor search engine that embeds documents on ingest and serves lexical, tensor and hybrid queries."
+  matching-engine:
+    name: "Generic matching engine"
+    description: "Vendor-neutral matching engine. Use when the real product is not in the catalogue; every rule for this kind still applies."
   materialize:
     name: "Materialize"
     description: "Incremental view maintenance engine serving strongly consistent materialized views."
@@ -4063,6 +4188,12 @@ components:
   maxwell:
     name: "Maxwell"
     description: "Daemon that reads the MySQL binlog and emits row changes as JSON."
+  media-router:
+    name: "Generic media router"
+    description: "Vendor-neutral media router. Use when the real product is not in the catalogue; every rule for this kind still applies."
+  media-transcoder:
+    name: "Generic media transcoder"
+    description: "Vendor-neutral media transcoder. Use when the real product is not in the catalogue; every rule for this kind still applies."
   mediasoup:
     name: "mediasoup"
     description: "Self-managed Node.js and C++ SFU library."
@@ -4123,6 +4254,12 @@ components:
   mixpanel:
     name: "Mixpanel"
     description: "Hosted product analytics with boards, funnels and retention reports."
+  ml-inference:
+    name: "Generic ML inference"
+    description: "Vendor-neutral ML inference. Use when the real product is not in the catalogue; every rule for this kind still applies."
+  ml-platform:
+    name: "Generic ML platform"
+    description: "Vendor-neutral ML platform. Use when the real product is not in the catalogue; every rule for this kind still applies."
   mlflow:
     name: "MLflow"
     description: "Self-hosted tracking server for ML experiments, metrics, artifacts and models."
@@ -4144,6 +4281,9 @@ components:
   mongos:
     name: "mongos"
     description: "MongoDB sharded-cluster query router."
+  monitoring:
+    name: "Generic monitoring"
+    description: "Vendor-neutral monitoring. Use when the real product is not in the catalogue; every rule for this kind still applies."
   moosefs:
     name: "MooseFS"
     description: "Fault-tolerant distributed file system with a FUSE mount and per-object copy goals."
@@ -4180,6 +4320,9 @@ components:
   nanomq:
     name: "NanoMQ"
     description: "Ultra-light MQTT 5.0 broker for edge devices, with MQTT over QUIC and bridging."
+  nat-gateway:
+    name: "Generic NAT gateway"
+    description: "Vendor-neutral NAT gateway. Use when the real product is not in the catalogue; every rule for this kind still applies."
   nats-jetstream:
     name: "NATS JetStream"
     description: "Persistence layer for NATS providing globally ordered, Raft-replicated streams."
@@ -4210,6 +4353,9 @@ components:
   netscout-arbor:
     name: "NETSCOUT Arbor DDoS"
     description: "Always-on inline stateless DDoS appliance with ATLAS threat intelligence and cloud signaling to scrubbing centres."
+  network-fabric:
+    name: "Generic network fabric"
+    description: "Vendor-neutral network fabric. Use when the real product is not in the catalogue; every rule for this kind still applies."
   new-relic:
     name: "New Relic"
     description: "SaaS observability with APM agents."
@@ -4252,12 +4398,18 @@ components:
   norikra:
     name: "Norikra"
     description: "Schemaless stream processor querying JSON events in memory with Esper EPL."
+  nosql-database:
+    name: "Generic NoSQL database"
+    description: "Vendor-neutral NoSQL database. Use when the real product is not in the catalogue; every rule for this kind still applies."
   nosql-store:
     name: "NoSQL store"
     description: "NoSQL store drawn without naming a product."
   notification-platform:
     name: "Notification platform"
     description: "Generic in-house service that fans events out to push, email and SMS with user preferences."
+  notification-service:
+    name: "Generic notification service"
+    description: "Vendor-neutral notification service. Use when the real product is not in the catalogue; every rule for this kind still applies."
   novu:
     name: "Novu"
     description: "Open-source notification infrastructure with workflows across inbox, email, SMS, push and chat."
@@ -4273,6 +4425,9 @@ components:
   oauth2-proxy:
     name: "OAuth2 Proxy"
     description: "Reverse proxy that authenticates requests against an upstream provider and validates the account."
+  object-store:
+    name: "Generic object store"
+    description: "Vendor-neutral object store. Use when the real product is not in the catalogue; every rule for this kind still applies."
   observability-stack:
     name: "Observability stack"
     description: "Logging, metrics and alerting drawn as one box."
@@ -5053,6 +5208,9 @@ components:
   polaris:
     name: "Apache Polaris"
     description: "Iceberg REST catalog with role-based access control and short-lived vended storage credentials."
+  policy-engine:
+    name: "Generic policy engine"
+    description: "Vendor-neutral policy engine. Use when the real product is not in the catalogue; every rule for this kind still applies."
   polyaxon:
     name: "Polyaxon"
     description: "Self-hostable control plane running and tracking machine learning workloads on Kubernetes."
@@ -5086,6 +5244,9 @@ components:
   presto:
     name: "Presto"
     description: "Distributed SQL query engine that queries data where it lives instead of moving it."
+  private-link:
+    name: "Generic private endpoint"
+    description: "Vendor-neutral private endpoint. Use when the real product is not in the catalogue; every rule for this kind still applies."
   prometheus:
     name: "Prometheus"
     description: "Pull-based metrics store and alerting toolkit."
@@ -5098,6 +5259,9 @@ components:
   proxysql:
     name: "ProxySQL"
     description: "MySQL proxy with connection multiplexing and rule-based routing."
+  pubsub-topic:
+    name: "Generic Pub/Sub topic"
+    description: "Vendor-neutral Pub/Sub topic. Use when the real product is not in the catalogue; every rule for this kind still applies."
   pulsar:
     name: "Apache Pulsar"
     description: "Multi-tenant streaming platform with BookKeeper storage, tiered offload and geo-replication."
@@ -5131,6 +5295,9 @@ components:
   questdb:
     name: "QuestDB"
     description: "SQL time-series database with a WAL write path and columnar reads."
+  queue:
+    name: "Generic queue"
+    description: "Vendor-neutral queue. Use when the real product is not in the catalogue; every rule for this kind still applies."
   quickwit:
     name: "Quickwit"
     description: "Search engine for logs and traces querying splits directly on object storage."
@@ -5146,6 +5313,9 @@ components:
   rancher:
     name: "Rancher"
     description: "Management plane that provisions and governs many Kubernetes clusters with central authentication and project-level RBAC."
+  rate-limiter:
+    name: "Generic rate limiter"
+    description: "Vendor-neutral rate limiter. Use when the real product is not in the catalogue; every rule for this kind still applies."
   ravendb:
     name: "RavenDB"
     description: "Document store with a Raft cluster and multi-master document replication resolved to the latest modified variant."
@@ -5161,6 +5331,9 @@ components:
   rds-proxy:
     name: "Amazon RDS Proxy"
     description: "Managed connection pool in front of RDS and Aurora."
+  realtime-gateway:
+    name: "Generic real-time gateway"
+    description: "Vendor-neutral real-time gateway. Use when the real product is not in the catalogue; every rule for this kind still applies."
   recombee:
     name: "Recombee"
     description: "Hosted recommender service fed an item catalog and user interactions, queried with a public or private access token."
@@ -5257,6 +5430,9 @@ components:
   sap-hana:
     name: "SAP HANA"
     description: "In-memory relational database with a column store as its default storage."
+  schema-registry:
+    name: "Generic schema registry"
+    description: "Vendor-neutral schema registry. Use when the real product is not in the catalogue; every rule for this kind still applies."
   scylladb:
     name: "ScyllaDB"
     description: "Cassandra-compatible wide-column store with a shard-per-core architecture."
@@ -5266,6 +5442,9 @@ components:
   sealed-secrets:
     name: "Sealed Secrets"
     description: "Kubernetes controller that decrypts SealedSecret resources into Secrets."
+  search-index:
+    name: "Generic search index"
+    description: "Vendor-neutral search index. Use when the real product is not in the catalogue; every rule for this kind still applies."
   seaweedfs:
     name: "SeaweedFS"
     description: "Self-hosted object store with an S3 gateway and per-volume replication codes."
@@ -5284,6 +5463,9 @@ components:
   sentry:
     name: "Sentry"
     description: "Error tracking and performance monitoring pushed by application SDKs."
+  service-mesh:
+    name: "Generic service mesh"
+    description: "Vendor-neutral service mesh. Use when the real product is not in the catalogue; every rule for this kind still applies."
   sglang:
     name: "SGLang"
     description: "GPU LLM serving runtime with prefix caching and an OpenAI-compatible API."
@@ -5383,6 +5565,9 @@ components:
   spring-cloud-gateway:
     name: "Spring Cloud Gateway"
     description: "API gateway built on Spring Boot, run standalone or embedded in an application."
+  sql-database:
+    name: "Generic SQL database"
+    description: "Vendor-neutral SQL database. Use when the real product is not in the catalogue; every rule for this kind still applies."
   sql-server:
     name: "Microsoft SQL Server"
     description: "Commercial relational database with optional Always On availability groups."
@@ -5425,6 +5610,12 @@ components:
   storm:
     name: "Apache Storm"
     description: "Distributed topology of spouts and bolts with acked at-least-once tuple processing."
+  stream:
+    name: "Generic stream"
+    description: "Vendor-neutral stream. Use when the real product is not in the catalogue; every rule for this kind still applies."
+  stream-processor:
+    name: "Generic stream processor"
+    description: "Vendor-neutral stream processor. Use when the real product is not in the catalogue; every rule for this kind still applies."
   striim:
     name: "Striim"
     description: "Streaming integration platform with log-based CDC, as managed cloud or self-managed software."
@@ -5524,6 +5715,9 @@ components:
   thingsboard:
     name: "ThingsBoard"
     description: "Open-source IoT platform with device provisioning, digital twin attributes and a rule engine."
+  third-party-api:
+    name: "Generic third-party API"
+    description: "Vendor-neutral third-party API. Use when the real product is not in the catalogue; every rule for this kind still applies."
   threecx:
     name: "3CX"
     description: "SIP phone system with call queues, live chat and self-hosted or 3CX-hosted deployment."
@@ -5551,6 +5745,9 @@ components:
   timescaledb:
     name: "TimescaleDB"
     description: "PostgreSQL extension with hypertables, opt-in compression and continuous aggregates."
+  timeseries-database:
+    name: "Generic time-series database"
+    description: "Vendor-neutral time-series database. Use when the real product is not in the catalogue; every rule for this kind still applies."
   together-ai:
     name: "Together AI"
     description: "Serverless and dedicated inference for open models with dynamic rate limits."
@@ -5638,6 +5835,9 @@ components:
   vector:
     name: "Vector"
     description: "Datadog's open source observability pipeline for logs, metrics and traces."
+  vector-database:
+    name: "Generic vector database"
+    description: "Vendor-neutral vector database. Use when the real product is not in the catalogue; every rule for this kind still applies."
   veeam:
     name: "Veeam Backup & Replication"
     description: "Self-hosted backup and disaster recovery for virtual, physical and cloud workloads."
@@ -5665,6 +5865,12 @@ components:
   victoriametrics:
     name: "VictoriaMetrics"
     description: "Prometheus-compatible time series database with one month of default retention."
+  virtual-desktop:
+    name: "Generic virtual desktop pool"
+    description: "Vendor-neutral virtual desktop pool. Use when the real product is not in the catalogue; every rule for this kind still applies."
+  virtual-machine:
+    name: "Generic virtual machine"
+    description: "Vendor-neutral virtual machine. Use when the real product is not in the catalogue; every rule for this kind still applies."
   virtuoso:
     name: "OpenLink Virtuoso"
     description: "Hybrid relational engine and RDF quad store with a SPARQL endpoint."
@@ -5683,12 +5889,18 @@ components:
   vonage:
     name: "Vonage Messages API"
     description: "Multi-channel messaging API for SMS, MMS, RCS, WhatsApp, Viber and email."
+  vpn-gateway:
+    name: "Generic VPN gateway"
+    description: "Vendor-neutral VPN gateway. Use when the real product is not in the catalogue; every rule for this kind still applies."
   vsphere:
     name: "VMware vSphere"
     description: "ESXi type-1 hypervisor with vCenter Server, clustering, vMotion and optional key-provider-backed VM encryption."
   vyos:
     name: "VyOS"
     description: "Open source router and firewall operating system whose base chains accept by default and log nothing until a rule says so."
+  waf:
+    name: "Generic web application firewall"
+    description: "Vendor-neutral web application firewall. Use when the real product is not in the catalogue; every rule for this kind still applies."
   warpstream:
     name: "WarpStream"
     description: "Kafka-compatible cluster whose stateless agents store all data directly in object storage."
@@ -5707,6 +5919,9 @@ components:
   web-browser:
     name: "Web browser"
     description: "Browser-based web client."
+  webhook-endpoint:
+    name: "Generic webhook endpoint"
+    description: "Vendor-neutral webhook endpoint. Use when the real product is not in the catalogue; every rule for this kind still applies."
   webhook-receiver:
     name: "Webhook receiver"
     description: "Generic HTTP endpoint exposed to receive callbacks from third parties."
@@ -5737,6 +5952,12 @@ components:
   woodpecker:
     name: "Woodpecker CI"
     description: "Lightweight self-hosted CI server and agents running container pipelines."
+  worker:
+    name: "Generic worker"
+    description: "Vendor-neutral worker. Use when the real product is not in the catalogue; every rule for this kind still applies."
+  workflow-engine:
+    name: "Generic workflow engine"
+    description: "Vendor-neutral workflow engine. Use when the real product is not in the catalogue; every rule for this kind still applies."
   workos:
     name: "WorkOS"
     description: "Hosted enterprise auth API: AuthKit sessions, SAML/OIDC SSO and SCIM directory sync."
@@ -5805,102 +6026,146 @@ rules:
   business-updates-without-index-propagation:
     name: "Database updates not propagated to the search index"
     description: "Application servers write a database and the design keeps a search index, but no change data capture leaves the database; index writes rely on dual writes."
+    rationale: "Application servers write this database and the design keeps a search index, but nothing captures the database's changes. The index then depends on the application writing to both places, and the two drift apart silently."
   cache-as-primary-store-without-persistence:
     name: "Cache used as primary store without persistence"
     description: "A cache is the only copy of its data and has persistence disabled, so the data is lost on restart."
+    rationale: "This cache is the only copy of its data and has persistence turned off. A restart loses the data outright."
   cache-missing-eviction-policy:
     name: "Cache without eviction policy"
+    rationale: "A cache with no declared eviction policy inherits whatever the vendor chose, and most vendors default to evicting nothing. The cache fills up and then starts refusing writes."
   credentials-without-rotation:
     name: "Credentials without rotation"
     description: "The design holds data but declares no credential rotation period and has no key-management node."
+    rationale: "The design stores data but says nothing about rotating the credentials that reach it, and it has no key-management node that would rotate them. A leaked credential stays valid forever."
   cross-cell-call:
     name: "Synchronous call across cells"
     description: "A synchronous edge crosses a cell boundary while the design requires cell isolation."
+    rationale: "In a cell architecture each cell has to be able to fail on its own. A synchronous call that leaves the cell ties the two cells together and defeats the point of draining one."
+  custom-node:
+    name: "Custom node"
+    description: "A node uses the custom kind, so the catalogue does not describe it and no rule can check anything about it."
+    rationale: "A custom node is a hole in the model: the catalogue has no word for it, so no rule can check anything about it. It is meant to be temporary, and naming it in the catalogue closes the hole."
+  custom-nodes-present:
+    name: "Design has custom nodes"
+    description: "The design places nodes the catalogue does not name; the rules are blind to that part of the architecture."
+    rationale: "The design places nodes the catalogue does not name, so the rules are blind to that part of the architecture. The count belongs on the design, not only on the individual boxes."
   datastore-missing-backup:
     name: "Datastore without backup or retention"
+    rationale: "A system of record with backups off, or with no retention period stated, cannot be restored. The loss is discovered on the day it matters."
   datastore-single-region:
     name: "Single-region datastore behind a multi-region SLA"
+    rationale: "The design promises multi-region availability, but this datastore sits in one region and does not replicate. A region outage takes the system of record with it."
   derived-store-without-cdc-or-rebuild:
     name: "Search index without an asynchronous feed"
     description: "A search index has no asynchronous in-edge from a stream, change data capture or worker, so it cannot be rebuilt or kept in sync off the write path."
+    rationale: "A search index is derived data and needs an asynchronous feed from a stream, change data capture or an indexing worker. Without one it is written inline on the request path, and it can never be rebuilt after it drifts."
   exactly-once-with-external-side-effects:
     name: "Exactly-once delivery in front of an external side effect"
     description: "An edge claims exactly-once delivery to a node that then calls a third party synchronously, which exactly-once cannot cover."
+    rationale: "Exactly-once delivery stops at the consumer. When that consumer then calls a third party synchronously, the side effect sits outside the transaction and can still happen twice, so the exactly-once claim hides the need for an idempotent external call."
   external-call-inline-without-durable-path:
     name: "Inline external call without durable fallback"
     description: "A service calls a third party synchronously and has no queue or workflow engine to hand the request to on failure."
+    rationale: "A service that calls a third party synchronously, with no queue or workflow engine attached, has nowhere to park the request when the third party is slow or down. The failure becomes the user's problem instead of a retried job."
   fanout-inline-in-request-path:
     name: "Fan-out inline in the request path"
     description: "An application server calls a worker synchronously, so the request waits for background work such as fan-out."
+    rationale: "Calling a worker synchronously puts the background job on the request path. The caller waits for the slowest part of the fan-out."
   materialised-cache-without-rebuild-path:
     name: "Materialised cache without a rebuild path"
     description: "A cache holds materialised data but has no in-edge from a durable store, worker or stream that could rebuild it."
+    rationale: "A cache holding materialised views has to be rebuildable from a durable store or a worker. With nothing feeding it, a cold cache is a permanent gap rather than a slow start."
   money-mutation-without-idempotency-key:
     name: "Money mutation without idempotency key"
     description: "An edge into a money-handling third party or a double-entry ledger declares no idempotency while the design requires exactly-once effect."
+    rationale: "A call that moves money is retried after a lost response. Without an idempotency key on that hop the retry becomes a second charge, which is exactly what the design's exactly-once-effect promise rules out."
   money-store-without-double-entry-ledger:
     name: "Money store without double-entry ledger"
     description: "The design requires zero-sum money movement but contains no ledger node."
+    rationale: "The design promises that money movements sum to zero, but it has no ledger to enforce double entry. Balances kept in an ordinary table drift and cannot be audited."
   multi-leader-store-without-conflict-policy:
     name: "Multi-leader store without a conflict policy"
     description: "A NoSQL store replicates multi-region multi-leader but declares no conflict resolution policy."
+    rationale: "Multi-leader replication accepts concurrent writes in several regions. With no conflict resolution policy declared, divergent replicas are reconciled by accident rather than by design."
   object-store-single-zone-with-durability-target:
     name: "Object store in fewer than three zones with a durability target"
     description: "An object store spans fewer than three zones, or declares none, while the design targets more than ten nines of annual durability."
+    rationale: "Eleven nines of durability assumes redundancy spread over at least three failure domains. An object store confined to fewer zones, or declaring none, cannot reach the target the design states."
   pubsub-replay-required:
     name: "Pub/Sub topic where replay is required"
+    rationale: "The design declares that consumers must be able to replay history. A fan-out topic that does not retain messages cannot deliver that."
   push-fanout-without-celebrity-path:
     name: "Push fan-out without a celebrity threshold"
     description: "A worker pushes fan-out over a social graph with no follower threshold above which timelines are merged at read time."
+    rationale: "Pure push fan-out over a social graph is brutal at the tail: one post from an account with millions of followers becomes millions of cache writes. A follower threshold above which readers merge at read time bounds that write amplification."
   queue-missing-dlq:
     name: "Queue without dead-letter queue"
+    rationale: "A queue that receives asynchronous traffic and has no dead-letter queue either drops poison messages or retries them forever. Neither outcome leaves anything for a human to investigate."
   read-heavy-path-without-cache:
     name: "Read-heavy datastore without a cache"
     description: "The design states a read-heavy workload and application servers read a datastore directly, but no cache exists."
+    rationale: "The design states a read-heavy workload and application servers read this datastore directly, yet the design has no cache anywhere. Every read pays a database round trip."
   read-replica-as-sole-scaling:
     name: "Read replicas as the only scaling"
     description: "An SQL database above 5000 rps relies on async replicas alone; it is neither sharded nor distributed, so writes still hit one primary."
+    rationale: "Asynchronous read replicas scale reads only. When the store is neither sharded nor distributed the writes still land on one primary, so the replicas add nothing at the declared peak."
   reconnect-stampede-without-guard:
     name: "Reconnect stampede without guard"
     description: "A realtime gateway calls a coordination service synchronously on connect and has no guard against a mass reconnect."
+    rationale: "When a gateway holding millions of sockets restarts, every client reconnects at once and the gateway asks the coordination service about each of them. Without a stampede guard that lookup storm takes the coordination service down too."
   retry-queue-without-dlq:
     name: "Retry queue without dead-letter queue"
     description: "A queue in the retry role has no dead-letter queue, so poison messages are retried forever or dropped."
+    rationale: "A retry queue is where poison messages end up. With no dead-letter queue they are retried forever or dropped in silence, and nobody ever looks at the failed payment."
   retry-without-adaptive-shedding:
     name: "Retry without circuit breaker or load shedding"
     description: "An edge retries into a service with no circuit breaker on the caller and no rate limiter in front of the callee."
+    rationale: "Retries into a service that can neither shed load nor have its circuit opened produce a metastable failure: the retries keep the dependency saturated long after the original fault is gone. Either break the circuit at the caller or put an adaptive limiter in front of the callee."
   retry-without-backoff:
     name: "Retry queue without backoff"
     description: "A queue in the retry role declares no backoff, so retries hammer the failing dependency."
+    rationale: "Retrying a transient failure at full speed turns one slow dependency into a retry storm. A retry queue backs off, preferably exponentially and with jitter."
   shared-dependency-without-redundancy:
     name: "Shared dependency without redundancy"
     description: "The design requires redundant discovery, but a DNS or coordination service has a single provider or is not replicated."
+    rationale: "The design requires redundant discovery, but this DNS or coordination service, which everything depends on, runs on a single provider or a single replica. Its failure is the whole system's failure."
   shared-host-per-channel-without-isolation:
     name: "Random channel placement under heavy-tail traffic"
     description: "A realtime gateway assigns channels to hosts at random while the design declares heavy-tail traffic, so hot channels degrade unrelated tenants."
+    rationale: "With heavy-tail traffic a few channels carry most of the load. Assigning channels at random lands those hot channels on arbitrary hosts, and every tenant sharing a host suffers for it."
   shared-worker-pool-across-queues:
     name: "Shared worker pool across queues"
     description: "One worker consumes more than one queue while the design requires per-queue isolation."
+    rationale: "One worker pool consuming several queues lets a slow or poisoned queue starve the others. That is precisely what the design's per-queue isolation requirement forbids."
   single-writer-primary-at-peak-qps:
     name: "Single-writer primary at peak QPS"
     description: "An unsharded single-writer SQL database is declared at more than 5000 requests per second."
+    rationale: "A single-writer, unsharded relational primary has a throughput ceiling. Declaring more than five thousand requests per second against it means the peak finds that ceiling in production."
   stateful-engine-pinned-to-single-zone:
     name: "Stateful engine pinned to a single zone"
     description: "A matching engine, coordination service or event store sits in exactly one availability zone with no failover or replication."
+    rationale: "A matching engine, coordination service or event store living in exactly one availability zone, with no failover and no replication, is lost with that zone. Everything that depends on it stops with it."
   stateful-hash-ring-without-ring-manager:
     name: "Stateful hash ring without ring manager"
     description: "A service on a consistent hash ring is not connected to a coordination service that owns the ring."
+    rationale: "A stateful service on a consistent hash ring needs something that owns the ring: detect a dead host, pick a replacement, tell everyone. Without a coordination service the ring is edited by hand during the outage."
   stateful-node-without-zone-redundancy:
     name: "Stateful node without zone redundancy"
     description: "A stateful compute node lives in exactly one availability zone and is not part of a cell."
+    rationale: "A stateful compute node pinned to exactly one availability zone disappears with that zone, and its state goes with it. Nodes inside a cell are exempt, because there the cell is deliberately single-zone and redundancy comes from the other cells."
   stateful-websocket-scale-in-without-drain:
     name: "Stateful WebSocket scale-in without drain"
     description: "An autoscaling realtime gateway does not drain connections when scaling in, so every scale-down is a reconnect storm."
+    rationale: "Scaling a gateway down kills every live WebSocket on the removed instance at once. Without a drain step those clients all reconnect together."
   sync-chain-too-deep:
     name: "Synchronous call chain too deep"
+    rationale: "Every consecutive synchronous hop from this entry point spends part of the stated p95 latency budget, and the chain's failures multiply. More than three hops is a budget nobody is tracking."
   webhook-without-signature-or-idempotency:
     name: "Webhook without signature verification or idempotency"
     description: "A webhook endpoint accepts callbacks without verifying the caller's signature or without deduplicating retried events."
+    rationale: "A webhook is a public endpoint that its caller retries. Without signature verification anyone can post a fake event; without idempotency the provider's own retries apply the same event twice."
   windowed-aggregation-without-watermark:
     name: "Event-time windows without watermark"
     description: "A stream processor windows by event time but declares no watermark, so window completion and late data are undefined."
+    rationale: "Event-time windows need a watermark to know when a window is complete. Without one the processor either waits forever or closes windows early and silently drops late events."

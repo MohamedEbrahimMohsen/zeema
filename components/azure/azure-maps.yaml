@@ -9,6 +9,7 @@ type: "component"
 id: "azure-maps"
 kind: "third-party-api"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/azure-maps/azure-maps-authentication"
 defaults:
   managed: true
   callbackStyle: "none"

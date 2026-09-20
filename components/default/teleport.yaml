@@ -7,6 +7,7 @@ type: "component"
 id: "teleport"
 kind: "bastion-host"
 provider: "default"
+docs: "https://goteleport.com/docs/reference/architecture/session-recording/"
 defaults:
   managed: false
   protocols: "both"

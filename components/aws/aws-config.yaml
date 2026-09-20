@@ -7,6 +7,7 @@ type: "component"
 id: "aws-config"
 kind: "policy-engine"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/config/latest/developerguide/WhatIsConfig.html"
 defaults:
   effect: "audit"
   scope: "account"

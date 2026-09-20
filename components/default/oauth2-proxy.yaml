@@ -8,6 +8,7 @@ type: "component"
 id: "oauth2-proxy"
 kind: "identity-provider"
 provider: "default"
+docs: "https://oauth2-proxy.github.io/oauth2-proxy/"
 defaults:
   managed: false
   protocol: "oauth2"

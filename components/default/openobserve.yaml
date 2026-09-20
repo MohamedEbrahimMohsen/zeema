@@ -6,6 +6,7 @@ type: "component"
 id: "openobserve"
 kind: "monitoring"
 provider: "default"
+docs: "https://openobserve.ai/docs/environment-variables/"
 defaults:
   signal: "all"
   collectorMode: "push"

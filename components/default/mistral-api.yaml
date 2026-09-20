@@ -8,6 +8,7 @@ type: "component"
 id: "mistral-api"
 kind: "ai-service"
 provider: "default"
+docs: "https://docs.mistral.ai/admin/user-management-finops/tier"
 defaults:
   managed: true
   modality: "multimodal"

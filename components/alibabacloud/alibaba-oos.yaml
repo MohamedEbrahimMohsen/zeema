@@ -9,6 +9,7 @@ type: "component"
 id: "alibaba-oos"
 kind: "workflow-engine"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/oos/"
 defaults:
   managed: true
   pattern: "dag"

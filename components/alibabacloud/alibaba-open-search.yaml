@@ -9,6 +9,7 @@ type: "component"
 id: "alibaba-open-search"
 kind: "search-index"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/open-search/"
 defaults:
   managed: true
   structure: "inverted"

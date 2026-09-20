@@ -7,6 +7,7 @@ type: "component"
 id: "opc-ua-server"
 kind: "iot-hub"
 provider: "default"
+docs: "https://reference.opcfoundation.org/Core/Part6/v105/docs/7.1"
 defaults:
   protocol: "multi"
   perDeviceIdentity: true

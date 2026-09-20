@@ -8,6 +8,7 @@ type: "component"
 id: "hcp-terraform"
 kind: "ci-pipeline"
 provider: "default"
+docs: "https://developer.hashicorp.com/terraform/cloud-docs/overview"
 defaults:
   trigger: "commit"
   approvalRequired: false

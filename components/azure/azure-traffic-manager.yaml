@@ -7,6 +7,7 @@ type: "component"
 id: "azure-traffic-manager"
 kind: "dns"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/traffic-manager/traffic-manager-overview"
 defaults:
   managed: true
   healthChecked: true

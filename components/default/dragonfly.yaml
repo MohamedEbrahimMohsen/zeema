@@ -6,6 +6,7 @@ type: "component"
 id: "dragonfly"
 kind: "cache"
 provider: "default"
+docs: "https://www.dragonflydb.io/docs"
 defaults:
   persistence: false
 properties:

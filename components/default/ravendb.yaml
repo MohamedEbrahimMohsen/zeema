@@ -7,6 +7,7 @@ type: "component"
 id: "ravendb"
 kind: "nosql-database"
 provider: "default"
+docs: "https://docs.ravendb.net/server/clustering/replication/replication-conflicts/"
 defaults:
   model: "document"
   consistency: "eventual"

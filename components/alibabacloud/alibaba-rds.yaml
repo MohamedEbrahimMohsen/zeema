@@ -9,6 +9,7 @@ type: "component"
 id: "alibaba-rds"
 kind: "sql-database"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/rds/product-overview/what-is-apsaradb-rds"
 defaults:
   managed: true
 properties:

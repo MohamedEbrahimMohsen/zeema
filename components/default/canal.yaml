@@ -7,6 +7,7 @@ type: "component"
 id: "canal"
 kind: "change-data-capture"
 provider: "default"
+docs: "https://github.com/alibaba/canal/wiki"
 defaults:
   managed: false
   mode: "log-based"

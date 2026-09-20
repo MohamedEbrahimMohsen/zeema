@@ -7,6 +7,7 @@ type: "component"
 id: "verdaccio"
 kind: "artifact-repository"
 provider: "default"
+docs: "https://verdaccio.org/docs/what-is-verdaccio"
 defaults:
   artifactType: "package"
   managed: false

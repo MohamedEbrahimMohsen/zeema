@@ -6,6 +6,7 @@ type: "component"
 id: "falco"
 kind: "monitoring"
 provider: "default"
+docs: "https://falco.org/docs/concepts/event-sources/kernel/"
 defaults:
   signal: "alerts"
   collectorMode: "push"

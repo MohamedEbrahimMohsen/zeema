@@ -7,6 +7,7 @@ type: "component"
 id: "kafka-connect"
 kind: "change-data-capture"
 provider: "default"
+docs: "https://docs.confluent.io/platform/current/connect/references/allconfigs.html"
 defaults:
   ordered: true
   managed: false

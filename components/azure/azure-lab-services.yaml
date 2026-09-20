@@ -8,6 +8,7 @@ type: "component"
 id: "azure-lab-services"
 kind: "virtual-desktop"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/lab-services/lab-services-overview"
 defaults:
   sessionMode: "personal"
   maxSessionsPerHost: 1

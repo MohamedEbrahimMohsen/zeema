@@ -10,6 +10,7 @@ type: "component"
 id: "aws-workspaces-thin-client"
 kind: "client"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/workspaces-thin-client/latest/ag/architecture.html"
 defaults:
   managed: true
   platform: "embedded"

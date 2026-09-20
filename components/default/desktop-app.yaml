@@ -5,6 +5,7 @@ type: "component"
 id: "desktop-app"
 kind: "client"
 provider: "default"
+docs: "https://www.electronjs.org/docs/latest/"
 defaults:
   platform: "desktop"
   localCache: true

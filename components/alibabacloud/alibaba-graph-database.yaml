@@ -8,6 +8,7 @@ type: "component"
 id: "alibaba-graph-database"
 kind: "graph-database"
 provider: "alibabacloud"
+docs: "https://help.aliyun.com/en/gdb/product-overview/"
 defaults:
   managed: true
   inMemory: false

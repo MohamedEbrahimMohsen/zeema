@@ -8,6 +8,7 @@ type: "component"
 id: "aws-detective"
 kind: "monitoring"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/detective/latest/userguide/what-is-detective.html"
 defaults:
   signal: "all"
   collectorMode: "pull"

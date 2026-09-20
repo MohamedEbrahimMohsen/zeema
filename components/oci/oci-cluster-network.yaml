@@ -8,6 +8,7 @@ type: "component"
 id: "oci-cluster-network"
 kind: "virtual-machine"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/Compute/Tasks/managingclusternetworks.htm"
 defaults:
   managed: false
   os: "linux"

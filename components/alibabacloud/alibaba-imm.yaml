@@ -9,6 +9,7 @@ type: "component"
 id: "alibaba-imm"
 kind: "media-transcoder"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/imm/"
 defaults:
   mode: "file"
   managed: true

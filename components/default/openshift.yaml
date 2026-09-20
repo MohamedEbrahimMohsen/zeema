@@ -7,6 +7,7 @@ type: "component"
 id: "openshift"
 kind: "container-orchestrator"
 provider: "default"
+docs: "https://docs.redhat.com/en/documentation/openshift_container_platform/4.17/html/authentication_and_authorization/using-rbac"
 defaults:
   managed: false
   autoscaling: false

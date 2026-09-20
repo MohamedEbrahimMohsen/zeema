@@ -9,6 +9,7 @@ type: "component"
 id: "oci-data-science"
 kind: "ml-platform"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/data-science/using/data-science.htm"
 defaults:
   computeInstances: 1
   gpuEnabled: false

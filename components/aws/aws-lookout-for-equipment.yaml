@@ -6,6 +6,7 @@ type: "component"
 id: "aws-lookout-for-equipment"
 kind: "ai-service"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/lookout-for-equipment/latest/ug/what-is.html"
 defaults:
   modality: "structured"
   managed: true

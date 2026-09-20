@@ -8,6 +8,7 @@ type: "component"
 id: "hono"
 kind: "iot-hub"
 provider: "default"
+docs: "https://eclipse.dev/hono/docs/architecture/component-view/"
 defaults:
   protocol: "multi"
   perDeviceIdentity: true

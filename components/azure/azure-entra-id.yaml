@@ -5,6 +5,7 @@ type: "component"
 id: "azure-entra-id"
 kind: "identity-provider"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/entra/fundamentals/whatis"
 defaults:
   protocol: "oidc"
   authorizationModel: "rbac"

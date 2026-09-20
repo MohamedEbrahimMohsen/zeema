@@ -9,6 +9,7 @@ type: "component"
 id: "dex"
 kind: "identity-provider"
 provider: "default"
+docs: "https://dexidp.io/docs/"
 defaults:
   managed: false
   protocol: "oidc"

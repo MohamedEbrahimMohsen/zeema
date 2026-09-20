@@ -8,6 +8,7 @@ type: "component"
 id: "google-firestore-mongodb"
 kind: "nosql-database"
 provider: "gcp"
+docs: "https://cloud.google.com/firestore/mongodb-compatibility/docs/overview"
 defaults:
   model: "document"
   consistency: "strong"

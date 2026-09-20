@@ -8,6 +8,7 @@ type: "component"
 id: "aws-cloudwatch-internet-monitor"
 kind: "monitoring"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-IM-get-started.html"
 defaults:
   signal: "metrics"
   collectorMode: "push"

@@ -8,6 +8,7 @@ type: "component"
 id: "aws-swf"
 kind: "workflow-engine"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/amazonswf/latest/developerguide/swf-welcome.html"
 defaults:
   managed: true
   durable: true

@@ -10,6 +10,7 @@ type: "component"
 id: "azure-monitor-for-sap"
 kind: "monitoring"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/sap/monitor/about-azure-monitor-sap-solutions"
 defaults:
   managed: true
   signal: "logs"

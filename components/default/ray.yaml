@@ -7,6 +7,7 @@ type: "component"
 id: "ray"
 kind: "big-data-cluster"
 provider: "default"
+docs: "https://docs.ray.io/en/latest/cluster/kubernetes/user-guides/configuring-autoscaling.html"
 defaults:
   engine: "ray"
   autoscaling: false

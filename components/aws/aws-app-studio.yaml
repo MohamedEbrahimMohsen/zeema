@@ -8,6 +8,7 @@ type: "component"
 id: "aws-app-studio"
 kind: "app-server"
 provider: "aws"
+docs: "https://aws.amazon.com/appstudio/faqs/"
 defaults:
   autoscaling: true
   ownsData: false

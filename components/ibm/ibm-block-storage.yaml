@@ -10,6 +10,7 @@ type: "component"
 id: "ibm-block-storage"
 kind: "block-storage"
 provider: "ibm"
+docs: "https://cloud.ibm.com/docs/vpc?topic=vpc-block-storage-about"
 defaults:
   managed: true
   mediaType: "ssd"

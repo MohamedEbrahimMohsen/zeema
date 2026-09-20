@@ -8,6 +8,7 @@ type: "component"
 id: "oci-visual-builder"
 kind: "app-server"
 provider: "oci"
+docs: "https://docs.oracle.com/en/cloud/paas/app-builder-cloud/visual-builder-oci-admin/oracle-visual-builder.html"
 defaults:
   managed: true
   stateless: false

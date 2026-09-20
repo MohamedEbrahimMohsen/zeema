@@ -6,6 +6,7 @@ type: "component"
 id: "mqtt-broker"
 kind: "pubsub-topic"
 provider: "default"
+docs: "https://mqtt.org/mqtt-specification/"
 defaults:
   delivery: "at-most-once"
   ordering: "per-key"

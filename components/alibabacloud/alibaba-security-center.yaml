@@ -12,6 +12,7 @@ type: "component"
 id: "alibaba-security-center"
 kind: "monitoring"
 provider: "alibabacloud"
+docs: "https://help.aliyun.com/en/security-center/product-overview/what-is-security-center"
 defaults:
   managed: true
   signal: "alerts"

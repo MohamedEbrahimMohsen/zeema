@@ -8,6 +8,7 @@ type: "component"
 id: "external-dns"
 kind: "dns"
 provider: "default"
+docs: "https://kubernetes-sigs.github.io/external-dns/latest/"
 defaults:
   managed: false
   anycast: false

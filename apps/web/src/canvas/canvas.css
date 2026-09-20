@@ -79,6 +79,18 @@
   padding: 2px var(--sp-1);
   width: 28ch;
 }
+/* the note inspector: what a note is pinned to, and the way off it */
+.zeema-canvas .anchor-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-1);
+}
+.zeema-canvas .toolbar .notes-toggle[aria-pressed="true"] {
+  background: var(--t-note-fill);
+  border-color: var(--t-note-line);
+  color: var(--ink);
+}
 .zeema-canvas .toolbar .auto {
   display: flex;
   align-items: center;
@@ -168,6 +180,76 @@
   color: var(--ink);
 }
 
+/* notes — sticky annotations from the layout sidecar. No glyph, no ports, no edges. */
+.zeema-canvas .note-box {
+  cursor: grab;
+}
+.zeema-canvas .note-body {
+  stroke-width: 1;
+}
+.zeema-canvas .note-box.selected .note-body {
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+.zeema-canvas .note-text {
+  /* NOTE_FONT in scene.ts. Keep the two in step: wrapping is measured against it. */
+  font-size: 11px;
+  fill: var(--ink);
+  pointer-events: none;
+  white-space: pre;
+}
+.zeema-canvas .note-text.empty {
+  fill: var(--muted);
+  font-style: italic;
+}
+.zeema-canvas .note-grip {
+  stroke: var(--muted);
+  stroke-width: 1.2;
+  fill: none;
+  pointer-events: none;
+}
+.zeema-canvas .note-grip-hit {
+  fill: transparent;
+  cursor: nwse-resize;
+}
+/* the thread from a pinned note to what it is pinned to: the note's own line, quietened */
+.zeema-canvas .note-leader {
+  fill: none;
+  stroke: var(--f-note-line);
+  stroke-width: 1;
+  stroke-dasharray: 2 3;
+  opacity: 0.55;
+  pointer-events: none;
+}
+/* a peeked note is there to be read, not handled: no pointer reaches it */
+.zeema-canvas .note-box.peek {
+  pointer-events: none;
+  opacity: 0.92;
+}
+.zeema-canvas .note-leader.peek {
+  opacity: 0.4;
+}
+/* with notes hidden, a dot on the corner they hang off says there is something here */
+.zeema-canvas .note-marker-g {
+  cursor: pointer;
+}
+.zeema-canvas .note-marker-hit {
+  fill: transparent;
+}
+.zeema-canvas .note-marker {
+  fill: var(--f-note-fill);
+  stroke: var(--f-note-line);
+  stroke-width: 1;
+  pointer-events: none;
+}
+.zeema-canvas .note-marker-g:hover .note-marker {
+  r: 5.5;
+}
+.zeema-canvas .note-marker.pinned {
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+
 /* boundaries — dashed, never filled */
 .zeema-canvas .frame {
   fill: none;
@@ -191,6 +273,14 @@
   font-size: 11px;
   font-family: var(--mono);
   fill: var(--muted);
+  cursor: move;
+}
+/* the kind, as a tag beside the name — never in parentheses after it */
+.zeema-canvas .frame-kind {
+  font-size: 10px;
+  font-family: var(--mono);
+  fill: var(--muted);
+  opacity: 0.75;
   cursor: move;
 }
 
@@ -268,6 +358,18 @@
   color: var(--ink);
   outline: none;
 }
+/* the note editor: the same type, padding and box as the note it is sitting on */
+.zeema-canvas .inline-edit.note-edit {
+  font-family: var(--sans);
+  box-sizing: border-box;
+  padding: 8px 10px;
+  background: var(--f-note-fill);
+  border-radius: 3px;
+  resize: none;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
 .zeema-canvas .empty-state {
   position: absolute;
   inset: 0;
@@ -278,25 +380,120 @@
   text-align: center;
   padding: var(--sp-4);
 }
-.zeema-canvas .help {
+/* help — a dialog over the canvas area, never over the whole page */
+.zeema-canvas .help-overlay {
   position: absolute;
-  right: var(--sp-1-5);
-  top: var(--sp-1-5);
+  inset: 0;
   z-index: 10;
-  width: 320px;
+  /* flex, not grid: a percentage height on the dialog must resolve against the canvas area,
+     and an auto grid row would grow to the dialog instead and let it run off the bottom */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-2);
+}
+.zeema-canvas .help-backdrop {
+  position: absolute;
+  inset: 0;
+  background: var(--bg);
+  opacity: 0.6;
+}
+.zeema-canvas .help-dialog {
+  position: relative;
+  width: min(560px, 100%);
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  font-size: var(--fs-small);
+  box-shadow: var(--shadow-float);
+}
+.zeema-canvas .help-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  padding: var(--sp-1-5);
+  border-bottom: var(--border) solid var(--line);
+}
+.zeema-canvas .help-dialog .help-title {
+  margin: 0;
+  font-family: var(--sans);
+  text-transform: none;
+  letter-spacing: normal;
+  font-size: var(--fs-body);
+  font-weight: var(--fw-medium);
+  color: var(--ink);
+}
+.zeema-canvas .help-close {
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1;
+  padding: 2px 6px;
+  border-radius: var(--rc);
+  cursor: pointer;
+}
+.zeema-canvas .help-close:hover {
+  color: var(--ink);
+  background: var(--line);
+}
+.zeema-canvas .help-body {
+  overflow: auto;
+  padding: var(--sp-1-5);
+}
+.zeema-canvas .help-body section + section {
+  margin-top: var(--sp-2);
+}
+.zeema-canvas .help-rows {
+  margin: var(--sp-1) 0 0;
+}
+.zeema-canvas .help-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2px var(--sp-2);
+  padding: 3px 0;
+}
+@media (min-width: 640px) {
+  .zeema-canvas .help-row {
+    grid-template-columns: 13rem 1fr;
+    align-items: baseline;
+  }
+}
+.zeema-canvas .help-row dt {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0;
+}
+.zeema-canvas .help-row dd {
+  margin: 0;
+  color: var(--muted);
+}
+.zeema-canvas .help-row kbd {
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.4;
+  padding: 1px 5px;
+  color: var(--ink);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  box-shadow: 0 1px 0 var(--line);
+  white-space: nowrap;
+}
+
+/* the boundary-wiring hint: a remark near the pointer, never a mode */
+.zeema-canvas .canvas-hint {
+  position: fixed;
+  z-index: 60;
+  width: 300px;
   padding: var(--sp-1-5);
   font-size: var(--fs-small);
   box-shadow: var(--shadow-float);
 }
-.zeema-canvas .help ul {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-top: var(--sp-1);
-}
-.zeema-canvas .help kbd {
-  font-family: var(--mono);
-  font-size: var(--fs-micro);
+.zeema-canvas .canvas-hint p {
+  margin: 0 0 var(--sp-1);
   color: var(--muted);
 }
 
@@ -355,6 +552,19 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.zeema-canvas .pal-hint {
+  padding: 0 var(--sp-1) calc(var(--p) * 0.4);
+  color: var(--muted);
+  font-size: var(--fs-micro);
+  line-height: 1.35;
+}
+/* The vendor-neutral component of a kind: first in its category, and marked as such. */
+.zeema-canvas .pal-row.is-generic .kind {
+  color: var(--accent);
+  border: var(--border) solid var(--line);
+  border-radius: var(--rc);
+  padding: 0 4px;
 }
 
 /* inspector — a field is label, control, resolved hint */

@@ -9,6 +9,7 @@ type: "component"
 id: "k8s-ingress"
 kind: "load-balancer"
 provider: "k8s"
+docs: "https://kubernetes.io/docs/concepts/services-networking/ingress/"
 defaults:
   managed: false
   layer: "l7"

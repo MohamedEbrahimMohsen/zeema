@@ -9,6 +9,7 @@ type: "component"
 id: "alibaba-elasticsearch"
 kind: "search-index"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/es/"
 defaults:
   managed: true
   structure: "inverted"

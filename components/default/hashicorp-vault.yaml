@@ -5,6 +5,7 @@ type: "component"
 id: "hashicorp-vault"
 kind: "key-management"
 provider: "default"
+docs: "https://developer.hashicorp.com/vault/docs"
 defaults:
   managed: false
   hsm: false

@@ -7,6 +7,7 @@ type: "component"
 id: "coolify"
 kind: "app-server"
 provider: "default"
+docs: "https://coolify.io/docs/get-started/introduction"
 defaults:
   managed: false
   stateless: true

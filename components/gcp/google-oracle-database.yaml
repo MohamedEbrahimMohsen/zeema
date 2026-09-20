@@ -8,6 +8,7 @@ type: "component"
 id: "google-oracle-database"
 kind: "sql-database"
 provider: "gcp"
+docs: "https://cloud.google.com/oracle/database/docs/overview"
 defaults:
   encryptionAtRest: true
   backupEnabled: true

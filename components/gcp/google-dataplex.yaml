@@ -7,6 +7,7 @@ type: "component"
 id: "google-dataplex"
 kind: "data-catalog"
 provider: "gcp"
+docs: "https://docs.cloud.google.com/dataplex/docs/about-data-lineage"
 defaults:
   managed: true
   lineage: false

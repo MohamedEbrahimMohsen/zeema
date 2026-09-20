@@ -9,6 +9,7 @@ type: "component"
 id: "aws-dynamodb-streams"
 kind: "change-data-capture"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Streams.html"
 defaults:
   mode: "log-based"
   ordered: true

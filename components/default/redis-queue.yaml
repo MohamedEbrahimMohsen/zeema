@@ -6,6 +6,7 @@ type: "component"
 id: "redis-queue"
 kind: "queue"
 provider: "default"
+docs: "https://redis.io/docs/latest/develop/data-types/lists/"
 defaults:
   delivery: "at-most-once"
   ordering: "global"

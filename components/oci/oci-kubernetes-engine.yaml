@@ -8,6 +8,7 @@ type: "component"
 id: "oci-kubernetes-engine"
 kind: "container-orchestrator"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/ContEng/Tasks/contengcomparingenhancedwithbasicclusters_topic.htm"
 defaults:
   managed: true
   autoscaling: false

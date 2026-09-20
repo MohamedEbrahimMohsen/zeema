@@ -5,6 +5,7 @@ type: "component"
 id: "azure-application-gateway"
 kind: "load-balancer"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/application-gateway/overview"
 defaults:
   layer: "l7"
   managed: true

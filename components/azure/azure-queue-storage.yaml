@@ -8,6 +8,7 @@ type: "component"
 id: "azure-queue-storage"
 kind: "queue"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/storage/queues/storage-queues-introduction"
 defaults:
   delivery: "at-least-once"
   ordering: "none"

@@ -8,6 +8,7 @@ type: "component"
 id: "risingwave"
 kind: "stream-processor"
 provider: "default"
+docs: "https://docs.risingwave.com/reference/data-persistence"
 defaults:
   managed: false
   windowing: "event-time"

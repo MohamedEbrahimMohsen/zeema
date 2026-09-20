@@ -5,6 +5,7 @@ type: "component"
 id: "google-cloud-kms"
 kind: "key-management"
 provider: "gcp"
+docs: "https://cloud.google.com/kms/docs/key-management-service"
 defaults:
   managed: true
   hsm: false

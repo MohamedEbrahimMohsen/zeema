@@ -8,6 +8,7 @@ type: "component"
 id: "google-customer-experience-insights"
 kind: "ai-service"
 provider: "gcp"
+docs: "https://docs.cloud.google.com/contact-center/insights/docs/ttl"
 defaults:
   modality: "multimodal"
   publicEndpoint: true

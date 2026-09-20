@@ -5,6 +5,7 @@ type: "component"
 id: "aws-batch"
 kind: "worker"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/batch/latest/userguide/what-is-batch.html"
 defaults:
   managed: true
   trigger: "batch"

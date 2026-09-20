@@ -7,6 +7,7 @@ type: "component"
 id: "orientdb"
 kind: "nosql-database"
 provider: "default"
+docs: "https://orientdb.dev/docs/3.2.x/distributed/Distributed-Configuration.html"
 defaults:
   model: "document"
   consistency: "tunable"

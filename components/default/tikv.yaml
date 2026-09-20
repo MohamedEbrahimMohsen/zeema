@@ -6,6 +6,7 @@ type: "component"
 id: "tikv"
 kind: "nosql-database"
 provider: "default"
+docs: "https://tikv.org/docs/latest/reference/architecture/overview/"
 defaults:
   model: "key-value"
   consistency: "strong"

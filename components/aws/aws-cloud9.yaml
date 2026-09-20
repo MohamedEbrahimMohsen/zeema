@@ -9,6 +9,7 @@ type: "component"
 id: "aws-cloud9"
 kind: "virtual-desktop"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/cloud9/latest/user-guide/create-environment-main.html"
 defaults:
   sessionMode: "personal"
   persistentProfiles: true

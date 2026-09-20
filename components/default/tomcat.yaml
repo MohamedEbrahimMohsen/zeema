@@ -7,6 +7,7 @@ type: "component"
 id: "tomcat"
 kind: "app-server"
 provider: "default"
+docs: "https://tomcat.apache.org/tomcat-11.0-doc/config/http.html"
 defaults:
   managed: false
   runtime: "jvm"

@@ -7,6 +7,7 @@ type: "component"
 id: "google-transcoder-api"
 kind: "media-transcoder"
 provider: "gcp"
+docs: "https://cloud.google.com/transcoder/docs/concepts/overview"
 defaults:
   managed: true
   mode: "file"

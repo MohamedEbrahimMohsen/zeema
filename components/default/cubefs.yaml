@@ -6,6 +6,7 @@ type: "component"
 id: "cubefs"
 kind: "file-storage"
 provider: "default"
+docs: "https://cubefs.io/docs/master/dev-guide/admin-api/master/volume.html"
 defaults:
   protocol: "multi"
   managed: false

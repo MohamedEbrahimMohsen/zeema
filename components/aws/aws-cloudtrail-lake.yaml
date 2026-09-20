@@ -8,6 +8,7 @@ type: "component"
 id: "aws-cloudtrail-lake"
 kind: "monitoring"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-lake-manage-costs.html"
 defaults:
   signal: "logs"
   collectorMode: "push"

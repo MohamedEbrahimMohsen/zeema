@@ -6,6 +6,7 @@ type: "component"
 id: "plaid"
 kind: "third-party-api"
 provider: "default"
+docs: "https://plaid.com/docs/api/webhooks/webhook-verification/"
 defaults:
   managed: true
   handlesMoney: false

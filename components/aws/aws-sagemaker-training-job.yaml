@@ -7,6 +7,7 @@ type: "component"
 id: "aws-sagemaker-training-job"
 kind: "worker"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_CreateTrainingJob.html"
 defaults:
   managed: true
   trigger: "batch"

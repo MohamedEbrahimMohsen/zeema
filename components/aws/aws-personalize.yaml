@@ -6,6 +6,7 @@ type: "component"
 id: "aws-personalize"
 kind: "ai-service"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/personalize/latest/dg/limits.html"
 defaults:
   modality: "structured"
   managed: true

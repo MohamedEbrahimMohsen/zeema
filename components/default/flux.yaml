@@ -8,6 +8,7 @@ type: "component"
 id: "flux"
 kind: "ci-pipeline"
 provider: "default"
+docs: "https://fluxcd.io/flux/components/kustomize/kustomizations/"
 defaults:
   trigger: "schedule"
   approvalRequired: false

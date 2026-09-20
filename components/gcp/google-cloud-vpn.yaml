@@ -6,6 +6,7 @@ type: "component"
 id: "google-cloud-vpn"
 kind: "vpn-gateway"
 provider: "gcp"
+docs: "https://cloud.google.com/network-connectivity/docs/vpn/concepts/overview"
 defaults:
   managed: true
   tunnelType: "ipsec"

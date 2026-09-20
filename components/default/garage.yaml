@@ -8,6 +8,7 @@ type: "component"
 id: "garage"
 kind: "object-store"
 provider: "default"
+docs: "https://garagehq.deuxfleurs.fr/documentation/reference-manual/configuration/"
 defaults:
   managed: false
   replication: "quorum"

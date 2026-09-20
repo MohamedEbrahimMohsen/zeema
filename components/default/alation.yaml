@@ -8,6 +8,7 @@ type: "component"
 id: "alation"
 kind: "data-catalog"
 provider: "default"
+docs: "https://docs.alation.com/"
 defaults:
   managed: true
   classification: true

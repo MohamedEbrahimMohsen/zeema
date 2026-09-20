@@ -7,6 +7,7 @@ type: "component"
 id: "azure-nat-gateway"
 kind: "nat-gateway"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/nat-gateway/nat-overview"
 defaults:
   managed: true
   idleTimeoutMinutes: 4

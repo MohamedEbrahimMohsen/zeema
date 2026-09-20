@@ -8,6 +8,7 @@ type: "component"
 id: "meltano"
 kind: "worker"
 provider: "default"
+docs: "https://docs.meltano.com/guide/integration/"
 defaults:
   managed: false
   trigger: "manual"

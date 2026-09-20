@@ -7,6 +7,7 @@ type: "component"
 id: "configcat"
 kind: "feature-flag-service"
 provider: "default"
+docs: "https://configcat.com/docs/sdk-reference/js/"
 defaults:
   stagedRollout: true
   managed: true

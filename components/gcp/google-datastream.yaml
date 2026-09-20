@@ -8,6 +8,7 @@ type: "component"
 id: "google-datastream"
 kind: "change-data-capture"
 provider: "gcp"
+docs: "https://docs.cloud.google.com/datastream/docs/behavior-overview"
 defaults:
   managed: true
   mode: "log-based"

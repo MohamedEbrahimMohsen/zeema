@@ -8,6 +8,7 @@ type: "component"
 id: "aws-trusted-advisor"
 kind: "monitoring"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/awssupport/latest/user/trusted-advisor.html"
 defaults:
   signal: "alerts"
   collectorMode: "pull"

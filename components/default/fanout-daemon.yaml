@@ -6,6 +6,7 @@ type: "component"
 id: "fanout-daemon"
 kind: "worker"
 provider: "default"
+docs: "https://en.wikipedia.org/wiki/Fan-out_"
 defaults:
   trigger: "stream"
   fanoutStrategy: "push"

@@ -8,6 +8,7 @@ type: "component"
 id: "litmus"
 kind: "worker"
 provider: "default"
+docs: "https://docs.litmuschaos.io/"
 defaults:
   managed: false
   trigger: "manual"

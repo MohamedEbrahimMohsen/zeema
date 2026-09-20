@@ -8,6 +8,7 @@ type: "component"
 id: "oci-autonomous-recovery-service"
 kind: "backup-service"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/recovery-service/doc/overview-protection-policy.html"
 defaults:
   managed: true
   frequency: "daily"

@@ -7,6 +7,7 @@ type: "component"
 id: "google-persistent-disk"
 kind: "block-storage"
 provider: "gcp"
+docs: "https://cloud.google.com/compute/docs/disks/persistent-disks"
 defaults:
   redundancy: "zonal"
   encryptionAtRest: true

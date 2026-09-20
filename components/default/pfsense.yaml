@@ -7,6 +7,7 @@ type: "component"
 id: "pfsense"
 kind: "firewall"
 provider: "default"
+docs: "https://docs.netgate.com/pfsense/en/latest/firewall/fundamentals.html"
 defaults:
   managed: false
   defaultAction: "deny"

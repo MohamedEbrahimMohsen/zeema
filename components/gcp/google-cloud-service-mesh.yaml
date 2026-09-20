@@ -6,6 +6,7 @@ type: "component"
 id: "google-cloud-service-mesh"
 kind: "service-mesh"
 provider: "gcp"
+docs: "https://cloud.google.com/service-mesh/docs/overview"
 defaults:
   managed: true
   sidecar: true

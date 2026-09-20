@@ -4,6 +4,7 @@
 // product is hard coded. A control shows the value the design resolves to and writes only when
 // the user sets something. Text inputs commit on blur or Enter, never per keystroke.
 import { effective, propDefs } from "@zeema/core/document";
+import { anchorTarget, type Note } from "@/lib/layout-sidecar";
 import type { Subject } from "./scene";
 
 export type InspectorApi = {
@@ -19,7 +20,9 @@ export type InspectorApi = {
   setParent: (id: string, parent: string | null) => void;
   setDesignId: (id: string) => void;
   setRequirement: (path: string, value: unknown) => void;
-  remove: (type: "node" | "edge" | "group", ref: string | number) => void;
+  setNoteText: (id: string, text: string) => void;
+  detachNote: (id: string) => void;
+  remove: (type: "node" | "edge" | "group" | "note", ref: string | number) => void;
 };
 
 const label = (name: string) =>
@@ -137,12 +140,14 @@ export function Inspector({
   selection,
   multi,
   doc,
+  notes,
   catalogue,
   api,
 }: {
   selection: Subject;
   multi: Set<string>;
   doc: any;
+  notes: Note[];
   catalogue: any;
   api: InspectorApi;
 }) {
@@ -170,6 +175,16 @@ export function Inspector({
         <>
           {head}
           <EdgePanel edge={edge} index={selection.ref as number} doc={doc} api={api} />
+        </>
+      );
+  }
+  if (selection.type === "note") {
+    const note = (notes ?? []).find((n) => n.id === selection.ref);
+    if (note)
+      return (
+        <>
+          {head}
+          <NotePanel note={note} api={api} />
         </>
       );
   }
@@ -383,6 +398,60 @@ function EdgePanel({
         onClick={() => api.remove("edge", index)}
       >
         Delete edge
+      </button>
+    </>
+  );
+}
+
+// A note is not part of the design: it lives in the layout sidecar, so there is nothing here
+// but its text and its box. No rule ever reads it and no edge can reach it.
+function NotePanel({ note, api }: { note: Note; api: InspectorApi }) {
+  return (
+    <>
+      <h2>Note</h2>
+      <p className="muted my-2 small">
+        An annotation. It is stored with the positions, never in the design document, so the rules
+        never see it and no edge can connect to it.
+      </p>
+      <Field name="text" isSet={Boolean(note.text)}>
+        <textarea
+          rows={5}
+          defaultValue={note.text}
+          onBlur={(e) => {
+            if (e.target.value !== note.text) api.setNoteText(note.id, e.target.value);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") {
+              (e.target as HTMLTextAreaElement).value = note.text;
+              (e.target as HTMLTextAreaElement).blur();
+            }
+          }}
+        />
+      </Field>
+      {note.anchor ? (
+        <Field name="anchored to" note="an offset from that box's top-right corner">
+          <div className="anchor-row">
+            <code>{anchorTarget(note.anchor)}</code>
+            <button
+              type="button"
+              className="btn btn-sm"
+              onClick={() => api.detachNote(note.id)}
+              title="Leave it where it is, but stop following"
+            >
+              Detach
+            </button>
+          </div>
+        </Field>
+      ) : null}
+      <div className="meta">
+        {note.w} × {note.h} {note.anchor ? "offset" : "at"} {note.x}, {note.y}
+      </div>
+      <button
+        type="button"
+        className="btn btn-sm btn-danger mt-3"
+        onClick={() => api.remove("note", note.id)}
+      >
+        Delete note
       </button>
     </>
   );

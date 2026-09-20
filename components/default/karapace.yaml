@@ -7,6 +7,7 @@ type: "component"
 id: "karapace"
 kind: "schema-registry"
 provider: "default"
+docs: "https://github.com/Aiven-Open/karapace"
 defaults:
   compatibility: "backward"
   enforced: false

@@ -6,6 +6,7 @@ type: "component"
 id: "openebs"
 kind: "block-storage"
 provider: "default"
+docs: "https://openebs.io/docs/concepts/architecture"
 defaults:
   managed: false
   snapshots: true

@@ -9,6 +9,7 @@ type: "component"
 id: "alibaba-polardb"
 kind: "sql-database"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/polardb/product-overview/"
 defaults:
   managed: true
   multiWriter: false

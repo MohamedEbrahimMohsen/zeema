@@ -5,6 +5,7 @@ type: "component"
 id: "nginx"
 kind: "load-balancer"
 provider: "default"
+docs: "https://nginx.org/en/docs/"
 defaults:
   layer: "l7"
   managed: false

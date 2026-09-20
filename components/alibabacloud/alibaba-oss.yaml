@@ -10,6 +10,7 @@ type: "component"
 id: "alibaba-oss"
 kind: "object-store"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/oss/"
 defaults:
   tier: "hot"
   strongReadAfterWrite: true

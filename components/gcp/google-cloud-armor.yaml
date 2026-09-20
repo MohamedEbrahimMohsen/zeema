@@ -6,6 +6,7 @@ type: "component"
 id: "google-cloud-armor"
 kind: "waf"
 provider: "gcp"
+docs: "https://cloud.google.com/armor/docs/cloud-armor-overview"
 defaults:
   managed: true
   mode: "prevention"

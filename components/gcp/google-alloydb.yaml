@@ -8,6 +8,7 @@ type: "component"
 id: "google-alloydb"
 kind: "sql-database"
 provider: "gcp"
+docs: "https://cloud.google.com/alloydb/docs/backup/overview"
 defaults:
   replication: "sync"
   backupEnabled: true

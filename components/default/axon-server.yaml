@@ -6,6 +6,7 @@ type: "component"
 id: "axon-server"
 kind: "event-store"
 provider: "default"
+docs: "https://docs.axoniq.io/"
 defaults:
   replication: "none"
   journaled: true

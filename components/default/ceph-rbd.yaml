@@ -6,6 +6,7 @@ type: "component"
 id: "ceph-rbd"
 kind: "block-storage"
 provider: "default"
+docs: "https://docs.ceph.com/en/latest/rbd/"
 defaults:
   managed: false
   snapshots: true

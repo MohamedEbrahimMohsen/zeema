@@ -5,6 +5,7 @@ type: "component"
 id: "lambda"
 kind: "app-server"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/lambda/latest/dg/welcome.html"
 defaults:
   managed: true
   stateless: true

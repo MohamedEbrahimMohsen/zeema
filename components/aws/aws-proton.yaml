@@ -7,6 +7,7 @@ type: "component"
 id: "aws-proton"
 kind: "ci-pipeline"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/proton/latest/userguide/proton-end-of-support.html"
 defaults:
   managed: true
 properties:

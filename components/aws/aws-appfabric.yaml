@@ -8,6 +8,7 @@ type: "component"
 id: "aws-appfabric"
 kind: "third-party-api"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/appfabric/latest/adminguide/what-is-appfabric.html"
 defaults:
   managed: true
   hostedPage: false

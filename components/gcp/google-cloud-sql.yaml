@@ -7,6 +7,7 @@ type: "component"
 id: "google-cloud-sql"
 kind: "sql-database"
 provider: "gcp"
+docs: "https://cloud.google.com/sql/docs/mysql/create-instance"
 defaults:
   backupEnabled: true
   backupRetentionDays: 7

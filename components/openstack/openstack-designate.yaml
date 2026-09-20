@@ -8,6 +8,7 @@ type: "component"
 id: "openstack-designate"
 kind: "dns"
 provider: "openstack"
+docs: "https://docs.openstack.org/designate/latest/"
 defaults:
   managed: false
 properties:

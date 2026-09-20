@@ -6,6 +6,7 @@ type: "component"
 id: "conductor"
 kind: "workflow-engine"
 provider: "default"
+docs: "https://conductor-oss.github.io/conductor/"
 defaults:
   durable: true
   pattern: "dag"

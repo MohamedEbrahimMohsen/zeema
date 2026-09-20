@@ -6,6 +6,7 @@ type: "component"
 id: "grafana"
 kind: "monitoring"
 provider: "default"
+docs: "https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/"
 defaults:
   signal: "all"
   collectorMode: "pull"

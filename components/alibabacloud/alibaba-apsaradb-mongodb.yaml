@@ -10,6 +10,7 @@ type: "component"
 id: "alibaba-apsaradb-mongodb"
 kind: "nosql-database"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/mongodb/"
 defaults:
   managed: true
   model: "document"

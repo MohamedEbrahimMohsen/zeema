@@ -7,6 +7,7 @@ type: "component"
 id: "aws-eks"
 kind: "container-orchestrator"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/eks/latest/userguide/cluster-endpoint.html"
 defaults:
   managed: true
   autoscaling: false

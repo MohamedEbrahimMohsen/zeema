@@ -10,6 +10,7 @@ type: "component"
 id: "mattermost"
 kind: "app-server"
 provider: "default"
+docs: "https://docs.mattermost.com/"
 defaults:
   managed: false
   ownsData: true

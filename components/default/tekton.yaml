@@ -8,6 +8,7 @@ type: "component"
 id: "tekton"
 kind: "ci-pipeline"
 provider: "default"
+docs: "https://tekton.dev/docs/pipelines/"
 defaults:
   trigger: "manual"
   selfHostedRunners: true

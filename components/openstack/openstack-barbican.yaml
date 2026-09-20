@@ -8,6 +8,7 @@ type: "component"
 id: "openstack-barbican"
 kind: "key-management"
 provider: "openstack"
+docs: "https://docs.openstack.org/barbican/latest/"
 defaults:
   managed: false
 properties:

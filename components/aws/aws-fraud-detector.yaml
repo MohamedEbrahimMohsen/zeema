@@ -6,6 +6,7 @@ type: "component"
 id: "aws-fraud-detector"
 kind: "ai-service"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/frauddetector/latest/ug/limits.html"
 defaults:
   modality: "structured"
   managed: true

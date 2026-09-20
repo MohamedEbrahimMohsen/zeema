@@ -8,6 +8,7 @@ type: "component"
 id: "oci-opensearch-dashboards"
 kind: "bi-service"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/search-opensearch/Concepts/ociopensearch.htm"
 defaults:
   managed: true
   capacityMode: "dedicated"

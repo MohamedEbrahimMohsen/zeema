@@ -8,6 +8,7 @@ type: "component"
 id: "oci-base-database"
 kind: "sql-database"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/base-database/doc/create-db-system-using-console.html"
 defaults:
   managed: true
   backupEnabled: true

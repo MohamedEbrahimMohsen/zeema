@@ -7,6 +7,7 @@ type: "component"
 id: "ollama"
 kind: "ml-inference"
 provider: "default"
+docs: "https://docs.ollama.com/faq"
 defaults:
   training: "batch"
   inputs: "live"

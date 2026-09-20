@@ -7,6 +7,7 @@ type: "component"
 id: "tailscale"
 kind: "vpn-gateway"
 provider: "default"
+docs: "https://tailscale.com/kb/1018/acls"
 defaults:
   managed: true
   tunnelType: "wireguard"

@@ -9,6 +9,7 @@ type: "component"
 id: "norikra"
 kind: "stream-processor"
 provider: "default"
+docs: "https://norikra.github.io/"
 defaults:
   managed: false
   stateBackend: "memory"

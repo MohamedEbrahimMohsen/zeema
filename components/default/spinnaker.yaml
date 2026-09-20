@@ -8,6 +8,7 @@ type: "component"
 id: "spinnaker"
 kind: "ci-pipeline"
 provider: "default"
+docs: "https://spinnaker.io/docs/concepts/"
 defaults:
   trigger: "manual"
   approvalRequired: false

@@ -5,6 +5,7 @@ type: "component"
 id: "redshift"
 kind: "data-warehouse"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/redshift/latest/mgmt/welcome.html"
 defaults:
   realtime: false
   upsert: false

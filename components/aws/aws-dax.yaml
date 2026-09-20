@@ -8,6 +8,7 @@ type: "component"
 id: "aws-dax"
 kind: "cache"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DAX.concepts.html"
 defaults:
   managed: true
   evictionPolicy: "lru"

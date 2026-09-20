@@ -6,6 +6,7 @@ type: "component"
 id: "pulsar"
 kind: "stream"
 provider: "default"
+docs: "https://pulsar.apache.org/docs/"
 defaults:
   delivery: "at-least-once"
   ordering: "per-key"

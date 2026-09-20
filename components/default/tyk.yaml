@@ -7,6 +7,7 @@ type: "component"
 id: "tyk"
 kind: "api-gateway"
 provider: "default"
+docs: "https://tyk.io/docs/tyk-oss-gateway/"
 defaults:
   managed: false
   rateLimiting: false

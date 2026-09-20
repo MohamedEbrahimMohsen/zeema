@@ -101,6 +101,15 @@ export function displayName(catalogue, node) {
   return loc?.name || node.component || node.id;
 }
 
+// The catalogue carries one vendor-neutral component per kind, and the convention that names it
+// is that its id is the kind id: `queue` is the generic queue, `kafka` is a product. Readers that
+// want to put the generic first ask here rather than re-deriving the convention.
+// `custom` fits the id convention but is never generic: generic promises that every rule for the
+// kind still applies, and for a custom node no rule applies at all.
+export function isGeneric(componentId, kind) {
+  return Boolean(componentId) && componentId === kind && kind !== "custom";
+}
+
 // An id nobody chose: the component's own id, or that with the counter the editor adds when a
 // second one is placed. Those are the only ids the editor is free to rewrite when a name is
 // typed, so an id a person set is never renamed behind their back.

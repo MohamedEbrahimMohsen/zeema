@@ -10,6 +10,7 @@ type: "component"
 id: "aws-macie"
 kind: "monitoring"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/macie/latest/user/what-is-macie.html"
 defaults:
   signal: "alerts"
   collectorMode: "pull"

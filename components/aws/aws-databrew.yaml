@@ -8,6 +8,7 @@ type: "component"
 id: "aws-databrew"
 kind: "worker"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/databrew/latest/dg/jobs.recipe.html"
 defaults:
   managed: true
   trigger: "manual"

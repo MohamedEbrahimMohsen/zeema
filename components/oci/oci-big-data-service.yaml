@@ -8,6 +8,7 @@ type: "component"
 id: "oci-big-data-service"
 kind: "big-data-cluster"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/bigdata/manage-cluster-create.htm"
 defaults:
   managed: true
   engine: "hadoop"

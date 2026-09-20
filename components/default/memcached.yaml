@@ -6,6 +6,7 @@ type: "component"
 id: "memcached"
 kind: "cache"
 provider: "default"
+docs: "https://docs.memcached.org/"
 defaults:
   persistence: false
   hashing: "none"

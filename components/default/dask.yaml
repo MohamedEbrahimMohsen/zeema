@@ -7,6 +7,7 @@ type: "component"
 id: "dask"
 kind: "big-data-cluster"
 provider: "default"
+docs: "https://docs.dask.org/en/stable/deploying.html"
 defaults:
   engine: "dask"
   autoscaling: false

@@ -7,6 +7,7 @@ type: "component"
 id: "oci-resource-scheduler"
 kind: "worker"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/resource-scheduler/tasks/create-manage.htm"
 defaults:
   managed: true
   trigger: "schedule"

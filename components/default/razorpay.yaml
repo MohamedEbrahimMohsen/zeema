@@ -6,6 +6,7 @@ type: "component"
 id: "razorpay"
 kind: "third-party-api"
 provider: "default"
+docs: "https://razorpay.com/docs/webhooks/validate-test/"
 defaults:
   managed: true
   idempotent: false

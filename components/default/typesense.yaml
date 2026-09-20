@@ -6,6 +6,7 @@ type: "component"
 id: "typesense"
 kind: "search-index"
 provider: "default"
+docs: "https://typesense.org/docs/"
 defaults:
   structure: "inverted"
   shardingStrategy: "none"

@@ -8,6 +8,7 @@ type: "component"
 id: "oci-compute"
 kind: "virtual-machine"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/Compute/Tasks/launchinginstance.htm"
 defaults:
   managed: false
   os: "linux"

@@ -8,6 +8,7 @@ type: "component"
 id: "gitlab"
 kind: "artifact-repository"
 provider: "default"
+docs: "https://docs.gitlab.com/user/public_access/"
 defaults:
   artifactType: "source"
   managed: false

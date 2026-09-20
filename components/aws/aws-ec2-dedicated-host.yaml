@@ -7,6 +7,7 @@ type: "component"
 id: "aws-ec2-dedicated-host"
 kind: "virtual-machine"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/dedicated-hosts-overview.html"
 defaults:
   managed: false
   zoneRedundant: false

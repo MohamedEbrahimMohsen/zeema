@@ -11,6 +11,7 @@ type: "component"
 id: "alibaba-fraud-detection"
 kind: "ai-service"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/fraud-detection/product-overview/overview"
 defaults:
   managed: true
   modality: "structured"

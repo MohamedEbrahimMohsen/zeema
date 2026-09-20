@@ -7,6 +7,7 @@ type: "component"
 id: "aws-sagemaker-model-registry"
 kind: "artifact-repository"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_CreateModelPackage.html"
 defaults:
   managed: true
   artifactType: "package"

@@ -7,6 +7,7 @@ type: "component"
 id: "google-assured-workloads"
 kind: "policy-engine"
 provider: "gcp"
+docs: "https://cloud.google.com/assured-workloads/docs/overview"
 defaults:
   effect: "deny"
   enforcementMode: "enforced"

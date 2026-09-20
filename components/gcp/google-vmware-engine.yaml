@@ -8,6 +8,7 @@ type: "component"
 id: "google-vmware-engine"
 kind: "virtual-machine"
 provider: "gcp"
+docs: "https://cloud.google.com/vmware-engine/docs/concepts-private-cloud"
 defaults:
   managed: true
   zoneRedundant: false

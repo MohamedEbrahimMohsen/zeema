@@ -5,6 +5,7 @@ type: "component"
 id: "dataproc-job"
 kind: "worker"
 provider: "gcp"
+docs: "https://cloud.google.com/dataproc/docs/concepts/jobs/life-of-a-job"
 defaults:
   managed: true
   trigger: "batch"

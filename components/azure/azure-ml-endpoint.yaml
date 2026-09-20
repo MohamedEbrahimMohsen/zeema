@@ -5,6 +5,7 @@ type: "component"
 id: "azure-ml-endpoint"
 kind: "ml-inference"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/machine-learning/concept-endpoints-online"
 defaults:
   managed: true
   training: "batch"

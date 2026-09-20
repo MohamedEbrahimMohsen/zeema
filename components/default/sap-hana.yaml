@@ -7,6 +7,7 @@ type: "component"
 id: "sap-hana"
 kind: "sql-database"
 provider: "default"
+docs: "https://help.sap.com/docs/SAP_HANA_PLATFORM/6b94445c94ae495c83a19646e7c3fd56/bd6e6be8bb5710149e34e14608e07b76.html"
 defaults:
   replication: "none"
 properties:

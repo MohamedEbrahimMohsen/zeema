@@ -7,6 +7,7 @@ type: "component"
 id: "manticore"
 kind: "search-index"
 provider: "default"
+docs: "https://manual.manticoresearch.com/Creating_a_table/Local_tables"
 defaults:
   structure: "inverted"
   shardingStrategy: "none"

@@ -7,6 +7,7 @@ type: "component"
 id: "aws-site-to-site-vpn"
 kind: "vpn-gateway"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/vpn/latest/s2svpn/VPC_VPN.html"
 defaults:
   managed: true
   peerType: "site-to-site"

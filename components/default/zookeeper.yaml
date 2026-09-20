@@ -5,6 +5,7 @@ type: "component"
 id: "zookeeper"
 kind: "coordination-service"
 provider: "default"
+docs: "https://zookeeper.apache.org/documentation.html"
 defaults:
   role: "metadata"
   consensus: "zab"

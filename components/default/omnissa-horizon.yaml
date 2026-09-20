@@ -9,6 +9,7 @@ type: "component"
 id: "omnissa-horizon"
 kind: "virtual-desktop"
 provider: "default"
+docs: "https://docs.omnissa.com/HorizonOverviewDeployment/DesktopPools"
 defaults:
   managed: false
   mfaRequired: false

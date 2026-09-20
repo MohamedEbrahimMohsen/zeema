@@ -10,6 +10,7 @@ type: "component"
 id: "azure-network-security-perimeter"
 kind: "firewall"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/private-link/network-security-perimeter-concepts"
 defaults:
   managed: true
   defaultAction: "deny"

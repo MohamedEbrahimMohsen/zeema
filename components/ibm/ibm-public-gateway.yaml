@@ -9,6 +9,7 @@ type: "component"
 id: "ibm-public-gateway"
 kind: "nat-gateway"
 provider: "ibm"
+docs: "https://cloud.ibm.com/docs/vpc?topic=vpc-about-public-gateways"
 defaults:
   managed: true
   staticIpCount: 1

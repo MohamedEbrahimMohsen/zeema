@@ -8,6 +8,7 @@ type: "component"
 id: "logstash"
 kind: "stream-processor"
 provider: "default"
+docs: "https://www.elastic.co/docs/reference/logstash/logstash-settings-file"
 defaults:
   managed: false
   windowing: "none"

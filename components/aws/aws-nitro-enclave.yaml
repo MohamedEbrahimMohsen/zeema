@@ -7,6 +7,7 @@ type: "component"
 id: "aws-nitro-enclave"
 kind: "virtual-machine"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/enclaves/latest/user/nitro-enclave.html"
 defaults:
   managed: false
   os: "linux"

@@ -7,6 +7,7 @@ type: "component"
 id: "aws-vpc-lattice"
 kind: "service-mesh"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/vpc-lattice/latest/ug/what-is-vpc-lattice.html"
 defaults:
   managed: true
   sidecar: false

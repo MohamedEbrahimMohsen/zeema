@@ -12,6 +12,7 @@ type: "component"
 id: "alibaba-data-encryption-service"
 kind: "key-management"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/kms/key-management-service/support/overview-12"
 defaults:
   managed: true
   hsm: true

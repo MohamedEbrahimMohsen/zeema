@@ -5,6 +5,7 @@ type: "component"
 id: "m3"
 kind: "monitoring"
 provider: "default"
+docs: "https://m3db.io/docs/"
 defaults:
   signal: "metrics"
   collectorMode: "push"

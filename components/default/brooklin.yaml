@@ -6,6 +6,7 @@ type: "component"
 id: "brooklin"
 kind: "change-data-capture"
 provider: "default"
+docs: "https://github.com/linkedin/brooklin/wiki"
 defaults:
   mode: "log-based"
   ordered: true

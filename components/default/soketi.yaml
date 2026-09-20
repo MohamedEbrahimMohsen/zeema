@@ -8,6 +8,7 @@ type: "component"
 id: "soketi"
 kind: "realtime-gateway"
 provider: "default"
+docs: "https://github.com/soketi/soketi"
 defaults:
   protocol: "websocket"
   stateful: true

@@ -5,6 +5,7 @@ type: "component"
 id: "aws-transit-gateway"
 kind: "network-fabric"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/vpc/latest/tgw/what-is-transit-gateway.html"
 defaults:
   managed: true
   interconnect: "cloud-backbone"

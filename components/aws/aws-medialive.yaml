@@ -9,6 +9,7 @@ type: "component"
 id: "aws-medialive"
 kind: "media-transcoder"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/medialive/latest/ug/channel-class.html"
 defaults:
   managed: true
   mode: "live"

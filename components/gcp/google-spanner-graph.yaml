@@ -8,6 +8,7 @@ type: "component"
 id: "google-spanner-graph"
 kind: "graph-database"
 provider: "gcp"
+docs: "https://cloud.google.com/spanner/docs/graph/overview"
 defaults:
   inMemory: false
   managed: true

@@ -6,6 +6,7 @@ type: "component"
 id: "google-cloud-router"
 kind: "network-fabric"
 provider: "gcp"
+docs: "https://cloud.google.com/network-connectivity/docs/router/concepts/overview"
 defaults:
   managed: true
   overlay: true

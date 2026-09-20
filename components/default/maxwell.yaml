@@ -5,6 +5,7 @@ type: "component"
 id: "maxwell"
 kind: "change-data-capture"
 provider: "default"
+docs: "https://maxwells-daemon.io/"
 defaults:
   mode: "log-based"
   ordered: true

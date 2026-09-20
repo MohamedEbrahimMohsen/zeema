@@ -7,6 +7,7 @@ type: "component"
 id: "spring-cloud-gateway"
 kind: "api-gateway"
 provider: "default"
+docs: "https://docs.spring.io/spring-cloud-gateway/reference/"
 defaults:
   managed: false
   rateLimiting: false

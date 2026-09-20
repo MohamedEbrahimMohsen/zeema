@@ -6,6 +6,7 @@ type: "component"
 id: "juicefs"
 kind: "file-storage"
 provider: "default"
+docs: "https://juicefs.com/docs/community/command_reference/"
 defaults:
   protocol: "multi"
   managed: false

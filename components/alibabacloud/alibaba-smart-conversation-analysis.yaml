@@ -9,6 +9,7 @@ type: "component"
 id: "alibaba-smart-conversation-analysis"
 kind: "ai-service"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/product/sca"
 defaults:
   managed: true
   modality: "multimodal"

@@ -8,6 +8,7 @@ type: "component"
 id: "google-firebase-test-lab"
 kind: "ci-pipeline"
 provider: "gcp"
+docs: "https://firebase.google.com/docs/test-lab/android/command-line"
 defaults:
   trigger: "manual"
   selfHostedRunners: false

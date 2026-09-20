@@ -5,6 +5,7 @@ type: "component"
 id: "google-identity-platform"
 kind: "identity-provider"
 provider: "gcp"
+docs: "https://cloud.google.com/identity-platform/docs/concepts"
 defaults:
   protocol: "oidc"
   authorizationModel: "none"

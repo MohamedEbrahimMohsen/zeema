@@ -6,6 +6,7 @@ type: "component"
 id: "aws-dms"
 kind: "change-data-capture"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/dms/latest/userguide/Welcome.html"
 defaults:
   managed: true
   mode: "log-based"

@@ -8,6 +8,7 @@ type: "component"
 id: "svix"
 kind: "webhook-endpoint"
 provider: "default"
+docs: "https://docs.svix.com/retries"
 defaults:
   managed: true
   signatureVerified: true

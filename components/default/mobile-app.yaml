@@ -5,6 +5,7 @@ type: "component"
 id: "mobile-app"
 kind: "client"
 provider: "default"
+docs: "https://developer.android.com/guide"
 defaults:
   platform: "mobile"
   localCache: true

@@ -7,6 +7,7 @@ type: "component"
 id: "mlflow"
 kind: "ml-platform"
 provider: "default"
+docs: "https://mlflow.org/docs/latest/ml/tracking/"
 defaults:
   experimentTracking: true
   modelRegistry: false

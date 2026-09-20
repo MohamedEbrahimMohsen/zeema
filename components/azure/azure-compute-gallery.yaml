@@ -9,6 +9,7 @@ type: "component"
 id: "azure-compute-gallery"
 kind: "artifact-repository"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/virtual-machines/azure-compute-gallery"
 defaults:
   artifactType: "generic"
   visibility: "private"

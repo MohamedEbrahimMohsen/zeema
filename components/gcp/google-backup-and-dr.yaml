@@ -8,6 +8,7 @@ type: "component"
 id: "google-backup-and-dr"
 kind: "backup-service"
 provider: "gcp"
+docs: "https://cloud.google.com/backup-disaster-recovery/docs/concepts/backup-vault"
 defaults:
   immutable: true
   redundancy: "regional"

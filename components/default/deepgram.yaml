@@ -8,6 +8,7 @@ type: "component"
 id: "deepgram"
 kind: "ai-service"
 provider: "default"
+docs: "https://developers.deepgram.com/docs/the-deepgram-model-improvement-partnership-program"
 defaults:
   managed: true
   modality: "speech"

@@ -7,6 +7,7 @@ type: "component"
 id: "nanomq"
 kind: "pubsub-topic"
 provider: "default"
+docs: "https://nanomq.io/docs/en/latest/config-description/broker.html"
 defaults:
   delivery: "at-most-once"
   ordering: "per-key"

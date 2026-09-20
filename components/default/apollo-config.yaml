@@ -7,6 +7,7 @@ type: "component"
 id: "apollo-config"
 kind: "feature-flag-service"
 provider: "default"
+docs: "https://github.com/apolloconfig/apollo"
 defaults:
   stagedRollout: true
   managed: false

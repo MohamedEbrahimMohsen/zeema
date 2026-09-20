@@ -9,6 +9,7 @@ type: "component"
 id: "k8s-endpoints"
 kind: "coordination-service"
 provider: "k8s"
+docs: "https://kubernetes.io/docs/concepts/services-networking/endpoint-slices/"
 defaults:
   role: "discovery"
   managed: false

@@ -5,6 +5,7 @@ type: "component"
 id: "mysql"
 kind: "sql-database"
 provider: "default"
+docs: "https://dev.mysql.com/doc/refman/8.4/en/"
 defaults:
   replication: "none"
   concurrencyControl: "pessimistic"

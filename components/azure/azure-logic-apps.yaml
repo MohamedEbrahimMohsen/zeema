@@ -9,6 +9,7 @@ type: "component"
 id: "azure-logic-apps"
 kind: "workflow-engine"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/logic-apps/logic-apps-overview"
 defaults:
   managed: true
   durable: true

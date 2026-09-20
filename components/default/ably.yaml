@@ -5,6 +5,7 @@ type: "component"
 id: "ably"
 kind: "realtime-gateway"
 provider: "default"
+docs: "https://ably.com/docs"
 defaults:
   managed: true
   protocol: "websocket"

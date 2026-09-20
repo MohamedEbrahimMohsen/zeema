@@ -8,6 +8,7 @@ type: "component"
 id: "aws-oracle-database"
 kind: "sql-database"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/odb/latest/UserGuide/what-is-odb.html"
 defaults:
   managed: true
   replication: "none"

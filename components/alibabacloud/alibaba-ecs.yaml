@@ -9,6 +9,7 @@ type: "component"
 id: "alibaba-ecs"
 kind: "virtual-machine"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/ecs/"
 defaults:
   managed: false
   publicIp: false

@@ -7,6 +7,7 @@ type: "component"
 id: "statsig"
 kind: "feature-flag-service"
 provider: "default"
+docs: "https://docs.statsig.com/server/introduction"
 defaults:
   stagedRollout: true
   managed: true

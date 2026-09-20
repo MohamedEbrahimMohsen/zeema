@@ -8,6 +8,7 @@ type: "component"
 id: "anthropic-api"
 kind: "ai-service"
 provider: "default"
+docs: "https://platform.claude.com/docs/en/api/rate-limits"
 defaults:
   managed: true
   modality: "multimodal"

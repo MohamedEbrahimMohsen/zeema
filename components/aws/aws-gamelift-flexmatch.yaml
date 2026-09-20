@@ -10,6 +10,7 @@ type: "component"
 id: "aws-gamelift-flexmatch"
 kind: "matching-engine"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/gamelift/latest/apireference/API_CreateMatchmakingConfiguration.html"
 defaults:
   managed: true
   singleThreaded: false

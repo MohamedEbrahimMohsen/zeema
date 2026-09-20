@@ -7,6 +7,7 @@ type: "component"
 id: "cloudflare-turnstile"
 kind: "bot-management"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/turnstile/get-started/server-side-validation/"
 defaults:
   managed: true
   challengeAction: "managed-challenge"

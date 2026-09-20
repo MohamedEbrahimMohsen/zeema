@@ -8,6 +8,7 @@ type: "component"
 id: "firecracker"
 kind: "virtual-machine"
 provider: "default"
+docs: "https://github.com/firecracker-microvm/firecracker/blob/main/docs/design.md"
 defaults:
   managed: false
   os: "linux"

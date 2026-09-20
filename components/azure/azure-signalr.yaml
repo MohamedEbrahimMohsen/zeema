@@ -5,6 +5,7 @@ type: "component"
 id: "azure-signalr"
 kind: "realtime-gateway"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/azure-signalr/signalr-overview"
 defaults:
   managed: true
   protocol: "websocket"

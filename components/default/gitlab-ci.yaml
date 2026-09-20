@@ -8,6 +8,7 @@ type: "component"
 id: "gitlab-ci"
 kind: "ci-pipeline"
 provider: "default"
+docs: "https://docs.gitlab.com/ci/pipelines/settings/"
 defaults:
   trigger: "commit"
   approvalRequired: false

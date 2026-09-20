@@ -7,6 +7,7 @@ type: "component"
 id: "google-cloud-scheduler"
 kind: "worker"
 provider: "gcp"
+docs: "https://cloud.google.com/scheduler/docs/reference/rest/v1/projects.locations.jobs"
 defaults:
   managed: true
   trigger: "schedule"

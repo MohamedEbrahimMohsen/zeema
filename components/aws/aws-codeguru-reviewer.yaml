@@ -9,6 +9,7 @@ type: "component"
 id: "aws-codeguru-reviewer"
 kind: "policy-engine"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/codeguru/latest/reviewer-ug/welcome.html"
 defaults:
   effect: "audit"
   scope: "resource"

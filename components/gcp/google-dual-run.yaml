@@ -7,6 +7,7 @@ type: "component"
 id: "google-dual-run"
 kind: "worker"
 provider: "gcp"
+docs: "https://docs.cloud.google.com/mainframe-dual-run/docs/dual-run-overview"
 defaults:
   managed: true
   trigger: "batch"

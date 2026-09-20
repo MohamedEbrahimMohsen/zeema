@@ -7,6 +7,7 @@ type: "component"
 id: "google-cloud-deploy"
 kind: "ci-pipeline"
 provider: "gcp"
+docs: "https://cloud.google.com/deploy/docs/overview"
 defaults:
   managed: true
   trigger: "manual"

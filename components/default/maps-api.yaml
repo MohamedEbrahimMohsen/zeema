@@ -5,6 +5,7 @@ type: "component"
 id: "maps-api"
 kind: "third-party-api"
 provider: "default"
+docs: "https://developers.google.com/maps/documentation"
 defaults:
   idempotent: true
   callbackStyle: "none"

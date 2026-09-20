@@ -7,6 +7,7 @@ type: "component"
 id: "google-vertex-ai-training"
 kind: "worker"
 provider: "gcp"
+docs: "https://cloud.google.com/vertex-ai/docs/training/overview"
 defaults:
   managed: true
   trigger: "manual"

@@ -7,6 +7,7 @@ type: "component"
 id: "google-earth-engine"
 kind: "third-party-api"
 provider: "gcp"
+docs: "https://developers.google.com/earth-engine/guides/usage"
 defaults:
   managed: true
   qpsQuota: 100

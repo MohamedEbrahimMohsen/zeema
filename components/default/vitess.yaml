@@ -6,6 +6,7 @@ type: "component"
 id: "vitess"
 kind: "database-proxy"
 provider: "default"
+docs: "https://vitess.io/docs/"
 defaults:
   pooling: true
   poolSharded: true

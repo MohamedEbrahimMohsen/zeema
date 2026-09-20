@@ -8,6 +8,7 @@ type: "component"
 id: "google-batch"
 kind: "worker"
 provider: "gcp"
+docs: "https://cloud.google.com/batch/docs/get-started"
 defaults:
   managed: true
   trigger: "batch"

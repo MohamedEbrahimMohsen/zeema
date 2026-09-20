@@ -9,6 +9,7 @@ type: "component"
 id: "aws-iot-greengrass"
 kind: "edge-appliance"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/greengrass/v2/developerguide/manage-data-streams.html"
 defaults:
   connectivity: "intermittent"
   offlineMode: true

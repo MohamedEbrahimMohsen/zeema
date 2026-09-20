@@ -8,6 +8,7 @@ type: "component"
 id: "google-dataform"
 kind: "ci-pipeline"
 provider: "gcp"
+docs: "https://docs.cloud.google.com/dataform/docs/overview"
 defaults:
   managed: true
   trigger: "manual"

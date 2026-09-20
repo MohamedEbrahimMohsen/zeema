@@ -8,6 +8,7 @@ type: "component"
 id: "nexus"
 kind: "artifact-repository"
 provider: "default"
+docs: "https://help.sonatype.com/en/sonatype-nexus-repository.html"
 defaults:
   artifactType: "package"
   managed: false

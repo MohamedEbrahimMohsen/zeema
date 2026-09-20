@@ -7,6 +7,7 @@ type: "component"
 id: "ffmpeg"
 kind: "media-transcoder"
 provider: "default"
+docs: "https://ffmpeg.org/ffmpeg.html"
 defaults:
   managed: false
   mode: "file"

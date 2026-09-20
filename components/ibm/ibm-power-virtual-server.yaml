@@ -9,6 +9,7 @@ type: "component"
 id: "ibm-power-virtual-server"
 kind: "virtual-machine"
 provider: "ibm"
+docs: "https://cloud.ibm.com/docs/power-iaas"
 defaults:
   managed: false
   publicIp: false

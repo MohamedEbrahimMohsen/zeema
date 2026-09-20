@@ -9,6 +9,7 @@ type: "component"
 id: "asterisk"
 kind: "contact-center"
 provider: "default"
+docs: "https://docs.asterisk.org/Getting-Started/Beginning-Asterisk/"
 defaults:
   managed: false
   channelVoice: true

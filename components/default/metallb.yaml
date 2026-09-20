@@ -7,6 +7,7 @@ type: "component"
 id: "metallb"
 kind: "load-balancer"
 provider: "default"
+docs: "https://metallb.io/concepts/"
 defaults:
   layer: "l4"
   managed: false

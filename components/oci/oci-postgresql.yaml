@@ -8,6 +8,7 @@ type: "component"
 id: "oci-postgresql"
 kind: "sql-database"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/postgresql/overview.htm"
 defaults:
   managed: true
   backupEnabled: false

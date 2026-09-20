@@ -53,7 +53,7 @@ properties:
 
 | Field | Required | Meaning |
 |---|---|---|
-| `category` | yes | One of `messaging`, `compute`, `data`, `edge`, `external`, `client`, `ops`, `security`. Rules may select by category. `external` is for services outside your control (`third-party-api`). |
+| `category` | yes | One of `messaging`, `compute`, `data`, `edge`, `external`, `client`, `ops`, `security`, `custom`. Rules may select by category. `external` is for services outside your control (`third-party-api`); `custom` holds only the `custom` kind, the untyped escape hatch. |
 | `properties` | yes | Map of property name to property definition. May be empty. |
 
 ### Property definition

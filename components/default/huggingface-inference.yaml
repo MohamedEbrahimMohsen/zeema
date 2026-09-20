@@ -8,6 +8,7 @@ type: "component"
 id: "huggingface-inference"
 kind: "ml-inference"
 provider: "default"
+docs: "https://huggingface.co/docs/inference-endpoints/en/guides/autoscaling"
 defaults:
   managed: true
   inputs: "live"

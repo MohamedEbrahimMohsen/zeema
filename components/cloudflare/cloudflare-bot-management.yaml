@@ -7,6 +7,7 @@ type: "component"
 id: "cloudflare-bot-management"
 kind: "bot-management"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/bots/concepts/bot-score/"
 defaults:
   managed: true
   scoreThreshold: 30

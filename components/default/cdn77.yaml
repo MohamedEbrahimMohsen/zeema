@@ -7,6 +7,7 @@ type: "component"
 id: "cdn77"
 kind: "cdn"
 provider: "default"
+docs: "https://client.cdn77.com/support/knowledgebase/general-faq/ssl-tech-specs"
 defaults:
   managed: true
   tls: true

@@ -9,6 +9,7 @@ type: "component"
 id: "ibm-watson-speech-to-text"
 kind: "ai-service"
 provider: "ibm"
+docs: "https://cloud.ibm.com/docs/speech-to-text"
 defaults:
   managed: true
   modality: "speech"

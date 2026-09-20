@@ -7,6 +7,7 @@ type: "component"
 id: "hcp-vault"
 kind: "key-management"
 provider: "default"
+docs: "https://developer.hashicorp.com/hcp/docs/vault/get-started/deployment-considerations/tiers-and-features"
 defaults:
   managed: true
   hsm: false

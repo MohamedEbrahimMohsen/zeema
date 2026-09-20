@@ -7,6 +7,7 @@ type: "component"
 id: "teradata"
 kind: "data-warehouse"
 provider: "default"
+docs: "https://docs.teradata.com/r/Enterprise_IntelliFlex_VMware/Database-Design/Primary-Index-Primary-AMP-Index-and-NoPI-Objects/Column-Partitioning"
 defaults:
   realtime: false
   format: "row"

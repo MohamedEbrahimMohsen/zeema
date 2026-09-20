@@ -9,6 +9,7 @@ type: "component"
 id: "aws-workspaces-pools"
 kind: "virtual-desktop"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/workspaces/latest/adminguide/managing-stacks-fleets.html"
 defaults:
   managed: true
   sessionMode: "pooled"

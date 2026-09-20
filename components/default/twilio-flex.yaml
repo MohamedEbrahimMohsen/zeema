@@ -9,6 +9,7 @@ type: "component"
 id: "twilio-flex"
 kind: "contact-center"
 provider: "default"
+docs: "https://www.twilio.com/docs/flex/admin-guide/core-concepts/voice"
 defaults:
   managed: true
   channelVoice: true

@@ -6,6 +6,7 @@ type: "component"
 id: "sqs"
 kind: "queue"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/welcome.html"
 defaults:
   managed: true
   delivery: "at-least-once"

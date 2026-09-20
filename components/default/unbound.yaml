@@ -7,6 +7,7 @@ type: "component"
 id: "unbound"
 kind: "dns"
 provider: "default"
+docs: "https://unbound.docs.nlnetlabs.nl/en/latest/manpages/unbound.conf.html"
 defaults:
   managed: false
   anycast: false

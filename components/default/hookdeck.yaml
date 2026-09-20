@@ -8,6 +8,7 @@ type: "component"
 id: "hookdeck"
 kind: "webhook-endpoint"
 provider: "default"
+docs: "https://hookdeck.com/docs/introduction"
 defaults:
   managed: true
   retriedByCaller: true

@@ -7,6 +7,7 @@ type: "component"
 id: "flipt"
 kind: "feature-flag-service"
 provider: "default"
+docs: "https://docs.flipt.io/v2/concepts"
 defaults:
   stagedRollout: true
   managed: false

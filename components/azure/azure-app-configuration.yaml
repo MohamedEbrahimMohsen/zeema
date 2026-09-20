@@ -5,6 +5,7 @@ type: "component"
 id: "azure-app-configuration"
 kind: "feature-flag-service"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/azure-app-configuration/overview"
 defaults:
   stagedRollout: true
   managed: true

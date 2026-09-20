@@ -6,6 +6,7 @@ type: "component"
 id: "mariadb"
 kind: "sql-database"
 provider: "default"
+docs: "https://mariadb.com/docs/server/ha-and-performance/standard-replication/replication-overview"
 defaults:
   replication: "none"
   concurrencyControl: "pessimistic"

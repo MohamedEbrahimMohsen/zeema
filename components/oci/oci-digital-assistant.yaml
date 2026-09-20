@@ -9,6 +9,7 @@ type: "component"
 id: "oci-digital-assistant"
 kind: "ai-service"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/digital-assistant/doc/order-service-and-provision-instance.html"
 defaults:
   modality: "text"
   publicEndpoint: true

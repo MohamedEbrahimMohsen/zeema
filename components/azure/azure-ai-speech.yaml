@@ -6,6 +6,7 @@ type: "component"
 id: "azure-ai-speech"
 kind: "ai-service"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/ai-services/speech-service/speech-services-quotas-and-limits"
 defaults:
   managed: true
   modality: "speech"

@@ -6,6 +6,7 @@ type: "component"
 id: "geo-cell-index"
 kind: "search-index"
 provider: "default"
+docs: "https://s2geometry.io/"
 defaults:
   structure: "geo-cell"
   shardingStrategy: "geo"

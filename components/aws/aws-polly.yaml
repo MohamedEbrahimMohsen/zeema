@@ -6,6 +6,7 @@ type: "component"
 id: "aws-polly"
 kind: "ai-service"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/polly/latest/dg/limits.html"
 defaults:
   managed: true
   modality: "speech"

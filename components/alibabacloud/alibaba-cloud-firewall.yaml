@@ -12,6 +12,7 @@ type: "component"
 id: "alibaba-cloud-firewall"
 kind: "firewall"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/cloud-firewall/cloudfirewall/user-guide/introduction-of-intrusion-protection-principle"
 defaults:
   managed: true
   intrusionPrevention: true

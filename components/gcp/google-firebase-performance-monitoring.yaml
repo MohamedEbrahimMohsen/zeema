@@ -8,6 +8,7 @@ type: "component"
 id: "google-firebase-performance-monitoring"
 kind: "monitoring"
 provider: "gcp"
+docs: "https://firebase.google.com/docs/perf-mon"
 defaults:
   signal: "traces"
   collectorMode: "push"

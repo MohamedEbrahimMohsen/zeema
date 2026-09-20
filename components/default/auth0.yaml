@@ -5,6 +5,7 @@ type: "component"
 id: "auth0"
 kind: "identity-provider"
 provider: "default"
+docs: "https://auth0.com/docs"
 defaults:
   protocol: "oidc"
   authorizationModel: "none"

@@ -7,6 +7,7 @@ type: "component"
 id: "cloudflare-casb"
 kind: "monitoring"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/cloudflare-one/cloud-and-saas-findings/troubleshoot-casb/"
 defaults:
   managed: true
   signal: "alerts"

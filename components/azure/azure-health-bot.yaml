@@ -6,6 +6,7 @@ type: "component"
 id: "azure-health-bot"
 kind: "app-server"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/health-bot/overview"
 defaults:
   managed: true
   autoscaling: true

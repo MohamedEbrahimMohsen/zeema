@@ -9,6 +9,7 @@ type: "component"
 id: "aws-cloud-directory"
 kind: "graph-database"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/clouddirectory/latest/developerguide/what_is_cloud_directory.html"
 defaults:
   managed: true
   inMemory: false

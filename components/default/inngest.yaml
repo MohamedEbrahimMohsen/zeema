@@ -7,6 +7,7 @@ type: "component"
 id: "inngest"
 kind: "workflow-engine"
 provider: "default"
+docs: "https://www.inngest.com/docs/features/inngest-functions/error-retries/retries"
 defaults:
   durable: true
   pattern: "dag"

@@ -6,6 +6,7 @@ type: "component"
 id: "azure-schema-registry"
 kind: "schema-registry"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/event-hubs/schema-registry-overview"
 defaults:
   compatibility: "none"
   enforced: false

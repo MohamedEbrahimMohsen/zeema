@@ -8,6 +8,7 @@ type: "component"
 id: "nutanix-ahv"
 kind: "virtual-machine"
 provider: "default"
+docs: "https://www.nutanix.com/products/ahv"
 defaults:
   managed: false
   diskEncryption: false

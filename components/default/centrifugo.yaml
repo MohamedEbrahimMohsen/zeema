@@ -8,6 +8,7 @@ type: "component"
 id: "centrifugo"
 kind: "realtime-gateway"
 provider: "default"
+docs: "https://centrifugal.dev/docs/server/engines"
 defaults:
   protocol: "websocket"
   stateful: true

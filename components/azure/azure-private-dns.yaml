@@ -7,6 +7,7 @@ type: "component"
 id: "azure-private-dns"
 kind: "dns"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/dns/private-dns-overview"
 defaults:
   managed: true
   anycast: false

@@ -8,6 +8,7 @@ type: "component"
 id: "google-cloud-run-job"
 kind: "worker"
 provider: "gcp"
+docs: "https://cloud.google.com/run/docs/create-jobs"
 defaults:
   managed: true
   trigger: "batch"

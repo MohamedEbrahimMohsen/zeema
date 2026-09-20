@@ -7,6 +7,7 @@ type: "component"
 id: "google-cloud-api-registry"
 kind: "data-catalog"
 provider: "gcp"
+docs: "https://cloud.google.com/apigee/docs/apihub/what-is-api-hub"
 defaults:
   managed: true
   scanSchedule: "manual"

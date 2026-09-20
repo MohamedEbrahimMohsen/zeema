@@ -5,6 +5,7 @@ type: "component"
 id: "fastly"
 kind: "cdn"
 provider: "default"
+docs: "https://docs.fastly.com/"
 defaults:
   managed: true
   edgeCompute: false

@@ -8,6 +8,7 @@ type: "component"
 id: "aws-chatbot"
 kind: "notification-service"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/chatbot/latest/adminguide/what-is.html"
 defaults:
   channelPush: false
   channelEmail: false

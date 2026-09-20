@@ -7,6 +7,7 @@ type: "component"
 id: "aws-subnet"
 kind: "network-fabric"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/vpc/latest/userguide/configure-subnets.html"
 defaults:
   managed: true
   multicast: false

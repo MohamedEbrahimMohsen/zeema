@@ -5,6 +5,7 @@ type: "component"
 id: "multicast-feed"
 kind: "realtime-gateway"
 provider: "default"
+docs: "https://datatracker.ietf.org/doc/html/rfc3208"
 defaults:
   protocol: "udp-multicast"
   stateful: false

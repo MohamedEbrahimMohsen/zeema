@@ -7,6 +7,7 @@ type: "component"
 id: "cloudflare-dex"
 kind: "monitoring"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/cloudflare-one/insights/dex/tests/"
 defaults:
   managed: true
   signal: "metrics"

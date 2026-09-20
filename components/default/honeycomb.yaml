@@ -6,6 +6,7 @@ type: "component"
 id: "honeycomb"
 kind: "monitoring"
 provider: "default"
+docs: "https://docs.honeycomb.io/security-compliance/security-data-protection"
 defaults:
   signal: "traces"
   collectorMode: "push"

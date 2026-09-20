@@ -7,6 +7,7 @@ type: "component"
 id: "keydb"
 kind: "cache"
 provider: "default"
+docs: "https://github.com/Snapchat/KeyDB"
 defaults:
   persistence: false
 properties:

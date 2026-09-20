@@ -10,6 +10,7 @@ type: "component"
 id: "alibaba-smart-access-gateway"
 kind: "edge-appliance"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/sag/product-overview/what-is-sag"
 defaults:
   managed: true
   cloudManaged: true

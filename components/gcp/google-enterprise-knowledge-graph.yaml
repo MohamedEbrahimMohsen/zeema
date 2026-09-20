@@ -7,6 +7,7 @@ type: "component"
 id: "google-enterprise-knowledge-graph"
 kind: "graph-database"
 provider: "gcp"
+docs: "https://cloud.google.com/enterprise-knowledge-graph/docs/overview"
 defaults:
   managed: true
   inMemory: false

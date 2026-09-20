@@ -7,6 +7,7 @@ type: "component"
 id: "aws-ec2-image-builder"
 kind: "ci-pipeline"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/imagebuilder/latest/userguide/what-is-image-builder.html"
 defaults:
   managed: true
   selfHostedRunners: true

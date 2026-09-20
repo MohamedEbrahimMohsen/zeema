@@ -5,6 +5,7 @@ type: "component"
 id: "consul-connect"
 kind: "service-mesh"
 provider: "default"
+docs: "https://developer.hashicorp.com/consul/docs/connect"
 defaults:
   managed: false
   sidecar: true

@@ -5,6 +5,7 @@ type: "component"
 id: "spine-leaf-fabric"
 kind: "network-fabric"
 provider: "default"
+docs: "https://en.wikipedia.org/wiki/Clos_network"
 defaults:
   interconnect: "private"
   overlay: false

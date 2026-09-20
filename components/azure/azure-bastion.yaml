@@ -7,6 +7,7 @@ type: "component"
 id: "azure-bastion"
 kind: "bastion-host"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/bastion/bastion-overview"
 defaults:
   managed: true
   protocols: "both"

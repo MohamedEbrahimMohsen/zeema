@@ -8,6 +8,7 @@ type: "component"
 id: "openrouter"
 kind: "ai-service"
 provider: "default"
+docs: "https://openrouter.ai/docs/api-reference/limits"
 defaults:
   managed: true
   modality: "multimodal"

@@ -7,6 +7,7 @@ type: "component"
 id: "cloudflare-time-services"
 kind: "third-party-api"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/time-services/ntp/usage/"
 defaults:
   managed: true
   callbackStyle: "none"

@@ -7,6 +7,7 @@ type: "component"
 id: "cloudflare-dlp"
 kind: "policy-engine"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/cloudflare-one/data-loss-prevention/"
 defaults:
   managed: true
   scope: "account"

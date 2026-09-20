@@ -5,6 +5,7 @@ type: "component"
 id: "mongos"
 kind: "database-proxy"
 provider: "default"
+docs: "https://www.mongodb.com/docs/manual/core/sharded-cluster-query-router/"
 defaults:
   pooling: true
   poolSharded: true

@@ -5,6 +5,7 @@ type: "component"
 id: "akamai"
 kind: "cdn"
 provider: "default"
+docs: "https://techdocs.akamai.com/"
 defaults:
   managed: true
   edgeCompute: false

@@ -6,6 +6,7 @@ type: "component"
 id: "nagios"
 kind: "monitoring"
 provider: "default"
+docs: "https://assets.nagios.com/downloads/nagioscore/docs/nagioscore/4/en/activechecks.html"
 defaults:
   signal: "alerts"
   collectorMode: "pull"

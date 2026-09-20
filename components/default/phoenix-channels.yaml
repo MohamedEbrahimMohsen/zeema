@@ -5,6 +5,7 @@ type: "component"
 id: "phoenix-channels"
 kind: "realtime-gateway"
 provider: "default"
+docs: "https://hexdocs.pm/phoenix/channels.html"
 defaults:
   protocol: "websocket"
   stateful: true

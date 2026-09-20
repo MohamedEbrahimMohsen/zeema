@@ -9,6 +9,7 @@ type: "component"
 id: "aws-iot-device-management"
 kind: "iot-hub"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/iot/latest/developerguide/managing-index.html"
 defaults:
   protocol: "multi"
   perDeviceIdentity: true

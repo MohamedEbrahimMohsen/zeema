@@ -8,6 +8,7 @@ type: "component"
 id: "oci-audit"
 kind: "monitoring"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/Audit/Tasks/settingretentionperiod.htm"
 defaults:
   managed: true
   signal: "logs"

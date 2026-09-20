@@ -5,6 +5,7 @@ type: "component"
 id: "aws-api-gateway"
 kind: "api-gateway"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/apigateway/latest/developerguide/welcome.html"
 defaults:
   tls: true
   rateLimiting: true

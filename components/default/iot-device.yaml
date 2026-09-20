@@ -5,6 +5,7 @@ type: "component"
 id: "iot-device"
 kind: "client"
 provider: "default"
+docs: "https://www.iso.org/standard/79323.html"
 defaults:
   platform: "embedded"
 properties:

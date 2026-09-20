@@ -7,6 +7,7 @@ type: "component"
 id: "oci-data-integration"
 kind: "worker"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/data-integration/home.htm"
 defaults:
   managed: true
   trigger: "schedule"

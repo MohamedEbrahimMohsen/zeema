@@ -11,6 +11,7 @@ type: "component"
 id: "alibaba-bastionhost"
 kind: "bastion-host"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/bh/bastionhost/user-guide/o-and-m-auditing/"
 defaults:
   managed: true
   protocols: "both"

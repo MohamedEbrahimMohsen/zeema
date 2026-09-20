@@ -6,6 +6,7 @@ type: "component"
 id: "redpanda"
 kind: "stream"
 provider: "default"
+docs: "https://docs.redpanda.com/"
 defaults:
   delivery: "at-least-once"
   ordering: "per-key"

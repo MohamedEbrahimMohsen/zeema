@@ -7,6 +7,7 @@ type: "component"
 id: "gatling"
 kind: "client"
 provider: "default"
+docs: "https://docs.gatling.io/reference/script/core/simulation/"
 defaults:
   platform: "desktop"
   localCache: false

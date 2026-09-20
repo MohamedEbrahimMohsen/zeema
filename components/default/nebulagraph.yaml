@@ -7,6 +7,7 @@ type: "component"
 id: "nebulagraph"
 kind: "graph-database"
 provider: "default"
+docs: "https://docs.nebula-graph.io/master/3.ngql-guide/9.space-statements/1.create-space/"
 defaults:
   inMemory: false
   masterPerShard: true

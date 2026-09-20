@@ -6,6 +6,7 @@ type: "component"
 id: "azure-immersive-reader"
 kind: "ai-service"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/ai-services/immersive-reader/overview"
 defaults:
   managed: true
   modality: "text"

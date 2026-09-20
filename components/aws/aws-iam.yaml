@@ -5,6 +5,7 @@ type: "component"
 id: "aws-iam"
 kind: "identity-provider"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/IAM/latest/UserGuide/introduction.html"
 defaults:
   protocol: "iam"
   authorizationModel: "rbac"

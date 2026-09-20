@@ -9,6 +9,7 @@ type: "component"
 id: "azure-oracle-database"
 kind: "sql-database"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/oracle/oracle-db/database-overview"
 defaults:
   managed: true
 properties:

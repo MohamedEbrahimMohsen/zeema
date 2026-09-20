@@ -8,6 +8,7 @@ type: "component"
 id: "oci-batch"
 kind: "worker"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/oci-batch/batch-objects.htm"
 defaults:
   managed: true
   trigger: "batch"

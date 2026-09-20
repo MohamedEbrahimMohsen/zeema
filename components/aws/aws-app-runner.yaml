@@ -10,6 +10,7 @@ type: "component"
 id: "aws-app-runner"
 kind: "app-server"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/apprunner/latest/dg/apprunner-availability-change.html"
 defaults:
   managed: true
   stateless: true

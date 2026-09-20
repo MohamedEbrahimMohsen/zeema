@@ -8,6 +8,7 @@ type: "component"
 id: "aws-aurora-dsql"
 kind: "sql-database"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/aurora-dsql/latest/userguide/data-encryption.html"
 defaults:
   managed: true
   distributed: true

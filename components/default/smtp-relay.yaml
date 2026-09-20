@@ -5,6 +5,7 @@ type: "component"
 id: "smtp-relay"
 kind: "third-party-api"
 provider: "default"
+docs: "https://datatracker.ietf.org/doc/html/rfc5321"
 defaults:
   idempotent: false
   callbackStyle: "none"

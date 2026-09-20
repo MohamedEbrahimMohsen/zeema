@@ -7,6 +7,7 @@ type: "component"
 id: "circleci"
 kind: "ci-pipeline"
 provider: "default"
+docs: "https://circleci.com/docs/reference/configuration-reference/"
 defaults:
   trigger: "commit"
   approvalRequired: false

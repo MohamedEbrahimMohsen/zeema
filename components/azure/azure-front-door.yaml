@@ -5,6 +5,7 @@ type: "component"
 id: "azure-front-door"
 kind: "cdn"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/frontdoor/front-door-overview"
 defaults:
   managed: true
   caching: false

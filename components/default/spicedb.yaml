@@ -5,6 +5,7 @@ type: "component"
 id: "spicedb"
 kind: "identity-provider"
 provider: "default"
+docs: "https://authzed.com/docs"
 defaults:
   protocol: "custom"
   authorizationModel: "rebac"

@@ -8,6 +8,7 @@ type: "component"
 id: "aws-appsync"
 kind: "api-gateway"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/appsync/latest/devguide/what-is-appsync.html"
 defaults:
   managed: true
   tls: true

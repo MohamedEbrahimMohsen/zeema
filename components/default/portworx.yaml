@@ -11,6 +11,7 @@ type: "component"
 id: "portworx"
 kind: "block-storage"
 provider: "default"
+docs: "https://docs.portworx.com/"
 defaults:
   managed: false
   snapshots: true

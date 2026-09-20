@@ -6,6 +6,7 @@ type: "component"
 id: "aws-translate"
 kind: "ai-service"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/translate/latest/dg/what-is-limits.html"
 defaults:
   managed: true
   modality: "text"

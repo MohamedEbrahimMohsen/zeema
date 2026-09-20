@@ -6,6 +6,7 @@ type: "component"
 id: "azure-sql"
 kind: "sql-database"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/azure-sql/database/sql-database-paas-overview"
 defaults:
   managed: true
   replication: "none"

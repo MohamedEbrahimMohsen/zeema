@@ -5,6 +5,7 @@ type: "component"
 id: "uuid-generator"
 kind: "id-generator"
 provider: "default"
+docs: "https://datatracker.ietf.org/doc/html/rfc9562"
 defaults:
   strategy: "uuid"
   central: false

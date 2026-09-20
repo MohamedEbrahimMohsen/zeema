@@ -9,6 +9,7 @@ type: "component"
 id: "kasm"
 kind: "virtual-desktop"
 provider: "default"
+docs: "https://kasm.com/docs/latest/guide/persistent_data.html"
 defaults:
   managed: false
   persistentProfiles: false

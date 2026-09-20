@@ -5,6 +5,7 @@ type: "component"
 id: "cloudflare-cdn"
 kind: "cdn"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/cache/"
 defaults:
   managed: true
   caching: true

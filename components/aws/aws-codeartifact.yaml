@@ -8,6 +8,7 @@ type: "component"
 id: "aws-codeartifact"
 kind: "artifact-repository"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/codeartifact/latest/ug/welcome.html"
 defaults:
   artifactType: "package"
   visibility: "private"

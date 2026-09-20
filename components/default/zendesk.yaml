@@ -8,6 +8,7 @@ type: "component"
 id: "zendesk"
 kind: "third-party-api"
 provider: "default"
+docs: "https://developer.zendesk.com/api-reference/introduction/rate-limits/"
 defaults:
   managed: true
   idempotent: false

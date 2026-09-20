@@ -7,6 +7,7 @@ type: "component"
 id: "questdb"
 kind: "timeseries-database"
 provider: "default"
+docs: "https://questdb.com/docs/concepts/ttl/"
 defaults:
   downsampling: false
   tiers: "single"

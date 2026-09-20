@@ -9,6 +9,7 @@ type: "component"
 id: "aws-eventbridge-pipes"
 kind: "stream-processor"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-pipes.html"
 defaults:
   managed: true
   windowing: "none"

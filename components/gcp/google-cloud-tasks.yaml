@@ -6,6 +6,7 @@ type: "component"
 id: "google-cloud-tasks"
 kind: "queue"
 provider: "gcp"
+docs: "https://cloud.google.com/tasks/docs/dual-overview"
 defaults:
   managed: true
   delivery: "at-least-once"

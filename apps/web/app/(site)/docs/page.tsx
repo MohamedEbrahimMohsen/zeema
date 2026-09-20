@@ -2,6 +2,7 @@ const SECTIONS = [
   ["layers", "Three layers"],
   ["rules", "Rules"],
   ["writing", "Writing a design"],
+  ["reference", "Catalogue reference"],
   ["repo", "In your repository"],
   ["site", "On this site"],
 ];
@@ -76,6 +77,47 @@ edges:
               sidecar beside the file.
             </li>
           </ul>
+        </section>
+        <section id="reference">
+          <h2>Catalogue reference</h2>
+          <p>
+            Every entity in the catalogue has a page, and nothing on it is written by hand: it is
+            derived from the YAML and the locale each time it is served.
+          </p>
+          <ul className="small">
+            <li>
+              <code>/catalogue/components/&lt;id&gt;</code> — a product: its provider, kind and
+              category, a link to the official documentation, the full property table with the
+              defaults this product pins, every rule that can fire on it with the condition in plain
+              English, and the other products of the same kind.
+            </li>
+            <li>
+              <code>/catalogue/kinds/&lt;id&gt;</code> — an abstract kind: the properties it
+              defines, the rules that read them, and every component that implements it, grouped by
+              provider with the vendor-neutral one first.
+            </li>
+            <li>
+              <code>/catalogue/rules/&lt;id&gt;</code> — a rule: why it exists, what it selects and
+              what it checks in plain English, its message template, the kinds and the number of
+              components it covers, and the reference designs whose broken twin trips it.
+            </li>
+          </ul>
+          <p>
+            Each of those pages is also a markdown document at the same address with{" "}
+            <code>.md</code> appended, served as <code>text/markdown</code>:{" "}
+            <code>/catalogue/components/kafka.md</code>. It carries the same sections plus YAML
+            front matter and the verbatim source file, so an agent can read the page and copy the
+            bytes without scraping HTML.
+          </p>
+          <p>
+            <a className="link" href="/llms.txt">
+              /llms.txt
+            </a>{" "}
+            is the index over all of it, following the llms.txt convention: every kind, every
+            component grouped by provider, and every rule, each linking to its markdown page. There
+            is no <code>llms-full.txt</code> on purpose — a kind&apos;s page already lists all of
+            its components, and that is the drill-down path.
+          </p>
         </section>
         <section id="repo">
           <h2>In your repository</h2>

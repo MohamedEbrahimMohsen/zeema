@@ -5,6 +5,7 @@ type: "component"
 id: "cron-job"
 kind: "worker"
 provider: "default"
+docs: "https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/"
 defaults:
   trigger: "schedule"
 properties:

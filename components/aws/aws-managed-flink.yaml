@@ -8,6 +8,7 @@ type: "component"
 id: "aws-managed-flink"
 kind: "stream-processor"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/managed-flink/latest/java/how-fault.html"
 defaults:
   managed: true
   checkpointIntervalSeconds: 60

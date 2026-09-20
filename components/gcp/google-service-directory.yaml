@@ -6,6 +6,7 @@ type: "component"
 id: "google-service-directory"
 kind: "coordination-service"
 provider: "gcp"
+docs: "https://cloud.google.com/service-directory/docs/overview"
 defaults:
   managed: true
   role: "discovery"

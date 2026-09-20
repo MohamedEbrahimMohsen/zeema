@@ -6,6 +6,7 @@ type: "component"
 id: "double-entry-ledger"
 kind: "ledger"
 provider: "default"
+docs: "https://en.wikipedia.org/wiki/Double-entry_bookkeeping"
 defaults:
   doubleEntry: true
   appendOnly: true

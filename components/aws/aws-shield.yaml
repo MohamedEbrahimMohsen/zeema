@@ -10,6 +10,7 @@ type: "component"
 id: "aws-shield"
 kind: "ddos-protection"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/waf/latest/developerguide/shield-chapter.html"
 defaults:
   managed: true
   scope: "network"

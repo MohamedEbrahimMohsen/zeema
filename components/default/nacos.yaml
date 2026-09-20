@@ -7,6 +7,7 @@ type: "component"
 id: "nacos"
 kind: "coordination-service"
 provider: "default"
+docs: "https://nacos.io/en/docs/latest/guide/user/auth/"
 defaults:
   role: "discovery"
   managed: false

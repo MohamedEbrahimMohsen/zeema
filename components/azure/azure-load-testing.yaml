@@ -8,6 +8,7 @@ type: "component"
 id: "azure-load-testing"
 kind: "client"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/app-testing/load-testing/overview-what-is-azure-load-testing"
 defaults:
   platform: "sdk"
   managed: true

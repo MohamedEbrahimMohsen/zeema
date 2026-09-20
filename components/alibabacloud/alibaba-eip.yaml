@@ -10,6 +10,7 @@ type: "component"
 id: "alibaba-eip"
 kind: "network-fabric"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/eip/product-overview/what-is-eip"
 defaults:
   managed: true
   interconnect: "public"

@@ -8,6 +8,7 @@ type: "component"
 id: "oci-data-integrator"
 kind: "worker"
 provider: "oci"
+docs: "https://docs.oracle.com/en/middleware/fusion-middleware/data-integrator/12.2.1.4/dimgs/getting-started-oracle-cloud-marketplace.html"
 defaults:
   trigger: "schedule"
 properties:

@@ -6,6 +6,7 @@ type: "component"
 id: "proxysql"
 kind: "database-proxy"
 provider: "default"
+docs: "https://proxysql.com/documentation/"
 defaults:
   pooling: true
   routing: "none"

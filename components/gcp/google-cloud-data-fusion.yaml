@@ -7,6 +7,7 @@ type: "component"
 id: "google-cloud-data-fusion"
 kind: "worker"
 provider: "gcp"
+docs: "https://docs.cloud.google.com/data-fusion/docs/concepts/overview"
 defaults:
   managed: true
   trigger: "batch"

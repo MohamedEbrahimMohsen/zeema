@@ -8,6 +8,7 @@ type: "component"
 id: "cloudflare-stream"
 kind: "media-transcoder"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/stream/viewing-videos/using-own-player/"
 defaults:
   managed: true
   mode: "file"

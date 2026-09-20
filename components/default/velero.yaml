@@ -6,6 +6,7 @@ type: "component"
 id: "velero"
 kind: "backup-service"
 provider: "default"
+docs: "https://velero.io/docs/main/api-types/backup/"
 defaults:
   managed: false
   retentionDays: 30

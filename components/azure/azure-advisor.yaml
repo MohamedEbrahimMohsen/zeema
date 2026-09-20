@@ -9,6 +9,7 @@ type: "component"
 id: "azure-advisor"
 kind: "monitoring"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/advisor/advisor-overview"
 defaults:
   managed: true
   signal: "alerts"

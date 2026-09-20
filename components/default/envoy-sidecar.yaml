@@ -5,6 +5,7 @@ type: "component"
 id: "envoy-sidecar"
 kind: "service-mesh"
 provider: "default"
+docs: "https://www.envoyproxy.io/docs/envoy/latest/intro/deployment_types/service_to_service"
 defaults:
   managed: false
   sidecar: true

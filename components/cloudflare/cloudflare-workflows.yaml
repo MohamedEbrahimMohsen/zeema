@@ -7,6 +7,7 @@ type: "component"
 id: "cloudflare-workflows"
 kind: "workflow-engine"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/workflows/build/sleeping-and-retrying/"
 defaults:
   managed: true
   durable: true

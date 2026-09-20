@@ -9,6 +9,7 @@ type: "component"
 id: "alibaba-intelligent-robot"
 kind: "ai-service"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/product/bot"
 defaults:
   managed: true
   modality: "text"

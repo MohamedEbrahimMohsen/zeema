@@ -6,6 +6,7 @@ type: "component"
 id: "sagemaker-endpoint"
 kind: "ml-inference"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/sagemaker/latest/dg/realtime-endpoints.html"
 defaults:
   managed: true
   training: "batch"

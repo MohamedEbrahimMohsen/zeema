@@ -6,6 +6,7 @@ type: "component"
 id: "google-network-intelligence-center"
 kind: "monitoring"
 provider: "gcp"
+docs: "https://cloud.google.com/network-intelligence-center/docs/overview"
 defaults:
   managed: true
   collectorMode: "push"

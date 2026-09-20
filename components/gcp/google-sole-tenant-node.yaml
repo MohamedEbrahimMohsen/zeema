@@ -8,6 +8,7 @@ type: "component"
 id: "google-sole-tenant-node"
 kind: "virtual-machine"
 provider: "gcp"
+docs: "https://cloud.google.com/compute/docs/nodes/sole-tenant-nodes"
 defaults:
   managed: false
   diskEncryption: true

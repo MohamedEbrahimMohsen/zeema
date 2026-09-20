@@ -8,6 +8,7 @@ type: "component"
 id: "aws-workspaces"
 kind: "virtual-desktop"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/workspaces/latest/adminguide/amazon-workspaces.html"
 defaults:
   managed: true
   sessionMode: "personal"

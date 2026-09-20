@@ -5,6 +5,7 @@ type: "component"
 id: "bank-api"
 kind: "third-party-api"
 provider: "default"
+docs: "https://www.openbanking.org.uk/standards/"
 defaults:
   handlesMoney: true
   idempotent: false

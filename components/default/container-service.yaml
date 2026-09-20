@@ -6,6 +6,7 @@ type: "component"
 id: "container-service"
 kind: "app-server"
 provider: "default"
+docs: "https://kubernetes.io/docs/concepts/workloads/"
 defaults:
   stateless: true
 properties:

@@ -8,6 +8,7 @@ type: "component"
 id: "azure-application-insights"
 kind: "monitoring"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview"
 defaults:
   managed: true
   signal: "all"

@@ -8,6 +8,7 @@ type: "component"
 id: "materialize"
 kind: "stream-processor"
 provider: "default"
+docs: "https://materialize.com/docs/get-started/isolation-level/"
 defaults:
   managed: true
   windowing: "none"

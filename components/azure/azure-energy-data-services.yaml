@@ -8,6 +8,7 @@ type: "component"
 id: "azure-energy-data-services"
 kind: "third-party-api"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/energy-data-services/overview-microsoft-energy-data-services"
 defaults:
   managed: true
 properties:

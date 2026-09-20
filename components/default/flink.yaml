@@ -6,6 +6,7 @@ type: "component"
 id: "flink"
 kind: "stream-processor"
 provider: "default"
+docs: "https://nightlies.apache.org/flink/flink-docs-stable/"
 defaults:
   managed: false
   windowing: "none"

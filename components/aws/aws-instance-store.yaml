@@ -8,6 +8,7 @@ type: "component"
 id: "aws-instance-store"
 kind: "block-storage"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/InstanceStorage.html"
 defaults:
   mediaType: "ssd"
   redundancy: "local"

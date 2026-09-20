@@ -8,6 +8,7 @@ type: "component"
 id: "aws-timestream-influxdb"
 kind: "timeseries-database"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/ts-influxdb/latest/ts-influxdb-api/API_CreateDbInstance.html"
 defaults:
   managed: true
   tiers: "single"

@@ -7,6 +7,7 @@ type: "component"
 id: "google-vertex-ai-agent-engine"
 kind: "app-server"
 provider: "gcp"
+docs: "https://cloud.google.com/vertex-ai/generative-ai/docs/agent-engine/overview"
 defaults:
   managed: true
   stateless: true

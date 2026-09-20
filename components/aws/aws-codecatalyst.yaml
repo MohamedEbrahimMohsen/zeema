@@ -9,6 +9,7 @@ type: "component"
 id: "aws-codecatalyst"
 kind: "ci-pipeline"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/codecatalyst/latest/userguide/welcome.html"
 defaults:
   trigger: "manual"
   selfHostedRunners: false

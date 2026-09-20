@@ -7,6 +7,7 @@ type: "component"
 id: "boundary"
 kind: "bastion-host"
 provider: "default"
+docs: "https://developer.hashicorp.com/boundary/docs/overview/what-is-boundary"
 defaults:
   managed: false
   protocols: "both"

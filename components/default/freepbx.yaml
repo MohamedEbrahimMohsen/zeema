@@ -9,6 +9,7 @@ type: "component"
 id: "freepbx"
 kind: "contact-center"
 provider: "default"
+docs: "https://sangomakb.atlassian.net/wiki/spaces/PG/pages/24510614/Queues+Module+User+Guide"
 defaults:
   managed: false
   channelVoice: true

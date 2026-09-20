@@ -6,6 +6,7 @@ type: "component"
 id: "prefect"
 kind: "workflow-engine"
 provider: "default"
+docs: "https://docs.prefect.io/v3/concepts/server"
 defaults:
   durable: true
   pattern: "dag"

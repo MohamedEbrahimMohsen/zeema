@@ -9,6 +9,7 @@ type: "component"
 id: "azure-data-box-gateway"
 kind: "edge-appliance"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/databox-gateway/data-box-gateway-overview"
 defaults:
   managed: false
   cloudManaged: true

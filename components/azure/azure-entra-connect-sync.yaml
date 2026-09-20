@@ -9,6 +9,7 @@ type: "component"
 id: "azure-entra-connect-sync"
 kind: "worker"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/whatis-azure-ad-connect"
 defaults:
   trigger: "schedule"
   managed: false

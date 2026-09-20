@@ -8,6 +8,7 @@ type: "component"
 id: "beam"
 kind: "stream-processor"
 provider: "default"
+docs: "https://beam.apache.org/documentation/basics/"
 defaults:
   managed: false
   windowing: "none"

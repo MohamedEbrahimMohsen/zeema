@@ -6,6 +6,7 @@ type: "component"
 id: "ngrok"
 kind: "network-fabric"
 provider: "default"
+docs: "https://ngrok.com/docs/universal-gateway/"
 defaults:
   managed: true
   overlay: true

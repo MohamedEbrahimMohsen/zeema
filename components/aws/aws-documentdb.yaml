@@ -8,6 +8,7 @@ type: "component"
 id: "aws-documentdb"
 kind: "nosql-database"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/documentdb/latest/developerguide/encryption-at-rest.html"
 defaults:
   managed: true
   model: "document"

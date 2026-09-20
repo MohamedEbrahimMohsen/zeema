@@ -7,6 +7,7 @@ type: "component"
 id: "srs"
 kind: "media-router"
 provider: "default"
+docs: "https://ossrs.io/lts/en-us/docs/v6/doc/introduction"
 defaults:
   managed: false
   mode: "ingest"

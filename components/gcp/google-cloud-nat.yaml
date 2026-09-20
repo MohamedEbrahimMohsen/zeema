@@ -6,6 +6,7 @@ type: "component"
 id: "google-cloud-nat"
 kind: "nat-gateway"
 provider: "gcp"
+docs: "https://cloud.google.com/nat/docs/overview"
 defaults:
   managed: true
   logging: false

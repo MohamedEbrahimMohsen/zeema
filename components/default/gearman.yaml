@@ -6,6 +6,7 @@ type: "component"
 id: "gearman"
 kind: "queue"
 provider: "default"
+docs: "https://gearman.org/documentation/"
 defaults:
   delivery: "at-most-once"
   ordering: "none"

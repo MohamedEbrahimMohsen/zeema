@@ -8,6 +8,7 @@ type: "component"
 id: "oci-generative-ai-cluster"
 kind: "ml-inference"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/generative-ai/create-ai-cluster-hosting.htm"
 defaults:
   accelerator: "gpu"
   instances: 1

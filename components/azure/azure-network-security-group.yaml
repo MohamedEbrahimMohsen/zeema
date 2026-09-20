@@ -7,6 +7,7 @@ type: "component"
 id: "azure-network-security-group"
 kind: "firewall"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/virtual-network/network-security-groups-overview"
 defaults:
   managed: true
   defaultAction: "deny"

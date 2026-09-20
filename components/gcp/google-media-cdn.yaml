@@ -6,6 +6,7 @@ type: "component"
 id: "google-media-cdn"
 kind: "cdn"
 provider: "gcp"
+docs: "https://cloud.google.com/media-cdn/docs/overview"
 defaults:
   managed: true
   caching: true

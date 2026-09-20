@@ -8,6 +8,7 @@ type: "component"
 id: "google-policy-controller"
 kind: "policy-engine"
 provider: "gcp"
+docs: "https://cloud.google.com/kubernetes-engine/enterprise/policy-controller/docs/how-to/installing-policy-controller"
 defaults:
   managed: true
   remediation: false

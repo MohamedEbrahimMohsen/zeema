@@ -6,6 +6,7 @@ type: "component"
 id: "bird"
 kind: "third-party-api"
 provider: "default"
+docs: "https://bird.com/docs/api"
 defaults:
   managed: true
   idempotent: true

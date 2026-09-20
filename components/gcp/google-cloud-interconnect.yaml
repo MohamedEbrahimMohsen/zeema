@@ -6,6 +6,7 @@ type: "component"
 id: "google-cloud-interconnect"
 kind: "network-fabric"
 provider: "gcp"
+docs: "https://cloud.google.com/network-connectivity/docs/interconnect/concepts/overview"
 defaults:
   managed: true
   interconnect: "private"

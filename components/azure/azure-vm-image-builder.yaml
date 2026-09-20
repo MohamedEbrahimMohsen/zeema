@@ -7,6 +7,7 @@ type: "component"
 id: "azure-vm-image-builder"
 kind: "ci-pipeline"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/virtual-machines/image-builder-overview"
 defaults:
   managed: true
   trigger: "manual"

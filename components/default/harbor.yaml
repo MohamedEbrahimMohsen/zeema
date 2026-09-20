@@ -8,6 +8,7 @@ type: "component"
 id: "harbor"
 kind: "container-registry"
 provider: "default"
+docs: "https://goharbor.io/docs/2.13.0/working-with-projects/create-projects/"
 defaults:
   managed: false
   visibility: "private"

@@ -9,6 +9,7 @@ type: "component"
 id: "aws-mwaa"
 kind: "workflow-engine"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/mwaa/latest/userguide/environment-class.html"
 defaults:
   managed: true
   durable: true

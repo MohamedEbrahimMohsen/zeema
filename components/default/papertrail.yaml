@@ -10,6 +10,7 @@ type: "component"
 id: "papertrail"
 kind: "monitoring"
 provider: "default"
+docs: "https://www.papertrail.com/"
 defaults:
   managed: true
   signal: "logs"

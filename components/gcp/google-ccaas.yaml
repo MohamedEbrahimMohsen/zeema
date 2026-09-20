@@ -8,6 +8,7 @@ type: "component"
 id: "google-ccaas"
 kind: "contact-center"
 provider: "gcp"
+docs: "https://docs.cloud.google.com/contact-center/ccai-platform/docs/setup-agents-channels"
 defaults:
   channelVoice: true
   channelChat: true

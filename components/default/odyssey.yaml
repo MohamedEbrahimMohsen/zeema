@@ -7,6 +7,7 @@ type: "component"
 id: "odyssey"
 kind: "database-proxy"
 provider: "default"
+docs: "https://github.com/yandex/odyssey/blob/master/docs/configuration/rules.md"
 defaults:
   pooling: true
   routing: "none"

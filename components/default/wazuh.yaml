@@ -6,6 +6,7 @@ type: "component"
 id: "wazuh"
 kind: "monitoring"
 provider: "default"
+docs: "https://documentation.wazuh.com/current/getting-started/index.html"
 defaults:
   signal: "logs"
   collectorMode: "push"

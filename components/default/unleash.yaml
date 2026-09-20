@@ -5,6 +5,7 @@ type: "component"
 id: "unleash"
 kind: "feature-flag-service"
 provider: "default"
+docs: "https://docs.getunleash.io/"
 defaults:
   stagedRollout: true
   managed: false

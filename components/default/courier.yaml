@@ -6,6 +6,7 @@ type: "component"
 id: "courier"
 kind: "notification-service"
 provider: "default"
+docs: "https://www.courier.com/docs/platform/"
 defaults:
   managed: true
   channelPush: true

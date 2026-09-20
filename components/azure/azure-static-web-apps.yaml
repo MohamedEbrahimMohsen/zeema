@@ -7,6 +7,7 @@ type: "component"
 id: "azure-static-web-apps"
 kind: "cdn"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/static-web-apps/plans"
 defaults:
   managed: true
   caching: true

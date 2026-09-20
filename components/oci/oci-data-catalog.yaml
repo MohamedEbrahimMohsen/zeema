@@ -8,6 +8,7 @@ type: "component"
 id: "oci-data-catalog"
 kind: "data-catalog"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/data-catalog/home.htm"
 defaults:
   managed: true
   scanSchedule: "manual"

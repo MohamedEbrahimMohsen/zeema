@@ -6,6 +6,7 @@ type: "component"
 id: "aurora"
 kind: "sql-database"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/CHAP_AuroraOverview.html"
 defaults:
   managed: true
   replication: "async"

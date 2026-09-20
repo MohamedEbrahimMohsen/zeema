@@ -8,6 +8,7 @@ type: "component"
 id: "openstack-freezer"
 kind: "backup-service"
 provider: "openstack"
+docs: "https://docs.openstack.org/freezer/latest/"
 defaults:
   managed: false
 properties:

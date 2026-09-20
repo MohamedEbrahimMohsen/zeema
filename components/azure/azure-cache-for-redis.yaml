@@ -8,6 +8,7 @@ type: "component"
 id: "azure-cache-for-redis"
 kind: "cache"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/azure-cache-for-redis/cache-overview"
 defaults:
   managed: true
   evictionPolicy: "lru"

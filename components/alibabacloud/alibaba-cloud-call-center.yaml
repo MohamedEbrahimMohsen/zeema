@@ -10,6 +10,7 @@ type: "component"
 id: "alibaba-cloud-call-center"
 kind: "contact-center"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/product/cloud-call-center"
 defaults:
   managed: true
   channelVoice: true

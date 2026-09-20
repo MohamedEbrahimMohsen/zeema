@@ -6,6 +6,7 @@ type: "component"
 id: "xata"
 kind: "sql-database"
 provider: "default"
+docs: "https://xata.io/docs"
 defaults:
   managed: true
 properties:

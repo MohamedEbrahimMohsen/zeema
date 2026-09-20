@@ -6,6 +6,7 @@ type: "component"
 id: "aws-comprehend"
 kind: "ai-service"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/comprehend/latest/dg/guidelines-and-limits.html"
 defaults:
   managed: true
   modality: "text"

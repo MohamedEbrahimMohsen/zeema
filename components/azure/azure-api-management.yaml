@@ -5,6 +5,7 @@ type: "component"
 id: "azure-api-management"
 kind: "api-gateway"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/api-management/api-management-key-concepts"
 defaults:
   managed: true
   tls: true

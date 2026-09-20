@@ -8,6 +8,7 @@ type: "component"
 id: "cloudflare-wallets"
 kind: "third-party-api"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/wallets/"
 defaults:
   managed: true
   callbackStyle: "none"

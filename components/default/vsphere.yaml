@@ -7,6 +7,7 @@ type: "component"
 id: "vsphere"
 kind: "virtual-machine"
 provider: "default"
+docs: "https://techdocs.broadcom.com/us/en/vmware-cis/vsphere/vsphere/8-0/vsphere-security/configuring-and-managing-vsphere-native-key-provider/vsphere-native-key-provider-overview.html"
 defaults:
   managed: false
   diskEncryption: false

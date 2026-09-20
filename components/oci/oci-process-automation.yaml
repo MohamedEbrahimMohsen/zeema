@@ -8,6 +8,7 @@ type: "component"
 id: "oci-process-automation"
 kind: "workflow-engine"
 provider: "oci"
+docs: "https://docs.oracle.com/en/cloud/paas/process-automation/user-process-automation/decisions-glance.html"
 defaults:
   managed: true
   durable: true

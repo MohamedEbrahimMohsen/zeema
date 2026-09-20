@@ -6,6 +6,7 @@ type: "component"
 id: "azure-openai"
 kind: "ai-service"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/ai-foundry/openai/concepts/default-safety-policies"
 defaults:
   managed: true
   modality: "multimodal"

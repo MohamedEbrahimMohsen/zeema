@@ -8,6 +8,7 @@ type: "component"
 id: "websphere-liberty"
 kind: "app-server"
 provider: "default"
+docs: "https://www.ibm.com/docs/en/was-liberty/base?topic=liberty-overview"
 defaults:
   managed: false
   runtime: "jvm"

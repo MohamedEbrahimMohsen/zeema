@@ -6,6 +6,7 @@ type: "component"
 id: "order-book-matcher"
 kind: "matching-engine"
 provider: "default"
+docs: "https://en.wikipedia.org/wiki/Order_matching_system"
 defaults:
   singleThreaded: true
   deterministic: true

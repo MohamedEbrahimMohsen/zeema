@@ -11,6 +11,7 @@ type: "component"
 id: "digitalocean-managed-databases"
 kind: "sql-database"
 provider: "digitalocean"
+docs: "https://docs.digitalocean.com/products/databases/"
 defaults:
   managed: true
   backupEnabled: true

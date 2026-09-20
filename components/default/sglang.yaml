@@ -7,6 +7,7 @@ type: "component"
 id: "sglang"
 kind: "ml-inference"
 provider: "default"
+docs: "https://docs.sglang.io/advanced_features/server_arguments.html"
 defaults:
   training: "batch"
   inputs: "live"

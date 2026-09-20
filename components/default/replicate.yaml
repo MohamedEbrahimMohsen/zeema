@@ -8,6 +8,7 @@ type: "component"
 id: "replicate"
 kind: "ai-service"
 provider: "default"
+docs: "https://replicate.com/docs/topics/predictions/data-retention"
 defaults:
   managed: true
   modality: "multimodal"

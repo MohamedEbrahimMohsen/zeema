@@ -7,6 +7,7 @@ type: "component"
 id: "oci-certificates"
 kind: "key-management"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/certificates/overview.htm"
 defaults:
   managed: true
   hsm: true

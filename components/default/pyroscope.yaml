@@ -6,6 +6,7 @@ type: "component"
 id: "pyroscope"
 kind: "monitoring"
 provider: "default"
+docs: "https://grafana.com/docs/pyroscope/latest/configure-server/reference-configuration-parameters/"
 defaults:
   signal: "metrics"
   collectorMode: "push"

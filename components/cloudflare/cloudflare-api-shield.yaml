@@ -7,6 +7,7 @@ type: "component"
 id: "cloudflare-api-shield"
 kind: "api-gateway"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/api-shield/"
 defaults:
   managed: true
   tls: true

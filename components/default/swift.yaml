@@ -8,6 +8,7 @@ type: "component"
 id: "swift"
 kind: "object-store"
 provider: "default"
+docs: "https://docs.openstack.org/swift/latest/overview_architecture.html"
 defaults:
   managed: false
   replication: "quorum"

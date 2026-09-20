@@ -9,6 +9,7 @@ type: "component"
 id: "digdag"
 kind: "workflow-engine"
 provider: "default"
+docs: "https://docs.digdag.io/"
 defaults:
   managed: false
   pattern: "dag"

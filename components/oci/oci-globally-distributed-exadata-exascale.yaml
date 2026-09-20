@@ -8,6 +8,7 @@ type: "component"
 id: "oci-globally-distributed-exadata-exascale"
 kind: "sql-database"
 provider: "oci"
+docs: "https://docs.oracle.com/en/cloud/paas/globally-distributed-exascale-database/user/overview-distributed-exadb-xs.html"
 defaults:
   managed: true
   sharded: true

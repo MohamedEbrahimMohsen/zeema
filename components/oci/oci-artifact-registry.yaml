@@ -8,6 +8,7 @@ type: "component"
 id: "oci-artifact-registry"
 kind: "artifact-repository"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/artifacts/overview.htm"
 defaults:
   managed: true
   artifactType: "generic"

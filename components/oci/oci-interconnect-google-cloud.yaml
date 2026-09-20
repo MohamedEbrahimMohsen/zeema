@@ -8,6 +8,7 @@ type: "component"
 id: "oci-interconnect-google-cloud"
 kind: "network-fabric"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/multicloud/interconnect-gcp.htm"
 defaults:
   managed: true
   interconnect: "private"

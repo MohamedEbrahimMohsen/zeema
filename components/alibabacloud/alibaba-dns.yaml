@@ -11,6 +11,7 @@ type: "component"
 id: "alibaba-dns"
 kind: "dns"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/dns/"
 defaults:
   geoRouting: true
   healthChecked: false

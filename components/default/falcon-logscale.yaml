@@ -10,6 +10,7 @@ type: "component"
 id: "falcon-logscale"
 kind: "monitoring"
 provider: "default"
+docs: "https://library.humio.com/"
 defaults:
   managed: false
   signal: "logs"

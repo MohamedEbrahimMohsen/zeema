@@ -7,6 +7,7 @@ type: "component"
 id: "fireworks-ai"
 kind: "ai-service"
 provider: "default"
+docs: "https://docs.fireworks.ai/getting-started/introduction"
 defaults:
   managed: true
   modality: "multimodal"

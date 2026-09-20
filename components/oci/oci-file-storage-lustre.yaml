@@ -8,6 +8,7 @@ type: "component"
 id: "oci-file-storage-lustre"
 kind: "file-storage"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/lustre/file-system-create.htm"
 defaults:
   managed: true
   protocol: "lustre"

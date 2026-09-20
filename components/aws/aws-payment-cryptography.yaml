@@ -8,6 +8,7 @@ type: "component"
 id: "aws-payment-cryptography"
 kind: "key-management"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/payment-cryptography/latest/userguide/data-protection.html"
 defaults:
   managed: true
   hsm: true

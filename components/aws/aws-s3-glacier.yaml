@@ -7,6 +7,7 @@ type: "component"
 id: "aws-s3-glacier"
 kind: "object-store"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage-class-intro.html"
 defaults:
   zones: 3
   durabilityNines: 11

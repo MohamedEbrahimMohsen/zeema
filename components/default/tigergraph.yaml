@@ -7,6 +7,7 @@ type: "component"
 id: "tigergraph"
 kind: "graph-database"
 provider: "default"
+docs: "https://www.tigergraph.com/docs/tigergraph-server/current/cluster-and-ha-management/ha-cluster"
 defaults:
   inMemory: false
   masterPerShard: true

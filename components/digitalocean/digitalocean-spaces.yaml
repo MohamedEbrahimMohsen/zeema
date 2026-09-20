@@ -10,6 +10,7 @@ type: "component"
 id: "digitalocean-spaces"
 kind: "object-store"
 provider: "digitalocean"
+docs: "https://docs.digitalocean.com/products/spaces/"
 defaults:
   managed: true
   tier: "hot"

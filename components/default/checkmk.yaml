@@ -6,6 +6,7 @@ type: "component"
 id: "checkmk"
 kind: "monitoring"
 provider: "default"
+docs: "https://docs.checkmk.com/latest/en/graphing.html"
 defaults:
   signal: "metrics"
   collectorMode: "pull"

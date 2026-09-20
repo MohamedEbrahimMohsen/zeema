@@ -10,6 +10,7 @@ type: "component"
 id: "digitalocean-volumes"
 kind: "block-storage"
 provider: "digitalocean"
+docs: "https://docs.digitalocean.com/products/volumes/"
 defaults:
   managed: true
   mediaType: "ssd"

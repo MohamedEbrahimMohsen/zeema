@@ -7,6 +7,7 @@ type: "component"
 id: "azure-vpn-gateway"
 kind: "vpn-gateway"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-about-vpngateways"
 defaults:
   managed: true
   tunnelType: "ipsec"

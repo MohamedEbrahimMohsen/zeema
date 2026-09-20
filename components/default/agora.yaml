@@ -8,6 +8,7 @@ type: "component"
 id: "agora"
 kind: "media-router"
 provider: "default"
+docs: "https://docs.agora.io/en/video-calling/reference/firewall"
 defaults:
   managed: true
   mode: "sfu"

@@ -5,6 +5,7 @@ type: "component"
 id: "bigquery"
 kind: "data-warehouse"
 provider: "gcp"
+docs: "https://cloud.google.com/bigquery/docs/introduction"
 defaults:
   realtime: false
   upsert: false

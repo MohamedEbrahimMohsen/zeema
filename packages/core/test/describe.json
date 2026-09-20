@@ -1,0 +1,334 @@
+{
+  "business-updates-without-index-propagation": {
+    "select": "every node of kind sql-database",
+    "when": [
+      "- all of these hold:",
+      "  - the node has at least one synchronous incoming edge from an app-server",
+      "  - the design contains a node of kind search-index",
+      "  - this does not hold:",
+      "    - the node has at least one outgoing edge to a change-data-capture"
+    ]
+  },
+  "cache-as-primary-store-without-persistence": {
+    "select": "every node of kind cache",
+    "when": [
+      "- all of these hold:",
+      "  - the node's `usedAsPrimaryStore` is true",
+      "  - the node's `persistence` is false"
+    ]
+  },
+  "cache-missing-eviction-policy": {
+    "select": "every node of kind cache",
+    "when": [
+      "- any of these hold:",
+      "  - the node's `evictionPolicy` has no value",
+      "  - the node's `evictionPolicy` is \"none\""
+    ]
+  },
+  "credentials-without-rotation": {
+    "select": "every design",
+    "when": [
+      "- all of these hold:",
+      "  - the design contains a node in category data",
+      "  - the design requirement `security.credentialRotationDays` has no value",
+      "  - this does not hold:",
+      "    - the design contains a node of kind key-management"
+    ]
+  },
+  "cross-cell-call": {
+    "select": "every synchronous edge",
+    "when": [
+      "- all of these hold:",
+      "  - the edge crosses a cell boundary, or at least one end is in no cell at all",
+      "  - the design requirement `isolation.tenancy` is \"cell\""
+    ]
+  },
+  "custom-node": {
+    "select": "every node of kind custom",
+    "when": [
+      "- the node's `anyProperty` has no value"
+    ]
+  },
+  "custom-nodes-present": {
+    "select": "every design",
+    "when": [
+      "- the design contains a node of kind custom"
+    ]
+  },
+  "datastore-missing-backup": {
+    "select": "every node of kind sql-database",
+    "when": [
+      "- any of these hold:",
+      "  - the node's `backupEnabled` is false",
+      "  - the node's `backupRetentionDays` has no value"
+    ]
+  },
+  "datastore-single-region": {
+    "select": "every node of kind sql-database",
+    "when": [
+      "- all of these hold:",
+      "  - the design requirement `availability.multiRegion` is true",
+      "  - the node sits inside exactly 1 region boundary",
+      "  - the node's `replication` is \"none\""
+    ]
+  },
+  "derived-store-without-cdc-or-rebuild": {
+    "select": "every node of kind search-index",
+    "when": [
+      "- this does not hold:",
+      "  - the node has at least one asynchronous incoming edge from a stream, change-data-capture or worker"
+    ]
+  },
+  "exactly-once-with-external-side-effects": {
+    "select": "every edge declaring exactly-once delivery",
+    "when": [
+      "- the edge's target node:",
+      "  - the node has at least one synchronous outgoing edge to a third-party-api"
+    ]
+  },
+  "external-call-inline-without-durable-path": {
+    "select": "every node of kind app-server",
+    "when": [
+      "- all of these hold:",
+      "  - the node has at least one synchronous outgoing edge to a third-party-api",
+      "  - this does not hold:",
+      "    - the node has at least one connected edge joining a workflow-engine or queue"
+    ]
+  },
+  "fanout-inline-in-request-path": {
+    "select": "every node of kind app-server",
+    "when": [
+      "- the node has at least one synchronous outgoing edge to a worker"
+    ]
+  },
+  "materialised-cache-without-rebuild-path": {
+    "select": "every node of kind cache",
+    "when": [
+      "- all of these hold:",
+      "  - the node's `materialised` is true",
+      "  - this does not hold:",
+      "    - the node has at least one incoming edge from a sql-database, nosql-database, worker or stream"
+    ]
+  },
+  "money-mutation-without-idempotency-key": {
+    "select": "every edge",
+    "when": [
+      "- all of these hold:",
+      "  - the edge's target node:",
+      "    - any of these hold:",
+      "      - the node's `handlesMoney` is true",
+      "      - the node's `doubleEntry` has a value",
+      "  - the edge's `idempotent` has no value",
+      "  - the design requirement `correctness.exactlyOnceEffect` is true"
+    ]
+  },
+  "money-store-without-double-entry-ledger": {
+    "select": "every design",
+    "when": [
+      "- all of these hold:",
+      "  - the design requirement `money.zeroSum` is true",
+      "  - this does not hold:",
+      "    - the design contains a node of kind ledger"
+    ]
+  },
+  "multi-leader-store-without-conflict-policy": {
+    "select": "every node of kind nosql-database",
+    "when": [
+      "- all of these hold:",
+      "  - the node's `replication` is \"multi-region-multi-leader\"",
+      "  - any of these hold:",
+      "    - the node's `conflictResolution` has no value",
+      "    - the node's `conflictResolution` is \"none\""
+    ]
+  },
+  "object-store-single-zone-with-durability-target": {
+    "select": "every node of kind object-store",
+    "when": [
+      "- all of these hold:",
+      "  - the design requirement `durability.annualNines` is a number greater than 10",
+      "  - any of these hold:",
+      "    - the node's `zones` has no value",
+      "    - the node's `zones` is a number less than 3"
+    ]
+  },
+  "pubsub-replay-required": {
+    "select": "every node of kind pubsub-topic",
+    "when": [
+      "- all of these hold:",
+      "  - the design requirement `messaging.replay` is true",
+      "  - the node's `replay` is false"
+    ]
+  },
+  "push-fanout-without-celebrity-path": {
+    "select": "every node of kind worker",
+    "when": [
+      "- all of these hold:",
+      "  - the node's `fanoutStrategy` is \"push\"",
+      "  - the node's `fanoutThreshold` has no value",
+      "  - the design contains a node of kind graph-database"
+    ]
+  },
+  "queue-missing-dlq": {
+    "select": "every node of kind queue",
+    "when": [
+      "- all of these hold:",
+      "  - the node's `deadLetterQueue` is false",
+      "  - the node has at least one asynchronous incoming edge"
+    ]
+  },
+  "read-heavy-path-without-cache": {
+    "select": "every node of kind sql-database or nosql-database",
+    "when": [
+      "- all of these hold:",
+      "  - the design requirement `traffic.readWriteRatio` is a number greater than 10",
+      "  - the node has at least one synchronous incoming edge from an app-server",
+      "  - this does not hold:",
+      "    - the design contains a node of kind cache"
+    ]
+  },
+  "read-replica-as-sole-scaling": {
+    "select": "every node of kind sql-database",
+    "when": [
+      "- all of these hold:",
+      "  - the node's `replication` is \"async\"",
+      "  - the node's `sharded` is false",
+      "  - the node's `distributed` is false",
+      "  - the node's declared requests per second is more than 5000"
+    ]
+  },
+  "reconnect-stampede-without-guard": {
+    "select": "every node of kind realtime-gateway",
+    "when": [
+      "- all of these hold:",
+      "  - the node has at least one synchronous outgoing edge to a coordination-service",
+      "  - the node's `stampedeGuard` is false"
+    ]
+  },
+  "retry-queue-without-dlq": {
+    "select": "every node of kind queue",
+    "when": [
+      "- all of these hold:",
+      "  - the node's `role` is \"retry\"",
+      "  - the node's `deadLetterQueue` is false"
+    ]
+  },
+  "retry-without-adaptive-shedding": {
+    "select": "every edge",
+    "when": [
+      "- all of these hold:",
+      "  - the edge's `retryPolicy` is one of \"fixed\", \"exponential\" or \"exponential-jitter\"",
+      "  - this does not hold:",
+      "    - the edge's `circuitBreaker` is true",
+      "  - the edge's target node:",
+      "    - this does not hold:",
+      "      - the node has at least one incoming edge from a rate-limiter"
+    ]
+  },
+  "retry-without-backoff": {
+    "select": "every node of kind queue",
+    "when": [
+      "- all of these hold:",
+      "  - the node's `role` is \"retry\"",
+      "  - any of these hold:",
+      "    - the node's `backoff` has no value",
+      "    - the node's `backoff` is \"none\""
+    ]
+  },
+  "shared-dependency-without-redundancy": {
+    "select": "every node of kind dns or coordination-service",
+    "when": [
+      "- all of these hold:",
+      "  - the design requirement `availability.discoveryRedundant` is true",
+      "  - any of these hold:",
+      "    - the node's `redundantProviders` is false",
+      "    - the node's `replicated` is false"
+    ]
+  },
+  "shared-host-per-channel-without-isolation": {
+    "select": "every node of kind realtime-gateway",
+    "when": [
+      "- all of these hold:",
+      "  - the node's `channelAssignment` is \"random\"",
+      "  - the design requirement `traffic.skew` is \"heavy-tail\""
+    ]
+  },
+  "shared-worker-pool-across-queues": {
+    "select": "every node of kind worker",
+    "when": [
+      "- all of these hold:",
+      "  - the node has more than 1 incoming edge from a queue",
+      "  - the design requirement `isolation.perQueue` is true"
+    ]
+  },
+  "single-writer-primary-at-peak-qps": {
+    "select": "every node of kind sql-database",
+    "when": [
+      "- all of these hold:",
+      "  - the node's `multiWriter` is false",
+      "  - the node's `sharded` is false",
+      "  - the node's declared requests per second is more than 5000"
+    ]
+  },
+  "stateful-engine-pinned-to-single-zone": {
+    "select": "every node of kind matching-engine, coordination-service or event-store",
+    "when": [
+      "- all of these hold:",
+      "  - the node sits inside exactly 1 availability-zone boundary",
+      "  - any of these hold:",
+      "    - the node's `failover` is \"none\"",
+      "    - the node's `replicated` is false",
+      "    - the node's `replication` is \"none\""
+    ]
+  },
+  "stateful-hash-ring-without-ring-manager": {
+    "select": "every node of kind app-server",
+    "when": [
+      "- all of these hold:",
+      "  - the node's `shardingStrategy` is \"consistent-hash\"",
+      "  - this does not hold:",
+      "    - the node has at least one connected edge joining a coordination-service"
+    ]
+  },
+  "stateful-node-without-zone-redundancy": {
+    "select": "every node in category compute",
+    "when": [
+      "- all of these hold:",
+      "  - the node's `stateless` is false",
+      "  - the node sits inside exactly 1 availability-zone boundary",
+      "  - this does not hold:",
+      "    - the node sits inside at least one cell boundary"
+    ]
+  },
+  "stateful-websocket-scale-in-without-drain": {
+    "select": "every node of kind realtime-gateway",
+    "when": [
+      "- all of these hold:",
+      "  - the node's `autoscaling` is true",
+      "  - the node's `drainOnScaleIn` is false"
+    ]
+  },
+  "sync-chain-too-deep": {
+    "select": "every node of kind api-gateway",
+    "when": [
+      "- all of these hold:",
+      "  - the design requirement `latency.p95Ms` has a value",
+      "  - the longest chain of synchronous calls starting at the node is more than 3 hops long"
+    ]
+  },
+  "webhook-without-signature-or-idempotency": {
+    "select": "every node of kind webhook-endpoint",
+    "when": [
+      "- any of these hold:",
+      "  - the node's `signatureVerified` is false",
+      "  - the node's `idempotent` is false"
+    ]
+  },
+  "windowed-aggregation-without-watermark": {
+    "select": "every node of kind stream-processor",
+    "when": [
+      "- all of these hold:",
+      "  - the node's `windowing` is \"event-time\"",
+      "  - the node's `watermarkSeconds` has no value"
+    ]
+  }
+}

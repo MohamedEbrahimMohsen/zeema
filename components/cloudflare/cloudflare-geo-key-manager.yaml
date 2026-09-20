@@ -7,6 +7,7 @@ type: "component"
 id: "cloudflare-geo-key-manager"
 kind: "key-management"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/ssl/edge-certificates/geokey-manager/"
 defaults:
   managed: true
 properties:

@@ -6,6 +6,7 @@ type: "component"
 id: "vm-service"
 kind: "app-server"
 provider: "default"
+docs: "https://en.wikipedia.org/wiki/Virtual_machine"
 defaults:
   stateless: true
   autoscaling: false

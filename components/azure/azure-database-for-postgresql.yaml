@@ -8,6 +8,7 @@ type: "component"
 id: "azure-database-for-postgresql"
 kind: "sql-database"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/service-overview"
 defaults:
   managed: true
   replication: "none"

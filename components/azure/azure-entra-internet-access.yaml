@@ -9,6 +9,7 @@ type: "component"
 id: "azure-entra-internet-access"
 kind: "firewall"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/entra/global-secure-access/concept-internet-access"
 defaults:
   managed: true
 properties:

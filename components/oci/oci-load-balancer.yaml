@@ -5,6 +5,7 @@ type: "component"
 id: "oci-load-balancer"
 kind: "load-balancer"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/Balance/Concepts/balanceoverview.htm"
 defaults:
   managed: true
   layer: "l7"

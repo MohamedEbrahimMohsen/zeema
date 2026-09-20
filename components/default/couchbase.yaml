@@ -6,6 +6,7 @@ type: "component"
 id: "couchbase"
 kind: "nosql-database"
 provider: "default"
+docs: "https://docs.couchbase.com/"
 defaults:
   model: "document"
   consistency: "strong"

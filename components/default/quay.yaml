@@ -8,6 +8,7 @@ type: "component"
 id: "quay"
 kind: "container-registry"
 provider: "default"
+docs: "https://docs.projectquay.io/use_quay.html"
 defaults:
   managed: false
   visibility: "private"

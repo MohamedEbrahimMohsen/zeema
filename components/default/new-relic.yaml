@@ -5,6 +5,7 @@ type: "component"
 id: "new-relic"
 kind: "monitoring"
 provider: "default"
+docs: "https://docs.newrelic.com/"
 defaults:
   signal: "all"
   collectorMode: "push"

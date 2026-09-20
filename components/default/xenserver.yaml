@@ -7,6 +7,7 @@ type: "component"
 id: "xenserver"
 kind: "virtual-machine"
 provider: "default"
+docs: "https://docs.xenserver.com/en-us/xenserver/8/"
 defaults:
   managed: false
 properties:

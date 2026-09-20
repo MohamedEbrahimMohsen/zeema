@@ -7,6 +7,7 @@ type: "component"
 id: "oci-health-checks"
 kind: "monitoring"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/HealthChecks/Concepts/healthchecks.htm"
 defaults:
   managed: true
   signal: "metrics"

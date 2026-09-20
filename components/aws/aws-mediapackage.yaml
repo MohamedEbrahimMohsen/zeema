@@ -9,6 +9,7 @@ type: "component"
 id: "aws-mediapackage"
 kind: "media-router"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/mediapackage/latest/ug/what-is-features.html"
 defaults:
   managed: true
   mode: "ingest"

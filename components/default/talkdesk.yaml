@@ -9,6 +9,7 @@ type: "component"
 id: "talkdesk"
 kind: "contact-center"
 provider: "default"
+docs: "https://docs.talkdesk.com/docs/contact-center-overview"
 defaults:
   managed: true
   channelVoice: true

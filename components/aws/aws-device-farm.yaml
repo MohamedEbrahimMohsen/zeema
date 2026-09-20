@@ -8,6 +8,7 @@ type: "component"
 id: "aws-device-farm"
 kind: "client"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/devicefarm/latest/developerguide/welcome.html"
 defaults:
   platform: "mobile"
   offlineCapable: false

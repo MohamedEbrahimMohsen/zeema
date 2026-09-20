@@ -5,6 +5,7 @@ type: "component"
 id: "adyen"
 kind: "third-party-api"
 provider: "default"
+docs: "https://docs.adyen.com/"
 defaults:
   idempotent: true
   handlesMoney: true

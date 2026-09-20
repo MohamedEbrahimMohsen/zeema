@@ -8,6 +8,7 @@ type: "component"
 id: "azure-managed-cassandra"
 kind: "nosql-database"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/managed-instance-apache-cassandra/introduction"
 defaults:
   model: "wide-column"
   consistency: "tunable"

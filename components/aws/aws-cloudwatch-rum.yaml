@@ -7,6 +7,7 @@ type: "component"
 id: "aws-cloudwatch-rum"
 kind: "monitoring"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/cloudwatchrum/latest/APIReference/API_AppMonitorConfiguration.html"
 defaults:
   signal: "metrics"
   collectorMode: "push"

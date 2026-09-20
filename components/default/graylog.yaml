@@ -6,6 +6,7 @@ type: "component"
 id: "graylog"
 kind: "monitoring"
 provider: "default"
+docs: "https://go2docs.graylog.org/current/setting_up_graylog/index_model.html"
 defaults:
   signal: "logs"
   collectorMode: "push"

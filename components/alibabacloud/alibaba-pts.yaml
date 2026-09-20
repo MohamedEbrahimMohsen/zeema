@@ -9,6 +9,7 @@ type: "component"
 id: "alibaba-pts"
 kind: "client"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/pts/"
 defaults:
   managed: true
   platform: "multi"

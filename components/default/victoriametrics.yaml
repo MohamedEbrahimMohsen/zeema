@@ -6,6 +6,7 @@ type: "component"
 id: "victoriametrics"
 kind: "timeseries-database"
 provider: "default"
+docs: "https://docs.victoriametrics.com/"
 defaults:
   retentionRawDays: 30
   downsampling: false

@@ -6,6 +6,7 @@ type: "component"
 id: "borgbackup"
 kind: "backup-service"
 provider: "default"
+docs: "https://borgbackup.readthedocs.io/en/stable/usage/init.html"
 defaults:
   managed: false
   crossRegionRestore: false

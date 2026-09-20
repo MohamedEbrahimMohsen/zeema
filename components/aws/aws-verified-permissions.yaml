@@ -11,6 +11,7 @@ type: "component"
 id: "aws-verified-permissions"
 kind: "policy-engine"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/verifiedpermissions/latest/userguide/what-is-avp.html"
 defaults:
   effect: "deny"
   enforcementMode: "enforced"

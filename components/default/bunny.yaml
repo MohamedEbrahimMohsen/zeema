@@ -7,6 +7,7 @@ type: "component"
 id: "bunny"
 kind: "cdn"
 provider: "default"
+docs: "https://bunny.net/docs/cdn-overview"
 defaults:
   managed: true
   originShield: false

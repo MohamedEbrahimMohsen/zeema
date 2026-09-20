@@ -9,6 +9,7 @@ type: "component"
 id: "alibaba-mobile-push"
 kind: "notification-service"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/mobile-push/"
 defaults:
   managed: true
   channelPush: true

@@ -11,6 +11,7 @@ type: "component"
 id: "alibaba-polardb-x"
 kind: "sql-database"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/polardb/polardb-for-xscale/scenarios-1"
 defaults:
   managed: true
   distributed: true

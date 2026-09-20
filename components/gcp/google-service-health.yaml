@@ -7,6 +7,7 @@ type: "component"
 id: "google-service-health"
 kind: "monitoring"
 provider: "gcp"
+docs: "https://cloud.google.com/service-health/docs/overview"
 defaults:
   managed: true
   signal: "alerts"

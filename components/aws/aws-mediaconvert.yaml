@@ -8,6 +8,7 @@ type: "component"
 id: "aws-mediaconvert"
 kind: "media-transcoder"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/mediaconvert/latest/ug/working-with-queues.html"
 defaults:
   managed: true
   mode: "file"

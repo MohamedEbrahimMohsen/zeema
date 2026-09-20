@@ -7,6 +7,7 @@ type: "component"
 id: "aws-cloudwatch-synthetics"
 kind: "monitoring"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/AmazonSynthetics/latest/APIReference/API_CreateCanary.html"
 defaults:
   signal: "metrics"
   collectorMode: "pull"

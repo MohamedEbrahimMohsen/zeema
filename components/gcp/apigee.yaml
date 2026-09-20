@@ -5,6 +5,7 @@ type: "component"
 id: "apigee"
 kind: "api-gateway"
 provider: "gcp"
+docs: "https://cloud.google.com/apigee/docs/api-platform/get-started/what-apigee"
 defaults:
   managed: true
   tls: true

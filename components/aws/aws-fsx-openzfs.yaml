@@ -8,6 +8,7 @@ type: "component"
 id: "aws-fsx-openzfs"
 kind: "file-storage"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/fsx/latest/OpenZFSGuide/what-is-fsx.html"
 defaults:
   protocol: "nfs"
   encryptionInTransit: true

@@ -8,6 +8,7 @@ type: "component"
 id: "puppet"
 kind: "ci-pipeline"
 provider: "default"
+docs: "https://www.puppet.com/docs/puppet/7/configuration.html"
 defaults:
   trigger: "schedule"
   approvalRequired: false

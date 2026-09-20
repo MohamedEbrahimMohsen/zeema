@@ -8,6 +8,7 @@ type: "component"
 id: "crossplane"
 kind: "ci-pipeline"
 provider: "default"
+docs: "https://docs.crossplane.io/v1.20/concepts/managed-resources/"
 defaults:
   trigger: "manual"
   approvalRequired: false

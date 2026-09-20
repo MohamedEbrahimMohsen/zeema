@@ -7,6 +7,7 @@ type: "component"
 id: "oci-apm"
 kind: "monitoring"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/application-performance-monitoring/doc/create-apm-domain.html"
 defaults:
   managed: true
   signal: "traces"

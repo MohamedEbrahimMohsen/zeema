@@ -6,6 +6,7 @@ type: "component"
 id: "bigtable"
 kind: "nosql-database"
 provider: "gcp"
+docs: "https://cloud.google.com/bigtable/docs/overview"
 defaults:
   model: "wide-column"
   consistency: "strong"

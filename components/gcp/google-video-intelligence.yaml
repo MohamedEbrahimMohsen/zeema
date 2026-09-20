@@ -8,6 +8,7 @@ type: "component"
 id: "google-video-intelligence"
 kind: "ai-service"
 provider: "gcp"
+docs: "https://docs.cloud.google.com/video-intelligence/quotas"
 defaults:
   modality: "vision"
   publicEndpoint: true

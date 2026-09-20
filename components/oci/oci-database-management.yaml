@@ -8,6 +8,7 @@ type: "component"
 id: "oci-database-management"
 kind: "monitoring"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/database-management/doc/oracle-cloud-database-metrics.html"
 defaults:
   managed: true
   signal: "metrics"

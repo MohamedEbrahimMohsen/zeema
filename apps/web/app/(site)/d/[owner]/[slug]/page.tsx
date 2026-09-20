@@ -5,15 +5,21 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { DesignActions } from "@/components/DesignActions";
 import { EditableSlug } from "@/components/EditableSlug";
+import { EditableSummary } from "@/components/EditableSummary";
 import { EditableTitle } from "@/components/EditableTitle";
 import { Findings } from "@/components/Findings";
 import { Icon } from "@/components/Icon";
+import { Markdown } from "@/components/Markdown";
+import { Readme } from "@/components/Readme";
+import { TagEditor } from "@/components/TagEditor";
+import { YamlSection } from "@/components/YamlSection";
 import { currentUser } from "@/lib/auth";
 import { getCatalogue, getIcons } from "@/lib/catalogue";
 import {
   getBrokenVersion,
   getDesign,
   getTombstone,
+  listTags,
   listVersions,
   ownerSegment,
   recordEvent,
@@ -76,6 +82,9 @@ export default async function DesignPage({
   const ownerSeg = ownerSegment(view.owner);
   const versions = await listVersions(view);
   const currentId = view.design.currentVersionId;
+  // The offers only exist for the owner's own field, so nobody else pays for the query.
+  const tagSuggestions = view.can.write ? await listTags(viewer) : [];
+  const readme = view.design.readme ?? "";
 
   return (
     <div className="flex flex-col gap-5">
@@ -114,7 +123,19 @@ export default async function DesignPage({
             {sp.v && !version?.publishedAt ? <span className="tag">unreleased</span> : null}
             {broken ? <span className="tag tag-danger">broken twin</span> : null}
           </h1>
-          {view.design.summary ? <p className="muted">{view.design.summary}</p> : null}
+          <EditableSummary
+            owner={ownerSeg}
+            slug={view.design.slug}
+            summary={view.design.summary ?? ""}
+            canWrite={view.can.write}
+          />
+          <TagEditor
+            owner={ownerSeg}
+            slug={view.design.slug}
+            tags={view.design.tags ?? []}
+            canWrite={view.can.write}
+            suggestions={tagSuggestions}
+          />
           <div className="card-strip pt-1">
             <span>{doc?.nodes.length ?? 0} components</span>
             <span>·</span>
@@ -177,14 +198,21 @@ export default async function DesignPage({
             {/* biome-ignore lint/security/noDangerouslySetInnerHtml: SVG produced by the engine from escaped data */}
             <div dangerouslySetInnerHTML={{ __html: svg }} />
           </section>
-          <details className="disclosure">
-            <summary>
-              YAML <span className="count mono">{yaml.split("\n").length} lines</span>
-            </summary>
-            <pre className="body code" style={{ border: 0, padding: "var(--sp-1) 0 0" }}>
-              {yaml}
-            </pre>
-          </details>
+          <Readme
+            owner={ownerSeg}
+            slug={view.design.slug}
+            readme={readme}
+            canWrite={view.can.write}
+          >
+            {readme ? <Markdown>{readme}</Markdown> : null}
+          </Readme>
+          <YamlSection
+            owner={ownerSeg}
+            slug={view.design.slug}
+            yaml={yaml}
+            canWrite={view.can.write}
+            version={sp.v}
+          />
         </div>
         <aside className="flex flex-col gap-4">
           <Findings findings={findings} />

@@ -6,6 +6,7 @@ type: "component"
 id: "kuma"
 kind: "service-mesh"
 provider: "default"
+docs: "https://kuma.io/docs/latest/policies/mutual-tls/"
 defaults:
   managed: false
   sidecar: true

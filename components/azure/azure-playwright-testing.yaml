@@ -8,6 +8,7 @@ type: "component"
 id: "azure-playwright-testing"
 kind: "client"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/app-testing/playwright-workspaces/overview-what-is-microsoft-playwright-workspaces"
 defaults:
   platform: "web"
   managed: true

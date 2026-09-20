@@ -7,6 +7,7 @@ type: "component"
 id: "google-firebase-crashlytics"
 kind: "monitoring"
 provider: "gcp"
+docs: "https://firebase.google.com/docs/crashlytics/customize-crash-reports"
 defaults:
   signal: "logs"
   collectorMode: "push"

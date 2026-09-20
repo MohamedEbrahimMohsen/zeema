@@ -9,6 +9,7 @@ type: "component"
 id: "polyaxon"
 kind: "ml-platform"
 provider: "default"
+docs: "https://polyaxon.com/docs/"
 defaults:
   managed: false
   modelRegistry: true

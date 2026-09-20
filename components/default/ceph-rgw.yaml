@@ -5,6 +5,7 @@ type: "component"
 id: "ceph-rgw"
 kind: "object-store"
 provider: "default"
+docs: "https://docs.ceph.com/en/latest/radosgw/"
 defaults:
   replication: "quorum"
   strongReadAfterWrite: true

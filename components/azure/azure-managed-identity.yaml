@@ -8,6 +8,7 @@ type: "component"
 id: "azure-managed-identity"
 kind: "identity-provider"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/entra/identity/managed-identities-azure-resources/overview"
 defaults:
   protocol: "oauth2"
   authorizationModel: "rbac"

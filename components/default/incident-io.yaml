@@ -6,6 +6,7 @@ type: "component"
 id: "incident-io"
 kind: "notification-service"
 provider: "default"
+docs: "https://incident.io/on-call"
 defaults:
   managed: true
   channelPush: true

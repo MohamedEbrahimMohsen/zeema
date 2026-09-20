@@ -10,6 +10,7 @@ type: "component"
 id: "alibaba-nat-gateway"
 kind: "nat-gateway"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/nat-gateway/product-overview/what-is-nat-gateway"
 defaults:
   managed: true
 properties:

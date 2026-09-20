@@ -9,6 +9,7 @@ type: "component"
 id: "alibaba-log-service"
 kind: "monitoring"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/sls/"
 defaults:
   managed: true
   signal: "all"

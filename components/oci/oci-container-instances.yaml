@@ -8,6 +8,7 @@ type: "component"
 id: "oci-container-instances"
 kind: "app-server"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/container-instances/container-instance-shapes.htm"
 defaults:
   managed: true
   stateless: true

@@ -8,6 +8,7 @@ type: "component"
 id: "google-document-ai"
 kind: "ai-service"
 provider: "gcp"
+docs: "https://docs.cloud.google.com/document-ai/quotas"
 defaults:
   modality: "structured"
   publicEndpoint: true

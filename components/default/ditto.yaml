@@ -8,6 +8,7 @@ type: "component"
 id: "ditto"
 kind: "iot-hub"
 provider: "default"
+docs: "https://eclipse.dev/ditto/intro-overview.html"
 defaults:
   protocol: "multi"
   deviceTwin: true

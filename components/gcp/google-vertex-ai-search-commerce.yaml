@@ -8,6 +8,7 @@ type: "component"
 id: "google-vertex-ai-search-commerce"
 kind: "search-index"
 provider: "gcp"
+docs: "https://docs.cloud.google.com/retail/docs/quotas"
 defaults:
   structure: "vector"
   indexing: "async"

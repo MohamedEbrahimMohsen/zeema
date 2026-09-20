@@ -8,6 +8,7 @@ type: "component"
 id: "nifi"
 kind: "stream-processor"
 provider: "default"
+docs: "https://nifi.apache.org/nifi-docs/overview.html"
 defaults:
   managed: false
   windowing: "none"

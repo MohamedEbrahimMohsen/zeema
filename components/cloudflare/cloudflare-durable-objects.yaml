@@ -7,6 +7,7 @@ type: "component"
 id: "cloudflare-durable-objects"
 kind: "coordination-service"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/durable-objects/platform/limits/"
 defaults:
   managed: true
   role: "lock"

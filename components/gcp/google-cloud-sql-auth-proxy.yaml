@@ -7,6 +7,7 @@ type: "component"
 id: "google-cloud-sql-auth-proxy"
 kind: "database-proxy"
 provider: "gcp"
+docs: "https://cloud.google.com/sql/docs/mysql/sql-proxy"
 defaults:
   pooling: false
   routing: "none"

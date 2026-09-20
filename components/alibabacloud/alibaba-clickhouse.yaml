@@ -9,6 +9,7 @@ type: "component"
 id: "alibaba-clickhouse"
 kind: "data-warehouse"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/clickhouse/"
 defaults:
   managed: true
   realtime: true

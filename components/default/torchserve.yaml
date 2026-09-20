@@ -7,6 +7,7 @@ type: "component"
 id: "torchserve"
 kind: "ml-inference"
 provider: "default"
+docs: "https://docs.pytorch.org/serve/configuration.html"
 defaults:
   training: "batch"
   inputs: "live"

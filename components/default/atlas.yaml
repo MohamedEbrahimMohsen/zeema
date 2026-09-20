@@ -8,6 +8,7 @@ type: "component"
 id: "atlas"
 kind: "data-catalog"
 provider: "default"
+docs: "https://atlas.apache.org/2.0.0/index.html"
 defaults:
   managed: false
   classification: true

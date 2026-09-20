@@ -10,6 +10,7 @@ type: "component"
 id: "k8s-statefulset"
 kind: "app-server"
 provider: "k8s"
+docs: "https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/"
 defaults:
   managed: false
   stateless: false

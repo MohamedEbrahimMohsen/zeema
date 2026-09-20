@@ -5,6 +5,7 @@ type: "component"
 id: "twilio-sms"
 kind: "third-party-api"
 provider: "default"
+docs: "https://www.twilio.com/docs/messaging"
 defaults:
   idempotent: false
   callbackStyle: "webhook"

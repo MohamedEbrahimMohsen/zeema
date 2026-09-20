@@ -7,6 +7,7 @@ type: "component"
 id: "cloudflare-waiting-room"
 kind: "rate-limiter"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/waiting-room/reference/configuration-settings/"
 defaults:
   managed: true
   algorithm: "fixed-window"

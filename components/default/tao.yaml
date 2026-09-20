@@ -6,6 +6,7 @@ type: "component"
 id: "tao"
 kind: "graph-database"
 provider: "default"
+docs: "https://engineering.fb.com/2013/06/25/core-infra/tao-the-power-of-the-graph/"
 defaults:
   inMemory: true
   masterPerShard: true

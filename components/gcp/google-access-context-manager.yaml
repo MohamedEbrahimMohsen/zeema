@@ -8,6 +8,7 @@ type: "component"
 id: "google-access-context-manager"
 kind: "policy-engine"
 provider: "gcp"
+docs: "https://cloud.google.com/access-context-manager/docs/overview"
 defaults:
   scope: "organization"
   remediation: false

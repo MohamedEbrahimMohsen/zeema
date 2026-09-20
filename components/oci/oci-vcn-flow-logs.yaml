@@ -7,6 +7,7 @@ type: "component"
 id: "oci-vcn-flow-logs"
 kind: "monitoring"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/Logging/Reference/details_for_vcn_flow_logs.htm"
 defaults:
   managed: true
   signal: "logs"

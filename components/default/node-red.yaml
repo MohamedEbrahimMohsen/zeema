@@ -6,6 +6,7 @@ type: "component"
 id: "node-red"
 kind: "workflow-engine"
 provider: "default"
+docs: "https://nodered.org/docs/user-guide/concepts"
 defaults:
   durable: false
   pattern: "dag"

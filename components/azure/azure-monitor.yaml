@@ -5,6 +5,7 @@ type: "component"
 id: "azure-monitor"
 kind: "monitoring"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/azure-monitor/overview"
 defaults:
   signal: "all"
   collectorMode: "push"

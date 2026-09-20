@@ -7,6 +7,7 @@ type: "component"
 id: "knot-dns"
 kind: "dns"
 provider: "default"
+docs: "https://www.knot-dns.cz/docs/latest/singlehtml/index.html"
 defaults:
   managed: false
   anycast: false

@@ -2,7 +2,7 @@
 // built bundle), same shape the browser gets from /catalogue/*.json.
 import fs from "node:fs";
 import path from "node:path";
-import { designIndex, iconMap, loadCatalogue, resolveRoot } from "@zeema/catalogue";
+import { designIndex, iconMap, loadCatalogue, loadSources, resolveRoot } from "@zeema/catalogue";
 
 export type Catalogue = {
   kinds: Record<string, { id: string; category: string; properties: Record<string, PropertyDef> }>;
@@ -12,6 +12,8 @@ export type Catalogue = {
       id: string;
       kind: string;
       provider: string;
+      /** Official documentation page for the product; absent when none is recorded. */
+      docs?: string;
       defaults: Record<string, unknown>;
       properties: Record<string, PropertyDef>;
     }
@@ -32,9 +34,13 @@ export type PropertyDef = {
   required?: boolean;
   refKind?: string;
 };
-export type LocaleEntry = { name?: string; description?: string };
+export type LocaleEntry = { name?: string; description?: string; rationale?: string };
 
-type Holder = { cat?: Catalogue & { root: string }; icons?: Record<string, string> };
+type Holder = {
+  cat?: Catalogue & { root: string };
+  icons?: Record<string, string>;
+  sources?: Sources;
+};
 const g = globalThis as unknown as { __zeemaCat?: Holder };
 if (!g.__zeemaCat) g.__zeemaCat = {};
 const holder: Holder = g.__zeemaCat;
@@ -68,6 +74,28 @@ export function getIcons(): Record<string, string> {
       ).icons;
   }
   return holder.icons ?? {};
+}
+
+export type Sources = {
+  kinds: Record<string, string>;
+  components: Record<string, string>;
+  rules: Record<string, string>;
+};
+
+/**
+ * The verbatim YAML of every kind, component and rule, loaded once per process from the
+ * server-only `sources.json` the bundle build writes (or straight from the repository in
+ * development). It is deliberately not part of catalogue.json: it is about as large again as the
+ * whole bundle and no browser needs it. The catalogue reference pages show it, and hand it to
+ * agents in the markdown rendering, so a reader can copy the exact bytes on disk.
+ */
+export function getSources(): Sources {
+  if (!holder.sources) {
+    const built = path.join(process.cwd(), "public", "catalogue", "sources.json");
+    if (fs.existsSync(built)) holder.sources = JSON.parse(fs.readFileSync(built, "utf8"));
+    else holder.sources = loadSources(repoRoot()) as Sources;
+  }
+  return holder.sources ?? { kinds: {}, components: {}, rules: {} };
 }
 
 export function componentName(cat: Catalogue, id: string) {

@@ -6,6 +6,7 @@ type: "component"
 id: "pagerduty"
 kind: "notification-service"
 provider: "default"
+docs: "https://support.pagerduty.com/main/docs/user-profile"
 defaults:
   managed: true
   channelPush: true

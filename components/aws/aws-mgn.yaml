@@ -7,6 +7,7 @@ type: "component"
 id: "aws-mgn"
 kind: "worker"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/mgn/latest/ug/what-is-application-migration-service.html"
 defaults:
   managed: true
   trigger: "stream"

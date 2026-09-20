@@ -8,6 +8,7 @@ type: "component"
 id: "redpanda-connect"
 kind: "stream-processor"
 provider: "default"
+docs: "https://docs.redpanda.com/redpanda-connect/components/buffers/about/"
 defaults:
   managed: false
   windowing: "none"

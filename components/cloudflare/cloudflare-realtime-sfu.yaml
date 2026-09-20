@@ -8,6 +8,7 @@ type: "component"
 id: "cloudflare-realtime-sfu"
 kind: "media-router"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/realtime/sfu/"
 defaults:
   managed: true
   mode: "sfu"

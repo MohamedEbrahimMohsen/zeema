@@ -7,6 +7,7 @@ type: "component"
 id: "zitadel"
 kind: "identity-provider"
 provider: "default"
+docs: "https://zitadel.com/docs"
 defaults:
   protocol: "oidc"
   authorizationModel: "rbac"

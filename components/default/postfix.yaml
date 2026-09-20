@@ -6,6 +6,7 @@ type: "component"
 id: "postfix"
 kind: "third-party-api"
 provider: "default"
+docs: "https://www.postfix.org/OVERVIEW.html"
 defaults:
   managed: false
   idempotent: false

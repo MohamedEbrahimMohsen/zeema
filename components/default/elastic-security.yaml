@@ -8,6 +8,7 @@ type: "component"
 id: "elastic-security"
 kind: "monitoring"
 provider: "default"
+docs: "https://www.elastic.co/docs/solutions/security"
 defaults:
   managed: false
   signal: "all"

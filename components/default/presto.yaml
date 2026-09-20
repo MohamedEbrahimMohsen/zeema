@@ -7,6 +7,7 @@ type: "component"
 id: "presto"
 kind: "data-warehouse"
 provider: "default"
+docs: "https://github.com/prestodb/presto"
 defaults:
   realtime: false
   upsert: false

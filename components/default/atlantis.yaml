@@ -8,6 +8,7 @@ type: "component"
 id: "atlantis"
 kind: "ci-pipeline"
 provider: "default"
+docs: "https://www.runatlantis.io/docs/"
 defaults:
   managed: false
   trigger: "pull-request"

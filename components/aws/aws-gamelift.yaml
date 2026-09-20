@@ -8,6 +8,7 @@ type: "component"
 id: "aws-gamelift"
 kind: "app-server"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/gamelift/latest/apireference/API_CreateFleet.html"
 defaults:
   managed: true
   stateless: false

@@ -7,6 +7,7 @@ type: "component"
 id: "azure-cloud-hsm"
 kind: "key-management"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/cloud-hsm/overview"
 defaults:
   managed: true
   hsm: true

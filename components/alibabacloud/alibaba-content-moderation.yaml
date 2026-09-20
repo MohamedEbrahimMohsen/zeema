@@ -9,6 +9,7 @@ type: "component"
 id: "alibaba-content-moderation"
 kind: "ai-service"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/content-moderation/"
 defaults:
   managed: true
   modality: "multimodal"

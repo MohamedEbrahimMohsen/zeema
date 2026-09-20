@@ -7,6 +7,7 @@ type: "component"
 id: "azure-batch"
 kind: "worker"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/batch/batch-technical-overview"
 defaults:
   managed: true
   trigger: "batch"

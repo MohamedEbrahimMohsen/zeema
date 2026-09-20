@@ -10,6 +10,7 @@ type: "component"
 id: "telegram"
 kind: "third-party-api"
 provider: "default"
+docs: "https://core.telegram.org/bots/api"
 defaults:
   managed: true
   callbackStyle: "poll"

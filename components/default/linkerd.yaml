@@ -5,6 +5,7 @@ type: "component"
 id: "linkerd"
 kind: "service-mesh"
 provider: "default"
+docs: "https://linkerd.io/docs/"
 defaults:
   managed: false
   sidecar: true

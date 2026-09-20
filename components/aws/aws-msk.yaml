@@ -9,6 +9,7 @@ type: "component"
 id: "aws-msk"
 kind: "stream"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/msk/latest/developerguide/msk-default-configuration.html"
 defaults:
   managed: true
   delivery: "at-least-once"

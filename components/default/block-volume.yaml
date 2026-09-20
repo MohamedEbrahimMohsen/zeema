@@ -7,5 +7,6 @@ type: "component"
 id: "block-volume"
 kind: "block-storage"
 provider: "default"
+docs: "https://en.wikipedia.org/wiki/Block-level_storage"
 defaults:
   managed: false

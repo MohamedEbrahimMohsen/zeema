@@ -7,6 +7,7 @@ type: "component"
 id: "thingsboard"
 kind: "iot-hub"
 provider: "default"
+docs: "https://thingsboard.io/docs/getting-started-guides/what-is-thingsboard/"
 defaults:
   protocol: "multi"
   perDeviceIdentity: true

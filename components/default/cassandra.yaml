@@ -6,6 +6,7 @@ type: "component"
 id: "cassandra"
 kind: "nosql-database"
 provider: "default"
+docs: "https://cassandra.apache.org/doc/stable/"
 defaults:
   model: "wide-column"
   consistency: "tunable"

@@ -11,6 +11,7 @@ type: "component"
 id: "digitalocean-droplet"
 kind: "virtual-machine"
 provider: "digitalocean"
+docs: "https://docs.digitalocean.com/products/droplets/"
 defaults:
   managed: false
   os: "linux"

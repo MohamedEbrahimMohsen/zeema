@@ -6,6 +6,7 @@ type: "component"
 id: "worldpay"
 kind: "third-party-api"
 provider: "default"
+docs: "https://docs.worldpay.com/access/products/reference/api-principles"
 defaults:
   managed: true
   handlesMoney: true

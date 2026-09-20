@@ -11,6 +11,7 @@ import { type Catalogue, getCatalogue } from "./catalogue";
 import { analyse } from "./lint";
 import { countExport, countWrite } from "./metrics";
 import { type Sketch, sketchOf } from "./sketch";
+import { toSlug, toTag } from "./slug";
 import { actingAdmin, type SessionUser } from "./viewer";
 
 export class ServiceError extends Error {
@@ -24,14 +25,12 @@ export class ServiceError extends Error {
 }
 
 export const contentHash = (yaml: string) => createHash("sha256").update(yaml).digest("hex");
-export const toSlug = (s: string) =>
-  s
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 64) || "design";
+export { toSlug, toTag } from "./slug";
 
 const MAX_YAML = 512 * 1024;
+/** The README is prose, not a document: long enough for a real write-up, short of a book. */
+export const MAX_README = 20_000;
+export const MAX_TAGS = 10;
 
 export type Viewer = SessionUser | null;
 
@@ -240,6 +239,8 @@ export type ListOptions = {
   q?: string;
   provider?: string;
   kind?: string;
+  /** One of the author's own words, matched against the design's tag list. */
+  tag?: string;
   owner?: string;
   /** Curation tier: reference and imported are the seeded designs, authored are people's own. */
   origin?: "authored" | "imported" | "reference";
@@ -305,6 +306,10 @@ export async function listDesigns(
   if (opts.origin) conds.push(eq(schema.designs.origin, opts.origin));
   if (opts.provider) conds.push(ilike(schema.designs.searchText, `%provider:${opts.provider}%`));
   if (opts.kind) conds.push(ilike(schema.designs.searchText, `%kind:${opts.kind}%`));
+  // Containment rather than a text match: `tags @> '["db"]'` finds the tag "db" and never the
+  // design tagged "dbt", which `like '%db%'` would have handed back.
+  if (opts.tag)
+    conds.push(sql`${schema.designs.tags} @> ${JSON.stringify([toTag(opts.tag)])}::jsonb`);
   const where = and(...conds);
   const order =
     opts.sort === "clones"
@@ -386,6 +391,32 @@ export async function listOwners(viewer: Viewer): Promise<string[]> {
     .orderBy(schema.users.username)
     .limit(50);
   return ["zeema", ...rows.map((r) => r.username)];
+}
+
+/** The tags already in use, commonest first, to offer while someone types a new one. A tag is
+ *  only suggested from designs the viewer may see, so a private design never leaks a word. */
+export async function listTags(viewer: Viewer): Promise<string[]> {
+  const db = await getDb();
+  const rows = await db
+    .select({ tags: schema.designs.tags })
+    .from(schema.designs)
+    .where(
+      and(
+        isNull(schema.designs.deletedAt),
+        actingAdmin(viewer)
+          ? undefined
+          : viewer
+            ? or(eq(schema.designs.visibility, "public"), eq(schema.designs.ownerId, viewer.id))
+            : eq(schema.designs.visibility, "public"),
+      ),
+    )
+    .limit(2000);
+  const uses = new Map<string, number>();
+  for (const r of rows) for (const t of r.tags ?? []) uses.set(t, (uses.get(t) ?? 0) + 1);
+  return [...uses.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .slice(0, 50)
+    .map(([tag]) => tag);
 }
 
 // ---------------------------------------------------------------- writes
@@ -678,6 +709,7 @@ export type PatchInput = {
   title?: string;
   slug?: string;
   summary?: string;
+  readme?: string | null;
   visibility?: "public" | "private";
   tags?: string[];
 };
@@ -706,6 +738,18 @@ export async function patchDesign(owner: string, slug: string, viewer: Viewer, i
     }
   }
   if (input.summary !== undefined) set.summary = input.summary.slice(0, 280) || null;
+  // The README is refused rather than truncated: silently losing the end of someone's writing is
+  // worse than making them shorten it themselves.
+  if (input.readme !== undefined) {
+    const text = input.readme ?? "";
+    if (typeof text !== "string") throw new ServiceError(400, "readme must be text");
+    if (text.length > MAX_README)
+      throw new ServiceError(
+        422,
+        `readme is ${text.length} characters; the limit is ${MAX_README}`,
+      );
+    set.readme = text.trim() ? text : null;
+  }
   if (input.visibility !== undefined) {
     if (!["public", "private"].includes(input.visibility))
       throw new ServiceError(400, "visibility must be public or private");
@@ -722,7 +766,13 @@ export async function patchDesign(owner: string, slug: string, viewer: Viewer, i
         .where(eq(schema.designVersions.id, view.version.id));
     }
   }
-  if (input.tags !== undefined) set.tags = input.tags.map(toSlug).filter(Boolean).slice(0, 10);
+  if (input.tags !== undefined) {
+    if (!Array.isArray(input.tags)) throw new ServiceError(400, "tags must be a list of words");
+    set.tags = [...new Set(input.tags.map((t) => toTag(String(t))).filter(Boolean))].slice(
+      0,
+      MAX_TAGS,
+    );
+  }
   const [design] = await db
     .update(schema.designs)
     .set(set)

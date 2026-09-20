@@ -7,6 +7,7 @@ type: "component"
 id: "nomad"
 kind: "container-orchestrator"
 provider: "default"
+docs: "https://developer.hashicorp.com/nomad/docs/configuration/acl"
 defaults:
   managed: false
   autoscaling: false

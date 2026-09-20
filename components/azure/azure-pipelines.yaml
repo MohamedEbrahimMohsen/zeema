@@ -7,6 +7,7 @@ type: "component"
 id: "azure-pipelines"
 kind: "ci-pipeline"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/devops/pipelines/get-started/what-is-azure-pipelines"
 defaults:
   trigger: "commit"
   selfHostedRunners: false

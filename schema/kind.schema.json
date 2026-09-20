@@ -31,7 +31,8 @@
         "external",
         "client",
         "ops",
-        "security"
+        "security",
+        "custom"
       ]
     },
     "properties": {

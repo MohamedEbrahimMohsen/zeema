@@ -9,6 +9,7 @@ type: "component"
 id: "aws-healthomics"
 kind: "object-store"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/omics/latest/dev/create-sequence-store.html"
 defaults:
   managed: true
   tier: "hot"

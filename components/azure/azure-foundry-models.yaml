@@ -6,6 +6,7 @@ type: "component"
 id: "azure-foundry-models"
 kind: "ai-service"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/ai-foundry/foundry-models/concepts/models-from-partners"
 defaults:
   managed: true
   modality: "multimodal"

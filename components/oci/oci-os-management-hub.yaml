@@ -7,6 +7,7 @@ type: "component"
 id: "oci-os-management-hub"
 kind: "worker"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/osmh/doc/overview.htm"
 defaults:
   managed: true
   trigger: "schedule"

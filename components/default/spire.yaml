@@ -7,6 +7,7 @@ type: "component"
 id: "spire"
 kind: "identity-provider"
 provider: "default"
+docs: "https://spiffe.io/docs/latest/spire-about/spire-concepts/"
 defaults:
   protocol: "custom"
   authorizationModel: "none"

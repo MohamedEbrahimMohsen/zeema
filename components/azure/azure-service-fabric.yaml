@@ -8,6 +8,7 @@ type: "component"
 id: "azure-service-fabric"
 kind: "container-orchestrator"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/service-fabric/service-fabric-overview"
 defaults:
   managed: false
   autoscaling: false

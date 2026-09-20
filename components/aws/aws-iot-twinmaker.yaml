@@ -8,6 +8,7 @@ type: "component"
 id: "aws-iot-twinmaker"
 kind: "graph-database"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/iot-twinmaker/latest/guide/what-is-twinmaker.html"
 defaults:
   inMemory: false
   crossRegionConsistency: "none"

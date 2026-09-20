@@ -6,6 +6,7 @@ type: "component"
 id: "longhorn"
 kind: "block-storage"
 provider: "default"
+docs: "https://longhorn.io/docs/1.9.0/references/settings/"
 defaults:
   managed: false
   snapshots: true

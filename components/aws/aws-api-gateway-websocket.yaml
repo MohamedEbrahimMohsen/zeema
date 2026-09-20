@@ -5,6 +5,7 @@ type: "component"
 id: "aws-api-gateway-websocket"
 kind: "realtime-gateway"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api.html"
 defaults:
   managed: true
   protocol: "websocket"

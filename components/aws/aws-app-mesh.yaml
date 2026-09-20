@@ -5,6 +5,7 @@ type: "component"
 id: "aws-app-mesh"
 kind: "service-mesh"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/app-mesh/latest/userguide/what-is-app-mesh.html"
 defaults:
   managed: true
   sidecar: true

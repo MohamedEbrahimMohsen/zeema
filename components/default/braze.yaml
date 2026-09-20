@@ -6,6 +6,7 @@ type: "component"
 id: "braze"
 kind: "notification-service"
 provider: "default"
+docs: "https://www.braze.com/docs/api/basics/"
 defaults:
   managed: true
   channelPush: true

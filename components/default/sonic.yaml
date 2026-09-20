@@ -7,6 +7,7 @@ type: "component"
 id: "sonic"
 kind: "search-index"
 provider: "default"
+docs: "https://github.com/valeriansaliou/sonic"
 defaults:
   structure: "inverted"
   shardingStrategy: "none"

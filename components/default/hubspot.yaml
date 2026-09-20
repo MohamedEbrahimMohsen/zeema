@@ -9,6 +9,7 @@ type: "component"
 id: "hubspot"
 kind: "third-party-api"
 provider: "default"
+docs: "https://developers.hubspot.com/docs/developer-tooling/platform/usage-guidelines"
 defaults:
   managed: true
   idempotent: false

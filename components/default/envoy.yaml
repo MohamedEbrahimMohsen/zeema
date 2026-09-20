@@ -5,6 +5,7 @@ type: "component"
 id: "envoy"
 kind: "load-balancer"
 provider: "default"
+docs: "https://www.envoyproxy.io/docs/envoy/latest/"
 defaults:
   layer: "l7"
   managed: false

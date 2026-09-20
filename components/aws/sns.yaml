@@ -5,6 +5,7 @@ type: "component"
 id: "sns"
 kind: "pubsub-topic"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/sns/latest/dg/welcome.html"
 defaults:
   managed: true
   delivery: "at-least-once"

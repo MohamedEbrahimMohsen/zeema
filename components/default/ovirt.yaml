@@ -7,6 +7,7 @@ type: "component"
 id: "ovirt"
 kind: "virtual-machine"
 provider: "default"
+docs: "https://www.ovirt.org/documentation/administration_guide/"
 defaults:
   managed: false
 properties:

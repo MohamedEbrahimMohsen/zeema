@@ -8,6 +8,7 @@ type: "component"
 id: "aws-mediatailor"
 kind: "media-router"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/mediatailor/latest/ug/what-is.html"
 defaults:
   managed: true
   mode: "ingest"

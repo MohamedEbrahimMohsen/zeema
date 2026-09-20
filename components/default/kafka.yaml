@@ -6,6 +6,7 @@ type: "component"
 id: "kafka"
 kind: "stream"
 provider: "default"
+docs: "https://kafka.apache.org/documentation/"
 defaults:
   delivery: "at-least-once"
   ordering: "per-key"

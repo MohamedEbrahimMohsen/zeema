@@ -7,6 +7,7 @@ type: "component"
 id: "matomo"
 kind: "bi-service"
 provider: "default"
+docs: "https://matomo.org/faq/on-premise/"
 defaults:
   managed: false
 properties:

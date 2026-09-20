@@ -10,6 +10,7 @@
     "./document": "./src/document.js",
     "./structure": "./src/structure.js",
     "./rules": "./src/rules.js",
+    "./describe": "./src/describe.js",
     "./layout": "./src/layout.js",
     "./geometry": "./src/geometry.js",
     "./render": "./src/render.js"

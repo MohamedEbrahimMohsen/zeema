@@ -8,6 +8,7 @@ type: "component"
 id: "azure-deployment-environments"
 kind: "ci-pipeline"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/deployment-environments/overview-what-is-azure-deployment-environments"
 defaults:
   trigger: "manual"
   managed: true

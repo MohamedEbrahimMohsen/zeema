@@ -9,6 +9,7 @@ type: "component"
 id: "alibaba-file-storage-hdfs"
 kind: "file-storage"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/oss/support/apsara-file-storage-for-hdfs"
 defaults:
   protocol: "native"
   publicAccess: false

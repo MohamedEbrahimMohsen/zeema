@@ -5,6 +5,7 @@ type: "component"
 id: "databricks-sql"
 kind: "data-warehouse"
 provider: "default"
+docs: "https://docs.databricks.com/aws/en/sql/"
 defaults:
   realtime: false
   upsert: true

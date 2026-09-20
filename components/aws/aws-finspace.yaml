@@ -8,6 +8,7 @@ type: "component"
 id: "aws-finspace"
 kind: "timeseries-database"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/finspace/latest/userguide/finspace-what-is.html"
 defaults:
   managed: true
 properties:

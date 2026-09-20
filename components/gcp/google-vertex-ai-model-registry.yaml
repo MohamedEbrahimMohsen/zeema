@@ -7,6 +7,7 @@ type: "component"
 id: "google-vertex-ai-model-registry"
 kind: "artifact-repository"
 provider: "gcp"
+docs: "https://cloud.google.com/vertex-ai/docs/model-registry/introduction"
 defaults:
   managed: true
   artifactType: "generic"

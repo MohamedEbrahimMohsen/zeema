@@ -6,6 +6,7 @@ type: "component"
 id: "oceanbase"
 kind: "sql-database"
 provider: "default"
+docs: "https://en.oceanbase.com/docs/common-oceanbase-database-10000000001031451"
 defaults:
   distributed: true
   sharded: true

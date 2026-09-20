@@ -8,6 +8,7 @@ type: "component"
 id: "cloudflare-firewall-for-ai"
 kind: "waf"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/waf/detections/firewall-for-ai/"
 defaults:
   managed: true
   mode: "detection"

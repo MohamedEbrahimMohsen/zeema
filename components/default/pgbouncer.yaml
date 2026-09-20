@@ -5,6 +5,7 @@ type: "component"
 id: "pgbouncer"
 kind: "database-proxy"
 provider: "default"
+docs: "https://www.pgbouncer.org/config.html"
 defaults:
   pooling: true
   routing: "none"

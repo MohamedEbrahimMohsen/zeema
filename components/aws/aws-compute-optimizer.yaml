@@ -8,6 +8,7 @@ type: "component"
 id: "aws-compute-optimizer"
 kind: "monitoring"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/compute-optimizer/latest/ug/what-is-compute-optimizer.html"
 defaults:
   signal: "metrics"
   collectorMode: "pull"

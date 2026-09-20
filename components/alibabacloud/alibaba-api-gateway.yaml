@@ -10,6 +10,7 @@ type: "component"
 id: "alibaba-api-gateway"
 kind: "api-gateway"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/api-gateway/"
 defaults:
   managed: true
   tls: true

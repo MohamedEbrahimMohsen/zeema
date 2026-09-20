@@ -5,6 +5,7 @@ type: "component"
 id: "oci-autonomous-database"
 kind: "sql-database"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/autonomous-database-serverless/doc/autonomous-workload-types.html"
 defaults:
   managed: true
   backupEnabled: true

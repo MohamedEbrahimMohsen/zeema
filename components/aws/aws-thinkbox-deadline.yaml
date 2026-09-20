@@ -9,6 +9,7 @@ type: "component"
 id: "aws-thinkbox-deadline"
 kind: "worker"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/general/latest/gr/maintenance_services.html"
 defaults:
   trigger: "batch"
 properties:

@@ -142,3 +142,74 @@ describe("deleting", () => {
     expect(again.design.slug).toBe("shipped-2");
   });
 });
+
+describe("about and tags", () => {
+  it("refuses a README past the limit and keeps the one already stored", async () => {
+    const { createDesign, patchDesign, getDesign, MAX_README } = await lib();
+    const jane = await makeUser("jane");
+    await createDesign(jane as never, { title: "Readme", yaml: YAML });
+    const kept = "# Title\n\nA paragraph.";
+    await patchDesign("jane", "readme", jane as never, { readme: kept });
+    await expect(
+      patchDesign("jane", "readme", jane as never, { readme: "x".repeat(MAX_README + 1) }),
+    ).rejects.toMatchObject({ status: 422 });
+    const view = await getDesign("jane", "readme", jane as never);
+    expect(view.design.readme).toBe(kept);
+    // Exactly at the limit is accepted, and blank clears the field rather than storing "".
+    const edge = "y".repeat(MAX_README);
+    expect((await patchDesign("jane", "readme", jane as never, { readme: edge })).readme).toBe(
+      edge,
+    );
+    expect(
+      (await patchDesign("jane", "readme", jane as never, { readme: "   " })).readme,
+    ).toBeNull();
+  });
+
+  it("normalises tags, drops the duplicates and stops at ten", async () => {
+    const { createDesign, patchDesign, listTags, MAX_TAGS } = await lib();
+    const karl = await makeUser("karl");
+    await createDesign(karl as never, { title: "Tagged", yaml: YAML });
+    const d = await patchDesign("karl", "tagged", karl as never, {
+      tags: ["Event Driven", "  AWS  ", "aws", "!!!", "kafka"],
+    });
+    expect(d.tags).toEqual(["event-driven", "aws", "kafka"]);
+
+    const many = await patchDesign("karl", "tagged", karl as never, {
+      tags: Array.from({ length: 15 }, (_, i) => `tag-${i}`),
+    });
+    expect(many.tags).toHaveLength(MAX_TAGS);
+
+    // A private design's words are not offered to a stranger.
+    expect(await listTags(null)).toEqual([]);
+    expect(await listTags(karl as never)).toContain("tag-0");
+  });
+});
+
+describe("browsing by tag", () => {
+  it("returns the designs carrying that exact word and no others", async () => {
+    const { createDesign, patchDesign, listDesigns } = await lib();
+    const lena = await makeUser("lena");
+    const paid = await createDesign(lena as never, { title: "Paid", yaml: YAML });
+    const free = await createDesign(lena as never, { title: "Free", yaml: YAML });
+    await patchDesign("lena", paid.design.slug, lena as never, {
+      visibility: "public",
+      tags: ["billing", "billing-portal"],
+    });
+    await patchDesign("lena", free.design.slug, lena as never, { visibility: "public" });
+
+    const hit = await listDesigns(null, { tag: "billing" });
+    expect(hit.items.map((d) => d.title)).toEqual(["Paid"]);
+    // Containment, not a substring: "billing" must not be answered by "billing-portal" alone.
+    expect((await listDesigns(null, { tag: "billing-portal" })).items).toHaveLength(1);
+    expect((await listDesigns(null, { tag: "bill" })).items).toEqual([]);
+  });
+
+  it("reads an unknown #word in the search box as a tag rather than as text", async () => {
+    const { getCatalogue } = await import("./catalogue");
+    const { parseQuery } = await import("./search-query");
+    const q = parseQuery("#billing #aws stripe", getCatalogue());
+    expect(q.tag).toBe("billing");
+    expect(q.provider).toBe("aws");
+    expect(q.text).toBe("stripe");
+  });
+});

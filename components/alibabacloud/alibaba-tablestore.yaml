@@ -9,6 +9,7 @@ type: "component"
 id: "alibaba-tablestore"
 kind: "nosql-database"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/tablestore/"
 defaults:
   model: "wide-column"
   consistency: "strong"

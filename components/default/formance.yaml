@@ -6,6 +6,7 @@ type: "component"
 id: "formance"
 kind: "ledger"
 provider: "default"
+docs: "https://docs.formance.com/ledger/"
 defaults:
   doubleEntry: true
   appendOnly: true

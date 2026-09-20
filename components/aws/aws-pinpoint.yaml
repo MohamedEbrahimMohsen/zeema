@@ -6,6 +6,7 @@ type: "component"
 id: "aws-pinpoint"
 kind: "notification-service"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/pinpoint/latest/userguide/welcome.html"
 defaults:
   managed: true
   channelPush: true

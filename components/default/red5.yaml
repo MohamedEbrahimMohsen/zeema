@@ -7,6 +7,7 @@ type: "component"
 id: "red5"
 kind: "media-router"
 provider: "default"
+docs: "https://www.red5.net/docs/red5-pro/users-guide/protocols/rtmp/"
 defaults:
   managed: false
   mode: "ingest"

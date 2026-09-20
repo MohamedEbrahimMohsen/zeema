@@ -7,6 +7,7 @@ type: "component"
 id: "google-managed-prometheus"
 kind: "timeseries-database"
 provider: "gcp"
+docs: "https://cloud.google.com/stackdriver/docs/managed-prometheus"
 defaults:
   managed: true
   retentionRawDays: 730

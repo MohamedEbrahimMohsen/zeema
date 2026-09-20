@@ -8,6 +8,7 @@ type: "component"
 id: "google-certificate-authority-service"
 kind: "key-management"
 provider: "gcp"
+docs: "https://cloud.google.com/certificate-authority-service/docs/ca-service-overview"
 defaults:
   managed: true
   hsm: true

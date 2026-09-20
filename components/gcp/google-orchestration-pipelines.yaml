@@ -7,6 +7,7 @@ type: "component"
 id: "google-orchestration-pipelines"
 kind: "workflow-engine"
 provider: "gcp"
+docs: "https://docs.cloud.google.com/orchestration-pipelines/overview"
 defaults:
   managed: true
   pattern: "dag"

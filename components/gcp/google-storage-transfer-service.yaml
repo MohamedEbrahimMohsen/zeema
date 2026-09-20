@@ -8,6 +8,7 @@ type: "component"
 id: "google-storage-transfer-service"
 kind: "worker"
 provider: "gcp"
+docs: "https://cloud.google.com/storage-transfer/docs/create-transfers"
 defaults:
   trigger: "batch"
   idempotent: true

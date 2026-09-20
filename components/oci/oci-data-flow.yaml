@@ -8,6 +8,7 @@ type: "component"
 id: "oci-data-flow"
 kind: "big-data-cluster"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/data-flow/using/home.htm"
 defaults:
   managed: true
   engine: "spark"

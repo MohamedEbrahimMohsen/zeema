@@ -5,6 +5,7 @@ type: "component"
 id: "multicast-domain"
 kind: "network-fabric"
 provider: "default"
+docs: "https://datatracker.ietf.org/doc/html/rfc1112"
 defaults:
   multicast: true
   interconnect: "private"

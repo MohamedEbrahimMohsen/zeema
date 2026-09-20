@@ -9,6 +9,7 @@ type: "component"
 id: "oci-database-at-google-cloud"
 kind: "sql-database"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/database-at-gcp/overview.htm"
 defaults:
   managed: true
   backupEnabled: true

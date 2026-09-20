@@ -5,6 +5,7 @@ type: "component"
 id: "cockroachdb"
 kind: "sql-database"
 provider: "default"
+docs: "https://www.cockroachlabs.com/docs/stable/"
 defaults:
   distributed: true
   multiWriter: true

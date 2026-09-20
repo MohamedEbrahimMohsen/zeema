@@ -10,6 +10,7 @@ type: "component"
 id: "alibaba-cen"
 kind: "network-fabric"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/cen/product-overview/what-is-cen"
 defaults:
   managed: true
   interconnect: "cloud-backbone"

@@ -9,6 +9,7 @@ type: "component"
 id: "digitalocean-reserved-ip"
 kind: "network-fabric"
 provider: "digitalocean"
+docs: "https://docs.digitalocean.com/products/networking/reserved-ips/"
 defaults:
   managed: true
   interconnect: "public"

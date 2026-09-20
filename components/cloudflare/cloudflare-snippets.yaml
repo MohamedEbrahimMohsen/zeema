@@ -7,6 +7,7 @@ type: "component"
 id: "cloudflare-snippets"
 kind: "worker"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/rules/snippets/"
 defaults:
   managed: true
   trigger: "manual"

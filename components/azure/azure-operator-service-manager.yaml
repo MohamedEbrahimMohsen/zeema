@@ -8,6 +8,7 @@ type: "component"
 id: "azure-operator-service-manager"
 kind: "ci-pipeline"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/operator-service-manager/azure-operator-service-manager-overview"
 defaults:
   managed: true
   trigger: "manual"

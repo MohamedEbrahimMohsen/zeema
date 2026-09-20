@@ -8,6 +8,7 @@ type: "component"
 id: "google-firebase-app-hosting"
 kind: "app-server"
 provider: "gcp"
+docs: "https://firebase.google.com/docs/app-hosting/configure"
 defaults:
   stateless: true
   autoscaling: true

@@ -8,6 +8,7 @@ type: "component"
 id: "azure-network-watcher"
 kind: "monitoring"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/network-watcher/network-watcher-overview"
 defaults:
   managed: true
   signal: "all"

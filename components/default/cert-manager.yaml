@@ -7,6 +7,7 @@ type: "component"
 id: "cert-manager"
 kind: "key-management"
 provider: "default"
+docs: "https://cert-manager.io/docs/usage/certificate/"
 defaults:
   managed: false
   hsm: false

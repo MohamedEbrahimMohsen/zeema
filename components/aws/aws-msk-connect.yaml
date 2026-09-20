@@ -8,6 +8,7 @@ type: "component"
 id: "aws-msk-connect"
 kind: "worker"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/MSKC/latest/mskc/API_CreateConnector.html"
 defaults:
   managed: true
   trigger: "stream"

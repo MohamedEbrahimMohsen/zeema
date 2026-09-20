@@ -7,6 +7,7 @@ type: "component"
 id: "azure-cyclecloud"
 kind: "big-data-cluster"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/cyclecloud/overview"
 defaults:
   managed: false
   engine: "hpc"

@@ -5,6 +5,7 @@ type: "component"
 id: "datadog"
 kind: "monitoring"
 provider: "default"
+docs: "https://docs.datadoghq.com/"
 defaults:
   signal: "all"
   collectorMode: "push"

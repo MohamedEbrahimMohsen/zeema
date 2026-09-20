@@ -9,6 +9,7 @@ type: "component"
 id: "azure-subnet"
 kind: "network-fabric"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-manage-subnet"
 defaults:
   managed: true
   overlay: true

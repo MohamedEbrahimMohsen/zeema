@@ -7,6 +7,7 @@ type: "component"
 id: "ping-identity"
 kind: "identity-provider"
 provider: "default"
+docs: "https://www.pingidentity.com/en/platform.html"
 defaults:
   protocol: "oidc"
   authorizationModel: "rbac"

@@ -9,6 +9,7 @@ type: "component"
 id: "alibaba-devops-flow"
 kind: "ci-pipeline"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/yunxiao/"
 defaults:
   managed: true
 properties:

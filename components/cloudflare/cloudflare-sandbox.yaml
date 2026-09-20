@@ -7,6 +7,7 @@ type: "component"
 id: "cloudflare-sandbox"
 kind: "app-server"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/sandbox/"
 defaults:
   managed: true
   stateless: false

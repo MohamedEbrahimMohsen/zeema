@@ -7,6 +7,7 @@ type: "component"
 id: "oci-base-database-cloud-at-customer"
 kind: "sql-database"
 provider: "oci"
+docs: "https://docs.oracle.com/en/cloud/cloud-at-customer/base-database/admin/architecture.html"
 defaults:
   managed: true
   replication: "none"

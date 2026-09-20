@@ -7,6 +7,7 @@ type: "component"
 id: "slurm"
 kind: "big-data-cluster"
 provider: "default"
+docs: "https://slurm.schedmd.com/sched_config.html"
 defaults:
   engine: "hpc"
   autoscaling: false

@@ -5,6 +5,7 @@ type: "component"
 id: "oracle-db"
 kind: "sql-database"
 provider: "default"
+docs: "https://docs.oracle.com/en/database/oracle/oracle-database/"
 defaults:
   replication: "none"
   concurrencyControl: "pessimistic"

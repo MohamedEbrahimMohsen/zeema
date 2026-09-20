@@ -7,6 +7,7 @@ type: "component"
 id: "aws-location-service"
 kind: "third-party-api"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/location/latest/developerguide/what-is.html"
 defaults:
   managed: true
   callbackStyle: "none"

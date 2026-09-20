@@ -7,6 +7,7 @@ type: "component"
 id: "aws-fis"
 kind: "worker"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/fis/latest/userguide/what-is.html"
 defaults:
   trigger: "manual"
   managed: true

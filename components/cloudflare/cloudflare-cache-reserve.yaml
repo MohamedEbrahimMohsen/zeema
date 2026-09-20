@@ -7,6 +7,7 @@ type: "component"
 id: "cloudflare-cache-reserve"
 kind: "object-store"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/cache/advanced-configuration/cache-reserve/"
 defaults:
   managed: true
   tier: "warm"

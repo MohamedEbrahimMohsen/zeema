@@ -9,6 +9,7 @@ type: "component"
 id: "glassfish"
 kind: "app-server"
 provider: "default"
+docs: "https://glassfish.org/documentation"
 defaults:
   managed: false
   runtime: "jvm"

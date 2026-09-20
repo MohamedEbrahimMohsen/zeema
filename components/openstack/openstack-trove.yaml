@@ -8,6 +8,7 @@ type: "component"
 id: "openstack-trove"
 kind: "sql-database"
 provider: "openstack"
+docs: "https://docs.openstack.org/trove/latest/"
 defaults:
   backupEnabled: false
   replication: "none"

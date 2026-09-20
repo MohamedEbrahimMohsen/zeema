@@ -5,6 +5,7 @@ type: "component"
 id: "oci-queue"
 kind: "queue"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/queue/overview.htm"
 defaults:
   managed: true
   delivery: "at-least-once"

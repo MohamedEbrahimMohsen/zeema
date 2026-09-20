@@ -8,6 +8,7 @@ type: "component"
 id: "oci-dedicated-vm-host"
 kind: "virtual-machine"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/Compute/Concepts/dedicatedvmhosts.htm"
 defaults:
   managed: false
   diskEncryption: true

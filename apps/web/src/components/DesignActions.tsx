@@ -100,11 +100,7 @@ export function DesignActions({
       >
         {canWrite ? "Open in canvas" : "View in canvas"}
       </a>
-      {canWrite ? (
-        <a className="btn btn-sm no-underline" href={`/d/${owner}/${slug}/edit`}>
-          Edit YAML
-        </a>
-      ) : null}
+      {/* Editing the YAML lives with the YAML, in the section's own toolbar. */}
       {canWrite && unpublished ? (
         <button
           type="button"
@@ -132,9 +128,6 @@ export function DesignActions({
       <button type="button" className="btn btn-sm" onClick={exportSvg}>
         Export SVG
       </button>
-      <a className="btn btn-sm no-underline" href={`${base}/yaml`} target="_blank" rel="noreferrer">
-        YAML
-      </a>
       {canWrite && !isCurated ? (
         <>
           <button

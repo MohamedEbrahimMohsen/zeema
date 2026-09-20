@@ -8,6 +8,7 @@ type: "component"
 id: "azure-database-for-mysql"
 kind: "sql-database"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/mysql/flexible-server/overview"
 defaults:
   managed: true
   replication: "none"

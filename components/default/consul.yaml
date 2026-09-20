@@ -5,6 +5,7 @@ type: "component"
 id: "consul"
 kind: "coordination-service"
 provider: "default"
+docs: "https://developer.hashicorp.com/consul/docs"
 defaults:
   role: "discovery"
   consensus: "raft"

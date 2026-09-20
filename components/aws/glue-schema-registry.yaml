@@ -6,6 +6,7 @@ type: "component"
 id: "glue-schema-registry"
 kind: "schema-registry"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/glue/latest/dg/schema-registry.html"
 defaults:
   compatibility: "backward"
   enforced: false

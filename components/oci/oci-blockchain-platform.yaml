@@ -9,6 +9,7 @@ type: "component"
 id: "oci-blockchain-platform"
 kind: "ledger"
 provider: "oci"
+docs: "https://docs.oracle.com/en/cloud/paas/blockchain-cloud/usingoci/what-are-advantages-oracle-blockchain-platform.html"
 defaults:
   managed: true
   appendOnly: true

@@ -8,6 +8,7 @@ type: "component"
 id: "k8s-volume"
 kind: "block-storage"
 provider: "k8s"
+docs: "https://kubernetes.io/docs/concepts/storage/volumes/"
 defaults:
   managed: false
 properties:

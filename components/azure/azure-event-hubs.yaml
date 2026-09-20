@@ -6,6 +6,7 @@ type: "component"
 id: "azure-event-hubs"
 kind: "stream"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-about"
 defaults:
   delivery: "at-least-once"
   ordering: "per-key"

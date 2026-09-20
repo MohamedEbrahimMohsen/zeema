@@ -8,6 +8,7 @@ type: "component"
 id: "aws-entity-resolution"
 kind: "worker"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/entityresolution/latest/userguide/what-is-service.html"
 defaults:
   managed: true
   trigger: "manual"

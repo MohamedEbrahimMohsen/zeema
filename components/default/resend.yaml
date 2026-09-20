@@ -6,6 +6,7 @@ type: "component"
 id: "resend"
 kind: "third-party-api"
 provider: "default"
+docs: "https://resend.com/docs/dashboard/emails/idempotency-keys"
 defaults:
   managed: true
   idempotent: true

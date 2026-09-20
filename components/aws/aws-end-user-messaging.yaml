@@ -8,6 +8,7 @@ type: "component"
 id: "aws-end-user-messaging"
 kind: "notification-service"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/sms-voice/latest/userguide/what-is-service.html"
 defaults:
   managed: true
   channelSms: true

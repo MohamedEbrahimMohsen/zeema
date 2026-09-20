@@ -6,6 +6,7 @@ type: "component"
 id: "azure-document-intelligence"
 kind: "ai-service"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/service-limits"
 defaults:
   managed: true
   modality: "vision"

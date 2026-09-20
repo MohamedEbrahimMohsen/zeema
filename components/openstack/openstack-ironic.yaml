@@ -8,6 +8,7 @@ type: "component"
 id: "openstack-ironic"
 kind: "virtual-machine"
 provider: "openstack"
+docs: "https://docs.openstack.org/ironic/latest/"
 defaults:
   managed: false
 properties:

@@ -8,6 +8,7 @@ type: "component"
 id: "cloudinary"
 kind: "object-store"
 provider: "default"
+docs: "https://cloudinary.com/documentation/backups_and_version_management"
 defaults:
   managed: true
   tier: "hot"

@@ -7,6 +7,7 @@ type: "component"
 id: "google-vertex-ai-vector-search"
 kind: "vector-database"
 provider: "gcp"
+docs: "https://cloud.google.com/vertex-ai/docs/vector-search/overview"
 defaults:
   managed: true
   metadataFiltering: true

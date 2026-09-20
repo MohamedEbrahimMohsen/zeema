@@ -5,6 +5,7 @@ type: "component"
 id: "mediasoup"
 kind: "media-router"
 provider: "default"
+docs: "https://mediasoup.org/documentation/v3/"
 defaults:
   managed: false
   mode: "sfu"

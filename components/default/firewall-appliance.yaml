@@ -8,6 +8,7 @@ type: "component"
 id: "firewall-appliance"
 kind: "firewall"
 provider: "default"
+docs: "https://en.wikipedia.org/wiki/Firewall_"
 defaults:
   managed: false
   defaultAction: "deny"

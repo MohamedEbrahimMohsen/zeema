@@ -6,6 +6,7 @@ type: "component"
 id: "google-time-zone-api"
 kind: "third-party-api"
 provider: "gcp"
+docs: "https://developers.google.com/maps/documentation/timezone/usage-and-billing"
 defaults:
   managed: true
   idempotent: true

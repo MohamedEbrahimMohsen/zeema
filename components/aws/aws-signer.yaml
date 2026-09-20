@@ -7,6 +7,7 @@ type: "component"
 id: "aws-signer"
 kind: "key-management"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/signer/latest/api/API_PutSigningProfile.html"
 defaults:
   managed: true
   rotationAutomated: false

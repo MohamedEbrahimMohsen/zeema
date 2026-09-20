@@ -5,6 +5,7 @@ type: "component"
 id: "route53"
 kind: "dns"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/Welcome.html"
 defaults:
   managed: true
   anycast: true

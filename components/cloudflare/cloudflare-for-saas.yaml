@@ -7,6 +7,7 @@ type: "component"
 id: "cloudflare-for-saas"
 kind: "cdn"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/cloudflare-for-platforms/cloudflare-for-saas/security/certificate-management/issue-and-validate/issue-certificates/"
 defaults:
   managed: true
   caching: true

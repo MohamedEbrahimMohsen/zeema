@@ -5,6 +5,7 @@ type: "component"
 id: "riak"
 kind: "nosql-database"
 provider: "default"
+docs: "https://www.riak.info/"
 defaults:
   model: "key-value"
   consistency: "tunable"

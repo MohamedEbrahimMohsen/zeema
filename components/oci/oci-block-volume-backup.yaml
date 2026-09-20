@@ -9,6 +9,7 @@ type: "component"
 id: "oci-block-volume-backup"
 kind: "backup-service"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/Block/Tasks/schedulingvolumebackups.htm"
 defaults:
   managed: true
   redundancy: "regional"

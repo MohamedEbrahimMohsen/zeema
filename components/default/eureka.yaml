@@ -5,6 +5,7 @@ type: "component"
 id: "eureka"
 kind: "coordination-service"
 provider: "default"
+docs: "https://github.com/Netflix/eureka/wiki"
 defaults:
   role: "discovery"
   consensus: "none"

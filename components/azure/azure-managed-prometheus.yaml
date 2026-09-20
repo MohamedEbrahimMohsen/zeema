@@ -9,6 +9,7 @@ type: "component"
 id: "azure-managed-prometheus"
 kind: "monitoring"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/azure-monitor/metrics/prometheus-metrics-overview"
 defaults:
   managed: true
   signal: "metrics"

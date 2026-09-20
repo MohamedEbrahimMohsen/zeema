@@ -8,6 +8,7 @@ type: "component"
 id: "aws-codepipeline"
 kind: "ci-pipeline"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/codepipeline/latest/userguide/concepts.html"
 defaults:
   approvalRequired: false
   selfHostedRunners: false

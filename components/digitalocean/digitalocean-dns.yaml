@@ -9,6 +9,7 @@ type: "component"
 id: "digitalocean-dns"
 kind: "dns"
 provider: "digitalocean"
+docs: "https://docs.digitalocean.com/products/networking/dns/"
 defaults:
   managed: true
 properties:

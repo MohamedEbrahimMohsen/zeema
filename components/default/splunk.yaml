@@ -6,6 +6,7 @@ type: "component"
 id: "splunk"
 kind: "monitoring"
 provider: "default"
+docs: "https://help.splunk.com/en/splunk-enterprise/administer/admin-manual/10.4/configuration-file-reference/10.4.0-configuration-file-reference/indexes.conf"
 defaults:
   signal: "logs"
   collectorMode: "push"

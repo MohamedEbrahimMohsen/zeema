@@ -6,6 +6,7 @@ type: "component"
 id: "rabbitmq"
 kind: "queue"
 provider: "default"
+docs: "https://www.rabbitmq.com/docs"
 defaults:
   delivery: "at-least-once"
   ordering: "none"

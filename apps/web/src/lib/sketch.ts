@@ -22,6 +22,8 @@ const HUE: Record<string, string> = {
   messaging: "green",
   client: "rose",
   external: "red",
+  // Untyped, so uncoloured: a custom node is a hole, and it should look like one.
+  custom: "grey",
 };
 
 export function sketchOf(yaml: string, cat: Catalogue): Sketch | null {

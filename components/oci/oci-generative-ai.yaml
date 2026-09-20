@@ -8,6 +8,7 @@ type: "component"
 id: "oci-generative-ai"
 kind: "ai-service"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/generative-ai/overview.htm"
 defaults:
   modality: "text"
   publicEndpoint: true

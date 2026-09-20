@@ -8,6 +8,7 @@ type: "component"
 id: "oci-secure-desktops"
 kind: "virtual-desktop"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/secure-desktops/create-pool.htm"
 defaults:
   managed: true
   maxSessionsPerHost: 1

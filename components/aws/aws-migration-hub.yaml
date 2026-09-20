@@ -7,6 +7,7 @@ type: "component"
 id: "aws-migration-hub"
 kind: "monitoring"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/migrationhub/latest/ug/whatishub.html"
 defaults:
   managed: true
   collectorMode: "push"

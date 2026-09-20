@@ -6,6 +6,7 @@ type: "component"
 id: "azure-content-understanding"
 kind: "ai-service"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/ai-services/content-understanding/overview"
 defaults:
   managed: true
   modality: "multimodal"

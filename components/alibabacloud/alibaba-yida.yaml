@@ -9,6 +9,7 @@ type: "component"
 id: "alibaba-yida"
 kind: "app-server"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/product/yida"
 defaults:
   managed: true
 properties:

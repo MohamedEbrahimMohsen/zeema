@@ -8,6 +8,7 @@ type: "component"
 id: "cloudflare-dmarc-management"
 kind: "monitoring"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/dmarc-management/enable/"
 defaults:
   managed: true
   signal: "logs"

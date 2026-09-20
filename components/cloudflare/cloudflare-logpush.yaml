@@ -7,6 +7,7 @@ type: "component"
 id: "cloudflare-logpush"
 kind: "stream-processor"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/logs/logpush/logpush-job/api-configuration/"
 defaults:
   managed: true
 properties:

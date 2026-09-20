@@ -6,6 +6,7 @@ type: "component"
 id: "google-pubsub"
 kind: "pubsub-topic"
 provider: "gcp"
+docs: "https://cloud.google.com/pubsub/docs/overview"
 defaults:
   managed: true
   delivery: "at-least-once"

@@ -8,6 +8,7 @@ type: "component"
 id: "oci-webcenter"
 kind: "app-server"
 provider: "oci"
+docs: "https://docs.oracle.com/en/cloud/paas/webcenter-portal/wc-portal-marketplace/index.html"
 defaults:
   managed: false
   runtime: "weblogic"

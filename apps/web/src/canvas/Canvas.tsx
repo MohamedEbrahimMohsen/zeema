@@ -12,6 +12,21 @@ import { parse, serialize } from "@zeema/core/yaml";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  NOTE_ANCHOR_DX,
+  NOTE_ANCHOR_DY,
+  NOTE_ANCHOR_H,
+  NOTE_ANCHOR_W,
+  NOTE_DEFAULT_H,
+  NOTE_DEFAULT_W,
+  type Note,
+  type NoteAnchor,
+  nextNoteId,
+  pruneAnchored,
+  readSidecar,
+  retargetAnchors,
+  writeSidecar,
+} from "@/lib/layout-sidecar";
 import { ContextMenu, type MenuItem } from "./ContextMenu";
 import { exportScene } from "./exportScene";
 import { type CanvasFinding, FindingsPanel } from "./FindingsPanel";
@@ -25,11 +40,8 @@ type Props = {
   slug: string;
   title: string;
   yaml: string;
-  layoutSidecar: {
-    version: number;
-    nodes?: Record<string, [number, number]>;
-    edges?: Record<string, number>;
-  } | null;
+  /** The jsonb stored beside the version; see lib/layout-sidecar.ts for its shape. */
+  layoutSidecar: unknown;
   contentHash: string;
   canWrite: boolean;
   canClone: boolean;
@@ -46,6 +58,7 @@ type Engine = {
   positions: Record<string, [number, number]>;
   sizes: Record<string, [number, number]>;
   bows: Record<string, number>;
+  notes: Note[];
   undo: any[];
   redo: any[];
   dirty: boolean;
@@ -57,6 +70,117 @@ type Engine = {
 };
 
 const clone = (x: unknown) => JSON.parse(JSON.stringify(x));
+
+// Whether notes are shown is a habit, not a property of the design: it lives in this browser
+// and applies to every canvas the person opens. One key, and a storage that may refuse to
+// answer at all (private windows, blocked site data) never stops the canvas loading.
+const NOTES_KEY = "zeema.canvas.notes";
+const readNotesPref = () => {
+  try {
+    return window.localStorage.getItem(NOTES_KEY) !== "hidden";
+  } catch {
+    return true;
+  }
+};
+
+/** Everything a note is allowed to be anchored to, as the document currently stands. */
+const anchorables = (doc: any) => ({
+  nodes: doc.nodes.map((n: any) => n.id as string),
+  groups: ((doc.groups ?? []) as any[]).map((g) => g.id as string),
+});
+// The canvas writes its shortcuts the way the platform does: ⌘ on a Mac, the caret elsewhere.
+// One helper, so the toolbar hints and the help dialog can never drift apart.
+const onMac = () =>
+  typeof navigator !== "undefined" &&
+  /mac|iphone|ipad|ipod/i.test((navigator as any).platform || navigator.userAgent);
+const useModKey = () => {
+  // Resolved after mount: the server has no navigator, and a guess would break hydration.
+  const [mac, setMac] = useState(false);
+  useEffect(() => setMac(onMac()), []);
+  return { short: mac ? "⌘" : "⌃", long: mac ? "⌘" : "Ctrl" };
+};
+
+/**
+ * Every key and gesture the canvas binds, grouped the way someone looks for them. Each row is
+ * [what you press or do, what it does]. Nothing is listed here that the handlers below and in
+ * scene.ts do not actually bind.
+ */
+const helpSections = (mod: string): Array<[string, Array<[string[], string]>]> => [
+  [
+    "Place and wire",
+    [
+      [
+        ["Drag", "Double-click"],
+        "Add a component: drag it in from the palette, or double-click it there.",
+      ],
+      [["Drag a dot"], "Wire an edge: drag a component's dot onto another component."],
+      [
+        ["Drag a boundary"],
+        "Boundaries don't connect. Wire the components inside one — or add an External system node for something outside your control.",
+      ],
+    ],
+  ],
+  [
+    "Select and move",
+    [
+      [["Click"], "Select what you click; empty space clears the selection."],
+      [["Shift", "Click"], "Add a component to the selection, or take it out."],
+      [["Drag"], "Sweep a box over empty space to select several; Shift keeps what you had."],
+      [[mod, "A"], "Select every component."],
+      [["Drag"], "Move the selection. A component dropped inside a boundary joins it."],
+      [
+        ["Drag a boundary"],
+        "Move a boundary with everything inside it; the grouping does not change.",
+      ],
+      [["←", "→", "↑", "↓"], "Nudge the selection by one."],
+      [["Shift", "←"], "Nudge by ten."],
+      [["Esc"], "Clear the selection, or abandon what you are dragging."],
+    ],
+  ],
+  [
+    "Edit",
+    [
+      [["Double-click"], "Rename what you clicked: a component, an edge or a boundary."],
+      [["Enter"], "Rename the selection."],
+      [["G"], "Group the selection into a boundary."],
+      [[mod, "Shift", "G"], "Ungroup the selected boundary; its components stay."],
+      [[mod, "D"], "Duplicate the selection."],
+      [["Del", "Backspace"], "Delete the selection."],
+      [["Drag an edge"], "Bow it away from the straight line."],
+      [
+        ["Right-click an edge"],
+        "Reverse it, switch synchronous and asynchronous, or straighten it.",
+      ],
+      [[mod, "Z"], "Undo."],
+      [[mod, "Shift", "Z"], "Redo."],
+      [[mod, "Y"], "Redo."],
+    ],
+  ],
+  [
+    "Notes",
+    [
+      [["Right-click empty space"], "Add a note: an annotation, never a node."],
+      [
+        ["Right-click a component", "or a boundary"],
+        "Pin a note to it; the note then follows what it is pinned to.",
+      ],
+      [["N"], "Show or hide every note; a hidden one leaves a dot on its target."],
+      [[mod, "Enter"], "Keep what you typed in a note; Esc throws the edit away."],
+    ],
+  ],
+  [
+    "View and file",
+    [
+      [["Wheel"], "Zoom around the pointer."],
+      [["Middle-drag", "Space", "Drag"], "Pan the canvas."],
+      [[mod, "0"], "Fit the whole design on screen."],
+      [[mod, "1"], "Back to actual size."],
+      [[mod, "S"], "Save."],
+      [["?"], "Open and close this dialog."],
+    ],
+  ],
+];
+
 const typing = (ev: KeyboardEvent) => {
   const t = ev.target as HTMLElement | null;
   return Boolean(t && (/input|select|textarea/i.test(t.tagName) || t.isContentEditable));
@@ -74,10 +198,33 @@ export function Canvas(props: Props) {
   const [autosave, setAutosave] = useState(props.canWrite);
   const [menu, setMenu] = useState<{ x: number; y: number; items: MenuItem[] } | null>(null);
   const [help, setHelp] = useState(false);
+  // The dialog owns Escape while it is open, and the other Escape handlers stand down; a ref,
+  // because those handlers are bound once and must read the current answer, not a stale one.
+  const helpOpen = useRef(false);
+  helpOpen.current = help;
+  const helpBtn = useRef<HTMLButtonElement>(null);
+  const helpDialog = useRef<HTMLDivElement>(null);
+  const helpClose = useRef<HTMLButtonElement>(null);
+  const mod = useModKey();
+  // The boundary-wiring hint: where it sits, and nothing else. It is a remark, not a mode.
+  const [hint, setHint] = useState<{ x: number; y: number } | null>(null);
+  const hintEl = useRef<HTMLDivElement>(null);
+  const [paletteQuery, setPaletteQuery] = useState("");
+  const [paletteFocus, setPaletteFocus] = useState(0);
   const [title, setTitle] = useState(props.title);
   const [unpublished, setUnpublished] = useState(props.unpublished);
   const [editingTitle, setEditingTitle] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
+  // Default shown; the stored preference is read after mount so the server and the first
+  // client render agree.
+  const [showNotes, setShowNotes] = useState(true);
+  const showNotesRef = useRef(true);
+  showNotesRef.current = showNotes;
+  // Targets whose notes are held open although the toggle is off. A look, not a setting: it
+  // lives here and nowhere else, so it dies with the page and never reaches the sidecar.
+  const [pinnedNotes, setPinnedNotes] = useState<string[]>([]);
+  const pinnedNotesRef = useRef<string[]>([]);
+  pinnedNotesRef.current = pinnedNotes;
   const rootRef = useRef<HTMLDivElement>(null);
   const [selection, setSelection] = useState<Subject>({ type: null, ref: null });
   const [multi, setMulti] = useState<Set<string>>(new Set());
@@ -150,6 +297,9 @@ export function Canvas(props: Props) {
         positions: e.positions,
         sizes: e.sizes,
         bows: e.bows,
+        notes: e.notes,
+        showNotes: showNotesRef.current,
+        pinnedNotes: pinnedNotesRef.current,
         findings: [...e.structural, ...e.rules],
       });
       setSelection({ ...scene.selection });
@@ -161,9 +311,11 @@ export function Canvas(props: Props) {
     }
   }, [bundle, relayout, derive]);
 
+  // Notes ride along with the positions: one save request, one sidecar, and never a byte of
+  // the YAML, because a note is not a node.
   const sidecar = useCallback(() => {
     const e = eng.current!;
-    return { version: 2, nodes: e.positions, edges: e.bows };
+    return writeSidecar({ nodes: e.positions, edges: e.bows, notes: e.notes });
   }, []);
 
   const save = useCallback(async () => {
@@ -227,7 +379,12 @@ export function Canvas(props: Props) {
   const commit = useCallback(
     (next: any, opts: { coalesce?: boolean; apply?: () => void } = {}) => {
       const e = eng.current!;
-      const snapshot = { doc: clone(e.doc), positions: clone(e.positions), bows: clone(e.bows) };
+      const snapshot = {
+        doc: clone(e.doc),
+        positions: clone(e.positions),
+        bows: clone(e.bows),
+        notes: clone(e.notes),
+      };
       const now = Date.now();
       const coalesce = Boolean(opts.coalesce) && now - e.lastDragAt < 400;
       if (!coalesce) {
@@ -238,6 +395,10 @@ export function Canvas(props: Props) {
       e.lastDragAt = opts.coalesce ? now : 0;
       if (opts.apply) opts.apply();
       if (next) e.doc = next;
+      // A note anchored to something that has just gone goes with it. Doing it here, after the
+      // snapshot above, means deleting a node and losing its notes is one undo away — and every
+      // delete path gets it, without each one remembering to.
+      e.notes = pruneAnchored(e.notes, anchorables(e.doc));
       e.dirty = true;
       e.saveSeq++;
       setStatus(props.canWrite ? "unsaved" : "read only — Clone to keep these edits");
@@ -251,7 +412,12 @@ export function Canvas(props: Props) {
     const e = eng.current!;
     const prev = e.undo.pop();
     if (!prev) return;
-    e.redo.push({ doc: clone(e.doc), positions: clone(e.positions), bows: clone(e.bows) });
+    e.redo.push({
+      doc: clone(e.doc),
+      positions: clone(e.positions),
+      bows: clone(e.bows),
+      notes: clone(e.notes),
+    });
     Object.assign(e, prev);
     e.lastDragAt = 0;
     e.dirty = true;
@@ -265,7 +431,12 @@ export function Canvas(props: Props) {
     const e = eng.current!;
     const next = e.redo.pop();
     if (!next) return;
-    e.undo.push({ doc: clone(e.doc), positions: clone(e.positions), bows: clone(e.bows) });
+    e.undo.push({
+      doc: clone(e.doc),
+      positions: clone(e.positions),
+      bows: clone(e.bows),
+      notes: clone(e.notes),
+    });
     Object.assign(e, next);
     e.lastDragAt = 0;
     e.dirty = true;
@@ -294,7 +465,13 @@ export function Canvas(props: Props) {
           scene.selection = { type: "node", ref: now };
         scene.multi = new Set([...scene.multi].map((x) => (x === id ? now : x)));
       }
-      commit(doc, { apply: () => now !== id && movePosition(id, now) });
+      commit(doc, {
+        apply: () => {
+          if (now === id) return;
+          movePosition(id, now);
+          retargetAnchors(e.notes, "node", id, now);
+        },
+      });
     },
     [bundle, commit],
   );
@@ -309,6 +486,10 @@ export function Canvas(props: Props) {
     const sel = ids();
     scene.selection = { type: null, ref: null };
     scene.multi = new Set();
+    if (s.type === "note") {
+      const id = s.ref as string;
+      return commit(null, { apply: () => (e.notes = e.notes.filter((n) => n.id !== id)) });
+    }
     if (sel.length) return commit(D.deleteNodes(e.doc, sel, bundle!.catalogue));
     if (s.type === "edge") return commit(D.deleteEdge(e.doc, s.ref as number));
     if (s.type === "group") return commit(D.deleteGroup(e.doc, s.ref as string));
@@ -404,8 +585,127 @@ export function Canvas(props: Props) {
     [bundle, commit],
   );
 
+  // ---------------------------------------------------------------- notes
+  // A note is layout, never document: it is added, moved, retyped and deleted entirely inside
+  // the sidecar, so `commit(null, ...)` is the whole story and the YAML never changes.
+  const setNotesShown = useCallback((next: boolean) => {
+    showNotesRef.current = next;
+    setShowNotes(next);
+    // Showing everything makes a pin meaningless, so it stops being one.
+    if (next) {
+      pinnedNotesRef.current = [];
+      setPinnedNotes([]);
+    }
+    try {
+      window.localStorage.setItem(NOTES_KEY, next ? "shown" : "hidden");
+    } catch {
+      /* a browser that will not remember is still a browser that works */
+    }
+  }, []);
+
+  useEffect(() => setShowNotes(readNotesPref()), []);
+  // The toggle changes what the scene draws, nothing it stores, so a plain redraw is the whole
+  // of it. Notes are never touched, so nothing here makes the design dirty.
+  useEffect(() => {
+    render();
+  }, [showNotes, pinnedNotes, render]);
+
+  const toggleNotePin = useCallback((key: string) => {
+    const now = pinnedNotesRef.current;
+    const next = now.includes(key) ? now.filter((k) => k !== key) : [...now, key];
+    pinnedNotesRef.current = next;
+    setPinnedNotes(next);
+  }, []);
+
+  const newNote = useCallback(
+    (note: Omit<Note, "id">) => {
+      const e = eng.current!;
+      const scene = sceneRef.current!;
+      const id = nextNoteId(e.notes.map((n) => n.id));
+      // Making something invisible would be a trick, not a feature: adding a note while they
+      // are hidden turns them back on so the person sees what they just made.
+      if (!showNotesRef.current) setNotesShown(true);
+      scene.selection = { type: "note", ref: id };
+      scene.multi = new Set();
+      commit(null, { apply: () => e.notes.push({ ...note, id }) });
+      scene.editLabel("note", id);
+    },
+    [commit, setNotesShown],
+  );
+
+  /** A free-floating note, at a place on the canvas. */
+  const addNote = useCallback(
+    (at?: [number, number]) => {
+      const center = at ?? sceneRef.current!.viewCenterWorld();
+      newNote({
+        x: Math.round(center[0]),
+        y: Math.round(center[1]),
+        w: NOTE_DEFAULT_W,
+        h: NOTE_DEFAULT_H,
+        text: "",
+      });
+    },
+    [newNote],
+  );
+
+  /** A note pinned to a node or a boundary: x and y become an offset from its top-right corner. */
+  const addNoteOn = useCallback(
+    (anchor: NoteAnchor) =>
+      newNote({
+        x: NOTE_ANCHOR_DX,
+        y: NOTE_ANCHOR_DY,
+        w: NOTE_ANCHOR_W,
+        h: NOTE_ANCHOR_H,
+        text: "",
+        anchor,
+      }),
+    [newNote],
+  );
+
+  /** Cut a note loose. It keeps the place it is already drawn in, now as world coordinates. */
+  const detachNote = useCallback(
+    (id: string) => {
+      const e = eng.current!;
+      const box = sceneRef.current?.noteBoxes[id];
+      commit(null, {
+        apply: () => {
+          const note = e.notes.find((n) => n.id === id);
+          if (!note) return;
+          if (box) {
+            note.x = Math.round(box[0]);
+            note.y = Math.round(box[1]);
+          }
+          delete note.anchor;
+        },
+      });
+    },
+    [commit],
+  );
+
+  const setNoteText = useCallback(
+    (id: string, text: string) => {
+      const e = eng.current!;
+      commit(null, {
+        apply: () => {
+          const note = e.notes.find((n) => n.id === id);
+          if (note) note.text = text;
+        },
+      });
+    },
+    [commit],
+  );
+
+  const deleteNote = useCallback(
+    (id: string) => {
+      const e = eng.current!;
+      sceneRef.current?.select(null, null);
+      commit(null, { apply: () => (e.notes = e.notes.filter((n) => n.id !== id)) });
+    },
+    [commit],
+  );
+
   const menuFor = useCallback(
-    (target: Subject): MenuItem[] => {
+    (target: Subject, at: [number, number]): MenuItem[] => {
       const scene = sceneRef.current!;
       const e = eng.current!;
       const count = scene.multi.size;
@@ -423,6 +723,11 @@ export function Canvas(props: Props) {
             label: count > 1 ? `Duplicate these ${count}` : "Duplicate",
             hint: "Ctrl D",
             run: duplicateSelection,
+          },
+          {
+            label: "Add note",
+            hint: "pinned here",
+            run: () => addNoteOn({ node: target.ref as string }),
           },
           "-",
           {
@@ -462,6 +767,18 @@ export function Canvas(props: Props) {
           },
         ];
       }
+      if (target.type === "note") {
+        const id = target.ref as string;
+        const note = e.notes.find((n) => n.id === id);
+        return [
+          { label: "Edit text", hint: "double click", run: () => scene.editLabel("note", id) },
+          note?.anchor
+            ? { label: "Detach note", hint: "keep it where it is", run: () => detachNote(id) }
+            : null,
+          "-",
+          { label: "Delete note", hint: "Del", danger: true, run: () => deleteNote(id) },
+        ];
+      }
       if (target.type === "group") {
         const id = target.ref as string;
         const members = D.groupMembers(e.doc, id).length;
@@ -472,6 +789,7 @@ export function Canvas(props: Props) {
             disabled: !members,
             run: () => scene.selectNodes(D.groupMembers(e.doc, id)),
           },
+          { label: "Add note", hint: "pinned here", run: () => addNoteOn({ group: id }) },
           "-",
           {
             label: "Remove boundary, keep members",
@@ -494,6 +812,8 @@ export function Canvas(props: Props) {
         ];
       }
       return [
+        { label: "Add note", hint: "annotation, not a node", run: () => addNote(at) },
+        "-",
         {
           label: "Select all",
           hint: "Ctrl A",
@@ -503,7 +823,18 @@ export function Canvas(props: Props) {
         { label: "Fit to view", hint: "Ctrl 0", run: () => scene.fit() },
       ];
     },
-    [arrange, commit, deleteSelection, duplicateSelection, groupSelection, releaseFromGroup],
+    [
+      addNote,
+      addNoteOn,
+      arrange,
+      commit,
+      deleteNote,
+      detachNote,
+      deleteSelection,
+      duplicateSelection,
+      groupSelection,
+      releaseFromGroup,
+    ],
   );
 
   // ---------------------------------------------------------------- mount the scene
@@ -519,12 +850,14 @@ export function Canvas(props: Props) {
       setError(`This design cannot be opened on the canvas: ${(err as Error).message}`);
       return;
     }
+    const sidecarIn = readSidecar(props.layoutSidecar, anchorables(doc));
     eng.current = {
       doc,
       cst,
-      positions: clone(props.layoutSidecar?.nodes ?? {}),
+      positions: sidecarIn.nodes,
       sizes: {},
-      bows: clone(props.layoutSidecar?.edges ?? {}),
+      bows: sidecarIn.edges,
+      notes: sidecarIn.notes,
       undo: [],
       redo: [],
       dirty: false,
@@ -564,8 +897,20 @@ export function Canvas(props: Props) {
             else delete eng.current!.bows[key];
           },
         }),
+      onNotePin: (key) => toggleNotePin(key),
+      onNoteGeometry: (id, box) => {
+        const e = eng.current!;
+        commit(null, {
+          coalesce: true,
+          apply: () => {
+            const note = e.notes.find((n) => n.id === id);
+            if (note) Object.assign(note, box);
+          },
+        });
+      },
       labelOf: (kind, ref) => {
         const e = eng.current!;
+        if (kind === "note") return e.notes.find((n) => n.id === ref)?.text ?? null;
         if (kind === "node") {
           const n = e.doc.nodes.find((x: any) => x.id === ref);
           return n ? D.displayName(bundle.catalogue, n) : null;
@@ -579,14 +924,16 @@ export function Canvas(props: Props) {
       },
       onLabel: (kind, ref, value) => {
         const e = eng.current!;
+        if (kind === "note") return setNoteText(ref as string, value);
         if (kind === "node") return renameToLabel(ref as string, value);
         if (kind === "edge")
           commit(D.setEdgeField(e.doc, ref as number, "label", value || undefined));
         if (kind === "group")
           commit(D.setGroupField(e.doc, ref as string, "label", value || undefined));
       },
-      onContext: (target, x, y) => setMenu({ x, y, items: menuFor(target) }),
+      onContext: (target, x, y) => setMenu({ x, y, items: menuFor(target, scene.toWorld(x, y)) }),
       onDrop: (componentId, x, y) => addComponent(componentId, [x, y]),
+      onFrameWire: (x, y) => setHint({ x, y }),
     });
     sceneRef.current = scene;
     render();
@@ -602,9 +949,17 @@ export function Canvas(props: Props) {
   // ---------------------------------------------------------------- keyboard
   useEffect(() => {
     const onKey = (ev: KeyboardEvent) => {
+      if (ev.key === "Escape" && helpOpen.current) {
+        // The dialog is modal: Escape belongs to it and to nothing else while it is open.
+        ev.preventDefault();
+        ev.stopPropagation();
+        setHelp(false);
+        return;
+      }
       const scene = sceneRef.current;
       if (!scene || !eng.current) return;
       if (ev.key === "Escape") {
+        setHint(null);
         setMenu(null);
         scene.cancel();
         scene.closeEditor();
@@ -674,6 +1029,11 @@ export function Canvas(props: Props) {
         scene.editLabel(scene.selection.type, scene.selection.ref as string | number);
         return;
       }
+      if (!mod && k === "n") {
+        ev.preventDefault();
+        setNotesShown(!showNotesRef.current);
+        return;
+      }
       if (ev.key === "?") {
         setHelp((h) => !h);
         return;
@@ -688,7 +1048,56 @@ export function Canvas(props: Props) {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [save, undo, redo, duplicateSelection, groupSelection, deleteSelection, nudge, commit]);
+  }, [
+    save,
+    undo,
+    redo,
+    duplicateSelection,
+    groupSelection,
+    deleteSelection,
+    nudge,
+    commit,
+    setNotesShown,
+  ]);
+
+  // The dialog opens on the close button and hands focus back to the ? button when it goes, so
+  // the keyboard never lands somewhere the reader cannot see.
+  const hadHelp = useRef(false);
+  useEffect(() => {
+    if (help) helpClose.current?.focus();
+    else if (hadHelp.current) helpBtn.current?.focus();
+    hadHelp.current = help;
+  }, [help]);
+
+  // Any press outside the dialog closes it — the backdrop, a toolbar button, the canvas itself.
+  // Nothing is swallowed: the press it closed on still does whatever it was going to do. The
+  // ? button is the exception, because its own click is what toggles the dialog shut.
+  useEffect(() => {
+    if (!help) return;
+    const onDown = (ev: PointerEvent) => {
+      const t = ev.target as Node | null;
+      if (!t) return;
+      if (helpDialog.current?.contains(t) || helpBtn.current?.contains(t)) return;
+      setHelp(false);
+    };
+    document.addEventListener("pointerdown", onDown, true);
+    return () => document.removeEventListener("pointerdown", onDown, true);
+  }, [help]);
+
+  // The boundary hint is a remark that gets out of the way: six seconds, a click, or Escape.
+  useEffect(() => {
+    if (!hint) return;
+    const timer = setTimeout(() => setHint(null), 6000);
+    const onDown = (ev: PointerEvent) => {
+      if (hintEl.current?.contains(ev.target as Node)) return;
+      setHint(null);
+    };
+    document.addEventListener("pointerdown", onDown, true);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener("pointerdown", onDown, true);
+    };
+  }, [hint]);
 
   useEffect(() => {
     const warn = (ev: BeforeUnloadEvent) => {
@@ -722,7 +1131,10 @@ export function Canvas(props: Props) {
         scene.selection = { type: "node", ref: newId };
         scene.multi = new Set([...scene.multi].map((x) => (x === oldId ? newId : x)));
         commit(D.renameNode(e.doc, oldId, newId, bundle!.catalogue), {
-          apply: () => movePosition(oldId, newId),
+          apply: () => {
+            movePosition(oldId, newId);
+            retargetAnchors(e.notes, "node", oldId, newId);
+          },
         });
       },
       swap: (id, componentId) => {
@@ -744,7 +1156,9 @@ export function Canvas(props: Props) {
         if ((e.doc.groups ?? []).some((g: any) => g.id === newId))
           return notify(`${newId} is the id of another boundary`);
         sceneRef.current!.selection = { type: "group", ref: newId };
-        commit(D.renameGroup(e.doc, oldId, newId));
+        commit(D.renameGroup(e.doc, oldId, newId), {
+          apply: () => retargetAnchors(e.notes, "group", oldId, newId),
+        });
       },
       setParent: (id, p) => commit(D.setGroupParent(eng.current!.doc, id, p)),
       setDesignId: (v) => {
@@ -759,17 +1173,20 @@ export function Canvas(props: Props) {
           notify((err as Error).message);
         }
       },
+      setNoteText,
+      detachNote,
       remove: (type, ref) => {
         const scene = sceneRef.current!;
         scene.selection = { type: null, ref: null };
         scene.multi = new Set();
         const e = eng.current!;
+        if (type === "note") return deleteNote(ref as string);
         if (type === "node") commit(D.deleteNodes(e.doc, [ref as string], bundle!.catalogue));
         if (type === "edge") commit(D.deleteEdge(e.doc, ref as number));
         if (type === "group") commit(D.deleteGroup(e.doc, ref as string));
       },
     }),
-    [bundle, commit, notify, render, renameToLabel],
+    [bundle, commit, deleteNote, detachNote, notify, render, renameToLabel, setNoteText],
   );
 
   // Native fullscreen when the browser grants it; otherwise the canvas pins itself over the
@@ -780,7 +1197,8 @@ export function Canvas(props: Props) {
       if (!pseudoFs.current) setFullscreen(Boolean(document.fullscreenElement));
     };
     const onKey = (ev: KeyboardEvent) => {
-      if (ev.key === "Escape" && pseudoFs.current) {
+      // The help dialog is modal, so it takes Escape first and full screen keeps waiting.
+      if (ev.key === "Escape" && !helpOpen.current && pseudoFs.current) {
         pseudoFs.current = false;
         setFullscreen(false);
       }
@@ -899,12 +1317,15 @@ export function Canvas(props: Props) {
         ? scene.boxes[subject.ref as string]
         : subject.type === "group"
           ? scene.frames[subject.ref as string]
-          : null;
+          : subject.type === "note"
+            ? scene.noteBoxes[subject.ref as string]
+            : null;
     if (box) scene.center(box);
   };
 
   // ---------------------------------------------------------------- render
   const e = eng.current;
+  const noteCount = e?.notes.length ?? 0;
   const structural = e?.structural ?? [];
   const rules = e?.rules ?? [];
   const blocking = structural.length > 0;
@@ -975,7 +1396,7 @@ export function Canvas(props: Props) {
                 disabled={blocking}
                 title={blocking ? "Fix structural errors first" : "Ctrl S"}
               >
-                Save <kbd>⌃S</kbd>
+                Save <kbd>{mod.short}S</kbd>
               </button>
               <label className="auto">
                 <input
@@ -1029,7 +1450,7 @@ export function Canvas(props: Props) {
             disabled={!e?.undo.length}
             title="Ctrl Z"
           >
-            Undo <kbd>⌃Z</kbd>
+            Undo <kbd>{mod.short}Z</kbd>
           </button>
           <button
             type="button"
@@ -1038,7 +1459,7 @@ export function Canvas(props: Props) {
             disabled={!e?.redo.length}
             title="Ctrl Y"
           >
-            Redo <kbd>⌃Y</kbd>
+            Redo <kbd>{mod.short}Y</kbd>
           </button>
         </div>
         <span className="sep" />
@@ -1049,7 +1470,7 @@ export function Canvas(props: Props) {
             onClick={() => sceneRef.current?.fit()}
             title="Ctrl 0"
           >
-            Fit <kbd>⌃0</kbd>
+            Fit <kbd>{mod.short}0</kbd>
           </button>
           <button
             type="button"
@@ -1058,6 +1479,15 @@ export function Canvas(props: Props) {
             title="Lay every component out again"
           >
             Arrange
+          </button>
+          <button
+            type="button"
+            className={`btn notes-toggle${showNotes ? " active" : ""}`}
+            aria-pressed={showNotes}
+            onClick={() => setNotesShown(!showNotes)}
+            title={showNotes ? "Hide the notes (N)" : "Show the notes (N)"}
+          >
+            Notes{noteCount ? ` · ${noteCount}` : ""} <kbd>N</kbd>
           </button>
         </div>
         <span className="sep" />
@@ -1110,6 +1540,9 @@ export function Canvas(props: Props) {
         <button
           type="button"
           className="btn btn-ghost"
+          ref={helpBtn}
+          aria-pressed={help}
+          aria-label="Keys and gestures"
           onClick={() => setHelp((h) => !h)}
           title="Keys and gestures"
         >
@@ -1122,6 +1555,9 @@ export function Canvas(props: Props) {
             <Palette
               rows={bundle.search}
               icons={bundle.icons}
+              query={paletteQuery}
+              onQuery={setPaletteQuery}
+              focusSeq={paletteFocus}
               onCreate={(id) => addComponent(id)}
             />
           ) : (
@@ -1134,6 +1570,7 @@ export function Canvas(props: Props) {
             <defs />
             <g className="viewport">
               <g className="layer-frames" />
+              <g className="layer-notes" />
               <g className="layer-edges" />
               <g className="layer-nodes" />
               <g className="layer-overlay" />
@@ -1146,19 +1583,76 @@ export function Canvas(props: Props) {
             </div>
           ) : null}
           {help ? (
-            <div className="panel help">
-              <div className="label">Keys and gestures</div>
-              <ul>
-                <li>Drag a component from the palette, or double-click it.</li>
-                <li>Drag a node's dot to another node to wire an edge.</li>
-                <li>Drag an edge to bow it; right-click to reverse or switch sync/async.</li>
-                <li>Drag on empty space to select several; Shift-click adds.</li>
-                <li>Middle button or Space+drag pans; wheel zooms.</li>
-                <li>Double-click a label to rename; Enter edits the selection.</li>
-                <li>G groups the selection; Ctrl Shift G ungroups.</li>
-                <li>Ctrl D duplicates; Delete removes; arrows nudge (Shift ×10).</li>
-                <li>Ctrl Z / Ctrl Y undo and redo; Ctrl S saves; Ctrl 0 fits.</li>
-              </ul>
+            <div className="help-overlay">
+              <div className="help-backdrop" />
+              <div
+                className="panel help-dialog"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="canvas-help-title"
+                ref={helpDialog}
+              >
+                <div className="help-head">
+                  <h2 className="help-title" id="canvas-help-title">
+                    Keys and gestures
+                  </h2>
+                  <button
+                    type="button"
+                    className="help-close"
+                    aria-label="Close"
+                    ref={helpClose}
+                    onClick={() => setHelp(false)}
+                  >
+                    ×
+                  </button>
+                </div>
+                <div className="help-body">
+                  {helpSections(mod.long).map(([section, rows]) => (
+                    <section key={section}>
+                      <div className="label">{section}</div>
+                      <dl className="help-rows">
+                        {rows.map(([keys, action]) => (
+                          <div className="help-row" key={`${keys.join("+")} ${action}`}>
+                            <dt>
+                              {keys.map((key) => (
+                                <kbd key={key}>{key}</kbd>
+                              ))}
+                            </dt>
+                            <dd>{action}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                    </section>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : null}
+          {hint ? (
+            <div
+              className="panel canvas-hint"
+              ref={hintEl}
+              role="status"
+              style={{
+                left: Math.max(8, Math.min(hint.x + 12, window.innerWidth - 320)),
+                top: Math.max(8, hint.y + 12),
+              }}
+            >
+              <p>
+                Boundaries don't connect. Wire the components inside it — or add an External system
+                node for something outside your control.
+              </p>
+              <button
+                type="button"
+                className="btn btn-sm btn-primary"
+                onClick={() => {
+                  setPaletteQuery("category:external");
+                  setPaletteFocus((n) => n + 1);
+                  setHint(null);
+                }}
+              >
+                Add external node
+              </button>
             </div>
           ) : null}
         </div>
@@ -1169,6 +1663,7 @@ export function Canvas(props: Props) {
                 selection={selection}
                 multi={multi}
                 doc={e.doc}
+                notes={e.notes}
                 catalogue={bundle.catalogue}
                 api={api}
               />

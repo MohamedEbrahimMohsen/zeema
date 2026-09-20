@@ -6,6 +6,7 @@ type: "component"
 id: "novu"
 kind: "notification-service"
 provider: "default"
+docs: "https://docs.novu.co/community/self-hosting-novu/overview"
 defaults:
   managed: false
   channelPush: true

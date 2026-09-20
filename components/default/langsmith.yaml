@@ -8,6 +8,7 @@ type: "component"
 id: "langsmith"
 kind: "monitoring"
 provider: "default"
+docs: "https://docs.langchain.com/langsmith/administration-overview"
 defaults:
   managed: true
   signal: "traces"

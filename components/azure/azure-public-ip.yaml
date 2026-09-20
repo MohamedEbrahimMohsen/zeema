@@ -7,6 +7,7 @@ type: "component"
 id: "azure-public-ip"
 kind: "network-fabric"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/virtual-network/ip-services/public-ip-addresses"
 defaults:
   managed: true
   interconnect: "public"

@@ -6,6 +6,7 @@ type: "component"
 id: "neon"
 kind: "sql-database"
 provider: "default"
+docs: "https://neon.com/docs/introduction/point-in-time-restore"
 defaults:
   managed: true
   replication: "sync"

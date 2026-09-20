@@ -9,6 +9,7 @@ type: "component"
 id: "ibm-vpn-gateway"
 kind: "vpn-gateway"
 provider: "ibm"
+docs: "https://cloud.ibm.com/docs/vpc?topic=vpc-using-vpn"
 defaults:
   managed: true
   peerType: "site-to-site"

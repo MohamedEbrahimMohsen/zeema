@@ -8,6 +8,7 @@ type: "component"
 id: "geoserver"
 kind: "third-party-api"
 provider: "default"
+docs: "https://docs.geoserver.org/latest/en/user/gettingstarted/web-admin-quickstart/index.html"
 defaults:
   managed: false
   idempotent: true

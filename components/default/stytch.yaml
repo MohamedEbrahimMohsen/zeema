@@ -7,6 +7,7 @@ type: "component"
 id: "stytch"
 kind: "identity-provider"
 provider: "default"
+docs: "https://stytch.com/docs/get-started/guides/authentication"
 defaults:
   protocol: "oidc"
   authorizationModel: "rbac"

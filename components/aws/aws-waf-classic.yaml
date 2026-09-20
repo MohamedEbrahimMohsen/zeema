@@ -9,6 +9,7 @@ type: "component"
 id: "aws-waf-classic"
 kind: "waf"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/waf/latest/developerguide/classic-waf-chapter.html"
 defaults:
   managed: true
   mode: "prevention"

@@ -6,6 +6,7 @@ type: "component"
 id: "google-recaptcha-enterprise"
 kind: "waf"
 provider: "gcp"
+docs: "https://cloud.google.com/recaptcha/docs/overview"
 defaults:
   managed: true
   mode: "detection"

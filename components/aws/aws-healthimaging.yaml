@@ -6,6 +6,7 @@ type: "component"
 id: "aws-healthimaging"
 kind: "object-store"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/healthimaging/latest/devguide/data-encryption.html"
 defaults:
   encryptionAtRest: true
   checksumOnWrite: true

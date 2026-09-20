@@ -9,6 +9,7 @@ type: "component"
 id: "aws-opensearch-ingestion"
 kind: "stream-processor"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/opensearch-service/latest/developerguide/creating-pipeline.html"
 defaults:
   managed: true
   windowing: "none"

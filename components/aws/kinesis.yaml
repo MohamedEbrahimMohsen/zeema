@@ -6,6 +6,7 @@ type: "component"
 id: "kinesis"
 kind: "stream"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/streams/latest/dev/introduction.html"
 defaults:
   delivery: "at-least-once"
   ordering: "per-key"

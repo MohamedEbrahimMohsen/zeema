@@ -10,6 +10,7 @@ type: "component"
 id: "airflow"
 kind: "workflow-engine"
 provider: "default"
+docs: "https://airflow.apache.org/docs/apache-airflow/stable/index.html"
 defaults:
   durable: true
   pattern: "dag"

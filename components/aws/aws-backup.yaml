@@ -7,6 +7,7 @@ type: "component"
 id: "aws-backup"
 kind: "backup-service"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/aws-backup/latest/devguide/whatisbackup.html"
 defaults:
   redundancy: "regional"
   crossRegionRestore: false

@@ -7,6 +7,7 @@ type: "component"
 id: "kyverno"
 kind: "policy-engine"
 provider: "default"
+docs: "https://kyverno.io/docs/policy-types/cluster-policy/validate/"
 defaults:
   effect: "audit"
   enforcementMode: "enforced"

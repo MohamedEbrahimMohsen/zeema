@@ -5,6 +5,7 @@ type: "component"
 id: "opensearch"
 kind: "search-index"
 provider: "default"
+docs: "https://docs.opensearch.org/"
 defaults:
   structure: "inverted"
   shardingStrategy: "hash"

@@ -8,6 +8,7 @@ type: "component"
 id: "oci-mysql-heatwave-cluster"
 kind: "data-warehouse"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/mysql-database/doc/features-mysql-heatwave-service.html"
 defaults:
   managed: true
   realtime: true

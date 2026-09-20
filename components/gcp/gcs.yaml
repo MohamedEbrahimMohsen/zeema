@@ -6,6 +6,7 @@ type: "component"
 id: "gcs"
 kind: "object-store"
 provider: "gcp"
+docs: "https://cloud.google.com/storage/docs/introduction"
 defaults:
   zones: 3
   durabilityNines: 11

@@ -6,6 +6,7 @@ type: "component"
 id: "ulid-service"
 kind: "id-generator"
 provider: "default"
+docs: "https://github.com/ulid/spec"
 defaults:
   strategy: "ulid"
   central: false

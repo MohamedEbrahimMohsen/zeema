@@ -9,6 +9,7 @@ type: "component"
 id: "collibra"
 kind: "data-catalog"
 provider: "default"
+docs: "https://productresources.collibra.com/docs/collibra/latest/Content/Products-and-features/co_products-and-features.htm"
 defaults:
   managed: true
   classification: true

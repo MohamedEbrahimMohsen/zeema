@@ -8,6 +8,7 @@ type: "component"
 id: "milvus"
 kind: "vector-database"
 provider: "default"
+docs: "https://milvus.io/api-reference/pymilvus/v2.5.x/MilvusClient/Collections/create_collection.md"
 defaults:
   distanceMetric: "cosine"
   quantization: "none"

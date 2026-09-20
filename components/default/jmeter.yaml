@@ -7,6 +7,7 @@ type: "component"
 id: "jmeter"
 kind: "client"
 provider: "default"
+docs: "https://jmeter.apache.org/usermanual/get-started.html"
 defaults:
   platform: "desktop"
   localCache: false

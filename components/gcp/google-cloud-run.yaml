@@ -6,6 +6,7 @@ type: "component"
 id: "google-cloud-run"
 kind: "app-server"
 provider: "gcp"
+docs: "https://cloud.google.com/run/docs/overview/what-is-cloud-run"
 defaults:
   managed: true
   stateless: true

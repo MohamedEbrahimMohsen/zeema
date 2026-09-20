@@ -6,6 +6,7 @@ type: "component"
 id: "airflow-dag"
 kind: "worker"
 provider: "default"
+docs: "https://airflow.apache.org/docs/"
 defaults:
   managed: false
   trigger: "schedule"

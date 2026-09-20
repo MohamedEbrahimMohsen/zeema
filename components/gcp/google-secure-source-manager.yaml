@@ -7,6 +7,7 @@ type: "component"
 id: "google-secure-source-manager"
 kind: "artifact-repository"
 provider: "gcp"
+docs: "https://cloud.google.com/secure-source-manager/docs/overview"
 defaults:
   managed: true
   artifactType: "source"

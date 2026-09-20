@@ -8,6 +8,7 @@ type: "component"
 id: "cloudflare-images"
 kind: "object-store"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/images/get-started/limits/"
 defaults:
   managed: true
   tier: "hot"

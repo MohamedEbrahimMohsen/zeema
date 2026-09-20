@@ -11,6 +11,7 @@ type: "component"
 id: "microsoft-teams"
 kind: "third-party-api"
 provider: "default"
+docs: "https://learn.microsoft.com/en-us/microsoftteams/platform/"
 defaults:
   managed: true
   callbackStyle: "webhook"

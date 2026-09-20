@@ -9,6 +9,7 @@ type: "component"
 id: "google-manufacturing-data-engine"
 kind: "stream-processor"
 provider: "gcp"
+docs: "https://docs.cloud.google.com/manufacturing-data-engine/docs/overview"
 defaults:
   stateBackend: "external"
   managed: true

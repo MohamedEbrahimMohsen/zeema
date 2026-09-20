@@ -6,6 +6,7 @@ type: "component"
 id: "container-worker"
 kind: "worker"
 provider: "default"
+docs: "https://kubernetes.io/docs/concepts/workloads/controllers/job/"
 defaults:
   trigger: "queue"
   idempotent: false

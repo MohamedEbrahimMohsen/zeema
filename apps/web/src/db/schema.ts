@@ -90,6 +90,9 @@ export const designs = pgTable(
     slug: text("slug").notNull(),
     title: text("title").notNull(),
     summary: text("summary"),
+    // The long description, Markdown, written by the owner. Plain text in the column: it is
+    // rendered at read time, never stored as HTML.
+    readme: text("readme"),
     visibility: visibilityEnum("visibility").notNull().default("private"),
     origin: originEnum("origin").notNull().default("authored"),
     sourceDesignId: uuid("source_design_id"),

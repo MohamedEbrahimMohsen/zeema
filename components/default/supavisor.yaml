@@ -7,6 +7,7 @@ type: "component"
 id: "supavisor"
 kind: "database-proxy"
 provider: "default"
+docs: "https://github.com/supabase/supavisor"
 defaults:
   pooling: true
   routing: "none"

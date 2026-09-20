@@ -7,6 +7,7 @@ type: "component"
 id: "aws-ssm-parameter-store"
 kind: "key-management"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html"
 defaults:
   rotationAutomated: false
   managed: true

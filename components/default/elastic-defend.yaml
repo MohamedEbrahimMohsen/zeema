@@ -8,6 +8,7 @@ type: "component"
 id: "elastic-defend"
 kind: "monitoring"
 provider: "default"
+docs: "https://www.elastic.co/guide/en/security/current/install-endpoint.html"
 defaults:
   managed: false
   signal: "logs"

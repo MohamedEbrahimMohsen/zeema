@@ -6,6 +6,7 @@ type: "component"
 id: "dynatrace"
 kind: "monitoring"
 provider: "default"
+docs: "https://docs.dynatrace.com/docs/manage/data-privacy-and-security/data-privacy/data-retention-periods"
 defaults:
   signal: "all"
   collectorMode: "push"

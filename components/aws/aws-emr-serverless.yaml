@@ -8,6 +8,7 @@ type: "component"
 id: "aws-emr-serverless"
 kind: "big-data-cluster"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/emr/latest/EMR-Serverless-UserGuide/app-behavior.html"
 defaults:
   managed: true
   autoscaling: true

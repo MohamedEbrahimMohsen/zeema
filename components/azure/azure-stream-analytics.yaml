@@ -6,6 +6,7 @@ type: "component"
 id: "azure-stream-analytics"
 kind: "stream-processor"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/stream-analytics/stream-analytics-introduction"
 defaults:
   managed: true
   windowing: "processing-time"

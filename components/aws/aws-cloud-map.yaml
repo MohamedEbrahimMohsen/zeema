@@ -7,6 +7,7 @@ type: "component"
 id: "aws-cloud-map"
 kind: "coordination-service"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/cloud-map/latest/dg/what-is-cloud-map.html"
 defaults:
   managed: true
   role: "discovery"

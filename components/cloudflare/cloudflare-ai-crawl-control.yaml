@@ -8,6 +8,7 @@ type: "component"
 id: "cloudflare-ai-crawl-control"
 kind: "bot-management"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/ai-crawl-control/features/manage-ai-crawlers/"
 defaults:
   managed: true
   challengeAction: "log"

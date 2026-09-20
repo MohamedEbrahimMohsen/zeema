@@ -9,6 +9,7 @@ type: "component"
 id: "google-cloud-identity"
 kind: "identity-provider"
 provider: "gcp"
+docs: "https://cloud.google.com/identity/docs/overview"
 defaults:
   protocol: "saml"
   authorizationModel: "none"

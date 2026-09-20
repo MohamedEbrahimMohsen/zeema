@@ -9,6 +9,7 @@ type: "component"
 id: "chaos-mesh"
 kind: "worker"
 provider: "default"
+docs: "https://chaos-mesh.org/docs/"
 defaults:
   managed: false
   trigger: "manual"

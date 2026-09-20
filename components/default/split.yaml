@@ -7,6 +7,7 @@ type: "component"
 id: "split"
 kind: "feature-flag-service"
 provider: "default"
+docs: "https://developer.harness.io/docs/feature-management-experimentation/getting-started/overview/install-the-sdk/"
 defaults:
   stagedRollout: true
   managed: true

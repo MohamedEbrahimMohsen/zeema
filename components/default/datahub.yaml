@@ -8,6 +8,7 @@ type: "component"
 id: "datahub"
 kind: "data-catalog"
 provider: "default"
+docs: "https://docs.datahub.com/docs/features/feature-guides/lineage"
 defaults:
   managed: false
   lineage: true

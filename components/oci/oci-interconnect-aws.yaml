@@ -8,6 +8,7 @@ type: "component"
 id: "oci-interconnect-aws"
 kind: "network-fabric"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/multicloud/interconnect-aws.htm"
 defaults:
   managed: true
   interconnect: "private"

@@ -5,6 +5,7 @@ type: "component"
 id: "aws-kms"
 kind: "key-management"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/kms/latest/developerguide/overview.html"
 defaults:
   managed: true
   hsm: true

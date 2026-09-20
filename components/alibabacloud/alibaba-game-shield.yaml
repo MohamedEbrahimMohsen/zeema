@@ -11,6 +11,7 @@ type: "component"
 id: "alibaba-game-shield"
 kind: "ddos-protection"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/product/gameshield"
 defaults:
   managed: true
   scope: "network"

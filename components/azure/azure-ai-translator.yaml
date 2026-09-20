@@ -6,6 +6,7 @@ type: "component"
 id: "azure-ai-translator"
 kind: "ai-service"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/ai-services/translator/service-limits"
 defaults:
   managed: true
   modality: "text"

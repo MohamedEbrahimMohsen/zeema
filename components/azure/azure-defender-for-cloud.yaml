@@ -8,6 +8,7 @@ type: "component"
 id: "azure-defender-for-cloud"
 kind: "monitoring"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/defender-for-cloud/defender-for-cloud-introduction"
 defaults:
   managed: true
   signal: "alerts"

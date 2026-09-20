@@ -6,6 +6,7 @@ type: "component"
 id: "bareos"
 kind: "backup-service"
 provider: "default"
+docs: "https://docs.bareos.org/TasksAndConcepts/CatalogMaintenance.html"
 defaults:
   managed: false
   retentionDays: 180

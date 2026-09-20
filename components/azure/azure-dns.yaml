@@ -5,6 +5,7 @@ type: "component"
 id: "azure-dns"
 kind: "dns"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/dns/dns-overview"
 defaults:
   managed: true
   anycast: true

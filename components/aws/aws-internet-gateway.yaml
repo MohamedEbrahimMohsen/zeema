@@ -7,6 +7,7 @@ type: "component"
 id: "aws-internet-gateway"
 kind: "network-fabric"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Internet_Gateway.html"
 defaults:
   managed: true
   interconnect: "public"

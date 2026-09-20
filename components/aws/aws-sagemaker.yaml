@@ -7,6 +7,7 @@ type: "component"
 id: "aws-sagemaker"
 kind: "ml-platform"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_CreateDomain.html"
 defaults:
   managed: true
   publicAccess: true

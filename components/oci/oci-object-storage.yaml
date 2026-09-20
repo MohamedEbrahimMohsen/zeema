@@ -5,6 +5,7 @@ type: "component"
 id: "oci-object-storage"
 kind: "object-store"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/objectstorageoverview.htm"
 defaults:
   managed: true
   zones: 3

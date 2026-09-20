@@ -6,6 +6,7 @@ type: "component"
 id: "algolia"
 kind: "search-index"
 provider: "default"
+docs: "https://www.algolia.com/doc/"
 defaults:
   structure: "inverted"
   indexing: "async"

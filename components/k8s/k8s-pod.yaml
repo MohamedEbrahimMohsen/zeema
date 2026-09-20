@@ -8,6 +8,7 @@ type: "component"
 id: "k8s-pod"
 kind: "app-server"
 provider: "k8s"
+docs: "https://kubernetes.io/docs/concepts/workloads/pods/"
 defaults:
   managed: false
   instances: 1

@@ -7,6 +7,7 @@ type: "component"
 id: "vespa"
 kind: "search-index"
 provider: "default"
+docs: "https://docs.vespa.ai/en/reference/services-content.html"
 defaults:
   structure: "inverted"
   shardingStrategy: "hash"

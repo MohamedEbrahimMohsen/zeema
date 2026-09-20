@@ -6,6 +6,7 @@ type: "component"
 id: "azure-planetary-computer"
 kind: "object-store"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/planetary-computer/microsoft-planetary-computer-pro-overview"
 defaults:
   managed: true
 properties:

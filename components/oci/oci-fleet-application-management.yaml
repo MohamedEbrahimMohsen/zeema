@@ -7,6 +7,7 @@ type: "component"
 id: "oci-fleet-application-management"
 kind: "worker"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/fleet-management/home.htm"
 defaults:
   managed: true
   trigger: "schedule"

@@ -8,6 +8,7 @@ type: "component"
 id: "zuul-ci"
 kind: "ci-pipeline"
 provider: "default"
+docs: "https://zuul-ci.org/docs/zuul/latest/"
 defaults:
   managed: false
   trigger: "pull-request"

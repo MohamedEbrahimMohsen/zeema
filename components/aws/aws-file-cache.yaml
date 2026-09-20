@@ -8,6 +8,7 @@ type: "component"
 id: "aws-file-cache"
 kind: "file-storage"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/fsx/latest/FileCacheGuide/what-is.html"
 defaults:
   protocol: "lustre"
   redundancy: "zonal"

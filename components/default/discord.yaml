@@ -9,6 +9,7 @@ type: "component"
 id: "discord"
 kind: "third-party-api"
 provider: "default"
+docs: "https://docs.discord.com/developers/intro"
 defaults:
   managed: true
   qpsQuota: 50

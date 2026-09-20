@@ -8,6 +8,7 @@ type: "component"
 id: "google-firebase-in-app-messaging"
 kind: "notification-service"
 provider: "gcp"
+docs: "https://firebase.google.com/docs/in-app-messaging/modify-message-behavior"
 defaults:
   channelPush: false
   channelEmail: false

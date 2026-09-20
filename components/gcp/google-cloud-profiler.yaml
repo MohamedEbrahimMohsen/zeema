@@ -6,6 +6,7 @@ type: "component"
 id: "google-cloud-profiler"
 kind: "monitoring"
 provider: "gcp"
+docs: "https://cloud.google.com/profiler/docs/about-profiler"
 defaults:
   managed: true
   signal: "metrics"

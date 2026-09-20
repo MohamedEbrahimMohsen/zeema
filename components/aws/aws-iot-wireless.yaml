@@ -8,6 +8,7 @@ type: "component"
 id: "aws-iot-wireless"
 kind: "iot-hub"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/iot-wireless/latest/developerguide/what-is-iot-lorawan.html"
 defaults:
   protocol: "lorawan"
   perDeviceIdentity: true

@@ -9,6 +9,7 @@ type: "component"
 id: "aws-drs"
 kind: "backup-service"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/drs/latest/userguide/what-is-drs.html"
 defaults:
   redundancy: "regional"
   crossRegionRestore: true

@@ -8,6 +8,7 @@ type: "component"
 id: "ozone"
 kind: "object-store"
 provider: "default"
+docs: "https://ozone.apache.org/docs/current/feature/erasurecoding.html"
 defaults:
   managed: false
   replication: "quorum"

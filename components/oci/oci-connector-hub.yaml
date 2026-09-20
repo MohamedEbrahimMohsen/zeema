@@ -7,6 +7,7 @@ type: "component"
 id: "oci-connector-hub"
 kind: "stream-processor"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/connector-hub/home.htm"
 defaults:
   managed: true
   windowing: "none"

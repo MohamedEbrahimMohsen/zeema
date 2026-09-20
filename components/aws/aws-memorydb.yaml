@@ -8,6 +8,7 @@ type: "component"
 id: "aws-memorydb"
 kind: "cache"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/memorydb/latest/APIReference/API_CreateCluster.html"
 defaults:
   managed: true
   persistence: true

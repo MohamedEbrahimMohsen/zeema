@@ -6,6 +6,7 @@ type: "component"
 id: "aws-monitron"
 kind: "iot-hub"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/Monitron/latest/user-guide/monitron-components.html"
 defaults:
   perDeviceIdentity: true
   deviceProvisioning: true

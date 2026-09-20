@@ -8,6 +8,7 @@ type: "component"
 id: "azure-managed-redis"
 kind: "cache"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/redis/overview"
 defaults:
   managed: true
   persistence: false

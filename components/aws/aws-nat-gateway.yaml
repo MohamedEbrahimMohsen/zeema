@@ -7,6 +7,7 @@ type: "component"
 id: "aws-nat-gateway"
 kind: "nat-gateway"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html"
 defaults:
   managed: true
   staticIpCount: 1

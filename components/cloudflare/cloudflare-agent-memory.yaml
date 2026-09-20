@@ -8,6 +8,7 @@ type: "component"
 id: "cloudflare-agent-memory"
 kind: "vector-database"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/agent-memory/concepts/how-agent-memory-works/"
 defaults:
   managed: true
   namespaces: true

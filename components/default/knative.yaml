@@ -7,6 +7,7 @@ type: "component"
 id: "knative"
 kind: "app-server"
 provider: "default"
+docs: "https://knative.dev/docs/serving/autoscaling/scale-to-zero/"
 defaults:
   managed: false
   stateless: true

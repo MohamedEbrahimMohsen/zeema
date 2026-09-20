@@ -215,8 +215,10 @@ properties:
 ```
 
 **A2.2** `category` is required and is one of `messaging`, `compute`, `data`, `edge`, `external`,
-`client`, `ops`, `security`. `external` means outside the design owner's control. Rules may select
-by category.
+`client`, `ops`, `security`, `custom`. `external` means outside the design owner's control.
+`custom` holds only the `custom` kind, the escape hatch for a box the catalogue does not name;
+it is untyped by design and the rules say so rather than staying silent. Rules may select by
+category.
 
 **A2.3** `properties` is required and may be empty. A property definition has:
 

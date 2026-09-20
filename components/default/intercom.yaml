@@ -12,6 +12,7 @@ type: "component"
 id: "intercom"
 kind: "third-party-api"
 provider: "default"
+docs: "https://developers.intercom.com/docs"
 defaults:
   managed: true
   callbackStyle: "webhook"

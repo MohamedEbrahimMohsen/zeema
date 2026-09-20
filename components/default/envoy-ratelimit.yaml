@@ -5,6 +5,7 @@ type: "component"
 id: "envoy-ratelimit"
 kind: "rate-limiter"
 provider: "default"
+docs: "https://github.com/envoyproxy/ratelimit"
 defaults:
   algorithm: "fixed-window"
   placement: "gateway"

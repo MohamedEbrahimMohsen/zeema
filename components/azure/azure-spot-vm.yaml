@@ -7,6 +7,7 @@ type: "component"
 id: "azure-spot-vm"
 kind: "virtual-machine"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/virtual-machines/spot-vms"
 defaults:
   managed: false
   diskEncryption: true

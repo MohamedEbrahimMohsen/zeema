@@ -6,6 +6,7 @@ type: "component"
 id: "google-cloud-ngfw"
 kind: "firewall"
 provider: "gcp"
+docs: "https://cloud.google.com/firewall/docs/about-firewalls"
 defaults:
   managed: true
   defaultAction: "deny"

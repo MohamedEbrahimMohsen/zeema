@@ -5,6 +5,7 @@ type: "component"
 id: "vertex-ai-endpoint"
 kind: "ml-inference"
 provider: "gcp"
+docs: "https://cloud.google.com/vertex-ai/docs/predictions/overview"
 defaults:
   managed: true
   training: "batch"

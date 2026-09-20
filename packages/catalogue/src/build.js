@@ -1,13 +1,29 @@
-// Build the bundle: catalogue.json, search.json, designs.json, icons.json.
+// Build the bundle: catalogue.json, search.json, designs.json, icons.json, sources.json.
 //   node src/build.js [--out <dir>] [--root <repo>]
 // Deterministic: sorted keys, sorted walks, no timestamps. Regenerating over an unchanged
 // repository is byte identical, and a test asserts it.
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { designIndex, iconMap, loadCatalogue, resolveRoot, searchRows, toBundle } from "./index.js";
+import {
+  designIndex,
+  iconMap,
+  loadCatalogue,
+  loadSources,
+  resolveRoot,
+  searchRows,
+  toBundle,
+} from "./index.js";
 
-export const BUNDLE_FILES = ["catalogue.json", "search.json", "designs.json", "icons.json"];
+// sources.json is the odd one out: it is not loaded by any browser, only by the server
+// rendering the catalogue reference, which needs the verbatim file text.
+export const BUNDLE_FILES = [
+  "catalogue.json",
+  "search.json",
+  "designs.json",
+  "icons.json",
+  "sources.json",
+];
 
 export function buildBundle(rootArg) {
   const cat = loadCatalogue(rootArg);
@@ -17,6 +33,7 @@ export function buildBundle(rootArg) {
     "search.json": { value: searchRows(cat), indent: 0 },
     "designs.json": { value: designIndex(cat.root), indent: 2 },
     "icons.json": { value: icons, indent: 0 },
+    "sources.json": { value: loadSources(cat.root), indent: 0 },
     missing,
     counts: {
       kinds: Object.keys(cat.kinds).length,

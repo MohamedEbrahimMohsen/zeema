@@ -8,6 +8,7 @@ type: "component"
 id: "azure-relay"
 kind: "network-fabric"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/azure-relay/relay-what-is-it"
 defaults:
   managed: true
   multicast: false

@@ -7,6 +7,7 @@ type: "component"
 id: "oci-ops-insights"
 kind: "monitoring"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/operations-insights/doc/operations-insights.html"
 defaults:
   managed: true
   signal: "metrics"

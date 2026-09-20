@@ -6,6 +6,7 @@ type: "component"
 id: "google-dataflow"
 kind: "stream-processor"
 provider: "gcp"
+docs: "https://cloud.google.com/dataflow/docs/overview"
 defaults:
   managed: true
   windowing: "event-time"

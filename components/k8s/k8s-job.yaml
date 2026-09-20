@@ -8,6 +8,7 @@ type: "component"
 id: "k8s-job"
 kind: "worker"
 provider: "k8s"
+docs: "https://kubernetes.io/docs/concepts/workloads/controllers/job/"
 defaults:
   trigger: "batch"
   managed: false

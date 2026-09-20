@@ -8,6 +8,7 @@ type: "component"
 id: "striim"
 kind: "change-data-capture"
 provider: "default"
+docs: "https://www.striim.com/docs/en/recovering-applications.html"
 defaults:
   managed: true
   mode: "log-based"

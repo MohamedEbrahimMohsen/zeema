@@ -5,6 +5,7 @@ type: "component"
 id: "apache-helix"
 kind: "coordination-service"
 provider: "default"
+docs: "https://helix.apache.org/"
 defaults:
   role: "placement"
   consensus: "none"

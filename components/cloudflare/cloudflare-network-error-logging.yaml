@@ -7,6 +7,7 @@ type: "component"
 id: "cloudflare-network-error-logging"
 kind: "monitoring"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/network-error-logging/"
 defaults:
   managed: true
   signal: "logs"

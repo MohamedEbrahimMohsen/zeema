@@ -7,6 +7,7 @@ type: "component"
 id: "cloudflare-workers-for-platforms"
 kind: "app-server"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/cloudflare-for-platforms/workers-for-platforms/reference/how-workers-for-platforms-works/"
 defaults:
   managed: true
   stateless: true

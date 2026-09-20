@@ -9,6 +9,7 @@ type: "component"
 id: "salesforce"
 kind: "third-party-api"
 provider: "default"
+docs: "https://developer.salesforce.com/docs/atlas.en-us.salesforce_app_limits_cheatsheet.meta/salesforce_app_limits_cheatsheet/salesforce_app_limits_platform_api.htm"
 defaults:
   managed: true
   idempotent: false

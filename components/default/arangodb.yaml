@@ -7,6 +7,7 @@ type: "component"
 id: "arangodb"
 kind: "graph-database"
 provider: "default"
+docs: "https://docs.arango.ai/arangodb/stable/concepts/data-structure/collections/"
 defaults:
   inMemory: false
   masterPerShard: true

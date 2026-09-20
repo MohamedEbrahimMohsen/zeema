@@ -8,6 +8,7 @@ type: "component"
 id: "azure-managed-disk"
 kind: "block-storage"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/virtual-machines/managed-disks-overview"
 defaults:
   redundancy: "local"
   encryptionAtRest: true

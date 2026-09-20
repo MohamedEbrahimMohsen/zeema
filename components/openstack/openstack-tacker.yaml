@@ -8,6 +8,7 @@ type: "component"
 id: "openstack-tacker"
 kind: "ci-pipeline"
 provider: "openstack"
+docs: "https://docs.openstack.org/tacker/latest/"
 defaults:
   managed: false
 properties:

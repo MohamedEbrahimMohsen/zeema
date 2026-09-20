@@ -5,6 +5,7 @@ type: "component"
 id: "haproxy"
 kind: "load-balancer"
 provider: "default"
+docs: "https://docs.haproxy.org/"
 defaults:
   layer: "l4"
   managed: false

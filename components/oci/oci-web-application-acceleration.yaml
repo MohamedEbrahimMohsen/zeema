@@ -7,6 +7,7 @@ type: "component"
 id: "oci-web-application-acceleration"
 kind: "cdn"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/web-app-acceleration/overview.htm"
 defaults:
   managed: true
   edgeCompute: false

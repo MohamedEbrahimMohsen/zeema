@@ -8,6 +8,7 @@ type: "component"
 id: "azure-automation"
 kind: "worker"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/automation/overview"
 defaults:
   managed: true
   trigger: "schedule"

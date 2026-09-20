@@ -8,6 +8,7 @@ type: "component"
 id: "azure-container-storage"
 kind: "block-storage"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/storage/container-storage/container-storage-introduction"
 defaults:
   managed: true
   mediaType: "ssd"

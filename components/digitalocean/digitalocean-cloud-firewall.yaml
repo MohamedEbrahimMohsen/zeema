@@ -10,6 +10,7 @@ type: "component"
 id: "digitalocean-cloud-firewall"
 kind: "firewall"
 provider: "digitalocean"
+docs: "https://docs.digitalocean.com/products/networking/firewalls/"
 defaults:
   managed: true
   stateful: true

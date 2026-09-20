@@ -6,6 +6,7 @@ type: "component"
 id: "n8n"
 kind: "workflow-engine"
 provider: "default"
+docs: "https://docs.n8n.io/deploy/host-n8n/configure-n8n/choose-n8ns-database/"
 defaults:
   durable: true
   pattern: "dag"

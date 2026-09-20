@@ -9,6 +9,7 @@ type: "component"
 id: "oci-document-understanding"
 kind: "ai-service"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/document-understanding/using/limits.htm"
 defaults:
   modality: "structured"
   publicEndpoint: true

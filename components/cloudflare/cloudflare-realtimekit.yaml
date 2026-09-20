@@ -8,6 +8,7 @@ type: "component"
 id: "cloudflare-realtimekit"
 kind: "media-router"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/realtime/realtimekit/"
 defaults:
   managed: true
   mode: "sfu"

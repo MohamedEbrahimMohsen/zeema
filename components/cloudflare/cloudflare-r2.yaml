@@ -7,6 +7,7 @@ type: "component"
 id: "cloudflare-r2"
 kind: "object-store"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/r2/reference/data-security/"
 defaults:
   managed: true
   tier: "hot"

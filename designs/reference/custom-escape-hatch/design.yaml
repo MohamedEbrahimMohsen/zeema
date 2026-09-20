@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference design: the smallest shape that shows the escape hatch working properly. A web
+# client calls a service, and a boundary holds the service. Every box is a catalogue
+# component, so every rule that has anything to say about these kinds can say it.
+schemaVersion: "1"
+type: "design"
+id: "custom-escape-hatch"
+
+groups:
+  - { id: "platform", kind: "system" }
+
+nodes:
+  - id: "web-client"
+    component: "client"
+    label: "Web client"
+    props: { platform: "web" }
+
+  - id: "api"
+    component: "app-server"
+    label: "API service"
+    group: "platform"
+
+edges:
+  - { from: "web-client", to: "api", protocol: "https", mode: "sync" }

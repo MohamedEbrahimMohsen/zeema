@@ -9,6 +9,7 @@ type: "component"
 id: "alibaba-nas"
 kind: "file-storage"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/nas/"
 defaults:
   protocol: "multi"
   redundancy: "zonal"

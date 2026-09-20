@@ -12,6 +12,7 @@ type: "component"
 id: "pomerium"
 kind: "bastion-host"
 provider: "default"
+docs: "https://www.pomerium.com/docs"
 defaults:
   managed: false
   protocols: "both"

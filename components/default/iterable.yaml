@@ -6,6 +6,7 @@ type: "component"
 id: "iterable"
 kind: "notification-service"
 provider: "default"
+docs: "https://support.iterable.com/hc/en-us/articles/204780529-Message-Channels-and-Message-Types-Overview"
 defaults:
   managed: true
   channelPush: true

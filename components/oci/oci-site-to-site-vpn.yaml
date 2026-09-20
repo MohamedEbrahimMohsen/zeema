@@ -7,6 +7,7 @@ type: "component"
 id: "oci-site-to-site-vpn"
 kind: "vpn-gateway"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/Network/Tasks/overviewIPsec.htm"
 defaults:
   managed: true
   peerType: "site-to-site"

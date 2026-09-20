@@ -8,6 +8,7 @@ type: "component"
 id: "google-api-gateway"
 kind: "api-gateway"
 provider: "gcp"
+docs: "https://cloud.google.com/api-gateway/docs/about-api-gateway"
 defaults:
   managed: true
   tls: true

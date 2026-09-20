@@ -5,6 +5,7 @@ type: "component"
 id: "spark-job"
 kind: "worker"
 provider: "default"
+docs: "https://spark.apache.org/docs/latest/submitting-applications.html"
 defaults:
   trigger: "batch"
 properties:

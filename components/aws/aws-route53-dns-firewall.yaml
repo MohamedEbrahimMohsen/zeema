@@ -8,6 +8,7 @@ type: "component"
 id: "aws-route53-dns-firewall"
 kind: "firewall"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resolver-dns-firewall.html"
 defaults:
   managed: true
   defaultAction: "allow"

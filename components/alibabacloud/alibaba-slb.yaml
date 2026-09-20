@@ -10,6 +10,7 @@ type: "component"
 id: "alibaba-slb"
 kind: "load-balancer"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/slb/"
 defaults:
   managed: true
   healthChecks: true

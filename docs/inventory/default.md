@@ -1169,6 +1169,87 @@ Two mapping decisions worth recording:
 | Git | — | — | skip: Version control tool and protocol; the placed node is the hosting server | https://diagrams.mingrammer.com/docs/nodes/onprem |
 | Twilio | — | — | skip: umbrella brand; the placeable products are twilio-sms, twilio-video, twilio-flex and segment | https://diagrams.mingrammer.com/docs/nodes/saas |
 
+## Generic components — one per kind
+
+Every kind has a vendor-neutral component whose id is the kind id. It sets no defaults and
+adds no properties, so an architect who has a queue but not Kafka still places a typed node and
+every rule for the kind still fires. The source is the kind file itself.
+
+| resource | id | kind | status | source |
+|---|---|---|---|---|
+| Generic AI service | ai-service | ai-service | done | kinds/ai-service.yaml |
+| Custom (untyped escape hatch) | custom | custom | done | kinds/custom.yaml |
+| Generic API gateway | api-gateway | api-gateway | done | kinds/api-gateway.yaml |
+| Generic application server | app-server | app-server | done | kinds/app-server.yaml |
+| Generic artifact repository | artifact-repository | artifact-repository | done | kinds/artifact-repository.yaml |
+| Generic backup vault | backup-service | backup-service | done | kinds/backup-service.yaml |
+| Generic bastion host | bastion-host | bastion-host | done | kinds/bastion-host.yaml |
+| Generic BI service | bi-service | bi-service | done | kinds/bi-service.yaml |
+| Generic big data cluster | big-data-cluster | big-data-cluster | done | kinds/big-data-cluster.yaml |
+| Generic block storage volume | block-storage | block-storage | done | kinds/block-storage.yaml |
+| Generic bot management | bot-management | bot-management | done | kinds/bot-management.yaml |
+| Generic cache | cache | cache | done | kinds/cache.yaml |
+| Generic CDN | cdn | cdn | done | kinds/cdn.yaml |
+| Generic change data capture | change-data-capture | change-data-capture | done | kinds/change-data-capture.yaml |
+| Generic CI/CD pipeline | ci-pipeline | ci-pipeline | done | kinds/ci-pipeline.yaml |
+| Generic client | client | client | done | kinds/client.yaml |
+| Generic contact center | contact-center | contact-center | done | kinds/contact-center.yaml |
+| Generic container orchestrator | container-orchestrator | container-orchestrator | done | kinds/container-orchestrator.yaml |
+| Generic container registry | container-registry | container-registry | done | kinds/container-registry.yaml |
+| Generic content repository | content-repository | content-repository | done | kinds/content-repository.yaml |
+| Generic coordination service | coordination-service | coordination-service | done | kinds/coordination-service.yaml |
+| Generic data catalog | data-catalog | data-catalog | done | kinds/data-catalog.yaml |
+| Generic data warehouse | data-warehouse | data-warehouse | done | kinds/data-warehouse.yaml |
+| Generic database proxy | database-proxy | database-proxy | done | kinds/database-proxy.yaml |
+| Generic DDoS protection plan | ddos-protection | ddos-protection | done | kinds/ddos-protection.yaml |
+| Generic DNS | dns | dns | done | kinds/dns.yaml |
+| Generic edge appliance | edge-appliance | edge-appliance | done | kinds/edge-appliance.yaml |
+| Generic email security gateway | email-security-gateway | email-security-gateway | done | kinds/email-security-gateway.yaml |
+| Generic event store | event-store | event-store | done | kinds/event-store.yaml |
+| Generic feature flag service | feature-flag-service | feature-flag-service | done | kinds/feature-flag-service.yaml |
+| Generic file share | file-storage | file-storage | done | kinds/file-storage.yaml |
+| Generic firewall | firewall | firewall | done | kinds/firewall.yaml |
+| Generic graph database | graph-database | graph-database | done | kinds/graph-database.yaml |
+| Generic ID generator | id-generator | id-generator | done | kinds/id-generator.yaml |
+| Generic identity provider | identity-provider | identity-provider | done | kinds/identity-provider.yaml |
+| Generic IoT hub | iot-hub | iot-hub | done | kinds/iot-hub.yaml |
+| Generic key management | key-management | key-management | done | kinds/key-management.yaml |
+| Generic ledger | ledger | ledger | done | kinds/ledger.yaml |
+| Generic load balancer | load-balancer | load-balancer | done | kinds/load-balancer.yaml |
+| Generic matching engine | matching-engine | matching-engine | done | kinds/matching-engine.yaml |
+| Generic media router | media-router | media-router | done | kinds/media-router.yaml |
+| Generic media transcoder | media-transcoder | media-transcoder | done | kinds/media-transcoder.yaml |
+| Generic ML inference | ml-inference | ml-inference | done | kinds/ml-inference.yaml |
+| Generic ML platform | ml-platform | ml-platform | done | kinds/ml-platform.yaml |
+| Generic monitoring | monitoring | monitoring | done | kinds/monitoring.yaml |
+| Generic NAT gateway | nat-gateway | nat-gateway | done | kinds/nat-gateway.yaml |
+| Generic network fabric | network-fabric | network-fabric | done | kinds/network-fabric.yaml |
+| Generic NoSQL database | nosql-database | nosql-database | done | kinds/nosql-database.yaml |
+| Generic notification service | notification-service | notification-service | done | kinds/notification-service.yaml |
+| Generic object store | object-store | object-store | done | kinds/object-store.yaml |
+| Generic policy engine | policy-engine | policy-engine | done | kinds/policy-engine.yaml |
+| Generic private endpoint | private-link | private-link | done | kinds/private-link.yaml |
+| Generic Pub/Sub topic | pubsub-topic | pubsub-topic | done | kinds/pubsub-topic.yaml |
+| Generic queue | queue | queue | done | kinds/queue.yaml |
+| Generic rate limiter | rate-limiter | rate-limiter | done | kinds/rate-limiter.yaml |
+| Generic real-time gateway | realtime-gateway | realtime-gateway | done | kinds/realtime-gateway.yaml |
+| Generic schema registry | schema-registry | schema-registry | done | kinds/schema-registry.yaml |
+| Generic search index | search-index | search-index | done | kinds/search-index.yaml |
+| Generic service mesh | service-mesh | service-mesh | done | kinds/service-mesh.yaml |
+| Generic SQL database | sql-database | sql-database | done | kinds/sql-database.yaml |
+| Generic stream | stream | stream | done | kinds/stream.yaml |
+| Generic stream processor | stream-processor | stream-processor | done | kinds/stream-processor.yaml |
+| Generic third-party API | third-party-api | third-party-api | done | kinds/third-party-api.yaml |
+| Generic time-series database | timeseries-database | timeseries-database | done | kinds/timeseries-database.yaml |
+| Generic vector database | vector-database | vector-database | done | kinds/vector-database.yaml |
+| Generic virtual desktop pool | virtual-desktop | virtual-desktop | done | kinds/virtual-desktop.yaml |
+| Generic virtual machine | virtual-machine | virtual-machine | done | kinds/virtual-machine.yaml |
+| Generic VPN gateway | vpn-gateway | vpn-gateway | done | kinds/vpn-gateway.yaml |
+| Generic web application firewall | waf | waf | done | kinds/waf.yaml |
+| Generic webhook endpoint | webhook-endpoint | webhook-endpoint | done | kinds/webhook-endpoint.yaml |
+| Generic worker | worker | worker | done | kinds/worker.yaml |
+| Generic workflow engine | workflow-engine | workflow-engine | done | kinds/workflow-engine.yaml |
+
 ## Counts
 
-total 871, todo 0, done 729, skip 142.
+total 943, todo 0, done 801, skip 142.

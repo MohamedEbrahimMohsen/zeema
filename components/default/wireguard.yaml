@@ -7,6 +7,7 @@ type: "component"
 id: "wireguard"
 kind: "vpn-gateway"
 provider: "default"
+docs: "https://www.wireguard.com/"
 defaults:
   managed: false
   tunnelType: "wireguard"

@@ -6,6 +6,7 @@ type: "component"
 id: "prometheus-tsdb"
 kind: "timeseries-database"
 provider: "default"
+docs: "https://prometheus.io/docs/prometheus/latest/storage/"
 defaults:
   retentionRawDays: 15
   downsampling: false

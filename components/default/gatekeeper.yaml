@@ -7,6 +7,7 @@ type: "component"
 id: "gatekeeper"
 kind: "policy-engine"
 provider: "default"
+docs: "https://open-policy-agent.github.io/gatekeeper/website/docs/violations/"
 defaults:
   effect: "deny"
   enforcementMode: "enforced"

@@ -7,6 +7,7 @@ type: "component"
 id: "aws-direct-connect-gateway"
 kind: "network-fabric"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/directconnect/latest/UserGuide/direct-connect-gateways-intro.html"
 defaults:
   managed: true
   interconnect: "private"

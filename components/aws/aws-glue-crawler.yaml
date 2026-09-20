@@ -8,6 +8,7 @@ type: "component"
 id: "aws-glue-crawler"
 kind: "worker"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/glue/latest/dg/crawler-configuration.html"
 defaults:
   managed: true
   trigger: "manual"

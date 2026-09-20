@@ -7,6 +7,7 @@ type: "component"
 id: "cloudflare-origin-ca"
 kind: "key-management"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/ssl/origin-configuration/origin-ca/"
 defaults:
   managed: true
 properties:

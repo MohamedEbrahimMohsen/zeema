@@ -5,6 +5,7 @@ type: "component"
 id: "azure-functions"
 kind: "app-server"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/azure-functions/functions-overview"
 defaults:
   managed: true
   stateless: true

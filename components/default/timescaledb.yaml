@@ -6,6 +6,7 @@ type: "component"
 id: "timescaledb"
 kind: "timeseries-database"
 provider: "default"
+docs: "https://docs.tigerdata.com/"
 defaults:
   downsampling: false
   tiers: "single"

@@ -111,6 +111,7 @@ export function loadCatalogue(rootArg) {
       id: doc.id,
       kind: doc.kind,
       provider: doc.provider,
+      ...(doc.docs ? { docs: doc.docs } : {}),
       defaults: sorted(doc.defaults ?? {}),
       properties: sorted(doc.properties ?? {}),
     };
@@ -147,6 +148,27 @@ export function loadCatalogue(rootArg) {
     schema,
     files,
   };
+}
+
+/**
+ * The verbatim source text of every kind, component and rule, keyed by id inside its type.
+ * Kept out of `toBundle` on purpose: it is roughly the size of the whole bundle again and no
+ * browser needs it. `build.js` writes it beside catalogue.json as the server-only `sources.json`,
+ * which the reference pages read to show (and hand to agents) the exact bytes on disk.
+ */
+export function loadSources(rootArg) {
+  const root = resolveRoot(rootArg);
+  const out = { kinds: {}, components: {}, rules: {} };
+  for (const [dir, bucket] of [
+    ["kinds", "kinds"],
+    ["components", "components"],
+    ["rules", "rules"],
+  ])
+    for (const rel of walk(root, dir, ".yaml")) {
+      const id = path.basename(rel, ".yaml");
+      out[bucket][id] = fs.readFileSync(path.join(root, rel), "utf8");
+    }
+  return out;
 }
 
 /** The bundle a client loads: the catalogue without `files` and `root`. */

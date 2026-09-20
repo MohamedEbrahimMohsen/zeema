@@ -7,6 +7,7 @@ type: "component"
 id: "hivemq"
 kind: "iot-hub"
 provider: "default"
+docs: "https://docs.hivemq.com/hivemq/latest/user-guide/configuration.html"
 defaults:
   protocol: "mqtt"
   managed: false

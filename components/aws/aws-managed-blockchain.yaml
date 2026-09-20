@@ -10,6 +10,7 @@ type: "component"
 id: "aws-managed-blockchain"
 kind: "ledger"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/managed-blockchain/latest/managementguide/what-is-managed-blockchain.html"
 defaults:
   managed: true
   doubleEntry: false

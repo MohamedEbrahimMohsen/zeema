@@ -2,19 +2,18 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Icon } from "@/components/Icon";
 import { PropertyTable } from "@/components/PropertyTable";
+import { Facts, RuleList, Source } from "@/components/Reference";
 import { getCatalogue, getIcons } from "@/lib/catalogue";
+import { kindDoc } from "@/lib/reference";
 
 export default async function KindPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const doc = kindDoc(id);
+  if (!doc) notFound();
   const cat = getCatalogue();
   const kind = cat.kinds[id];
-  if (!kind) notFound();
   const icons = getIcons();
-  const loc = cat.locale.kinds[id] ?? {};
-  const components = Object.values(cat.components)
-    .filter((c) => c.kind === id)
-    .sort((a, b) => a.provider.localeCompare(b.provider) || a.id.localeCompare(b.id));
-  const rules = cat.rules.filter((r) => JSON.stringify(r.select).includes(`"${id}"`));
+
   return (
     <div className="flex flex-col gap-6">
       <div className="meta">
@@ -24,77 +23,69 @@ export default async function KindPage({ params }: { params: Promise<{ id: strin
         {" / "}
         <span className="mono">{cat.locale.categories[kind.category]?.name ?? kind.category}</span>
       </div>
+
       <div className="flex items-start gap-4">
         <Icon markup={icons[`kind:${id}`]} size="lg" />
         <div className="flex flex-col gap-1 min-w-0">
           <h1 className="display flex items-baseline gap-3">
-            {loc.name ?? id}
+            {doc.title}
             <span className="tag">{kind.category}</span>
           </h1>
           <div className="mono meta">{id}</div>
-          {loc.description ? <p className="muted">{loc.description}</p> : null}
+          {doc.description ? <p className="muted">{doc.description}</p> : null}
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-        <section className="flex flex-col gap-2">
-          <span className="label">Properties · {Object.keys(kind.properties).length}</span>
-          <PropertyTable properties={kind.properties} />
-        </section>
-        <section className="flex flex-col gap-2">
-          <span className="label">Rules that select this kind · {rules.length}</span>
-          {rules.length ? (
+      <Facts facts={doc.facts} />
+
+      <section className="flex flex-col gap-2">
+        <span className="label">Properties · {doc.properties?.caption}</span>
+        <p className="small muted">
+          A node of this kind resolves each property from its own <code>props</code>, then the
+          component&apos;s defaults, then the default below.
+        </p>
+        <PropertyTable rows={doc.properties?.rows ?? []} />
+      </section>
+
+      <section className="flex flex-col gap-2">
+        <span className="label">{doc.rules?.caption}</span>
+        <RuleList
+          items={doc.rules?.items ?? []}
+          empty="No rule selects this kind or its category. Governance calls that a recorded gap."
+        />
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <span className="label">
+          Components · {doc.componentGroups?.reduce((n, g) => n + g.items.length, 0) ?? 0}
+        </span>
+        {doc.componentGroups?.map((g) => (
+          <div key={g.provider} className="flex flex-col gap-2">
+            <span className="meta mono">{g.provider}</span>
             <div className="list">
-              {rules.map((r) => (
-                <Link
-                  key={r.id}
-                  href={`/catalogue/rules#${r.id}`}
-                  className="row no-underline"
-                  style={{ gridTemplateColumns: "10px 1fr auto" }}
-                >
-                  <span
-                    className="dot"
-                    style={{
-                      width: 8,
-                      height: 8,
-                      borderRadius: "50%",
-                      background: r.severity === "error" ? "var(--err)" : "var(--warn)",
-                    }}
-                  />
-                  <span className="flex flex-col min-w-0">
-                    <span className="name">{cat.locale.rules[r.id]?.name ?? r.id}</span>
-                    <span className="slug truncate">{r.id}</span>
+              {g.items.map((c) => (
+                <Link key={c.id} href={c.href} className="row no-underline">
+                  <Icon markup={icons[c.id] ?? icons[`kind:${id}`]} />
+                  <span className="flex items-baseline gap-2 min-w-0">
+                    <span className="name">{c.name}</span>
+                    <span className="slug truncate">{c.id}</span>
                   </span>
-                  <span className="kind">{r.severity}</span>
+                  {g.provider === "vendor-neutral" ? (
+                    <span className="tag tag-mono">generic</span>
+                  ) : (
+                    <span />
+                  )}
+                  <span className="kind">{c.note}</span>
                 </Link>
               ))}
             </div>
-          ) : (
-            <div className="empty">No rule selects this kind on its own.</div>
-          )}
-        </section>
-      </div>
-
-      <section className="flex flex-col gap-2">
-        <span className="label">Components · {components.length}</span>
-        <div className="list">
-          {components.map((c) => (
-            <Link key={c.id} href={`/catalogue/components/${c.id}`} className="row no-underline">
-              <Icon markup={icons[c.id] ?? icons[`kind:${id}`]} />
-              <span className="flex items-baseline gap-2 min-w-0">
-                <span className="name">{cat.locale.components[c.id]?.name ?? c.id}</span>
-                <span className="slug truncate">{c.id}</span>
-              </span>
-              {c.provider !== "default" ? (
-                <span className="tag tag-mono">{c.provider}</span>
-              ) : (
-                <span />
-              )}
-              <span className="kind">{Object.keys(c.defaults).length} defaults</span>
-            </Link>
-          ))}
-        </div>
+          </div>
+        ))}
+        {/* How many designs use this kind is deliberately not here: it is one database query per
+            kind against the platform, and this page is catalogue data only. */}
       </section>
+
+      <Source path={doc.path} source={doc.source} />
     </div>
   );
 }

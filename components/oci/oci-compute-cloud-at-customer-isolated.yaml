@@ -9,6 +9,7 @@ type: "component"
 id: "oci-compute-cloud-at-customer-isolated"
 kind: "edge-appliance"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/compute-cloud-at-customer-isolated/c3i/overview-compute-cloud-customer-isolated.htm"
 defaults:
   formFactor: "rack"
   connectivity: "disconnected"

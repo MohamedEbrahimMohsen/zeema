@@ -8,6 +8,7 @@ type: "component"
 id: "tileserver-gl"
 kind: "third-party-api"
 provider: "default"
+docs: "https://maptiler-tileserver.readthedocs.io/en/latest/config.html"
 defaults:
   managed: false
   idempotent: true

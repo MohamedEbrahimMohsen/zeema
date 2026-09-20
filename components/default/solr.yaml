@@ -5,6 +5,7 @@ type: "component"
 id: "solr"
 kind: "search-index"
 provider: "default"
+docs: "https://solr.apache.org/guide/"
 defaults:
   structure: "inverted"
   shardingStrategy: "none"

@@ -6,6 +6,7 @@ type: "component"
 id: "signoz"
 kind: "monitoring"
 provider: "default"
+docs: "https://signoz.io/docs/userguide/retention-period/"
 defaults:
   signal: "all"
   collectorMode: "push"

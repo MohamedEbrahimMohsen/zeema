@@ -8,6 +8,7 @@ type: "component"
 id: "aws-bedrock-knowledge-base"
 kind: "search-index"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/bedrock/latest/userguide/kb-chunking-parsing.html"
 defaults:
   managed: true
   structure: "vector"

@@ -6,6 +6,7 @@ type: "component"
 id: "payu"
 kind: "third-party-api"
 provider: "default"
+docs: "https://developers.payu.com/europe/docs/payment-flows/lifecycle/"
 defaults:
   managed: true
   idempotent: false

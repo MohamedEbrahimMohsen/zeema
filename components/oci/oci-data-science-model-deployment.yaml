@@ -9,6 +9,7 @@ type: "component"
 id: "oci-data-science-model-deployment"
 kind: "ml-inference"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/data-science/using/model_dep_create.htm"
 defaults:
   training: "batch"
   inputs: "live"

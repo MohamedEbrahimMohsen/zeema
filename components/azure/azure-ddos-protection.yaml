@@ -7,6 +7,7 @@ type: "component"
 id: "azure-ddos-protection"
 kind: "ddos-protection"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/ddos-protection/ddos-protection-overview"
 defaults:
   managed: true
   scope: "network"

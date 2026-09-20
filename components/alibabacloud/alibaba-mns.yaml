@@ -10,6 +10,7 @@ type: "component"
 id: "alibaba-mns"
 kind: "queue"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/mns/"
 defaults:
   managed: true
   delivery: "at-least-once"

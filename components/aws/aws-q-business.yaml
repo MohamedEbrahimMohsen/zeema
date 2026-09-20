@@ -9,6 +9,7 @@ type: "component"
 id: "aws-q-business"
 kind: "ai-service"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/amazonq/latest/qbusiness-ug/what-is.html"
 defaults:
   managed: true
   modality: "text"

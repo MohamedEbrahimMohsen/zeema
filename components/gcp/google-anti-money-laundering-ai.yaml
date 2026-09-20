@@ -8,6 +8,7 @@ type: "component"
 id: "google-anti-money-laundering-ai"
 kind: "ai-service"
 provider: "gcp"
+docs: "https://docs.cloud.google.com/financial-services/anti-money-laundering/docs/concepts/overview"
 defaults:
   modality: "structured"
   publicEndpoint: true

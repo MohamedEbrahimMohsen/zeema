@@ -9,6 +9,7 @@ type: "component"
 id: "k8s-config-map"
 kind: "feature-flag-service"
 provider: "k8s"
+docs: "https://kubernetes.io/docs/concepts/configuration/configmap/"
 defaults:
   managed: false
   stagedRollout: false

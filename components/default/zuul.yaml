@@ -5,6 +5,7 @@ type: "component"
 id: "zuul"
 kind: "api-gateway"
 provider: "default"
+docs: "https://github.com/Netflix/zuul/wiki"
 defaults:
   managed: false
   rateLimiting: false

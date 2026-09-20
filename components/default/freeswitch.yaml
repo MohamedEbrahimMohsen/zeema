@@ -9,6 +9,7 @@ type: "component"
 id: "freeswitch"
 kind: "contact-center"
 provider: "default"
+docs: "https://developer.signalwire.com/freeswitch/applications/call-queues/"
 defaults:
   managed: false
   channelVoice: true

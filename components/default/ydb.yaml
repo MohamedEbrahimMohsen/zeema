@@ -6,6 +6,7 @@ type: "component"
 id: "ydb"
 kind: "nosql-database"
 provider: "default"
+docs: "https://ydb.tech/docs/en/concepts/glossary"
 defaults:
   model: "key-value"
   consistency: "strong"

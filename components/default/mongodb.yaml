@@ -6,6 +6,7 @@ type: "component"
 id: "mongodb"
 kind: "nosql-database"
 provider: "default"
+docs: "https://www.mongodb.com/docs/manual/"
 defaults:
   model: "document"
   consistency: "strong"

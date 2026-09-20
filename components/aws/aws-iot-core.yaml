@@ -8,6 +8,7 @@ type: "component"
 id: "aws-iot-core"
 kind: "iot-hub"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/iot/latest/developerguide/what-is-aws-iot.html"
 defaults:
   protocol: "multi"
   perDeviceIdentity: true

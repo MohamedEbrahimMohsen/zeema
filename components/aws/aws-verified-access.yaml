@@ -7,6 +7,7 @@ type: "component"
 id: "aws-verified-access"
 kind: "bastion-host"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/verified-access/latest/ug/what-is-verified-access.html"
 defaults:
   managed: true
   justInTimeAccess: true

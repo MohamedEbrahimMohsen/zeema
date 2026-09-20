@@ -7,6 +7,7 @@ type: "component"
 id: "oci-security-zone"
 kind: "policy-engine"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/security-zone/using/security-zones.htm"
 defaults:
   managed: true
   effect: "deny"

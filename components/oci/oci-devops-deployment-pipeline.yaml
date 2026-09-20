@@ -7,6 +7,7 @@ type: "component"
 id: "oci-devops-deployment-pipeline"
 kind: "ci-pipeline"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/devops/using/devops_overview.htm"
 defaults:
   managed: true
   selfHostedRunners: false

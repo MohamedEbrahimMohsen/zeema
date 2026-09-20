@@ -8,6 +8,7 @@ type: "component"
 id: "oci-instance-pool"
 kind: "virtual-machine"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/Compute/Tasks/creatinginstancepool.htm"
 defaults:
   managed: false
   diskEncryption: true

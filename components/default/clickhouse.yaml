@@ -6,6 +6,7 @@ type: "component"
 id: "clickhouse"
 kind: "data-warehouse"
 provider: "default"
+docs: "https://clickhouse.com/docs"
 defaults:
   realtime: true
   upsert: false

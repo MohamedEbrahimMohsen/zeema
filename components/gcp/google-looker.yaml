@@ -7,6 +7,7 @@ type: "component"
 id: "google-looker"
 kind: "bi-service"
 provider: "gcp"
+docs: "https://docs.cloud.google.com/looker/docs/looker-core-overview"
 defaults:
   managed: true
   capacityMode: "dedicated"

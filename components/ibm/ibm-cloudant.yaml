@@ -10,6 +10,7 @@ type: "component"
 id: "ibm-cloudant"
 kind: "nosql-database"
 provider: "ibm"
+docs: "https://cloud.ibm.com/docs/Cloudant"
 defaults:
   managed: true
   model: "document"

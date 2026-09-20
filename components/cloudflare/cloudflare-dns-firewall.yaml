@@ -7,6 +7,7 @@ type: "component"
 id: "cloudflare-dns-firewall"
 kind: "firewall"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/dns/dns-firewall/"
 defaults:
   managed: true
 properties:

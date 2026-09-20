@@ -7,6 +7,7 @@ type: "component"
 id: "xcp-ng"
 kind: "virtual-machine"
 provider: "default"
+docs: "https://docs.xcp-ng.org/"
 defaults:
   managed: false
 properties:

@@ -8,6 +8,7 @@ type: "component"
 id: "cube"
 kind: "bi-service"
 provider: "default"
+docs: "https://docs.cube.dev/docs/introduction"
 defaults:
   managed: false
   embeddedReports: true

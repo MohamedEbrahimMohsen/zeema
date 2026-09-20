@@ -10,6 +10,7 @@ type: "component"
 id: "k8s-network-policy"
 kind: "firewall"
 provider: "k8s"
+docs: "https://kubernetes.io/docs/concepts/services-networking/network-policies/"
 defaults:
   managed: false
   defaultAction: "deny"

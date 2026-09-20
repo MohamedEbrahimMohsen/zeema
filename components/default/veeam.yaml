@@ -6,6 +6,7 @@ type: "component"
 id: "veeam"
 kind: "backup-service"
 provider: "default"
+docs: "https://helpcenter.veeam.com/docs/backup/vsphere/overview.html"
 defaults:
   managed: false
   crossRegionRestore: false

@@ -7,6 +7,7 @@ type: "component"
 id: "zerotier"
 kind: "vpn-gateway"
 provider: "default"
+docs: "https://docs.zerotier.com/what/"
 defaults:
   managed: true
   peerType: "point-to-site"

@@ -6,6 +6,7 @@ type: "component"
 id: "qldb"
 kind: "ledger"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/qldb/latest/developerguide/what-is.html"
 defaults:
   managed: true
   doubleEntry: false

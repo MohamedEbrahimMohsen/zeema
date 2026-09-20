@@ -10,6 +10,7 @@ type: "component"
 id: "stitch"
 kind: "worker"
 provider: "default"
+docs: "https://www.stitchdata.com/docs/"
 defaults:
   managed: true
   trigger: "schedule"

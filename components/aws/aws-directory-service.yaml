@@ -8,6 +8,7 @@ type: "component"
 id: "aws-directory-service"
 kind: "identity-provider"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/directoryservice/latest/admin-guide/directory_microsoft_ad.html"
 defaults:
   protocol: "custom"
   authorizationModel: "rbac"

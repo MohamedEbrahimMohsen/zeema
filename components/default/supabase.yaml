@@ -6,6 +6,7 @@ type: "component"
 id: "supabase"
 kind: "sql-database"
 provider: "default"
+docs: "https://supabase.com/docs/guides/platform/backups"
 defaults:
   managed: true
   backupEnabled: false

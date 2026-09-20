@@ -8,6 +8,7 @@ type: "component"
 id: "aws-cognito-identity-pool"
 kind: "identity-provider"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/cognito/latest/developerguide/authentication-flow.html"
 defaults:
   protocol: "iam"
   authorizationModel: "rbac"

@@ -7,6 +7,7 @@ type: "component"
 id: "azure-repos"
 kind: "artifact-repository"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/devops/repos/get-started/what-is-repos"
 defaults:
   artifactType: "source"
   visibility: "private"

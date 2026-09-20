@@ -8,6 +8,7 @@ type: "component"
 id: "openai-api"
 kind: "ai-service"
 provider: "default"
+docs: "https://developers.openai.com/api/docs/guides/your-data"
 defaults:
   managed: true
   modality: "multimodal"

@@ -8,6 +8,7 @@ type: "component"
 id: "openstack-cyborg"
 kind: "coordination-service"
 provider: "openstack"
+docs: "https://docs.openstack.org/cyborg/latest/"
 defaults:
   role: "placement"
   managed: false

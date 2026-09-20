@@ -8,6 +8,7 @@ type: "component"
 id: "oci-analytics-cloud"
 kind: "bi-service"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/analytics-cloud/doc/create-service-using-console.html"
 defaults:
   managed: true
   capacityMode: "dedicated"

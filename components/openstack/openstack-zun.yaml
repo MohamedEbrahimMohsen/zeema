@@ -8,6 +8,7 @@ type: "component"
 id: "openstack-zun"
 kind: "container-orchestrator"
 provider: "openstack"
+docs: "https://docs.openstack.org/zun/latest/"
 defaults:
   managed: false
 properties:

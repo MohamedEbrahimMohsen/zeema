@@ -6,6 +6,7 @@ type: "component"
 id: "icinga"
 kind: "monitoring"
 provider: "default"
+docs: "https://icinga.com/docs/icinga-2/latest/doc/03-monitoring-basics/"
 defaults:
   signal: "alerts"
   collectorMode: "pull"

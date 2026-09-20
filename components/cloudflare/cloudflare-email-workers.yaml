@@ -8,6 +8,7 @@ type: "component"
 id: "cloudflare-email-workers"
 kind: "app-server"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/email-service/api/route-emails/email-handler/"
 defaults:
   managed: true
   stateless: true

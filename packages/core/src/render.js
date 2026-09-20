@@ -14,6 +14,8 @@ const CATEGORY_HUE = {
   messaging: "green",
   client: "rose",
   external: "red",
+  // Untyped, so uncoloured: a custom node is a hole, and it should look like one.
+  custom: "grey",
 };
 
 // fill, stroke (light) | fill, stroke (dark)
@@ -70,7 +72,9 @@ export function toSvg(doc, catalogue, options = {}) {
   else style = `${vars.light}@media (prefers-color-scheme: dark){${vars.dark}${dark}}${light}`;
   style +=
     ".n{font-size:14px;font-weight:500;fill:var(--ink)}.c{font-size:12px;fill:var(--muted)}" +
-    ".g{font-size:12px;fill:var(--muted)}.e{font-size:12px;fill:var(--muted);paint-order:stroke;" +
+    ".g{font-size:12px;fill:var(--muted)}" +
+    ".gk{font-size:10px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;fill:var(--muted);opacity:0.75}" +
+    ".e{font-size:12px;fill:var(--muted);paint-order:stroke;" +
     "stroke:var(--bg);stroke-width:3px}.ic{color:var(--ink)}";
 
   const out = [
@@ -87,8 +91,16 @@ export function toSvg(doc, catalogue, options = {}) {
     out.push(
       `<rect x="${f1(f[0])}" y="${f1(f[1])}" width="${f1(f[2])}" height="${f1(f[3])}" rx="10" fill="none" stroke="var(--frame)" stroke-width="1" stroke-dasharray="5 4"/>`,
     );
+    // The name, then the kind as a tag beside it — never "name (kind)". With no label the id
+    // stands in; when that caption would only repeat the kind, the tag alone carries it.
+    const caption = g.label ? String(g.label) : String(g.id);
+    const name = caption === g.kind ? "" : caption;
+    if (name)
+      out.push(
+        `<text class="g" x="${f1(f[0] + 12)}" y="${f1(f[1] + 19)}">${escapeXml(name)}</text>`,
+      );
     out.push(
-      `<text class="g" x="${f1(f[0] + 12)}" y="${f1(f[1] + 19)}">${escapeXml(g.label || `${g.id} (${g.kind})`)}</text>`,
+      `<text class="gk" x="${f1(f[0] + 12 + (name ? name.length * 6.4 + 8 : 0))}" y="${f1(f[1] + 19)}">${escapeXml(g.kind)}</text>`,
     );
   }
   for (const e of lay.edges) {

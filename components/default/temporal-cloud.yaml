@@ -7,6 +7,7 @@ type: "component"
 id: "temporal-cloud"
 kind: "workflow-engine"
 provider: "default"
+docs: "https://docs.temporal.io/cloud/overview"
 defaults:
   durable: true
   pattern: "saga"

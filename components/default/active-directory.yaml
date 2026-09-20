@@ -8,6 +8,7 @@ type: "component"
 id: "active-directory"
 kind: "identity-provider"
 provider: "default"
+docs: "https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview"
 defaults:
   protocol: "custom"
   authorizationModel: "rbac"

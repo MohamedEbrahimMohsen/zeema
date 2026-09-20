@@ -9,6 +9,7 @@ type: "component"
 id: "alibaba-vpc"
 kind: "network-fabric"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/vpc/product-overview/what-is-a-vpc"
 defaults:
   managed: true
   overlay: true

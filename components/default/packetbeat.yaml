@@ -9,6 +9,7 @@ type: "component"
 id: "packetbeat"
 kind: "monitoring"
 provider: "default"
+docs: "https://www.elastic.co/guide/en/beats/packetbeat/current/index.html"
 defaults:
   managed: false
   signal: "logs"

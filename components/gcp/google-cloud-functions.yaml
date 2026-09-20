@@ -8,6 +8,7 @@ type: "component"
 id: "google-cloud-functions"
 kind: "app-server"
 provider: "gcp"
+docs: "https://cloud.google.com/sdk/gcloud/reference/functions/deploy"
 defaults:
   managed: true
   stateless: true

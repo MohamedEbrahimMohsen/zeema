@@ -11,6 +11,7 @@ type: "component"
 id: "aws-ram"
 kind: "policy-engine"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/ram/latest/userguide/what-is.html"
 defaults:
   enforcementMode: "enforced"
   scope: "account"

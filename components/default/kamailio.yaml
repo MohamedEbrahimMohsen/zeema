@@ -9,6 +9,7 @@ type: "component"
 id: "kamailio"
 kind: "contact-center"
 provider: "default"
+docs: "https://www.kamailio.org/w/"
 defaults:
   managed: false
   channelVoice: true

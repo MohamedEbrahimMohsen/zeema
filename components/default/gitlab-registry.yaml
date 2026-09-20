@@ -8,6 +8,7 @@ type: "component"
 id: "gitlab-registry"
 kind: "container-registry"
 provider: "default"
+docs: "https://docs.gitlab.com/user/packages/container_registry/"
 defaults:
   managed: false
   imageScanning: false

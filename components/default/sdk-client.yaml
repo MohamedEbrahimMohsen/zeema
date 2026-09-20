@@ -5,6 +5,7 @@ type: "component"
 id: "sdk-client"
 kind: "client"
 provider: "default"
+docs: "https://grpc.io/docs/"
 defaults:
   platform: "sdk"
 properties:

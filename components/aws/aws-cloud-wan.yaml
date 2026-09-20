@@ -7,6 +7,7 @@ type: "component"
 id: "aws-cloud-wan"
 kind: "network-fabric"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/network-manager/latest/cloudwan/what-is-cloudwan.html"
 defaults:
   managed: true
   interconnect: "cloud-backbone"

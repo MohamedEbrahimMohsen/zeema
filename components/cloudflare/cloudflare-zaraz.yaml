@@ -7,6 +7,7 @@ type: "component"
 id: "cloudflare-zaraz"
 kind: "worker"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/zaraz/reference/settings/"
 defaults:
   managed: true
   trigger: "manual"

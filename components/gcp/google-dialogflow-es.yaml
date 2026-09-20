@@ -8,6 +8,7 @@ type: "component"
 id: "google-dialogflow-es"
 kind: "ai-service"
 provider: "gcp"
+docs: "https://docs.cloud.google.com/dialogflow/quotas"
 defaults:
   modality: "multimodal"
   publicEndpoint: true

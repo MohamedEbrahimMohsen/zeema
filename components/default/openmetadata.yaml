@@ -8,6 +8,7 @@ type: "component"
 id: "openmetadata"
 kind: "data-catalog"
 provider: "default"
+docs: "https://docs.open-metadata.org/latest/connectors/ingestion/workflows"
 defaults:
   managed: false
   lineage: true

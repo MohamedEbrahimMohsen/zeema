@@ -8,6 +8,7 @@ type: "component"
 id: "azure-container-registry"
 kind: "container-registry"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/container-registry/container-registry-intro"
 defaults:
   managed: true
   visibility: "private"

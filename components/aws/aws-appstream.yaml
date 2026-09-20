@@ -9,6 +9,7 @@ type: "component"
 id: "aws-appstream"
 kind: "virtual-desktop"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/appstream2/latest/developerguide/what-is-appstream.html"
 defaults:
   managed: true
   sessionMode: "pooled"

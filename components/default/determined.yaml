@@ -7,6 +7,7 @@ type: "component"
 id: "determined"
 kind: "ml-platform"
 provider: "default"
+docs: "https://github.com/determined-ai/determined"
 defaults:
   experimentTracking: true
   modelRegistry: true

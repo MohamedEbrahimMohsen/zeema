@@ -8,6 +8,7 @@ type: "component"
 id: "azure-kubernetes-fleet-manager"
 kind: "container-orchestrator"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/kubernetes-fleet/overview"
 defaults:
   managed: true
   autoscaling: false

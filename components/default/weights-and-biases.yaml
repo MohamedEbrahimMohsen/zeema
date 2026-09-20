@@ -7,6 +7,7 @@ type: "component"
 id: "weights-and-biases"
 kind: "ml-platform"
 provider: "default"
+docs: "https://docs.wandb.ai/guides/hosting/"
 defaults:
   experimentTracking: true
   modelRegistry: true

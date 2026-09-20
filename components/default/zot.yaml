@@ -7,6 +7,7 @@ type: "component"
 id: "zot"
 kind: "container-registry"
 provider: "default"
+docs: "https://zotregistry.dev/v2.1.21/"
 defaults:
   managed: false
   geoReplicated: false

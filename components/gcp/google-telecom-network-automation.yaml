@@ -9,6 +9,7 @@ type: "component"
 id: "google-telecom-network-automation"
 kind: "ci-pipeline"
 provider: "gcp"
+docs: "https://docs.cloud.google.com/telecom-network-automation/docs/overview"
 defaults:
   trigger: "commit"
   managed: true

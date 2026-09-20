@@ -7,6 +7,7 @@ type: "component"
 id: "cloudflare-health-checks"
 kind: "monitoring"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/health-checks/"
 defaults:
   managed: true
   signal: "alerts"

@@ -5,6 +5,7 @@ type: "component"
 id: "supplier-api"
 kind: "third-party-api"
 provider: "default"
+docs: "https://en.wikipedia.org/wiki/Business-to-business"
 defaults:
   callbackStyle: "none"
 properties:

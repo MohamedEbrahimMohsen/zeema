@@ -8,6 +8,7 @@ type: "component"
 id: "oci-integration"
 kind: "workflow-engine"
 provider: "oci"
+docs: "https://docs.oracle.com/en/cloud/paas/application-integration/integrations-user/integrations.html"
 defaults:
   managed: true
   durable: true

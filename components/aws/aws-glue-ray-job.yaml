@@ -8,6 +8,7 @@ type: "component"
 id: "aws-glue-ray-job"
 kind: "worker"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/glue/latest/dg/author-job-ray.html"
 defaults:
   managed: true
   trigger: "batch"

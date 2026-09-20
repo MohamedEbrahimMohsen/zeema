@@ -7,6 +7,7 @@ type: "component"
 id: "azure-virtual-network"
 kind: "network-fabric"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-overview"
 defaults:
   managed: true
   overlay: true

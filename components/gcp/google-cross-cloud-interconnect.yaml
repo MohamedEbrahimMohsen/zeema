@@ -6,6 +6,7 @@ type: "component"
 id: "google-cross-cloud-interconnect"
 kind: "network-fabric"
 provider: "gcp"
+docs: "https://cloud.google.com/network-connectivity/docs/interconnect/concepts/cci-overview"
 defaults:
   managed: true
   interconnect: "private"

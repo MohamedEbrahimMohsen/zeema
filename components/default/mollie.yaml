@@ -6,6 +6,7 @@ type: "component"
 id: "mollie"
 kind: "third-party-api"
 provider: "default"
+docs: "https://docs.mollie.com/reference/api-idempotency"
 defaults:
   managed: true
   idempotent: true

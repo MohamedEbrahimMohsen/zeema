@@ -8,6 +8,7 @@ type: "component"
 id: "google-spot-vm"
 kind: "virtual-machine"
 provider: "gcp"
+docs: "https://cloud.google.com/compute/docs/instances/spot"
 defaults:
   managed: false
   diskEncryption: true

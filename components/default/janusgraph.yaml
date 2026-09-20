@@ -5,6 +5,7 @@ type: "component"
 id: "janusgraph"
 kind: "graph-database"
 provider: "default"
+docs: "https://docs.janusgraph.org/"
 defaults:
   inMemory: false
   crossRegionConsistency: "none"

@@ -4,6 +4,7 @@ type: "component"
 id: "postgres"
 kind: "sql-database"
 provider: "default"
+docs: "https://www.postgresql.org/docs/current/"
 defaults:
   managed: true
   replication: "none"

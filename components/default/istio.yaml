@@ -5,6 +5,7 @@ type: "component"
 id: "istio"
 kind: "service-mesh"
 provider: "default"
+docs: "https://istio.io/latest/docs/"
 defaults:
   managed: false
   sidecar: true

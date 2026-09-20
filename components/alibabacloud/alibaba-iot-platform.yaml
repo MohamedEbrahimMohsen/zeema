@@ -9,6 +9,7 @@ type: "component"
 id: "alibaba-iot-platform"
 kind: "iot-hub"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/iot/product-overview/what-is-iot-platform"
 defaults:
   managed: true
   protocol: "multi"

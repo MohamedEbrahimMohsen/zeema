@@ -10,6 +10,7 @@ type: "component"
 id: "alibaba-apsaradb-memcache"
 kind: "cache"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/apsaradb-for-memcache/"
 defaults:
   managed: true
   structure: "key-value"

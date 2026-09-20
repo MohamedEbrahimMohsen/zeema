@@ -8,6 +8,7 @@ type: "component"
 id: "aws-s3-tables"
 kind: "object-store"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-tables.html"
 defaults:
   zones: 3
   durabilityNines: 11

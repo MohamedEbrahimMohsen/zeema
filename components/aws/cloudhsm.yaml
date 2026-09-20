@@ -5,6 +5,7 @@ type: "component"
 id: "cloudhsm"
 kind: "key-management"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/cloudhsm/latest/userguide/introduction.html"
 defaults:
   managed: true
   hsm: true

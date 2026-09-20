@@ -10,6 +10,7 @@ type: "component"
 id: "alibaba-dbs"
 kind: "backup-service"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/product/database-backup"
 defaults:
   managed: true
 properties:

@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { getCatalogue, getIcons } from "@/lib/catalogue";
+import { catalogueCounts } from "@/lib/reference";
 
+// `custom` is last on purpose: it is the escape hatch, not a place to start.
 const CATEGORY_ORDER = [
   "compute",
   "edge",
@@ -11,6 +13,7 @@ const CATEGORY_ORDER = [
   "security",
   "client",
   "external",
+  "custom",
 ];
 
 export default async function CataloguePage({
@@ -22,6 +25,7 @@ export default async function CataloguePage({
   const cat = getCatalogue();
   const icons = getIcons();
   const q = (sp.q ?? "").toLowerCase().trim();
+  const totals = catalogueCounts();
   const counts: Record<string, number> = {};
   for (const c of Object.values(cat.components)) counts[c.kind] = (counts[c.kind] ?? 0) + 1;
   const kinds = Object.values(cat.kinds).sort(
@@ -53,10 +57,17 @@ export default async function CataloguePage({
       <div className="flex flex-col gap-1">
         <h1 className="title">Catalogue</h1>
         <p className="small muted">
-          {kinds.length} kinds, {Object.keys(cat.components).length.toLocaleString()} components
-          across {new Set(Object.values(cat.components).map((c) => c.provider)).size} providers,{" "}
-          {cat.rules.length} rules. A kind is the abstract thing (a queue); a component is the
-          concrete product (Kafka, SQS) with its real defaults.
+          A kind is the abstract thing (a queue); a component is the concrete product (Kafka, SQS)
+          with the defaults it really has; a rule is a deterministic check the linter runs over a
+          design. Every kind, component and rule below has a reference page: its properties, the
+          rules that apply to it in plain English, and the verbatim YAML from the repository.
+        </p>
+        <p className="small muted">
+          <b>{totals.kinds}</b> kinds · <b>{totals.components.toLocaleString()}</b> components
+          across <b>{totals.providers}</b> providers · <b>{totals.rules}</b> rules ·{" "}
+          <Link href="/llms.txt" className="link">
+            Machine-readable index
+          </Link>
         </p>
       </div>
       <form className="flex flex-wrap items-center gap-3" method="get">

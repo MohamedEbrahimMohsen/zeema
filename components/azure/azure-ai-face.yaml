@@ -6,6 +6,7 @@ type: "component"
 id: "azure-ai-face"
 kind: "ai-service"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/ai-services/face/overview-identity"
 defaults:
   managed: true
   modality: "vision"

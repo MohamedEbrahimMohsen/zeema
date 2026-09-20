@@ -8,6 +8,7 @@ type: "component"
 id: "google-memorystore-redis-cluster"
 kind: "cache"
 provider: "gcp"
+docs: "https://cloud.google.com/sdk/gcloud/reference/redis/clusters/create"
 defaults:
   replication: "none"
   persistence: false

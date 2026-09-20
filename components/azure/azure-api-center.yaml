@@ -9,6 +9,7 @@ type: "component"
 id: "azure-api-center"
 kind: "data-catalog"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/api-center/overview"
 defaults:
   managed: true
   accessPolicyEnforcement: false

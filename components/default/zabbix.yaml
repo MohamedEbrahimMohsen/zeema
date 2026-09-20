@@ -6,6 +6,7 @@ type: "component"
 id: "zabbix"
 kind: "monitoring"
 provider: "default"
+docs: "https://www.zabbix.com/documentation/current/en/manual/introduction/about"
 defaults:
   signal: "metrics"
   collectorMode: "pull"

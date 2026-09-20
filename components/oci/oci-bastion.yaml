@@ -7,6 +7,7 @@ type: "component"
 id: "oci-bastion"
 kind: "bastion-host"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/Bastion/Concepts/bastionoverview.htm"
 defaults:
   managed: true
   protocols: "ssh"

@@ -5,6 +5,7 @@ type: "component"
 id: "aws-ivs"
 kind: "media-router"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/ivs/latest/LowLatencyUserGuide/what-is.html"
 defaults:
   managed: true
   mode: "ingest"

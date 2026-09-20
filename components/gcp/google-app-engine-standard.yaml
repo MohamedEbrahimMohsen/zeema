@@ -8,6 +8,7 @@ type: "component"
 id: "google-app-engine-standard"
 kind: "app-server"
 provider: "gcp"
+docs: "https://cloud.google.com/appengine/docs/standard"
 defaults:
   managed: true
   stateless: true

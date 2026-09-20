@@ -8,6 +8,7 @@ type: "component"
 id: "azure-defender-easm"
 kind: "monitoring"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/external-attack-surface-management/what-is-discovery"
 defaults:
   managed: true
   signal: "alerts"

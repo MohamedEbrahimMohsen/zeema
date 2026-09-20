@@ -6,6 +6,7 @@ type: "component"
 id: "firestore"
 kind: "nosql-database"
 provider: "gcp"
+docs: "https://cloud.google.com/firestore/docs"
 defaults:
   model: "document"
   consistency: "strong"

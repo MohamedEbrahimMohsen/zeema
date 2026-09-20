@@ -10,6 +10,7 @@ type: "component"
 id: "oci-roving-edge"
 kind: "edge-appliance"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/roving-edge-infrastructure/rvr/device_specifications.htm"
 defaults:
   formFactor: "ruggedized"
   connectivity: "intermittent"

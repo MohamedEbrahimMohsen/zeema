@@ -5,6 +5,7 @@ type: "component"
 id: "smart-tv-app"
 kind: "client"
 provider: "default"
+docs: "https://developer.roku.com/docs"
 defaults:
   platform: "tv"
   localCache: true

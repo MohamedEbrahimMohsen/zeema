@@ -5,6 +5,7 @@ type: "component"
 id: "glue-job"
 kind: "worker"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/glue/latest/dg/what-is-glue.html"
 defaults:
   managed: true
   trigger: "batch"

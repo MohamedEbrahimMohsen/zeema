@@ -9,6 +9,7 @@ type: "component"
 id: "oci-media-flow"
 kind: "media-transcoder"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/media-services/mediaflow/media-flow-overview.htm"
 defaults:
   mode: "file"
   redundantPipeline: false

@@ -8,6 +8,7 @@ type: "component"
 id: "docker-registry"
 kind: "container-registry"
 provider: "default"
+docs: "https://distribution.github.io/distribution/about/configuration/"
 defaults:
   managed: false
   imageScanning: false

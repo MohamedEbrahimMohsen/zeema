@@ -7,6 +7,7 @@ type: "component"
 id: "optimizely"
 kind: "feature-flag-service"
 provider: "default"
+docs: "https://docs.developers.optimizely.com/feature-experimentation/docs/initialize-sdk-javascript"
 defaults:
   stagedRollout: true
   managed: true

@@ -9,6 +9,7 @@ type: "component"
 id: "outscale-internet-service"
 kind: "network-fabric"
 provider: "outscale"
+docs: "https://docs.outscale.com/en/userguide/About-Internet-Services.html"
 defaults:
   managed: true
   interconnect: "public"

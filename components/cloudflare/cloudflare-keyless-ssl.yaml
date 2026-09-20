@@ -7,6 +7,7 @@ type: "component"
 id: "cloudflare-keyless-ssl"
 kind: "key-management"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/ssl/keyless-ssl/"
 defaults:
   managed: false
 properties:

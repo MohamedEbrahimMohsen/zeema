@@ -5,6 +5,7 @@ type: "component"
 id: "twilio-video"
 kind: "media-router"
 provider: "default"
+docs: "https://www.twilio.com/docs/video"
 defaults:
   managed: true
   mode: "sfu"

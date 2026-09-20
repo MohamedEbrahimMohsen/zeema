@@ -9,6 +9,7 @@ type: "component"
 id: "threecx"
 kind: "contact-center"
 provider: "default"
+docs: "https://www.3cx.com/docs/manual/call-center-queues/"
 defaults:
   managed: false
   channelVoice: true

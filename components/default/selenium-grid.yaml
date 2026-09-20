@@ -7,6 +7,7 @@ type: "component"
 id: "selenium-grid"
 kind: "client"
 provider: "default"
+docs: "https://www.selenium.dev/documentation/grid/"
 defaults:
   platform: "desktop"
   localCache: false

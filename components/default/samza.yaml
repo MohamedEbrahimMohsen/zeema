@@ -6,6 +6,7 @@ type: "component"
 id: "samza"
 kind: "stream-processor"
 provider: "default"
+docs: "https://samza.apache.org/learn/documentation/latest/"
 defaults:
   windowing: "none"
   checkpointIntervalSeconds: 60

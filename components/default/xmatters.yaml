@@ -10,6 +10,7 @@ type: "component"
 id: "xmatters"
 kind: "notification-service"
 provider: "default"
+docs: "https://help.xmatters.com/ondemand/"
 defaults:
   managed: true
   channelPush: true

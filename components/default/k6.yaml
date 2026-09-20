@@ -7,6 +7,7 @@ type: "component"
 id: "k6"
 kind: "client"
 provider: "default"
+docs: "https://grafana.com/docs/k6/latest/"
 defaults:
   platform: "desktop"
   localCache: false

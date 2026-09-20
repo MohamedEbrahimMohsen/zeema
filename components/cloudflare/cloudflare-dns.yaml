@@ -5,6 +5,7 @@ type: "component"
 id: "cloudflare-dns"
 kind: "dns"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/dns/"
 defaults:
   managed: true
   anycast: true

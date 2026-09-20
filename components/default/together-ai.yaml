@@ -8,6 +8,7 @@ type: "component"
 id: "together-ai"
 kind: "ai-service"
 provider: "default"
+docs: "https://docs.together.ai/docs/rate-limits"
 defaults:
   managed: true
   modality: "multimodal"

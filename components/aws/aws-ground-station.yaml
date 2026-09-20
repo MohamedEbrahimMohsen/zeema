@@ -9,6 +9,7 @@ type: "component"
 id: "aws-ground-station"
 kind: "third-party-api"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/ground-station/latest/APIReference/Welcome.html"
 defaults:
   managed: true
   callbackStyle: "poll"

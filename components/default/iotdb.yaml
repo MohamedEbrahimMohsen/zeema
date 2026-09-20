@@ -7,6 +7,7 @@ type: "component"
 id: "iotdb"
 kind: "timeseries-database"
 provider: "default"
+docs: "https://iotdb.apache.org/UserGuide/latest/Reference/Common-Config-Manual.html"
 defaults:
   downsampling: false
   tiers: "single"

@@ -9,6 +9,7 @@ type: "component"
 id: "aws-gamelift-streams"
 kind: "virtual-desktop"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/gameliftstreams/latest/apireference/API_CreateStreamGroup.html"
 defaults:
   managed: true
   sessionMode: "pooled"

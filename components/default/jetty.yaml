@@ -8,6 +8,7 @@ type: "component"
 id: "jetty"
 kind: "app-server"
 provider: "default"
+docs: "https://jetty.org/docs/jetty/12/operations-guide/begin/index.html"
 defaults:
   managed: false
   runtime: "jvm"

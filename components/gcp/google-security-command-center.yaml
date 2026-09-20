@@ -9,6 +9,7 @@ type: "component"
 id: "google-security-command-center"
 kind: "monitoring"
 provider: "gcp"
+docs: "https://cloud.google.com/security-command-center/docs/security-command-center-overview"
 defaults:
   signal: "alerts"
   collectorMode: "pull"

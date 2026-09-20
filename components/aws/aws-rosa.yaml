@@ -7,6 +7,7 @@ type: "component"
 id: "aws-rosa"
 kind: "container-orchestrator"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/ROSA/latest/userguide/what-is-rosa.html"
 defaults:
   managed: true
   autoscaling: false

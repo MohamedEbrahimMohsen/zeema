@@ -8,6 +8,7 @@ type: "component"
 id: "aws-pcs"
 kind: "big-data-cluster"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/pcs/latest/userguide/what-is-pcs.html"
 defaults:
   managed: true
   engine: "hpc"

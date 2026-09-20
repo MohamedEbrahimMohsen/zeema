@@ -7,6 +7,7 @@ type: "component"
 id: "cerbos"
 kind: "policy-engine"
 provider: "default"
+docs: "https://docs.cerbos.dev/cerbos/latest/policies/resource_policies.html"
 defaults:
   effect: "deny"
   enforcementMode: "enforced"

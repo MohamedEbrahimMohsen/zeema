@@ -7,6 +7,7 @@ type: "component"
 id: "vercel"
 kind: "cdn"
 provider: "default"
+docs: "https://vercel.com/docs/cdn"
 defaults:
   managed: true
   caching: true

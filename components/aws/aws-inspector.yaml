@@ -9,6 +9,7 @@ type: "component"
 id: "aws-inspector"
 kind: "monitoring"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/inspector/latest/user/what-is-inspector.html"
 defaults:
   signal: "alerts"
   collectorMode: "pull"

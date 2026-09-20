@@ -9,6 +9,7 @@ type: "component"
 id: "google-cloud-talent-solution"
 kind: "search-index"
 provider: "gcp"
+docs: "https://docs.cloud.google.com/talent-solution/quotas"
 defaults:
   structure: "inverted"
   indexing: "async"

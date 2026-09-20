@@ -6,6 +6,7 @@ type: "component"
 id: "azure-cosmos-db"
 kind: "nosql-database"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/cosmos-db/introduction"
 defaults:
   model: "document"
   consistency: "tunable"

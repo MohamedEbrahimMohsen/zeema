@@ -6,6 +6,7 @@ type: "component"
 id: "hadoop-yarn"
 kind: "big-data-cluster"
 provider: "default"
+docs: "https://hadoop.apache.org/docs/stable/hadoop-yarn/hadoop-yarn-common/yarn-default.xml"
 defaults:
   engine: "hadoop"
   autoscaling: false

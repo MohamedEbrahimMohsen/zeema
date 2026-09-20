@@ -8,6 +8,7 @@ type: "component"
 id: "fluentd"
 kind: "monitoring"
 provider: "default"
+docs: "https://docs.fluentd.org/configuration/buffer-section"
 defaults:
   managed: false
   signal: "logs"

@@ -9,6 +9,7 @@ type: "component"
 id: "aws-cloudsearch"
 kind: "search-index"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/cloudsearch/latest/developerguide/concepts-scaling.html"
 defaults:
   managed: true
   structure: "inverted"

@@ -12,6 +12,7 @@ type: "component"
 id: "sonarqube"
 kind: "policy-engine"
 provider: "default"
+docs: "https://docs.sonarsource.com/sonarqube-server/latest/"
 defaults:
   managed: false
   effect: "audit"

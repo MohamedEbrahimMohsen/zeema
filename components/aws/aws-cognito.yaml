@@ -5,6 +5,7 @@ type: "component"
 id: "aws-cognito"
 kind: "identity-provider"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/cognito/latest/developerguide/what-is-amazon-cognito.html"
 defaults:
   protocol: "oidc"
   authorizationModel: "rbac"

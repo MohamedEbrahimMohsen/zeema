@@ -7,6 +7,7 @@ type: "component"
 id: "powerdns"
 kind: "dns"
 provider: "default"
+docs: "https://doc.powerdns.com/authoritative/settings.html"
 defaults:
   managed: false
   anycast: false

@@ -7,6 +7,7 @@ type: "component"
 id: "cloudflare-vectorize"
 kind: "vector-database"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/vectorize/platform/limits/"
 defaults:
   managed: true
   metadataFiltering: true

@@ -8,6 +8,7 @@ type: "component"
 id: "azure-database-migration-service"
 kind: "worker"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/dms/dms-overview"
 defaults:
   managed: true
   trigger: "manual"

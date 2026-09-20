@@ -6,6 +6,7 @@ type: "component"
 id: "aws-textract"
 kind: "ai-service"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/textract/latest/dg/limits-document.html"
 defaults:
   managed: true
   modality: "vision"

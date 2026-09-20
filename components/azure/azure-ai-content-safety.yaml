@@ -6,6 +6,7 @@ type: "component"
 id: "azure-ai-content-safety"
 kind: "ai-service"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/ai-services/content-safety/overview"
 defaults:
   managed: true
   modality: "multimodal"

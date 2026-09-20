@@ -7,6 +7,7 @@ type: "component"
 id: "starrocks"
 kind: "data-warehouse"
 provider: "default"
+docs: "https://docs.starrocks.io/docs/sql-reference/sql-statements/table_bucket_part_index/CREATE_TABLE/"
 defaults:
   realtime: true
   upsert: false

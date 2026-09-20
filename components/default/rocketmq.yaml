@@ -7,6 +7,7 @@ type: "component"
 id: "rocketmq"
 kind: "stream"
 provider: "default"
+docs: "https://rocketmq.apache.org/docs/introduction/03limits"
 defaults:
   delivery: "at-least-once"
   ordering: "per-key"

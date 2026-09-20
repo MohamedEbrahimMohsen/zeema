@@ -9,6 +9,7 @@ type: "component"
 id: "aws-s3-object-lambda"
 kind: "app-server"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/transforming-objects.html"
 defaults:
   managed: true
   stateless: true

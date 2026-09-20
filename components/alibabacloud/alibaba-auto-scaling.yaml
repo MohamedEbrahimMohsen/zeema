@@ -9,6 +9,7 @@ type: "component"
 id: "alibaba-auto-scaling"
 kind: "virtual-machine"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/auto-scaling/"
 defaults:
   managed: false
 properties:

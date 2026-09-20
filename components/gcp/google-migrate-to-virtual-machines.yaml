@@ -7,6 +7,7 @@ type: "component"
 id: "google-migrate-to-virtual-machines"
 kind: "worker"
 provider: "gcp"
+docs: "https://docs.cloud.google.com/migrate/virtual-machines/docs/5.0/discover/lifecycle"
 defaults:
   managed: true
   trigger: "schedule"

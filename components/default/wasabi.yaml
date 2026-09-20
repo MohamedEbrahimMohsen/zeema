@@ -8,6 +8,7 @@ type: "component"
 id: "wasabi"
 kind: "object-store"
 provider: "default"
+docs: "https://docs.wasabi.com/docs/how-does-wasabis-minimum-storage-duration-policy-work"
 defaults:
   managed: true
   tier: "hot"

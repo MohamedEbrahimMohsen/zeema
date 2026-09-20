@@ -8,6 +8,7 @@ type: "component"
 id: "aws-storage-gateway"
 kind: "edge-appliance"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/storagegateway/latest/userguide/WhatIsStorageGateway.html"
 defaults:
   connectivity: "connected"
   offlineMode: false

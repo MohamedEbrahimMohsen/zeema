@@ -8,6 +8,7 @@ type: "component"
 id: "here"
 kind: "third-party-api"
 provider: "default"
+docs: "https://www.here.com/get-started/pricing/rps-limits-excluded-use-cases"
 defaults:
   managed: true
   idempotent: true

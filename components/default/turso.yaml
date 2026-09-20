@@ -6,6 +6,7 @@ type: "component"
 id: "turso"
 kind: "sql-database"
 provider: "default"
+docs: "https://docs.turso.tech/features/embedded-replicas/introduction"
 defaults:
   managed: true
   replication: "async"

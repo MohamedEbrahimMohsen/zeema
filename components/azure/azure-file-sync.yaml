@@ -9,6 +9,7 @@ type: "component"
 id: "azure-file-sync"
 kind: "file-storage"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/storage/file-sync/file-sync-introduction"
 defaults:
   protocol: "smb"
   managed: true

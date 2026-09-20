@@ -5,6 +5,7 @@ type: "component"
 id: "neptune"
 kind: "graph-database"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/neptune/latest/userguide/intro.html"
 defaults:
   inMemory: false
   crossRegionConsistency: "none"

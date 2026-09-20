@@ -7,6 +7,7 @@ type: "component"
 id: "openstack-nova"
 kind: "virtual-machine"
 provider: "default"
+docs: "https://docs.openstack.org/nova/latest/"
 defaults:
   managed: false
 properties:

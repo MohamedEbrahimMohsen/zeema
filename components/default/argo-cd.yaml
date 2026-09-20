@@ -8,6 +8,7 @@ type: "component"
 id: "argo-cd"
 kind: "ci-pipeline"
 provider: "default"
+docs: "https://argo-cd.readthedocs.io/en/stable/user-guide/auto_sync/"
 defaults:
   trigger: "manual"
   approvalRequired: false

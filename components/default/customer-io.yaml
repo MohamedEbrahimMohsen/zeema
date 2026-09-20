@@ -6,6 +6,7 @@ type: "component"
 id: "customer-io"
 kind: "notification-service"
 provider: "default"
+docs: "https://docs.customer.io/get-started/set-up-messages/"
 defaults:
   managed: true
   channelPush: true

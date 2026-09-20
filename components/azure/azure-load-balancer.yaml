@@ -5,6 +5,7 @@ type: "component"
 id: "azure-load-balancer"
 kind: "load-balancer"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/load-balancer/load-balancer-overview"
 defaults:
   layer: "l4"
   managed: true

@@ -10,6 +10,7 @@ type: "component"
 id: "k8s-storage-class"
 kind: "block-storage"
 provider: "k8s"
+docs: "https://kubernetes.io/docs/concepts/storage/storage-classes/"
 defaults:
   managed: false
 properties:

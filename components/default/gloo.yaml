@@ -7,6 +7,7 @@ type: "component"
 id: "gloo"
 kind: "api-gateway"
 provider: "default"
+docs: "https://docs.solo.io/gateway/latest/about/overview/"
 defaults:
   managed: false
   rateLimiting: false

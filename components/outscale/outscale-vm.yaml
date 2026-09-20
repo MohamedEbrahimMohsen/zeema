@@ -9,6 +9,7 @@ type: "component"
 id: "outscale-vm"
 kind: "virtual-machine"
 provider: "outscale"
+docs: "https://docs.outscale.com/en/userguide/About-VMs.html"
 defaults:
   managed: false
   publicIp: true

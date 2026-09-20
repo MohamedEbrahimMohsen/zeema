@@ -10,6 +10,7 @@ type: "component"
 id: "alibaba-express-connect"
 kind: "network-fabric"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/express-connect/product-overview/what-is-express-connect"
 defaults:
   managed: true
   interconnect: "private"

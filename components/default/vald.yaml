@@ -7,6 +7,7 @@ type: "component"
 id: "vald"
 kind: "vector-database"
 provider: "default"
+docs: "https://vald.vdaas.org/docs/overview/about-vald/"
 defaults:
   metadataFiltering: false
   hybridSearch: false

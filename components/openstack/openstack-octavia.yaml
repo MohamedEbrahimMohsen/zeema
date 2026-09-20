@@ -8,6 +8,7 @@ type: "component"
 id: "openstack-octavia"
 kind: "load-balancer"
 provider: "openstack"
+docs: "https://docs.openstack.org/octavia/latest/"
 defaults:
   global: false
   managed: false

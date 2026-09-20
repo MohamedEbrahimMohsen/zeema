@@ -8,6 +8,7 @@ type: "component"
 id: "google-vision-product-search"
 kind: "search-index"
 provider: "gcp"
+docs: "https://docs.cloud.google.com/vision/product-search/quotas"
 defaults:
   structure: "vector"
   indexing: "batch"

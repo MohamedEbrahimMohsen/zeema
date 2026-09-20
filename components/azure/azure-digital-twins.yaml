@@ -7,6 +7,7 @@ type: "component"
 id: "azure-digital-twins"
 kind: "graph-database"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/digital-twins/overview"
 defaults:
   managed: true
 properties:

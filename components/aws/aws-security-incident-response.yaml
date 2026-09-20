@@ -11,6 +11,7 @@ type: "component"
 id: "aws-security-incident-response"
 kind: "monitoring"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/security-ir/latest/userguide/what-is.html"
 defaults:
   signal: "alerts"
   collectorMode: "push"

@@ -8,6 +8,7 @@ type: "component"
 id: "chef"
 kind: "ci-pipeline"
 provider: "default"
+docs: "https://docs.chef.io/platform_overview/"
 defaults:
   trigger: "schedule"
   approvalRequired: false

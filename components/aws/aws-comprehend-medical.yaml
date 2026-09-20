@@ -6,6 +6,7 @@ type: "component"
 id: "aws-comprehend-medical"
 kind: "ai-service"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/comprehend-medical/latest/dev/comprehendmedical-quotas.html"
 defaults:
   managed: true
   modality: "text"

@@ -7,6 +7,7 @@ type: "component"
 id: "infisical"
 kind: "key-management"
 provider: "default"
+docs: "https://infisical.com/docs/documentation/platform/kms/overview"
 defaults:
   managed: true
   hsm: false

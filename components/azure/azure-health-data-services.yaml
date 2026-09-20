@@ -8,6 +8,7 @@ type: "component"
 id: "azure-health-data-services"
 kind: "nosql-database"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/healthcare-apis/healthcare-apis-overview"
 defaults:
   managed: true
   model: "document"

@@ -9,6 +9,7 @@ type: "component"
 id: "oci-block-volume"
 kind: "block-storage"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/Block/Tasks/creatingavolume.htm"
 defaults:
   managed: true
   sizeGib: 1024

@@ -8,6 +8,7 @@ type: "component"
 id: "aws-lightsail"
 kind: "virtual-machine"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/lightsail/latest/userguide/what-is-amazon-lightsail.html"
 defaults:
   managed: false
   publicIp: true

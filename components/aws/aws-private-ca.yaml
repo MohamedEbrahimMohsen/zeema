@@ -8,6 +8,7 @@ type: "component"
 id: "aws-private-ca"
 kind: "key-management"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/privateca/latest/APIReference/API_CreateCertificateAuthority.html"
 defaults:
   managed: true
   hsm: true

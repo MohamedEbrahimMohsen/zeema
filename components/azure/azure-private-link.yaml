@@ -7,6 +7,7 @@ type: "component"
 id: "azure-private-link"
 kind: "private-link"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/private-link/private-link-overview"
 defaults:
   managed: true
   crossRegion: true

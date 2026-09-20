@@ -6,6 +6,7 @@ type: "component"
 id: "elasticsearch"
 kind: "search-index"
 provider: "default"
+docs: "https://www.elastic.co/docs/"
 defaults:
   structure: "inverted"
   shardingStrategy: "hash"

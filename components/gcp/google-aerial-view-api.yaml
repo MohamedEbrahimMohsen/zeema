@@ -7,6 +7,7 @@ type: "component"
 id: "google-aerial-view-api"
 kind: "third-party-api"
 provider: "gcp"
+docs: "https://developers.google.com/maps/documentation/aerial-view/reference/rest/v1/videos/lookupVideo"
 defaults:
   managed: true
   idempotent: true

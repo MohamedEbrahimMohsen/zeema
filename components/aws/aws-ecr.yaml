@@ -7,6 +7,7 @@ type: "component"
 id: "aws-ecr"
 kind: "container-registry"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/AmazonECR/latest/userguide/encryption-at-rest.html"
 defaults:
   managed: true
   visibility: "private"

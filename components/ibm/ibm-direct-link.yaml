@@ -9,6 +9,7 @@ type: "component"
 id: "ibm-direct-link"
 kind: "network-fabric"
 provider: "ibm"
+docs: "https://cloud.ibm.com/docs/dl"
 defaults:
   managed: true
   interconnect: "private"

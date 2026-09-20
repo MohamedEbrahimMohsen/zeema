@@ -10,6 +10,7 @@ type: "component"
 id: "pushover"
 kind: "notification-service"
 provider: "default"
+docs: "https://pushover.net/api"
 defaults:
   managed: true
   channelPush: true

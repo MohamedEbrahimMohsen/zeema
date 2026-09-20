@@ -6,6 +6,7 @@ type: "component"
 id: "sqlite"
 kind: "sql-database"
 provider: "default"
+docs: "https://sqlite.org/pragma.html"
 defaults:
   replication: "none"
   concurrencyControl: "pessimistic"

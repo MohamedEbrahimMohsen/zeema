@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../schema/rule.schema.json
+# A custom node is a hole in the model: the catalogue does not name it, so nothing can be
+# checked about it. Fires on every custom node, unconditionally. Tripped by
+# designs/reference/custom-escape-hatch/design.broken.yaml.
+schemaVersion: "1"
+type: "rule"
+id: "custom-node"
+severity: "warning"
+select:
+  node:
+    kind: "custom"
+# `when` is required and the custom kind defines no properties, so nothing ever resolves on
+# one of these nodes: this predicate is how the fixed predicate set spells "always".
+when:
+  prop: "anyProperty"
+  exists: false
+message: "Node '{{node.id}}' is custom: no rule can judge it. Replace it with a catalogue component or contribute one (docs/governance.md)."

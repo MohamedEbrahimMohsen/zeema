@@ -5,6 +5,7 @@ type: "component"
 id: "azure-app-service"
 kind: "app-server"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/app-service/overview"
 defaults:
   managed: true
   stateless: true

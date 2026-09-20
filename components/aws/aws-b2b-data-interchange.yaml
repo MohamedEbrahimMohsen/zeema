@@ -8,6 +8,7 @@ type: "component"
 id: "aws-b2b-data-interchange"
 kind: "worker"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/b2bi/latest/userguide/what-is-b2bi.html"
 defaults:
   managed: true
   trigger: "batch"

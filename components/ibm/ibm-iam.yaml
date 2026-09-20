@@ -9,6 +9,7 @@ type: "component"
 id: "ibm-iam"
 kind: "identity-provider"
 provider: "ibm"
+docs: "https://cloud.ibm.com/docs/account?topic=account-iamoverview"
 defaults:
   managed: true
   protocol: "iam"

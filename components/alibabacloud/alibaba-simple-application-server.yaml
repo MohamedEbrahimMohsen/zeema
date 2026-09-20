@@ -10,6 +10,7 @@ type: "component"
 id: "alibaba-simple-application-server"
 kind: "virtual-machine"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/simple-application-server/"
 defaults:
   managed: false
 properties:

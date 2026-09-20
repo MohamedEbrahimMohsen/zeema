@@ -10,6 +10,7 @@ type: "component"
 id: "bitwarden"
 kind: "key-management"
 provider: "default"
+docs: "https://bitwarden.com/help/"
 defaults:
   managed: true
   hsm: false

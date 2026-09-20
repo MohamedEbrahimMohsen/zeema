@@ -6,6 +6,7 @@ type: "component"
 id: "google-cloud-domains"
 kind: "dns"
 provider: "gcp"
+docs: "https://cloud.google.com/domains/docs/overview"
 defaults:
   managed: true
 properties:

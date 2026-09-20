@@ -8,6 +8,7 @@ type: "component"
 id: "openstack-watcher"
 kind: "monitoring"
 provider: "openstack"
+docs: "https://docs.openstack.org/watcher/latest/"
 defaults:
   signal: "metrics"
   managed: false

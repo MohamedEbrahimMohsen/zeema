@@ -8,6 +8,7 @@ type: "component"
 id: "redash"
 kind: "bi-service"
 provider: "default"
+docs: "https://redash.io/help/user-guide/dashboards/sharing-dashboards"
 defaults:
   managed: false
   publicSharing: true

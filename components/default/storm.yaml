@@ -8,6 +8,7 @@ type: "component"
 id: "storm"
 kind: "stream-processor"
 provider: "default"
+docs: "https://storm.apache.org/releases/current/Guaranteeing-message-processing.html"
 defaults:
   managed: false
   windowing: "none"

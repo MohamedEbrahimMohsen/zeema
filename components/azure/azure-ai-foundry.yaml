@@ -6,6 +6,7 @@ type: "component"
 id: "azure-ai-foundry"
 kind: "ml-platform"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/ai-foundry/what-is-azure-ai-foundry"
 defaults:
   managed: true
   modelRegistry: true

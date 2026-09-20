@@ -7,6 +7,7 @@ type: "component"
 id: "google-config-connector"
 kind: "ci-pipeline"
 provider: "gcp"
+docs: "https://cloud.google.com/config-connector/docs/overview"
 defaults:
   managed: true
   trigger: "manual"

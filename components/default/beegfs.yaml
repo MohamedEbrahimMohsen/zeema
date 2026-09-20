@@ -6,6 +6,7 @@ type: "component"
 id: "beegfs"
 kind: "file-storage"
 provider: "default"
+docs: "https://doc.beegfs.io/latest/advanced_topics/striping.html"
 defaults:
   protocol: "native"
   managed: false

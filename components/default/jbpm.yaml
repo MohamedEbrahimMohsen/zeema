@@ -7,6 +7,7 @@ type: "component"
 id: "jbpm"
 kind: "workflow-engine"
 provider: "default"
+docs: "https://docs.jbpm.org/latest/jbpm-docs/html_single/"
 defaults:
   durable: false
   pattern: "dag"

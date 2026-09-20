@@ -8,6 +8,7 @@ type: "component"
 id: "aws-aiops"
 kind: "monitoring"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/cloudwatchinvestigations/latest/APIReference/API_CreateInvestigationGroup.html"
 defaults:
   signal: "alerts"
   collectorMode: "pull"

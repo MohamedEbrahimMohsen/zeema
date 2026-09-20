@@ -7,6 +7,7 @@ type: "component"
 id: "oci-dns-zone"
 kind: "dns"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/DNS/Concepts/dnszonemanagement.htm"
 defaults:
   managed: true
   anycast: true

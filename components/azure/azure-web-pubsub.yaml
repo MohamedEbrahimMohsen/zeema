@@ -8,6 +8,7 @@ type: "component"
 id: "azure-web-pubsub"
 kind: "realtime-gateway"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/azure-web-pubsub/overview"
 defaults:
   managed: true
   protocol: "websocket"

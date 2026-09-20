@@ -9,6 +9,7 @@ type: "component"
 id: "aws-iot-sitewise"
 kind: "iot-hub"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/iot-sitewise/latest/userguide/manage-data-storage.html"
 defaults:
   protocol: "multi"
   perDeviceIdentity: false

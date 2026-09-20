@@ -7,6 +7,7 @@ type: "component"
 id: "aws-iam-roles-anywhere"
 kind: "identity-provider"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/rolesanywhere/latest/userguide/introduction.html"
 defaults:
   protocol: "iam"
   authorizationModel: "rbac"

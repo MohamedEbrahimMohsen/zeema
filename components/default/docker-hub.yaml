@@ -8,6 +8,7 @@ type: "component"
 id: "docker-hub"
 kind: "container-registry"
 provider: "default"
+docs: "https://docs.docker.com/docker-hub/usage/"
 defaults:
   managed: true
   geoReplicated: false

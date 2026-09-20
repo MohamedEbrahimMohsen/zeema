@@ -9,6 +9,7 @@ type: "component"
 id: "k8s-replicaset"
 kind: "app-server"
 provider: "k8s"
+docs: "https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/"
 defaults:
   managed: false
   stateless: true

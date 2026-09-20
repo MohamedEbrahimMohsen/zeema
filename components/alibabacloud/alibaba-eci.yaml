@@ -9,6 +9,7 @@ type: "component"
 id: "alibaba-eci"
 kind: "app-server"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/eci/"
 defaults:
   managed: true
 properties:

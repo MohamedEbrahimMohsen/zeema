@@ -8,6 +8,7 @@ type: "component"
 id: "openstack-magnum"
 kind: "container-orchestrator"
 provider: "openstack"
+docs: "https://docs.openstack.org/magnum/latest/"
 defaults:
   nodeCount: 1
   managed: false

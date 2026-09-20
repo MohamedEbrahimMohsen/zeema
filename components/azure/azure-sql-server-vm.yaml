@@ -7,6 +7,7 @@ type: "component"
 id: "azure-sql-server-vm"
 kind: "sql-database"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/azure-sql/virtual-machines/windows/sql-server-on-azure-vm-iaas-what-is-overview"
 defaults:
   managed: false
   backupEnabled: false

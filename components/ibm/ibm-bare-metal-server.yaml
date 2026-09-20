@@ -9,6 +9,7 @@ type: "component"
 id: "ibm-bare-metal-server"
 kind: "virtual-machine"
 provider: "ibm"
+docs: "https://cloud.ibm.com/docs/bare-metal"
 defaults:
   managed: false
   zoneRedundant: false

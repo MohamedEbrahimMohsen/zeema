@@ -8,6 +8,7 @@ type: "component"
 id: "weaviate"
 kind: "vector-database"
 provider: "default"
+docs: "https://docs.weaviate.io/weaviate/config-refs/indexing/vector-index"
 defaults:
   indexType: "hnsw"
   distanceMetric: "cosine"

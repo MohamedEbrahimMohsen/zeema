@@ -5,6 +5,7 @@ type: "component"
 id: "pinot"
 kind: "data-warehouse"
 provider: "default"
+docs: "https://docs.pinot.apache.org/"
 defaults:
   realtime: true
   upsert: false

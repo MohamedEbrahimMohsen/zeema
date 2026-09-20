@@ -8,6 +8,7 @@ type: "component"
 id: "google-security-operations"
 kind: "monitoring"
 provider: "gcp"
+docs: "https://cloud.google.com/chronicle/docs/secops/secops-overview"
 defaults:
   signal: "all"
   collectorMode: "push"

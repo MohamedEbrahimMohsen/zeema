@@ -7,6 +7,7 @@ type: "component"
 id: "forgejo"
 kind: "artifact-repository"
 provider: "default"
+docs: "https://forgejo.org/faq/"
 defaults:
   artifactType: "source"
   managed: false

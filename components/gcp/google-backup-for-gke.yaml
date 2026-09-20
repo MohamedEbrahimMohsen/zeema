@@ -9,6 +9,7 @@ type: "component"
 id: "google-backup-for-gke"
 kind: "backup-service"
 provider: "gcp"
+docs: "https://cloud.google.com/kubernetes-engine/docs/add-on/backup-for-gke/concepts/backup-for-gke"
 defaults:
   managed: true
   redundancy: "regional"

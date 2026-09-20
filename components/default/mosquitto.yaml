@@ -7,6 +7,7 @@ type: "component"
 id: "mosquitto"
 kind: "pubsub-topic"
 provider: "default"
+docs: "https://mosquitto.org/man/mosquitto-conf-5.html"
 defaults:
   delivery: "at-most-once"
   ordering: "per-key"

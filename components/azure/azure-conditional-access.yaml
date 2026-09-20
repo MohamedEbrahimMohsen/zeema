@@ -8,6 +8,7 @@ type: "component"
 id: "azure-conditional-access"
 kind: "policy-engine"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/entra/identity/conditional-access/overview"
 defaults:
   managed: true
   scope: "organization"

@@ -11,6 +11,7 @@ type: "component"
 id: "alibaba-waf"
 kind: "waf"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/waf/"
 defaults:
   mode: "prevention"
   managedRuleSet: "medium"

@@ -8,6 +8,7 @@ type: "component"
 id: "azure-chaos-studio"
 kind: "worker"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/chaos-studio/chaos-studio-overview"
 defaults:
   managed: true
   trigger: "manual"

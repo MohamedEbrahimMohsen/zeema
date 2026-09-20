@@ -6,6 +6,7 @@ type: "component"
 id: "cilium"
 kind: "service-mesh"
 provider: "default"
+docs: "https://docs.cilium.io/en/stable/security/network/encryption/"
 defaults:
   managed: false
   sidecar: false

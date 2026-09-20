@@ -8,6 +8,7 @@ type: "component"
 id: "backblaze-b2"
 kind: "object-store"
 provider: "default"
+docs: "https://www.backblaze.com/docs/cloud-storage-file-versions"
 defaults:
   managed: true
   tier: "hot"

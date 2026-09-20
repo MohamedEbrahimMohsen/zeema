@@ -9,6 +9,7 @@ type: "component"
 id: "ibm-load-balancer"
 kind: "load-balancer"
 provider: "ibm"
+docs: "https://cloud.ibm.com/docs/vpc?topic=vpc-load-balancers"
 defaults:
   managed: true
   layer: "l7"

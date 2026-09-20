@@ -5,6 +5,7 @@ type: "component"
 id: "google-cloud-dns"
 kind: "dns"
 provider: "gcp"
+docs: "https://cloud.google.com/dns/docs/overview"
 defaults:
   managed: true
   anycast: true

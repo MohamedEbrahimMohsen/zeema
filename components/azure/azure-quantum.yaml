@@ -7,6 +7,7 @@ type: "component"
 id: "azure-quantum"
 kind: "third-party-api"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/quantum/overview-azure-quantum"
 defaults:
   managed: true
   callbackStyle: "poll"

@@ -25,7 +25,7 @@ Add a kind only when **all** of these hold:
    they are components of one kind, not two kinds. Kafka and SQS share delivery,
    ordering and dead-lettering, so both are `queue`. SNS cannot be consumed
    point-to-point, so `pubsub-topic` is a separate kind.
-4. It fits one of the eight categories. Adding a category is a schema change (`external` was added from the intake cards for services outside your control).
+4. It fits one of the nine categories. Adding a category is a schema change (`external` was added from the intake cards for services outside your control; `custom` was added for the untyped escape hatch, and holds only the `custom` kind).
 
 The pull request must include the kind file, at least one component, the `en` locale
 entries, and an update to at least one reference design that uses it.
@@ -33,6 +33,13 @@ entries, and an update to at least one reference design that uses it.
 The provider coverage pass (`docs/coverage-loop.md`) is the one exception to the
 reference-design requirement: a kind proposed there ships with its components, locale
 entries and glyph, and the design requirement is settled when the first design uses it.
+
+Where the evidence comes from. The catalogue ships a `custom` kind for the box it has no word
+for: a real node with a real label that no rule can judge. Those labels are the intake queue.
+A word that keeps appearing in custom nodes across public designs is a kind or a component
+asking to exist, and the designs that used it are the evidence the pull request cites. A
+custom node is meant to be temporary, and `custom-node` warns on every one of them so that
+staying temporary is the path of least resistance.
 
 ## 3. Adding a component
 

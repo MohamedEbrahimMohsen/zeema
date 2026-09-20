@@ -1,0 +1,8 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# The vendor-neutral Pub/Sub topic: the kind itself, with no product behind it. It sets no
+# defaults and adds no properties, so every required kind property stays required on the node.
+schemaVersion: "1"
+type: "component"
+id: "pubsub-topic"
+kind: "pubsub-topic"
+provider: "default"

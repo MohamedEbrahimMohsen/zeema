@@ -9,6 +9,7 @@ type: "component"
 id: "google-manufacturing-connect"
 kind: "iot-hub"
 provider: "gcp"
+docs: "https://docs.cloud.google.com/manufacturing-data-engine/docs/overview"
 defaults:
   protocol: "multi"
   managed: false

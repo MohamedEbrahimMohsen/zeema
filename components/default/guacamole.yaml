@@ -9,6 +9,7 @@ type: "component"
 id: "guacamole"
 kind: "virtual-desktop"
 provider: "default"
+docs: "https://guacamole.apache.org/doc/gug/administration.html"
 defaults:
   managed: false
   loadBalancing: "breadth-first"

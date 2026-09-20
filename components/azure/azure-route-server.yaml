@@ -7,6 +7,7 @@ type: "component"
 id: "azure-route-server"
 kind: "network-fabric"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/route-server/overview"
 defaults:
   managed: true
   overlay: true

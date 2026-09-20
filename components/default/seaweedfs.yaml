@@ -8,6 +8,7 @@ type: "component"
 id: "seaweedfs"
 kind: "object-store"
 provider: "default"
+docs: "https://github.com/seaweedfs/seaweedfs/wiki/Replication"
 defaults:
   managed: false
   replication: "none"

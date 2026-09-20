@@ -8,6 +8,7 @@ type: "component"
 id: "segment"
 kind: "third-party-api"
 provider: "default"
+docs: "https://segment.com/docs/connections/rate-limits/"
 defaults:
   managed: true
   idempotent: true

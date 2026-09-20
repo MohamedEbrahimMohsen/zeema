@@ -7,6 +7,7 @@ type: "component"
 id: "h2o"
 kind: "ml-platform"
 provider: "default"
+docs: "https://docs.h2o.ai/h2o/latest-stable/h2o-docs/starting-h2o.html"
 defaults:
   experimentTracking: false
   modelRegistry: false

@@ -8,6 +8,7 @@ type: "component"
 id: "google-memorystore"
 kind: "cache"
 provider: "gcp"
+docs: "https://cloud.google.com/memorystore/docs/redis/supported-redis-configurations"
 defaults:
   evictionPolicy: "lru"
   replication: "none"

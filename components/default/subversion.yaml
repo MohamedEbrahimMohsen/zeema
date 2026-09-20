@@ -10,6 +10,7 @@ type: "component"
 id: "subversion"
 kind: "artifact-repository"
 provider: "default"
+docs: "https://subversion.apache.org/docs/"
 defaults:
   managed: false
   artifactType: "source"

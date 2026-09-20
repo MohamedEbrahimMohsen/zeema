@@ -11,6 +11,7 @@ type: "component"
 id: "outscale-net"
 kind: "network-fabric"
 provider: "outscale"
+docs: "https://docs.outscale.com/en/userguide/About-Nets.html"
 defaults:
   managed: true
   interconnect: "private"

@@ -7,6 +7,7 @@ type: "component"
 id: "cloudflare-ssl-tls"
 kind: "key-management"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/ssl/origin-configuration/ssl-modes/"
 defaults:
   managed: true
   rotationAutomated: true

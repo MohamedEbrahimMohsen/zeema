@@ -6,6 +6,7 @@ type: "component"
 id: "luigi"
 kind: "workflow-engine"
 provider: "default"
+docs: "https://luigi.readthedocs.io/en/stable/index.html"
 defaults:
   durable: false
   pattern: "dag"

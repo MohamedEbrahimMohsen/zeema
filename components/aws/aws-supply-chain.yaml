@@ -9,6 +9,7 @@ type: "component"
 id: "aws-supply-chain"
 kind: "third-party-api"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/connect-decisions/legacy/userguide/what-is-service.html"
 defaults:
   managed: true
   hostedPage: true

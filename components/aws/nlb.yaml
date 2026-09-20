@@ -5,6 +5,7 @@ type: "component"
 id: "nlb"
 kind: "load-balancer"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/elasticloadbalancing/latest/network/introduction.html"
 defaults:
   layer: "l4"
   managed: true

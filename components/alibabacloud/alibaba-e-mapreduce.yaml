@@ -9,6 +9,7 @@ type: "component"
 id: "alibaba-e-mapreduce"
 kind: "big-data-cluster"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/emr/"
 defaults:
   managed: false
 properties:

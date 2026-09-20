@@ -1,0 +1,8 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# The untyped node. It sets no defaults because there is no product behind it: what this box
+# is, only its label says, and the linter reads labels for nobody.
+schemaVersion: "1"
+type: "component"
+id: "custom"
+kind: "custom"
+provider: "default"

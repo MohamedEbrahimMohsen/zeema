@@ -8,6 +8,7 @@ type: "component"
 id: "azure-purview"
 kind: "data-catalog"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/purview/purview"
 defaults:
   classification: true
   lineage: true

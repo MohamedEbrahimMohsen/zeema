@@ -27,6 +27,12 @@
       "type": "string",
       "pattern": "^[a-z][a-z0-9-]*$"
     },
+    "docs": {
+      "description": "Official documentation page for this product.",
+      "type": "string",
+      "format": "uri",
+      "pattern": "^https?://"
+    },
     "defaults": {
       "description": "Overrides of the kind property defaults. Keys must exist on the kind.",
       "type": "object",

@@ -7,6 +7,7 @@ type: "component"
 id: "google-firebase-auth"
 kind: "identity-provider"
 provider: "gcp"
+docs: "https://firebase.google.com/docs/auth"
 defaults:
   protocol: "oauth2"
   authorizationModel: "none"

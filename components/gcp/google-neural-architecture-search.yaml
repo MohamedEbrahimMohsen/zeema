@@ -7,6 +7,7 @@ type: "component"
 id: "google-neural-architecture-search"
 kind: "ml-platform"
 provider: "gcp"
+docs: "https://cloud.google.com/vertex-ai/docs/training/neural-architecture-search/overview"
 defaults:
   managed: true
   modelRegistry: false

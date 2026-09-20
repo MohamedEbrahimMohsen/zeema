@@ -9,6 +9,7 @@ type: "component"
 id: "aws-ssm-incident-and-change-manager"
 kind: "workflow-engine"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/systems-manager/latest/userguide/change-manager.html"
 defaults:
   durable: true
   pattern: "dag"

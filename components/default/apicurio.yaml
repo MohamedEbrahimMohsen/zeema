@@ -6,6 +6,7 @@ type: "component"
 id: "apicurio"
 kind: "schema-registry"
 provider: "default"
+docs: "https://www.apicur.io/registry/docs/"
 defaults:
   compatibility: "none"
   enforced: false

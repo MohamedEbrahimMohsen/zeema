@@ -9,6 +9,7 @@ type: "component"
 id: "oci-media-streams"
 kind: "cdn"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/media-services/mediastreams/media-streams-overview.htm"
 defaults:
   caching: true
   tls: true

@@ -5,6 +5,7 @@ type: "component"
 id: "flagsmith"
 kind: "feature-flag-service"
 provider: "default"
+docs: "https://docs.flagsmith.com/"
 defaults:
   stagedRollout: true
   managed: true

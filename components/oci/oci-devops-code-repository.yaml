@@ -7,6 +7,7 @@ type: "component"
 id: "oci-devops-code-repository"
 kind: "artifact-repository"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/devops/using/devops_overview.htm"
 defaults:
   managed: true
   artifactType: "source"

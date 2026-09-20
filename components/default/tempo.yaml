@@ -6,6 +6,7 @@ type: "component"
 id: "tempo"
 kind: "monitoring"
 provider: "default"
+docs: "https://grafana.com/docs/tempo/latest/configuration/"
 defaults:
   signal: "traces"
   collectorMode: "push"

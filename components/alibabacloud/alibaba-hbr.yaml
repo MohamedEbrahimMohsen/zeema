@@ -10,6 +10,7 @@ type: "component"
 id: "alibaba-hbr"
 kind: "backup-service"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/cloud-backup/"
 defaults:
   immutable: false
   crossRegionRestore: false

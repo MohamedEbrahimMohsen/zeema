@@ -1,0 +1,13 @@
+# yaml-language-server: $schema=../schema/rule.schema.json
+# The same hole, counted once for the whole design, so the number is visible on the design and
+# not only on the boxes. Tripped by designs/reference/custom-escape-hatch/design.broken.yaml.
+schemaVersion: "1"
+type: "rule"
+id: "custom-nodes-present"
+severity: "warning"
+select:
+  design: true
+when:
+  hasNode:
+    kind: "custom"
+message: "This design has custom nodes; rules are blind to them. Aim for zero."

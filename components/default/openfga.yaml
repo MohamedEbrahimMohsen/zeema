@@ -6,6 +6,7 @@ type: "component"
 id: "openfga"
 kind: "identity-provider"
 provider: "default"
+docs: "https://openfga.dev/docs/getting-started/setup-openfga/configure-openfga"
 defaults:
   protocol: "custom"
   authorizationModel: "rebac"

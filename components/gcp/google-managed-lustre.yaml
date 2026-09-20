@@ -7,6 +7,7 @@ type: "component"
 id: "google-managed-lustre"
 kind: "file-storage"
 provider: "gcp"
+docs: "https://cloud.google.com/managed-lustre/docs/overview"
 defaults:
   protocol: "lustre"
   encryptionInTransit: true

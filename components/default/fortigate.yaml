@@ -8,6 +8,7 @@ type: "component"
 id: "fortigate"
 kind: "firewall"
 provider: "default"
+docs: "https://docs.fortinet.com/document/fortigate/8.0.0/administration-guide/216765/implicit-rule"
 defaults:
   managed: false
   defaultAction: "deny"

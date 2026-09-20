@@ -9,6 +9,7 @@ type: "component"
 id: "filebeat"
 kind: "monitoring"
 provider: "default"
+docs: "https://www.elastic.co/guide/en/beats/filebeat/current/index.html"
 defaults:
   managed: false
   signal: "logs"

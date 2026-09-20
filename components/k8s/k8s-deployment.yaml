@@ -9,6 +9,7 @@ type: "component"
 id: "k8s-deployment"
 kind: "app-server"
 provider: "k8s"
+docs: "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/"
 defaults:
   managed: false
   stateless: true

@@ -8,6 +8,7 @@ type: "component"
 id: "aws-data-exchange"
 kind: "third-party-api"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/data-exchange/latest/userguide/what-is.html"
 defaults:
   managed: true
   callbackStyle: "none"

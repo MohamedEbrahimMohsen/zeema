@@ -8,6 +8,7 @@ type: "component"
 id: "shopify"
 kind: "third-party-api"
 provider: "default"
+docs: "https://shopify.dev/docs/api/usage/rate-limits"
 defaults:
   managed: true
   idempotent: false

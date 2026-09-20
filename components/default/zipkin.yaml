@@ -6,6 +6,7 @@ type: "component"
 id: "zipkin"
 kind: "monitoring"
 provider: "default"
+docs: "https://github.com/openzipkin/zipkin/blob/master/zipkin-server/README.md"
 defaults:
   signal: "traces"
   collectorMode: "push"

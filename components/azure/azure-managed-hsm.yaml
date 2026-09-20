@@ -7,6 +7,7 @@ type: "component"
 id: "azure-managed-hsm"
 kind: "key-management"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/key-vault/managed-hsm/overview"
 defaults:
   managed: true
   hsm: true

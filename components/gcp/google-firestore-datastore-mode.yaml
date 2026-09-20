@@ -7,6 +7,7 @@ type: "component"
 id: "google-firestore-datastore-mode"
 kind: "nosql-database"
 provider: "gcp"
+docs: "https://cloud.google.com/datastore/docs/concepts/overview"
 defaults:
   model: "document"
   consistency: "strong"

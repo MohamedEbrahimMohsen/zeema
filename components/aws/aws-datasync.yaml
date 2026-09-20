@@ -8,6 +8,7 @@ type: "component"
 id: "aws-datasync"
 kind: "worker"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/datasync/latest/userguide/what-is-datasync.html"
 defaults:
   trigger: "manual"
   rateControl: "none"

@@ -6,6 +6,7 @@ type: "component"
 id: "netdata"
 kind: "monitoring"
 provider: "default"
+docs: "https://learn.netdata.cloud/docs/netdata-agent/configuration/database"
 defaults:
   signal: "metrics"
   collectorMode: "pull"

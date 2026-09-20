@@ -8,6 +8,7 @@ type: "component"
 id: "airbyte"
 kind: "worker"
 provider: "default"
+docs: "https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-schedules"
 defaults:
   managed: false
   trigger: "schedule"

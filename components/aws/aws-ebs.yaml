@@ -8,6 +8,7 @@ type: "component"
 id: "aws-ebs"
 kind: "block-storage"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/ebs/latest/userguide/what-is-ebs.html"
 defaults:
   mediaType: "ssd"
   redundancy: "zonal"

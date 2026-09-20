@@ -9,6 +9,7 @@ type: "component"
 id: "alibaba-e-hpc"
 kind: "big-data-cluster"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/ehpc/"
 defaults:
   managed: true
   engine: "hpc"

@@ -10,6 +10,7 @@ type: "component"
 id: "alibaba-blockchain-as-a-service"
 kind: "ledger"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/blockchain-as-a-service/latest/architecture"
 defaults:
   managed: true
   appendOnly: true

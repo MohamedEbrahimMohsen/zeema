@@ -6,6 +6,7 @@ type: "component"
 id: "planetscale"
 kind: "sql-database"
 provider: "default"
+docs: "https://planetscale.com/docs/vitess/sharding"
 defaults:
   managed: true
   sharded: false

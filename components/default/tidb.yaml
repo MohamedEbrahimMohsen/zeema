@@ -5,6 +5,7 @@ type: "component"
 id: "tidb"
 kind: "sql-database"
 provider: "default"
+docs: "https://docs.pingcap.com/tidb/stable/"
 defaults:
   distributed: true
   multiWriter: true

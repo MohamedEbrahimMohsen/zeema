@@ -8,6 +8,7 @@ type: "component"
 id: "opensips"
 kind: "contact-center"
 provider: "default"
+docs: "https://opensips.org/About/About"
 defaults:
   managed: false
   channelVoice: true

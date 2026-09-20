@@ -7,6 +7,7 @@ type: "component"
 id: "qdrant"
 kind: "vector-database"
 provider: "default"
+docs: "https://qdrant.tech/documentation/concepts/indexing/"
 defaults:
   indexType: "hnsw"
   quantization: "none"

@@ -6,6 +6,7 @@ type: "component"
 id: "redis"
 kind: "cache"
 provider: "default"
+docs: "https://redis.io/docs/latest/"
 defaults:
   persistence: false
 properties:

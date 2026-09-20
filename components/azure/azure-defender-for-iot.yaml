@@ -8,6 +8,7 @@ type: "component"
 id: "azure-defender-for-iot"
 kind: "monitoring"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/defender-for-iot/organizations/overview"
 defaults:
   managed: true
   signal: "alerts"

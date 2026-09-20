@@ -11,6 +11,7 @@ type: "component"
 id: "alibaba-id-verification"
 kind: "ai-service"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/product/id-verification"
 defaults:
   managed: true
   modality: "vision"

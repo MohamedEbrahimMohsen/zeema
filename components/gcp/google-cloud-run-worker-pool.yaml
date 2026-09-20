@@ -8,6 +8,7 @@ type: "component"
 id: "google-cloud-run-worker-pool"
 kind: "worker"
 provider: "gcp"
+docs: "https://cloud.google.com/run/docs/resource-model"
 defaults:
   managed: true
   trigger: "queue"

@@ -5,6 +5,7 @@ type: "component"
 id: "socket-io-server"
 kind: "realtime-gateway"
 provider: "default"
+docs: "https://socket.io/docs/v4/"
 defaults:
   protocol: "websocket"
   stateful: true

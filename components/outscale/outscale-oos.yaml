@@ -10,6 +10,7 @@ type: "component"
 id: "outscale-oos"
 kind: "object-store"
 provider: "outscale"
+docs: "https://docs.outscale.com/en/userguide/About-OOS.html"
 defaults:
   managed: true
   replication: "erasure-coded"

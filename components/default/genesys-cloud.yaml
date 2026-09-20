@@ -9,6 +9,7 @@ type: "component"
 id: "genesys-cloud"
 kind: "contact-center"
 provider: "default"
+docs: "https://help.genesys.cloud/articles/about-genesys-cloud/"
 defaults:
   managed: true
   channelVoice: true

@@ -8,6 +8,7 @@ type: "component"
 id: "ibm-floating-ip"
 kind: "network-fabric"
 provider: "ibm"
+docs: "https://cloud.ibm.com/docs/vpc?topic=vpc-fip-about"
 defaults:
   managed: true
   interconnect: "public"

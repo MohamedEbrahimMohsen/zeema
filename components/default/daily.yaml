@@ -7,6 +7,7 @@ type: "component"
 id: "daily"
 kind: "media-router"
 provider: "default"
+docs: "https://docs.daily.co/reference/rest-api/rooms/set-room-config"
 defaults:
   managed: true
   mode: "sfu"

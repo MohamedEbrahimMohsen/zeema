@@ -8,6 +8,7 @@ type: "component"
 id: "aws-global-accelerator"
 kind: "load-balancer"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/global-accelerator/latest/dg/what-is-global-accelerator.html"
 defaults:
   managed: true
   layer: "l4"

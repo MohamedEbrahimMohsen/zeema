@@ -9,6 +9,7 @@ type: "component"
 id: "alibaba-analyticdb"
 kind: "data-warehouse"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/analyticdb/"
 defaults:
   managed: true
   realtime: true

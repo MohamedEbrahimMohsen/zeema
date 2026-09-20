@@ -5,6 +5,7 @@ type: "component"
 id: "google-cloud-cdn"
 kind: "cdn"
 provider: "gcp"
+docs: "https://cloud.google.com/cdn/docs/overview"
 defaults:
   managed: true
   caching: true

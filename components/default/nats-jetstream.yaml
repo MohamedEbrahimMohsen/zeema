@@ -6,6 +6,7 @@ type: "component"
 id: "nats-jetstream"
 kind: "stream"
 provider: "default"
+docs: "https://docs.nats.io/nats-concepts/jetstream"
 defaults:
   delivery: "at-least-once"
   ordering: "global"

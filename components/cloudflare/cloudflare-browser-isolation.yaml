@@ -8,6 +8,7 @@ type: "component"
 id: "cloudflare-browser-isolation"
 kind: "virtual-desktop"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/cloudflare-one/remote-browser-isolation/isolation-policies/"
 defaults:
   managed: true
   persistentProfiles: false

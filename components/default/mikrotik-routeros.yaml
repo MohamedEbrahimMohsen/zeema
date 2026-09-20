@@ -9,6 +9,7 @@ type: "component"
 id: "mikrotik-routeros"
 kind: "firewall"
 provider: "default"
+docs: "https://help.mikrotik.com/docs/spaces/ROS/overview"
 defaults:
   managed: false
   defaultAction: "allow"

@@ -8,6 +8,7 @@ type: "component"
 id: "bamboo"
 kind: "ci-pipeline"
 provider: "default"
+docs: "https://confluence.atlassian.com/bamboo/configuring-agents-289277172.html"
 defaults:
   selfHostedRunners: true
   approvalRequired: false

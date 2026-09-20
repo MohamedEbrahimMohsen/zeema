@@ -9,6 +9,7 @@ type: "component"
 id: "wns"
 kind: "third-party-api"
 provider: "default"
+docs: "https://learn.microsoft.com/en-us/windows/apps/windows-app-sdk/notifications/push-notifications/"
 defaults:
   managed: true
   idempotent: false

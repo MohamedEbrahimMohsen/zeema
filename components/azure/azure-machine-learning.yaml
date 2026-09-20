@@ -6,6 +6,7 @@ type: "component"
 id: "azure-machine-learning"
 kind: "ml-platform"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/machine-learning/overview-what-is-azure-machine-learning"
 defaults:
   managed: true
   modelRegistry: true

@@ -7,6 +7,7 @@ type: "component"
 id: "spark-cluster"
 kind: "big-data-cluster"
 provider: "default"
+docs: "https://spark.apache.org/docs/latest/cluster-overview.html"
 defaults:
   engine: "spark"
   autoscaling: false

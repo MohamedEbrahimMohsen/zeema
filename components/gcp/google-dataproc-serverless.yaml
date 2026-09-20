@@ -8,6 +8,7 @@ type: "component"
 id: "google-dataproc-serverless"
 kind: "big-data-cluster"
 provider: "gcp"
+docs: "https://docs.cloud.google.com/dataproc-serverless/docs/concepts/properties"
 defaults:
   managed: true
   engine: "spark"

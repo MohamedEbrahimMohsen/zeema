@@ -377,6 +377,28 @@ function render(tpl, ctx) {
   });
 }
 
+/* ------------------------------------------------------------------------- rule selection */
+
+/**
+ * The rules that can ever fire on a node of this kind, using the same `select` semantics the
+ * pass uses: a node rule matches when its `select.node.kind` lists the kind, or its
+ * `select.node.category` lists the kind's category, and an absent clause matches everything.
+ * Edge and design rules are never about one component, so they are not returned.
+ *
+ * The catalogue reference pages and the markdown they also serve both call this, so "which
+ * rules apply to Kafka" has exactly one answer and it is this function's.
+ */
+export function rulesFor(catalogue, { kind, category } = {}) {
+  const cat = category ?? catalogue?.kinds?.[kind]?.category;
+  return (catalogue?.rules ?? []).filter((r) => {
+    const sel = r.select?.node;
+    if (!sel) return false;
+    if (sel.kind && !(kind !== undefined && [].concat(sel.kind).includes(kind))) return false;
+    if (sel.category && !(cat !== undefined && [].concat(sel.category).includes(cat))) return false;
+    return true;
+  });
+}
+
 /* ------------------------------------------------------------------------------ the pass */
 
 /**

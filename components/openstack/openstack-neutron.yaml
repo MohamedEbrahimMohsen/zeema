@@ -8,6 +8,7 @@ type: "component"
 id: "openstack-neutron"
 kind: "network-fabric"
 provider: "openstack"
+docs: "https://docs.openstack.org/neutron/latest/"
 defaults:
   managed: false
 properties:

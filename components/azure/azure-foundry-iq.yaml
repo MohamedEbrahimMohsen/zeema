@@ -6,6 +6,7 @@ type: "component"
 id: "azure-foundry-iq"
 kind: "search-index"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/foundry/agents/concepts/what-is-foundry-iq"
 defaults:
   managed: true
   indexing: "batch"

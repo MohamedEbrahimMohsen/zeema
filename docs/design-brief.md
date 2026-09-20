@@ -25,8 +25,8 @@ Three layers, always in this order:
 Plus **36 rules** — declarative predicates such as *"Cache 'x' is the primary store for its data
 but has persistence disabled"* (error) or *"Cache 'x' has no eviction policy"* (warning).
 
-Kinds fall into **8 categories**: `compute`, `edge`, `data`, `ops`, `security`, `messaging`,
-`client`, `external`. Components come from **6 providers**: `default` (671, vendor-neutral
+Kinds fall into **9 categories**: `compute`, `edge`, `data`, `ops`, `security`, `messaging`,
+`client`, `external`, `custom`. Components come from **6 providers**: `default` (671, vendor-neutral
 products like Kafka, Redis, Postgres, GitHub, Stripe, Slack), `aws` (285), `gcp` (227), `azure`
 (174), `oci` (168), `cloudflare` (98).
 

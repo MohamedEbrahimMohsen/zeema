@@ -8,6 +8,7 @@ type: "component"
 id: "openstack-vitrage"
 kind: "monitoring"
 provider: "openstack"
+docs: "https://docs.openstack.org/vitrage/latest/"
 defaults:
   signal: "alerts"
   alertGrouping: true

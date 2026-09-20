@@ -7,6 +7,7 @@ type: "component"
 id: "upstash"
 kind: "cache"
 provider: "default"
+docs: "https://upstash.com/docs/redis/features/eviction"
 defaults:
   managed: true
   persistence: true

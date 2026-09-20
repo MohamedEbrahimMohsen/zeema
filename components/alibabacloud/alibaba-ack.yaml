@@ -10,6 +10,7 @@ type: "component"
 id: "alibaba-ack"
 kind: "container-orchestrator"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/ack/"
 defaults:
   managed: true
   rbac: true

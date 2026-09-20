@@ -6,6 +6,7 @@ type: "component"
 id: "google-vpc-service-controls"
 kind: "policy-engine"
 provider: "gcp"
+docs: "https://cloud.google.com/vpc-service-controls/docs/overview"
 defaults:
   managed: true
   effect: "deny"

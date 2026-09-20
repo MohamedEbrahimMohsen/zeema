@@ -7,6 +7,7 @@ type: "component"
 id: "cloudflare-mtls"
 kind: "key-management"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/ssl/client-certificates/"
 defaults:
   managed: true
 properties:

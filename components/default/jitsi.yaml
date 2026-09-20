@@ -7,6 +7,7 @@ type: "component"
 id: "jitsi"
 kind: "media-router"
 provider: "default"
+docs: "https://jitsi.github.io/handbook/docs/devops-guide/devops-guide-quickstart/"
 defaults:
   managed: false
   mode: "sfu"

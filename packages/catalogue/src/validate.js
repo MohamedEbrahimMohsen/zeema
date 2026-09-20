@@ -11,6 +11,7 @@ import { fileURLToPath } from "node:url";
 import { runRules } from "@zeema/core/rules";
 import { check } from "@zeema/core/structure";
 import Ajv from "ajv";
+import addFormats from "ajv-formats";
 import YAML from "yaml";
 import { loadCatalogue, PROVIDERS, resolveRoot, walk } from "./index.js";
 
@@ -22,6 +23,8 @@ export function validateRepository(rootArg, options = {}) {
   const fail = (m) => problems.push(m);
 
   const ajv = new Ajv({ allErrors: true, strict: false });
+  // `format` keywords (component `docs` is `uri`) are otherwise ignored with a warning.
+  addFormats(ajv);
   const loadSchema = (n) => JSON.parse(fs.readFileSync(path.join(root, "schema", n), "utf8"));
   const kindSchema = loadSchema("kind.schema.json");
   ajv.addSchema(kindSchema, "kind.schema.json");
@@ -98,10 +101,28 @@ export function validateRepository(rootArg, options = {}) {
         fail(`component ${c.id}: default ${key} not string`);
     }
   }
+  // `docs` is an absolute http(s) URL or it is absent. No network call: a link that 404s is a
+  // content problem for the inventory pass, not something the gate can decide offline.
+  for (const c of Object.values(components)) {
+    if (c.docs === undefined) continue;
+    if (typeof c.docs !== "string" || !/^https?:\/\/\S+$/.test(c.docs))
+      fail(`component ${c.id}: docs is not an absolute http(s) URL`);
+  }
+
   for (const id of Object.keys(kinds)) if (!locale.kinds?.[id]) fail(`locale missing kind ${id}`);
   for (const id of Object.keys(components))
     if (!locale.components?.[id]) fail(`locale missing component ${id}`);
-  for (const r of rules) if (!locale.rules?.[r.id]) fail(`locale missing rule ${r.id}`);
+  // A rule's "why" is display text, so it lives here and not in the YAML header comment. The
+  // reference pages and the markdown rendering both print it, so an absent one is a gate failure.
+  for (const r of rules) {
+    const t = locale.rules?.[r.id];
+    if (!t) {
+      fail(`locale missing rule ${r.id}`);
+      continue;
+    }
+    if (!t.name) fail(`locale rule ${r.id}: name missing`);
+    if (!t.rationale) fail(`locale rule ${r.id}: rationale missing`);
+  }
   for (const id of Object.keys(locale.components ?? {}))
     if (!components[id]) fail(`locale unknown component ${id}`);
   for (const id of Object.keys(locale.rules ?? {}))

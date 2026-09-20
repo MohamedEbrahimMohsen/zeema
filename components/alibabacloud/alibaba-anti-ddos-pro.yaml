@@ -11,6 +11,7 @@ type: "component"
 id: "alibaba-anti-ddos-pro"
 kind: "ddos-protection"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/anti-ddos/anti-ddos-pro-and-premium/product-overview/what-are-anti-ddos-pro-and-anti-ddos-premium"
 defaults:
   managed: true
   scope: "both"

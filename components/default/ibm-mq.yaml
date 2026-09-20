@@ -6,6 +6,7 @@ type: "component"
 id: "ibm-mq"
 kind: "queue"
 provider: "default"
+docs: "https://www.ibm.com/docs/en/ibm-mq/9.4.0?topic=ibm-mq-technical-overview"
 defaults:
   delivery: "at-least-once"
   ordering: "none"

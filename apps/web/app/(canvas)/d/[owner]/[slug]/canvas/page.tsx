@@ -29,13 +29,7 @@ export default async function CanvasPage({
       slug={view.design.slug}
       title={view.design.title}
       yaml={view.version?.yaml ?? ""}
-      layoutSidecar={
-        (view.version?.layout as {
-          version: number;
-          nodes?: Record<string, [number, number]>;
-          edges?: Record<string, number>;
-        } | null) ?? null
-      }
+      layoutSidecar={view.version?.layout ?? null}
       contentHash={view.version?.contentHash ?? ""}
       canWrite={view.can.write}
       unpublished={view.unpublished}

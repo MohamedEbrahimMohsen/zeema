@@ -7,6 +7,7 @@ type: "component"
 id: "redis-cloud"
 kind: "cache"
 provider: "default"
+docs: "https://redis.io/docs/latest/operate/rc/databases/create-database/create-essentials-database/"
 defaults:
   managed: true
 properties:

@@ -6,6 +6,7 @@ type: "component"
 id: "alertmanager"
 kind: "notification-service"
 provider: "default"
+docs: "https://prometheus.io/docs/alerting/latest/configuration/"
 defaults:
   managed: false
   channelPush: false

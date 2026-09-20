@@ -5,6 +5,7 @@ type: "component"
 id: "websocket-gateway"
 kind: "realtime-gateway"
 provider: "default"
+docs: "https://datatracker.ietf.org/doc/html/rfc6455"
 defaults:
   protocol: "websocket"
   stateful: true

@@ -7,6 +7,7 @@ type: "component"
 id: "azure-virtual-desktop"
 kind: "virtual-desktop"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/virtual-desktop/overview"
 defaults:
   managed: true
   loadBalancing: "breadth-first"

@@ -7,6 +7,7 @@ type: "component"
 id: "drone"
 kind: "ci-pipeline"
 provider: "default"
+docs: "https://docs.drone.io/runner/docker/configuration/reference/drone-runner-capacity/"
 defaults:
   trigger: "commit"
   selfHostedRunners: true

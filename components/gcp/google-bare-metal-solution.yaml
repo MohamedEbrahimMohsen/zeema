@@ -9,6 +9,7 @@ type: "component"
 id: "google-bare-metal-solution"
 kind: "virtual-machine"
 provider: "gcp"
+docs: "https://cloud.google.com/bare-metal/docs/bms-planning"
 defaults:
   managed: false
   os: "linux"

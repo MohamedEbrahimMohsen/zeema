@@ -7,6 +7,7 @@ type: "component"
 id: "aws-eks-anywhere"
 kind: "edge-appliance"
 provider: "aws"
+docs: "https://anywhere.eks.amazonaws.com/docs/overview/"
 defaults:
   managed: false
   cloudManaged: false

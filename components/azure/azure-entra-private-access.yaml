@@ -9,6 +9,7 @@ type: "component"
 id: "azure-entra-private-access"
 kind: "bastion-host"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/entra/global-secure-access/concept-private-access"
 defaults:
   managed: true
 properties:

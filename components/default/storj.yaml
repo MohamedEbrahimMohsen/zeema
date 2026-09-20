@@ -8,6 +8,7 @@ type: "component"
 id: "storj"
 kind: "object-store"
 provider: "default"
+docs: "https://storj.dev/dcs/api/s3/object-versioning"
 defaults:
   managed: true
   replication: "erasure-coded"

@@ -6,6 +6,7 @@ type: "component"
 id: "aws-transcribe"
 kind: "ai-service"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/general/latest/gr/transcribe.html"
 defaults:
   managed: true
   modality: "speech"

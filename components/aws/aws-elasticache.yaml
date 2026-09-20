@@ -8,6 +8,7 @@ type: "component"
 id: "aws-elasticache"
 kind: "cache"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/at-rest-encryption.html"
 defaults:
   managed: true
   persistence: false

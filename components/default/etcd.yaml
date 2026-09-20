@@ -5,6 +5,7 @@ type: "component"
 id: "etcd"
 kind: "coordination-service"
 provider: "default"
+docs: "https://etcd.io/docs/"
 defaults:
   role: "metadata"
   consensus: "raft"

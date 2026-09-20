@@ -5,6 +5,7 @@ type: "component"
 id: "cloudwatch"
 kind: "monitoring"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/WhatIsCloudWatch.html"
 defaults:
   signal: "all"
   collectorMode: "push"

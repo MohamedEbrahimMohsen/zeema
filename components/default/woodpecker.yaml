@@ -8,6 +8,7 @@ type: "component"
 id: "woodpecker"
 kind: "ci-pipeline"
 provider: "default"
+docs: "https://woodpecker-ci.org/docs/administration/configuration/agent"
 defaults:
   trigger: "commit"
   selfHostedRunners: true

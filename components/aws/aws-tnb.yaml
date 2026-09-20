@@ -10,6 +10,7 @@ type: "component"
 id: "aws-tnb"
 kind: "ci-pipeline"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/tnb/latest/ug/what-is-tnb.html"
 defaults:
   managed: true
   trigger: "manual"

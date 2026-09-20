@@ -8,6 +8,7 @@ type: "component"
 id: "imgix"
 kind: "cdn"
 provider: "default"
+docs: "https://docs.imgix.com/en-US/getting-started/setup/creating-sources"
 defaults:
   managed: true
   caching: true

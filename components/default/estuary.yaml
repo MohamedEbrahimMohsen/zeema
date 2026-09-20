@@ -8,6 +8,7 @@ type: "component"
 id: "estuary"
 kind: "change-data-capture"
 provider: "default"
+docs: "https://docs.estuary.dev/concepts/"
 defaults:
   managed: true
   mode: "log-based"

@@ -6,6 +6,7 @@ type: "component"
 id: "openzfs"
 kind: "block-storage"
 provider: "default"
+docs: "https://openzfs.github.io/openzfs-docs/man/master/7/zfsprops.7.html"
 defaults:
   managed: false
   snapshots: true

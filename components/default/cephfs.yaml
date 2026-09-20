@@ -6,6 +6,7 @@ type: "component"
 id: "cephfs"
 kind: "file-storage"
 provider: "default"
+docs: "https://docs.ceph.com/en/latest/cephfs/"
 defaults:
   protocol: "multi"
   managed: false

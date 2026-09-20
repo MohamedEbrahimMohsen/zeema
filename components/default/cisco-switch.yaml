@@ -10,6 +10,7 @@ type: "component"
 id: "cisco-switch"
 kind: "network-fabric"
 provider: "default"
+docs: "https://www.cisco.com/c/en/us/products/switches/index.html"
 defaults:
   managed: false
   interconnect: "private"

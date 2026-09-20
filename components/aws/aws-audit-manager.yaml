@@ -11,6 +11,7 @@ type: "component"
 id: "aws-audit-manager"
 kind: "monitoring"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/audit-manager/latest/userguide/audit-manager-availability-change.html"
 defaults:
   signal: "all"
   collectorMode: "pull"

@@ -7,6 +7,7 @@ type: "component"
 id: "varnish"
 kind: "cache"
 provider: "default"
+docs: "https://www.varnish.org/docs/users-guide/storage-backends.html"
 defaults:
   persistence: false
   evictionPolicy: "lru"

@@ -8,6 +8,7 @@ type: "component"
 id: "unity-catalog"
 kind: "data-catalog"
 provider: "default"
+docs: "https://docs.unitycatalog.io/"
 defaults:
   managed: false
   accessPolicyEnforcement: true

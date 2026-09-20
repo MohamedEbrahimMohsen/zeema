@@ -7,6 +7,7 @@ type: "component"
 id: "aws-neptune-analytics"
 kind: "graph-database"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/neptune-analytics/latest/apiref/API_CreateGraph.html"
 defaults:
   managed: true
   inMemory: true

@@ -8,6 +8,7 @@ type: "component"
 id: "google-firebase-realtime-database"
 kind: "nosql-database"
 provider: "gcp"
+docs: "https://firebase.google.com/docs/database/backups"
 defaults:
   model: "document"
   consistency: "strong"

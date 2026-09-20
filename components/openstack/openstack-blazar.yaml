@@ -8,6 +8,7 @@ type: "component"
 id: "openstack-blazar"
 kind: "coordination-service"
 provider: "openstack"
+docs: "https://docs.openstack.org/blazar/latest/"
 defaults:
   role: "placement"
   managed: false

@@ -5,6 +5,7 @@ type: "component"
 id: "pusher"
 kind: "realtime-gateway"
 provider: "default"
+docs: "https://pusher.com/docs/channels/"
 defaults:
   managed: true
   protocol: "websocket"

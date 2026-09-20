@@ -8,6 +8,7 @@ type: "component"
 id: "openstack-mistral"
 kind: "workflow-engine"
 provider: "openstack"
+docs: "https://docs.openstack.org/mistral/latest/"
 defaults:
   pattern: "dag"
   managed: false

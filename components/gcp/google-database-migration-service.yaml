@@ -8,6 +8,7 @@ type: "component"
 id: "google-database-migration-service"
 kind: "change-data-capture"
 provider: "gcp"
+docs: "https://cloud.google.com/database-migration/docs/mysql/faq"
 defaults:
   schemaEvolution: true
   managed: true

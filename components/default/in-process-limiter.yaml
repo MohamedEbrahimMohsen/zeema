@@ -5,6 +5,7 @@ type: "component"
 id: "in-process-limiter"
 kind: "rate-limiter"
 provider: "default"
+docs: "https://en.wikipedia.org/wiki/Token_bucket"
 defaults:
   placement: "in-process"
   distributed: false

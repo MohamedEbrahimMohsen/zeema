@@ -7,6 +7,7 @@ type: "component"
 id: "aws-cloudwatch-application-signals"
 kind: "monitoring"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-Application-Monitoring-Sections.html"
 defaults:
   signal: "all"
   collectorMode: "push"

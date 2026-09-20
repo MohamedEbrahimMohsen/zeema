@@ -9,6 +9,7 @@ type: "component"
 id: "aws-chime-sdk"
 kind: "media-router"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/chime-sdk/latest/dg/meetings-sdk.html"
 defaults:
   managed: true
   mode: "sfu"

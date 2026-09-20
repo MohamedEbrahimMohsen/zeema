@@ -9,6 +9,7 @@ type: "component"
 id: "mixpanel"
 kind: "bi-service"
 provider: "default"
+docs: "https://docs.mixpanel.com/reference/import-events"
 defaults:
   managed: true
   capacityMode: "shared"

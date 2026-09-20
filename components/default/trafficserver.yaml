@@ -7,6 +7,7 @@ type: "component"
 id: "trafficserver"
 kind: "cdn"
 provider: "default"
+docs: "https://docs.trafficserver.apache.org/en/latest/admin-guide/storage/index.en.html"
 defaults:
   caching: true
   managed: false

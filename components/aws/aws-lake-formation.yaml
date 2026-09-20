@@ -8,6 +8,7 @@ type: "component"
 id: "aws-lake-formation"
 kind: "policy-engine"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/lake-formation/latest/dg/what-is-lake-formation.html"
 defaults:
   managed: true
   enforcementMode: "enforced"

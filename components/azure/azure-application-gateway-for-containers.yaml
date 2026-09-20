@@ -9,6 +9,7 @@ type: "component"
 id: "azure-application-gateway-for-containers"
 kind: "load-balancer"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/application-gateway/for-containers/overview"
 defaults:
   managed: true
   layer: "l7"

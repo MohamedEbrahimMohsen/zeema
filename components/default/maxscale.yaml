@@ -8,6 +8,7 @@ type: "component"
 id: "maxscale"
 kind: "database-proxy"
 provider: "default"
+docs: "https://mariadb.com/docs/maxscale/reference/maxscale-routers/maxscale-readwritesplit.md"
 defaults:
   pooling: false
   routing: "none"

@@ -7,6 +7,7 @@ type: "component"
 id: "oci-private-endpoint"
 kind: "private-link"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/Network/Concepts/privateaccess.htm"
 defaults:
   managed: true
   approvalRequired: false

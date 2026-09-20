@@ -8,6 +8,7 @@ type: "component"
 id: "google-agent-assist"
 kind: "ai-service"
 provider: "gcp"
+docs: "https://docs.cloud.google.com/agent-assist/docs/features"
 defaults:
   modality: "multimodal"
   publicEndpoint: true

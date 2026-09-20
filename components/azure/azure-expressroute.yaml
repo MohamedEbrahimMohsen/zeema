@@ -5,6 +5,7 @@ type: "component"
 id: "azure-expressroute"
 kind: "network-fabric"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/expressroute/expressroute-introduction"
 defaults:
   interconnect: "private"
 properties:

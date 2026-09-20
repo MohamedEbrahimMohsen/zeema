@@ -8,6 +8,7 @@ type: "component"
 id: "openstack-glance"
 kind: "artifact-repository"
 provider: "openstack"
+docs: "https://docs.openstack.org/glance/latest/"
 defaults:
   artifactType: "generic"
   visibility: "private"

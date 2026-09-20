@@ -8,6 +8,7 @@ type: "component"
 id: "google-app-engine-flexible"
 kind: "app-server"
 provider: "gcp"
+docs: "https://cloud.google.com/appengine/docs/flexible/reference/app-yaml"
 defaults:
   managed: true
   stateless: true

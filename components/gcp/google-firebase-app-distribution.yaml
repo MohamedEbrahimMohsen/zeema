@@ -8,6 +8,7 @@ type: "component"
 id: "google-firebase-app-distribution"
 kind: "artifact-repository"
 provider: "gcp"
+docs: "https://firebase.google.com/docs/app-distribution/troubleshooting"
 defaults:
   artifactType: "package"
   visibility: "private"

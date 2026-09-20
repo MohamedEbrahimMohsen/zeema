@@ -9,6 +9,7 @@ type: "component"
 id: "aws-user-notifications"
 kind: "notification-service"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/notifications/latest/userguide/what-is-service.html"
 defaults:
   managed: true
   channelPush: false

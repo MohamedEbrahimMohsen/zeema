@@ -9,6 +9,7 @@ type: "component"
 id: "superset"
 kind: "bi-service"
 provider: "default"
+docs: "https://superset.apache.org/admin-docs/configuration/configuring-superset/"
 defaults:
   managed: false
   publicSharing: false

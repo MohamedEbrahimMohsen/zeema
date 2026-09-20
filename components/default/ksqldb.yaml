@@ -8,6 +8,7 @@ type: "component"
 id: "ksqldb"
 kind: "stream-processor"
 provider: "default"
+docs: "https://docs.confluent.io/platform/current/ksqldb/reference/server-configuration.html"
 defaults:
   managed: false
   windowing: "event-time"

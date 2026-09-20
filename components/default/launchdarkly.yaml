@@ -5,6 +5,7 @@ type: "component"
 id: "launchdarkly"
 kind: "feature-flag-service"
 provider: "default"
+docs: "https://launchdarkly.com/docs/"
 defaults:
   stagedRollout: true
   managed: true

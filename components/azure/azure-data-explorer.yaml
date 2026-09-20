@@ -6,6 +6,7 @@ type: "component"
 id: "azure-data-explorer"
 kind: "timeseries-database"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/data-explorer/data-explorer-overview"
 defaults:
   downsampling: false
   tiers: "hot-cold"

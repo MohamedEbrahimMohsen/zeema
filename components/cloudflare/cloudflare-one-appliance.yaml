@@ -7,6 +7,7 @@ type: "component"
 id: "cloudflare-one-appliance"
 kind: "edge-appliance"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/cloudflare-wan/configuration/appliance/"
 defaults:
   managed: true
   cloudManaged: true

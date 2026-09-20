@@ -5,6 +5,7 @@ type: "component"
 id: "oci-streaming"
 kind: "stream"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/Streaming/Concepts/streamingoverview.htm"
 defaults:
   managed: true
   delivery: "at-least-once"

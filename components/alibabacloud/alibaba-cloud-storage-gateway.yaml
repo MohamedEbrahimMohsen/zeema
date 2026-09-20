@@ -10,6 +10,7 @@ type: "component"
 id: "alibaba-cloud-storage-gateway"
 kind: "edge-appliance"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/cloud-storage-gateway/"
 defaults:
   connectivity: "connected"
   formFactor: "virtual"

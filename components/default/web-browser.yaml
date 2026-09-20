@@ -5,6 +5,7 @@ type: "component"
 id: "web-browser"
 kind: "client"
 provider: "default"
+docs: "https://developer.mozilla.org/en-US/docs/Web"
 defaults:
   platform: "web"
   localCache: true

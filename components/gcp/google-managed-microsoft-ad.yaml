@@ -8,6 +8,7 @@ type: "component"
 id: "google-managed-microsoft-ad"
 kind: "identity-provider"
 provider: "gcp"
+docs: "https://cloud.google.com/managed-microsoft-ad/docs/overview"
 defaults:
   protocol: "custom"
   centralised: true

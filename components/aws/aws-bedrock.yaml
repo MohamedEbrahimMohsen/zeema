@@ -9,6 +9,7 @@ type: "component"
 id: "aws-bedrock"
 kind: "ai-service"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
 defaults:
   managed: true
   modality: "multimodal"

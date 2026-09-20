@@ -6,6 +6,7 @@ type: "component"
 id: "informix"
 kind: "sql-database"
 provider: "default"
+docs: "https://www.ibm.com/docs/en/informix-servers/14.10.0?topic=servers-asynchronous-mode-hdr-replication"
 defaults:
   replication: "none"
   concurrencyControl: "pessimistic"

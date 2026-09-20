@@ -6,6 +6,7 @@ type: "component"
 id: "google-cloud-ids"
 kind: "firewall"
 provider: "gcp"
+docs: "https://cloud.google.com/intrusion-detection-system/docs/overview"
 defaults:
   managed: true
   intrusionPrevention: false

@@ -7,6 +7,7 @@ type: "component"
 id: "bento4"
 kind: "media-transcoder"
 provider: "default"
+docs: "https://github.com/axiomatic-systems/Bento4"
 defaults:
   managed: false
   mode: "file"

@@ -8,6 +8,7 @@ type: "component"
 id: "alibaba-direct-mail"
 kind: "notification-service"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/directmail/"
 defaults:
   managed: true
   channelEmail: true

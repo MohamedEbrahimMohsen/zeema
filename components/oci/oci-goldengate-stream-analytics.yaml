@@ -8,6 +8,7 @@ type: "component"
 id: "oci-goldengate-stream-analytics"
 kind: "stream-processor"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/goldengate/doc/stream-analytics.html"
 defaults:
   managed: true
 properties:

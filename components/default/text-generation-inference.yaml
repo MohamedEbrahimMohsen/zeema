@@ -7,6 +7,7 @@ type: "component"
 id: "text-generation-inference"
 kind: "ml-inference"
 provider: "default"
+docs: "https://huggingface.co/docs/text-generation-inference/en/basic_tutorials/launcher"
 defaults:
   training: "batch"
   inputs: "live"

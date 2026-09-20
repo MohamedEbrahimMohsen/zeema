@@ -7,6 +7,7 @@ type: "component"
 id: "f5-big-ip"
 kind: "load-balancer"
 provider: "default"
+docs: "https://techdocs.f5.com/en-us/bigip-14-1-0/big-ip-local-traffic-management-basics-14-1-0/about-pools.html"
 defaults:
   managed: false
   hashing: "round-robin"

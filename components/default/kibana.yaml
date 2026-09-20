@@ -8,6 +8,7 @@ type: "component"
 id: "kibana"
 kind: "bi-service"
 provider: "default"
+docs: "https://www.elastic.co/docs/explore-analyze/report-and-share"
 defaults:
   managed: false
   publicSharing: false

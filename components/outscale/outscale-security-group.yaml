@@ -10,6 +10,7 @@ type: "component"
 id: "outscale-security-group"
 kind: "firewall"
 provider: "outscale"
+docs: "https://docs.outscale.com/en/userguide/About-Security-Groups.html"
 defaults:
   managed: true
   defaultAction: "deny"

@@ -5,6 +5,7 @@ type: "component"
 id: "cloudfront"
 kind: "cdn"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Introduction.html"
 defaults:
   managed: true
   edgeCompute: false

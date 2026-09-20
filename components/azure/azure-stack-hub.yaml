@@ -7,6 +7,7 @@ type: "component"
 id: "azure-stack-hub"
 kind: "edge-appliance"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure-stack/operator/azure-stack-overview"
 defaults:
   formFactor: "rack"
   cloudManaged: false

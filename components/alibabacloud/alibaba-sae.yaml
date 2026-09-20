@@ -10,6 +10,7 @@ type: "component"
 id: "alibaba-sae"
 kind: "app-server"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/sae/"
 defaults:
   managed: true
 properties:

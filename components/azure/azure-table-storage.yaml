@@ -7,6 +7,7 @@ type: "component"
 id: "azure-table-storage"
 kind: "nosql-database"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/storage/tables/table-storage-overview"
 defaults:
   model: "key-value"
   consistency: "strong"

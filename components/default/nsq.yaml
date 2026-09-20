@@ -6,6 +6,7 @@ type: "component"
 id: "nsq"
 kind: "queue"
 provider: "default"
+docs: "https://nsq.io/components/nsqd.html"
 defaults:
   delivery: "at-least-once"
   ordering: "none"

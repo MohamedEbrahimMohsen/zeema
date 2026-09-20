@@ -9,6 +9,7 @@ type: "component"
 id: "openwhisk"
 kind: "app-server"
 provider: "default"
+docs: "https://openwhisk.apache.org/documentation.html"
 defaults:
   managed: false
   stateless: true

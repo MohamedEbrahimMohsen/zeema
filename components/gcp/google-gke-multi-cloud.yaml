@@ -8,6 +8,7 @@ type: "component"
 id: "google-gke-multi-cloud"
 kind: "container-orchestrator"
 provider: "gcp"
+docs: "https://cloud.google.com/kubernetes-engine/multi-cloud/docs"
 defaults:
   managed: true
 properties:

@@ -7,6 +7,7 @@ type: "component"
 id: "google-colab-enterprise"
 kind: "ml-platform"
 provider: "gcp"
+docs: "https://cloud.google.com/colab/docs/create-runtime-template"
 defaults:
   managed: true
   gpuEnabled: false

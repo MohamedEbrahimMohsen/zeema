@@ -7,6 +7,7 @@ type: "component"
 id: "feast"
 kind: "ml-platform"
 provider: "default"
+docs: "https://docs.feast.dev/getting-started/quickstart"
 defaults:
   experimentTracking: false
   modelRegistry: false

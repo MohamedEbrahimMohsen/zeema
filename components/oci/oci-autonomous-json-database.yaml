@@ -7,6 +7,7 @@ type: "component"
 id: "oci-autonomous-json-database"
 kind: "nosql-database"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/autonomous-database-serverless/doc/about-autonomous-database-workloads.html"
 defaults:
   managed: true
   model: "document"

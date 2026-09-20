@@ -8,6 +8,7 @@ type: "component"
 id: "aws-control-tower"
 kind: "policy-engine"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/controltower/latest/userguide/what-is-control-tower.html"
 defaults:
   scope: "organization"
   remediation: false

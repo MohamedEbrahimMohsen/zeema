@@ -8,6 +8,7 @@ type: "component"
 id: "google-firebase-ai-logic"
 kind: "ai-service"
 provider: "gcp"
+docs: "https://firebase.google.com/docs/ai-logic"
 defaults:
   modality: "multimodal"
   publicEndpoint: true

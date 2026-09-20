@@ -9,6 +9,7 @@ type: "component"
 id: "ibm-transit-gateway"
 kind: "network-fabric"
 provider: "ibm"
+docs: "https://cloud.ibm.com/docs/transit-gateway"
 defaults:
   managed: true
   interconnect: "cloud-backbone"

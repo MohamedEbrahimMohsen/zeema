@@ -5,6 +5,7 @@ type: "component"
 id: "trie-index"
 kind: "search-index"
 provider: "default"
+docs: "https://en.wikipedia.org/wiki/Trie"
 defaults:
   structure: "trie"
   shardingStrategy: "prefix-range"

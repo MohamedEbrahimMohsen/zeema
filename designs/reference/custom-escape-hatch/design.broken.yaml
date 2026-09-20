@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference design, broken variant: the same system with one box the catalogue has no word
+# for, drawn as a custom node.
+#
+# This file MUST trip:
+#   - custom-node            (billing-mainframe uses the custom kind)
+#   - custom-nodes-present   (the design as a whole has custom nodes)
+# and MUST NOT trip:
+#   - sync-chain-too-deep    (no entry point kind, and the design states no latency target)
+schemaVersion: "1"
+type: "design"
+id: "custom-escape-hatch"
+
+groups:
+  - { id: "platform", kind: "system" }
+
+nodes:
+  - id: "web-client"
+    component: "client"
+    label: "Web client"
+    props: { platform: "web" }
+
+  - id: "api"
+    component: "app-server"
+    label: "API service"
+    group: "platform"
+
+  - id: "billing-mainframe"
+    component: "custom"
+    label: "1987 billing mainframe"
+
+edges:
+  - { from: "web-client", to: "api", protocol: "https", mode: "sync" }
+  - { from: "api", to: "billing-mainframe", protocol: "mq", mode: "sync" }

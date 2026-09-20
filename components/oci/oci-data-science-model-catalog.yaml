@@ -8,6 +8,7 @@ type: "component"
 id: "oci-data-science-model-catalog"
 kind: "artifact-repository"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/data-science/using/models-about.htm"
 defaults:
   artifactType: "generic"
   visibility: "private"

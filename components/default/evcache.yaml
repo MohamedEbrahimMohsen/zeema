@@ -5,6 +5,7 @@ type: "component"
 id: "evcache"
 kind: "cache"
 provider: "default"
+docs: "https://github.com/Netflix/EVCache/wiki"
 defaults:
   persistence: false
   hashing: "consistent"

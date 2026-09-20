@@ -11,6 +11,7 @@ type: "component"
 id: "outscale-eim"
 kind: "identity-provider"
 provider: "outscale"
+docs: "https://docs.outscale.com/en/userguide/About-IAM.html"
 defaults:
   managed: true
   protocol: "iam"

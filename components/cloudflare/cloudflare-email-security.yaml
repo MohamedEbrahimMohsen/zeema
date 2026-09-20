@@ -8,6 +8,7 @@ type: "component"
 id: "cloudflare-email-security"
 kind: "email-security-gateway"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/cloudflare-one/email-security/settings/detection-settings/configure-link-actions/"
 defaults:
   managed: true
   deliveryMode: "inline-mx"

@@ -9,6 +9,7 @@ type: "component"
 id: "alibaba-vpn-gateway"
 kind: "vpn-gateway"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/vpn-gateway/"
 defaults:
   managed: true
 properties:

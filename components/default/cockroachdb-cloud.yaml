@@ -6,6 +6,7 @@ type: "component"
 id: "cockroachdb-cloud"
 kind: "sql-database"
 provider: "default"
+docs: "https://www.cockroachlabs.com/docs/cockroachcloud/managed-backups"
 defaults:
   managed: true
   distributed: true

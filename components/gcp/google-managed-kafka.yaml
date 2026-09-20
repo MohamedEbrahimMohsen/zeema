@@ -8,6 +8,7 @@ type: "component"
 id: "google-managed-kafka"
 kind: "stream"
 provider: "gcp"
+docs: "https://docs.cloud.google.com/managed-service-for-apache-kafka/docs/overview"
 defaults:
   managed: true
   replicationFactor: 3

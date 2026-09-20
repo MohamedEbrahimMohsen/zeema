@@ -9,6 +9,7 @@ type: "component"
 id: "nextcloud"
 kind: "file-storage"
 provider: "default"
+docs: "https://docs.nextcloud.com/server/latest/admin_manual/"
 defaults:
   managed: false
   protocol: "native"

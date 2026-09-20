@@ -5,6 +5,7 @@ type: "component"
 id: "stripe"
 kind: "third-party-api"
 provider: "default"
+docs: "https://docs.stripe.com/"
 defaults:
   idempotent: true
   handlesMoney: true

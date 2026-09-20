@@ -7,6 +7,7 @@ type: "component"
 id: "google-local-ssd"
 kind: "block-storage"
 provider: "gcp"
+docs: "https://cloud.google.com/compute/docs/disks/local-ssd"
 defaults:
   mediaType: "ssd"
   sizeGib: 375

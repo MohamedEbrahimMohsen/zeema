@@ -10,6 +10,7 @@ type: "component"
 id: "x-api"
 kind: "third-party-api"
 provider: "default"
+docs: "https://docs.x.com/x-api/introduction"
 defaults:
   managed: true
   callbackStyle: "none"

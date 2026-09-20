@@ -7,6 +7,7 @@ type: "component"
 id: "google-cloud-translation"
 kind: "ai-service"
 provider: "gcp"
+docs: "https://docs.cloud.google.com/translate/quotas"
 defaults:
   modality: "text"
   publicEndpoint: true

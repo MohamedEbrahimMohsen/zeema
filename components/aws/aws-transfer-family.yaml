@@ -7,6 +7,7 @@ type: "component"
 id: "aws-transfer-family"
 kind: "app-server"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/transfer/latest/userguide/create-server-sftp.html"
 defaults:
   managed: true
   stateless: true

@@ -9,6 +9,7 @@ type: "component"
 id: "aws-fsx-file-gateway"
 kind: "edge-appliance"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/filegateway/latest/filefsxw/what-is-file-fsxw.html"
 defaults:
   connectivity: "connected"
   offlineMode: false

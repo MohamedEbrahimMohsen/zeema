@@ -8,6 +8,7 @@ type: "component"
 id: "aws-gwlb"
 kind: "load-balancer"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/introduction.html"
 defaults:
   managed: true
   layer: "l4"

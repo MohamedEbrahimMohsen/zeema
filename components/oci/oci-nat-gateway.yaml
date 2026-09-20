@@ -8,6 +8,7 @@ type: "component"
 id: "oci-nat-gateway"
 kind: "nat-gateway"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/Network/Tasks/NATgateway.htm"
 defaults:
   managed: true
   staticIpCount: 1

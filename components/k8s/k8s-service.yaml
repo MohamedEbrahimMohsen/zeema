@@ -9,6 +9,7 @@ type: "component"
 id: "k8s-service"
 kind: "load-balancer"
 provider: "k8s"
+docs: "https://kubernetes.io/docs/concepts/services-networking/service/"
 defaults:
   managed: false
   layer: "l4"

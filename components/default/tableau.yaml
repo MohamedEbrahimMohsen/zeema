@@ -9,6 +9,7 @@ type: "component"
 id: "tableau"
 kind: "bi-service"
 provider: "default"
+docs: "https://help.tableau.com/current/server/en-us/users_guest.htm"
 defaults:
   managed: false
   publicSharing: false

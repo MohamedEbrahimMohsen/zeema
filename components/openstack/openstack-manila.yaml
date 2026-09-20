@@ -8,6 +8,7 @@ type: "component"
 id: "openstack-manila"
 kind: "file-storage"
 provider: "openstack"
+docs: "https://docs.openstack.org/manila/latest/"
 defaults:
   protocol: "multi"
   publicAccess: false

@@ -5,6 +5,7 @@ type: "component"
 id: "azure-key-vault"
 kind: "key-management"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/key-vault/general/overview"
 defaults:
   managed: true
   hsm: false

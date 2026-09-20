@@ -8,6 +8,7 @@ type: "component"
 id: "aws-glue-data-catalog"
 kind: "data-catalog"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/glue/latest/dg/catalog-and-crawler.html"
 defaults:
   managed: true
   scanSchedule: "manual"

@@ -8,6 +8,7 @@ type: "component"
 id: "openstack-keystone"
 kind: "identity-provider"
 provider: "openstack"
+docs: "https://docs.openstack.org/keystone/latest/"
 defaults:
   protocol: "iam"
   authorizationModel: "rbac"

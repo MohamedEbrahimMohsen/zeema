@@ -7,6 +7,7 @@ type: "component"
 id: "cloudflare-dynamic-workers"
 kind: "app-server"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/dynamic-workers/"
 defaults:
   managed: true
   stateless: true

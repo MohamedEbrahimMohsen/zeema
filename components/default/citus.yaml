@@ -6,6 +6,7 @@ type: "component"
 id: "citus"
 kind: "sql-database"
 provider: "default"
+docs: "https://docs.citusdata.com/en/stable/develop/api_guc.html"
 defaults:
   distributed: true
   sharded: true

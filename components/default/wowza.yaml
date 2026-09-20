@@ -7,6 +7,7 @@ type: "component"
 id: "wowza"
 kind: "media-router"
 provider: "default"
+docs: "https://www.wowza.com/docs/wowza-streaming-engine-product-articles"
 defaults:
   managed: false
   mode: "ingest"

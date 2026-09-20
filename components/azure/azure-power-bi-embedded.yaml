@@ -8,6 +8,7 @@ type: "component"
 id: "azure-power-bi-embedded"
 kind: "bi-service"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/power-bi/developer/embedded/embedded-analytics-power-bi"
 defaults:
   capacityMode: "dedicated"
   embeddedReports: true

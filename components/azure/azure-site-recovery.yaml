@@ -9,6 +9,7 @@ type: "component"
 id: "azure-site-recovery"
 kind: "backup-service"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/site-recovery/site-recovery-overview"
 defaults:
   managed: true
   retentionDays: 1

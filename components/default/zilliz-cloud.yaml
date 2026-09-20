@@ -7,6 +7,7 @@ type: "component"
 id: "zilliz-cloud"
 kind: "vector-database"
 provider: "default"
+docs: "https://docs.zilliz.com/docs/select-zilliz-cloud-service-plans"
 defaults:
   distanceMetric: "cosine"
   metadataFiltering: true

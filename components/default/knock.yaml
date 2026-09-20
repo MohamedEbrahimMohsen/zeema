@@ -6,6 +6,7 @@ type: "component"
 id: "knock"
 kind: "notification-service"
 provider: "default"
+docs: "https://docs.knock.app/getting-started/what-is-knock"
 defaults:
   managed: true
   channelPush: true

@@ -8,6 +8,7 @@ type: "component"
 id: "google-cloud-iam"
 kind: "policy-engine"
 provider: "gcp"
+docs: "https://cloud.google.com/iam/docs/overview"
 defaults:
   effect: "deny"
   enforcementMode: "enforced"

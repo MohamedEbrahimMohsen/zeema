@@ -8,6 +8,7 @@ type: "component"
 id: "aws-quicksight"
 kind: "bi-service"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/quicksight/latest/user/spice.html"
 defaults:
   managed: true
   capacityMode: "shared"

@@ -6,6 +6,7 @@ type: "component"
 id: "debezium"
 kind: "change-data-capture"
 provider: "default"
+docs: "https://debezium.io/documentation/"
 defaults:
   mode: "log-based"
   ordered: true

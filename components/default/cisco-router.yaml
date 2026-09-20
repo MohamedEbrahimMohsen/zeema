@@ -10,6 +10,7 @@ type: "component"
 id: "cisco-router"
 kind: "network-fabric"
 provider: "default"
+docs: "https://www.cisco.com/c/en/us/products/routers/index.html"
 defaults:
   managed: false
 properties:

@@ -6,6 +6,7 @@ type: "component"
 id: "azure-ai-vision"
 kind: "ai-service"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/ai-services/computer-vision/overview-image-analysis"
 defaults:
   managed: true
   modality: "vision"

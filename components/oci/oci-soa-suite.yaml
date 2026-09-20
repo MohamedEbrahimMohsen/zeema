@@ -8,6 +8,7 @@ type: "component"
 id: "oci-soa-suite"
 kind: "workflow-engine"
 provider: "oci"
+docs: "https://docs.oracle.com/en/cloud/paas/soa/soa-marketplace/soamp-components-oracle-soa-suite-marketplace.html"
 defaults:
   managed: false
   durable: true

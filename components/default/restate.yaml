@@ -7,6 +7,7 @@ type: "component"
 id: "restate"
 kind: "workflow-engine"
 provider: "default"
+docs: "https://docs.restate.dev/concepts/durable_execution/"
 defaults:
   durable: true
   pattern: "saga"

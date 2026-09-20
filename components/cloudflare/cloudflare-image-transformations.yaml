@@ -8,6 +8,7 @@ type: "component"
 id: "cloudflare-image-transformations"
 kind: "media-transcoder"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/images/transform-images/"
 defaults:
   managed: true
   mode: "file"

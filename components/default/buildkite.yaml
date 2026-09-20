@@ -8,6 +8,7 @@ type: "component"
 id: "buildkite"
 kind: "ci-pipeline"
 provider: "default"
+docs: "https://buildkite.com/docs/agent/v3"
 defaults:
   trigger: "commit"
   approvalRequired: false

@@ -8,6 +8,7 @@ type: "component"
 id: "azure-backup"
 kind: "backup-service"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/backup/backup-overview"
 defaults:
   redundancy: "geo"
   softDeleteDays: 14

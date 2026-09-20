@@ -9,6 +9,7 @@ type: "component"
 id: "oci-weblogic-server-oke"
 kind: "app-server"
 provider: "oci"
+docs: "https://docs.oracle.com/en/cloud/paas/weblogic-container/user/create-stack2.html"
 defaults:
   managed: false
   runtime: "weblogic"

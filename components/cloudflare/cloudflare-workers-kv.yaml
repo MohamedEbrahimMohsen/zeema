@@ -7,6 +7,7 @@ type: "component"
 id: "cloudflare-workers-kv"
 kind: "nosql-database"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/kv/concepts/how-kv-works/"
 defaults:
   managed: true
   model: "key-value"

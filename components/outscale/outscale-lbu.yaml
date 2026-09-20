@@ -10,6 +10,7 @@ type: "component"
 id: "outscale-lbu"
 kind: "load-balancer"
 provider: "outscale"
+docs: "https://docs.outscale.com/en/userguide/About-Load-Balancers.html"
 defaults:
   managed: true
   healthChecks: true

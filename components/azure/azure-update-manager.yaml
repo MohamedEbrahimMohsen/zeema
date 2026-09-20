@@ -8,6 +8,7 @@ type: "component"
 id: "azure-update-manager"
 kind: "worker"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/update-manager/overview"
 defaults:
   managed: true
   trigger: "schedule"

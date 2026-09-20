@@ -6,6 +6,7 @@ type: "component"
 id: "cloudflare-secondary-dns"
 kind: "dns"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/dns/zone-setups/zone-transfers/"
 defaults:
   managed: true
   anycast: true

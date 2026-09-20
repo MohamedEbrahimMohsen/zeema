@@ -5,6 +5,7 @@ type: "component"
 id: "sendgrid"
 kind: "third-party-api"
 provider: "default"
+docs: "https://www.twilio.com/docs/sendgrid"
 defaults:
   idempotent: false
   callbackStyle: "webhook"

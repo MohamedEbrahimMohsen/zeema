@@ -8,6 +8,7 @@ type: "component"
 id: "google-artifact-registry"
 kind: "container-registry"
 provider: "gcp"
+docs: "https://cloud.google.com/artifact-registry/docs/cmek"
 defaults:
   managed: true
   geoReplicated: false

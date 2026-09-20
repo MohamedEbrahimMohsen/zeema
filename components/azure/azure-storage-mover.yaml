@@ -8,6 +8,7 @@ type: "component"
 id: "azure-storage-mover"
 kind: "worker"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/storage-mover/service-overview"
 defaults:
   trigger: "manual"
   managed: true

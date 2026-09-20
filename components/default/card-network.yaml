@@ -5,6 +5,7 @@ type: "component"
 id: "card-network"
 kind: "third-party-api"
 provider: "default"
+docs: "https://www.iso.org/standard/31482.html"
 defaults:
   handlesMoney: true
   idempotent: false

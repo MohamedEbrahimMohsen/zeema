@@ -7,6 +7,7 @@ type: "component"
 id: "trino"
 kind: "data-warehouse"
 provider: "default"
+docs: "https://trino.io/docs/current/overview.html"
 defaults:
   realtime: false
   upsert: false

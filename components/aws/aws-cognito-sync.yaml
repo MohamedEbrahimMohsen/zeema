@@ -9,6 +9,7 @@ type: "component"
 id: "aws-cognito-sync"
 kind: "nosql-database"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/cognito/latest/developerguide/synchronizing-data.html"
 defaults:
   model: "key-value"
   consistency: "eventual"

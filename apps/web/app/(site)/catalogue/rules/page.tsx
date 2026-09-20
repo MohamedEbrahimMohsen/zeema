@@ -36,7 +36,8 @@ export default async function RulesPage({
         <p className="small muted">
           Declarative predicates over a design. A rule reads a node&apos;s effective properties, its
           edges, its boundaries and the design&apos;s requirements. A finding never blocks a save; a
-          structural problem always does.
+          structural problem always does. Open a rule for its rationale, the condition in plain
+          English, and the reference designs that trip it.
         </p>
       </div>
       <div className="flex items-center gap-2">
@@ -56,7 +57,12 @@ export default async function RulesPage({
       </div>
       <div className="list">
         {rules.map((r) => (
-          <div key={r.id} id={r.id} className="flex flex-col gap-1 p-4">
+          <Link
+            key={r.id}
+            id={r.id}
+            href={`/catalogue/rules/${r.id}`}
+            className="flex flex-col gap-1 p-4 no-underline"
+          >
             <div className="finding" style={{ gridTemplateColumns: "10px 1fr" }}>
               <span
                 className="dot"
@@ -73,12 +79,12 @@ export default async function RulesPage({
                   <span className="tag tag-mono">{selectText(r.select)}</span>
                 </div>
                 <div className="small">{r.message}</div>
-                {cat.locale.rules[r.id]?.description ? (
-                  <div className="small muted">{cat.locale.rules[r.id]?.description}</div>
+                {cat.locale.rules[r.id]?.rationale ? (
+                  <div className="small muted">{cat.locale.rules[r.id]?.rationale}</div>
                 ) : null}
               </div>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </div>

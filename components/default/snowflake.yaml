@@ -6,6 +6,7 @@ type: "component"
 id: "snowflake"
 kind: "data-warehouse"
 provider: "default"
+docs: "https://docs.snowflake.com/"
 defaults:
   realtime: false
   upsert: false

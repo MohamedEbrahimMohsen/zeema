@@ -5,6 +5,7 @@ type: "component"
 id: "apns"
 kind: "third-party-api"
 provider: "default"
+docs: "https://developer.apple.com/documentation/usernotifications"
 defaults:
   idempotent: false
   callbackStyle: "none"

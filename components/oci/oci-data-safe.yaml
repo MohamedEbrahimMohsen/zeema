@@ -8,6 +8,7 @@ type: "component"
 id: "oci-data-safe"
 kind: "policy-engine"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/data-safe/doc/oracle-data-safe-overview.html"
 defaults:
   managed: true
   effect: "audit"

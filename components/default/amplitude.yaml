@@ -8,6 +8,7 @@ type: "component"
 id: "amplitude"
 kind: "bi-service"
 provider: "default"
+docs: "https://amplitude.com/docs/apis/analytics/http-v2"
 defaults:
   managed: true
   capacityMode: "shared"

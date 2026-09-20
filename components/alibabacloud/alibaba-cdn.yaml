@@ -9,6 +9,7 @@ type: "component"
 id: "alibaba-cdn"
 kind: "cdn"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/cdn/product-overview/what-is-alibaba-cloud-cdn"
 defaults:
   managed: true
   caching: true

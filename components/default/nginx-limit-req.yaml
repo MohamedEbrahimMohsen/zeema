@@ -5,6 +5,7 @@ type: "component"
 id: "nginx-limit-req"
 kind: "rate-limiter"
 provider: "default"
+docs: "https://nginx.org/en/docs/http/ngx_http_limit_req_module.html"
 defaults:
   algorithm: "leaky-bucket"
   scope: "ip"

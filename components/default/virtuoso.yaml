@@ -7,6 +7,7 @@ type: "component"
 id: "virtuoso"
 kind: "graph-database"
 provider: "default"
+docs: "https://docs.openlinksw.com/virtuoso/clusterstcnf/"
 defaults:
   inMemory: false
   masterPerShard: false

@@ -1,0 +1,8 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# The escape hatch: something real that the catalogue does not name yet. It is a node, so the
+# diagram stays complete data, but it has no properties, so no rule can judge it. See rules/custom-node.yaml.
+schemaVersion: "1"
+type: "kind"
+id: "custom"
+category: "custom"
+properties: {}

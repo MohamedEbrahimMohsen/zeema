@@ -8,6 +8,7 @@ type: "component"
 id: "aws-appflow"
 kind: "worker"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/appflow/latest/userguide/what-is-appflow.html"
 defaults:
   managed: true
   trigger: "manual"

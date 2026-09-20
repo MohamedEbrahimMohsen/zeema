@@ -6,6 +6,7 @@ type: "component"
 id: "valkey"
 kind: "cache"
 provider: "default"
+docs: "https://valkey.io/topics/"
 defaults:
   persistence: false
 properties:

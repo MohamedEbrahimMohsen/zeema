@@ -11,6 +11,7 @@ type: "component"
 id: "alibaba-certificate-management"
 kind: "key-management"
 provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/ssl-certificate/"
 defaults:
   managed: true
 properties:

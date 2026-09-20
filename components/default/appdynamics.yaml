@@ -6,6 +6,7 @@ type: "component"
 id: "appdynamics"
 kind: "monitoring"
 provider: "default"
+docs: "https://help.splunk.com/en/appdynamics-on-premises/plan-your-deployment/physical-machine-controller-deployment-guide/controller-data-and-backups/database-size-and-data-retention/modify-metric-data-retention-periods"
 defaults:
   signal: "all"
   collectorMode: "push"

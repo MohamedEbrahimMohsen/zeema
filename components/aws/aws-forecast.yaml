@@ -6,6 +6,7 @@ type: "component"
 id: "aws-forecast"
 kind: "ai-service"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/forecast/latest/dg/limits.html"
 defaults:
   modality: "structured"
   managed: true

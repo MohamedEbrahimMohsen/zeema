@@ -8,6 +8,7 @@ type: "component"
 id: "google-firebase-app-check"
 kind: "policy-engine"
 provider: "gcp"
+docs: "https://firebase.google.com/docs/app-check/monitor-metrics"
 defaults:
   effect: "audit"
   enforcementMode: "disabled"

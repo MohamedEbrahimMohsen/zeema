@@ -8,6 +8,7 @@ type: "component"
 id: "azure-confidential-ledger"
 kind: "ledger"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/confidential-ledger/overview"
 defaults:
   managed: true
   appendOnly: true

@@ -9,6 +9,7 @@ type: "component"
 id: "vyos"
 kind: "firewall"
 provider: "default"
+docs: "https://docs.vyos.io/en/latest/"
 defaults:
   managed: false
   defaultAction: "allow"

@@ -9,6 +9,7 @@ type: "component"
 id: "google-cloud-healthcare-api"
 kind: "nosql-database"
 provider: "gcp"
+docs: "https://docs.cloud.google.com/healthcare-api/docs/cmek"
 defaults:
   model: "document"
   replication: "single-region"

@@ -8,6 +8,7 @@ type: "component"
 id: "oci-archive-storage"
 kind: "object-store"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/Archive/Concepts/archivestorageoverview.htm"
 defaults:
   managed: true
   tier: "cold"

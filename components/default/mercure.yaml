@@ -8,6 +8,7 @@ type: "component"
 id: "mercure"
 kind: "realtime-gateway"
 provider: "default"
+docs: "https://mercure.rocks/spec"
 defaults:
   protocol: "sse"
   stateful: true

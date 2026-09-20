@@ -8,6 +8,7 @@ type: "component"
 id: "aws-datazone"
 kind: "data-catalog"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/datazone/latest/userguide/create-domain.html"
 defaults:
   managed: true
   scanSchedule: "manual"

@@ -8,6 +8,7 @@ type: "component"
 id: "cohere-api"
 kind: "ai-service"
 provider: "default"
+docs: "https://docs.cohere.com/docs/rate-limits"
 defaults:
   managed: true
   modality: "text"

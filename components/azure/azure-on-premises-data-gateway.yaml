@@ -9,6 +9,7 @@ type: "component"
 id: "azure-on-premises-data-gateway"
 kind: "edge-appliance"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/data-integration/gateway/service-gateway-onprem"
 defaults:
   managed: false
   cloudManaged: true

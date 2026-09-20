@@ -9,6 +9,7 @@ type: "component"
 id: "alibaba-link-wan"
 kind: "iot-hub"
 provider: "alibabacloud"
+docs: "https://help.aliyun.com/en/link-wan/product-overview/hybrid-gateway"
 defaults:
   managed: true
   protocol: "lorawan"

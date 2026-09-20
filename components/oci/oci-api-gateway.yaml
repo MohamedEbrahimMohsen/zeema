@@ -5,6 +5,7 @@ type: "component"
 id: "oci-api-gateway"
 kind: "api-gateway"
 provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/APIGateway/Concepts/apigatewayoverview.htm"
 defaults:
   managed: true
   tls: true

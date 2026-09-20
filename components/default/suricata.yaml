@@ -7,6 +7,7 @@ type: "component"
 id: "suricata"
 kind: "firewall"
 provider: "default"
+docs: "https://docs.suricata.io/en/latest/rule-management/suricata-update.html"
 defaults:
   managed: false
   defaultAction: "allow"

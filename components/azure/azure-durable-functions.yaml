@@ -6,6 +6,7 @@ type: "component"
 id: "azure-durable-functions"
 kind: "workflow-engine"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-overview"
 defaults:
   durable: true
   pattern: "dag"

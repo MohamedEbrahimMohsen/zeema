@@ -8,6 +8,7 @@ type: "component"
 id: "google-gke"
 kind: "container-orchestrator"
 provider: "gcp"
+docs: "https://cloud.google.com/kubernetes-engine/docs/concepts/regional-clusters"
 defaults:
   managed: true
   nodeCount: 3

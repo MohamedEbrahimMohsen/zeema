@@ -5,6 +5,7 @@ type: "component"
 id: "aws-appconfig"
 kind: "feature-flag-service"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/appconfig/latest/userguide/what-is-appconfig.html"
 defaults:
   stagedRollout: true
   managed: true

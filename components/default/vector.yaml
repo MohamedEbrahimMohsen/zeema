@@ -8,6 +8,7 @@ type: "component"
 id: "vector"
 kind: "monitoring"
 provider: "default"
+docs: "https://vector.dev/docs/architecture/buffering-model/"
 defaults:
   managed: false
   signal: "all"

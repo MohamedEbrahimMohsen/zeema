@@ -8,6 +8,7 @@ type: "component"
 id: "google-firebase-data-connect"
 kind: "api-gateway"
 provider: "gcp"
+docs: "https://firebase.google.com/docs/data-connect/authorization-and-security"
 defaults:
   auth: "jwt"
   protocol: "http"

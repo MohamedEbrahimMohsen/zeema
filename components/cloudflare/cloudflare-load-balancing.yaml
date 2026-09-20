@@ -7,6 +7,7 @@ type: "component"
 id: "cloudflare-load-balancing"
 kind: "load-balancer"
 provider: "cloudflare"
+docs: "https://developers.cloudflare.com/load-balancing/understand-basics/session-affinity/"
 defaults:
   managed: true
   layer: "l7"

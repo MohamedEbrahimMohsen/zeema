@@ -8,6 +8,7 @@ type: "component"
 id: "aws-codebuild"
 kind: "ci-pipeline"
 provider: "aws"
+docs: "https://docs.aws.amazon.com/codebuild/latest/APIReference/API_CreateProject.html"
 defaults:
   trigger: "manual"
   selfHostedRunners: false

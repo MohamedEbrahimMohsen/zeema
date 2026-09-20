@@ -9,6 +9,7 @@ type: "component"
 id: "snowplow"
 kind: "stream-processor"
 provider: "default"
+docs: "https://docs.snowplow.io/docs/api-reference/stream-collector/"
 defaults:
   managed: false
   windowing: "none"

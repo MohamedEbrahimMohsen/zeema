@@ -6,6 +6,7 @@ type: "component"
 id: "azure-event-grid"
 kind: "pubsub-topic"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/event-grid/overview"
 defaults:
   managed: true
   delivery: "at-least-once"

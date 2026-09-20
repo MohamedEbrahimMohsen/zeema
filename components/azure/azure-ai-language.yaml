@@ -6,6 +6,7 @@ type: "component"
 id: "azure-ai-language"
 kind: "ai-service"
 provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/ai-services/language-service/concepts/data-limits"
 defaults:
   managed: true
   modality: "text"

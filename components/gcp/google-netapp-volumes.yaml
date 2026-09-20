@@ -8,6 +8,7 @@ type: "component"
 id: "google-netapp-volumes"
 kind: "file-storage"
 provider: "gcp"
+docs: "https://cloud.google.com/netapp/volumes/docs/configure-and-use/storage-pools/overview"
 defaults:
   protocol: "multi"
   redundancy: "zonal"

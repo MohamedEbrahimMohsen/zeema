@@ -5,6 +5,7 @@ type: "component"
 id: "payment-service-provider"
 kind: "third-party-api"
 provider: "default"
+docs: "https://en.wikipedia.org/wiki/Payment_service_provider"
 defaults:
   handlesMoney: true
   callbackStyle: "webhook"

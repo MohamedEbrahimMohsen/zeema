@@ -7,6 +7,7 @@ type: "component"
 id: "doppler"
 kind: "key-management"
 provider: "default"
+docs: "https://docs.doppler.com/docs/secrets-rotation"
 defaults:
   managed: true
   rotationAutomated: false

@@ -8,6 +8,7 @@ type: "component"
 id: "openstack-telemetry"
 kind: "monitoring"
 provider: "openstack"
+docs: "https://docs.openstack.org/ceilometer/latest/"
 defaults:
   signal: "metrics"
   collectorMode: "pull"

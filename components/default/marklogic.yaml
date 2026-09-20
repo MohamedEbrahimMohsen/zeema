@@ -7,6 +7,7 @@ type: "component"
 id: "marklogic"
 kind: "nosql-database"
 provider: "default"
+docs: "https://docs.progress.com/bundle/marklogic-server-understand-concepts-12/page/topics/overview.html"
 defaults:
   model: "document"
   consistency: "strong"
