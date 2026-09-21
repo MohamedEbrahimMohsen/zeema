@@ -90,7 +90,7 @@ export default async function DesignPage({
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-wrap items-start gap-4">
-        <div className="min-w-0 flex-1 flex flex-col gap-1">
+        <div className="min-w-0 flex-1 basis-[16rem] flex flex-col gap-1">
           <div className="meta">
             {view.owner ? (
               <Link href={`/u/${view.owner.username}`} className="link">
@@ -177,7 +177,7 @@ export default async function DesignPage({
           )}
         </div>
       ) : null}
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
+      <div className="grid gap-5 grid-cols-[minmax(0,1fr)] lg:grid-cols-[minmax(0,1fr)_360px]">
         <div className="flex flex-col gap-5 min-w-0">
           <section className="panel svg-preview p-2">
             {/* biome-ignore lint/security/noDangerouslySetInnerHtml: SVG produced by the engine from escaped data */}

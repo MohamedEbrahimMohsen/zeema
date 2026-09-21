@@ -58,6 +58,14 @@ export type LayoutSidecar = {
 
 export const NOTE_MIN_W = 80;
 export const NOTE_MIN_H = 48;
+// A sidecar is stored opaquely, so a corrupt or hand-edited one can say anything. These are the
+// ceilings the reader clamps to: a note box no larger than a very large board, a text no longer
+// than a long paragraph, and a list no longer than a canvas anyone would draw. Past them the
+// picture would not be readable anyway, and the renderer would be laying out megabytes of text.
+export const NOTE_MAX_W = 4000;
+export const NOTE_MAX_H = 4000;
+export const NOTE_MAX_TEXT = 2000;
+export const NOTE_MAX_NOTES = 200;
 // Sized for the note font (see NOTE_FONT in canvas/scene.ts): the text got a step smaller, so
 // the boxes came down with it and the same sentence still fills about the same space.
 export const NOTE_DEFAULT_W = 184;
@@ -65,6 +73,8 @@ export const NOTE_DEFAULT_H = 88;
 
 const num = (v: unknown, fallback: number) =>
   typeof v === "number" && Number.isFinite(v) ? v : fallback;
+
+const clamp = (v: number, lo: number, hi: number) => (v < lo ? lo : v > hi ? hi : v);
 
 /** What the design currently holds, so a stale anchor can be spotted. */
 export type AnchorTargets = { nodes?: Iterable<string>; groups?: Iterable<string> };
@@ -91,9 +101,9 @@ function readNote(
     id: r.id,
     x: Math.round(num(r.x, 0)),
     y: Math.round(num(r.y, 0)),
-    w: Math.round(Math.max(NOTE_MIN_W, num(r.w, NOTE_DEFAULT_W))),
-    h: Math.round(Math.max(NOTE_MIN_H, num(r.h, NOTE_DEFAULT_H))),
-    text: typeof r.text === "string" ? r.text : "",
+    w: Math.round(clamp(num(r.w, NOTE_DEFAULT_W), NOTE_MIN_W, NOTE_MAX_W)),
+    h: Math.round(clamp(num(r.h, NOTE_DEFAULT_H), NOTE_MIN_H, NOTE_MAX_H)),
+    text: typeof r.text === "string" ? r.text.slice(0, NOTE_MAX_TEXT) : "",
   };
   // An anchor whose target has gone is dropped, not an error: the note stays where it was
   // drawn last, as a free-floating one. A design must open whatever the sidecar says.
@@ -120,8 +130,13 @@ export function readSidecar(raw: unknown, targets?: AnchorTargets): LayoutSideca
   if (r.edges && typeof r.edges === "object")
     for (const [key, v] of Object.entries(r.edges as Record<string, unknown>))
       if (typeof v === "number" && Number.isFinite(v)) edges[key] = v;
+  // The count is capped the same way the text is: the first NOTE_MAX_NOTES readable notes are
+  // kept and the rest are dropped, so a runaway or hostile sidecar cannot stall a render.
   const notes = Array.isArray(r.notes)
-    ? (r.notes.map((n) => readNote(n, present)).filter(Boolean) as Note[])
+    ? (r.notes
+        .slice(0, NOTE_MAX_NOTES)
+        .map((n) => readNote(n, present))
+        .filter(Boolean) as Note[])
     : ([] as Note[]);
   return { version: num(r.version, SIDECAR_VERSION), nodes, edges, notes };
 }

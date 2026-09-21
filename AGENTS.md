@@ -67,5 +67,7 @@ changes only when a behaviour change is intended, and the commit says why.
 - The API returns `{ error: { code, message, findings? } }` on failure. 422 carries structural
   findings. 409 carries `currentHash` on a save conflict. 404 for private designs, 403 for a
   non-owner writing a public one.
-- Local development: no database to install (PGlite) and a local sign-in when
-  `AUTH_DEV_LOGIN=1`. Production requires `DATABASE_URL` and the GitHub OAuth variables.
+- Local development: no database to install (PGlite). There is no local-account sign-in: the
+  only identity provider is GitHub, so `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` and
+  `APP_ORIGIN` are needed to sign in even locally (`src/lib/auth.ts`, `githubConfigured`).
+  Without them reading works and creating is disabled. Production also requires `DATABASE_URL`.

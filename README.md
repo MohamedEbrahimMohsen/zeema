@@ -39,13 +39,14 @@ The rule `pubsub-replay-required` fires: the design requires replay, and SNS can
 pnpm install
 pnpm validate            # the repository gate
 pnpm test                # every package's tests
-pnpm dev                 # the web app on http://localhost:3000 (embedded Postgres, local sign-in)
+pnpm dev                 # the web app on http://localhost:3000 (embedded Postgres)
 ```
 
 The web app needs nothing installed: without `DATABASE_URL` it uses an embedded Postgres under
-`apps/web/.pglite`, and with `AUTH_DEV_LOGIN=1` it offers a local account. For a real deployment
-set `DATABASE_URL`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` and `APP_ORIGIN` (see
-`apps/web/.env.example`).
+`apps/web/.pglite`. There is no local-account sign-in — signing in always goes through GitHub, so
+even locally you need a GitHub OAuth app and `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` and
+`APP_ORIGIN` set. Without them the site still reads and lints; only creating, cloning and
+publishing are disabled. For a real deployment add `DATABASE_URL` (see `apps/web/.env.example`).
 
 ## Lint a design in your own repository
 

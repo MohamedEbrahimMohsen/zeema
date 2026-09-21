@@ -380,6 +380,9 @@ export async function listOwners(viewer: Viewer): Promise<string[]> {
     .where(
       and(
         isNull(schema.designs.deletedAt),
+        // A closed account has no profile page (getUserProfile hides it), so offering its name
+        // as a filter would offer a link to a 404.
+        isNull(schema.users.deletedAt),
         actingAdmin(viewer)
           ? undefined
           : viewer

@@ -24,7 +24,7 @@
   align-items: center;
   gap: var(--sp-0-5);
 }
-.zeema-canvas .toolbar .sep {
+.zeema-canvas :where(.toolbar) .sep {
   width: 1px;
   height: 20px;
   background: var(--line);
@@ -34,12 +34,12 @@
   padding: calc(var(--p) * 0.55) calc(var(--p) * 1.2);
   font-size: var(--fs-small);
 }
-.zeema-canvas .toolbar .btn kbd {
+.zeema-canvas :where(.toolbar) .btn kbd {
   font-family: var(--mono);
   font-size: var(--fs-micro);
   color: var(--muted);
 }
-.zeema-canvas .toolbar .btn-primary kbd {
+.zeema-canvas :where(.toolbar) .btn-primary kbd {
   color: var(--accent-ink);
   opacity: 0.75;
 }
@@ -699,6 +699,11 @@
   background: var(--accent);
   color: var(--accent-ink);
 }
+.zeema-menu .hint {
+  font-family: var(--mono);
+  color: var(--muted);
+  font-size: var(--fs-micro);
+}
 .zeema-menu button:hover:not([disabled]) .hint {
   color: inherit;
   opacity: 0.8;
@@ -709,11 +714,6 @@
 }
 .zeema-menu button.danger {
   color: var(--err);
-}
-.zeema-menu .hint {
-  font-family: var(--mono);
-  color: var(--muted);
-  font-size: var(--fs-micro);
 }
 .zeema-menu .sep {
   height: 1px;

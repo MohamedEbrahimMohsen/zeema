@@ -18,17 +18,19 @@ Three layers, always in this order:
 
 | Layer | What it is | Example | Count |
 |---|---|---|---|
-| **Kind** | An abstract category with typed properties | `queue` has `delivery`, `ordering`, `deadLetterQueue` | 71 |
-| **Component** | A concrete product of exactly one kind, with the defaults that product really has | `sns` is a `pubsub-topic` on `aws`, and it cannot replay | 1,623 |
-| **Design** | Nodes (components), directed edges, nested boundaries, and requirements | "YouTube", "Order processing" | 28 curated + user-made |
+| **Kind** | An abstract category with typed properties | `queue` has `delivery`, `ordering`, `deadLetterQueue` | 72 |
+| **Component** | A concrete product of exactly one kind, with the defaults that product really has | `sns` is a `pubsub-topic` on `aws`, and it cannot replay | 1,927 |
+| **Design** | Nodes (components), directed edges, nested boundaries, and requirements | "YouTube", "Order processing" | 68 curated + user-made |
 
-Plus **36 rules** — declarative predicates such as *"Cache 'x' is the primary store for its data
+Every number in this section is the catalogue as it stood at the time of writing; the product
+derives them from the bundle. Plus **38 rules** — declarative predicates such as *"Cache 'x' is the primary store for its data
 but has persistence disabled"* (error) or *"Cache 'x' has no eviction policy"* (warning).
 
 Kinds fall into **9 categories**: `compute`, `edge`, `data`, `ops`, `security`, `messaging`,
-`client`, `external`, `custom`. Components come from **6 providers**: `default` (671, vendor-neutral
-products like Kafka, Redis, Postgres, GitHub, Stripe, Slack), `aws` (285), `gcp` (227), `azure`
-(174), `oci` (168), `cloudflare` (98).
+`client`, `external`, `custom`. Components come from **12 providers**: `default` (801,
+vendor-neutral products like Kafka, Redis, Postgres, GitHub, Stripe, Slack), `aws` (286), `gcp`
+(228), `azure` (195), `oci` (168), `cloudflare` (98), `alibabacloud` (69), `openstack` (22),
+`ibm` (21), `k8s` (17), `outscale` (12), `digitalocean` (10).
 
 **Who uses it.** Software architects and senior engineers. They read curated reference designs
 of well-known systems (YouTube, Twitter timeline, Slack messaging, DoorDash delivery, URL
@@ -42,16 +44,17 @@ principal engineer opens every day, not a marketing site.
 
 ### 2.1 Icons — the biggest asset the current design ignores
 
-The repo ships **1,911 SVG icons**, all `24×24`, and the current UI barely uses them:
+The repo ships **2,275 SVG icons** (at the time of writing), all `24×24`, and the current UI
+barely uses them:
 
 - `icons/components/<provider>/<id>.svg` — one per component. For **aws, azure and oci** this is
   the **vendor's own product icon in the vendor's own colours** (the AWS Architecture Icons, Azure
   Public Service Icons, OCI toolkit). For everything else it is a monochrome line glyph of the
   kind, with a small round **provider badge** in the bottom-right corner (a brand mark from
   Simple Icons: GitHub, Stripe, Slack, Kafka, Google Cloud, Cloudflare…).
-- `icons/kinds/<kind>.svg` — 71 generic line glyphs (a cylinder for a database, a gear for a
+- `icons/kinds/<kind>.svg` — one generic line glyph per kind (a cylinder for a database, a gear for a
   worker, a funnel for a queue…). Monochrome, `stroke="currentColor"`, so they follow the theme.
-- `icons/providers/*.svg` — 217 brand marks.
+- `icons/providers/*.svg` — 276 brand marks.
 
 **Design rule: wherever a component or design is listed, lead with the picture.** A card, a
 palette row, a table row, a node on the canvas — the icon comes first, the name second, the id in
@@ -151,7 +154,8 @@ Two-column hero:
 
 - Left: headline *"Architecture as typed, queryable data."*; one paragraph explaining
   picture vs model; two buttons **Browse designs** (primary) and **Create your own** (goes to
-  sign-in first if signed out); three live counters **71 kinds · 1,623 components · 36 rules**.
+  sign-in first if signed out); three live counters — kinds, components and rules, read from the
+  bundle rather than written into the copy.
 - Right: a code panel showing a tiny YAML design and, as a comment, the rule it trips
   (`pubsub-replay-required fires: the design requires replay, and SNS cannot replay`). This is
   the product's whole pitch in one panel — give it presence. A rendered mini-diagram next to the
@@ -166,7 +170,7 @@ The catalogue of *designs*.
 - Title "Browse" (or **"My designs"** when filtered to the signed-in user), count "N designs",
   and a toggle link "Show only mine / Show public designs" (signed-in only).
 - Filter bar: free-text search (title, summary, components), **Provider** select (aws, azure,
-  gcp, oci, cloudflare, default), **Kind** select (71 kinds by display name), **Sort**
+  gcp, oci, cloudflare, default), **Kind** select (every kind, by display name), **Sort**
   (Recently updated · Newest · Most cloned · Most exported), Filter button. Filters are URL
   query parameters — a filtered view is a shareable link.
 - Grid of design cards, 3 across on desktop, 2 on tablet, 1 on phone. **This is the page the
@@ -179,11 +183,11 @@ The catalogue of *designs*.
 The catalogue of *kinds and components*. Today it is a plain table and a grid of text tiles;
 this page needs the most rework.
 
-- Header: "Catalogue" + the sentence *"71 kinds, 1,623 components across six providers, 36
-  rules. A kind is the abstract thing (a queue); a component is the concrete product (Kafka,
-  SQS) with its real defaults."*
+- Header: "Catalogue" + a sentence built from the live counts: *"N kinds, M components across
+  P providers, R rules. A kind is the abstract thing (a queue); a component is the concrete
+  product (Kafka, SQS) with its real defaults."*
 - Search box for components (matches id, name, description).
-- **Kinds grid**, grouped by the 8 categories. Each kind tile: the kind glyph, the display name
+- **Kinds grid**, grouped by the 9 categories. Each kind tile: the kind glyph, the display name
   ("Queue"), the category tag, "N components · M properties". Clicking a kind filters the
   component list to it.
 - **Components list** (appears when a kind or a search is active; capped at 300): each row/card
@@ -195,7 +199,7 @@ this page needs the most rework.
   description, and the **defaults** it overrides (`sns`: `delivery: at-least-once`,
   `managed: true`, `ordering: none`, `replay: false`) plus its own extra properties
   (`fifo: boolean`). Link to designs that use it.
-- **Rules** (currently not shown anywhere as a list — design it): a list/table of the 36 rules:
+- **Rules** (currently not shown anywhere as a list — design it): a list/table of every rule:
   severity dot, rule id (mono), human name, the message template, and what it selects
   (`node.kind = cache`). Filter by severity and by the kind it targets.
 

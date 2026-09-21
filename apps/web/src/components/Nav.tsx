@@ -11,7 +11,7 @@ export async function Nav() {
     <header className="topbar">
       <Link href="/" className="wordmark no-underline">
         <Mark size={20} />
-        Zeema
+        <span className="wordmark-text">Zeema</span>
       </Link>
       <NavTabs />
       <div className="ml-auto flex items-center gap-3">

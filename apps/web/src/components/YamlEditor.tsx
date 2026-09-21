@@ -101,7 +101,7 @@ export function YamlEditor({ owner, slug, initialYaml, contentHash, title }: Pro
   const [word, tone] = STATUS[state];
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+    <div className="grid gap-6 grid-cols-[minmax(0,1fr)] lg:grid-cols-[minmax(0,1fr)_360px]">
       <div className="panel flex flex-col overflow-hidden">
         <div
           className="flex items-center gap-3 border-b px-3 py-2"

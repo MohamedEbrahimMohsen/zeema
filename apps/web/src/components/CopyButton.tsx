@@ -23,7 +23,7 @@ const Check = () => (
 );
 
 function selectInstead(button: HTMLElement) {
-  const pre = button.closest(".yaml-section, .yaml-block")?.querySelector("pre");
+  const pre = button.closest(".yaml-section, .yaml-block, .code-block")?.querySelector("pre");
   if (!pre) return;
   const range = document.createRange();
   range.selectNodeContents(pre);

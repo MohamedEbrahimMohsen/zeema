@@ -10,7 +10,14 @@
 
 import { displayName } from "@zeema/core/document";
 import { bowAt, edgeGeometry, groupFrames, innermostFrameAt, pathOf } from "@zeema/core/geometry";
-import { anchorKey, anchorTarget, NOTE_MIN_H, NOTE_MIN_W, type Note } from "@/lib/layout-sidecar";
+import {
+  anchorKey,
+  anchorTarget,
+  NOTE_MAX_TEXT,
+  NOTE_MIN_H,
+  NOTE_MIN_W,
+  type Note,
+} from "@/lib/layout-sidecar";
 
 const NS = "http://www.w3.org/2000/svg";
 const el = (name: string, attrs: Record<string, unknown> = {}) => {
@@ -214,9 +221,15 @@ export class Scene {
     this.closeEditor();
     for (const c of this.cleanups) c();
     this.cleanups = [];
+    // The marker layer and the arrowhead are the two things this scene added to a DOM it does
+    // not own. They go with it, or the next Scene on the same <svg> inherits a stale layer and
+    // a second element with the same id.
+    this.layers.markers.remove();
+    this.defs.querySelector("#arrowhead")?.remove();
   }
 
   installArrowhead() {
+    this.defs.querySelector("#arrowhead")?.remove();
     const m = el("marker", {
       id: "arrowhead",
       viewBox: "0 0 10 10",
@@ -917,14 +930,18 @@ export class Scene {
 
   // ---------------------------------------------------------------- interaction
 
-  private on<K extends keyof WindowEventMap>(
-    target: Window,
+  // Every listener this scene puts on something it does not own goes through here, so
+  // `dispose` takes all of them off again. The SVG element outlives the Scene (React owns it),
+  // so a listener left on it would be bound twice the next time a Scene mounts on the same
+  // node — which is exactly what happens under React's development double-mount.
+  private on<K extends keyof GlobalEventHandlersEventMap>(
+    target: Window | SVGSVGElement,
     type: K,
-    fn: (ev: WindowEventMap[K]) => void,
+    fn: (ev: GlobalEventHandlersEventMap[K]) => void,
     opts?: AddEventListenerOptions,
   ) {
-    target.addEventListener(type, fn as any, opts);
-    this.cleanups.push(() => target.removeEventListener(type, fn as any, opts));
+    target.addEventListener(type, fn as EventListener, opts);
+    this.cleanups.push(() => target.removeEventListener(type, fn as EventListener, opts));
   }
 
   bind() {
@@ -948,7 +965,8 @@ export class Scene {
       svg.classList.remove("hand");
     });
 
-    svg.addEventListener(
+    this.on(
+      svg,
       "wheel",
       (ev) => {
         ev.preventDefault();
@@ -963,14 +981,14 @@ export class Scene {
       { passive: false },
     );
 
-    svg.addEventListener("dblclick", (ev) => {
+    this.on(svg, "dblclick", (ev) => {
       const target = this.targetOf(ev);
       if (!target.type) return;
       ev.preventDefault();
       this.editLabel(target.type, target.ref as string | number);
     });
 
-    svg.addEventListener("contextmenu", (ev) => {
+    this.on(svg, "contextmenu", (ev) => {
       ev.preventDefault();
       const target = this.targetOf(ev);
       if (target.type === "node" && !this.multi.has(target.ref as string))
@@ -981,10 +999,10 @@ export class Scene {
       this.h.onContext?.(target, ev.clientX, ev.clientY);
     });
 
-    svg.addEventListener("dragover", (ev) => {
+    this.on(svg, "dragover", (ev) => {
       if (ev.dataTransfer?.types.includes("text/zeema-component")) ev.preventDefault();
     });
-    svg.addEventListener("drop", (ev) => {
+    this.on(svg, "drop", (ev) => {
       const id = ev.dataTransfer?.getData("text/zeema-component");
       if (!id) return;
       ev.preventDefault();
@@ -992,7 +1010,7 @@ export class Scene {
       this.h.onDrop?.(id, wx, wy);
     });
 
-    svg.addEventListener("pointerdown", (ev) => {
+    this.on(svg, "pointerdown", (ev) => {
       if (ev.button === 1 || (ev.button === 0 && this.space)) {
         ev.preventDefault();
         this.pan = { x: ev.clientX, y: ev.clientY, vx: this.view.x, vy: this.view.y };
@@ -1027,7 +1045,7 @@ export class Scene {
       this.capture(ev);
     });
 
-    svg.addEventListener("pointermove", (ev) => {
+    this.on(svg, "pointermove", (ev) => {
       if (this.pan) {
         this.view.x = this.pan.vx + (ev.clientX - this.pan.x);
         this.view.y = this.pan.vy + (ev.clientY - this.pan.y);
@@ -1052,8 +1070,8 @@ export class Scene {
       if (this.wire) this.endWire();
       if (this.bowDrag) this.endBow();
     };
-    svg.addEventListener("pointerup", end);
-    svg.addEventListener("pointercancel", end);
+    this.on(svg, "pointerup", end);
+    this.on(svg, "pointercancel", end);
   }
 
   targetOf(ev: MouseEvent): Subject {
@@ -1478,6 +1496,9 @@ export class Scene {
     area.className = "inline-edit note-edit";
     area.value = current;
     area.spellcheck = false;
+    // The reader caps a note at the same length (layout-sidecar.ts), so stopping here is what
+    // keeps what you typed and what comes back the same text.
+    area.maxLength = NOTE_MAX_TEXT;
     area.style.left = `${Math.round(sx - r.left)}px`;
     area.style.top = `${Math.round(sy - r.top)}px`;
     area.style.width = `${Math.round(b[2] * k)}px`;
