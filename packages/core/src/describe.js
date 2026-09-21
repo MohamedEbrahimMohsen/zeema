@@ -183,3 +183,97 @@ export function describeLines(node, depth = 0) {
     ...(node.children ?? []).flatMap((c) => describeLines(c, depth + 1)),
   ];
 }
+
+/* ------------------------------------------------------------------------ what a rule reads */
+
+const add = (arr, v) => {
+  for (const x of list(v)) if (x !== undefined && x !== null && !arr.includes(x)) arr.push(x);
+};
+
+/**
+ * @typedef {{
+ *   fields: string[], directions: string[], modes: string[], deliveries: string[],
+ *   peerKinds: string[], peerCategories: string[], crossesGroupKinds: string[],
+ * }} RuleEdgeReads
+ * @typedef {{
+ *   requirements: string[], props: string[], nodeKinds: string[], nodeCategories: string[],
+ *   edge: RuleEdgeReads | null,
+ * }} RuleReads
+ */
+
+/**
+ * Everything a rule's `when` tree reads, so an editor can point at it.
+ * -> {
+ *      requirements: string[],      // every `requirement: "<path>"`
+ *      props: string[],             // every `prop: "<name>"`, including under from/to
+ *      nodeKinds: string[],         // every `hasNode.kind`
+ *      nodeCategories: string[],    // every `hasNode.category`
+ *      edge: null | {               // null when the rule reads nothing about an edge
+ *        fields, directions, modes, deliveries, peerKinds, peerCategories, crossesGroupKinds
+ *      },
+ *    }
+ * Every list is deduplicated and sorted, so the answer is a function of the rule and not of the
+ * order the tree happens to be written in.
+ *
+ * The vocabulary is the one `evalPred` in rules.js evaluates and `describePredicate` above
+ * phrases; an unknown predicate throws here too, so a predicate added to the schema is found the
+ * day it is added rather than the day a field silently stops being highlighted.
+ *
+ * @param {any} rule
+ * @returns {RuleReads}
+ */
+export function ruleReads(rule) {
+  /** @type {RuleReads} */
+  const out = { requirements: [], props: [], nodeKinds: [], nodeCategories: [], edge: null };
+  const onEdge = () => {
+    if (!out.edge)
+      out.edge = {
+        fields: [],
+        directions: [],
+        modes: [],
+        deliveries: [],
+        peerKinds: [],
+        peerCategories: [],
+        crossesGroupKinds: [],
+      };
+    return out.edge;
+  };
+  const walk = (p) => {
+    if (!p || typeof p !== "object")
+      throw new Error(`ruleReads: not a predicate: ${JSON.stringify(p)}`);
+    if (p.all) return void p.all.forEach(walk);
+    if (p.any) return void p.any.forEach(walk);
+    if (p.not) return void walk(p.not);
+    if (p.prop) return void add(out.props, p.prop);
+    if (p.field) return void add(onEdge().fields, p.field);
+    if (p.requirement) return void add(out.requirements, p.requirement);
+    if (p.nfr) return; // a declared number on the node, not a field of the design or a property
+    if (p.hasEdge) {
+      const e = onEdge();
+      add(e.directions, p.hasEdge.direction ?? "out");
+      if (p.hasEdge.mode) add(e.modes, p.hasEdge.mode);
+      if (p.hasEdge.delivery) add(e.deliveries, p.hasEdge.delivery);
+      if (p.hasEdge.peerKind) add(e.peerKinds, p.hasEdge.peerKind);
+      if (p.hasEdge.peerCategory) add(e.peerCategories, p.hasEdge.peerCategory);
+      return;
+    }
+    if (p.hasNode) {
+      if (p.hasNode.kind) add(out.nodeKinds, p.hasNode.kind);
+      if (p.hasNode.category) add(out.nodeCategories, p.hasNode.category);
+      return;
+    }
+    if (p.inGroup) return; // a boundary, which the inspector offers as the node's group
+    if (p.syncChainDepth) return; // a property of the graph, not of any one field
+    if (p.from) return void walk(p.from);
+    if (p.to) return void walk(p.to);
+    if (p.crossesGroup) return void add(onEdge().crossesGroupKinds, p.crossesGroup.kind);
+    throw new Error(`ruleReads: unknown predicate ${JSON.stringify(p)}`);
+  };
+  walk(rule?.when);
+  out.requirements.sort();
+  out.props.sort();
+  out.nodeKinds.sort();
+  out.nodeCategories.sort();
+  if (out.edge) for (const k of Object.keys(out.edge)) out.edge[k].sort();
+  return out;
+}

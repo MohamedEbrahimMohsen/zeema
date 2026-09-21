@@ -3,6 +3,7 @@
 // The canvas shell. React renders the frame once and re-renders the side panels only at commit
 // boundaries; positions live in refs and go straight to the SVG during a drag. Every change goes
 // through `commit`, which snapshots first, so undo and redo are uniform.
+import { ruleReads } from "@zeema/core/describe";
 import * as D from "@zeema/core/document";
 import { edgeKeys } from "@zeema/core/geometry";
 import { layout } from "@zeema/core/layout";
@@ -30,7 +31,7 @@ import {
 import { ContextMenu, type MenuItem } from "./ContextMenu";
 import { exportScene } from "./exportScene";
 import { type CanvasFinding, FindingsPanel } from "./FindingsPanel";
-import { Inspector, type InspectorApi } from "./Inspector";
+import { type Highlight, Inspector, type InspectorApi } from "./Inspector";
 import { Palette } from "./Palette";
 import { Scene, type Subject } from "./scene";
 import "./canvas.css";
@@ -227,6 +228,12 @@ export function Canvas(props: Props) {
   pinnedNotesRef.current = pinnedNotes;
   const rootRef = useRef<HTMLDivElement>(null);
   const [selection, setSelection] = useState<Subject>({ type: null, ref: null });
+  // A finding was clicked: which row it was, and what its rule reads. It survives until another
+  // finding is clicked, the selection changes any other way, or Escape.
+  const [finding, setFinding] = useState<{ key: string; highlight: Highlight } | null>(null);
+  // True for exactly as long as a finding click is choosing its subject, so the scene's own
+  // selection callback does not read that selection as "the reader moved on".
+  const picking = useRef(false);
   const [multi, setMulti] = useState<Set<string>>(new Set());
   const saving = useRef<{ inFlight: boolean; again: boolean }>({ inFlight: false, again: false });
   const autosaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -871,6 +878,7 @@ export function Canvas(props: Props) {
       onSelect: (sel, m) => {
         setSelection({ ...sel });
         setMulti(new Set(m));
+        if (!picking.current) setFinding(null);
       },
       onMove: (moves) => {
         const e = eng.current!;
@@ -961,6 +969,7 @@ export function Canvas(props: Props) {
       if (ev.key === "Escape") {
         setHint(null);
         setMenu(null);
+        setFinding(null);
         scene.cancel();
         scene.closeEditor();
         if (!typing(ev)) scene.select(null, null);
@@ -1175,6 +1184,10 @@ export function Canvas(props: Props) {
       },
       setNoteText,
       detachNote,
+      findInPalette: (query: string) => {
+        setPaletteQuery(query);
+        setPaletteFocus((n) => n + 1);
+      },
       remove: (type, ref) => {
         const scene = sceneRef.current!;
         scene.selection = { type: null, ref: null };
@@ -1322,6 +1335,50 @@ export function Canvas(props: Props) {
             : null;
     if (box) scene.center(box);
   };
+
+  // A finding is a question about the document: it says what is wrong, and clicking it says
+  // where. The subject is selected, and the fields the rule actually reads are lit in the
+  // inspector — the requirement it asked for, the property it compared, the edge field it read.
+  const pickFinding = (f: CanvasFinding, key: string) => {
+    const scene = sceneRef.current;
+    const rule = f.id ? bundle?.catalogue?.rules?.find((r: any) => r.id === f.id) : null;
+    let reads: ReturnType<typeof ruleReads> | null = null;
+    try {
+      reads = rule ? ruleReads(rule) : null;
+    } catch {
+      // A rule using a predicate this build cannot read still selects its subject.
+      reads = null;
+    }
+    picking.current = true;
+    try {
+      if (f.subject?.type && f.subject.ref !== null && f.subject.ref !== undefined)
+        centerOn(f.subject);
+      // A design finding is about the design: clearing the selection is what shows its panel.
+      else scene?.select(null, null);
+    } finally {
+      picking.current = false;
+    }
+    setFinding({
+      key,
+      highlight: {
+        fields: [...(reads?.props ?? []), ...(reads?.edge?.fields ?? [])],
+        requirements: reads?.requirements ?? [],
+        nodeKinds: reads?.nodeKinds ?? [],
+        nodeCategories: reads?.nodeCategories ?? [],
+      },
+    });
+  };
+
+  // The highlighted field is brought into view once per click, after the inspector has drawn it.
+  useEffect(() => {
+    if (!finding) return;
+    const id = requestAnimationFrame(() => {
+      rootRef.current
+        ?.querySelector(".pane-right .field.hl")
+        ?.scrollIntoView({ block: "center", behavior: "smooth" });
+    });
+    return () => cancelAnimationFrame(id);
+  }, [finding]);
 
   // ---------------------------------------------------------------- render
   const e = eng.current;
@@ -1666,13 +1723,15 @@ export function Canvas(props: Props) {
                 notes={e.notes}
                 catalogue={bundle.catalogue}
                 api={api}
+                highlight={finding?.highlight ?? null}
               />
               <h2 className="mt-4">Findings</h2>
               <FindingsPanel
                 structural={structural}
                 rules={rules}
                 catalogue={bundle.catalogue}
-                onSelect={centerOn}
+                onPick={pickFinding}
+                active={finding?.key ?? null}
               />
             </div>
           ) : null}

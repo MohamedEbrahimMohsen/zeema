@@ -21,9 +21,24 @@ export type InspectorApi = {
   setDesignId: (id: string) => void;
   setRequirement: (path: string, value: unknown) => void;
   setNoteText: (id: string, text: string) => void;
+  /** Point the palette at a query, the way the boundary hint does. */
+  findInPalette: (query: string) => void;
   detachNote: (id: string) => void;
   remove: (type: "node" | "edge" | "group" | "note", ref: string | number) => void;
 };
+
+/**
+ * What a clicked finding asks the reader to look at: the fields its rule reads, straight from
+ * `ruleReads` in @zeema/core/describe. `fields` are node properties and edge fields by name,
+ * `requirements` are design requirement paths like `security.credentialRotationDays`, and
+ * `nodeKinds`/`nodeCategories` are what the rule also hunts for in the design.
+ */
+export type Highlight = {
+  fields: string[];
+  requirements: string[];
+  nodeKinds: string[];
+  nodeCategories: string[];
+} | null;
 
 const label = (name: string) =>
   name.replace(/([A-Z])/g, " $1").replace(/^./, (c) => c.toUpperCase());
@@ -32,15 +47,21 @@ function Field({
   name,
   note,
   isSet,
+  hl,
+  path,
   children,
 }: {
   name: string;
   note?: string | null;
   isSet?: boolean;
+  /** A finding is about this field: it keeps an accent bar until the finding is dismissed. */
+  hl?: boolean;
+  /** What the field is called to a rule, when that is not its display name. */
+  path?: string;
   children: React.ReactNode;
 }) {
   return (
-    <div className={`field${isSet ? " set" : ""}`}>
+    <div className={`field${isSet ? " set" : ""}${hl ? " hl" : ""}`} data-field={path ?? name}>
       <div className="field-name">{label(name)}</div>
       {children}
       {note ? <div className="resolved">{note}</div> : null}
@@ -143,6 +164,7 @@ export function Inspector({
   notes,
   catalogue,
   api,
+  highlight,
 }: {
   selection: Subject;
   multi: Set<string>;
@@ -150,7 +172,10 @@ export function Inspector({
   notes: Note[];
   catalogue: any;
   api: InspectorApi;
+  /** The fields the finding last clicked in the panel is about, or null. */
+  highlight?: Highlight;
 }) {
+  const hl = highlight ?? null;
   const head =
     multi.size > 1 ? (
       <div className="mb-3 small muted">
@@ -164,7 +189,7 @@ export function Inspector({
       return (
         <>
           {head}
-          <NodePanel node={node} doc={doc} catalogue={catalogue} api={api} />
+          <NodePanel node={node} doc={doc} catalogue={catalogue} api={api} highlight={hl} />
         </>
       );
   }
@@ -174,7 +199,13 @@ export function Inspector({
       return (
         <>
           {head}
-          <EdgePanel edge={edge} index={selection.ref as number} doc={doc} api={api} />
+          <EdgePanel
+            edge={edge}
+            index={selection.ref as number}
+            doc={doc}
+            api={api}
+            highlight={hl}
+          />
         </>
       );
   }
@@ -201,7 +232,7 @@ export function Inspector({
   return (
     <>
       {head}
-      <DesignPanel doc={doc} catalogue={catalogue} api={api} />
+      <DesignPanel doc={doc} catalogue={catalogue} api={api} highlight={hl} />
     </>
   );
 }
@@ -211,11 +242,13 @@ function NodePanel({
   doc,
   catalogue,
   api,
+  highlight,
 }: {
   node: any;
   doc: any;
   catalogue: any;
   api: InspectorApi;
+  highlight: Highlight;
 }) {
   const c = catalogue.components[node.component];
   const defs: Record<string, any> = propDefs(catalogue, node.component);
@@ -260,6 +293,7 @@ function NodePanel({
             name={name}
             note={[def.type, def.required ? "required" : null].filter(Boolean).join(" · ")}
             isSet={value !== undefined}
+            hl={highlight?.fields.includes(name)}
           >
             <Control
               def={def}
@@ -315,12 +349,15 @@ function EdgePanel({
   index,
   doc,
   api,
+  highlight,
 }: {
   edge: any;
   index: number;
   doc: any;
   api: InspectorApi;
+  highlight: Highlight;
 }) {
+  const lit = (name: string) => highlight?.fields.includes(name);
   const ids = doc.nodes.map((n: any) => n.id as string);
   const pick = (name: string) => (
     <select value={edge[name]} onChange={(e) => api.setEdge(index, name, e.target.value)}>
@@ -332,7 +369,7 @@ function EdgePanel({
     </select>
   );
   const enumField = (name: string, values: string[], note?: string) => (
-    <Field name={name} note={note} isSet={edge[name] !== undefined}>
+    <Field name={name} note={note} isSet={edge[name] !== undefined} hl={lit(name)}>
       <Control
         def={{ type: "enum", values }}
         value={edge[name]}
@@ -342,7 +379,7 @@ function EdgePanel({
     </Field>
   );
   const boolField = (name: string) => (
-    <Field name={name} isSet={edge[name] !== undefined}>
+    <Field name={name} isSet={edge[name] !== undefined} hl={lit(name)}>
       <Control
         def={{ type: "boolean" }}
         value={edge[name]}
@@ -360,13 +397,13 @@ function EdgePanel({
       <Field name="to" isSet>
         {pick("to")}
       </Field>
-      <Field name="protocol" note="required" isSet>
+      <Field name="protocol" note="required" isSet hl={lit("protocol")}>
         <TextInput
           value={edge.protocol ?? ""}
           onCommit={(v) => api.setEdge(index, "protocol", v)}
         />
       </Field>
-      <Field name="mode" note="required" isSet>
+      <Field name="mode" note="required" isSet hl={lit("mode")}>
         <select value={edge.mode} onChange={(e) => api.setEdge(index, "mode", e.target.value)}>
           <option value="sync">sync</option>
           <option value="async">async</option>
@@ -379,7 +416,7 @@ function EdgePanel({
           onCommit={(v) => api.setEdge(index, "label", v || undefined)}
         />
       </Field>
-      <Field name="timeoutMs" isSet={edge.timeoutMs !== undefined}>
+      <Field name="timeoutMs" isSet={edge.timeoutMs !== undefined} hl={lit("timeoutMs")}>
         <Control
           def={{ type: "integer" }}
           value={edge.timeoutMs}
@@ -522,8 +559,31 @@ function GroupPanel({ group, doc, api }: { group: any; doc: any; api: InspectorA
   );
 }
 
-function DesignPanel({ doc, catalogue, api }: { doc: any; catalogue: any; api: InspectorApi }) {
+function DesignPanel({
+  doc,
+  catalogue,
+  api,
+  highlight,
+}: {
+  doc: any;
+  catalogue: any;
+  api: InspectorApi;
+  highlight: Highlight;
+}) {
   const schema = catalogue.schema?.properties?.requirements ?? { properties: {} };
+  // The rule reads `security.credentialRotationDays`; the panel shows a `security` group holding
+  // a `credentialRotationDays` field. Split once, here, and both halves are looked up by name.
+  const wanted = (highlight?.requirements ?? []).map((path) => path.split("."));
+  // A rule that also hunts for a node says so once, under the group it pointed at, because that
+  // is where the reader is looking — and the palette can be pointed straight at it.
+  const hunted = highlight?.nodeKinds.length
+    ? { query: `kind:${highlight.nodeKinds[0]}`, text: highlight.nodeKinds.join(" or ") }
+    : highlight?.nodeCategories.length
+      ? {
+          query: `category:${highlight.nodeCategories[0]}`,
+          text: highlight.nodeCategories.join(" or "),
+        }
+      : null;
   return (
     <>
       <h2>Design</h2>
@@ -540,8 +600,9 @@ function DesignPanel({ doc, catalogue, api }: { doc: any; catalogue: any; api: I
       {Object.entries(schema.properties ?? {}).map(([groupName, groupSchema]: [string, any]) => {
         const current = doc.requirements?.[groupName] ?? {};
         const set = Object.keys(current).length;
+        const asked = wanted.filter(([g]) => g === groupName).map(([, name]) => name);
         return (
-          <details key={groupName} open={set > 0}>
+          <details key={groupName} open={set > 0 || asked.length > 0}>
             <summary>
               {label(groupName)}
               {set ? ` · ${set} set` : ""}
@@ -561,7 +622,14 @@ function DesignPanel({ doc, catalogue, api }: { doc: any; catalogue: any; api: I
                 .filter(Boolean)
                 .join(" · ");
               return (
-                <Field key={name} name={name} note={note} isSet={current[name] !== undefined}>
+                <Field
+                  key={name}
+                  name={name}
+                  note={note}
+                  isSet={current[name] !== undefined}
+                  hl={asked.includes(name)}
+                  path={`${groupName}.${name}`}
+                >
                   <Control
                     def={kind}
                     value={current[name]}
@@ -571,6 +639,18 @@ function DesignPanel({ doc, catalogue, api }: { doc: any; catalogue: any; api: I
                 </Field>
               );
             })}
+            {asked.length > 0 && hunted ? (
+              <div className="rule-hint">
+                <span>This rule also looks for a {hunted.text} node.</span>
+                <button
+                  type="button"
+                  className="btn btn-sm"
+                  onClick={() => api.findInPalette(hunted.query)}
+                >
+                  Find in palette
+                </button>
+              </div>
+            ) : null}
           </details>
         );
       })}

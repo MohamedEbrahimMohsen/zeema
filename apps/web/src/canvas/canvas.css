@@ -625,7 +625,10 @@
   padding: 4px 0;
 }
 
-/* findings */
+/* findings — dot, then the rule's name with a way out to its page, then the message. The row
+   is the button; the link inside it is a link. Hover tints the row and underlines nothing:
+   `button.finding:hover .msg` in globals.css underlines a message it does not own, and this
+   panel's rows are not buttons anyway. */
 .zeema-canvas .finding {
   width: 100%;
   border: 0;
@@ -644,6 +647,15 @@
 .zeema-canvas .finding:hover {
   background: var(--bg);
 }
+.zeema-canvas .finding:focus-visible {
+  outline: none;
+  box-shadow: var(--ring-focus);
+}
+/* The finding whose fields are lit in the inspector. */
+.zeema-canvas .finding.active {
+  background: var(--bg);
+  box-shadow: inset 2px 0 0 var(--accent);
+}
 .zeema-canvas .finding .dot {
   width: 8px;
   height: 8px;
@@ -657,16 +669,111 @@
 .zeema-canvas .finding.warning .dot {
   background: var(--warn);
 }
+/* min-width:0 so a long word wraps inside the column instead of widening the panel. */
+.zeema-canvas .finding-body {
+  min-width: 0;
+}
+.zeema-canvas .finding-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-1);
+}
 .zeema-canvas .finding .rule {
   font-family: var(--mono);
   font-size: var(--fs-micro);
   color: var(--muted);
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .zeema-canvas .finding.error .rule {
   color: var(--err);
 }
 .zeema-canvas .finding.warning .rule {
   color: var(--warn);
+}
+.zeema-canvas .finding .rule-link {
+  flex: none;
+  font-family: var(--mono);
+  font-size: var(--fs-micro);
+  color: var(--muted);
+  text-decoration: none;
+  border: var(--border) solid var(--line);
+  border-radius: var(--rc);
+  padding: 0 4px;
+  white-space: nowrap;
+}
+.zeema-canvas .finding .rule-link:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  text-decoration: none;
+}
+.zeema-canvas .finding .rule-link:focus-visible {
+  outline: none;
+  box-shadow: var(--ring-focus);
+}
+.zeema-canvas .finding .msg {
+  font-size: 0.9em;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.zeema-canvas .finding .subject {
+  font-family: var(--mono);
+  font-size: var(--fs-micro);
+  color: var(--muted);
+}
+/* nothing in a row is a link but the link: hovering underlines neither name nor message. */
+.zeema-canvas .finding:hover .msg,
+.zeema-canvas .finding:hover .rule {
+  text-decoration: none;
+}
+
+/* the field a finding points at: a thin accent bar that stays, and one pulse that does not */
+.zeema-canvas .field.hl {
+  box-shadow: inset 2px 0 0 var(--accent);
+  border-radius: var(--rc);
+  padding: 2px 0 2px var(--sp-1);
+  margin-left: calc(var(--sp-1) * -1);
+}
+.zeema-canvas .field.hl .field-name {
+  color: var(--accent);
+}
+.zeema-canvas .field.hl input,
+.zeema-canvas .field.hl select {
+  border-color: var(--accent);
+  animation: zeema-field-pulse 1.1s ease-out 2;
+}
+@keyframes zeema-field-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+  50% {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 35%, transparent);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .zeema-canvas .field.hl input,
+  .zeema-canvas .field.hl select {
+    animation: none;
+  }
+}
+/* what else the rule was looking for, said once, where the reader is already looking */
+.zeema-canvas .rule-hint {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-1);
+  margin: var(--sp-0-5) 0 var(--sp-1);
+  padding: calc(var(--p) * 0.5) var(--sp-1);
+  border: var(--border) solid var(--line);
+  border-left: 2px solid var(--accent);
+  border-radius: var(--rc);
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+.zeema-canvas .rule-hint .btn {
+  flex: none;
 }
 
 /* context menu — one of the few things that floats */
