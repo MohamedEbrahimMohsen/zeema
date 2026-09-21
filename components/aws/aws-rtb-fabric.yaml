@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS RTB Fabric gateway: an AWS-managed network endpoint colocated with a VPC that carries OpenRTB
+# bid traffic between ad tech companies over private paths instead of the public internet. "What is
+# AWS RTB Fabric?" says gateways are either requester or responder, that a link created by a requester
+# gateway must be accepted by the account owning the responder gateway before it becomes active, and
+# that logs are optional and delivered outside the fabric to CloudWatch Logs or Amazon S3.
+schemaVersion: "1"
+type: "component"
+id: "aws-rtb-fabric"
+kind: "private-link"
+provider: "aws"
+docs: "https://docs.aws.amazon.com/rtb-fabric/latest/userguide/what-is-rtb-fabric.html"
+defaults:
+  managed: true
+  approvalRequired: true
+  crossRegion: false
+properties:
+  gatewayRole:
+    type: "enum"
+    values: ["requester", "responder"]
+  protocol:
+    type: "enum"
+    values: ["openrtb"]
+    default: "openrtb"
+  modules:
+    type: "boolean"
+    default: false
+  logDelivery:
+    type: "boolean"
+    default: false

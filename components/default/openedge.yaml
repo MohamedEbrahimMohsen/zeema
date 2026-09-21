@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Progress OpenEdge RDBMS: the database of the OpenEdge platform, served to ABL and SQL clients.
+# Per the OpenEdge 13.0 documentation index, multi-tenancy, table partitioning, transparent data
+# encryption, change data capture and OpenEdge Replication are separately enabled features.
+schemaVersion: "1"
+type: "component"
+id: "openedge"
+kind: "sql-database"
+provider: "default"
+docs: "https://docs.progress.com/category/openedge"
+defaults:
+  managed: false
+  replication: "none"
+  encryptionAtRest: false
+  sharded: false
+properties:
+  multiTenancy:
+    type: "boolean"
+    default: false
+  tablePartitioning:
+    type: "boolean"
+    default: false
+  changeDataCapture:
+    type: "boolean"
+    default: false

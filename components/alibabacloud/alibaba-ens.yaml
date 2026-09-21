@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Edge Node Service (ENS): compute, storage and network resources placed in edge nodes close to
+# end users, provisioned as edge instances much like ECS but in a node rather than a region
+# ("What is ENS").
+schemaVersion: "1"
+type: "component"
+id: "alibaba-ens"
+kind: "virtual-machine"
+provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/ens/product-overview/what-is-ens"
+defaults:
+  managed: false
+properties:
+  nodeScope:
+    type: "enum"
+    values: ["edge-node"]
+    default: "edge-node"

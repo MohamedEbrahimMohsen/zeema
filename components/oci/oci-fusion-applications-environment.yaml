@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Fusion Applications Environment Management: a Fusion environment is the platform a set of Fusion
+# Applications runs on, provisioned and maintained from the OCI Console. Defaults from "Overview of Fusion
+# Applications Environment Management": an environment is always created inside an environment family,
+# which holds its members at the same patch and upgrade level; a subscription includes one production and
+# one test environment, while development and demonstration environments are bought separately.
+schemaVersion: "1"
+type: "component"
+id: "oci-fusion-applications-environment"
+kind: "app-server"
+provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/Content/fusion-applications/overview.htm"
+defaults:
+  managed: true
+  stateless: false
+  ownsData: true
+properties:
+  environmentType:
+    type: "enum"
+    values: ["production", "test", "development", "demonstration"]
+  environmentFamilyRequired:
+    type: "boolean"
+    default: true

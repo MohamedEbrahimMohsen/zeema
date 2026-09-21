@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Device Registry: the cloud registry that projects the devices and assets of an Azure IoT
+# Operations deployment into Azure Resource Manager ("Asset and Device Management - Azure IoT
+# Operations"). That page states Device Registry "offers a unified registry so that apps and services
+# that interact with your assets connect to a single source", that it "syncs assets in the cloud with
+# custom resources in Kubernetes on the edge", that it organises assets and devices into namespaces
+# with one namespace per IoT Operations instance, and that "the cloud is always the source of truth for
+# device and asset configuration".
+schemaVersion: "1"
+type: "component"
+id: "azure-device-registry"
+kind: "coordination-service"
+provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/iot-operations/discover-manage-assets/overview-manage-assets"
+defaults:
+  managed: true
+  role: "metadata"
+properties:
+  namespaces:
+    type: "boolean"
+    default: true
+  edgeSync:
+    type: "boolean"
+    default: true
+  cloudSourceOfTruth:
+    type: "boolean"
+    default: true

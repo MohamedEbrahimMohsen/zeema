@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Cloud Databases for Elasticsearch: managed Elasticsearch on the IBM Cloud Databases
+# platform, in a Platinum edition that adds the commercial security and alerting features. Daily
+# automatic backups kept for 30 days ("Managing Cloud Databases Backups").
+schemaVersion: "1"
+type: "component"
+id: "ibm-databases-for-elasticsearch"
+kind: "search-index"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/databases-for-elasticsearch"
+defaults:
+  managed: true
+  structure: "inverted"
+  indexing: "async"
+properties:
+  edition:
+    type: "enum"
+    values: ["enterprise", "platinum"]
+  backupRetentionDays:
+    type: "integer"
+    default: 30

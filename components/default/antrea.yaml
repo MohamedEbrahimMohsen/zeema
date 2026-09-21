@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Antrea: Kubernetes CNI built on Open vSwitch, providing pod networking and network policy.
+# Per the Antrea documentation the default traffic encapsulation mode builds a Geneve overlay
+# between nodes, and multicast support is behind a feature gate that is off by default.
+schemaVersion: "1"
+type: "component"
+id: "antrea"
+kind: "network-fabric"
+provider: "default"
+docs: "https://antrea.io/docs/"
+defaults:
+  managed: false
+  overlay: true
+  multicast: false
+  kernelBypass: false
+  interconnect: "private"
+properties:
+  trafficEncapMode:
+    type: "enum"
+    values: ["encap", "no-encap", "hybrid", "network-policy-only"]
+    default: "encap"
+  tunnelType:
+    type: "enum"
+    values: ["geneve", "vxlan", "gre", "stt"]
+    default: "geneve"

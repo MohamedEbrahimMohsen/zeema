@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Microsoft Power Apps: low-code platform whose published canvas and model-driven apps run in a browser
+# and on phones and tablets ("What is Power Apps?"). That page states apps connect to data "stored either
+# in the underlying data platform (Microsoft Dataverse) or in many online and on-premises data sources",
+# so the app holds no data of its own, and that users build them "without writing code".
+schemaVersion: "1"
+type: "component"
+id: "azure-power-apps"
+kind: "app-server"
+provider: "azure"
+docs: "https://learn.microsoft.com/en-us/power-apps/powerapps-overview"
+defaults:
+  managed: true
+  ownsData: false
+properties:
+  appType:
+    type: "enum"
+    values: ["canvas", "model-driven"]
+  dataSource:
+    type: "enum"
+    values: ["dataverse", "sharepoint", "microsoft-365", "dynamics-365", "sql-server", "on-premises"]
+    default: "dataverse"
+  noCodeAuthoring:
+    type: "boolean"
+    default: true
+  mobileClients:
+    type: "boolean"
+    default: true
+  copilotAuthoring:
+    type: "boolean"
+    default: true

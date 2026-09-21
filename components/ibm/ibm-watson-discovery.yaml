@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Watson Discovery: ingests documents into a project collection, enriches them with natural
+# language understanding, and answers natural language queries over the resulting index
+# ("IBM Watson Discovery"). Crawls run on a configured schedule, so indexing is batch.
+schemaVersion: "1"
+type: "component"
+id: "ibm-watson-discovery"
+kind: "search-index"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/discovery-data"
+defaults:
+  managed: true
+  structure: "inverted"
+  indexing: "batch"
+properties:
+  enrichment:
+    type: "boolean"
+    default: true
+  projectType:
+    type: "enum"
+    values: ["document-retrieval", "conversational-search", "content-mining"]

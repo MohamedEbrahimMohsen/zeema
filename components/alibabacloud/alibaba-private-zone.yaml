@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Alibaba Cloud DNS PrivateZone: private DNS zones resolved only inside the VPCs they are bound to,
+# so the records never appear in public DNS ("What is Alibaba Cloud DNS PrivateZone"). Public
+# authoritative DNS is Alibaba Cloud DNS instead (alibaba-dns).
+schemaVersion: "1"
+type: "component"
+id: "alibaba-private-zone"
+kind: "dns"
+provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/dns/what-is-privatezone"
+defaults:
+  managed: true
+  anycast: false
+properties:
+  visibility:
+    type: "enum"
+    values: ["private"]
+    default: "private"

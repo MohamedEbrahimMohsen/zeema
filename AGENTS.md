@@ -22,7 +22,14 @@ docs/                specification, plan, governance, intake cards, inventories
 pnpm validate        # catalogue + designs gate (packages/catalogue/src/validate.js)
 pnpm test            # vitest in every package: parser conformance, golden parity, edits, CLI, gate
 pnpm lint            # biome
+pnpm gate            # the three above, in that order
 ```
+
+`pnpm gate` takes no arguments. pnpm appends anything you add to the last command in the chain,
+so `pnpm gate --force` reaches `biome check .` as an unknown flag and the gate fails before it has
+told you anything about the repository. To defeat Turbo's cache, set the variable instead:
+`TURBO_FORCE=true pnpm test`, and run `pnpm validate` and `pnpm lint` on their own — neither is
+cached.
 
 Do not weaken a test to make it pass. A golden fixture (`packages/core/test/golden.json`)
 changes only when a behaviour change is intended, and the commit says why.

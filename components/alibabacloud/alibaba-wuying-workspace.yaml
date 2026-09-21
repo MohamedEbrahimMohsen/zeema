@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# WUYING Workspace (Elastic Desktop Service): cloud desktops delivered to thin clients and browsers
+# from a workspace bound to a VPC, assigned to users individually or from a pool
+# ("What is WUYING Workspace").
+schemaVersion: "1"
+type: "component"
+id: "alibaba-wuying-workspace"
+kind: "virtual-desktop"
+provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/wuying-workspace/product-overview/what-is-wuying-workspace"
+defaults:
+  managed: true
+properties:
+  deliveryClient:
+    type: "enum"
+    values: ["software-client", "thin-client", "browser"]

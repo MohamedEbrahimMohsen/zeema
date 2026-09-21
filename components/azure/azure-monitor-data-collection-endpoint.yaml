@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Data collection endpoint: the regional Azure resource that carries the logs ingestion, metrics
+# ingestion and configuration access URLs Azure Monitor Agent and the Logs Ingestion API call
+# ("Data collection endpoints in Azure Monitor"). That page states the configuration access endpoint
+# is where the agent retrieves its data collection rules, that a DCE is required for Private Link and
+# for the Windows firewall log and Container Insights Prometheus sources, and that Log Analytics and
+# Azure Monitor workspaces are its only destinations. The resource provider documents three values for
+# networkAcls.publicNetworkAccess and no default ("Microsoft.Insights/dataCollectionEndpoints"), so
+# the property carries none here. "Logs Ingestion API in Azure Monitor": TLS 1.2 or higher is enforced
+# from 1 March 2026.
+schemaVersion: "1"
+type: "component"
+id: "azure-monitor-data-collection-endpoint"
+kind: "monitoring"
+provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/azure-monitor/data-collection/data-collection-endpoint-overview"
+defaults:
+  managed: true
+  signal: "all"
+  collectorMode: "push"
+properties:
+  publicNetworkAccess:
+    type: "enum"
+    values: ["enabled", "disabled", "secured-by-perimeter"]
+  privateLink:
+    type: "boolean"
+    default: false
+  configurationAccess:
+    type: "boolean"
+    default: true
+  minimumTlsVersion:
+    type: "string"
+    default: "1.2"

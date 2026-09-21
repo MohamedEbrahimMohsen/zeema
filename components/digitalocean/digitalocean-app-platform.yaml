@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# DigitalOcean App Platform: "a fully managed Platform-as-a-Service (PaaS) that deploys
+# applications from Git repositories or container images", building with buildpacks or a
+# Dockerfile and scaling the components it runs ("App Platform"). An app is made of components
+# (web service, worker, job, static site, function); the web service is the request-serving one.
+# "App Platform Pricing" lists the shared-CPU plans starting at apps-s-1vcpu-0.5gb and the
+# dedicated-CPU plans; request-based autoscaling is opt-in per component.
+schemaVersion: "1"
+type: "component"
+id: "digitalocean-app-platform"
+kind: "app-server"
+provider: "digitalocean"
+docs: "https://docs.digitalocean.com/products/app-platform/"
+defaults:
+  managed: true
+  stateless: true
+  instances: 1
+  autoscaling: false
+properties:
+  componentType:
+    type: "enum"
+    values: ["web-service", "worker", "job", "static-site", "function"]
+    default: "web-service"
+  buildMethod:
+    type: "enum"
+    values: ["buildpack", "dockerfile", "container-image"]
+  instanceClass:
+    type: "enum"
+    values: ["shared-cpu", "dedicated-cpu"]
+    default: "shared-cpu"

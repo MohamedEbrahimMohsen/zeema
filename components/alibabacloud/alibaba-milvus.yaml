@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Alibaba Cloud Milvus: managed Milvus, the open-source vector database, holding collections of
+# embeddings with an approximate nearest-neighbour index and scalar filters ("What is Milvus").
+# Index type, metric and dimension are chosen per collection, so none is defaulted.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-milvus"
+kind: "vector-database"
+provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/milvus"
+defaults:
+  managed: true
+  metadataFiltering: true
+properties:
+  deploymentMode:
+    type: "enum"
+    values: ["cluster", "standalone"]

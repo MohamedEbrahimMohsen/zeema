@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Network ACL: a stateless packet filter bound to vSwitches of a VPC, evaluated by rule priority in
+# each direction ("Overview of network ACLs"). Stateless means the return path needs its own rule.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-network-acl"
+kind: "firewall"
+provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/vpc/user-guide/overview-40"
+defaults:
+  managed: true
+  stateful: false
+properties:
+  boundTo:
+    type: "enum"
+    values: ["vswitch"]
+    default: "vswitch"

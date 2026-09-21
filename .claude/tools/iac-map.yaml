@@ -18,6 +18,7 @@ terraform:
     aws_apigatewayv2_route: null
     aws_apigatewayv2_stage: null
     aws_appconfig_application: "aws-appconfig"
+    aws_applicationinsights_application: "aws-cloudwatch-application-insights"
     aws_apprunner_service: "aws-app-runner"
     aws_appsync_graphql_api: "aws-appsync"
     aws_athena_database: "aws-athena"
@@ -33,6 +34,7 @@ terraform:
     aws_cloudformation_stack: null
     aws_cloudfront_distribution: "cloudfront"
     aws_cloudfront_function: "aws-cloudfront-functions"
+    aws_cloudfront_key_value_store: "aws-cloudfront-keyvaluestore"
     aws_cloudfront_origin_access_control: null
     aws_cloudfront_origin_access_identity: null
     aws_cloudhsm_v2_cluster: "cloudhsm"
@@ -104,6 +106,8 @@ terraform:
     aws_internet_gateway: "aws-internet-gateway"
     aws_iot_thing: "aws-iot-core"
     aws_iot_topic_rule: "aws-iot-core"
+    aws_ivschat_logging_configuration: null
+    aws_ivschat_room: "aws-ivs-chat"
     aws_key_pair: null
     aws_keyspaces_keyspace: "aws-keyspaces"
     aws_kinesis_firehose_delivery_stream: "aws-firehose"
@@ -125,6 +129,7 @@ terraform:
     aws_lb_target_group: null
     aws_lightsail_instance: "aws-lightsail"
     aws_macie2_account: "aws-macie"
+    aws_mailmanager_ingress_point: "aws-ses-mail-manager"
     aws_memorydb_cluster: "aws-memorydb"
     aws_mq_broker: "aws-mq"
     aws_msk_cluster: "aws-msk"
@@ -135,6 +140,8 @@ terraform:
     aws_network_acl: "aws-network-acl"
     aws_network_firewall_firewall: "aws-network-firewall"
     aws_network_interface: "aws-elastic-network-interface"
+    aws_networkflowmonitor_monitor: "aws-cloudwatch-network-flow-monitor"
+    aws_networkflowmonitor_scope: null
     aws_opensearch_domain: "aws-opensearch"
     aws_organizations_account: null
     aws_organizations_organization: "aws-organizations"
@@ -164,6 +171,7 @@ terraform:
     aws_s3_object: null
     aws_sagemaker_domain: "aws-sagemaker"
     aws_sagemaker_endpoint: "sagemaker-endpoint"
+    aws_sagemaker_mlflow_tracking_server: "aws-sagemaker-mlflow"
     aws_sagemaker_notebook_instance: "aws-sagemaker"
     aws_scheduler_schedule: "aws-eventbridge-scheduler"
     aws_secretsmanager_secret: "aws-secrets-manager"
@@ -276,9 +284,13 @@ terraform:
     azurerm_management_lock: null
     azurerm_maps_account: "azure-maps"
     azurerm_monitor_action_group: null
+    azurerm_monitor_data_collection_endpoint: "azure-monitor-data-collection-endpoint"
+    azurerm_monitor_data_collection_rule: "azure-monitor-data-collection-rule"
+    azurerm_monitor_data_collection_rule_association: null
     azurerm_monitor_autoscale_setting: null
     azurerm_monitor_diagnostic_setting: null
     azurerm_monitor_metric_alert: null
+    azurerm_monitor_workspace: "azure-monitor-workspace"
     azurerm_mssql_database: "azure-sql"
     azurerm_mssql_elasticpool: "azure-sql"
     azurerm_mssql_managed_instance: "azure-sql-managed-instance"
@@ -293,6 +305,8 @@ terraform:
     azurerm_network_watcher: "azure-network-watcher"
     azurerm_notification_hub: "azure-notification-hubs"
     azurerm_orchestrated_virtual_machine_scale_set: "azure-vm-scale-set"
+    azurerm_pim_active_role_assignment: "azure-privileged-identity-management"
+    azurerm_pim_eligible_role_assignment: "azure-privileged-identity-management"
     azurerm_policy_assignment: null
     azurerm_policy_definition: null
     azurerm_postgresql_flexible_server: "azure-database-for-postgresql"
@@ -309,6 +323,7 @@ terraform:
     azurerm_resource_group: null
     azurerm_role_assignment: null
     azurerm_role_definition: null
+    azurerm_role_management_policy: "azure-privileged-identity-management"
     azurerm_route: null
     azurerm_route_table: null
     azurerm_search_service: "azure-ai-search"
@@ -371,6 +386,8 @@ terraform:
     cloudflare_email_routing_rule: null
     cloudflare_email_routing_settings: "cloudflare-email-routing"
     cloudflare_firewall_rule: "cloudflare-waf"
+    cloudflare_flagship_app: "cloudflare-flagship"
+    cloudflare_flagship_flag: "cloudflare-flagship"
     cloudflare_healthcheck: "cloudflare-health-checks"
     cloudflare_hyperdrive_config: "cloudflare-hyperdrive"
     cloudflare_list: null
@@ -412,6 +429,8 @@ terraform:
     cloudflare_workers_script: "cloudflare-workers"
     cloudflare_workers_secret: null
     cloudflare_zaraz_config: "cloudflare-zaraz"
+    cloudflare_zero_trust_access_ai_controls_mcp_portal: "cloudflare-mcp-portal"
+    cloudflare_zero_trust_access_ai_controls_mcp_server: null
     cloudflare_zero_trust_access_application: "cloudflare-access"
     cloudflare_zero_trust_gateway_policy: null
     cloudflare_zero_trust_gateway_settings: "cloudflare-gateway"
@@ -516,7 +535,12 @@ terraform:
     google_netapp_volume: "google-netapp-volumes"
     google_notebooks_instance: "google-vertex-ai-workbench"
     google_organization_policy: null
+    google_parameter_manager_parameter: "google-parameter-manager"
+    google_parameter_manager_parameter_version: null
+    google_parameter_manager_regional_parameter: "google-parameter-manager"
+    google_parameter_manager_regional_parameter_version: null
     google_privateca_ca_pool: "google-certificate-authority-service"
+    google_privileged_access_manager_entitlement: "google-privileged-access-manager"
     google_project: null
     google_project_iam_binding: null
     google_project_iam_custom_role: null
@@ -549,11 +573,14 @@ terraform:
     google_vertex_ai_featurestore: "google-vertex-ai-feature-store"
     google_vertex_ai_index: "google-vertex-ai-vector-search"
     google_vmwareengine_private_cloud: "google-vmware-engine"
+    google_vpc_access_connector: "google-serverless-vpc-access-connector"
     google_workflows_workflow: "google-cloud-workflows"
     google_workstations_workstation_cluster: "google-cloud-workstations"
   oci:
     oci_ai_anomaly_detection_project: "todo"
     oci_analytics_analytics_instance: "oci-analytics-cloud"
+    oci_apiaccesscontrol_privileged_api_control: "oci-api-access-control"
+    oci_apiaccesscontrol_privileged_api_request: null
     oci_apigateway_deployment: null
     oci_apigateway_gateway: "oci-api-gateway"
     oci_artifacts_container_repository: "oci-container-registry"
@@ -597,6 +624,8 @@ terraform:
     oci_database_autonomous_database: "oci-autonomous-database"
     oci_database_cloud_exadata_infrastructure: "oci-exadata-database-dedicated"
     oci_database_db_system: "oci-base-database"
+    oci_delegate_access_control_delegation_control: "oci-delegate-access-control"
+    oci_delegate_access_control_delegation_subscription: null
     oci_devops_build_pipeline: "oci-devops-build-pipeline"
     oci_devops_deploy_pipeline: "oci-devops-deployment-pipeline"
     oci_devops_repository: "oci-devops-code-repository"
@@ -606,8 +635,13 @@ terraform:
     oci_events_rule: "oci-events"
     oci_file_storage_file_system: "oci-file-storage"
     oci_file_storage_mount_target: null
+    oci_fleet_software_update_fsu_collection: "oci-exadata-fleet-update"
+    oci_fleet_software_update_fsu_cycle: "oci-exadata-fleet-update"
     oci_functions_application: "oci-functions"
     oci_functions_function: "oci-functions"
+    oci_fusion_apps_fusion_environment: "oci-fusion-applications-environment"
+    oci_fusion_apps_fusion_environment_family: null
+    oci_gdp_gdp_pipeline: "oci-guarded-data-pipelines"
     oci_golden_gate_deployment: "oci-goldengate"
     oci_identity_compartment: null
     oci_identity_dynamic_group: null
@@ -631,6 +665,8 @@ terraform:
     oci_oda_oda_instance: "oci-digital-assistant"
     oci_ons_notification_topic: "oci-notifications"
     oci_opensearch_opensearch_cluster: "oci-opensearch"
+    oci_operator_access_control_operator_control: "oci-operator-access-control"
+    oci_operator_access_control_operator_control_assignment: null
     oci_psql_db_system: "oci-postgresql"
     oci_queue_queue: "oci-queue"
     oci_redis_redis_cluster: "oci-cache-redis"
@@ -649,8 +685,12 @@ arm:
   "Microsoft.AppPlatform/Spring": "azure-spring-apps"
   "Microsoft.Authorization/locks": null
   "Microsoft.Authorization/policyAssignments": null
+  "Microsoft.Authorization/roleAssignmentScheduleRequests": "azure-privileged-identity-management"
   "Microsoft.Authorization/roleAssignments": null
   "Microsoft.Authorization/roleDefinitions": null
+  "Microsoft.Authorization/roleEligibilityScheduleRequests": "azure-privileged-identity-management"
+  "Microsoft.Authorization/roleManagementPolicies": "azure-privileged-identity-management"
+  "Microsoft.Authorization/roleManagementPolicyAssignments": null
   "Microsoft.Automation/automationAccounts": "azure-automation"
   "Microsoft.Batch/batchAccounts": "azure-batch"
   "Microsoft.BotService/botServices": "azure-bot-service"
@@ -678,6 +718,10 @@ arm:
   "Microsoft.DBforMySQL/flexibleServers": "azure-database-for-mysql"
   "Microsoft.DBforPostgreSQL/flexibleServers": "azure-database-for-postgresql"
   "Microsoft.DesktopVirtualization/hostPools": "azure-virtual-desktop"
+  "Microsoft.DeviceRegistry/assetEndpointProfiles": null
+  "Microsoft.DeviceRegistry/assets": "azure-device-registry"
+  "Microsoft.DeviceRegistry/namespaces": "azure-device-registry"
+  "Microsoft.DeviceRegistry/namespaces/devices": "azure-device-registry"
   "Microsoft.Devices/IotHubs": "azure-iot-hub"
   "Microsoft.Devices/provisioningServices": "azure-iot-dps"
   "Microsoft.DigitalTwins/digitalTwinsInstances": "azure-digital-twins"
@@ -691,6 +735,9 @@ arm:
   "Microsoft.Insights/actionGroups": null
   "Microsoft.Insights/autoscalesettings": null
   "Microsoft.Insights/components": "azure-application-insights"
+  "Microsoft.Insights/dataCollectionEndpoints": "azure-monitor-data-collection-endpoint"
+  "Microsoft.Insights/dataCollectionRules": "azure-monitor-data-collection-rule"
+  "Microsoft.Insights/dataCollectionRuleAssociations": null
   "Microsoft.Insights/diagnosticSettings": null
   "Microsoft.Insights/metricAlerts": null
   "Microsoft.KeyVault/managedHSMs": "azure-managed-hsm"
@@ -702,7 +749,7 @@ arm:
   "Microsoft.MachineLearningServices/workspaces/onlineEndpoints": "azure-ml-endpoint"
   "Microsoft.ManagedIdentity/userAssignedIdentities": null
   "Microsoft.Maps/accounts": "azure-maps"
-  "Microsoft.Monitor/accounts": "azure-monitor"
+  "Microsoft.Monitor/accounts": "azure-monitor-workspace"
   "Microsoft.NetApp/netAppAccounts": "azure-netapp-files"
   "Microsoft.Network/applicationGateways": "azure-application-gateway"
   "Microsoft.Network/ApplicationGatewayWebApplicationFirewallPolicies": "azure-web-application-firewall"
@@ -780,11 +827,14 @@ cloudformation:
   "AWS::AppConfig::Application": "aws-appconfig"
   "AWS::AppRunner::Service": "aws-app-runner"
   "AWS::AppSync::GraphQLApi": "aws-appsync"
+  "AWS::ApplicationInsights::Application": "aws-cloudwatch-application-insights"
   "AWS::Athena::WorkGroup": "aws-athena"
   "AWS::AutoScaling::AutoScalingGroup": "aws-ec2-auto-scaling"
   "AWS::AutoScaling::LaunchConfiguration": null
   "AWS::AutoScaling::ScalingPolicy": null
   "AWS::Backup::BackupVault": "aws-backup"
+  "AWS::BackupGateway::Gateway": "aws-backup-gateway"
+  "AWS::BackupGateway::Hypervisor": null
   "AWS::Batch::JobQueue": "aws-batch"
   "AWS::Bedrock::KnowledgeBase": "aws-bedrock-knowledge-base"
   "AWS::CertificateManager::Certificate": "aws-acm"
@@ -792,6 +842,7 @@ cloudformation:
   "AWS::CloudFormation::Stack": null
   "AWS::CloudFront::Distribution": "cloudfront"
   "AWS::CloudFront::Function": "aws-cloudfront-functions"
+  "AWS::CloudFront::KeyValueStore": "aws-cloudfront-keyvaluestore"
   "AWS::CloudFront::OriginAccessControl": null
   "AWS::CloudTrail::Trail": "aws-cloudtrail"
   "AWS::CloudWatch::Alarm": null
@@ -861,6 +912,9 @@ cloudformation:
   "AWS::IAM::Policy": null
   "AWS::IAM::Role": null
   "AWS::IAM::User": null
+  "AWS::IVSChat::LoggingConfiguration": null
+  "AWS::IVSChat::Room": "aws-ivs-chat"
+  "AWS::Interconnect::Connection": "aws-interconnect"
   "AWS::IoT::Thing": "aws-iot-core"
   "AWS::KMS::Alias": null
   "AWS::KMS::Key": "aws-kms"
@@ -879,6 +933,7 @@ cloudformation:
   "AWS::MemoryDB::Cluster": "aws-memorydb"
   "AWS::Neptune::DBCluster": "neptune"
   "AWS::NetworkFirewall::Firewall": "aws-network-firewall"
+  "AWS::NetworkFlowMonitor::Monitor": "aws-cloudwatch-network-flow-monitor"
   "AWS::OpenSearchService::Domain": "aws-opensearch"
   "AWS::Pipes::Pipe": "aws-eventbridge-pipes"
   "AWS::RDS::DBCluster": "aurora"
@@ -886,19 +941,32 @@ cloudformation:
   "AWS::RDS::DBParameterGroup": null
   "AWS::RDS::DBProxy": "rds-proxy"
   "AWS::RDS::DBSubnetGroup": null
+  "AWS::RTBFabric::InboundExternalLink": null
+  "AWS::RTBFabric::Link": null
+  "AWS::RTBFabric::LinkRoutingRule": null
+  "AWS::RTBFabric::OutboundExternalLink": null
+  "AWS::RTBFabric::RequesterGateway": "aws-rtb-fabric"
+  "AWS::RTBFabric::ResponderGateway": "aws-rtb-fabric"
   "AWS::Redshift::Cluster": "redshift"
   "AWS::Route53::HostedZone": "route53"
   "AWS::Route53::RecordSet": null
   "AWS::Route53::RecordSetGroup": null
+  "AWS::Route53GlobalResolver::GlobalResolver": "aws-route53-global-resolver"
+  "AWS::Route53GlobalResolver::HostedZoneAssociation": null
   "AWS::S3::Bucket": "s3"
   "AWS::S3::BucketPolicy": null
   "AWS::SES::ConfigurationSet": "aws-ses"
+  "AWS::SES::MailManagerIngressPoint": "aws-ses-mail-manager"
+  "AWS::SES::MailManagerRuleSet": null
+  "AWS::SES::MailManagerTrafficPolicy": null
   "AWS::SNS::Subscription": null
   "AWS::SNS::Topic": "sns"
   "AWS::SQS::Queue": "sqs"
   "AWS::SQS::QueuePolicy": null
   "AWS::SSM::Parameter": "aws-ssm-parameter-store"
+  "AWS::SageMaker::Cluster": "aws-sagemaker-hyperpod"
   "AWS::SageMaker::Endpoint": "sagemaker-endpoint"
+  "AWS::SageMaker::MlflowTrackingServer": "aws-sagemaker-mlflow"
   "AWS::SageMaker::NotebookInstance": "aws-sagemaker"
   "AWS::Scheduler::Schedule": "aws-eventbridge-scheduler"
   "AWS::SecretsManager::Secret": "aws-secrets-manager"

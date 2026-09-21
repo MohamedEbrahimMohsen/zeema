@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OUTSCALE public IP: "an IPv4 address that you can allocate to your OUTSCALE account and then
+# associate with one of your resources" - a VM, a network interface, a load balancer or a NAT
+# service ("About Public IPs"). It is held by the account until released and may be moved
+# between resources, but only one resource at a time. In the public cloud an association is
+# lost on stop/start unless the `osc.fcu.eip.auto-attach` tag makes it persistent; inside a Net
+# associations are always persistent.
+schemaVersion: "1"
+type: "component"
+id: "outscale-public-ip"
+kind: "network-fabric"
+provider: "outscale"
+docs: "https://docs.outscale.com/en/userguide/About-Public-IPs.html"
+defaults:
+  managed: true
+  interconnect: "public"
+  overlay: false
+properties:
+  associableTo:
+    type: "enum"
+    values: ["vm", "nic", "load-balancer", "nat-service"]
+  persistentAssociation:
+    type: "boolean"
+    default: false

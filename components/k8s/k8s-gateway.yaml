@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Kubernetes Gateway (Gateway API, gateway.networking.k8s.io/v1): "an instance of traffic
+# handling infrastructure" - a cloud load balancer or an in-cluster proxy - that filters,
+# balances and routes traffic to backend Services ("Gateway API"). Per that page: Gateway,
+# GatewayClass, HTTPRoute and GRPCRoute are the stable (GA) kinds; Gateway API is an add-on
+# shipped as custom resources rather than part of core Kubernetes, so a controller for the named
+# GatewayClass must be running; listeners declare protocol, port and optional hostname and TLS;
+# and a Gateway accepts Routes only from its own namespace unless allowedRoutes says otherwise.
+schemaVersion: "1"
+type: "component"
+id: "k8s-gateway"
+kind: "load-balancer"
+provider: "k8s"
+docs: "https://kubernetes.io/docs/concepts/services-networking/gateway/"
+defaults:
+  managed: false
+  layer: "l7"
+  global: false
+properties:
+  listenerProtocol:
+    type: "enum"
+    values: ["http", "https", "tls", "tcp", "udp"]
+  crossNamespaceRoutes:
+    type: "boolean"
+    default: false
+  controllerRequired:
+    type: "boolean"
+    default: true
+  installedAsCrd:
+    type: "boolean"
+    default: true

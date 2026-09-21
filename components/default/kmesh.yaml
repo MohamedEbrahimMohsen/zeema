@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Kmesh: sidecarless service mesh data plane implemented with eBPF in the kernel. Per the Kmesh
+# README traffic management, security and monitoring are applied without an application-side proxy
+# and without a per-pod sidecar, and it consumes xDS configuration from an Istio control plane.
+schemaVersion: "1"
+type: "component"
+id: "kmesh"
+kind: "service-mesh"
+provider: "default"
+docs: "https://kmesh.net/docs/"
+defaults:
+  managed: false
+  sidecar: false
+  controlPlanes: 1
+properties:
+  mode:
+    type: "enum"
+    values: ["kernel-native", "dual-engine"]
+    default: "dual-engine"
+  xdsControlPlane:
+    type: "enum"
+    values: ["istiod"]
+    default: "istiod"

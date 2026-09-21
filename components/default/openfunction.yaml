@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenFunction: cloud-native FaaS platform that builds a function into an image and serves it on
+# Kubernetes. Per the OpenFunction documentation synchronous functions are served through Knative
+# Serving, and asynchronous functions through Dapr bindings scaled by KEDA.
+schemaVersion: "1"
+type: "component"
+id: "openfunction"
+kind: "app-server"
+provider: "default"
+docs: "https://openfunction.dev/docs/"
+defaults:
+  managed: false
+  stateless: true
+  autoscaling: true
+  ownsData: false
+properties:
+  serving:
+    type: "enum"
+    values: ["knative", "async-dapr-keda"]
+    default: "knative"
+  scaleToZero:
+    type: "boolean"
+    default: true

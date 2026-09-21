@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oxia: sharded metadata store and coordination system for large distributed systems, built as the
+# metadata layer for Apache Pulsar. Per the Oxia documentation a namespace is split into shards,
+# each replicated across an ensemble and served over a gRPC API.
+schemaVersion: "1"
+type: "component"
+id: "oxia"
+kind: "coordination-service"
+provider: "default"
+docs: "https://oxia-db.github.io/docs/getting-started"
+defaults:
+  role: "metadata"
+  replicated: true
+  managed: false
+properties:
+  shardCount:
+    type: "integer"
+  sessionEphemeralRecords:
+    type: "boolean"
+    default: true

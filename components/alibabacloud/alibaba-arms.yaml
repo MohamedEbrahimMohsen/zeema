@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Application Real-Time Monitoring Service (ARMS): application performance monitoring built from
+# agents in the application, covering traces, application metrics, Prometheus metrics and browser
+# and app monitoring ("What is ARMS"). The agents push telemetry out of the monitored process.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-arms"
+kind: "monitoring"
+provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/arms"
+defaults:
+  managed: true
+  signal: "traces"
+  collectorMode: "push"
+  independentOfMonitored: true
+properties:
+  module:
+    type: "enum"
+    values: ["application-monitoring", "prometheus", "browser-monitoring", "app-monitoring"]

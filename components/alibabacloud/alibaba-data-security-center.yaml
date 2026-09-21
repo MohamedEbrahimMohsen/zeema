@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Data Security Center (formerly Sensitive Data Discovery and Protection): scans connected data
+# stores, classifies the sensitive data it finds against rules, and reports risky access and
+# unprotected data ("What is Data Security Center"). It reports and classifies; it does not block.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-data-security-center"
+kind: "policy-engine"
+provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/dsc"
+defaults:
+  managed: true
+  effect: "audit"
+  scope: "account"
+  remediation: false
+properties:
+  capability:
+    type: "enum"
+    values: ["data-discovery", "classification", "anomaly-detection", "de-identification"]

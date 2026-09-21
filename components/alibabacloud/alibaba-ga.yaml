@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Global Accelerator (GA): anycast entry points on Alibaba Cloud's global network that carry client
+# traffic to an origin over the backbone instead of the public internet ("What is GA"). A GA
+# instance holds listeners and endpoint groups per region.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-ga"
+kind: "network-fabric"
+provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/ga/product-overview/what-is-ga"
+defaults:
+  managed: true
+properties:
+  acceleratorType:
+    type: "enum"
+    values: ["standard", "basic"]
+  crossBorder:
+    type: "boolean"
+    default: false

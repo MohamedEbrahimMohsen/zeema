@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# DigitalOcean Partner Network Connect (Partner Attachment): "private connectivity between VPC
+# networks across different cloud providers via a supported service provider"
+# ("digitalocean_partner_attachment", DigitalOcean Terraform provider). Required arguments are
+# the connection bandwidth in Mbps, the region, the network-as-a-service provider (Megaport) and
+# the VPCs to attach; an optional BGP block carries the peer ASN, router addresses and auth key,
+# and a redundancy zone is optional.
+schemaVersion: "1"
+type: "component"
+id: "digitalocean-partner-attachment"
+kind: "network-fabric"
+provider: "digitalocean"
+docs: "https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/partner_network_connect"
+defaults:
+  managed: true
+  interconnect: "private"
+  overlay: false
+properties:
+  naasProvider:
+    type: "enum"
+    values: ["megaport"]
+    default: "megaport"
+  bandwidthMbps:
+    type: "integer"
+  bgpEnabled:
+    type: "boolean"
+    default: false
+  redundancyZone:
+    type: "boolean"
+    default: false

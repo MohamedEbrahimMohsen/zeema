@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# ApsaraMQ for RabbitMQ: a managed AMQP 0-9-1 broker compatible with the open-source RabbitMQ
+# clients ("What is ApsaraMQ for RabbitMQ"). RabbitMQ acknowledges and redelivers, so delivery is
+# at-least-once; queues are durable. A dead letter exchange is set per queue.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-rabbitmq"
+kind: "queue"
+provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/apsaramq-for-rabbitmq"
+defaults:
+  managed: true
+  delivery: "at-least-once"
+  persistence: true
+properties:
+  protocol:
+    type: "enum"
+    values: ["amqp-0-9-1"]
+    default: "amqp-0-9-1"

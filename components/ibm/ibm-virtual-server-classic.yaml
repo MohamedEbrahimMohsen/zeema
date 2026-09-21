@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Virtual Servers for Classic: virtual machines on IBM classic infrastructure, provisioned as
+# public (multi-tenant), dedicated, transient or reserved instances ("Virtual Servers for
+# Classic"). Distinct from Virtual Servers for VPC (ibm-virtual-server), which run inside a VPC.
+schemaVersion: "1"
+type: "component"
+id: "ibm-virtual-server-classic"
+kind: "virtual-machine"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/virtual-servers?topic=virtual-servers-about-virtual-servers"
+properties:
+  tenancy:
+    type: "enum"
+    values: ["public", "dedicated", "transient", "reserved"]
+    default: "public"

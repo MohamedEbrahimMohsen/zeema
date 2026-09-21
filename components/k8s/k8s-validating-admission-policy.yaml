@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Kubernetes ValidatingAdmissionPolicy: "a declarative, in-process alternative to validating
+# admission webhooks" that expresses admission rules in CEL ("Validating Admission Policy").
+# Per that page it is `admissionregistration.k8s.io/v1`, stable since v1.30, and evaluated
+# inside the API server with no webhook server to call. A policy does nothing until a
+# ValidatingAdmissionPolicyBinding scopes it and names its validationActions; there is no
+# default action, at least one of Deny, Warn or Audit must be declared, and Deny and Warn
+# cannot be combined.
+schemaVersion: "1"
+type: "component"
+id: "k8s-validating-admission-policy"
+kind: "policy-engine"
+provider: "k8s"
+docs: "https://kubernetes.io/docs/reference/access-authn-authz/validating-admission-policy/"
+defaults:
+  managed: false
+  scope: "resource"
+  remediation: false
+properties:
+  validationAction:
+    type: "enum"
+    values: ["deny", "warn", "audit"]
+  expressionLanguage:
+    type: "enum"
+    values: ["cel"]
+    default: "cel"
+  bindingRequired:
+    type: "boolean"
+    default: true
+  inProcess:
+    type: "boolean"
+    default: true

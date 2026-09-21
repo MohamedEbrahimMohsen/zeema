@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# DataHub: a streaming data bus that receives records into sharded topics and hands them to
+# subscribers and to downstream products such as MaxCompute and Realtime Compute
+# ("What is DataHub"). Records sit in a shard for a retention window and are read by offset.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-datahub"
+kind: "stream"
+provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/datahub/product-overview/what-is-datahub"
+defaults:
+  managed: true
+  delivery: "at-least-once"
+  ordering: "per-key"
+  storage: "persistent"
+properties:
+  recordSchema:
+    type: "enum"
+    values: ["tuple", "blob"]

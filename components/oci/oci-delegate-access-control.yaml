@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Delegate Access Control: a delegation control governs how a registered service provider reaches
+# an Exadata resource the customer owns, after the customer takes a delegation subscription to that
+# provider. Defaults from "Oracle Delegate Access Control Configuration and Administration Guide": a
+# subscription is a prerequisite, every operator action during a delegated session is audited, and whether
+# an access request is auto-approved or needs an approver is set by the delegation control.
+schemaVersion: "1"
+type: "component"
+id: "oci-delegate-access-control"
+kind: "policy-engine"
+provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/delegate-access-control/doc/overview-of-delac.html"
+defaults:
+  managed: true
+  effect: "deny"
+  enforcementMode: "enforced"
+  scope: "resource"
+  remediation: false
+properties:
+  approvalRequired:
+    type: "boolean"
+  multiLevelApproval:
+    type: "boolean"
+  operatorActionsAudited:
+    type: "boolean"
+    default: true
+  subscriptionRequired:
+    type: "boolean"
+    default: true
+  targetService:
+    type: "enum"
+    values: ["exadb-cloud-at-customer", "exadb-dedicated", "exadb-exascale"]

@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Cloud Hyper Protect Crypto Services: "a dedicated key management service and Hardware
+# Security Module (HSM) that provides you with the Keep Your Own Key capability", built on
+# "FIPS 140-2 Level 4-certified hardware, the highest security level that is offered in the
+# industry" ("Overview - Standard Plan"). The customer loads the master keys and assigns the
+# administrators, so IBM Cloud administrators have no access.
+schemaVersion: "1"
+type: "component"
+id: "ibm-hyper-protect-crypto-services"
+kind: "key-management"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-overview"
+defaults:
+  managed: true
+  hsm: true
+  envelopeEncryption: true
+  rotationAutomated: false
+properties:
+  keyOwnership:
+    type: "enum"
+    values: ["keep-your-own-key"]
+    default: "keep-your-own-key"
+  cryptoApi:
+    type: "enum"
+    values: ["kmip", "pkcs11", "grep11", "key-management"]

@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Cloud Security and Compliance Center Workload Protection: an agent-based runtime security
+# service that finds vulnerabilities, misconfigurations and threats in hosts, containers and
+# Kubernetes clusters, and posts its findings to the service ("Workload Protection"). Agents push
+# telemetry out of the workload being watched.
+schemaVersion: "1"
+type: "component"
+id: "ibm-workload-protection"
+kind: "monitoring"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/workload-protection"
+defaults:
+  managed: true
+  signal: "alerts"
+  collectorMode: "push"
+  independentOfMonitored: true
+properties:
+  agentBased:
+    type: "boolean"
+    default: true
+  scope:
+    type: "enum"
+    values: ["host", "container", "kubernetes", "cloud-account"]

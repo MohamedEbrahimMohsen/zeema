@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Database Autonomy Service (DAS): watches ApsaraDB instances, detects slow queries, lock waits and
+# capacity problems, and can apply autonomous actions such as index recommendations and throttling
+# ("What is DAS"). It observes the databases it manages, so it is not independent of them.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-das"
+kind: "monitoring"
+provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/das"
+defaults:
+  managed: true
+  signal: "all"
+  collectorMode: "pull"
+properties:
+  autonomyEnabled:
+    type: "boolean"
+    default: false

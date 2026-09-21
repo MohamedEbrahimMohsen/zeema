@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Cloud Continuous Delivery: toolchains with Tekton or classic delivery pipelines that build,
+# test and deploy from a Git repository, with DevSecOps reference pipelines that add evidence
+# collection and change management ("Continuous Delivery"). Triggers are per pipeline.
+schemaVersion: "1"
+type: "component"
+id: "ibm-continuous-delivery"
+kind: "ci-pipeline"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/ContinuousDelivery"
+defaults:
+  managed: true
+properties:
+  pipelineType:
+    type: "enum"
+    values: ["tekton", "classic"]
+  devSecOps:
+    type: "boolean"
+    default: false
+  privateWorkers:
+    type: "boolean"
+    default: false

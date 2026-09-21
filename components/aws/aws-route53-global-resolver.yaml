@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Route 53 Global Resolver: an internet-reachable recursive resolver on a single set of anycast
+# IP addresses that answers for public domains and for associated Route 53 private hosted zones.
+# "What is Route 53 Global Resolver?" says it accepts traffic only from known clients (CIDR allowlists
+# for Do53, DoT and DoH, plus access tokens for DoT and DoH), filters queries with DNS Firewall rules
+# and AWS managed domain lists, and supports DNSSEC validation and EDNS client subnet per DNS view.
+schemaVersion: "1"
+type: "component"
+id: "aws-route53-global-resolver"
+kind: "dns"
+provider: "aws"
+docs: "https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/gr-what-is-global-resolver.html"
+defaults:
+  managed: true
+  anycast: true
+  redundantProviders: false
+properties:
+  encryptedTransport:
+    type: "enum"
+    values: ["do53", "doh", "dot"]
+    default: "do53"
+  dnssecValidation:
+    type: "boolean"
+  queryFiltering:
+    type: "boolean"
+    default: false
+  ednsClientSubnet:
+    type: "boolean"
+  clientAuthentication:
+    type: "enum"
+    values: ["cidr-allowlist", "access-token"]

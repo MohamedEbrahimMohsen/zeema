@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apache Jackrabbit Oak: hierarchical content repository implementing the JCR API, the storage
+# layer under Adobe Experience Manager. Per the Oak documentation content is reached through the
+# JCR API over a pluggable node store, and versioning is part of the JCR model.
+schemaVersion: "1"
+type: "component"
+id: "jackrabbit"
+kind: "content-repository"
+provider: "default"
+docs: "https://jackrabbit.apache.org/oak/docs/"
+defaults:
+  managed: false
+  deliveryMode: "headless-api"
+  versioning: true
+  previewEnvironment: false
+properties:
+  nodeStore:
+    type: "enum"
+    values: ["segment", "document"]
+    default: "segment"
+  indexProvider:
+    type: "enum"
+    values: ["property", "lucene", "elasticsearch"]
+    default: "lucene"

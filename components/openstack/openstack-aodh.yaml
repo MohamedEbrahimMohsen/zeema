@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenStack Aodh, the Alarming service: "a service that enables the ability to trigger actions
+# based on defined rules against metric or event data collected by Ceilometer or Gnocchi"
+# ("Welcome to Aodh's documentation"). It evaluates alarms over data another service collected,
+# so it stores no measurements of its own and shares fate with the telemetry pipeline it reads.
+schemaVersion: "1"
+type: "component"
+id: "openstack-aodh"
+kind: "monitoring"
+provider: "openstack"
+docs: "https://docs.openstack.org/aodh/latest/"
+defaults:
+  signal: "alerts"
+  collectorMode: "pull"
+  independentOfMonitored: false
+  managed: false
+properties:
+  dataSource:
+    type: "enum"
+    values: ["ceilometer", "gnocchi"]
+  storesData:
+    type: "boolean"
+    default: false

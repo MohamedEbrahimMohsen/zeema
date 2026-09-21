@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# VPC security group: a stateful packet filter attached to the network interfaces of instances,
+# load balancers, endpoint gateways and VPN servers. A new security group carries no rules, so
+# nothing is admitted until one is added ("Using security groups").
+schemaVersion: "1"
+type: "component"
+id: "ibm-security-group"
+kind: "firewall"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/vpc?topic=vpc-using-security-groups"
+defaults:
+  managed: true
+  stateful: true
+  defaultAction: "deny"
+properties:
+  attachedTo:
+    type: "enum"
+    values: ["instance-interface", "load-balancer", "endpoint-gateway", "vpn-server"]

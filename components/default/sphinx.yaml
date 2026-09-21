@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Sphinx: full-text search server. Per the Sphinx reference manual a plain index is built offline
+# by the `indexer` tool and served by the `searchd` daemon, which listens on port 9312 for the
+# native protocol; real-time indexes are an alternative index type.
+schemaVersion: "1"
+type: "component"
+id: "sphinx"
+kind: "search-index"
+provider: "default"
+docs: "http://sphinxsearch.com/docs/current.html"
+defaults:
+  managed: false
+  structure: "inverted"
+  shardingStrategy: "none"
+  indexing: "batch"
+properties:
+  indexType:
+    type: "enum"
+    values: ["plain", "realtime"]
+    default: "plain"
+  searchdPort:
+    type: "integer"
+    default: 9312

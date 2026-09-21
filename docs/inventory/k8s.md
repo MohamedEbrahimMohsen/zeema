@@ -76,6 +76,44 @@ Status: `done` = component exists in `components/k8s/`. `todo` = to be written.
 | ServiceAccount | — | — | skip: RBAC subject - the identity attached to a workload, has no runtime of its own | https://kubernetes.io/docs/concepts/security/service-accounts/ |
 | User | — | — | skip: RBAC subject, not a node | https://kubernetes.io/docs/reference/access-authn-authz/rbac/#referring-to-subjects |
 
+---
+
+## Coverage pass 2026-09-21
+
+Re-diffed against the Kubernetes API reference
+<https://kubernetes.io/docs/reference/kubernetes-api/> and the concepts documentation
+<https://kubernetes.io/docs/concepts/>. This folder stays Kubernetes-native API objects:
+ecosystem projects that merely run on a cluster (CoreDNS, Prometheus, Istio, cert-manager) are
+`default` components, and CoreDNS is already catalogued there.
+
+| resource | id | kind | status | source |
+|---|---|---|---|---|
+| Gateway (Gateway API) | k8s-gateway | load-balancer | done | https://kubernetes.io/docs/concepts/services-networking/gateway/ |
+| ValidatingAdmissionPolicy | k8s-validating-admission-policy | policy-engine | done | https://kubernetes.io/docs/reference/access-authn-authz/validating-admission-policy/ |
+| GatewayClass | — | — | skip: names the controller that fulfils Gateways of a class; a selector, not a node. | https://kubernetes.io/docs/concepts/services-networking/gateway/ |
+| HTTPRoute / GRPCRoute | — | — | skip: routing rules attached to a Gateway listener; the Gateway is the node, the same call already recorded for Ingress path rules. | https://kubernetes.io/docs/concepts/services-networking/gateway/ |
+| IngressClass | — | — | skip: names the controller that fulfils Ingresses of a class; a selector, not a node. | https://kubernetes.io/docs/concepts/services-networking/ingress/ |
+| ReplicationController | — | — | skip: legacy workload controller superseded by Deployment and ReplicaSet, both catalogued. | https://kubernetes.io/docs/concepts/workloads/controllers/replicationcontroller/ |
+| PodDisruptionBudget | — | — | skip: availability constraint attached to a workload, not a node. | https://kubernetes.io/docs/concepts/workloads/pods/disruptions/ |
+| PriorityClass | — | — | skip: scheduling configuration object, not a node. | https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/ |
+| RuntimeClass | — | — | skip: container-runtime selector for a Pod, a configuration object. | https://kubernetes.io/docs/concepts/containers/runtime-class/ |
+| VolumeSnapshot / VolumeSnapshotClass | — | — | skip: point-in-time copy of a PersistentVolumeClaim, a property of the claim. | https://kubernetes.io/docs/concepts/storage/volume-snapshots/ |
+| CSIDriver / CSINode / VolumeAttachment | — | — | skip: CSI plumbing registered in the cluster; the StorageClass and the claim are the drawn nodes. | https://kubernetes.io/docs/concepts/storage/volumes/ |
+| ResourceClaim / DeviceClass / ResourceSlice (dynamic resource allocation) | — | — | skip: device allocation request attached to a Pod, a property of the workload. | https://kubernetes.io/docs/concepts/scheduling-eviction/dynamic-resource-allocation/ |
+| ValidatingWebhookConfiguration / MutatingWebhookConfiguration | — | — | skip: registration pointing at an external webhook server; that server is the node. | https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/ |
+| MutatingAdmissionPolicy | — | — | skip: still beta; the stable in-process admission object is ValidatingAdmissionPolicy. | https://kubernetes.io/docs/reference/access-authn-authz/mutating-admission-policy/ |
+| APIService (aggregation layer) | — | — | skip: registration pointing at an extension API server; that server is the node. | https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/apiserver-aggregation/ |
+| Lease / Event / PodTemplate / Binding | — | — | skip: bookkeeping objects the control plane writes, not nodes. | https://kubernetes.io/docs/reference/kubernetes-api/ |
+| CertificateSigningRequest / ClusterTrustBundle | — | — | skip: certificate-issuance objects handled by the control plane, not nodes. | https://kubernetes.io/docs/reference/access-authn-authz/certificate-signing-requests/ |
+
+### Already covered under another name
+
+| resource | id | kind | status | source |
+|---|---|---|---|---|
+| EndpointSlice | k8s-endpoints | coordination-service | done | mapping: the scalable form of Endpoints, already the source cited on that row |
+| Service type LoadBalancer / NodePort / ExternalName | k8s-service | load-balancer | done | mapping: `serviceType` values of the one Service object |
+
 ## Counts
 
-total 42, todo 0, done 17, skip 25.
+total 59, todo 0, done 19, skip 40. Plus 2 mapping rows under
+"Already covered under another name", which point at rows already counted above.

@@ -3,8 +3,10 @@
 Official product directory: the Oracle Cloud Infrastructure documentation service catalogue
 <https://docs.oracle.com/en-us/iaas/Content/home.htm> (the "all services by category" index that
 <https://docs.oracle.com/en-us/iaas/Content/services.htm> redirects into) and the Oracle Cloud
-product pages <https://www.oracle.com/cloud/>. Families below use Oracle's own category
-headings from that index. One row per resource a designer places; composite services are split
+product pages <https://www.oracle.com/cloud/>, plus the OCI CLI service command groups
+<https://docs.oracle.com/en-us/iaas/tools/oci-cli/latest/oci_cli_docs/index.html>, the only public
+list that names services carrying an API but no entry in the other two. Families below use Oracle's
+own category headings from that index. One row per resource a designer places; composite services are split
 into their placeable sub-resources (Networking into VCN, subnet and each gateway type;
 Autonomous AI Database into its workload types; DevOps into code repository, build pipeline and
 deployment pipeline).
@@ -424,6 +426,53 @@ name; ids keep the shorter historical form where a component already exists.
 | Block Volume elastic performance | — | — | skip: white colour variant of the same OCI icon; ElasticPerformance is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
 | OCI File Storage | — | — | skip: white colour variant of the same OCI icon; FileStorage is the node | https://diagrams.mingrammer.com/docs/nodes/oci |
 
+## Coverage pass 2026-09-21
+
+Diffed against the OCI documentation service index
+(<https://docs.oracle.com/en-us/iaas/Content/home.htm>), the service limits page
+(<https://docs.oracle.com/en-us/iaas/Content/General/Concepts/servicelimits.htm>) and the OCI CLI
+service command groups
+(<https://docs.oracle.com/en-us/iaas/tools/oci-cli/latest/oci_cli_docs/index.html>), which is the
+only public list that names services carrying an API but no entry in the other two. The
+architecture icon set page publishes downloads only and lists no icon names, so it could not be
+used as a machine-readable cross-check.
+
+| resource | id | kind | status | source |
+|---|---|---|---|---|
+| Exadata Fleet Update maintenance cycle | oci-exadata-fleet-update | worker | done | https://docs.oracle.com/en-us/iaas/exadata-fleet-update/doc/manage-maintenance-cycles.html |
+| Oracle Operator Access Control operator control | oci-operator-access-control | policy-engine | done | https://docs.oracle.com/en-us/iaas/operator-access-control/doc/overview-of-operator-access-control.html |
+| Oracle Delegate Access Control delegation control | oci-delegate-access-control | policy-engine | done | https://docs.oracle.com/en-us/iaas/delegate-access-control/doc/overview-of-delac.html |
+| Oracle API Access Control privileged API control | oci-api-access-control | policy-engine | done | https://docs.oracle.com/en-us/iaas/oracle-api-access-control/doc/manage-privileged-api-control.html |
+| Device Data FHIR Service instance | oci-device-data-fhir | nosql-database | done | https://docs.oracle.com/en-us/iaas/device-data-fhir/fhir-r6-resources.htm |
+| Fusion Applications environment | oci-fusion-applications-environment | app-server | done | https://docs.oracle.com/en-us/iaas/Content/fusion-applications/overview.htm |
+| Guarded Data Pipelines pipeline | oci-guarded-data-pipelines | worker | done | https://docs.oracle.com/en-us/iaas/tools/oci-cli/latest/oci_cli_docs/cmdref/gdp.html |
+| Service Mesh | — | — | skip: retired, end of life 31 May 2025, Oracle names Istio as the replacement | https://docs.oracle.com/en-us/iaas/Content/service-mesh/home.htm |
+| OS Management (classic) | — | — | skip: superseded by OS Management Hub | https://docs.oracle.com/en-us/iaas/osmh/doc/overview.html |
+| Cloud Shell | — | — | skip: browser terminal in the Console; its VM belongs to the Cloud Shell service, not the tenancy | https://docs.oracle.com/en-us/iaas/Content/API/Concepts/cloudshellintro.htm |
+| Oracle Cloud Agent | — | — | skip: agent installed on an instance, drawn as part of the host | https://docs.oracle.com/en-us/iaas/Content/Compute/Tasks/manage-plugins.htm |
+| Resource Discovery and Monitoring | — | — | skip: plug-in discovery over instances the Management Agent already reports | https://docs.oracle.com/iaas/os-management/osms/osms-resource-discovery-monitoring.htm |
+| APM Synthetic Monitoring monitor | — | — | skip: synthetic monitor configured inside an Application Performance Monitoring domain | https://docs.oracle.com/en-us/iaas/application-performance-monitoring/doc/synthetic-monitoring.html |
+| EM Warehouse | — | — | skip: Enterprise Manager data load into Ops Insights | https://docs.oracle.com/en-us/iaas/tools/oci-cli/latest/oci_cli_docs/cmdref/em-warehouse.html |
+| Generative AI NL2SQL and enrichment jobs | — | — | skip: job API of the Generative AI service | https://docs.oracle.com/en-us/iaas/tools/oci-cli/latest/oci_cli_docs/cmdref/generative-ai-data.html |
+| Web Application Firewall edge policy (WAAS) | — | — | skip: hostname-attached flavour of the Web Application Firewall policy already catalogued | https://docs.oracle.com/en-us/iaas/Content/WAF/Concepts/overview.htm |
+| Security attribute namespace | — | — | skip: attribute namespace read by Zero Trust Packet Routing policies | https://docs.oracle.com/en-us/iaas/Content/zero-trust-packet-routing/overview.htm |
+| Governance rules | — | — | skip: tenancy hierarchy administration | https://docs.oracle.com/en-us/iaas/Content/General/Concepts/governance-rules.htm |
+| Capacity Management and Demand Signal | — | — | skip: capacity purchasing and forecasting inside Control Center | https://docs.oracle.com/en-us/iaas/Content/control-center/home.htm |
+| Scheduled reports (Cost Analysis) | — | — | skip: billing and cost reporting | https://docs.oracle.com/en-us/iaas/Content/Billing/Concepts/scheduledreportoverview.htm |
+| Oracle Code Assist | — | — | skip: coding assistant delivered as an IDE plug-in, not a placeable resource | https://docs.oracle.com/en-us/iaas/tools/oci-cli/latest/oci_cli_docs/index.html |
+| OCI Supercluster | — | — | skip: GPU capacity offering; the cluster network and the GPU instances are the nodes | https://docs.oracle.com/en-us/iaas/Content/Compute/Tasks/managingclusternetworks.htm |
+| Defense Industrial Base Isolated Cloud Environment | — | — | skip: isolated realm deployment model, resources are placed in it not drawn as it | https://docs.oracle.com/en-us/iaas/Content/dedicated-region/home.htm |
+
+### Operator access, and why OCI has components where Azure and GCP do not
+
+`oci-operator-access-control`, `oci-delegate-access-control`, `oci-api-access-control` and
+`oci-managed-access` are `done` while Azure Customer Lockbox and Google Access Transparency /
+Access Approval are `skip`. The difference is not the feature but its shape: an OCI operator control
+is a created object with an OCID, attached to a named Exadata or Autonomous AI Database resource and
+carrying its own approval and audit settings, whereas Customer Lockbox is a tenant-wide toggle and
+Access Approval an organization-level settings singleton, neither of which you name or place. The
+same test is recorded in `docs/inventory/azure.md` and `docs/inventory/gcp.md`.
+
 ## Counts
 
-total 296, todo 0, done 168, skip 126.
+total 317, todo 0, done 175, skip 142.

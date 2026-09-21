@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM OpenPages: a governance, risk and compliance platform holding the register of risks,
+# controls, policies and issues, and the workflows that assess and attest to them
+# ("IBM OpenPages"). It records and reports; it does not enforce anything at runtime.
+schemaVersion: "1"
+type: "component"
+id: "ibm-openpages"
+kind: "policy-engine"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/openpages"
+defaults:
+  managed: true
+  effect: "audit"
+  scope: "organization"
+  remediation: false
+properties:
+  domain:
+    type: "enum"
+    values: ["operational-risk", "policy-management", "regulatory-compliance", "it-governance", "model-risk", "third-party-risk"]

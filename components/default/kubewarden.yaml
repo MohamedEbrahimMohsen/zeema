@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Kubewarden: Kubernetes policy engine that runs admission policies compiled to WebAssembly.
+# Per the Kubewarden documentation a policy is deployed in protect mode, where a rejected request
+# is denied, and can instead be put in monitor mode where violations are only recorded.
+schemaVersion: "1"
+type: "component"
+id: "kubewarden"
+kind: "policy-engine"
+provider: "default"
+docs: "https://docs.kubewarden.io/"
+defaults:
+  managed: false
+  effect: "deny"
+  enforcementMode: "enforced"
+  scope: "resource"
+  remediation: false
+properties:
+  policyFormat:
+    type: "enum"
+    values: ["wasm"]
+    default: "wasm"
+  policyMode:
+    type: "enum"
+    values: ["protect", "monitor"]
+    default: "protect"

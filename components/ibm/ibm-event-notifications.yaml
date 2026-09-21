@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Cloud Event Notifications: "a routing service that provides you with information about
+# critical events that occur in your IBM Cloud account", filtering them and fanning them out to
+# human destinations (email, SMS, push) and service destinations (webhooks and cloud services
+# such as Slack) ("Getting started with Event Notifications").
+schemaVersion: "1"
+type: "component"
+id: "ibm-event-notifications"
+kind: "notification-service"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/event-notifications?topic=event-notifications-getting-started"
+defaults:
+  managed: true
+  channelPush: true
+  channelEmail: true
+  channelSms: true
+properties:
+  webhookDestinations:
+    type: "boolean"
+    default: true
+  sourceType:
+    type: "enum"
+    values: ["ibm-cloud-service", "custom-api"]

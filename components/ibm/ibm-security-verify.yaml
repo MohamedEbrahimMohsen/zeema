@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Security Verify: IBM's identity-as-a-service directory and single sign-on for workforce and
+# consumer identities, federating over OIDC and SAML with adaptive access and multifactor
+# authentication ("IBM Security Verify"). Whether MFA is enforced depends on the access policy.
+schemaVersion: "1"
+type: "component"
+id: "ibm-security-verify"
+kind: "identity-provider"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/security-verify"
+defaults:
+  managed: true
+  protocol: "oidc"
+  centralised: true
+properties:
+  audience:
+    type: "enum"
+    values: ["workforce", "consumer"]
+  adaptiveAccess:
+    type: "boolean"
+    default: false

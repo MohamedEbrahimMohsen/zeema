@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Time Series Database (TSDB): a managed store for metrics written as timestamped points with tags,
+# compressed on write and queried by tag and time range ("What is TSDB"). Downsampling and
+# retention are configured per instance, so neither is defaulted.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-tsdb"
+kind: "timeseries-database"
+provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/tsdb"
+defaults:
+  managed: true
+  labelIndex: true
+properties:
+  compatibility:
+    type: "enum"
+    values: ["opentsdb", "influxdb", "prometheus"]

@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Cloud App ID: authentication for web and mobile applications, so a developer can "secure
+# resources and add authentication; even when you don't have a lot of security experience"
+# ("Getting started with App ID"). It issues OIDC tokens and federates to Cloud Directory, SAML
+# providers and social identity providers. MFA is configurable, not on by default.
+schemaVersion: "1"
+type: "component"
+id: "ibm-app-id"
+kind: "identity-provider"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/appid?topic=appid-getting-started"
+defaults:
+  managed: true
+  protocol: "oidc"
+  centralised: true
+  mfa: false
+properties:
+  directory:
+    type: "enum"
+    values: ["cloud-directory", "saml", "social", "custom"]
+  anonymousLogin:
+    type: "boolean"
+    default: false

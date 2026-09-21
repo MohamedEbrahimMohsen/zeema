@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# File Storage for VPC: NFS file shares mounted by VPC instances through a mount target, encrypted
+# at rest under an IBM-managed key unless a customer-managed key is chosen ("About File Storage
+# for VPC"). Cross-zone or cross-region replication is opt-in.
+schemaVersion: "1"
+type: "component"
+id: "ibm-file-storage"
+kind: "file-storage"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-vpc-about"
+defaults:
+  managed: true
+  protocol: "nfs"
+  publicAccess: false
+properties:
+  keyManagement:
+    type: "enum"
+    values: ["provider-managed", "customer-managed"]
+    default: "provider-managed"
+  replication:
+    type: "boolean"
+    default: false

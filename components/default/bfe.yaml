@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# BFE (Beyond Front End): Baidu's layer 7 load balancer, a data plane of forwarding engines with a
+# separate control plane. Per the BFE README it terminates HTTP, HTTPS, HTTP/2, SPDY and WebSocket
+# and routes by a condition-based forwarding table reloaded without restart.
+schemaVersion: "1"
+type: "component"
+id: "bfe"
+kind: "load-balancer"
+provider: "default"
+docs: "https://www.bfe-networks.net"
+defaults:
+  managed: false
+  layer: "l7"
+  healthChecks: true
+  global: false
+  connectionPreserving: false
+properties:
+  protocols:
+    type: "enum"
+    values: ["http", "https", "http2", "spdy", "websocket"]
+    default: "http"
+  configHotReload:
+    type: "boolean"
+    default: true

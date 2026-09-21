@@ -621,7 +621,7 @@ covered by a cloud provider folder.
 | Gitea | gitea | artifact-repository | done | https://docs.gitea.com/administration/config-cheat-sheet |
 | Forgejo | forgejo | artifact-repository | done | https://forgejo.org/faq/ |
 | Bitbucket | bitbucket | artifact-repository | done | https://support.atlassian.com/bitbucket-cloud/docs/create-a-git-repository/ |
-| CNCF Dragonfly | â€” | â€” | skip: peer-to-peer image distribution accelerator for a registry; the id dragonfly is taken by the cache | https://d7y.io/docs/ |
+| CNCF Dragonfly | dragonfly-d7y | cdn | done | https://d7y.io/docs/ |
 | Artifact Hub | â€” | â€” | skip: public index of Helm charts and operators, not a deployed node | https://artifacthub.io/docs/ |
 | Apache Subversion | subversion | artifact-repository | done | https://subversion.apache.org/docs/ |
 
@@ -1250,6 +1250,158 @@ every rule for the kind still fires. The source is the kind file itself.
 | Generic worker | worker | worker | done | kinds/worker.yaml |
 | Generic workflow engine | workflow-engine | workflow-engine | done | kinds/workflow-engine.yaml |
 
+## Coverage pass 2026-09-21
+
+Diffed against the three sources named in the header: the CNCF Graduated, Incubating and
+Sandbox lists (from `landscape.yml`, 39 graduated, 38 incubating, 150 sandbox), the DB-Engines
+ranking top 150, and the fixed list of major independent SaaS and infrastructure products
+commonly drawn in architecture diagrams.
+
+### CNCF — added
+
+| resource | id | kind | status | source |
+|---|---|---|---|---|
+| Dapr | dapr | service-mesh | done | https://docs.dapr.io/concepts/dapr-services/sidecar/ |
+| OpenCost | opencost | monitoring | done | https://www.opencost.io/docs/ |
+| Oxia | oxia | coordination-service | done | https://oxia-db.github.io/docs/getting-started |
+| Perses | perses | monitoring | done | https://github.com/perses/perses |
+| Pixie | pixie | monitoring | done | https://docs.px.dev/about-pixie/what-is-pixie/ |
+| Trickster | trickster | cache | done | https://trickstercache.org/docs/ |
+| Antrea | antrea | network-fabric | done | https://antrea.io/docs/ |
+| Armada | armada | big-data-cluster | done | https://armadaproject.io/ |
+| Athenz | athenz | identity-provider | done | https://www.athenz.io |
+| BFE | bfe | load-balancer | done | https://www.bfe-networks.net |
+| ContainerSSH | containerssh | bastion-host | done | https://containerssh.io |
+| Curvine | curvine | file-storage | done | https://curvineio.github.io/ |
+| Drasi | drasi | stream-processor | done | https://drasi.io |
+| Easegress | easegress | api-gateway | done | https://megaease.cn/docs/easegress/ |
+| Higress | higress | api-gateway | done | https://higress.cn/en/docs/latest/overview/what-is-higress/ |
+| Kmesh | kmesh | service-mesh | done | https://kmesh.net/docs/ |
+| Kubewarden | kubewarden | policy-engine | done | https://docs.kubewarden.io/ |
+| KubeArmor | kubearmor | policy-engine | done | https://docs.kubearmor.io/kubearmor/ |
+| Kuberhealthy | kuberhealthy | monitoring | done | https://kuberhealthy.github.io/kuberhealthy/ |
+| loxilb | loxilb | load-balancer | done | https://docs.loxilb.io/latest/ |
+| OpenFunction | openfunction | app-server | done | https://openfunction.dev/docs/ |
+| Paralus | paralus | bastion-host | done | https://www.paralus.io/docs |
+| PipeCD | pipecd | ci-pipeline | done | https://pipecd.dev/docs/ |
+| Submariner | submariner | vpn-gateway | done | https://submariner.io/getting-started/ |
+| Tremor | tremor | stream-processor | done | https://github.com/tremor-rs/tremor-runtime |
+| llm-d | llm-d | ml-inference | done | https://llm-d.ai/docs/architecture |
+| openGemini | opengemini | timeseries-database | done | https://docs.opengemini.org/guide/ |
+
+### CNCF — not placeable nodes
+
+| resource | id | kind | status | source |
+|---|---|---|---|---|
+| Microcks | — | — | skip: API mocking and contract testing server used from a pipeline, not a production node | https://microcks.io |
+| KubeVela | — | — | skip: application delivery controller; the drawn nodes are the workloads it rolls out | https://kubevela.io |
+| k8gb | — | — | skip: controller that writes records into an external DNS provider; the drawn node is the zone | https://www.k8gb.io |
+| in-toto / Notary Project / The Update Framework | — | — | skip: supply-chain attestation and signing specifications | https://in-toto.io |
+| OpenFeature | — | — | skip: vendor-neutral feature-flag SDK and specification; the node is the flag service | https://openfeature.dev/ |
+| Container Network Interface (CNI) | — | — | skip: network plugin interface specification | https://www.cni.dev/ |
+| gRPC / Connect RPC | — | — | skip: RPC frameworks and libraries linked into the application | https://grpc.io |
+| Operator Framework | — | — | skip: SDK and lifecycle manager for operators | https://operatorframework.io/ |
+| Kubescape / Trivy-style scanners | — | — | skip: security posture scanners, tooling rather than nodes | https://kubescape.io/ |
+| Meshery | — | — | skip: service-mesh management and visualisation plane, tooling | https://meshery.io |
+| Cloud Custodian | — | — | skip: policy-as-code rules engine run as tooling against cloud APIs | https://cloudcustodian.io/ |
+| Lima / Podman Desktop / Headlamp / Telepresence | — | — | skip: developer-machine and desktop tooling | https://github.com/lima-vm/lima |
+| Confidential Containers / Kuasar / youki / WasmEdge / urunc / Spin / bootc | — | — | skip: container and Wasm runtimes on a node, not drawn resources | https://confidentialcontainers.org/ |
+| Fluid / OpenKruise / KAITO / Koordinator / KAI Scheduler / HAMi / Virtual Kubelet | — | — | skip: Kubernetes controllers, schedulers and device plugins; the drawn node is the workload | https://fluid-cloudnative.github.io/ |
+| Kube-OVN / OVN-Kubernetes / Spiderpool / NMstate / Network Service Mesh / kube-vip | — | — | skip: Kubernetes networking plugins, a property of the cluster fabric | https://www.kube-ovn.io/ |
+| HwameiStor / Piraeus Datastore / Carina / K8up / Kanister | — | — | skip: CSI drivers and backup operators; the drawn nodes are the volumes and the backup target | https://piraeus.io/ |
+| Eraser / Ratify / Copa / ORAS / KitOps / ModelPack / SlimToolkit / Stacker / Dalec | — | — | skip: image build, signing and inspection tooling | https://oras.land/ |
+| Carvel / KCL / kpt / ko / Score / KUDO / Porter / Radius / Shipwright / DevSpace / Devfile / werf / OpenTofu / SOPS / SchemaHero / external-secrets | — | — | skip: build, configuration and infrastructure-as-code tooling | https://carvel.dev/ |
+| Capsule / Clusternet / Clusterpedia / KubeFleet / KubeStellar / Kubean / KubeClipper / Open Cluster Management / kcp / KubeSlice / KubeElasti / Kured | — | — | skip: multi-cluster and lifecycle controllers | https://capsule.clastix.io/ |
+| Kepler / Inspektor Gadget / Kube-burner / bpfman | — | — | skip: exporters and diagnostic tooling on the node | https://sustainable-computing.io/ |
+| Chaosblade / Krkn | — | — | skip: chaos tooling, in the same family as the existing chaos skips | https://chaosblade.io/ |
+| Keylime / Parsec / Tokenetes / Open Policy Containers / OSCAL-COMPASS / Cedar / Kuadrant / KubeArmor policies | — | — | skip: attestation services, policy languages and admission policy sets | https://keylime.dev/ |
+| Cozystack / OpenChoreo / Kairos / Talos / Flatcar | — | — | skip: platform distributions and node operating systems | https://cozystack.io/ |
+| Tinkerbell / metal3-io | — | — | skip: bare-metal provisioning services, tooling | https://tinkerbell.org/ |
+| K8sGPT / HolmesGPT / kagent / Cartography / Konveyor / Runme | — | — | skip: analysis and assistant tooling | https://k8sgpt.ai/ |
+| Agones / Akri / Aeraki Mesh / Sermant / Logging Operator / Serverless Devs / SlimFaaS / OpenEverest / OpenGitOps / Open Workflow Specification / xRegistry | — | — | skip: operators, agents, specifications and domain stacks outside the drawn topology | https://agones.dev/ |
+
+### CNCF — already covered under another name
+
+| resource | id | kind | status | source |
+|---|---|---|---|---|
+| Distribution (CNCF) | — | — | skip: the reference OCI registry, already catalogued as docker-registry | https://distribution.github.io/distribution/ |
+| Kgateway (formerly Gloo Gateway) | — | — | skip: the renamed Gloo Gateway, already catalogued as gloo | https://kgateway.dev/ |
+| Cadence Workflow | — | — | skip: already catalogued as cadence | https://cadenceworkflow.io/ |
+
+### DB-Engines top 150 — added
+
+| resource | id | kind | status | source |
+|---|---|---|---|---|
+| kdb+ | kdb | timeseries-database | done | https://code.kx.com/q/ |
+| Sphinx | sphinx | search-index | done | http://sphinxsearch.com/docs/current.html |
+| DolphinDB | dolphindb | timeseries-database | done | https://docs.dolphindb.com/en/ |
+| Apache Jackrabbit Oak | jackrabbit | content-repository | done | https://jackrabbit.apache.org/oak/docs/ |
+| VMware GemFire | gemfire | cache | done | https://docs.vmware.com/en/VMware-GemFire/index.html |
+| InterBase | interbase | sql-database | done | https://docwiki.embarcadero.com/InterBase/2020/en/Main_Page |
+| Progress OpenEdge | openedge | sql-database | done | https://docs.progress.com/category/openedge |
+| Actian Ingres | ingres | sql-database | done | https://docs.actian.com/ingres/12.0/ |
+| SAP SQL Anywhere | sql-anywhere | sql-database | done | https://help.sap.com/docs/SAP_SQL_Anywhere |
+| Ontotext GraphDB | graphdb | graph-database | done | https://graphdb.ontotext.com/documentation/ |
+| Coveo | coveo | search-index | done | https://docs.coveo.com/ |
+| InterSystems IRIS | intersystems-iris | sql-database | done | https://docs.intersystems.com/ |
+| MonetDB | monetdb | data-warehouse | done | https://www.monetdb.org/documentation/ |
+| Datomic | datomic | sql-database | done | https://docs.datomic.com/ |
+| DataStax Enterprise | datastax-enterprise | nosql-database | done | https://docs.datastax.com/en/dse/6.9/index.html |
+| EDB Postgres Advanced Server | edb-postgres | sql-database | done | https://www.enterprisedb.com/docs/epas/latest/ |
+| Claris FileMaker Server | filemaker | sql-database | done | https://help.claris.com/en/server-help/ |
+
+### DB-Engines top 150 — not placeable, retired or owned by a cloud folder
+
+| resource | id | kind | status | source |
+|---|---|---|---|---|
+| Microsoft Access / dBASE | — | — | skip: desktop database file formats opened by an application, not a server | https://support.microsoft.com/en-us/access |
+| Realm | — | — | skip: embedded mobile database linked into the app process | https://www.mongodb.com/docs/atlas/device-sdks/ |
+| RocksDB / LevelDB / LMDB / Oracle Berkeley DB / SpatiaLite / PouchDB | — | — | skip: embedded storage libraries linked into the application | https://rocksdb.org/ |
+| Ehcache / HyperSQL | — | — | skip: in-process Java caches and databases, like the existing H2 and Derby skips | https://www.ehcache.org/ |
+| Apache Phoenix | — | — | skip: SQL layer over HBase; the drawn node is hbase | https://phoenix.apache.org/ |
+| SAP MaxDB | — | — | skip: in maintenance only, no new development | https://help.sap.com/docs/SAP_MaxDB |
+| Rockset | — | — | skip: service shut down after the 2024 acquisition | https://rockset.com/ |
+| Fauna | — | — | skip: service shut down in 2025 | https://fauna.com/ |
+| Oracle Essbase / Oracle NoSQL / Oracle Coherence | — | — | skip: Oracle products, they belong to the oci provider folder | https://www.oracle.com/database/ |
+| IBM IMS / Netezza / Cloudant | — | — | skip: IBM products, they belong to the ibm provider folder | https://www.ibm.com/products/ims |
+| Alibaba Cloud PolarDB | — | — | skip: covered by the alibabacloud provider folder | https://www.alibabacloud.com/product/polardb |
+| Apache Jena - TDB | — | — | skip: the TDB store is served by Fuseki, already catalogued as fuseki | https://jena.apache.org/documentation/fuseki2/ |
+
+### DB-Engines top 150 — genuine gaps left for a later pass
+
+| resource | id | kind | status | source |
+|---|---|---|---|---|
+| Adabas | — | — | todo | https://documentation.softwareag.com/adabas/ |
+| UniData / UniVerse | — | — | todo | https://www.rocketsoftware.com/products/rocket-multivalue |
+| GBase | — | — | todo | https://www.gbase.cn/ |
+| 4D | — | — | todo | https://developer.4d.com/docs/ |
+
+### Independent SaaS and infrastructure — added
+
+| resource | id | kind | status | source |
+|---|---|---|---|---|
+| mParticle | mparticle | third-party-api | done | https://docs.mparticle.com/ |
+| Fly.io | fly-io | app-server | done | https://fly.io/docs/ |
+| Render | render | app-server | done | https://render.com/docs |
+| Railway | railway | app-server | done | https://docs.railway.com/ |
+| Heroku | heroku | app-server | done | https://devcenter.heroku.com/categories/reference |
+| Hasura | hasura | api-gateway | done | https://hasura.io/docs/2.0/index/ |
+| Apollo GraphOS | apollo-graphos | api-gateway | done | https://www.apollographql.com/docs/graphos |
+| Kong Konnect | kong-konnect | api-gateway | done | https://docs.konghq.com/konnect/ |
+| Prefect Cloud | prefect-cloud | workflow-engine | done | https://docs.prefect.io/v3/manage/cloud/index |
+| Astronomer Astro | astronomer | workflow-engine | done | https://www.astronomer.io/docs/astro/ |
+| Retool | retool | app-server | done | https://docs.retool.com/ |
+| Zapier | zapier | workflow-engine | done | https://help.zapier.com/hc/en-us |
+| Workato | workato | workflow-engine | done | https://docs.workato.com/ |
+| Pi-hole | pi-hole | dns | done | https://docs.pi-hole.net/ |
+
+### Independent SaaS and infrastructure — not added
+
+| resource | id | kind | status | source |
+|---|---|---|---|---|
+| HCP Consul Dedicated | — | — | skip: end of life 12 November 2025, clusters decommissioned | https://support.hashicorp.com/hc/en-us/articles/34859329877011-HCP-Consul-Dedicated-End-Of-Life |
+| Cloudflare products | — | — | skip: covered by the cloudflare provider folder | https://developers.cloudflare.com/ |
+
 ## Counts
 
-total 943, todo 0, done 801, skip 142.
+total 1048, todo 4, done 860, skip 184.

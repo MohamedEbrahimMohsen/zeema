@@ -103,7 +103,7 @@ Status: `done` = component exists in `components/alibabacloud/`. `todo` = to be 
 | Cloud Firewall | alibaba-cloud-firewall | firewall | done | https://www.alibabacloud.com/help/en/cloud-firewall/cloudfirewall/user-guide/introduction-of-intrusion-protection-principle |
 | Content Moderation | alibaba-content-moderation | ai-service | done | https://www.alibabacloud.com/help/en/content-moderation/ |
 | Data Encryption Service | alibaba-data-encryption-service | key-management | done | https://www.alibabacloud.com/help/en/kms/key-management-service/support/overview-12 |
-| Database Audit | — | — | skip: end of sale, the console page is labelled "Traditional data audit (stop new purchase)" and auditing now ships inside Data Security Center | https://help.aliyun.com/en/dsc/database-audit/product-overview/what-is-dbaudit |
+| Database Audit | — | — | skip: end of sale, the console page is labelled "Traditional data audit (stop new purchase)" and auditing now ships inside Data Security Center, catalogued as `alibaba-data-security-center` | https://help.aliyun.com/en/dsc/database-audit/product-overview/what-is-dbaudit |
 | Game Shield | alibaba-game-shield | ddos-protection | done | https://www.alibabacloud.com/product/gameshield |
 | ID Verification | alibaba-id-verification | ai-service | done | https://www.alibabacloud.com/product/id-verification |
 | Security Center | alibaba-security-center | monitoring | done | https://help.aliyun.com/en/security-center/product-overview/what-is-security-center |
@@ -154,6 +154,86 @@ Status: `done` = component exists in `components/alibabacloud/`. `todo` = to be 
 | Managed Security Service | — | — | skip: skip: professional services engagement, not a node | https://www.alibabacloud.com/product/managed-security-service |
 | Server Guard | — | — | skip: skip: legacy name (Aegis) for Security Center, no longer available for purchase | https://www.alibabacloud.com/help/en/security-center/ |
 
+---
+
+## Coverage pass 2026-09-21
+
+Re-diffed against the Alibaba Cloud help centre <https://www.alibabacloud.com/help/en/> and the
+created-resource list of the Alicloud Terraform provider, read through the GitHub git tree API.
+The product directory <https://www.alibabacloud.com/en/product> is client-rendered and a fetch
+returns only its footer links, so the Terraform resource list stood in for it as the index.
+`todo` rows are products that belong in the catalogue but were not reached in this pass.
+
+| resource | id | kind | status | source |
+|---|---|---|---|---|
+| Global Accelerator | alibaba-ga | network-fabric | done | https://www.alibabacloud.com/help/en/ga/product-overview/what-is-ga |
+| PrivateLink | alibaba-privatelink | private-link | done | https://www.alibabacloud.com/help/en/privatelink/product-overview/what-is-privatelink |
+| Alibaba Cloud DNS PrivateZone | alibaba-private-zone | dns | done | https://www.alibabacloud.com/help/en/dns/what-is-privatezone |
+| vSwitch | alibaba-vswitch | network-fabric | done | https://www.alibabacloud.com/help/en/vpc/user-guide/vswitch-overview |
+| ECS security group | alibaba-security-group | firewall | done | https://www.alibabacloud.com/help/en/ecs/user-guide/overview-45 |
+| Network ACL | alibaba-network-acl | firewall | done | https://www.alibabacloud.com/help/en/vpc/user-guide/overview-40 |
+| Anycast Elastic IP Address | alibaba-anycast-eip | network-fabric | done | https://www.alibabacloud.com/help/en/anycast-eip/product-overview/what-is-anycast-eip |
+| Dynamic Route for CDN (DCDN) | alibaba-dcdn | cdn | done | https://www.alibabacloud.com/help/en/dcdn/product-overview/what-is-alibaba-cloud-dcdn |
+| Edge Security Acceleration (ESA) | alibaba-esa | cdn | done | https://www.alibabacloud.com/help/en/edge-security-acceleration/esa/product-overview/what-is-esa |
+| Edge Node Service (ENS) | alibaba-ens | virtual-machine | done | https://www.alibabacloud.com/help/en/ens/product-overview/what-is-ens |
+| Anti-DDoS Origin | alibaba-anti-ddos-origin | ddos-protection | done | https://www.alibabacloud.com/help/en/anti-ddos/anti-ddos-origin/product-overview/what-is-anti-ddos-origin |
+| Elastic Block Storage (cloud disks) | alibaba-ebs | block-storage | done | https://www.alibabacloud.com/help/en/ebs/product-overview/what-is-ebs |
+| Enterprise Distributed Application Service (EDAS) | alibaba-edas | app-server | done | https://www.alibabacloud.com/help/en/edas/product-overview/what-is-edas |
+| WUYING Workspace (Elastic Desktop Service) | alibaba-wuying-workspace | virtual-desktop | done | https://www.alibabacloud.com/help/en/wuying-workspace/product-overview/what-is-wuying-workspace |
+| Elastic Cloud Phone | alibaba-elastic-cloud-phone | virtual-desktop | done | https://www.alibabacloud.com/help/en/ecp/product-overview/what-is-elastic-cloud-phone |
+| ApsaraMQ for RocketMQ | alibaba-rocketmq | queue | done | https://www.alibabacloud.com/help/en/apsaramq-for-rocketmq |
+| ApsaraMQ for Kafka | alibaba-kafka | stream | done | https://www.alibabacloud.com/help/en/apsaramq-for-kafka |
+| ApsaraMQ for RabbitMQ | alibaba-rabbitmq | queue | done | https://www.alibabacloud.com/help/en/apsaramq-for-rabbitmq |
+| EventBridge | alibaba-eventbridge | pubsub-topic | done | https://www.alibabacloud.com/help/en/eventbridge/product-overview/what-is-eventbridge |
+| DataHub | alibaba-datahub | stream | done | https://www.alibabacloud.com/help/en/datahub/product-overview/what-is-datahub |
+| Realtime Compute for Apache Flink | alibaba-flink | stream-processor | done | https://www.alibabacloud.com/help/en/flink |
+| MaxCompute | alibaba-maxcompute | data-warehouse | done | https://www.alibabacloud.com/help/en/maxcompute/product-overview/what-is-maxcompute |
+| Hologres | alibaba-hologres | data-warehouse | done | https://www.alibabacloud.com/help/en/hologres/product-overview/what-is-hologres |
+| ApsaraDB for SelectDB | alibaba-selectdb | data-warehouse | done | https://www.alibabacloud.com/help/en/selectdb |
+| Lindorm | alibaba-lindorm | nosql-database | done | https://www.alibabacloud.com/help/en/lindorm |
+| Alibaba Cloud Milvus | alibaba-milvus | vector-database | done | https://www.alibabacloud.com/help/en/milvus |
+| Time Series Database (TSDB) | alibaba-tsdb | timeseries-database | done | https://www.alibabacloud.com/help/en/tsdb |
+| Platform for AI (PAI) | alibaba-pai | ml-platform | done | https://www.alibabacloud.com/help/en/pai |
+| Model Studio (Bailian) | alibaba-model-studio | ai-service | done | https://www.alibabacloud.com/help/en/model-studio/what-is-model-studio |
+| Quick BI | alibaba-quick-bi | bi-service | done | https://www.alibabacloud.com/help/en/quick-bi |
+| Resource Access Management (RAM) | alibaba-ram | identity-provider | done | https://www.alibabacloud.com/help/en/ram |
+| Cloud Config | alibaba-cloud-config | policy-engine | done | https://www.alibabacloud.com/help/en/cloud-config |
+| ActionTrail | alibaba-actiontrail | monitoring | done | https://www.alibabacloud.com/help/en/actiontrail |
+| CloudMonitor | alibaba-cloud-monitor | monitoring | done | https://www.alibabacloud.com/help/en/cms |
+| Application Real-Time Monitoring Service (ARMS) | alibaba-arms | monitoring | done | https://www.alibabacloud.com/help/en/arms |
+| Database Autonomy Service (DAS) | alibaba-das | monitoring | done | https://www.alibabacloud.com/help/en/das |
+| Microservices Engine (MSE) | alibaba-mse | coordination-service | done | https://www.alibabacloud.com/help/en/mse |
+| SchedulerX | alibaba-schedulerx | worker | done | https://www.alibabacloud.com/help/en/schedulerx |
+| CloudFlow (Serverless Workflow) | alibaba-cloudflow | workflow-engine | done | https://www.alibabacloud.com/help/en/serverless-workflow |
+| Short Message Service (SMS) | alibaba-sms | notification-service | done | https://www.alibabacloud.com/help/en/sms |
+| ApsaraVideo VOD | alibaba-vod | media-transcoder | done | https://www.alibabacloud.com/help/en/vod |
+| ApsaraVideo Live | alibaba-live | media-transcoder | done | https://www.alibabacloud.com/help/en/live |
+| Intelligent Media Services (IMS) | alibaba-intelligent-media-services | media-transcoder | done | https://www.alibabacloud.com/help/en/ims |
+| Data Security Center | alibaba-data-security-center | policy-engine | done | https://www.alibabacloud.com/help/en/dsc |
+| Application Load Balancer / Network Load Balancer / Classic Load Balancer / Gateway Load Balancer | — | — | skip: the four members of the SLB family, already one component with a loadBalancerType enum (alibaba-slb); gwlb was added to that enum in this pass | https://www.alibabacloud.com/help/en/slb/ |
+| Key Management Service | — | — | skip: same product as the Data Encryption Service component (alibaba-data-encryption-service), whose hsmType covers shared virtual and dedicated HSMs | https://www.alibabacloud.com/help/en/kms/ |
+| AnalyticDB for PostgreSQL | — | — | skip: engine of AnalyticDB (alibaba-analyticdb), a plan rather than a separate resource | https://www.alibabacloud.com/help/en/analyticdb/ |
+| Elastic Accelerated Computing Instances (EAIS) | — | — | skip: accelerator attached to an existing instance, a property of the instance | https://www.alibabacloud.com/help/en/eais/ |
+| ApsaraDB Dedicated Cluster | — | — | skip: capacity construct that existing ApsaraDB instances are placed into | https://www.alibabacloud.com/help/en/apsaradb-for-dedicated-cluster/ |
+| Compute Nest | — | — | skip: service-delivery and deployment template framework, not a runtime node | https://www.alibabacloud.com/help/en/compute-nest/ |
+| Route tables, custom routes, SNAT and DNAT entries, HAVIP | — | — | skip: routing entries configured on a VPC, NAT gateway or vSwitch | https://www.alibabacloud.com/help/en/vpc/ |
+| Images, snapshots, launch templates, deployment sets | — | — | skip: ECS sub-resources and provisioning inputs, not placed nodes | https://www.alibabacloud.com/help/en/ecs/ |
+| Resource Directory, resource groups, tags, quotas | — | — | skip: account and organisation constructs | https://www.alibabacloud.com/help/en/resource-management/ |
+| Message Center | — | — | skip: account notification inbox, not a customer resource | https://www.alibabacloud.com/help/en/message-center/ |
+| Cloud Marketplace | — | — | skip: catalogue of third-party offerings | https://www.alibabacloud.com/help/en/marketplace/ |
+| Cloud Governance Center | — | — | skip: landing-zone setup over Resource Directory, an account construct | https://www.alibabacloud.com/help/en/cloud-governance-center/ |
+| Reserved instances and savings plans | — | — | skip: billing commitments over existing instances | https://www.alibabacloud.com/help/en/ecs/ |
+| Lingjun Intelligent Computing (EFLO) | — | — | todo | https://www.alibabacloud.com/help/en/pai |
+| Tair KVCache | — | — | todo | https://www.alibabacloud.com/help/en/redis/ |
+| Database File System (DBFS) | — | — | todo | https://www.alibabacloud.com/help/en/database-file-system/ |
+| Mobile Hub (mPaaS) | — | — | todo | https://www.alibabacloud.com/help/en/mobile-platform-as-a-service/ |
+| Interactive Media Platform | — | — | todo | https://www.alibabacloud.com/help/en/ims |
+| Video Surveillance Service | — | — | todo | https://www.alibabacloud.com/help/en/vs/ |
+| Secure CDN (SCDN) | — | — | todo | https://www.alibabacloud.com/help/en/scdn/ |
+| Brain Industrial | — | — | todo | https://www.alibabacloud.com/help/en/brain-industrial/ |
+| Cloud-native API Gateway (APIG) | — | — | todo | https://www.alibabacloud.com/help/en/api-gateway/ |
+| StarRocks (EMR Serverless StarRocks) | — | — | todo | https://www.alibabacloud.com/help/en/emr/ |
+
 ## Counts
 
-total 91, todo 0, done 69, skip 22.
+total 158, todo 10, done 113, skip 35.

@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Cloud Code Engine: a serverless platform that runs "source-centric, containerized, and
+# serverless apps and jobs" and "automatically scales your workloads up and down, and even down
+# to zero when no requests are active" ("Learn about Code Engine"). Applications are HTTP-driven
+# and scale on request volume; jobs run to completion; functions are stateless snippets.
+schemaVersion: "1"
+type: "component"
+id: "ibm-code-engine"
+kind: "app-server"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/codeengine?topic=codeengine-about"
+defaults:
+  managed: true
+  stateless: true
+  autoscaling: true
+properties:
+  workloadType:
+    type: "enum"
+    values: ["application", "job", "function"]
+    default: "application"
+  scaleToZero:
+    type: "boolean"
+    default: true

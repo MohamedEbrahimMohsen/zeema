@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Railway: managed platform that builds a repository into a container and runs it as a service in
+# a project environment. Per the Railway documentation services in one project reach each other
+# over a private network, and a service runs a single replica unless more are configured.
+schemaVersion: "1"
+type: "component"
+id: "railway"
+kind: "app-server"
+provider: "default"
+docs: "https://docs.railway.com/"
+defaults:
+  managed: true
+  stateless: true
+  autoscaling: false
+  ownsData: false
+  instances: 1
+properties:
+  builder:
+    type: "enum"
+    values: ["railpack", "nixpacks", "dockerfile"]
+  privateNetworking:
+    type: "boolean"
+    default: true

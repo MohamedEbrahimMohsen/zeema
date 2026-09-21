@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# SnapShooter by DigitalOcean: "a cloud backup and recovery solution" that backs up "servers,
+# volumes, databases, and applications from DigitalOcean and other cloud providers"
+# ("SnapShooter"). Targets include Droplets and volumes, managed databases, Kubernetes
+# resources, files, Git repositories and application data; backups are written to a destination
+# the user chooses, such as Spaces Object Storage, Amazon S3, Google Drive or Dropbox.
+schemaVersion: "1"
+type: "component"
+id: "digitalocean-snapshooter"
+kind: "backup-service"
+provider: "digitalocean"
+docs: "https://docs.digitalocean.com/products/snapshooter/"
+defaults:
+  managed: true
+  crossRegionRestore: false
+properties:
+  destination:
+    type: "enum"
+    values: ["spaces", "s3", "google-drive", "dropbox", "other"]
+    default: "spaces"
+  coversOtherClouds:
+    type: "boolean"
+    default: true

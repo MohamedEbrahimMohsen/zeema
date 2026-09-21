@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Managed integrations for AWS IoT Device Management: one control plane for devices from many
+# manufacturers, reached directly, through a hub, or through a cloud-to-cloud connector. "What is
+# managed integrations for AWS IoT Device Management?" says a managed thing is an abstraction that
+# removes the rules, actions, MQTT topics and policies an AWS IoT Core thing needs, and that the
+# device and hub SDKs cover Zigbee, Z-Wave and Wi-Fi. Available in Canada (Central) and Europe
+# (Ireland) only.
+schemaVersion: "1"
+type: "component"
+id: "aws-iot-managed-integrations"
+kind: "iot-hub"
+provider: "aws"
+docs: "https://docs.aws.amazon.com/iot-mi/latest/devguide/what-is-managedintegrations.html"
+defaults:
+  managed: true
+  protocol: "multi"
+  perDeviceIdentity: true
+properties:
+  connectivity:
+    type: "enum"
+    values: ["direct-connected", "hub-connected", "cloud-to-cloud"]
+  cloudToCloudConnector:
+    type: "boolean"
+    default: false

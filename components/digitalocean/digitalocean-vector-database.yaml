@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# DigitalOcean Vector Databases: "managed clusters purpose-built for vector similarity search"
+# for retrieval-augmented generation and semantic search ("Vector Databases"). Three engines:
+# Weaviate (vector-native, public preview), OpenSearch (k-NN plus keyword search, so hybrid
+# search is available) and PostgreSQL with the pgvector and pgvectorscale extensions. The
+# OpenSearch and PostgreSQL clusters run on the Managed Databases infrastructure.
+schemaVersion: "1"
+type: "component"
+id: "digitalocean-vector-database"
+kind: "vector-database"
+provider: "digitalocean"
+docs: "https://docs.digitalocean.com/products/vector-databases/"
+defaults:
+  managed: true
+  hybridSearch: true
+properties:
+  engine:
+    type: "enum"
+    values: ["weaviate", "opensearch", "postgresql"]

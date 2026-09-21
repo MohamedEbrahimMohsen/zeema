@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# CloudFlow (Serverless Workflow): coordinates the steps of a long-running business process as a
+# state machine, persisting each transition so a run survives failure and can be retried or
+# compensated ("What is CloudFlow"). Steps are declared as a flow definition, not a saga library.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-cloudflow"
+kind: "workflow-engine"
+provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/serverless-workflow"
+defaults:
+  managed: true
+  durable: true
+properties:
+  flowMode:
+    type: "enum"
+    values: ["standard", "express"]
+    default: "standard"

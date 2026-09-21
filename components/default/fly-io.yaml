@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Fly.io: runs OCI images as Firecracker microVMs ("Machines") in many regions behind an anycast
+# proxy. Per the Fly.io documentation Machines can be configured to stop when idle and start on
+# request, which is set per service rather than being on by default.
+schemaVersion: "1"
+type: "component"
+id: "fly-io"
+kind: "app-server"
+provider: "default"
+docs: "https://fly.io/docs/"
+defaults:
+  managed: true
+  stateless: true
+  autoscaling: false
+  ownsData: false
+  runtime: "firecracker-microvm"
+properties:
+  autoStopMachines:
+    type: "boolean"
+    default: false
+  anycastRouting:
+    type: "boolean"
+    default: true

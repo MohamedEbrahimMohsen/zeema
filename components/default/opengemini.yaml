@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# openGemini: distributed time-series database for telemetry, queried with InfluxQL. Per the
+# openGemini documentation a single binary runs standalone for development while production
+# deployments split into ts-sql, ts-meta and ts-store nodes.
+schemaVersion: "1"
+type: "component"
+id: "opengemini"
+kind: "timeseries-database"
+provider: "default"
+docs: "https://docs.opengemini.org/guide/"
+defaults:
+  managed: false
+  labelIndex: true
+  compression: "other"
+  downsampling: false
+  tiers: "single"
+properties:
+  deploymentMode:
+    type: "enum"
+    values: ["standalone", "cluster"]
+    default: "standalone"
+  queryLanguage:
+    type: "enum"
+    values: ["influxql"]
+    default: "influxql"

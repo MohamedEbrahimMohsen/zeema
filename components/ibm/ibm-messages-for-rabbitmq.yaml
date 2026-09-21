@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Cloud Messages for RabbitMQ: managed RabbitMQ on the IBM Cloud Databases platform. RabbitMQ
+# acknowledges and redelivers, so delivery is at-least-once; queues are durable and messages are
+# persisted. Daily automatic backups kept for 30 days ("Managing Cloud Databases Backups").
+# A dead letter exchange is configured per queue, so deadLetterQueue is left at the kind default.
+schemaVersion: "1"
+type: "component"
+id: "ibm-messages-for-rabbitmq"
+kind: "queue"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/messages-for-rabbitmq"
+defaults:
+  managed: true
+  delivery: "at-least-once"
+  persistence: true
+properties:
+  backupRetentionDays:
+    type: "integer"
+    default: 30
+  keyManagement:
+    type: "enum"
+    values: ["provider-managed", "customer-managed"]
+    default: "provider-managed"

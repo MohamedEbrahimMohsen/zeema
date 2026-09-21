@@ -251,6 +251,27 @@ Network Flow, and Area 1 is now Email Security.
 | bot-management | A bot detection layer scores every request with a machine-learning model and acts on that score: it carries a bot-score threshold, the detection engines enabled (heuristics, ML, JavaScript detections, anomaly detection), a verified-bot allowlist, a challenge action, and a session-token lifetime. `waf` holds rulesets, managed rule groups and a paranoia level; `rate-limiter` holds a window and a request budget; `ddos-protection` holds attack-traffic thresholds. None of them can answer the rule a bot policy actually needs — "is JavaScript detection enabled on every route that also enforces a bot-score block", or "does a login route sitting behind bot management also emit a challenge" — because the score and the detection engines have nowhere to live. Used by Cloudflare Bot Management, Turnstile and AI Crawl Control. |
 | email-security-gateway | An inbound email security gateway sits in the MX path and holds properties nothing else in the catalogue has: a delivery mode (inline MX, journaling, or API-connected to the mailbox provider), per-disposition actions (malicious, suspicious, spoof, spam, bulk), link-rewrite and attachment-detonation switches, allow/block sender policies, and a quarantine retention. `firewall` describes network rules over addresses, ports and protocols and cannot express a message disposition; `notification-service` is an outbound sender with no inspection or quarantine; `waf` inspects HTTP requests. A rule such as "an internet-facing mail flow must have an email security gateway ahead of the mailbox and link rewriting on" has no property to read on any existing kind. Used by Cloudflare Email Security (formerly Area 1). |
 
+---
+
+## Coverage pass 2026-09-21
+
+Re-diffed against <https://developers.cloudflare.com/products/> and the created-resource list of
+the Cloudflare Terraform provider (`docs/resources/` in cloudflare/terraform-provider-cloudflare).
+The directory entries "AI controls", "Client-side security" and "Network visibility" are group
+headings, not products, and get no row.
+
+| resource | id | kind | status | source |
+|---|---|---|---|---|
+| Cloudflare Flagship (feature flags) | cloudflare-flagship | feature-flag-service | done | https://developers.cloudflare.com/flagship/ |
+| MCP server portal (Cloudflare One AI controls) | cloudflare-mcp-portal | api-gateway | done | https://developers.cloudflare.com/cloudflare-one/access-controls/ai-controls/mcp-portals/ |
+| Cloudforce One | — | — | skip: threat-intelligence platform and analyst service inside Security Center; its API objects are requests for information, not a resource in a traffic path | https://developers.cloudflare.com/security-center/cloudforce-one/ |
+| Open Port Scanning | — | — | skip: Cloudforce One scan of Magic Transit and BYOIP ranges, not a resource | https://developers.cloudflare.com/security-center/cloudforce-one/open-port-scanning/ |
+| Cloud Connector | — | — | skip: rule on a zone that routes matching requests to a cloud bucket | https://developers.cloudflare.com/rules/cloud-connector/ |
+| WAF content scanning | — | — | skip: upload-inspection detection feature of the WAF | https://developers.cloudflare.com/waf/detections/content-scanning/ |
+| Workers VPC service (connectivity directory entry) | — | — | skip: service entry a Worker binds to, part of Workers VPC | https://developers.cloudflare.com/workers-vpc/configuration/vpc-services/ |
+| Secure MCP servers | — | — | skip: Access policy placed in front of a customer's own MCP server | https://developers.cloudflare.com/cloudflare-one/access-controls/ai-controls/secure-mcp-servers/ |
+| Resource sharing | — | — | skip: account construct for sharing resources between accounts | https://developers.cloudflare.com/fundamentals/manage-members/share-resources/ |
+
 ## Counts
 
-total 157, todo 0, done 98, skip 56.
+total 163, todo 0, done 100, skip 63.

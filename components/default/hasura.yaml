@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Hasura: GraphQL engine that exposes a database as a GraphQL and REST API with row-level
+# permissions. Per the Hasura documentation an engine started without an admin secret serves
+# requests as the admin role, and the allow-list is off until enabled.
+schemaVersion: "1"
+type: "component"
+id: "hasura"
+kind: "api-gateway"
+provider: "default"
+docs: "https://hasura.io/docs/2.0/index/"
+defaults:
+  managed: false
+  auth: "none"
+  rateLimiting: false
+  protocol: "http"
+  concurrencyLimit: false
+properties:
+  adminSecret:
+    type: "boolean"
+    default: false
+  allowList:
+    type: "boolean"
+    default: false
+  jwtAuth:
+    type: "boolean"
+    default: false

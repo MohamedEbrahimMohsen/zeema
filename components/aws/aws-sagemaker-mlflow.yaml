@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Fully managed MLflow on Amazon SageMaker AI: an MLflow Tracking Server that records experiments,
+# runs and model versions. "Accelerate generative AI development using managed MLflow on Amazon
+# SageMaker AI" says the compute and backend metadata store are hosted in the SageMaker service
+# account while the artifact store is an Amazon S3 bucket in your account, that the default tracking
+# server size is Small, and that tracking servers launch in a single Availability Zone in their Region.
+schemaVersion: "1"
+type: "component"
+id: "aws-sagemaker-mlflow"
+kind: "ml-platform"
+provider: "aws"
+docs: "https://docs.aws.amazon.com/sagemaker/latest/dg/mlflow.html"
+defaults:
+  managed: true
+  experimentTracking: true
+  modelRegistry: true
+properties:
+  trackingServerSize:
+    type: "enum"
+    values: ["small", "medium", "large"]
+    default: "small"
+  zoneRedundant:
+    type: "boolean"
+    default: false
+  artifactStore:
+    type: "enum"
+    values: ["s3"]
+    default: "s3"
+  automaticModelRegistration:
+    type: "boolean"

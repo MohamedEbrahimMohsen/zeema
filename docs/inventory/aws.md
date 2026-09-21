@@ -1,7 +1,12 @@
 # AWS inventory
 
-Official product directory: <https://aws.amazon.com/products/> and the AWS documentation
-service index <https://docs.aws.amazon.com/general/latest/gr/aws-service-information.html>.
+Primary source: the Service Authorization Reference table of contents,
+<https://docs.aws.amazon.com/service-authorization/latest/reference/toc-contents.json>, which names
+every IAM service namespace and is the most current machine-readable list AWS publishes. The
+products directory <https://aws.amazon.com/products/> lags launches and drops services with no
+landing page, so it is a cross-check, not the index; the same goes for the AWS documentation
+service index <https://docs.aws.amazon.com/general/latest/gr/aws-service-information.html> and the
+regional services table <https://api.regional-table.region-services.aws.a2z.com/index.json>.
 Lifecycle states (maintenance, sunset, full shutdown) are taken from
 <https://docs.aws.amazon.com/general/latest/gr/service-lifecycle.html>. Families below use
 AWS's own directory headings. One row per resource a designer places; composite services are
@@ -747,6 +752,80 @@ Amazon Pinpoint is retained as a component although it is in sunset with end of 
 | Storage Gateway Tape Gateway | — | — | skip: gateway type of AWS Storage Gateway, a property not a node | https://diagrams.mingrammer.com/docs/nodes/aws |
 | Storage | — | — | skip: category icon | https://diagrams.mingrammer.com/docs/nodes/aws |
 
+## Coverage pass 2026-09-21
+
+Diffed against the AWS product directory API behind <https://aws.amazon.com/products/> (4 pages,
+355 entries), the Service Authorization Reference TOC
+<https://docs.aws.amazon.com/service-authorization/latest/reference/toc-contents.json> (475 IAM
+service namespaces, the most current list), the regional services table
+<https://api.regional-table.region-services.aws.a2z.com/index.json>, and the 2026 launch round-ups
+for services younger than both directories.
+
+### Added
+
+| resource | id | kind | status | source |
+|---|---|---|---|---|
+| Amazon CloudFront KeyValueStore | aws-cloudfront-keyvaluestore | nosql-database | done | https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/kvs-with-functions.html |
+| Managed MLflow on Amazon SageMaker AI (tracking server) | aws-sagemaker-mlflow | ml-platform | done | https://docs.aws.amazon.com/sagemaker/latest/dg/mlflow.html |
+| Amazon SageMaker HyperPod cluster | aws-sagemaker-hyperpod | big-data-cluster | done | https://docs.aws.amazon.com/sagemaker/latest/dg/sagemaker-hyperpod.html |
+| Mail Manager for Amazon SES | aws-ses-mail-manager | email-security-gateway | done | https://docs.aws.amazon.com/ses/latest/dg/eb.html |
+| Amazon IVS Chat room | aws-ivs-chat | realtime-gateway | done | https://docs.aws.amazon.com/ivs/latest/ChatUserGuide/what-is.html |
+| AWS Backup gateway | aws-backup-gateway | edge-appliance | done | https://docs.aws.amazon.com/aws-backup/latest/devguide/backup-gateway.html |
+| AWS Interconnect | aws-interconnect | network-fabric | done | https://docs.aws.amazon.com/interconnect/latest/userguide/what-is-interconnect.html |
+| AWS RTB Fabric gateway | aws-rtb-fabric | private-link | done | https://docs.aws.amazon.com/rtb-fabric/latest/userguide/what-is-rtb-fabric.html |
+| Managed integrations for AWS IoT Device Management | aws-iot-managed-integrations | iot-hub | done | https://docs.aws.amazon.com/iot-mi/latest/devguide/what-is-managedintegrations.html |
+| Amazon CloudWatch Network Flow Monitor | aws-cloudwatch-network-flow-monitor | monitoring | done | https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/what-is-network-flow-monitor.html |
+| Amazon CloudWatch Application Insights | aws-cloudwatch-application-insights | monitoring | done | https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch-application-insights.html |
+| Amazon Route 53 Global Resolver | aws-route53-global-resolver | dns | done | https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/gr-what-is-global-resolver.html |
+
+### Not a node
+
+| resource | id | kind | status | source |
+|---|---|---|---|---|
+| AWS Context | — | — | skip: announced at the AWS Summit New York 2026 and still "coming soon"; no service documentation to take defaults from | https://aws.amazon.com/blogs/machine-learning/context-intelligence-for-your-data-and-ai-agents-at-scale/ |
+| AWS Continuum | — | — | skip: announced at the AWS Summit New York 2026; no service documentation yet | https://aws.amazon.com/blogs/aws/top-announcements-of-the-aws-summit-in-new-york-2026/ |
+| Amazon Bedrock Managed Agents | — | — | skip: managed agent offering of Amazon Bedrock, placed as aws-bedrock-agentcore | https://aws.amazon.com/bedrock/managed-agents-openai/ |
+| Amazon Q in Connect | — | — | skip: assistant capability of an Amazon Connect instance | https://docs.aws.amazon.com/connect/latest/adminguide/amazon-q-connect.html |
+| Amazon Connect outbound campaigns | — | — | skip: campaign configuration on an Amazon Connect instance | https://docs.aws.amazon.com/connect/latest/adminguide/outbound-campaigns.html |
+| Amazon EKS Auto Mode | — | — | skip: compute mode of an EKS cluster, a property not a node | https://docs.aws.amazon.com/eks/latest/userguide/automode.html |
+| Amazon EKS Hybrid Nodes | — | — | skip: node type joined to an existing EKS cluster | https://docs.aws.amazon.com/eks/latest/userguide/hybrid-nodes-overview.html |
+| Amazon ElastiCache Serverless | — | — | skip: capacity mode of an ElastiCache cache | https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/WhatIs.html |
+| Amazon MWAA Serverless | — | — | skip: capacity mode of an Amazon MWAA environment | https://docs.aws.amazon.com/mwaa/latest/userguide/what-is-mwaa.html |
+| CloudFront SaaS Manager (multi-tenant distributions) | — | — | skip: distribution type of Amazon CloudFront | https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/distribution-config-options.html |
+| Amazon S3 Metadata | — | — | skip: metadata tables generated from an existing bucket into a table bucket | https://docs.aws.amazon.com/AmazonS3/latest/userguide/metadata-tables-overview.html |
+| Amazon S3 Annotations | — | — | skip: context attached to S3 objects, object metadata not a node | https://aws.amazon.com/blogs/aws/top-announcements-of-the-aws-summit-in-new-york-2026/ |
+| Amazon Application Recovery Controller zonal shift | — | — | skip: traffic action taken against an existing resource | https://docs.aws.amazon.com/r53recovery/latest/dg/arc-zonal-shift.html |
+| Amazon Route 53 Recovery Cluster / Controls / Readiness | — | — | skip: API namespaces of Amazon Application Recovery Controller | https://docs.aws.amazon.com/r53recovery/latest/dg/what-is-route53-recovery.html |
+| Amazon CloudWatch Observability Access Manager | — | — | skip: sink and link objects for cross-account observability, configuration not a node | https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-Unified-Cross-Account.html |
+| Amazon CloudWatch observability admin | — | — | skip: account-level telemetry configuration | https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/telemetry-config-cloudwatch.html |
+| AWS Backup Search | — | — | skip: search over existing recovery points | https://docs.aws.amazon.com/aws-backup/latest/devguide/searching-backups.html |
+| AWS Cost Optimization Hub | — | — | skip: recommendations view in Billing and Cost Management | https://docs.aws.amazon.com/cost-management/latest/userguide/cost-optimization-hub.html |
+| AWS Multi-party approval | — | — | skip: approval workflow capability of AWS Organizations, protects operations rather than serving traffic | https://docs.aws.amazon.com/mpa/latest/userguide/what-is.html |
+| AWS Private CA Connector for Active Directory | — | — | skip: certificate enrollment connector of AWS Private CA (AWS GovCloud (US) only) | https://docs.aws.amazon.com/privateca/latest/userguide/connector-for-ad.html |
+| AWS Private CA Connector for SCEP | — | — | skip: certificate enrollment connector of AWS Private CA | https://docs.aws.amazon.com/privateca/latest/userguide/connector-for-scep.html |
+| AWS Directory Service Data | — | — | skip: data-plane API of an AWS Managed Microsoft AD directory | https://docs.aws.amazon.com/directoryservice/latest/devguide/what_is_ds_data.html |
+| AWS Snow Device Management | — | — | skip: management feature of Snow devices; the Snow family reached full shutdown 12 November 2025 | https://docs.aws.amazon.com/general/latest/gr/full_shutdown_services.html |
+| AWS Data Transfer Terminal | — | — | skip: physical facility you bring storage devices to, not a resource | https://aws.amazon.com/data-transfer-terminal/ |
+| AWS SQL Workbench | — | — | skip: query authoring tool in the console | https://docs.aws.amazon.com/sqlworkbench/latest/userguide/what-is-sqlworkbench.html |
+| Kiro | — | — | skip: agentic IDE, desktop tooling | https://kiro.dev/ |
+| AWS Distro for OpenTelemetry | — | — | skip: collector and SDK distribution installed into a workload | https://aws.amazon.com/otel/ |
+| Amazon Corretto | — | — | skip: OpenJDK distribution | https://aws.amazon.com/corretto/ |
+
+### Already covered under another name
+
+| resource | id | kind | status | source |
+|---|---|---|---|---|
+| Amazon DocumentDB elastic clusters | aws-documentdb | nosql-database | done | mapping: `clusterType: "elastic"` on aws-documentdb |
+| Amazon CloudWatch Network Synthetic Monitor | aws-cloudwatch-network-monitor | monitoring | done | mapping: renamed from CloudWatch Network Monitor, same resource |
+| Amazon Quick / Amazon Quick Suite | aws-quicksight | bi-service | done | mapping: renamed Amazon QuickSight |
+| Amazon Managed Streaming for Apache Kafka Serverless | aws-msk | queue | done | mapping: capacity mode of aws-msk |
+| Amazon Bedrock Agents | aws-bedrock-agentcore | ai-service | done | mapping: agent runtime of Amazon Bedrock |
+| Elastic Load Balancing V2 (`elasticloadbalancing`) | alb, nlb | load-balancer | done | mapping: the API namespace behind ALB and NLB |
+| Amazon Simple Storage Service (S3) | s3 | object-store | done | mapping: full product name of the S3 bucket row |
+| AWS Key Management Service (KMS) | aws-kms | key-management | done | mapping: full product name |
+| AWS WAF Regional / AWS WAF V2, Amazon Inspector2 / InspectorScan, Amazon Kinesis Analytics V2, AWS Elemental MediaPackage V2 | — | — | mapping: API versions of AWS WAF, Amazon Inspector, Amazon Managed Service for Apache Flink and AWS Elemental MediaPackage | https://docs.aws.amazon.com/service-authorization/latest/reference/reference_policies_actions-resources-contextkeys.html |
+
 ## Counts
 
-total 607, todo 0, done 286, skip 317.
+total 643, todo 0, done 298, skip 345. Plus 9 mapping rows under
+"Already covered under another name", which point at rows already counted above.

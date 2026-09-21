@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apollo GraphOS: hosted schema registry and supergraph platform whose Router serves a federated
+# GraphQL API over subgraph services. Per the GraphOS documentation the router runs either as a
+# GraphOS-hosted cloud router or self-hosted next to the subgraphs, fetching its schema from the
+# registry.
+schemaVersion: "1"
+type: "component"
+id: "apollo-graphos"
+kind: "api-gateway"
+provider: "default"
+docs: "https://www.apollographql.com/docs/graphos"
+defaults:
+  managed: true
+  auth: "none"
+  rateLimiting: false
+  protocol: "http"
+properties:
+  routerHosting:
+    type: "enum"
+    values: ["cloud", "self-hosted"]
+    default: "cloud"
+  federation:
+    type: "boolean"
+    default: true
+  schemaChecks:
+    type: "boolean"
+    default: true

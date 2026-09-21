@@ -30,4 +30,7 @@ export const KIND_GLYPHS_EXTRA = {
   "bot-management": `<rect x="2.5" y="5" width="10.5" height="8" rx="2"/><path d="M7.75 2v3"/><path d="M5.5 8.5v1.5M10 8.5v1.5"/><path d="M6 11.5h3.5"/>`,
   "email-security-gateway": `<rect x="2.5" y="3.5" width="10.5" height="8" rx="1.5"/><path d="M3 4.5 7.75 8.5 12.5 4.5"/><path d="M3.5 15l2.5 2.5 5-5"/>`,
   "content-repository": `<rect x="3" y="3" width="10" height="15" rx="1.5"/><rect x="5.5" y="6" width="5" height="3.5" rx="0.5"/><path d="M5.5 12h5M5.5 15h3"/><path d="M15.5 6.5a4 4 0 0 1 0 5M18 5a6.5 6.5 0 0 1 0 8"/>`,
+  // Transcribed from the hand-drawn icons/kinds/custom.svg so the generator stops reporting
+  // `MISSING GLYPH: custom`. The body is the shipped one, dashed frame and all.
+  custom: `<rect x="3.5" y="5" width="17" height="14" rx="2" stroke-dasharray="3 2.5"/><path d="M10 10.4a2 2 0 1 1 2.6 1.9c-.5.2-.8.6-.8 1.1v.5"/><path d="M11.8 16.2h.02"/>`,
 };

@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Data Product Hub: a marketplace in which data producers publish data products with their
+# contracts and delivery methods, and consumers subscribe to them ("IBM Data Product Hub"). It
+# catalogues and brokers access; the data stays in the source system.
+schemaVersion: "1"
+type: "component"
+id: "ibm-data-product-hub"
+kind: "data-catalog"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/dph"
+defaults:
+  managed: true
+  accessPolicyEnforcement: true
+properties:
+  deliveryMethod:
+    type: "enum"
+    values: ["live-connection", "flat-file", "api"]

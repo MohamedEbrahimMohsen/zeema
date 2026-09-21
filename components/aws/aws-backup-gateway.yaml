@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Backup gateway: a virtual appliance deployed on an on-premises hypervisor so that AWS Backup can
+# discover and back up the virtual machines running on it. "AWS Backup gateway" describes it as a
+# software appliance that connects the hypervisor to AWS Backup and is managed from the AWS console.
+schemaVersion: "1"
+type: "component"
+id: "aws-backup-gateway"
+kind: "edge-appliance"
+provider: "aws"
+docs: "https://docs.aws.amazon.com/aws-backup/latest/devguide/backup-gateway.html"
+defaults:
+  managed: true
+  formFactor: "virtual"
+  cloudManaged: true
+properties:
+  hypervisor:
+    type: "enum"
+    values: ["vmware-esxi", "hyper-v", "kvm"]
+  bandwidthThrottling:
+    type: "boolean"
+    default: false

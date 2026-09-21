@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Model Studio (Bailian): "a one-stop model service platform" serving "the full Qwen series and
+# mainstream third-party LLMs" over an OpenAI-compatible API, across text generation, visual
+# understanding, image and video generation, speech and embeddings, with retrieval-augmented
+# generation billed separately ("OpenAI-Compatible Qwen & Multimodal Model Access"). Billing is
+# pay-as-you-go and the page states user data is not used for training.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-model-studio"
+kind: "ai-service"
+provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/model-studio/what-is-model-studio"
+defaults:
+  managed: true
+  modality: "multimodal"
+properties:
+  modelFamily:
+    type: "enum"
+    values: ["qwen-max", "qwen-plus", "qwen-flash", "third-party"]
+  knowledgeBase:
+    type: "boolean"
+    default: false
+  openAiCompatibleApi:
+    type: "boolean"
+    default: true

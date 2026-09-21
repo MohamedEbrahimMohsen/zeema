@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Athenz: X.509 certificate based service authentication with fine-grained role based access
+# control. Per the Athenz README it issues service identity certificates and mutual-TLS bound
+# OAuth2 access tokens, and supports both centralised and decentralised authorization.
+schemaVersion: "1"
+type: "component"
+id: "athenz"
+kind: "identity-provider"
+provider: "default"
+docs: "https://www.athenz.io"
+defaults:
+  managed: false
+  protocol: "oauth2"
+  authorizationModel: "rbac"
+  centralised: true
+  mfa: false
+properties:
+  serviceIdentityCertificates:
+    type: "boolean"
+    default: true
+  tokenBinding:
+    type: "enum"
+    values: ["none", "mtls"]
+    default: "mtls"

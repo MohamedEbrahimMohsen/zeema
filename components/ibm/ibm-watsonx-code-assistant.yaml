@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM watsonx Code Assistant: a code generation and modernisation assistant built on IBM Granite
+# code models, used from an IDE extension ("IBM watsonx Code Assistant"). It answers per request;
+# it stores no application data of its own.
+schemaVersion: "1"
+type: "component"
+id: "ibm-watsonx-code-assistant"
+kind: "ai-service"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/watsonx-code-assistant"
+defaults:
+  managed: true
+  modality: "text"
+properties:
+  target:
+    type: "enum"
+    values: ["general-development", "ansible-lightspeed", "z-modernization", "java-modernization"]

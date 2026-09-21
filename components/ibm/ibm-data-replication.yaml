@@ -1,0 +1,12 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Data Replication: continuous log-based replication that captures committed changes from a
+# source database and applies them to a target with low latency ("IBM Data Replication"). It
+# reads the transaction log, so it does not poll the tables.
+schemaVersion: "1"
+type: "component"
+id: "ibm-data-replication"
+kind: "change-data-capture"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/data-replication"
+defaults:
+  managed: true

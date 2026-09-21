@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Higress: AI-native API gateway built on Envoy and Istio, extended with WebAssembly plugins.
+# Per "What is Higress" it merges ingress, microservice and AI gateway roles in one process and is
+# configured through the Kubernetes Ingress and Gateway APIs.
+schemaVersion: "1"
+type: "component"
+id: "higress"
+kind: "api-gateway"
+provider: "default"
+docs: "https://higress.cn/en/docs/latest/overview/what-is-higress/"
+defaults:
+  managed: false
+  auth: "none"
+  rateLimiting: false
+  protocol: "http"
+  concurrencyLimit: false
+properties:
+  dataPlane:
+    type: "enum"
+    values: ["envoy"]
+    default: "envoy"
+  wasmPlugins:
+    type: "boolean"
+    default: true
+  aiProxy:
+    type: "boolean"
+    default: false

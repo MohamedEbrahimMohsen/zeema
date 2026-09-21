@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Db2 SaaS: Db2 delivered as a managed service on IBM Cloud, sold as a free Lite plan and as
+# Standard, Enterprise and Performance plans, with high availability (HADR) and geo-replicated
+# disaster recovery as options ("IBM Db2 SaaS"). HA is not part of every plan, so replication is
+# left unset.
+schemaVersion: "1"
+type: "component"
+id: "ibm-db2"
+kind: "sql-database"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/db2-saas"
+defaults:
+  managed: true
+properties:
+  plan:
+    type: "enum"
+    values: ["lite", "standard", "enterprise", "performance"]
+  highAvailability:
+    type: "boolean"
+    default: false
+  disasterRecovery:
+    type: "boolean"
+    default: false

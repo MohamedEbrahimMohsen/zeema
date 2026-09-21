@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Cloud Logs Routing: forwards platform logs of a region to the Cloud Logs instances named by
+# the tenant configuration ("Logs Routing"). A forwarder, not a store: it holds no retention of
+# its own.
+schemaVersion: "1"
+type: "component"
+id: "ibm-logs-routing"
+kind: "stream-processor"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/logs-router"
+defaults:
+  managed: true
+properties:
+  signal:
+    type: "enum"
+    values: ["platform-logs"]
+    default: "platform-logs"

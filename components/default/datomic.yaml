@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Datomic: immutable transactional database. Per the Datomic documentation all writes go through
+# a single transactor that appends facts to a log, history is never overwritten, and query runs in
+# the peer or client process against indexes read from a pluggable storage service.
+schemaVersion: "1"
+type: "component"
+id: "datomic"
+kind: "sql-database"
+provider: "default"
+docs: "https://docs.datomic.com/"
+defaults:
+  managed: false
+  appendOnly: true
+  multiWriter: false
+  sharded: false
+  replication: "none"
+properties:
+  edition:
+    type: "enum"
+    values: ["local", "pro", "cloud"]
+    default: "pro"
+  storageService:
+    type: "enum"
+    values: ["dev", "sql", "dynamodb", "cassandra"]
+    default: "dev"

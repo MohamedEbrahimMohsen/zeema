@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Armada: multi-cluster batch scheduler that queues jobs centrally and dispatches them to executor
+# agents on many Kubernetes clusters. Per the Armada README it exists so batch workloads can scale
+# past a single cluster, and queues are scheduled against each other by fair share.
+schemaVersion: "1"
+type: "component"
+id: "armada"
+kind: "big-data-cluster"
+provider: "default"
+docs: "https://armadaproject.io/"
+defaults:
+  managed: false
+  engine: "kubernetes-batch"
+  autoscaling: false
+  spotInstances: false
+properties:
+  multiCluster:
+    type: "boolean"
+    default: true
+  queueFairShare:
+    type: "boolean"
+    default: true

@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# ApsaraVideo Live: ingests a live stream over RTMP, transcodes it, records it and delivers it over
+# CDN in HLS, FLV or RTMP ("What is ApsaraVideo Live"). Recording and transcoding are enabled per
+# stream domain, not by default.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-live"
+kind: "media-transcoder"
+provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/live"
+defaults:
+  managed: true
+  mode: "live"
+properties:
+  ingestProtocol:
+    type: "enum"
+    values: ["rtmp", "srt", "webrtc"]
+    default: "rtmp"
+  recording:
+    type: "boolean"
+    default: false

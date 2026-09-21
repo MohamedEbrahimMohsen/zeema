@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Virtual private endpoint (VPE) gateway for VPC: a virtual IP interface reaching a supported IBM
+# Cloud service over the private backbone, "redundant and highly available, and spans all
+# availability zones of your VPC"; creating one also creates "a DNS zone and records", and
+# "public connectivity is not required" ("About virtual private endpoint gateways").
+schemaVersion: "1"
+type: "component"
+id: "ibm-virtual-endpoint-gateway"
+kind: "private-link"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/vpc?topic=vpc-about-vpe"
+defaults:
+  managed: true
+  privateDnsIntegration: true
+  crossRegion: false
+properties:
+  crossAccount:
+    type: "boolean"
+    default: false

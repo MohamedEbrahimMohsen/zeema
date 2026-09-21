@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Cloud Databases for PostgreSQL: managed PostgreSQL on the IBM Cloud Databases platform.
+# "An automatically scheduled backup is taken of your database every day" and backups are "kept
+# with a simple retention schedule of 30 days"; they are "encrypted either with an automatic key
+# or your own key if you use Bring Your Own Key" ("Managing Cloud Databases Backups"). The
+# replication topology is engine-specific and not stated for the platform, so it is left unset.
+schemaVersion: "1"
+type: "component"
+id: "ibm-databases-for-postgresql"
+kind: "sql-database"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/databases-for-postgresql"
+defaults:
+  managed: true
+  backupEnabled: true
+  backupRetentionDays: 30
+  encryptionAtRest: true
+properties:
+  keyManagement:
+    type: "enum"
+    values: ["provider-managed", "customer-managed"]
+    default: "provider-managed"
+  readReplica:
+    type: "boolean"
+    default: false

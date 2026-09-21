@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# DigitalOcean Network File Storage (NFS): "a fully managed, POSIX-compliant file storage
+# solution built for demanding workloads like AI/ML pipelines, containerized applications, and
+# DigitalOcean Kubernetes (DOKS) clusters" ("Network File Storage"). Shares are mounted with
+# standard NFS commands and attach to VPC networks in the same region, up to 10 VPCs per share;
+# a Standard and a High Performance tier are offered.
+schemaVersion: "1"
+type: "component"
+id: "digitalocean-nfs"
+kind: "file-storage"
+provider: "digitalocean"
+docs: "https://docs.digitalocean.com/products/nfs/"
+defaults:
+  managed: true
+  protocol: "nfs"
+  publicAccess: false
+  redundancy: "regional"
+properties:
+  performanceTier:
+    type: "enum"
+    values: ["standard", "high-performance"]
+    default: "standard"
+  maxAttachedVpcs:
+    type: "integer"
+    default: 10

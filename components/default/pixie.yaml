@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Pixie: eBPF observability for Kubernetes that auto-collects protocol traces, metrics and profiles
+# without code changes. Per "What is Pixie" the collected data stays in the cluster on the nodes
+# that produced it, which bounds how long it is kept.
+schemaVersion: "1"
+type: "component"
+id: "pixie"
+kind: "monitoring"
+provider: "default"
+docs: "https://docs.px.dev/about-pixie/what-is-pixie/"
+defaults:
+  signal: "all"
+  collectorMode: "push"
+  managed: false
+properties:
+  autoInstrumentation:
+    type: "boolean"
+    default: true
+  dataStoredInCluster:
+    type: "boolean"
+    default: true

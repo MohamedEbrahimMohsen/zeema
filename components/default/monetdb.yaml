@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# MonetDB: column-store relational database for analytical queries. Per the MonetDB documentation
+# columns are held in memory-mapped binary files and transactions run under optimistic concurrency
+# control, so conflicts are detected at commit rather than prevented by locks.
+schemaVersion: "1"
+type: "component"
+id: "monetdb"
+kind: "data-warehouse"
+provider: "default"
+docs: "https://www.monetdb.org/documentation/"
+defaults:
+  managed: false
+  format: "columnar"
+  realtime: false
+  upsert: true
+properties:
+  memoryMapped:
+    type: "boolean"
+    default: true
+  concurrencyControl:
+    type: "enum"
+    values: ["optimistic"]
+    default: "optimistic"

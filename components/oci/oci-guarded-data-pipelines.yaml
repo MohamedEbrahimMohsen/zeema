@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Guarded Data Pipelines: a pipeline that moves data between security domains that are kept physically,
+# logistically and network isolated from each other, peering with the pipeline on the far side. From the
+# "gdp" service reference, the only documentation Oracle publishes for it: the service scans transferred
+# data for malware and vulnerabilities and audits and logs the transfer. No default is stated for any of
+# those controls, so none is recorded here.
+schemaVersion: "1"
+type: "component"
+id: "oci-guarded-data-pipelines"
+kind: "worker"
+provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/tools/oci-cli/latest/oci_cli_docs/cmdref/gdp.html"
+defaults:
+  managed: true
+properties:
+  malwareScanning:
+    type: "boolean"
+  vulnerabilityScanning:
+    type: "boolean"
+  transferAudited:
+    type: "boolean"
+  peeredPipeline:
+    type: "boolean"

@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenStack Placement: "a REST API stack and data model used to track resource provider
+# inventories and usages, along with different classes of resources" ("Placement API").
+# It records resource providers (compute nodes, storage pools, IP allocation pools), their
+# inventories in resource classes such as VCPU, MEMORY_MB and DISK_GB, and qualitative traits;
+# Nova and other services ask it where a workload can fit. Extracted from Nova into its own
+# repository in Stein (19.0.0) after arriving in Newton (14.0.0).
+schemaVersion: "1"
+type: "component"
+id: "openstack-placement"
+kind: "coordination-service"
+provider: "openstack"
+docs: "https://docs.openstack.org/placement/latest/"
+defaults:
+  role: "placement"
+  managed: false
+properties:
+  resourceClasses:
+    type: "boolean"
+    default: true
+  traits:
+    type: "boolean"
+    default: true
+  standalone:
+    type: "boolean"
+    default: true

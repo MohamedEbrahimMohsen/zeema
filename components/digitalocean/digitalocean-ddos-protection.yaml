@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# DigitalOcean DDoS protection: "free, always-on protection from distributed denial-of-service
+# (DDoS) attacks" that "requires no configuration" ("DDoS Protection"). It covers the network
+# (layer 3) and transport (layer 4) layers only, not layer 7, and applies automatically to
+# Droplets, Kubernetes clusters, managed databases, load balancers and reserved IPs from the
+# moment they are provisioned. Past mitigation capacity the target address is blackholed.
+schemaVersion: "1"
+type: "component"
+id: "digitalocean-ddos-protection"
+kind: "ddos-protection"
+provider: "digitalocean"
+docs: "https://docs.digitalocean.com/platform/ddos-protection/"
+defaults:
+  managed: true
+  scope: "network"
+  alwaysOn: true
+properties:
+  layer7Protection:
+    type: "boolean"
+    default: false
+  blackholeOnCapacity:
+    type: "boolean"
+    default: true

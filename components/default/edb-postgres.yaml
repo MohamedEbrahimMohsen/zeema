@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# EDB Postgres Advanced Server: EnterpriseDB's PostgreSQL distribution with Oracle-compatible
+# syntax, packages and data dictionary views. Per the EPAS documentation the compatibility mode is
+# chosen at installation and transparent data encryption is initialised explicitly.
+schemaVersion: "1"
+type: "component"
+id: "edb-postgres"
+kind: "sql-database"
+provider: "default"
+docs: "https://www.enterprisedb.com/docs/epas/latest/"
+defaults:
+  managed: false
+  replication: "none"
+  encryptionAtRest: false
+  sharded: false
+properties:
+  compatibilityMode:
+    type: "enum"
+    values: ["oracle", "postgresql"]
+    default: "oracle"
+  transparentDataEncryption:
+    type: "boolean"
+    default: false

@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Cloud Databases for Redis: managed Redis on the IBM Cloud Databases platform, deployed with
+# persistence and daily automatic backups kept for 30 days, encrypted with an automatic or
+# customer key ("Managing Cloud Databases Backups"). Redis itself sets no eviction policy, so
+# evictionPolicy stays unset for a rule to catch.
+schemaVersion: "1"
+type: "component"
+id: "ibm-databases-for-redis"
+kind: "cache"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/databases-for-redis"
+defaults:
+  managed: true
+  persistence: true
+properties:
+  keyManagement:
+    type: "enum"
+    values: ["provider-managed", "customer-managed"]
+    default: "provider-managed"
+  backupRetentionDays:
+    type: "integer"
+    default: 30

@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# kdb+ (KX): column-oriented time-series database with the q language. Per "Q for Mortals" and
+# the kdb+ database reference, historical data is held in on-disk tables partitioned by date and
+# compression is opt-in per column; there is no metrics-style label index.
+schemaVersion: "1"
+type: "component"
+id: "kdb"
+kind: "timeseries-database"
+provider: "default"
+docs: "https://code.kx.com/q/"
+defaults:
+  managed: false
+  downsampling: false
+  labelIndex: false
+  compression: "none"
+  tiers: "single"
+properties:
+  partitionField:
+    type: "enum"
+    values: ["date", "month", "year", "int", "none"]
+    default: "date"
+  inMemoryTables:
+    type: "boolean"
+    default: true

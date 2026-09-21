@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Trickster: HTTP reverse proxy cache that accelerates time-series databases with a delta proxy
+# cache, and generic HTTP objects with a reverse proxy cache. Per the Trickster documentation the
+# in-memory cache is the default backend and other caches are configured explicitly.
+schemaVersion: "1"
+type: "component"
+id: "trickster"
+kind: "cache"
+provider: "default"
+docs: "https://trickstercache.org/docs/"
+defaults:
+  managed: false
+  tier: "core"
+  persistence: false
+  invalidation: "ttl"
+  structure: "key-value"
+  usedAsPrimaryStore: false
+properties:
+  cacheBackend:
+    type: "enum"
+    values: ["memory", "filesystem", "redis", "bbolt", "badger"]
+    default: "memory"
+  proxyMode:
+    type: "enum"
+    values: ["delta-proxy", "reverse-proxy"]
+    default: "delta-proxy"

@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# ApsaraMQ for Kafka: a managed Apache Kafka service compatible with the open-source Kafka client
+# APIs ("What is ApsaraMQ for Kafka"). Kafka semantics carry over: partitioned persistent logs,
+# per-key order, replicated brokers. Partitions and retention are set per topic and instance.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-kafka"
+kind: "stream"
+provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/apsaramq-for-kafka"
+defaults:
+  managed: true
+  delivery: "at-least-once"
+  ordering: "per-key"
+  storage: "persistent"
+properties:
+  instanceEdition:
+    type: "enum"
+    values: ["serverless", "standard", "professional"]

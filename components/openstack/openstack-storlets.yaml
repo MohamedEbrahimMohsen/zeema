@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenStack Storlets: extends Swift with "the ability to run user defined computations - called
+# storlets - near the data in a secure and isolated manner" ("Storlets"). A storlet is compiled
+# code the user uploads to Swift and invokes against stored objects, so the computation is
+# triggered by an object request rather than a queue or a schedule, and it runs where the data
+# already is instead of moving it.
+schemaVersion: "1"
+type: "component"
+id: "openstack-storlets"
+kind: "worker"
+provider: "openstack"
+docs: "https://docs.openstack.org/storlets/latest/"
+defaults:
+  trigger: "manual"
+  managed: false
+properties:
+  runsNearData:
+    type: "boolean"
+    default: true
+  isolated:
+    type: "boolean"
+    default: true

@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OUTSCALE Net access point: lets VMs in a Net reach another OUTSCALE service, such as OUTSCALE
+# Object Storage, "through a private connection, which avoids using a VPN connection or a
+# DirectLink connection" ("About Net Access Points"). Network traffic "remains within OUTSCALE
+# network"; the access point lives in one Region, routes are added automatically to the route
+# tables associated with it and win over the internet route by longest prefix match, and a
+# public IP is allocated to the account for it.
+schemaVersion: "1"
+type: "component"
+id: "outscale-net-access-point"
+kind: "private-link"
+provider: "outscale"
+docs: "https://docs.outscale.com/en/userguide/About-Net-Access-Points.html"
+defaults:
+  managed: true
+  crossRegion: false
+  publicAccessDisabled: true
+  approvalRequired: false
+properties:
+  routeTableIntegration:
+    type: "boolean"
+    default: true
+  allocatesPublicIp:
+    type: "boolean"
+    default: true

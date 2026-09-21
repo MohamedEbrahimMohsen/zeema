@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# vSwitch: the subnet of an Alibaba Cloud VPC. A vSwitch lives in exactly one zone and carries a
+# CIDR block cut out of the VPC range; instances are attached to a vSwitch ("What is a vSwitch").
+schemaVersion: "1"
+type: "component"
+id: "alibaba-vswitch"
+kind: "network-fabric"
+provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/vpc/user-guide/vswitch-overview"
+defaults:
+  managed: true
+properties:
+  zoneScope:
+    type: "enum"
+    values: ["single-zone"]
+    default: "single-zone"

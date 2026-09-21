@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Cloud App Configuration: feature flags and runtime properties held per environment and
+# collection, evaluated against targeting rules and percentage rollouts by the SDKs in the
+# application ("App Configuration"). A flag can be toggled off for everyone, so kill switches are
+# the basic use; segment rollouts are configured per flag.
+schemaVersion: "1"
+type: "component"
+id: "ibm-app-configuration"
+kind: "feature-flag-service"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/app-configuration"
+defaults:
+  managed: true
+  killSwitches: true
+properties:
+  targetingSegments:
+    type: "boolean"
+    default: false
+  propertyStore:
+    type: "boolean"
+    default: true

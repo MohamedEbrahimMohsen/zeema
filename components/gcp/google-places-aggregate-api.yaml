@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Places Aggregate API: returns insights about the places inside an area, filtered by location, type,
+# operating status, price level and user ratings ("Places Aggregate API overview"). That page states
+# the response is a count of matching places, and that individual place IDs are returned only when the
+# count is 100 or fewer, so details must then be fetched from the Places API.
+schemaVersion: "1"
+type: "component"
+id: "google-places-aggregate-api"
+kind: "third-party-api"
+provider: "gcp"
+docs: "https://developers.google.com/maps/documentation/places-aggregate/overview"
+defaults:
+  managed: true
+  idempotent: true
+  callbackStyle: "none"
+  hostedPage: false
+  handlesMoney: false
+properties:
+  returnsCount:
+    type: "boolean"
+    default: true
+  placeIdThreshold:
+    type: "integer"
+    default: 100

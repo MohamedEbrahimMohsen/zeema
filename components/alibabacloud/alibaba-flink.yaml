@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Realtime Compute for Apache Flink: fully managed Flink, running SQL, JAR and Python jobs on the
+# Flink runtime with its checkpointing and exactly-once state guarantees ("What is Realtime Compute
+# for Apache Flink"). Checkpoint interval, watermark and state backend are set per deployment.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-flink"
+kind: "stream-processor"
+provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/flink"
+defaults:
+  managed: true
+  windowing: "event-time"
+properties:
+  jobType:
+    type: "enum"
+    values: ["sql", "jar", "python"]

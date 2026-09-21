@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Zapier: hosted integration service that runs a Zap — one trigger followed by a chain of action
+# steps against third-party apps. Per the Zapier help centre most triggers poll the source app on
+# an interval set by the plan; instant triggers are delivered by webhook where the app supports it.
+schemaVersion: "1"
+type: "component"
+id: "zapier"
+kind: "workflow-engine"
+provider: "default"
+docs: "https://help.zapier.com/hc/en-us"
+defaults:
+  managed: true
+  durable: true
+  pattern: "dag"
+  compensation: false
+  humanReview: false
+properties:
+  triggerType:
+    type: "enum"
+    values: ["polling", "instant-webhook", "schedule"]
+    default: "polling"
+  autoReplayOnError:
+    type: "boolean"
+    default: false

@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Elastic Cloud Phone (ECP): Android instances running on ARM servers and streamed to a client, used
+# for cloud gaming, app testing and mobile workloads ("What is Elastic Cloud Phone"). Each phone
+# instance is personal to the session that holds it.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-elastic-cloud-phone"
+kind: "virtual-desktop"
+provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/ecp/product-overview/what-is-elastic-cloud-phone"
+defaults:
+  managed: true
+  sessionMode: "personal"
+properties:
+  guestOs:
+    type: "enum"
+    values: ["android"]
+    default: "android"

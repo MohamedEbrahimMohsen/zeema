@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Easegress: cloud-native traffic orchestration system used as a reverse proxy and API gateway.
+# Per "What is Easegress" a cluster elects a leader over built-in Raft consensus, and traffic is
+# handled by pipelines composed of filters.
+schemaVersion: "1"
+type: "component"
+id: "easegress"
+kind: "api-gateway"
+provider: "default"
+docs: "https://megaease.cn/docs/easegress/"
+defaults:
+  managed: false
+  auth: "none"
+  rateLimiting: false
+  protocol: "http"
+  concurrencyLimit: false
+properties:
+  clusterConsensus:
+    type: "enum"
+    values: ["raft", "none"]
+    default: "raft"
+  pipelineFilters:
+    type: "boolean"
+    default: true

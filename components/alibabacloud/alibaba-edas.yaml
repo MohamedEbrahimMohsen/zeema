@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Enterprise Distributed Application Service (EDAS): a PaaS that deploys and operates Spring Cloud,
+# Dubbo and HSF applications onto ECS or Kubernetes clusters, with service registry, tracing and
+# staged release built in ("What is EDAS").
+schemaVersion: "1"
+type: "component"
+id: "alibaba-edas"
+kind: "app-server"
+provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/edas/product-overview/what-is-edas"
+defaults:
+  managed: true
+properties:
+  cluster:
+    type: "enum"
+    values: ["ecs", "kubernetes"]
+  framework:
+    type: "enum"
+    values: ["spring-cloud", "dubbo", "hsf"]

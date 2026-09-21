@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# EventBridge: a serverless event bus that receives CloudEvents from Alibaba Cloud services, custom
+# applications and SaaS sources, matches them against rules and fans each one out to its targets
+# ("What is EventBridge"). Rules select by event pattern, so one event reaches many targets.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-eventbridge"
+kind: "pubsub-topic"
+provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/eventbridge/product-overview/what-is-eventbridge"
+defaults:
+  managed: true
+  delivery: "at-least-once"
+properties:
+  busType:
+    type: "enum"
+    values: ["default", "custom", "partner"]
+  schemaRegistry:
+    type: "boolean"
+    default: false

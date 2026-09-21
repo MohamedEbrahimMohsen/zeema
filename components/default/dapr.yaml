@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Dapr: portable application runtime injected as a sidecar next to each service, exposing state,
+# pub/sub, service invocation, bindings and actor building blocks over HTTP and gRPC. Per "Dapr
+# sidecar" and the Dapr security overview, mTLS between sidecars is on by default and the sidecar
+# API token is opt-in.
+schemaVersion: "1"
+type: "component"
+id: "dapr"
+kind: "service-mesh"
+provider: "default"
+docs: "https://docs.dapr.io/concepts/dapr-services/sidecar/"
+defaults:
+  managed: false
+  sidecar: true
+  mtls: true
+  retries: true
+  controlPlanes: 1
+properties:
+  deploymentMode:
+    type: "enum"
+    values: ["kubernetes", "self-hosted"]
+    default: "kubernetes"
+  apiTokenAuth:
+    type: "boolean"
+    default: false

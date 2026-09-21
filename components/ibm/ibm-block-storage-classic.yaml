@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Block Storage for Classic: iSCSI LUNs attached to classic bare metal and virtual servers, sized
+# and provisioned with an IOPS tier, with snapshots and replication as add-ons ("Block Storage for
+# Classic"). Distinct from Block Storage for VPC (ibm-block-storage).
+schemaVersion: "1"
+type: "component"
+id: "ibm-block-storage-classic"
+kind: "block-storage"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/BlockStorage"
+defaults:
+  managed: true
+  mediaType: "ssd"
+  redundancy: "local"
+properties:
+  protocol:
+    type: "enum"
+    values: ["iscsi"]
+    default: "iscsi"
+  replication:
+    type: "boolean"
+    default: false

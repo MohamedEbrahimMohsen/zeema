@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Kong Konnect: Kong's SaaS control plane for API gateways. Per the Konnect documentation the
+# control plane and its configuration are hosted by Kong while the data plane nodes that carry
+# traffic are run by the customer, unless a dedicated cloud gateway is provisioned instead.
+schemaVersion: "1"
+type: "component"
+id: "kong-konnect"
+kind: "api-gateway"
+provider: "default"
+docs: "https://docs.konghq.com/konnect/"
+defaults:
+  managed: true
+  auth: "none"
+  rateLimiting: false
+  protocol: "http"
+properties:
+  dataPlaneHosting:
+    type: "enum"
+    values: ["self-hosted", "dedicated-cloud-gateway", "serverless"]
+    default: "self-hosted"
+  configSyncedFromControlPlane:
+    type: "boolean"
+    default: true

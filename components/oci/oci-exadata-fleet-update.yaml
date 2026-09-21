@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Exadata Fleet Update: orchestrates Grid Infrastructure, Database and Guest OS software updates across a
+# collection of Exadata targets in one maintenance cycle. Defaults from "Exadata Fleet Update Maintenance
+# Cycles" and "Exadata Fleet Update Collections": one node at a time (rolling) is the default maintenance
+# method, one active cycle per collection, a new database home is created, drain timeout 600 seconds.
+schemaVersion: "1"
+type: "component"
+id: "oci-exadata-fleet-update"
+kind: "worker"
+provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/exadata-fleet-update/doc/manage-maintenance-cycles.html"
+defaults:
+  managed: true
+  trigger: "schedule"
+properties:
+  collectionType:
+    type: "enum"
+    values: ["database", "grid-infrastructure", "guest-os", "exadb-stack"]
+  maintenanceMethod:
+    type: "enum"
+    values: ["rolling", "smart-batch", "non-rolling", "fifty-fifty"]
+    default: "rolling"
+  drainTimeoutSeconds:
+    type: "integer"
+    default: 600
+  activeCyclesPerCollection:
+    type: "integer"
+    default: 1
+  createNewDatabaseHome:
+    type: "boolean"
+    default: true

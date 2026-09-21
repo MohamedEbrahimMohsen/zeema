@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM watsonx.data: a lakehouse that queries data where it lies. It offers Presto (Java), Presto
+# (C++), a native Spark engine and Apache Gluten; it reads Apache Iceberg, Delta Lake and Apache
+# Hudi tables; and the data sits in Cloud Object Storage, S3, ADLS, GCS, Ozone, HDFS or MinIO
+# ("IBM watsonx.data"). Storage is external, so the component records the engine and table format.
+schemaVersion: "1"
+type: "component"
+id: "ibm-watsonx-data"
+kind: "data-warehouse"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/watsonxdata"
+defaults:
+  managed: true
+  format: "columnar"
+properties:
+  engine:
+    type: "enum"
+    values: ["presto-java", "presto-cpp", "spark", "gluten"]
+  tableFormat:
+    type: "enum"
+    values: ["iceberg", "delta-lake", "hudi"]
+  federation:
+    type: "boolean"
+    default: true

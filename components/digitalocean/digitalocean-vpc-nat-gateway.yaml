@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# DigitalOcean VPC NAT Gateway: a managed egress gateway attached to one or more VPCs, giving
+# the resources behind it a stable set of public IPv4 addresses for outbound traffic
+# ("digitalocean_vpc_nat_gateway", DigitalOcean Terraform provider). Required arguments are the
+# type (PUBLIC), region, size and the ingress VPC list; TCP, UDP and ICMP egress idle timeouts
+# are optional and unset unless given. The resource is in private preview.
+schemaVersion: "1"
+type: "component"
+id: "digitalocean-vpc-nat-gateway"
+kind: "nat-gateway"
+provider: "digitalocean"
+docs: "https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/vpc_nat_gateway"
+defaults:
+  managed: true
+  logging: false
+properties:
+  gatewayType:
+    type: "enum"
+    values: ["public"]
+    default: "public"
+  size:
+    type: "integer"
+    default: 1
+  attachedVpcCount:
+    type: "integer"

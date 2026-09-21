@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# ECS security group: a stateful virtual firewall attached to instance network interfaces. A basic
+# security group denies inbound traffic that no rule allows and allows outbound traffic
+# ("Overview of security groups").
+schemaVersion: "1"
+type: "component"
+id: "alibaba-security-group"
+kind: "firewall"
+provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/ecs/user-guide/overview-45"
+defaults:
+  managed: true
+  stateful: true
+  defaultAction: "deny"
+properties:
+  groupType:
+    type: "enum"
+    values: ["basic", "advanced"]
+    default: "basic"

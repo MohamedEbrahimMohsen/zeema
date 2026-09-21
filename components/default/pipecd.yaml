@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# PipeCD: GitOps continuous delivery, a central control plane driving `piped` agents that run
+# inside each target cluster. Per the PipeCD documentation a deployment is triggered by a commit
+# to the application's Git configuration and runs a quick sync unless a pipeline is declared.
+schemaVersion: "1"
+type: "component"
+id: "pipecd"
+kind: "ci-pipeline"
+provider: "default"
+docs: "https://pipecd.dev/docs/"
+defaults:
+  managed: false
+  trigger: "commit"
+  approvalRequired: false
+  selfHostedRunners: true
+  artifactSigning: false
+  secretsFromVault: false
+properties:
+  syncStrategy:
+    type: "enum"
+    values: ["quick-sync", "pipeline-sync"]
+    default: "quick-sync"
+  platform:
+    type: "enum"
+    values: ["kubernetes", "terraform", "cloud-run", "lambda", "ecs"]
+    default: "kubernetes"

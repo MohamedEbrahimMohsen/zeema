@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Curvine: distributed cache file system written in Rust that layers POSIX semantics over cloud
+# object storage. Per the Curvine README object storage is the durable layer underneath and the
+# cluster is the cache in front of it, aimed at AI training and big-data shuffle acceleration.
+schemaVersion: "1"
+type: "component"
+id: "curvine"
+kind: "file-storage"
+provider: "default"
+docs: "https://curvineio.github.io/"
+defaults:
+  managed: false
+  protocol: "native"
+  publicAccess: false
+  backupEnabled: false
+properties:
+  accessInterface:
+    type: "enum"
+    values: ["fuse", "s3", "native"]
+    default: "fuse"
+  objectStorageBacked:
+    type: "boolean"
+    default: true

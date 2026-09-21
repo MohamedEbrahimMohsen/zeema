@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Cloud for VMware Solutions: vSphere and VMware Cloud Foundation estates running on IBM
+# Cloud bare metal, either customer-managed or as VMware Cloud Foundation as a Service ("Getting
+# started with IBM Cloud for VMware Solutions"). The node is the VMware environment, not one VM.
+schemaVersion: "1"
+type: "component"
+id: "ibm-vmware-solutions"
+kind: "virtual-machine"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/vmwaresolutions?topic=vmwaresolutions-getting-started"
+properties:
+  deploymentModel:
+    type: "enum"
+    values: ["customer-managed", "vcf-as-a-service"]

@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# DigitalOcean CSPM: cloud security posture management that "evaluates your DigitalOcean
+# resources for misconfigurations and security risks, surfaces findings by severity, and
+# provides guidance to help you resolve them" ("CSPM"). It reports rather than remediates:
+# checks are rules you enable or disable, findings can be suppressed per resource, and the
+# Security Advisor summarises them. Generally available since March 2026, free and paid plans.
+schemaVersion: "1"
+type: "component"
+id: "digitalocean-cspm"
+kind: "policy-engine"
+provider: "digitalocean"
+docs: "https://docs.digitalocean.com/products/cspm/"
+defaults:
+  managed: true
+  effect: "audit"
+  scope: "account"
+  remediation: false
+properties:
+  scanTrigger:
+    type: "enum"
+    values: ["on-demand", "scheduled"]
+    default: "on-demand"
+  findingSuppression:
+    type: "boolean"
+    default: true

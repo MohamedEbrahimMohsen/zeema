@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Flow Logs for VPC: a collector that records the IP traffic of a VPC, subnet, instance or network
+# interface and writes the flow records into an IBM Cloud Object Storage bucket ("About Flow Logs
+# for VPC"). Records are pushed to the bucket; retention is the bucket lifecycle, not a setting here.
+schemaVersion: "1"
+type: "component"
+id: "ibm-flow-logs"
+kind: "monitoring"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/vpc?topic=vpc-flow-logs"
+defaults:
+  managed: true
+  signal: "logs"
+  collectorMode: "push"
+  independentOfMonitored: true
+properties:
+  target:
+    type: "enum"
+    values: ["vpc", "subnet", "instance", "network-interface"]

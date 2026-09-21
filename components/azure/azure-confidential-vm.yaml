@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure confidential VM: a VM whose memory is encrypted in use by the hardware, behind a
+# hardware-enforced boundary between the guest and the virtualization stack ("About Azure confidential
+# VMs"). That page states the VM boots only after successful attestation, that it carries a dedicated
+# vTPM instance, and that confidential OS disk encryption is optional and cannot be changed after
+# deployment, so it is not defaulted here; Secure Boot is on only when that encryption is selected.
+schemaVersion: "1"
+type: "component"
+id: "azure-confidential-vm"
+kind: "virtual-machine"
+provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/confidential-computing/confidential-vm-overview"
+defaults:
+  managed: false
+  diskEncryption: true
+  zoneRedundant: false
+properties:
+  confidentialComputingTechnology:
+    type: "enum"
+    values: ["amd-sev-snp", "intel-tdx"]
+  memoryEncryption:
+    type: "boolean"
+    default: true
+  attestation:
+    type: "boolean"
+    default: true
+  virtualTpm:
+    type: "boolean"
+    default: true
+  confidentialOsDiskEncryption:
+    type: "boolean"
+  secureBoot:
+    type: "boolean"

@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenStack Neutron VPNaaS: "provides Virtual Private Network as a Service (VPNaaS) capabilities
+# to Neutron" ("Welcome to Neutron VPNaaS's documentation"), an API extension that terminates
+# IPsec tunnels on a Neutron router against a peer gateway. The Swan-family drivers differ per
+# operating system and the documentation does not name a default flavor, so no driver or
+# cryptographic default is claimed here.
+schemaVersion: "1"
+type: "component"
+id: "openstack-neutron-vpnaas"
+kind: "vpn-gateway"
+provider: "openstack"
+docs: "https://docs.openstack.org/neutron-vpnaas/latest/"
+defaults:
+  tunnelType: "ipsec"
+  peerType: "site-to-site"
+  managed: false
+properties:
+  attachedToRouter:
+    type: "boolean"
+    default: true
+  driverFamily:
+    type: "enum"
+    values: ["strongswan", "libreswan", "openswan"]

@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Short Message Service (SMS): sends text messages from approved signatures and templates to
+# recipients worldwide, with delivery receipts returned over a subscription
+# ("What is Short Message Service"). Templates and signatures are reviewed before use.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-sms"
+kind: "notification-service"
+provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/sms"
+defaults:
+  managed: true
+  channelPush: false
+  channelSms: true
+  templateStore: true
+properties:
+  messageType:
+    type: "enum"
+    values: ["verification-code", "notification", "promotional", "international"]

@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# VMware GemFire: in-memory data grid of cache servers coordinated by locators. Per the GemFire
+# documentation region data is held in memory unless persistence is configured, and a partitioned
+# region keeps no redundant copies unless `redundant-copies` is set.
+schemaVersion: "1"
+type: "component"
+id: "gemfire"
+kind: "cache"
+provider: "default"
+docs: "https://docs.vmware.com/en/VMware-GemFire/index.html"
+defaults:
+  managed: false
+  persistence: false
+  usedAsPrimaryStore: false
+  structure: "key-value"
+  tier: "core"
+properties:
+  regionType:
+    type: "enum"
+    values: ["partition", "replicate", "local"]
+    default: "partition"
+  redundantCopies:
+    type: "integer"
+    default: 0

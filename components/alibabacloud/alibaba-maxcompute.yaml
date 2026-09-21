@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# MaxCompute: "an enterprise-grade Software as a Service (SaaS) smart cloud data warehouse" that
+# "uses a serverless architecture to provide a fully managed, out-of-the-box online data warehouse
+# service", decoupling storage from compute and billing pay-as-you-go ("What is Alibaba Cloud
+# MaxCompute"). Its native storage offers Standard, Infrequent Access and Archive classes.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-maxcompute"
+kind: "data-warehouse"
+provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/maxcompute/product-overview/what-is-maxcompute"
+defaults:
+  managed: true
+properties:
+  computeModel:
+    type: "enum"
+    values: ["pay-as-you-go", "subscription-quota"]
+  storageClass:
+    type: "enum"
+    values: ["standard", "infrequent-access", "archive"]
+    default: "standard"

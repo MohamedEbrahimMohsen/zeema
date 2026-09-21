@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Cloud Logs: "an observability service in IBM Cloud designed to help organizations monitor,
+# troubleshoot, analyze, and alert on the performance of their applications and infrastructure in
+# real time and long term" ("Features"). Logs are pushed in, enriched by parsing rules and kept
+# long term in the customer's own Cloud Object Storage data and metrics buckets; Event2metrics
+# turns log patterns into Prometheus metrics.
+schemaVersion: "1"
+type: "component"
+id: "ibm-cloud-logs"
+kind: "monitoring"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/cloud-logs?topic=cloud-logs-about-cl"
+defaults:
+  managed: true
+  signal: "logs"
+  collectorMode: "push"
+  independentOfMonitored: true
+properties:
+  longTermStorage:
+    type: "enum"
+    values: ["object-storage"]
+    default: "object-storage"
+  derivedMetrics:
+    type: "boolean"
+    default: false

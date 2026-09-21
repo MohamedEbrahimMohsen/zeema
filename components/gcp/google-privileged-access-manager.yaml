@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Privileged Access Manager entitlement: just-in-time, time-bound elevation of IAM roles for named
+# principals ("Privileged Access Manager overview"). That page states approval is optional on an
+# entitlement, roles are revoked automatically at the end of the grant duration, grant records are
+# deleted 30 days after they end, and every entitlement and grant event is written to Cloud Audit Logs.
+schemaVersion: "1"
+type: "component"
+id: "google-privileged-access-manager"
+kind: "policy-engine"
+provider: "gcp"
+docs: "https://cloud.google.com/iam/docs/pam-overview"
+defaults:
+  effect: "modify"
+  enforcementMode: "enforced"
+  managed: true
+properties:
+  approvalRequired:
+    type: "boolean"
+    default: false
+  justificationRequired:
+    type: "boolean"
+  automaticRevocation:
+    type: "boolean"
+    default: true
+  grantRetentionDays:
+    type: "integer"
+    default: 30
+  auditLogged:
+    type: "boolean"
+    default: true

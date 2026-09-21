@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Platform for AI (PAI): the machine learning platform of Alibaba Cloud, made of visual modelling
+# (PAI-Designer), notebooks (PAI-DSW), distributed training (PAI-DLC) and online inference
+# (PAI-EAS) ("What is PAI"). Whether accelerators are attached depends on the resource group.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-pai"
+kind: "ml-platform"
+provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/pai"
+defaults:
+  managed: true
+properties:
+  module:
+    type: "enum"
+    values: ["designer", "dsw", "dlc", "eas", "quickstart"]
+  resourceType:
+    type: "enum"
+    values: ["public-resource-group", "dedicated-resource-group"]

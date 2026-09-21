@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Paralus: controlled, audited access to Kubernetes clusters for users, groups and services.
+# Per the Paralus README it issues just-in-time service accounts and short-lived kubeconfigs,
+# integrates with an OIDC identity provider, and records an audit trail of kubectl activity.
+schemaVersion: "1"
+type: "component"
+id: "paralus"
+kind: "bastion-host"
+provider: "default"
+docs: "https://www.paralus.io/docs"
+defaults:
+  managed: false
+  sessionRecording: true
+  mfaRequired: false
+  justInTimeAccess: true
+properties:
+  identitySource:
+    type: "enum"
+    values: ["local", "oidc"]
+    default: "local"
+  kubectlAuditLog:
+    type: "boolean"
+    default: true

@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# PrivateLink: an endpoint in the consumer VPC that reaches a service published behind an endpoint
+# service in another VPC, over the Alibaba Cloud private network rather than the internet
+# ("What is PrivateLink"). The service owner approves or auto-approves each connection.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-privatelink"
+kind: "private-link"
+provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/privatelink/product-overview/what-is-privatelink"
+defaults:
+  managed: true
+properties:
+  role:
+    type: "enum"
+    values: ["endpoint", "endpoint-service"]

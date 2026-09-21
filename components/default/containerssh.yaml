@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# ContainerSSH: SSH server that launches a throwaway container per session instead of giving
+# shell access to a host. Per the ContainerSSH documentation authentication and per-user container
+# configuration are delegated to an external webhook, and audit logging is enabled explicitly.
+schemaVersion: "1"
+type: "component"
+id: "containerssh"
+kind: "bastion-host"
+provider: "default"
+docs: "https://containerssh.io"
+defaults:
+  managed: false
+  protocols: "ssh"
+  sessionRecording: false
+  mfaRequired: false
+  justInTimeAccess: true
+properties:
+  backend:
+    type: "enum"
+    values: ["docker", "kubernetes", "sshproxy"]
+    default: "docker"
+  authentication:
+    type: "enum"
+    values: ["webhook", "oidc", "kerberos"]
+    default: "webhook"

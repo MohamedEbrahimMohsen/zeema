@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Actian Ingres: relational database server. Per the Ingres 12.0 "Database Administrator Guide"
+# a table created without a structure clause is a heap, and journaling of a table is switched on
+# explicitly rather than by default.
+schemaVersion: "1"
+type: "component"
+id: "ingres"
+kind: "sql-database"
+provider: "default"
+docs: "https://docs.actian.com/ingres/12.0/"
+defaults:
+  managed: false
+  replication: "none"
+  sharded: false
+properties:
+  storageStructure:
+    type: "enum"
+    values: ["heap", "hash", "isam", "btree"]
+    default: "heap"
+  journaling:
+    type: "boolean"
+    default: false

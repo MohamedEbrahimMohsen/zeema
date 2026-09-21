@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# llm-d: distributed LLM inference serving stack for Kubernetes. Per the llm-d README it runs
+# model servers such as vLLM behind an inference-aware scheduler, adding KV-cache aware routing and
+# optional prefill/decode disaggregation across accelerators.
+schemaVersion: "1"
+type: "component"
+id: "llm-d"
+kind: "ml-inference"
+provider: "default"
+docs: "https://llm-d.ai/docs/architecture"
+defaults:
+  managed: false
+  accelerator: "gpu"
+  inputs: "live"
+properties:
+  modelServer:
+    type: "enum"
+    values: ["vllm", "sglang"]
+    default: "vllm"
+  prefillDecodeDisaggregation:
+    type: "boolean"
+    default: false
+  cacheAwareRouting:
+    type: "boolean"
+    default: true

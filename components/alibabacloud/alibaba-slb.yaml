@@ -17,7 +17,7 @@ defaults:
 properties:
   loadBalancerType:
     type: "enum"
-    values: ["alb", "nlb", "clb"]
+    values: ["alb", "nlb", "clb", "gwlb"]
   addressType:
     type: "enum"
     values: ["internet-facing", "internal"]

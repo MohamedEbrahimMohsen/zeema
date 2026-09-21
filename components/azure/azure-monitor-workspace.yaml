@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Azure Monitor workspace: the regional metric repository behind Azure Monitor managed service for
+# Prometheus and a destination of data collection rules ("Azure Monitor workspace overview"). That page
+# states the only data hosted today is Prometheus metrics, that "data is retained for 18 months", that
+# it is "encrypted at rest using a Microsoft-managed key", and that "the default Azure Monitor workspace
+# limit is 1 million active times series and 1 million events per minute ingested". Retention is not
+# configurable, so there is no daily cap or retention setting as on a Log Analytics workspace.
+schemaVersion: "1"
+type: "component"
+id: "azure-monitor-workspace"
+kind: "timeseries-database"
+provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/azure-monitor/metrics/azure-monitor-workspace-overview"
+defaults:
+  managed: true
+  tiers: "single"
+  downsampling: false
+properties:
+  retentionMonths:
+    type: "integer"
+    default: 18
+  metricSource:
+    type: "enum"
+    values: ["prometheus"]
+    default: "prometheus"
+  encryptionAtRest:
+    type: "boolean"
+    default: true
+  activeTimeSeriesLimit:
+    type: "integer"
+    default: 1000000
+  eventsPerMinuteLimit:
+    type: "integer"
+    default: 1000000

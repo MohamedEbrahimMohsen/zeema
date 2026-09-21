@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Cloud Activity Tracker Event Routing: routes the account's auditing events to the targets
+# the customer configures — a Cloud Object Storage bucket, Cloud Logs, or Event Streams — under
+# routing rules per region ("Activity Tracker Event Routing"). It forwards; it does not store or
+# display the events itself.
+schemaVersion: "1"
+type: "component"
+id: "ibm-activity-tracker-event-routing"
+kind: "stream-processor"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/atracker"
+defaults:
+  managed: true
+properties:
+  target:
+    type: "enum"
+    values: ["object-storage", "cloud-logs", "event-streams"]
+  scope:
+    type: "enum"
+    values: ["region", "global"]

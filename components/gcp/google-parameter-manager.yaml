@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Parameter Manager: an extension of Secret Manager that stores workload configuration parameters,
+# versioned, with regional endpoints, and able to reference Secret Manager secrets from a parameter
+# payload ("Parameter Manager overview"). The REST reference for projects.locations.parameters states
+# the API defaults an unset format to UNFORMATTED, and that the CMEK kmsKey field is optional.
+schemaVersion: "1"
+type: "component"
+id: "google-parameter-manager"
+kind: "key-management"
+provider: "gcp"
+docs: "https://cloud.google.com/secret-manager/parameter-manager/docs/overview"
+defaults:
+  managed: true
+  hsm: false
+  rotationAutomated: false
+properties:
+  format:
+    type: "enum"
+    values: ["unformatted", "yaml", "json"]
+    default: "unformatted"
+  versioned:
+    type: "boolean"
+    default: true
+  secretManagerReferences:
+    type: "boolean"
+    default: true
+  customerManagedEncryption:
+    type: "boolean"
+    default: false

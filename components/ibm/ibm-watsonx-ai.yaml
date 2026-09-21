@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM watsonx.ai: the studio and runtime for foundation models and machine learning on IBM Cloud.
+# It hosts IBM Granite and third-party foundation models, prompt engineering and tuning, notebooks
+# and pipelines, and deploys models behind scoring endpoints ("IBM watsonx.ai").
+schemaVersion: "1"
+type: "component"
+id: "ibm-watsonx-ai"
+kind: "ml-platform"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/watsonx"
+defaults:
+  managed: true
+properties:
+  workload:
+    type: "enum"
+    values: ["foundation-model", "machine-learning", "both"]
+  tuning:
+    type: "enum"
+    values: ["none", "prompt-tuning", "fine-tuning"]
+    default: "none"

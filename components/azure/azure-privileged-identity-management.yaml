@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Microsoft Entra Privileged Identity Management: time-based and approval-based role activation over
+# Microsoft Entra roles, Azure resource roles and groups ("What is Privileged Identity Management?").
+# An eligible assignment grants nothing until it is activated; "Configure Microsoft Entra role settings
+# in PIM" presents MFA, justification, ticket and approval as settings an administrator turns on and
+# states no default for any of them, and caps activation duration at one to 24 hours, so none is defaulted here.
+schemaVersion: "1"
+type: "component"
+id: "azure-privileged-identity-management"
+kind: "policy-engine"
+provider: "azure"
+docs: "https://learn.microsoft.com/en-us/entra/id-governance/privileged-identity-management/pim-configure"
+defaults:
+  managed: true
+  effect: "modify"
+  enforcementMode: "enforced"
+properties:
+  managedScope:
+    type: "enum"
+    values: ["entra-roles", "azure-resource-roles", "groups"]
+  assignmentType:
+    type: "enum"
+    values: ["eligible", "active"]
+  approvalRequired:
+    type: "boolean"
+  justificationRequired:
+    type: "boolean"
+  mfaOnActivation:
+    type: "boolean"
+  activationMaxDurationHours:
+    type: "integer"

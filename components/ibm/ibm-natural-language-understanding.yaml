@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Watson Natural Language Understanding: a text analysis API that returns entities, keywords,
+# categories, sentiment, emotion, relations and syntax from a document or a URL
+# ("Natural Language Understanding"). It is stateless: text in, annotations out.
+schemaVersion: "1"
+type: "component"
+id: "ibm-natural-language-understanding"
+kind: "ai-service"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/natural-language-understanding"
+defaults:
+  managed: true
+  modality: "text"
+properties:
+  customModel:
+    type: "boolean"
+    default: false

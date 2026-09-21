@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Cloud DNS Services: private DNS zones "Separated from the wider, public DNS" and "Hidden
+# from machines outside of and not part of the IBM Cloud private network", answered by IBM
+# resolvers ("About DNS Services"). The same page lists global load balancing with health checks
+# as features. Public authoritative DNS is Cloud Internet Services instead.
+schemaVersion: "1"
+type: "component"
+id: "ibm-dns-services"
+kind: "dns"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/dns-svcs?topic=dns-svcs-about-dns-services"
+defaults:
+  managed: true
+  anycast: false
+properties:
+  visibility:
+    type: "enum"
+    values: ["private"]
+    default: "private"
+  globalLoadBalancer:
+    type: "boolean"
+    default: false
+  customResolver:
+    type: "boolean"
+    default: false

@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Serverless VPC Access connector: a regional pool of instances that lets Cloud Run, App Engine and
+# Cloud Run functions reach internal IP addresses in a VPC network instead of going over the internet
+# ("Serverless VPC Access overview", "Configure Serverless VPC Access"). Those pages give the
+# connector defaults: machine type e2-micro, and 2 minimum and 10 maximum instances.
+schemaVersion: "1"
+type: "component"
+id: "google-serverless-vpc-access-connector"
+kind: "private-link"
+provider: "gcp"
+docs: "https://cloud.google.com/vpc/docs/serverless-vpc-access"
+defaults:
+  managed: true
+  crossRegion: false
+properties:
+  machineType:
+    type: "enum"
+    values: ["f1-micro", "e2-micro", "e2-standard-4"]
+    default: "e2-micro"
+  minInstances:
+    type: "integer"
+    default: 2
+  maxInstances:
+    type: "integer"
+    default: 10
+  attachment:
+    type: "enum"
+    values: ["subnet", "vpc-network"]

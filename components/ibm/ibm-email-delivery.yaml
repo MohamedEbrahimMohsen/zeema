@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Cloud Email Delivery for Classic: an outbound SMTP relay for transactional mail sent from
+# classic infrastructure, with reputation and bounce handling ("Email Delivery"). Outbound mail
+# only: it neither receives nor inspects inbound messages.
+schemaVersion: "1"
+type: "component"
+id: "ibm-email-delivery"
+kind: "notification-service"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/email-delivery"
+defaults:
+  managed: true
+  channelPush: false
+  channelEmail: true

@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Cloud Databases for MongoDB: managed MongoDB replica sets on the IBM Cloud Databases
+# platform. Daily automatic backups kept for 30 days and encrypted with an automatic or customer
+# key ("Managing Cloud Databases Backups"). MongoDB reads default to the primary, so consistency
+# is strong unless the client relaxes the read preference.
+schemaVersion: "1"
+type: "component"
+id: "ibm-databases-for-mongodb"
+kind: "nosql-database"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/databases-for-mongodb"
+defaults:
+  managed: true
+  model: "document"
+  backupEnabled: true
+  backupRetentionDays: 30
+  encryptionAtRest: true
+properties:
+  edition:
+    type: "enum"
+    values: ["standard", "enterprise"]
+  keyManagement:
+    type: "enum"
+    values: ["provider-managed", "customer-managed"]
+    default: "provider-managed"

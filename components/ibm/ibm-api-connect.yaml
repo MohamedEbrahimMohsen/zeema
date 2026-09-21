@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM API Connect Reserved: "the cloud-based edition of IBM API Connect", used to "create,
+# securely expose, manage, and monetize APIs" through an API Manager, a DataPower gateway, a
+# Developer Portal and analytics ("Getting started as a user in API Connect Reserved"). The
+# authentication scheme and rate-limit plan are set per API product, so both are left unset.
+schemaVersion: "1"
+type: "component"
+id: "ibm-api-connect"
+kind: "api-gateway"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/apiconnect?topic=apiconnect-getting-started"
+defaults:
+  managed: true
+  protocol: "http"
+  tls: true
+properties:
+  developerPortal:
+    type: "boolean"
+    default: true
+  gatewayType:
+    type: "enum"
+    values: ["datapower-api-gateway", "datapower-gateway-v5c"]

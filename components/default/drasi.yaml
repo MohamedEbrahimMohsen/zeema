@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Drasi: data change processing platform. Per the Drasi overview a Source watches a data store for
+# changes, a Continuous Query written in Cypher or GQL says which changes matter, and a Reaction
+# fires when the query result set changes; it deploys standalone or on Kubernetes.
+schemaVersion: "1"
+type: "component"
+id: "drasi"
+kind: "stream-processor"
+provider: "default"
+docs: "https://drasi.io"
+defaults:
+  managed: false
+  windowing: "none"
+  exactlyOnce: false
+  stateBackend: "external"
+properties:
+  queryLanguage:
+    type: "enum"
+    values: ["cypher", "gql"]
+    default: "cypher"
+  deploymentModel:
+    type: "enum"
+    values: ["library", "server", "kubernetes"]
+    default: "kubernetes"

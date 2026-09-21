@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Retool: platform for building internal applications and workflows over existing databases and
+# APIs. Per the Retool documentation the platform is used as Retool Cloud by default and can
+# instead be self-hosted, in which case queries run inside the customer's network.
+schemaVersion: "1"
+type: "component"
+id: "retool"
+kind: "app-server"
+provider: "default"
+docs: "https://docs.retool.com/"
+defaults:
+  managed: true
+  stateless: true
+  autoscaling: false
+  ownsData: false
+properties:
+  hosting:
+    type: "enum"
+    values: ["cloud", "self-hosted"]
+    default: "cloud"
+  surface:
+    type: "enum"
+    values: ["web-app", "workflow", "mobile-app"]
+    default: "web-app"

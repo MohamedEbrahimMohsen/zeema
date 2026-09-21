@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# loxilb: eBPF-based layer 4 load balancer and service proxy, used as the external load balancer
+# for Kubernetes services. Per the loxilb documentation the forwarding path runs in eBPF and the
+# NAT mode of a service rule (default, one-arm, full NAT or DSR) is chosen per rule.
+schemaVersion: "1"
+type: "component"
+id: "loxilb"
+kind: "load-balancer"
+provider: "default"
+docs: "https://docs.loxilb.io/latest/"
+defaults:
+  managed: false
+  layer: "l4"
+  healthChecks: true
+  global: false
+  connectionPreserving: false
+properties:
+  natMode:
+    type: "enum"
+    values: ["default", "one-arm", "full-nat", "dsr"]
+    default: "default"
+  ebpfDataPath:
+    type: "boolean"
+    default: true

@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# CNCF Dragonfly: peer-to-peer distribution and acceleration for container images, files and AI models
+# ("Dragonfly - What Is Dragonfly?"). Peers download from each other and cache locally; a seed peer is the
+# root node the scheduler triggers to fetch from the source, so it shields the origin registry. Self-hosted,
+# four components (manager, scheduler, seed peer, peer). The id `dragonfly` is the unrelated cache.
+schemaVersion: "1"
+type: "component"
+id: "dragonfly-d7y"
+kind: "cdn"
+provider: "default"
+docs: "https://d7y.io/docs/"
+defaults:
+  managed: false
+  caching: true
+  originShield: true
+  edgeCompute: false
+properties:
+  role:
+    type: "enum"
+    values: ["manager", "scheduler", "seed-peer", "peer"]
+  peerToPeerDistribution:
+    type: "boolean"
+    default: true
+  backToSource:
+    type: "boolean"
+    default: true
+  contentType:
+    type: "enum"
+    values: ["container-image", "file", "ai-model"]

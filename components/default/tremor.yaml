@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Tremor: event processing system for high-volume log and metric pipelines, written in Rust.
+# Per the Tremor documentation a deployment is a Troy file wiring connectors into pipelines, and
+# windowed aggregation is written explicitly rather than applied by default.
+schemaVersion: "1"
+type: "component"
+id: "tremor"
+kind: "stream-processor"
+provider: "default"
+docs: "https://github.com/tremor-rs/tremor-runtime"
+defaults:
+  managed: false
+  windowing: "none"
+  exactlyOnce: false
+  stateBackend: "memory"
+properties:
+  deploymentLanguage:
+    type: "enum"
+    values: ["troy"]
+    default: "troy"
+  guaranteedDelivery:
+    type: "boolean"
+    default: false

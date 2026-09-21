@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Confidential Space: a workload that runs on a hardened image based on Container-Optimized OS on top
+# of a Confidential VM, so several parties can operate on each other's sensitive data without the
+# workload operator being able to read it ("Confidential Space overview"). That page states the image
+# runs on a Confidential VM with hardware isolation and remote attestation, that the workload is
+# verified before secrets are released to it, and that a debug variant of the image exists for testing.
+schemaVersion: "1"
+type: "component"
+id: "google-confidential-space"
+kind: "virtual-machine"
+provider: "gcp"
+docs: "https://cloud.google.com/confidential-computing/confidential-space/docs/confidential-space-overview"
+defaults:
+  managed: false
+  os: "linux"
+  diskEncryption: true
+  zoneRedundant: false
+properties:
+  imageVariant:
+    type: "enum"
+    values: ["production", "debug"]
+  hardenedImage:
+    type: "boolean"
+    default: true
+  attestation:
+    type: "boolean"
+    default: true
+  memoryEncryption:
+    type: "boolean"
+    default: true
+  operatorDataAccess:
+    type: "boolean"
+    default: false

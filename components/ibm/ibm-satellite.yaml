@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Cloud Satellite: a location made of hosts the customer owns, on premises, at the edge or in
+# another cloud, that IBM manages from the public cloud and on which IBM Cloud services and
+# OpenShift clusters run ("Understanding Satellite"). The control plane is an IBM-managed
+# OpenShift cluster placed on those hosts, so the infrastructure is not IBM's.
+schemaVersion: "1"
+type: "component"
+id: "ibm-satellite"
+kind: "container-orchestrator"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/satellite?topic=satellite-about"
+defaults:
+  managed: true
+  rbac: true
+properties:
+  hostInfrastructure:
+    type: "enum"
+    values: ["on-premises", "edge", "other-cloud", "ibm-cloud"]
+  linkTunnel:
+    type: "boolean"
+    default: true

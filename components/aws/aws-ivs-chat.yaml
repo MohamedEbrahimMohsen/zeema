@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon IVS Chat: managed live chat rooms that accompany an IVS video stream, with a WebSocket
+# messaging data plane. "IVS Chat Service Quotas": 50,000 rooms per account per Region, 50,000
+# concurrent chat connections per account per Region, 100 SendMessage requests per second per room,
+# 10 messaging requests per second per connection, message review handler timeout 200 ms.
+schemaVersion: "1"
+type: "component"
+id: "aws-ivs-chat"
+kind: "realtime-gateway"
+provider: "aws"
+docs: "https://docs.aws.amazon.com/ivs/latest/ChatUserGuide/what-is.html"
+defaults:
+  managed: true
+  protocol: "websocket"
+  stateful: true
+  autoscaling: true
+properties:
+  maxMessageRatePerSecond:
+    type: "integer"
+    default: 100
+  concurrentConnectionsLimit:
+    type: "integer"
+    default: 50000
+  messageReviewHandlerTimeoutMs:
+    type: "integer"
+    default: 200
+  loggingConfiguration:
+    type: "boolean"
+    default: false

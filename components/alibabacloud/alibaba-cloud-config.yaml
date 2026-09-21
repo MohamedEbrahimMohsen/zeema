@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cloud Config: records the configuration of resources as it changes and evaluates each change
+# against compliance rules, reporting the resources that do not comply ("What is Cloud Config").
+# It reports by default; remediation is a separate action attached to a rule.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-cloud-config"
+kind: "policy-engine"
+provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/cloud-config"
+defaults:
+  managed: true
+  effect: "audit"
+  scope: "account"
+  remediation: false
+properties:
+  aggregatorScope:
+    type: "enum"
+    values: ["account", "resource-directory"]
+    default: "account"

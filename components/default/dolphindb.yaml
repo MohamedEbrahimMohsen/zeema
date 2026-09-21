@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# DolphinDB: distributed time-series database with a built-in scripting and analytics engine.
+# Per the DolphinDB manual a node runs in single-node or cluster mode, and distributed tables are
+# stored in a partitioned distributed file system with column compression.
+schemaVersion: "1"
+type: "component"
+id: "dolphindb"
+kind: "timeseries-database"
+provider: "default"
+docs: "https://docs.dolphindb.com/en/"
+defaults:
+  managed: false
+  downsampling: false
+  labelIndex: false
+  compression: "other"
+  tiers: "single"
+properties:
+  deploymentMode:
+    type: "enum"
+    values: ["single-node", "cluster"]
+    default: "single-node"
+  storageEngine:
+    type: "enum"
+    values: ["olap", "tsdb"]
+    default: "olap"

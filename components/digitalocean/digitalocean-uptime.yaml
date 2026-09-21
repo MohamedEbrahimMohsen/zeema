@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# DigitalOcean Uptime: "a monitoring service that checks the health of any URL or IP address",
+# tracking latency, availability and SSL certificate expiry and notifying by email or Slack
+# ("Uptime"). Checks run from DigitalOcean's own probes against the target, so the monitor does
+# not share fate with the monitored system. Check types are HTTPS, HTTP and ICMP.
+schemaVersion: "1"
+type: "component"
+id: "digitalocean-uptime"
+kind: "monitoring"
+provider: "digitalocean"
+docs: "https://docs.digitalocean.com/products/uptime/"
+defaults:
+  managed: true
+  signal: "alerts"
+  collectorMode: "pull"
+  independentOfMonitored: true
+properties:
+  checkType:
+    type: "enum"
+    values: ["https", "http", "icmp"]
+    default: "https"
+  certificateExpiryAlert:
+    type: "boolean"
+    default: false

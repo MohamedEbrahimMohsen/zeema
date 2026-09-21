@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# MCP server portal (Cloudflare One AI controls): one HTTP endpoint that centralises up to 80
+# upstream MCP servers, authenticates clients with OAuth 2.0 through Access or a service token
+# and proxies tool calls ("MCP server portals"). Access logs every tool request; Code Mode is
+# opt-in, off unless the client asks for it.
+schemaVersion: "1"
+type: "component"
+id: "cloudflare-mcp-portal"
+kind: "api-gateway"
+provider: "cloudflare"
+docs: "https://developers.cloudflare.com/cloudflare-one/access-controls/ai-controls/mcp-portals/"
+defaults:
+  managed: true
+  protocol: "http"
+  tls: true
+  auth: "oauth2"
+  rateLimiting: false
+properties:
+  maxUpstreamServers:
+    type: "integer"
+    default: 80
+  codeMode:
+    type: "enum"
+    values: ["unavailable", "opt-in", "on-by-default", "required"]
+    default: "opt-in"
+  requestLogging:
+    type: "boolean"
+    default: true

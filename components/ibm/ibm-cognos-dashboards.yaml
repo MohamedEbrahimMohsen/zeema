@@ -1,0 +1,13 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cognos Dashboards Embedded: a dashboarding service that renders charts over uploaded or
+# connected data and embeds the resulting dashboard inside a customer application through its
+# JavaScript API ("Cognos Dashboards Embedded"). Embedding is the point of the service.
+schemaVersion: "1"
+type: "component"
+id: "ibm-cognos-dashboards"
+kind: "bi-service"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/cognos-dashboard-embedded"
+defaults:
+  managed: true
+  embeddedReports: true

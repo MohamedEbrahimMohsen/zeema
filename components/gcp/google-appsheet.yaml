@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AppSheet: Google's no-code platform for building applications and automations, delivered to desktop
+# and to iOS and Android without writing code ("AppSheet"). That page states the application data
+# stays in the connected source - Google Sheets, Google Drive, Office 365, Dropbox, Salesforce - or in
+# AppSheet's built-in database, and that automations send email, SMS and push notifications from
+# triggers, conditions and branches.
+schemaVersion: "1"
+type: "component"
+id: "google-appsheet"
+kind: "app-server"
+provider: "gcp"
+docs: "https://about.appsheet.com/home/"
+defaults:
+  managed: true
+  ownsData: false
+properties:
+  dataSource:
+    type: "enum"
+    values: ["google-sheets", "google-drive", "appsheet-database", "office-365", "dropbox", "salesforce"]
+  noCodeAuthoring:
+    type: "boolean"
+    default: true
+  mobileClients:
+    type: "boolean"
+    default: true
+  automationEnabled:
+    type: "boolean"
+    default: true

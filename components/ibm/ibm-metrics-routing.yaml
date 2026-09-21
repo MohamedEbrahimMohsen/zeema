@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Cloud Metrics Routing: routes the account's platform metrics to the IBM Cloud Monitoring
+# instances named by the routing rules, per region ("Metrics Routing"). A forwarder, not a store.
+schemaVersion: "1"
+type: "component"
+id: "ibm-metrics-routing"
+kind: "stream-processor"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/metrics-router"
+defaults:
+  managed: true
+properties:
+  signal:
+    type: "enum"
+    values: ["platform-metrics"]
+    default: "platform-metrics"

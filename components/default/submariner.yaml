@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Submariner: connects the pod and service networks of separate Kubernetes clusters through a
+# gateway node in each cluster. Per the Submariner documentation the default cable driver builds
+# IPsec tunnels with Libreswan, and overlapping CIDRs need Globalnet, which is off by default.
+schemaVersion: "1"
+type: "component"
+id: "submariner"
+kind: "vpn-gateway"
+provider: "default"
+docs: "https://submariner.io/getting-started/"
+defaults:
+  managed: false
+  peerType: "cloud-to-cloud"
+  tunnelType: "ipsec"
+  bgp: false
+  activeActive: false
+properties:
+  cableDriver:
+    type: "enum"
+    values: ["libreswan", "wireguard", "vxlan"]
+    default: "libreswan"
+  globalnet:
+    type: "boolean"
+    default: false

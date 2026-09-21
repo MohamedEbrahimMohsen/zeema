@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM watsonx Assistant: a conversational assistant that answers from configured actions and from
+# search over connected content, delivered through web chat, phone and messaging channels
+# ("IBM watsonx Assistant"). Whether an assistant is published publicly is per integration.
+schemaVersion: "1"
+type: "component"
+id: "ibm-watsonx-assistant"
+kind: "ai-service"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/watson-assistant"
+defaults:
+  managed: true
+  modality: "text"
+properties:
+  channel:
+    type: "enum"
+    values: ["web-chat", "phone", "sms", "messaging", "api"]
+  conversationalSearch:
+    type: "boolean"
+    default: false

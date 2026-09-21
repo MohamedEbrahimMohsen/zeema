@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM MQ on Cloud: IBM MQ delivered as a managed service on IBM Cloud; the placed node is a queue
+# manager ("IBM MQ on Cloud"). Persistent messages are logged to disk and delivered once inside a
+# unit of work, as with the self-hosted product (`ibm-mq` under default). A backout queue is set
+# per queue, so deadLetterQueue keeps the kind default.
+schemaVersion: "1"
+type: "component"
+id: "ibm-mq-on-cloud"
+kind: "queue"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/mqcloud"
+defaults:
+  managed: true
+  delivery: "at-least-once"
+  persistence: true
+properties:
+  deployment:
+    type: "enum"
+    values: ["single-instance", "high-availability"]
+  plan:
+    type: "enum"
+    values: ["lite", "reserved-deployment", "reserved-capacity"]

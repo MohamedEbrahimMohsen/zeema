@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Data Virtualization (Watson Query): a federation layer that presents tables held in many
+# remote sources as one virtual schema and pushes SQL down to them, so no copy is made
+# ("Data Virtualization"). It routes rather than stores, and gathers results across sources.
+schemaVersion: "1"
+type: "component"
+id: "ibm-data-virtualization"
+kind: "database-proxy"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/data-virtualization"
+defaults:
+  managed: true
+  scatterGather: true
+  routing: "lookup"
+properties:
+  caching:
+    type: "boolean"
+    default: false

@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# DigitalOcean Functions: "blocks of code that run on demand without the need to manage any
+# infrastructure", deployed into a namespace and invoked over HTTP, on a schedule or
+# asynchronously ("Functions"). "Functions Limits": memory defaults to 256 MB within a
+# 128 MB - 1 GB range, the maximum timeout is 15 minutes including initialization, and a
+# namespace runs up to 120 concurrent functions at up to 600 invocations per minute.
+schemaVersion: "1"
+type: "component"
+id: "digitalocean-functions"
+kind: "worker"
+provider: "digitalocean"
+docs: "https://docs.digitalocean.com/products/functions/"
+defaults:
+  managed: true
+  trigger: "manual"
+  concurrency: 120
+properties:
+  runtime:
+    type: "enum"
+    values: ["go", "node", "php", "python"]
+  memoryMb:
+    type: "integer"
+    default: 256
+  maxTimeoutMinutes:
+    type: "integer"
+    default: 15
+  invocationsPerMinute:
+    type: "integer"
+    default: 600

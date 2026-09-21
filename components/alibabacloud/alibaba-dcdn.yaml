@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Dynamic Route for CDN (DCDN): CDN that accelerates dynamic as well as static content, routing
+# uncacheable requests to the origin over optimised paths rather than the public internet
+# ("What is Alibaba Cloud DCDN"). Static objects are still cached at the point of presence.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-dcdn"
+kind: "cdn"
+provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/dcdn/product-overview/what-is-alibaba-cloud-dcdn"
+defaults:
+  managed: true
+properties:
+  dynamicAcceleration:
+    type: "boolean"
+    default: true
+  websocket:
+    type: "boolean"
+    default: false

@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Kuberhealthy: synthetic monitoring operator for Kubernetes. Per the Kuberhealthy README checks
+# are defined as KuberhealthyCheck resources, run as pods on a schedule, and their outcome is
+# exposed both as a JSON status page and as Prometheus metrics for an external scraper.
+schemaVersion: "1"
+type: "component"
+id: "kuberhealthy"
+kind: "monitoring"
+provider: "default"
+docs: "https://kuberhealthy.github.io/kuberhealthy/"
+defaults:
+  managed: false
+  signal: "metrics"
+  collectorMode: "pull"
+  independentOfMonitored: false
+properties:
+  checksAsPods:
+    type: "boolean"
+    default: true
+  prometheusMetrics:
+    type: "boolean"
+    default: true

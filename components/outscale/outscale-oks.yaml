@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OUTSCALE Kubernetes as a Service (OKS): "a managed Kubernetes service designed for efficiency
+# and ease of use" ("About OKS"). 3DS OUTSCALE runs the control plane and applies version and
+# security updates to it; the entry-level `cp.mono.master` control plane has a single master
+# with no high availability and no SLA, while the `cp.3.masters.*` types run three masters.
+# Worker nodes are always organised into node pools, and clusters are upgraded manually across
+# the supported versions 1.30 to 1.35.
+schemaVersion: "1"
+type: "component"
+id: "outscale-oks"
+kind: "container-orchestrator"
+provider: "outscale"
+docs: "https://docs.outscale.com/en/userguide/About-OKS.html"
+defaults:
+  managed: true
+properties:
+  controlPlaneType:
+    type: "enum"
+    values: ["cp.mono.master", "cp.3.masters.small", "cp.3.masters.medium", "cp.3.masters.large"]
+    default: "cp.mono.master"
+  controlPlaneHighlyAvailable:
+    type: "boolean"
+    default: false
+  nodePools:
+    type: "integer"
+  autoUpgrade:
+    type: "boolean"
+    default: false

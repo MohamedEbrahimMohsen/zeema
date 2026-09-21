@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM App Connect on IBM Cloud: integration flows that connect applications, transform messages
+# and move data between endpoints, either event-driven or on a schedule ("IBM App Connect").
+# A flow is a directed graph of connector actions, not a saga, so pattern stays at the kind default.
+schemaVersion: "1"
+type: "component"
+id: "ibm-app-connect"
+kind: "workflow-engine"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/AppConnect"
+defaults:
+  managed: true
+properties:
+  flowType:
+    type: "enum"
+    values: ["event-driven", "api", "batch"]

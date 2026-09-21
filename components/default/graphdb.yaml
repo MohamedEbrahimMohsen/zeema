@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Ontotext GraphDB: RDF triplestore queried with SPARQL, with forward-chaining inference applied
+# at load time. Per the GraphDB documentation a repository is created with the
+# `rdfsplus-optimized` ruleset and stores its data on disk.
+schemaVersion: "1"
+type: "component"
+id: "graphdb"
+kind: "graph-database"
+provider: "default"
+docs: "https://graphdb.ontotext.com/documentation/"
+defaults:
+  managed: false
+  inMemory: false
+  masterPerShard: false
+properties:
+  edition:
+    type: "enum"
+    values: ["free", "standard", "enterprise"]
+    default: "free"
+  ruleset:
+    type: "enum"
+    values: ["empty", "rdfs", "rdfsplus-optimized", "owl-horst-optimized", "owl2-rl"]
+    default: "rdfsplus-optimized"

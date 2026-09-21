@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon CloudWatch Network Flow Monitor: a monitor over the network flows of a workload, fed by
+# lightweight agents installed on the instances. "What is Amazon CloudWatch?" (Network and internet
+# monitoring) says a flow monitor uses information gathered by agents you install on your instances,
+# visualises packet loss and latency for the flows it tracks, and produces a network health indicator
+# saying whether AWS network issues affected those flows in the evaluated period.
+schemaVersion: "1"
+type: "component"
+id: "aws-cloudwatch-network-flow-monitor"
+kind: "monitoring"
+provider: "aws"
+docs: "https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/what-is-network-flow-monitor.html"
+defaults:
+  managed: true
+  signal: "metrics"
+  collectorMode: "push"
+properties:
+  agentRequired:
+    type: "boolean"
+    default: true
+  networkHealthIndicator:
+    type: "boolean"
+    default: true
+  scope:
+    type: "enum"
+    values: ["workload", "subnet", "vpc", "availability-zone"]

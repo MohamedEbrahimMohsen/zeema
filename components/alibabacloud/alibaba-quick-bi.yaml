@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Quick BI: a business intelligence service that connects to cloud and on-premises data sources and
+# builds dashboards, workbooks and self-service analyses over them, with row-level permissions and
+# embedding into a customer portal ("What is Quick BI").
+schemaVersion: "1"
+type: "component"
+id: "alibaba-quick-bi"
+kind: "bi-service"
+provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/quick-bi"
+defaults:
+  managed: true
+properties:
+  edition:
+    type: "enum"
+    values: ["standard", "professional", "enterprise"]

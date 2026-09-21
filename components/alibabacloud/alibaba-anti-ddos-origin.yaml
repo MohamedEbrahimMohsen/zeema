@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Anti-DDoS Origin: mitigation applied to the public IPs of Alibaba Cloud resources in place, so
+# traffic is scrubbed without changing the DNS record or moving the origin behind a proxy
+# ("What is Anti-DDoS Origin"). Anti-DDoS Pro and Premium proxy instead (alibaba-anti-ddos-pro).
+schemaVersion: "1"
+type: "component"
+id: "alibaba-anti-ddos-origin"
+kind: "ddos-protection"
+provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/anti-ddos/anti-ddos-origin/product-overview/what-is-anti-ddos-origin"
+defaults:
+  managed: true
+properties:
+  edition:
+    type: "enum"
+    values: ["basic", "enterprise"]
+  protectionMode:
+    type: "enum"
+    values: ["in-place"]
+    default: "in-place"

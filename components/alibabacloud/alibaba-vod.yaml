@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# ApsaraVideo VOD: ingests source videos, transcodes them into adaptive bitrate renditions, stores
+# them and delivers them through CDN, with optional encryption of the delivered stream
+# ("What is ApsaraVideo VOD"). Transcoding templates decide the renditions.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-vod"
+kind: "media-transcoder"
+provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/vod"
+defaults:
+  managed: true
+  mode: "file"
+  drm: false
+properties:
+  adaptiveBitrate:
+    type: "boolean"
+    default: true
+  deliveryNetwork:
+    type: "enum"
+    values: ["cdn"]
+    default: "cdn"

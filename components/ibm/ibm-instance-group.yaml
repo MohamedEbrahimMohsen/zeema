@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Auto Scale for VPC: an instance group that creates and removes virtual server instances from an
+# instance template to satisfy a target metric or a schedule, optionally registering them with a
+# load balancer pool ("About auto scale for VPC"). Membership spreads over the subnets it is given.
+schemaVersion: "1"
+type: "component"
+id: "ibm-instance-group"
+kind: "virtual-machine"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/vpc?topic=vpc-about-auto-scale"
+defaults:
+  managed: true
+properties:
+  scalingMode:
+    type: "enum"
+    values: ["static", "dynamic", "scheduled"]
+    default: "static"
+  loadBalancerIntegration:
+    type: "boolean"
+    default: false

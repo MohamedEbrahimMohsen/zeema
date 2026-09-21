@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# DigitalOcean Container Registry (DOCR): "a private Docker image registry that lets you store
+# and manage private container images", integrated with Docker and DigitalOcean Kubernetes
+# ("Container Registry"). Registries are private; there are three subscription plans (free, basic
+# and professional); image layers may be up to 20 GB and images up to 100 GB. Garbage collection
+# removes unreferenced layers, manually or automatically.
+schemaVersion: "1"
+type: "component"
+id: "digitalocean-container-registry"
+kind: "container-registry"
+provider: "digitalocean"
+docs: "https://docs.digitalocean.com/products/container-registry/"
+defaults:
+  managed: true
+  visibility: "private"
+  geoReplicated: false
+properties:
+  plan:
+    type: "enum"
+    values: ["starter", "basic", "professional"]
+    default: "starter"
+  garbageCollection:
+    type: "enum"
+    values: ["manual", "automatic"]
+    default: "manual"
+  maxImageGb:
+    type: "integer"
+    default: 100

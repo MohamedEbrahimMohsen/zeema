@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# DigitalOcean Droplet Autoscale pool: a pool that creates and destroys Droplets from one
+# template to hold a target load ("digitalocean_droplet_autoscale", DigitalOcean Terraform
+# provider). The config block carries min_instances, max_instances, target_cpu_utilization and
+# target_memory_utilization (both in [0, 1]) and cooldown_minutes, or a single
+# target_number_instances for a static pool; the provider documents no default for any of them.
+schemaVersion: "1"
+type: "component"
+id: "digitalocean-droplet-autoscale"
+kind: "virtual-machine"
+provider: "digitalocean"
+docs: "https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/droplet_autoscale"
+defaults:
+  managed: true
+  os: "linux"
+  zoneRedundant: false
+properties:
+  scalingMode:
+    type: "enum"
+    values: ["dynamic", "static"]
+  minInstances:
+    type: "integer"
+  maxInstances:
+    type: "integer"
+  cooldownMinutes:
+    type: "integer"

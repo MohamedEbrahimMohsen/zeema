@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Prefect Cloud: the vendor-hosted Prefect orchestration API. Per "Prefect Cloud" the API, UI and
+# run metadata are hosted by Prefect while flow runs execute on infrastructure the customer owns,
+# polled by a worker attached to a work pool.
+schemaVersion: "1"
+type: "component"
+id: "prefect-cloud"
+kind: "workflow-engine"
+provider: "default"
+docs: "https://docs.prefect.io/v3/manage/cloud/index"
+defaults:
+  managed: true
+  durable: true
+  pattern: "dag"
+  compensation: false
+  humanReview: false
+properties:
+  hybridExecution:
+    type: "boolean"
+    default: true
+  workPoolType:
+    type: "enum"
+    values: ["process", "docker", "kubernetes", "push", "managed"]

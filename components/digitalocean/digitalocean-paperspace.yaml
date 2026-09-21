@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Paperspace by DigitalOcean: "a cloud-based machine learning platform that offers GPU-powered
+# virtual machines and a Kubernetes-based container service" ("Paperspace"). The platform is the
+# workspace: Notebooks (a hosted Jupyter IDE with shared storage), Deployments (containers and
+# models served as a container-as-a-service), Workflows (GPU pipelines) and Machines (Linux and
+# Windows GPU VMs), driven by a REST API, JavaScript SDK and CLI.
+schemaVersion: "1"
+type: "component"
+id: "digitalocean-paperspace"
+kind: "ml-platform"
+provider: "digitalocean"
+docs: "https://docs.digitalocean.com/products/paperspace/"
+defaults:
+  managed: true
+  gpuEnabled: true
+properties:
+  surface:
+    type: "enum"
+    values: ["notebooks", "deployments", "workflows", "machines"]

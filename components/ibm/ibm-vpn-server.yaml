@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Client VPN for VPC: an OpenVPN-compatible VPN server inside a VPC that remote clients dial
+# into, authenticating with certificates, with IAM user IDs, or both ("Client-to-site VPN server
+# overview"). Site-to-site tunnels are VPN for VPC instead (ibm-vpn-gateway).
+schemaVersion: "1"
+type: "component"
+id: "ibm-vpn-server"
+kind: "vpn-gateway"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/vpc?topic=vpc-vpn-client-to-site-overview"
+defaults:
+  managed: true
+  peerType: "point-to-site"
+  tunnelType: "ssl"
+properties:
+  clientAuthentication:
+    type: "enum"
+    values: ["certificate", "username", "certificate-and-username"]
+  highAvailability:
+    type: "boolean"
+    default: false

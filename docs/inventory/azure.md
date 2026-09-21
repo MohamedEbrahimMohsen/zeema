@@ -288,6 +288,14 @@ customer-identity offering and is no longer sold to new tenants.
 | Azure Copilot | — | — | skip: assistant, not a node | https://learn.microsoft.com/en-us/azure/copilot/overview |
 | Azure Monitor for SAP solutions | azure-monitor-for-sap | monitoring | done | https://learn.microsoft.com/en-us/azure/sap/monitor/about-azure-monitor-sap-solutions |
 | Azure Monitor managed service for Prometheus | azure-managed-prometheus | monitoring | done | https://learn.microsoft.com/en-us/azure/azure-monitor/metrics/prometheus-metrics-overview |
+| Azure Monitor workspace | azure-monitor-workspace | timeseries-database | done | https://learn.microsoft.com/en-us/azure/azure-monitor/metrics/azure-monitor-workspace-overview |
+| Data collection endpoint [^dcr] | azure-monitor-data-collection-endpoint | monitoring | done | https://learn.microsoft.com/en-us/azure/azure-monitor/data-collection/data-collection-endpoint-overview |
+| Data collection rule [^dcr] | azure-monitor-data-collection-rule | monitoring | done | https://learn.microsoft.com/en-us/azure/azure-monitor/data-collection/data-collection-rule-overview |
+
+[^dcr]: Data collection rules were `skip: Configuration object of Azure Monitor, not a node.` in the
+mingrammer pass. The skip was reversed on request: Azure Monitor architecture diagrams draw the
+agent to DCR to destination path, so users expect to place both the rule and the endpoint. The
+mingrammer row now points here.
 
 ## Developer tools and DevOps
 
@@ -323,6 +331,7 @@ customer-identity offering and is no longer sold to new tenants.
 | Azure Sphere | azure-sphere | client | done | https://learn.microsoft.com/en-us/azure-sphere/product-overview/what-is-azure-sphere |
 | Windows for IoT | — | — | skip: device operating system | https://learn.microsoft.com/en-us/windows/iot/ |
 | Device Update for IoT Hub | azure-device-update | iot-hub | done | https://learn.microsoft.com/en-us/azure/iot-hub-device-update/understand-device-update |
+| Azure Device Registry | azure-device-registry | coordination-service | done | https://learn.microsoft.com/en-us/azure/iot-operations/discover-manage-assets/overview-manage-assets |
 
 ## Hybrid, edge and migration
 
@@ -404,7 +413,7 @@ customer-identity offering and is no longer sold to new tenants.
 | Azure Data Lake Storage Gen1 | — | — | skip: retired 29 February 2024, superseded by Data Lake Storage Gen2 | https://diagrams.mingrammer.com/docs/nodes/azure |
 | Endpoint analytics | — | — | skip: Microsoft Intune reporting feature, not an Azure resource | https://diagrams.mingrammer.com/docs/nodes/azure |
 | Event Hubs dedicated cluster | — | — | skip: dedicated capacity tier of Event Hubs, same resource | https://diagrams.mingrammer.com/docs/nodes/azure |
-| Microsoft Power Platform | — | — | skip: SaaS suite brand, not an Azure resource | https://diagrams.mingrammer.com/docs/nodes/azure |
+| Microsoft Power Platform | — | — | skip: suite brand over Power Apps, Power Automate and Power BI; the app builder is catalogued as azure-power-apps | https://diagrams.mingrammer.com/docs/nodes/azure |
 | App Service Certificates | — | — | skip: TLS certificate asset bound to App Service, not a node | https://diagrams.mingrammer.com/docs/nodes/azure |
 | App Service Domains | — | — | skip: domain name registration, not a node | https://diagrams.mingrammer.com/docs/nodes/azure |
 | App Service Environment | — | — | skip: network-isolated deployment mode of App Service; a boundary, not a node | https://diagrams.mingrammer.com/docs/nodes/azure |
@@ -477,7 +486,7 @@ customer-identity offering and is no longer sold to new tenants.
 | Access reviews | — | — | skip: governance feature of Microsoft Entra ID Governance, not a node | https://diagrams.mingrammer.com/docs/nodes/azure |
 | Microsoft Entra Connect Health | — | — | skip: monitoring feature of Microsoft Entra Connect, not a resource | https://diagrams.mingrammer.com/docs/nodes/azure |
 | Microsoft Entra ID Protection | — | — | skip: risk-detection feature of Microsoft Entra ID, not a resource | https://diagrams.mingrammer.com/docs/nodes/azure |
-| Privileged Identity Management | — | — | skip: role-activation feature of Microsoft Entra ID, not a resource | https://diagrams.mingrammer.com/docs/nodes/azure |
+| Privileged Identity Management | azure-privileged-identity-management | policy-engine | done | https://learn.microsoft.com/en-us/entra/id-governance/privileged-identity-management/pim-configure |
 | Administrative units | — | — | skip: directory container, not a node | https://diagrams.mingrammer.com/docs/nodes/azure |
 | API proxy | — | — | skip: directory feature icon, no standalone resource | https://diagrams.mingrammer.com/docs/nodes/azure |
 | App registrations | — | — | skip: directory object, not a node | https://diagrams.mingrammer.com/docs/nodes/azure |
@@ -538,7 +547,7 @@ customer-identity offering and is no longer sold to new tenants.
 | Activity log | — | — | skip: log category of Azure Monitor, not a resource | https://diagrams.mingrammer.com/docs/nodes/azure |
 | Alerts | — | — | skip: alerting feature of Azure Monitor, not a resource | https://diagrams.mingrammer.com/docs/nodes/azure |
 | Compliance | — | — | skip: compliance reporting view, not a node | https://diagrams.mingrammer.com/docs/nodes/azure |
-| Customer Lockbox for Microsoft Azure | — | — | skip: access approval workflow for Microsoft support, not a node | https://diagrams.mingrammer.com/docs/nodes/azure |
+| Customer Lockbox for Microsoft Azure | — | — | skip: tenant-wide approval setting for Microsoft support access; it creates no resource you name or place, unlike OCI's operator and delegate access controls, which are OCID-bearing objects attached to a named resource | https://learn.microsoft.com/en-us/azure/security/fundamentals/customer-lockbox-overview |
 | Diagnostic settings | — | — | skip: configuration object routing platform logs, not a node | https://diagrams.mingrammer.com/docs/nodes/azure |
 | Azure for Education | — | — | skip: training and subscription program, not a resource | https://diagrams.mingrammer.com/docs/nodes/azure |
 | Intune trends | — | — | skip: reporting view, not a node | https://diagrams.mingrammer.com/docs/nodes/azure |
@@ -612,7 +621,7 @@ customer-identity offering and is no longer sold to new tenants.
 | VPN client for Windows | — | — | skip: client software, not a node | https://diagrams.mingrammer.com/docs/nodes/azure |
 | Workload orchestration | — | — | skip: Arc deployment and configuration tooling for edge workloads, not a runtime node | https://diagrams.mingrammer.com/docs/nodes/azure |
 | Microsoft Entra authentication methods | — | — | skip: authentication policy of Microsoft Entra ID, not a node | https://diagrams.mingrammer.com/docs/nodes/azure |
-| Microsoft Entra Privileged Identity Management | — | — | skip: privileged access governance feature of Microsoft Entra ID, not a node | https://diagrams.mingrammer.com/docs/nodes/azure |
+| Microsoft Entra Privileged Identity Management | azure-privileged-identity-management | policy-engine | done | mapping: the full product name of the Privileged Identity Management row above |
 | Risky sign-ins | — | — | skip: report view in Microsoft Entra ID Protection, not a node | https://diagrams.mingrammer.com/docs/nodes/azure |
 | Risky users | — | — | skip: report view in Microsoft Entra ID Protection, not a node | https://diagrams.mingrammer.com/docs/nodes/azure |
 | Detonation | — | — | skip: generic concept icon for a malware sandbox, not a product | https://diagrams.mingrammer.com/docs/nodes/azure |
@@ -743,7 +752,7 @@ customer-identity offering and is no longer sold to new tenants.
 | Cost export | — | — | skip: Cost management and billing export, not a runtime node. | https://diagrams.mingrammer.com/docs/nodes/azure |
 | Custom IP prefix | — | — | skip: Bring-your-own IP address range, a configuration of Public IP addresses. | https://diagrams.mingrammer.com/docs/nodes/azure |
 | Dashboard hub | — | — | skip: Portal dashboard icon. | https://diagrams.mingrammer.com/docs/nodes/azure |
-| Data collection rules | — | — | skip: Configuration object of Azure Monitor, not a node. | https://diagrams.mingrammer.com/docs/nodes/azure |
+| Data collection rules (see Management and governance) | azure-monitor-data-collection-rule | monitoring | done | mapping: the same resource as the Data collection rule row under Management and governance |
 | Database instance for SAP | — | — | skip: Sub-resource of an Azure Virtual Instance for SAP, a management representation of VMs. | https://diagrams.mingrammer.com/docs/nodes/azure |
 | CM local manager | — | — | skip: OT asset icon from the Defender for IoT device inventory, not an Azure service. | https://diagrams.mingrammer.com/docs/nodes/azure |
 | DCS controller | — | — | skip: OT asset icon from the Defender for IoT device inventory, not an Azure service. | https://diagrams.mingrammer.com/docs/nodes/azure |
@@ -806,6 +815,94 @@ customer-identity offering and is no longer sold to new tenants.
 | Web App + Database | — | — | skip: Multi-resource deployment template icon, not a single product. | https://diagrams.mingrammer.com/docs/nodes/azure |
 | WebJobs | — | — | skip: Background task feature hosted inside an App Service plan, not a separate resource. | https://diagrams.mingrammer.com/docs/nodes/azure |
 
+## Coverage pass 2026-09-21
+
+Diff of this file against the Azure products directory
+(<https://azure.microsoft.com/en-us/products/>), the Azure documentation index
+(<https://learn.microsoft.com/en-us/azure/?product=all>) and the resource provider list
+(<https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/azure-services-resource-providers>),
+cross-checked against the architecture icon set (<https://learn.microsoft.com/en-us/azure/architecture/icons/>).
+Everything else in those sources was already `done` or `skip` above. Two rows became components
+(Azure Monitor workspace, Azure Device Registry); the rest are not nodes.
+
+| resource | id | kind | status | source |
+|---|---|---|---|---|
+| AI Gateway | — | — | skip: GenAI gateway capability set of API Management, not a separate resource | https://learn.microsoft.com/en-us/azure/api-management/genai-gateway-capabilities |
+| Azure Custom Providers | — | — | skip: Resource Manager extensibility mechanism, not a runtime node | https://learn.microsoft.com/en-us/azure/azure-resource-manager/custom-providers/overview |
+| Azure Serial Console | — | — | skip: VM troubleshooting console in the portal, not a node | https://learn.microsoft.com/en-us/troubleshoot/azure/virtual-machines/serial-console-windows |
+| Bing Maps for Enterprise | — | — | skip: Microsoft product outside Azure; the Azure service is azure-maps | https://learn.microsoft.com/en-us/bingmaps/ |
+| Azure Notebooks | — | — | skip: retired 2021, superseded by Azure Machine Learning notebooks | https://learn.microsoft.com/en-us/previous-versions/azure/notebooks/ |
+| Azure Dev Spaces | — | — | skip: retired 31 October 2023, superseded by Bridge to Kubernetes | https://learn.microsoft.com/en-us/previous-versions/azure/dev-spaces/ |
+| Enterprise Knowledge Graph | — | — | skip: resource provider namespace of a discontinued preview with no live documentation | https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/azure-services-resource-providers |
+| Object Store (Microsoft.ObjectStore) | — | — | skip: internal resource provider namespace, no public product | https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/azure-services-resource-providers |
+| Token (Microsoft.Token) | — | — | skip: internal resource provider namespace, no public product | https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/azure-services-resource-providers |
+| Gateway Load Balancer | — | — | skip: SKU of Azure Load Balancer, same resource as azure-load-balancer | https://learn.microsoft.com/en-us/azure/load-balancer/gateway-overview |
+| Service Connector | — | — | skip: connection configuration between a compute service and a backing service, not a node | https://learn.microsoft.com/en-us/azure/service-connector/overview |
+| Resiliency in Azure / Infrastructure Resiliency Manager | — | — | skip: posture-management experience over existing backup, replication and zone configuration, reached from the portal search box; not a deployable resource | https://learn.microsoft.com/en-us/azure/resiliency/resiliency-overview |
+| Azure Monitor action groups | — | — | skip: notification target list of an alert rule, a configuration object (Alerts is already skipped above) | https://learn.microsoft.com/en-us/azure/azure-monitor/alerts/action-groups |
+| Akri services and connectors (OPC UA, ONVIF, media, HTTP/REST, SSE, MQTT) | — | — | skip: in-cluster components of Azure IoT Operations, not separate resources | https://learn.microsoft.com/en-us/azure/iot-operations/discover-manage-assets/overview-manage-assets |
+| Microsoft Lifecycle Services | — | — | skip: Dynamics 365 delivery tooling, not an Azure resource | https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/azure-services-resource-providers |
+
+### Cross-provider twins (consolidation, same date)
+
+Products the other providers' passes found and this file did not. Each is the Azure half of a pair
+already catalogued elsewhere.
+
+| resource | id | kind | status | source |
+|---|---|---|---|---|
+| Azure confidential VM | azure-confidential-vm | virtual-machine | done | https://learn.microsoft.com/en-us/azure/confidential-computing/confidential-vm-overview |
+| Microsoft Power Apps | azure-power-apps | app-server | done | https://learn.microsoft.com/en-us/power-apps/powerapps-overview |
+
+Microsoft Entra Privileged Identity Management was `skip` on two mingrammer rows and is now
+`azure-privileged-identity-management`, the twin of `google-privileged-access-manager` and
+`oci-managed-access`: an eligible assignment is a stored object with its own lifetime, not a report.
+
+`azure-confidential-vm` overlaps the `securityType: "confidential"` value on `azure-virtual-machine`,
+the same overlap `google-confidential-vm` has with `google-compute-engine`. It is a separate component
+for the same reason: its own size families, its own attestation and vTPM behaviour, its own optional
+confidential OS disk encryption, and its own set of unsupported features.
+
+Microsoft Power Apps sits in `azure/` because the provider folder is the owning vendor, not the
+hosting cloud — the same call that put AppSheet in `gcp/`. The Power Platform brand row stays `skip`.
+
+Operator access: Customer Lockbox stays `skip` and OCI's operator, delegate and API access controls
+stay `done`. The line is whether the vendor's access governance creates something you name: an OCI
+operator control is an OCID-bearing object you attach to a named Exadata or Autonomous AI Database
+resource, while Customer Lockbox is a tenant-wide toggle plus a stream of approval requests, with no
+resource of its own. The same test keeps GCP's Access Transparency and Access Approval at `skip`.
+
+### Already covered under another name
+
+| source name | covered by |
+|---|---|
+| Azure Data Manager for Energy | azure-energy-data-services (Microsoft Energy Data Services is the same product) |
+| Autonomous Systems (Microsoft.AutonomousSystems) | the Project Bonsai skip row above |
+| Azure Arc-enabled servers / Kubernetes / data services / site manager, SQL Server enabled by Azure Arc | azure-arc, through its `resourceType` enum (servers, kubernetes, data-services, sql-server, vmware-vsphere, scvmm) |
+| Azure Business Continuity Center | renamed Resiliency in Azure, skipped in the table above |
+| Microsoft.AzureStackHCI | azure-local |
+| Microsoft.StorageCache (Azure HPC Cache) | skipped above as retired 30 September 2025, superseded by azure-managed-lustre |
+| Azure Load Testing | azure-load-testing, listed above as "Azure App Testing (Load Testing)" |
+| Managed MLflow tracking | azure-machine-learning, through the MLflow integration the workspace ships; there is no separate tracking-server resource to place, unlike aws-sagemaker-mlflow |
+| Azure Kubernetes Service Edge Essentials | azure-aks-edge-essentials |
+
+### Existing skips a user might reasonably expect to place
+
+Listed for review only; none of these was reversed in this pass. Each is currently `skip` with a
+"feature / configuration object / not a resource" reason, yet each has its own Azure resource or is
+drawn as a box in Microsoft's own architecture diagrams.
+
+| row | current reason | why it may deserve a component |
+|---|---|---|
+| Azure Monitor pipeline | edge data-collection feature of Azure Monitor, not a resource | It is a containerised OpenTelemetry-based service deployed to an Arc-enabled Kubernetes cluster with its own ARM resources, its own ingestion ports (Syslog 514, OTLP 4317) and optional persistent storage. Microsoft's own pipeline architecture diagram draws it as a box between clients and the Log Analytics workspace. |
+| Azure Virtual Network Manager | central governance over existing VNets, not a topology node | It owns network groups, connectivity configurations (hub and spoke, mesh) and security admin rules, and is the resource that creates the peerings a topology diagram shows. |
+| Azure Firewall Manager | policy manager over Azure Firewall instances | Firewall policies are their own resource and are what a secured-hub diagram points at. |
+| Local network gateways | configuration object describing the on-premises peer of a VPN gateway | Every site-to-site VPN diagram draws the on-premises peer as a box. |
+| Azure Monitor workbooks / dashboards | reporting and dashboard surface over Azure Monitor | They are ARM resources and are the consumer end of a monitoring path. |
+| Deployment slots / staging slot | deployment slot of App Service, a property of azure-app-service | A slot is a separately addressable App Service site with its own hostname, and blue-green diagrams draw both. |
+| Log Analytics query pack | container of saved queries, a configuration object | An ARM resource, though it has no runtime behaviour a rule could read; weakest of the list. |
+
 ## Counts
 
-total 698, todo 0, done 195, skip 478.
+total 692, todo 0, done 202, skip 490. Plus 2 mapping rows, which point at rows already counted
+above. (Recounted from the status column on 2026-09-21; the previous line counted a duplicate
+`azure-monitor-data-collection-rule` row as a second `done`.)

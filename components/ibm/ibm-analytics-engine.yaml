@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Analytics Engine: serverless Apache Spark clusters that are created for an application and
+# released when it ends, reading and writing data in IBM Cloud Object Storage rather than in
+# cluster-local HDFS ("IBM Analytics Engine").
+schemaVersion: "1"
+type: "component"
+id: "ibm-analytics-engine"
+kind: "big-data-cluster"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/AnalyticsEngine"
+defaults:
+  managed: true
+  engine: "spark"
+  autoscaling: true
+properties:
+  provisioning:
+    type: "enum"
+    values: ["serverless"]
+    default: "serverless"
+  storage:
+    type: "enum"
+    values: ["object-storage"]
+    default: "object-storage"

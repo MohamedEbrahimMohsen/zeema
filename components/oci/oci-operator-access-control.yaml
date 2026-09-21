@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Oracle Operator Access Control: an operator control names the actions Oracle staff may run on an
+# Exadata Cloud@Customer, Autonomous Exadata VM Cluster or Compute Cloud@Customer system, and is
+# attached to that system by an operator control assignment. Defaults from "Overview of Oracle Operator
+# Access Control": access is denied until an approval group approves it unless the action is marked
+# pre-approved, credentials are temporary, every operator action is logged, and a system with no
+# assignment runs under a default control that permits the access diagnostics and maintenance need.
+schemaVersion: "1"
+type: "component"
+id: "oci-operator-access-control"
+kind: "policy-engine"
+provider: "oci"
+docs: "https://docs.oracle.com/en-us/iaas/operator-access-control/doc/overview-of-operator-access-control.html"
+defaults:
+  managed: true
+  effect: "deny"
+  enforcementMode: "enforced"
+  scope: "resource"
+  remediation: false
+properties:
+  approvalRequired:
+    type: "boolean"
+    default: true
+  preApprovedActions:
+    type: "boolean"
+    default: false
+  operatorActionsAudited:
+    type: "boolean"
+    default: true
+  accessTemporary:
+    type: "boolean"
+    default: true
+  unassignedSystemAllowsAccess:
+    type: "boolean"
+    default: true

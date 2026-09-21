@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM watsonx.governance: tracks models through their lifecycle, records the facts of each
+# version, evaluates them for quality, drift and bias, and holds the risk and compliance
+# documentation against them ("IBM watsonx.governance"). It governs models rather than serving
+# them, so the registry is the substance and there is no training compute of its own.
+schemaVersion: "1"
+type: "component"
+id: "ibm-watsonx-governance"
+kind: "ml-platform"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/watsonx-governance"
+defaults:
+  managed: true
+  modelRegistry: true
+  experimentTracking: true
+properties:
+  driftMonitoring:
+    type: "boolean"
+    default: false
+  biasEvaluation:
+    type: "boolean"
+    default: false

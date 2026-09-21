@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# DataStax Enterprise (DSE): commercial Apache Cassandra distribution. Per the DSE 6.9
+# documentation a node starts as a plain transactional node; DSE Search, DSE Analytics and DSE
+# Graph are workloads enabled per node, and transparent data encryption is configured explicitly.
+schemaVersion: "1"
+type: "component"
+id: "datastax-enterprise"
+kind: "nosql-database"
+provider: "default"
+docs: "https://docs.datastax.com/en/dse/6.9/index.html"
+defaults:
+  managed: false
+  model: "wide-column"
+  consistency: "tunable"
+  replication: "single-region"
+  encryptionAtRest: false
+properties:
+  searchWorkload:
+    type: "boolean"
+    default: false
+  analyticsWorkload:
+    type: "boolean"
+    default: false
+  graphWorkload:
+    type: "boolean"
+    default: false

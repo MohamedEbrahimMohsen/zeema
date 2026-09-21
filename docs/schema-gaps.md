@@ -226,3 +226,30 @@ Format for an entry:
   type, if ever.
 - Status: rejected for v1
 
+
+## No group kind for an ownership boundary
+- Design: docs/inventory/oci.md (coverage pass 2026-09-21); no committed design yet, because the
+  gap is why none of the OCI reference material could be encoded as drawn.
+- Missing: the box every cloud vendor draws first. Oracle's own architecture diagrams nest
+  resources by **compartment**, the tenancy subtree that owns them, sets quotas on them and is
+  the subject of every IAM policy statement. The v1 group kinds are `region`,
+  `availability-zone`, `vpc`, `trust-zone`, `system`, `cell` and `point-of-presence`: every one
+  of them is a place or a blast radius, and none of them says who owns what is inside. The same
+  box exists under a different name in every other provider - an AWS account or organizational
+  unit, an Azure subscription or resource group, a GCP project or folder, an IBM Cloud resource
+  group, an Alibaba Cloud resource group. A compartment is not a region (compartments span
+  regions), not a VPC (a VCN lives in one), and not a trust zone (two compartments in one
+  tenancy are usually inside the same trust boundary; the split is billing, quota and
+  administration).
+- Workaround: `trust-zone`, which is wrong whenever the compartments are equally trusted, or
+  `system`, which loses the fact that the boundary is enforced by the provider and not by the
+  design. Most often the boundary is simply dropped and recorded in notes.md.
+- Proposed change: a group kind `ownership-boundary`, with the provider's own word carried as the
+  group's label (compartment, account, subscription, resource group, project, folder). It earns
+  its place the way `cell` did: rules want to read it. A rule that says a database and its
+  replica must not share a blast radius already reads `availability-zone`; the same rule about
+  administrative blast radius - one deleted compartment, one revoked account - needs this one.
+  A second rule candidate: a node in one ownership boundary reached synchronously from another
+  crosses an IAM boundary the design should show. No schema change is made until one of those
+  rules is written.
+- Status: open

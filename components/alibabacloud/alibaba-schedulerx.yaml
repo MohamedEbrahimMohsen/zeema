@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# SchedulerX: a distributed job scheduler that fires jobs on a cron expression or a fixed rate and
+# dispatches each run to the worker group registered for it, with retries and alarms
+# ("What is SchedulerX"). The job is a background process with no request path.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-schedulerx"
+kind: "worker"
+provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/schedulerx"
+defaults:
+  managed: true
+  trigger: "schedule"
+properties:
+  executionMode:
+    type: "enum"
+    values: ["standalone", "broadcast", "map", "map-reduce"]
+    default: "standalone"

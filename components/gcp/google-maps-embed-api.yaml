@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Maps Embed API: an API-key-authenticated URL that renders an interactive Google map inside a page.
+# "Maps Embed API Usage and Billing" states usage "is available at no charge" and that there are no
+# short-term queries-per-second or long-term queries-per-day limits, so no quota is declared here.
+schemaVersion: "1"
+type: "component"
+id: "google-maps-embed-api"
+kind: "third-party-api"
+provider: "gcp"
+docs: "https://developers.google.com/maps/documentation/embed/usage-and-billing"
+defaults:
+  managed: true
+  idempotent: true
+  callbackStyle: "none"
+  hostedPage: true
+  handlesMoney: false
+properties:
+  billed:
+    type: "boolean"
+    default: false
+  rateLimited:
+    type: "boolean"
+    default: false
+  apiKeyRequired:
+    type: "boolean"
+    default: true

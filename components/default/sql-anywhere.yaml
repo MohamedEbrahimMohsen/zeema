@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# SAP SQL Anywhere: embeddable relational database server aimed at edge and mobile deployments.
+# Per the SQL Anywhere documentation, database encryption and database mirroring are configured
+# per database and are absent from a database created with defaults.
+schemaVersion: "1"
+type: "component"
+id: "sql-anywhere"
+kind: "sql-database"
+provider: "default"
+docs: "https://help.sap.com/docs/SAP_SQL_Anywhere"
+defaults:
+  managed: false
+  replication: "none"
+  encryptionAtRest: false
+  sharded: false
+properties:
+  databaseEncryption:
+    type: "enum"
+    values: ["none", "simple", "aes"]
+    default: "none"
+  mirroring:
+    type: "boolean"
+    default: false

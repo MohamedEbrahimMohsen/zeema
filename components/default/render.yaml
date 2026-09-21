@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Render: managed platform that builds a repository and runs it as a web service, private service,
+# background worker, cron job or static site. Per the Render documentation a web service is served
+# over HTTPS with a managed certificate and deploys are zero-downtime.
+schemaVersion: "1"
+type: "component"
+id: "render"
+kind: "app-server"
+provider: "default"
+docs: "https://render.com/docs"
+defaults:
+  managed: true
+  stateless: true
+  autoscaling: false
+  ownsData: false
+properties:
+  serviceType:
+    type: "enum"
+    values: ["web-service", "private-service", "background-worker", "cron-job", "static-site"]
+    default: "web-service"
+  zeroDowntimeDeploys:
+    type: "boolean"
+    default: true

@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Embarcadero InterBase: embeddable relational database with a multi-generational (versioning)
+# architecture, so readers never block writers. Per the InterBase documentation "Data Definition
+# Guide" and "Operations Guide", database encryption and change views are licensed options that
+# are off until enabled.
+schemaVersion: "1"
+type: "component"
+id: "interbase"
+kind: "sql-database"
+provider: "default"
+docs: "https://docwiki.embarcadero.com/InterBase/2020/en/Main_Page"
+defaults:
+  managed: false
+  replication: "none"
+  encryptionAtRest: false
+  concurrencyControl: "optimistic"
+  sharded: false
+properties:
+  edition:
+    type: "enum"
+    values: ["iblite", "togo", "desktop", "server"]
+    default: "server"
+  changeViews:
+    type: "boolean"
+    default: false

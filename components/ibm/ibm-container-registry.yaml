@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Cloud Container Registry: private image namespaces in a multi-tenant regional registry,
+# with Vulnerability Advisor scanning pushed images ("About IBM Cloud Container Registry").
+# Namespaces are private; a registry is regional, not replicated between regions.
+schemaVersion: "1"
+type: "component"
+id: "ibm-container-registry"
+kind: "container-registry"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/Registry?topic=Registry-registry_overview"
+defaults:
+  managed: true
+  visibility: "private"
+  imageScanning: true
+  geoReplicated: false

@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# ActionTrail: records the management API calls made in an Alibaba Cloud account and delivers the
+# events to an OSS bucket or a Simple Log Service Logstore through a trail ("What is ActionTrail").
+# It is the audit log: independent of the resources it records.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-actiontrail"
+kind: "monitoring"
+provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/actiontrail"
+defaults:
+  managed: true
+  signal: "logs"
+  collectorMode: "push"
+  independentOfMonitored: true
+properties:
+  deliveryTarget:
+    type: "enum"
+    values: ["object-storage", "log-service", "both"]
+  trailScope:
+    type: "enum"
+    values: ["single-account", "multi-account"]
+    default: "single-account"

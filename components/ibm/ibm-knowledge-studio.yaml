@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Watson Knowledge Studio: a workspace where subject-matter experts annotate documents to
+# build a type system and train a domain machine-learning model, which is then deployed to Watson
+# Discovery or Natural Language Understanding ("IBM Watson Knowledge Studio"). It trains; the
+# deployed model serves elsewhere.
+schemaVersion: "1"
+type: "component"
+id: "ibm-knowledge-studio"
+kind: "ml-platform"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/watson-knowledge-studio"
+defaults:
+  managed: true
+  modelRegistry: true
+properties:
+  modelType:
+    type: "enum"
+    values: ["machine-learning", "rule-based"]

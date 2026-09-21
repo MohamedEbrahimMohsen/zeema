@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Gateway Appliance: a bare metal device in an IBM Cloud classic data centre that terminates
+# customer VLANs and runs a network operating system — Juniper vSRX, Virtual Router Appliance
+# (Vyatta) or Fortinet FortiGate — for routing, firewalling and VPN ("Getting started with
+# Gateway Appliance"). IBM hosts the rack device; the customer configures the software on it.
+schemaVersion: "1"
+type: "component"
+id: "ibm-gateway-appliance"
+kind: "edge-appliance"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/gateway-appliance?topic=gateway-appliance-getting-started"
+defaults:
+  connectivity: "connected"
+  formFactor: "rack"
+  cloudManaged: false
+properties:
+  operatingSystem:
+    type: "enum"
+    values: ["juniper-vsrx", "vyatta-vrouter", "fortigate"]
+  highAvailability:
+    type: "boolean"
+    default: false

@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Storage Ceph as a Service: a Ceph cluster run for the customer on IBM Cloud, presenting
+# block, file and S3-compatible object interfaces over one pool of replicated storage
+# ("IBM Storage Ceph as a Service"). Ceph replicates every object across OSDs in the cluster.
+schemaVersion: "1"
+type: "component"
+id: "ibm-storage-ceph"
+kind: "block-storage"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/storage-ceph"
+defaults:
+  managed: true
+  redundancy: "zonal"
+properties:
+  interface:
+    type: "enum"
+    values: ["block", "file", "object"]

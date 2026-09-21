@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# DigitalOcean Monitoring: "a free, opt-in service that helps you track Droplet resource usage,
+# view performance metrics, and receive alerts" ("Monitoring"). Extended CPU, memory, disk and
+# network metrics require the open-source metrics agent installed on the Droplet, which pushes
+# to DigitalOcean; alert policies are created by the user with their own thresholds.
+schemaVersion: "1"
+type: "component"
+id: "digitalocean-monitoring"
+kind: "monitoring"
+provider: "digitalocean"
+docs: "https://docs.digitalocean.com/products/monitoring/"
+defaults:
+  managed: true
+  signal: "metrics"
+  collectorMode: "push"
+  independentOfMonitored: false
+properties:
+  agentRequired:
+    type: "boolean"
+    default: true
+  gpuMetrics:
+    type: "boolean"
+    default: false

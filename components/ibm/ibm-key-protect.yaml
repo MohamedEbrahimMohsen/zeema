@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Key Protect: a key management service whose Standard offering is backed by "FIPS 140-2
+# Level 3 certified" hardware security modules and whose Dedicated offering has been submitted
+# for FIPS 140-3 Level 4 ("About Standard and Dedicated Key Protect"). Root keys wrap data keys
+# with AES-GCM, so envelope encryption is the model. Rotation schedules are supported but a key
+# is not rotated unless a policy is set, so rotationAutomated stays false.
+schemaVersion: "1"
+type: "component"
+id: "ibm-key-protect"
+kind: "key-management"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/key-protect?topic=key-protect-about"
+defaults:
+  managed: true
+  hsm: true
+  envelopeEncryption: true
+  rotationAutomated: false
+properties:
+  offering:
+    type: "enum"
+    values: ["standard", "dedicated"]
+    default: "standard"
+  keyType:
+    type: "enum"
+    values: ["root-key", "standard-key"]

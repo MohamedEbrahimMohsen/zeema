@@ -1,0 +1,13 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Netezza Performance Server as a Service: the Netezza massively parallel data warehouse run as a
+# managed service on IBM Cloud ("Netezza Performance Server Documentation"). Netezza stores tables
+# column-compressed and executes queries across all data slices.
+schemaVersion: "1"
+type: "component"
+id: "ibm-netezza"
+kind: "data-warehouse"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/netezza"
+defaults:
+  managed: true
+  format: "columnar"

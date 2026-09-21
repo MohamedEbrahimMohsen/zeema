@@ -200,7 +200,7 @@ documentation name with the former name in parentheses so an id stays stable acr
 | Policy Intelligence | — | — | skip: recommendation and analysis tooling over IAM policies | https://cloud.google.com/policy-intelligence/docs/overview |
 | Resource Manager (organizations, folders, projects) | — | — | skip: account hierarchy, a container not a resource | https://cloud.google.com/resource-manager/docs/cloud-platform-resource-hierarchy |
 | Cloud Audit Logs | — | — | skip: a log stream inside Cloud Logging | https://cloud.google.com/logging/docs/audit |
-| Access Transparency / Access Approval | — | — | skip: operator access governance features | https://cloud.google.com/assured-workloads/access-approval/docs/overview |
+| Access Transparency / Access Approval | — | — | skip: operator access governance features; Access Transparency is a log stream and Access Approval is an organization-level settings singleton plus incoming request records, so neither is an object you name and place, unlike OCI's OCID-bearing operator and delegate access controls | https://cloud.google.com/assured-workloads/access-approval/docs/overview |
 | Audit Manager | — | — | skip: compliance reporting tooling | https://cloud.google.com/audit-manager/docs/overview |
 | Advisory Notifications | — | — | skip: notification feed in the console | https://cloud.google.com/advisory-notifications/docs/overview |
 | Assured Open Source Software | — | — | skip: curated package distribution, consumed through Artifact Registry | https://cloud.google.com/assured-open-source-software/docs/overview |
@@ -340,7 +340,7 @@ documentation name with the former name in parentheses so an id stays stable acr
 | Config Controller | google-config-controller | ci-pipeline | done | https://cloud.google.com/kubernetes-engine/enterprise/config-controller/docs/setup |
 | Policy Controller | google-policy-controller | policy-engine | done | https://cloud.google.com/kubernetes-engine/enterprise/policy-controller/docs/how-to/installing-policy-controller |
 | Google Cloud Observability | — | — | skip: umbrella name for Logging, Monitoring, Trace and Profiler | https://cloud.google.com/stackdriver/docs |
-| Cloud Deployment Manager | — | — | skip: end of support 31 December 2025, use Infrastructure Manager or Terraform | https://cloud.google.com/deployment-manager/docs |
+| Cloud Deployment Manager | — | — | skip: end of support 31 March 2026 per the banner on the product documentation, use Infrastructure Manager or Terraform | https://cloud.google.com/deployment-manager/docs |
 | Terraform on Google Cloud / CDKTF / Pulumi / Ansible / Crossplane | — | — | skip: third-party infrastructure-as-code tooling, not Google resources | https://cloud.google.com/docs/terraform |
 | App Hub | — | — | skip: application metadata layer over existing resources | https://cloud.google.com/app-hub/docs/overview |
 | Application Design Center | — | — | skip: design and authoring console | https://cloud.google.com/application-design-center/docs/overview |
@@ -547,6 +547,59 @@ notebook and workbench surfaces are `ml-platform`, matching `aws-sagemaker`.
 | Resource Manager | — | — | skip: account hierarchy, a container not a resource | https://cloud.google.com/resource-manager/docs/cloud-platform-resource-hierarchy |
 | Security Health Analytics | — | — | skip: built-in scanning service of Security Command Center, not a separate node | https://cloud.google.com/security-command-center/docs/concepts-vulnerabilities-findings |
 
+## Coverage pass 2026-09-21
+
+Diff of the inventory against the Google Cloud documentation directory and its seventeen area
+pages, `cloud.google.com/docs/product-list`, the official architecture icon sets
+(`core-products-icons.zip`, `google-cloud-legacy-icons.zip`), the Google API discovery service and
+the AWS/Azure/Google Cloud service comparison, all read on 21 September 2026.
+
+| resource | id | kind | status | source |
+|---|---|---|---|---|
+| Serverless VPC Access connector | google-serverless-vpc-access-connector | private-link | done | https://cloud.google.com/vpc/docs/serverless-vpc-access |
+| Parameter Manager parameter | google-parameter-manager | key-management | done | https://cloud.google.com/secret-manager/parameter-manager/docs/overview |
+| Privileged Access Manager entitlement | google-privileged-access-manager | policy-engine | done | https://cloud.google.com/iam/docs/pam-overview |
+| Confidential Space workload | google-confidential-space | virtual-machine | done | https://cloud.google.com/confidential-computing/confidential-space/docs/confidential-space-overview |
+| AppSheet application | google-appsheet | app-server | done | https://about.appsheet.com/home/ |
+| Fleet Engine | google-fleet-engine | third-party-api | done | https://developers.google.com/maps/documentation/mobility/fleet-engine/essentials |
+| Places Aggregate API (Places Insights) | google-places-aggregate-api | third-party-api | done | https://developers.google.com/maps/documentation/places-aggregate/overview |
+| Maps Embed API | google-maps-embed-api | third-party-api | done | https://developers.google.com/maps/documentation/embed/usage-and-billing |
+| Agent Platform Vision (Vertex AI Vision) | — | — | skip: deprecated 15 June 2026, end of life 30 September 2026, use the Cloud Vision API or Agent Platform models | https://cloud.google.com/vision-ai/docs/overview |
+| Storage Intelligence | — | — | skip: management and insights configuration applied to a project, folder or organization | https://cloud.google.com/storage/docs/storage-intelligence/overview |
+| Storage batch operations job | — | — | skip: bulk job configuration inside Storage Intelligence | https://cloud.google.com/storage/docs/batch-operations/overview |
+| Optimization AI (Cloud Fleet Routing API) | — | — | skip: deprecated 16 January 2025, superseded by the Route Optimization API row under Google Maps Platform | https://cloud.google.com/optimization/docs/introduction/how-to |
+| Mandiant Attack Surface Management / Threat Defense / Incident Response / Managed Defense | — | — | skip: consulting and managed security services delivered through Google Security Operations | https://cloud.google.com/security/mandiant |
+| Google Cloud MCP servers | — | — | skip: developer tooling that exposes Google Cloud APIs to coding agents | https://docs.cloud.google.com/mcp |
+| BigQuery Migration Service | — | — | skip: assessment and SQL translation tooling | https://cloud.google.com/bigquery/docs/migration-intro |
+| Document AI Warehouse | — | — | skip: removed from Google Cloud after 16 January 2025 | https://cloud.google.com/document-warehouse/docs/overview |
+| Data Lineage | — | — | skip: lineage tracking feature of Knowledge Catalog (Dataplex) | https://cloud.google.com/dataplex/docs/about-data-lineage |
+| Public Certificate Authority | — | — | skip: public ACME issuance endpoint used by Certificate Manager | https://cloud.google.com/certificate-manager/docs/public-ca |
+| Runtime Configurator | — | — | skip: beta feature of Cloud Deployment Manager, which reached end of support 31 March 2026 | https://cloud.google.com/deployment-manager/runtime-configurator |
+| Apigee integrated developer portal / API monetization | — | — | skip: publishing features of an Apigee organization | https://cloud.google.com/apigee/docs/api-platform/publish/portal/build-integrated-portal |
+| Imagen / Veo / Lyria | — | — | skip: generative models served through the Gemini API and Agent Platform endpoints | https://cloud.google.com/vertex-ai/generative-ai/docs/image/overview |
+| Gemini Code Assist | — | — | skip: IDE and command line coding assistant | https://cloud.google.com/gemini/docs/codeassist/overview |
+| Key Access Justifications | — | — | skip: request-reason policy feature of Cloud KMS and Cloud EKM | https://cloud.google.com/assured-workloads/key-access-justifications/docs/overview |
+| Security Posture | — | — | skip: posture definition feature of Security Command Center | https://cloud.google.com/security-command-center/docs/security-posture-overview |
+| Agent Identity | — | — | skip: IAM identity for agents, a principal not a placeable resource | https://cloud.google.com/iam/docs/agent-identity-overview |
+| Phishing Protection | — | — | skip: retired, folded into Web Risk | https://cloud.google.com/web-risk/docs/overview |
+| Media Translation API | — | — | skip: retired, documentation removed, use Cloud Translation | https://cloud.google.com/translate/docs |
+| Cloud Debugger | — | — | skip: shut down, no replacement in Google Cloud Observability | https://cloud.google.com/stackdriver/docs/deprecations/debugger-deprecation |
+| Connectivity Tests | — | — | skip: diagnostic module of Network Intelligence Center | https://cloud.google.com/network-intelligence-center/docs/connectivity-tests/concepts/overview |
+| Endpoint Verification | — | — | skip: device posture agent installed on end-user machines | https://cloud.google.com/endpoint-verification/docs/overview |
+| Titan Security Keys | — | — | skip: hardware security key, not a cloud resource | https://cloud.google.com/security/products/titan-security-key |
+| Street View Publish API | — | — | skip: imagery upload endpoint, like the Maps Datasets API row | https://developers.google.com/streetview/publish |
+| Compute Engine autoscaler | — | — | skip: autoscaling configuration of a managed instance group | https://cloud.google.com/compute/docs/autoscaler |
+| OS Login / SSH-in-browser | — | — | skip: access methods for a Compute Engine VM | https://cloud.google.com/compute/docs/oslogin |
+| GKE fleet team management | — | — | skip: namespace grouping inside a GKE Enterprise fleet | https://cloud.google.com/kubernetes-engine/fleet-management/docs/team-management |
+
+### No equivalent
+
+Recorded so the next pass does not look again.
+
+| looked for | result |
+|---|---|
+| A twin of Amazon CloudFront KeyValueStore — a key-value store an edge function reads at request time | none. Cloud CDN and Media CDN have no edge key-value store, and Google Cloud has no CDN edge-compute runtime to read one. The AWS and Cloudflare halves of this pair are `aws-cloudfront-keyvaluestore` and `cloudflare-workers-kv`. |
+
 ## Counts
 
-total 400, todo 0, done 228, skip 172.
+total 435, todo 0, done 236, skip 199.

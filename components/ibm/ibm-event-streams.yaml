@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Event Streams: "a high-throughput message bus that is built with Apache Kafka", supporting
+# the Kafka client APIs, Kafka Streams and Kafka Connect ("Event Streams overview"). Kafka
+# semantics carry over: partitioned logs with per-key order, persistent storage, replicated
+# brokers. Partition counts, retention and replication factor depend on the plan and the topic,
+# so they are left unset.
+schemaVersion: "1"
+type: "component"
+id: "ibm-event-streams"
+kind: "stream"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/EventStreams?topic=EventStreams-about"
+defaults:
+  managed: true
+  delivery: "at-least-once"
+  ordering: "per-key"
+  storage: "persistent"
+properties:
+  plan:
+    type: "enum"
+    values: ["lite", "standard", "enterprise"]
+  mirroring:
+    type: "boolean"
+    default: false

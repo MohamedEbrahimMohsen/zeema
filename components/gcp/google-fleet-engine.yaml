@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Fleet Engine: the Google Maps Platform Mobility backend that a transportation management system
+# integrates with, holding vehicles, on-demand trips and scheduled tasks ("Introduction to Fleet
+# Engine"). That page states Fleet Engine APIs and SDKs require JSON Web Tokens signed by service
+# accounts created in the Cloud console, so every caller authenticates with a short-lived token.
+schemaVersion: "1"
+type: "component"
+id: "google-fleet-engine"
+kind: "third-party-api"
+provider: "gcp"
+docs: "https://developers.google.com/maps/documentation/mobility/fleet-engine/essentials"
+defaults:
+  managed: true
+  callbackStyle: "none"
+  hostedPage: false
+  handlesMoney: false
+properties:
+  journeyType:
+    type: "enum"
+    values: ["on-demand", "scheduled"]
+  authentication:
+    type: "enum"
+    values: ["service-account-jwt"]
+    default: "service-account-jwt"
+  tracksVehicleLocation:
+    type: "boolean"
+    default: true

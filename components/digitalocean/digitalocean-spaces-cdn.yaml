@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Spaces CDN: the content delivery network placed in front of a Spaces bucket. "How to Enable
+# the Spaces CDN" - the CDN is not on by default and is enabled on the Space, the default edge
+# cache time-to-live is one hour, and a custom subdomain can carry a free managed Let's Encrypt
+# certificate when the domain's DNS is on DigitalOcean.
+schemaVersion: "1"
+type: "component"
+id: "digitalocean-spaces-cdn"
+kind: "cdn"
+provider: "digitalocean"
+docs: "https://docs.digitalocean.com/products/spaces/how-to/enable-cdn/"
+defaults:
+  managed: true
+  caching: true
+  tls: true
+  edgeCompute: false
+  originShield: false
+properties:
+  edgeTtlSeconds:
+    type: "integer"
+    default: 3600
+  customSubdomain:
+    type: "boolean"
+    default: false
+  certificateSource:
+    type: "enum"
+    values: ["lets-encrypt", "custom"]

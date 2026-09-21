@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Lindorm: "a cloud native multi-model database service" whose engines cover wide-column
+# (LindormTable, HBase-compatible), time series (LindormTSDB), full-text search (LindormSearch,
+# Elasticsearch-compatible), distributed files (LindormDFS), vectors, graphs and streams
+# ("Introduction to Lindorm"). The wide-column engine is the one a design usually places.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-lindorm"
+kind: "nosql-database"
+provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/lindorm"
+defaults:
+  managed: true
+  model: "wide-column"
+properties:
+  engine:
+    type: "enum"
+    values: ["table", "tsdb", "search", "dfs", "vector", "graph", "stream", "compute"]
+    default: "table"
+  compatibility:
+    type: "enum"
+    values: ["hbase", "cassandra", "phoenix", "opentsdb", "solr"]

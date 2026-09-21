@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Cloud Databases for MySQL: managed MySQL on the IBM Cloud Databases platform. Daily
+# automatic backups kept for 30 days and encrypted with an automatic or customer key
+# ("Managing Cloud Databases Backups").
+schemaVersion: "1"
+type: "component"
+id: "ibm-databases-for-mysql"
+kind: "sql-database"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/databases-for-mysql"
+defaults:
+  managed: true
+  backupEnabled: true
+  backupRetentionDays: 30
+  encryptionAtRest: true
+properties:
+  keyManagement:
+    type: "enum"
+    values: ["provider-managed", "customer-managed"]
+    default: "provider-managed"
+  readReplica:
+    type: "boolean"
+    default: false

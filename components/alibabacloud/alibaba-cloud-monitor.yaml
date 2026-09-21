@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# CloudMonitor: collects metrics from Alibaba Cloud resources and from an agent on ECS instances,
+# and raises alerts against thresholds on them ("What is CloudMonitor"). Metrics arrive from the
+# service side by default; host metrics need the agent.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-cloud-monitor"
+kind: "monitoring"
+provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/cms"
+defaults:
+  managed: true
+  signal: "metrics"
+  collectorMode: "pull"
+  independentOfMonitored: true
+properties:
+  agentRequired:
+    type: "boolean"
+    default: false

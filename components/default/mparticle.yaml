@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# mParticle: hosted customer data platform that ingests events from apps and servers, resolves them
+# to a user with IDSync, and forwards them to configured output integrations. Per the mParticle
+# documentation a workspace is bound to a data pod in one region.
+schemaVersion: "1"
+type: "component"
+id: "mparticle"
+kind: "third-party-api"
+provider: "default"
+docs: "https://docs.mparticle.com/"
+defaults:
+  managed: true
+  callbackStyle: "webhook"
+  hostedPage: false
+  handlesMoney: false
+properties:
+  dataResidency:
+    type: "enum"
+    values: ["us", "eu", "au"]
+    default: "us"
+  identityResolution:
+    type: "boolean"
+    default: true

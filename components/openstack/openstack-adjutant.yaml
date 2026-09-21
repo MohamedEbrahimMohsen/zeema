@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenStack Adjutant: "a basic workflow framework built using Django and Django-Rest-Framework
+# to help automate Admin tasks within an OpenStack cluster" ("Adjutant"). It exists to "fill in
+# functionality missing from Keystone" - user signup, project setup, quota changes - and models
+# each task through initial submission, admin approval and token submission, so a human approval
+# step is part of the engine rather than an add-on.
+schemaVersion: "1"
+type: "component"
+id: "openstack-adjutant"
+kind: "workflow-engine"
+provider: "openstack"
+docs: "https://docs.openstack.org/adjutant/latest/"
+defaults:
+  pattern: "dag"
+  humanReview: true
+  managed: false
+properties:
+  taskStates:
+    type: "enum"
+    values: ["submission", "approval", "token"]
+  operatorFacing:
+    type: "boolean"
+    default: true

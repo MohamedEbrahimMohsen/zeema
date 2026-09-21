@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Cloud Security and Compliance Center: evaluates account resources against the rules of a
+# chosen profile on a schedule and reports which controls pass ("Security and Compliance
+# Center"). It reports; remediation is a separate action, so remediation stays false.
+schemaVersion: "1"
+type: "component"
+id: "ibm-security-compliance-center"
+kind: "policy-engine"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/security-compliance"
+defaults:
+  managed: true
+  effect: "audit"
+  scope: "account"
+  remediation: false
+properties:
+  profile:
+    type: "enum"
+    values: ["ibm-cloud-framework-for-financial-services", "cis-benchmark", "nist", "custom"]

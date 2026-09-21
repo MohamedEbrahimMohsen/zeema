@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AWS Interconnect: a managed private connection from AWS to another public cloud (multicloud) or to a
+# branch or data centre over a partner's last-mile network. "What is AWS Interconnect?" says every
+# Interconnect is provisioned across redundant devices in at least two physically distinct facilities,
+# that all connections between AWS and partner devices are encrypted by default with IEEE 802.1AE
+# MACsec, and that the AWS-side attach point is always a Direct Connect gateway.
+schemaVersion: "1"
+type: "component"
+id: "aws-interconnect"
+kind: "network-fabric"
+provider: "aws"
+docs: "https://docs.aws.amazon.com/interconnect/latest/userguide/what-is-interconnect.html"
+defaults:
+  managed: true
+  interconnect: "private"
+  multicast: false
+  overlay: false
+properties:
+  offering:
+    type: "enum"
+    values: ["multicloud", "last-mile"]
+  macsecEncryption:
+    type: "boolean"
+    default: true
+  redundantFacilities:
+    type: "boolean"
+    default: true
+  attachPoint:
+    type: "enum"
+    values: ["direct-connect-gateway"]
+    default: "direct-connect-gateway"

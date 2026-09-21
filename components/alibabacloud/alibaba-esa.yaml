@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Edge Security Acceleration (ESA): "a unified cloud service that protects and accelerates internet
+# content, applications, data centers, enterprise networks, and AI workloads" from more than 3,200
+# points of presence, inspecting traffic at the edge with a WAF, bot management, DDoS protection
+# and origin protection, and routing over anycast ("What is ESA"). Edge functions run at the POP.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-esa"
+kind: "cdn"
+provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/edge-security-acceleration/esa/product-overview/what-is-esa"
+defaults:
+  managed: true
+properties:
+  edgeFunctions:
+    type: "boolean"
+    default: false
+  wafEnabled:
+    type: "boolean"
+    default: false
+  botManagement:
+    type: "boolean"
+    default: false

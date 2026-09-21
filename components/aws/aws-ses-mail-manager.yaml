@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Mail Manager for Amazon SES: an email gateway in front of an organisation's inbound mail.
+# "Mail Manager for Amazon SES" describes the ingress endpoint as the infrastructure component whose
+# traffic policies and rule sets decide which mail is allowed in and which is rejected, an SMTP relay
+# that redirects traffic to other SMTP servers, and email archiving as long-term secure storage.
+schemaVersion: "1"
+type: "component"
+id: "aws-ses-mail-manager"
+kind: "email-security-gateway"
+provider: "aws"
+docs: "https://docs.aws.amazon.com/ses/latest/dg/eb.html"
+defaults:
+  managed: true
+  deliveryMode: "inline-mx"
+properties:
+  ingressEndpointType:
+    type: "enum"
+    values: ["open", "authenticated"]
+  smtpRelay:
+    type: "boolean"
+    default: false
+  archiving:
+    type: "boolean"
+    default: false
+  emailAddOns:
+    type: "boolean"
+    default: false

@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon CloudWatch Application Insights: onboards an application, scans its AWS resources and
+# configures the metrics, logs and alarms for each component. "Detect common application problems with
+# CloudWatch Application Insights" says it analyses metric patterns against historical data to detect
+# anomalies, correlates observations into problems with a severity, builds the dashboards itself, and
+# integrates with AWS Systems Manager OpsCenter to run remediation automation documents.
+schemaVersion: "1"
+type: "component"
+id: "aws-cloudwatch-application-insights"
+kind: "monitoring"
+provider: "aws"
+docs: "https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch-application-insights.html"
+defaults:
+  managed: true
+  signal: "all"
+  collectorMode: "push"
+  alertGrouping: true
+properties:
+  autoConfigureMonitors:
+    type: "boolean"
+  anomalyDetection:
+    type: "boolean"
+    default: true
+  opsCenterIntegration:
+    type: "boolean"
+    default: false
+  crossAccountObservability:
+    type: "boolean"
+    default: false

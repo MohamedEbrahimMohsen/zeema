@@ -291,12 +291,21 @@ components:
   alibaba-ack:
     name: "Container Service for Kubernetes"
     description: "Managed Kubernetes service that runs the control plane for you across availability zones and leaves you only worker nodes to create."
+  alibaba-actiontrail:
+    name: "ActionTrail"
+    description: "Records management API calls in an account and delivers the events to object storage or Simple Log Service."
   alibaba-analyticdb:
     name: "AnalyticDB"
     description: "Real-time cloud-native data warehouse, offered with a MySQL or a PostgreSQL engine, where written data becomes queryable within milliseconds."
+  alibaba-anti-ddos-origin:
+    name: "Anti-DDoS Origin"
+    description: "DDoS mitigation applied in place to the public IPs of Alibaba Cloud resources, without a proxy."
   alibaba-anti-ddos-pro:
     name: "Anti-DDoS Pro"
     description: "Scrubbing proxy that takes traffic by CNAME and filters layer 3, 4 and 7 DDoS and CC attacks before the origin."
+  alibaba-anycast-eip:
+    name: "Anycast Elastic IP Address"
+    description: "One public IP announced from many points of presence, reaching the origin over the backbone."
   alibaba-api-gateway:
     name: "API Gateway"
     description: "Hosted API front door that terminates TLS, authenticates callers and throttles REST, HTTP and WebSocket traffic before routing it to backends."
@@ -312,6 +321,9 @@ components:
   alibaba-apsaradb-redis:
     name: "ApsaraDB for Redis"
     description: "Managed Redis-compatible in-memory store that persists data to disk with AOF and RDB policies."
+  alibaba-arms:
+    name: "Application Real-Time Monitoring Service"
+    description: "Agent-based application performance monitoring covering traces, metrics, Prometheus, browser and app monitoring."
   alibaba-auto-scaling:
     name: "Auto Scaling"
     description: "Scaling group that adds and removes ECS or ECI instances against scheduled, event-triggered, custom or health-based policies."
@@ -336,24 +348,45 @@ components:
   alibaba-cloud-call-center:
     name: "Cloud Call Center"
     description: "Omnichannel contact centre with graphical IVR, skills-based routing, outbound dialling and call recording."
+  alibaba-cloud-config:
+    name: "Cloud Config"
+    description: "Records resource configuration as it changes and evaluates each change against compliance rules."
   alibaba-cloud-firewall:
     name: "Cloud Firewall"
     description: "SaaS firewall enforcing access control and intrusion prevention at the Internet, VPC, NAT, host and DNS borders."
+  alibaba-cloud-monitor:
+    name: "CloudMonitor"
+    description: "Collects metrics from cloud resources and from an agent on ECS instances, and alerts on thresholds."
   alibaba-cloud-storage-gateway:
     name: "Cloud Storage Gateway"
     description: "Appliance that presents an OSS bucket to applications as an NFS or SMB share or an iSCSI volume with a local cache."
+  alibaba-cloudflow:
+    name: "CloudFlow"
+    description: "Serverless workflow coordinating long-running business processes as a durable state machine."
   alibaba-container-registry:
     name: "Container Registry"
     description: "Managed registry for container images and cloud-native artifacts with image scanning, cross-region synchronization and signing."
   alibaba-content-moderation:
     name: "Content Moderation"
     description: "Metered endpoint that moderates text, image, video and voice content submitted through its API."
+  alibaba-das:
+    name: "Database Autonomy Service"
+    description: "Watches ApsaraDB instances for slow queries, lock waits and capacity problems, with autonomous remediation."
   alibaba-data-encryption-service:
     name: "Data Encryption Service"
     description: "FIPS 140-2 Level 3 validated hardware security modules that hold key material inside the hardware boundary."
+  alibaba-data-security-center:
+    name: "Data Security Center"
+    description: "Scans connected data stores, classifies sensitive data against rules and reports risky access."
+  alibaba-datahub:
+    name: "DataHub"
+    description: "Streaming data bus receiving records into sharded topics for subscribers and downstream analytics products."
   alibaba-dbs:
     name: "Database Backup"
     description: "Continuous real-time incremental backup for databases on Alibaba Cloud, on-premises and on third-party clouds."
+  alibaba-dcdn:
+    name: "Dynamic Route for CDN"
+    description: "CDN that accelerates dynamic as well as static content by routing uncacheable requests over optimised paths."
   alibaba-devops-flow:
     name: "Alibaba Cloud DevOps Flow"
     description: "Pipeline platform that builds, scans, verifies against quality red lines and releases with canary or phased strategies."
@@ -375,30 +408,54 @@ components:
   alibaba-e-mapreduce:
     name: "E-MapReduce"
     description: "Semi-managed big data platform running Hadoop, Spark, Flink, Hive and StarRocks on ECS instances, ACK or serverless engines."
+  alibaba-ebs:
+    name: "Elastic Block Storage"
+    description: "Cloud disks attached to ECS instances, replicated within a zone, encrypted only when enabled at creation."
   alibaba-eci:
     name: "Elastic Container Instance"
     description: "Serverless container runtime that starts individual containers in hardware-isolated sandboxes without a cluster to provision."
   alibaba-ecs:
     name: "Elastic Compute Service"
     description: "Virtual machine booted from an image, with no public IP address assigned unless one is requested or attached."
+  alibaba-edas:
+    name: "Enterprise Distributed Application Service"
+    description: "PaaS that deploys and operates Spring Cloud, Dubbo and HSF applications on ECS or Kubernetes."
   alibaba-eip:
     name: "Elastic IP Address"
     description: "Independently owned public IPv4 address on a BGP multi-ISP line with 5 Gbps of basic DDoS protection."
+  alibaba-elastic-cloud-phone:
+    name: "Elastic Cloud Phone"
+    description: "Android instances running on ARM servers and streamed to a client for gaming, testing and mobile workloads."
   alibaba-elasticsearch:
     name: "Alibaba Cloud Elasticsearch"
     description: "Managed Elasticsearch service running the AliES kernel with Kibana and the commercial X-Pack extension included."
+  alibaba-ens:
+    name: "Edge Node Service"
+    description: "Compute, storage and network resources placed in edge nodes close to end users."
+  alibaba-esa:
+    name: "Edge Security Acceleration"
+    description: "Unified edge network combining acceleration, edge WAF, bot management, DDoS protection and edge functions."
+  alibaba-eventbridge:
+    name: "EventBridge"
+    description: "Serverless event bus that matches CloudEvents against rules and fans each one out to its targets."
   alibaba-express-connect:
     name: "Express Connect"
     description: "Dedicated circuit joining an on-premises data centre to a VPC through a virtual border router."
   alibaba-file-storage-hdfs:
     name: "Apsara File Storage for HDFS"
     description: "Cloud file system that exposes the Hadoop Distributed File System interface to big data compute engines."
+  alibaba-flink:
+    name: "Realtime Compute for Apache Flink"
+    description: "Fully managed Apache Flink running SQL, JAR and Python jobs with checkpointing and exactly-once state."
   alibaba-fraud-detection:
     name: "Fraud Detection"
     description: "Metered endpoint that scores the risk of a registration, logon, transaction or campaign event in real time."
   alibaba-function-compute:
     name: "Function Compute"
     description: "Event-driven serverless runtime that executes a function on an HTTP request or an event and releases its resources afterwards."
+  alibaba-ga:
+    name: "Global Accelerator"
+    description: "Anycast entry points that carry client traffic to an origin over the Alibaba Cloud backbone."
   alibaba-game-shield:
     name: "Game Shield"
     description: "SDK-driven DDoS and TCP CC mitigation that spreads game traffic across protection nodes by dynamic scheduling."
@@ -408,36 +465,66 @@ components:
   alibaba-hbr:
     name: "Cloud Backup"
     description: "Vault-based backup and archive of cloud and on-premises resources with policy-driven retention."
+  alibaba-hologres:
+    name: "Hologres"
+    description: "PostgreSQL-compatible real-time data warehouse with row, column and hybrid storage and upsert support."
   alibaba-id-verification:
     name: "ID Verification"
     description: "Metered eKYC endpoint combining document OCR, liveness detection and facial comparison."
   alibaba-imm:
     name: "Intelligent Media Management"
     description: "Processes documents, images, audio and video held in Alibaba Cloud storage by transcoding, converting and analysing them."
+  alibaba-intelligent-media-services:
+    name: "Intelligent Media Services"
+    description: "Media production and processing pipelines for editing, composition, transcoding and media AI."
   alibaba-intelligent-robot:
     name: "Intelligent Robot"
     description: "NLP dialogue platform that answers from an ontology-based knowledge base and drives multi-round conversations across chat clients."
   alibaba-iot-platform:
     name: "IoT Platform"
     description: "Managed device hub accepting MQTT, CoAP and HTTPS connections on a public or Enterprise Edition instance."
+  alibaba-kafka:
+    name: "ApsaraMQ for Kafka"
+    description: "Managed Apache Kafka compatible with the open-source client APIs, with partitioned persistent logs."
+  alibaba-lindorm:
+    name: "Lindorm"
+    description: "Cloud-native multi-model database with wide-column, time series, search, file, vector, graph and stream engines."
   alibaba-link-wan:
     name: "Alibaba Cloud Link WAN"
     description: "Managed LoRaWAN network platform for gateway management, node management and network maintenance."
+  alibaba-live:
+    name: "ApsaraVideo Live"
+    description: "Ingests live streams over RTMP, transcodes and records them, and delivers them over CDN."
   alibaba-log-service:
     name: "Simple Log Service"
     description: "Observability platform that collects logs, metrics and traces by agent push into Logstores, Metricstores and Eventstores and alerts on them."
+  alibaba-maxcompute:
+    name: "MaxCompute"
+    description: "Serverless cloud data warehouse decoupling storage from compute, with Standard, Infrequent Access and Archive storage."
+  alibaba-milvus:
+    name: "Alibaba Cloud Milvus"
+    description: "Managed Milvus vector database holding collections of embeddings with approximate nearest-neighbour search."
   alibaba-mns:
     name: "Simple Message Queue (formerly MNS)"
     description: "Distributed messaging service whose queues deliver each message to one consumer at least once, with a publish-subscribe topic model alongside."
   alibaba-mobile-push:
     name: "Mobile Push"
     description: "Mobile push channel that reaches devices over a persistent TCP connection or through APNs, Firebase and Chinese vendor channels."
+  alibaba-model-studio:
+    name: "Model Studio"
+    description: "One-stop model service platform serving the Qwen series and third-party LLMs over an OpenAI-compatible API."
+  alibaba-mse:
+    name: "Microservices Engine"
+    description: "Managed Nacos, ZooKeeper or Eureka registry and configuration centre, plus a cloud-native gateway."
   alibaba-nas:
     name: "Apsara File Storage NAS"
     description: "Shared POSIX file system mounted over NFS or SMB by ECS instances and containers in the same zone."
   alibaba-nat-gateway:
     name: "NAT Gateway"
     description: "Managed address translation for VPC egress through SNAT to an elastic IP, or for address translation inside a VPC."
+  alibaba-network-acl:
+    name: "Network ACL"
+    description: "Stateless packet filter bound to vSwitches and evaluated by rule priority in each direction."
   alibaba-oceanbase:
     name: "ApsaraDB for OceanBase"
     description: "Managed distributed relational database with multi-replica storage and MySQL or Oracle compatibility; discontinued on 1 July 2027."
@@ -450,24 +537,54 @@ components:
   alibaba-oss:
     name: "Object Storage Service"
     description: "Regional object storage with immediate read-after-write and a choice of locally or zone-redundant durability."
+  alibaba-pai:
+    name: "Platform for AI"
+    description: "Machine learning platform with visual modelling, notebooks, distributed training and online inference."
   alibaba-polardb:
     name: "PolarDB"
     description: "Cloud-native relational database with one read/write node and multiple read-only nodes sharing one copy of the data."
   alibaba-polardb-x:
     name: "PolarDB-X"
     description: "Distributed MySQL-compatible database that shards on the primary key and commits distributed transactions with two-phase commit."
+  alibaba-private-zone:
+    name: "Alibaba Cloud DNS PrivateZone"
+    description: "Private DNS zones resolved only inside the VPCs they are bound to."
+  alibaba-privatelink:
+    name: "PrivateLink"
+    description: "Endpoint in a consumer VPC reaching a service published behind an endpoint service, over the private network."
   alibaba-pts:
     name: "Performance Testing Service"
     description: "Synthetic load generator that drives traffic from CDN points of presence using visually orchestrated scenarios or uploaded JMeter test plans."
+  alibaba-quick-bi:
+    name: "Quick BI"
+    description: "Business intelligence over cloud and on-premises sources, with dashboards, row-level permissions and embedding."
+  alibaba-rabbitmq:
+    name: "ApsaraMQ for RabbitMQ"
+    description: "Managed AMQP 0-9-1 broker compatible with the open-source RabbitMQ clients."
+  alibaba-ram:
+    name: "Resource Access Management"
+    description: "Account identity service holding RAM users, groups and roles and the policies that grant them actions."
   alibaba-rds:
     name: "ApsaraDB RDS"
     description: "Managed relational database instance for MySQL, SQL Server, PostgreSQL or MariaDB with primary/secondary replication."
+  alibaba-rocketmq:
+    name: "ApsaraMQ for RocketMQ"
+    description: "Distributed message queue for asynchronous communication, with ordered, transactional and scheduled messages."
   alibaba-sae:
     name: "Serverless App Engine"
     description: "Kubernetes-based application platform that hosts WAR, JAR, ZIP or image deployments and scales them on CPU, memory, QPS or response time."
+  alibaba-schedulerx:
+    name: "SchedulerX"
+    description: "Distributed job scheduler firing jobs on cron or a fixed rate and dispatching runs to a worker group."
   alibaba-security-center:
     name: "Security Center"
     description: "Workload protection platform whose agent reports intrusions, vulnerabilities and abnormal logons from each server."
+  alibaba-security-group:
+    name: "ECS Security Group"
+    description: "Stateful virtual firewall attached to instance network interfaces, denying unmatched inbound traffic."
+  alibaba-selectdb:
+    name: "ApsaraDB for SelectDB"
+    description: "Managed Apache Doris answering sub-second aggregate queries over columnar storage on the MySQL protocol."
   alibaba-simple-application-server:
     name: "Simple Application Server"
     description: "Single-instance cloud server bundling compute, storage, data transfer, DNS and monitoring behind curated application and OS images."
@@ -480,18 +597,33 @@ components:
   alibaba-smart-conversation-analysis:
     name: "Smart Conversation Analysis"
     description: "Quality inspection service that analyses call, chat and work order conversations in real time or offline with rule-based or large-model engines."
+  alibaba-sms:
+    name: "Short Message Service"
+    description: "Sends text messages from approved signatures and templates, with delivery receipts over a subscription."
   alibaba-tablestore:
     name: "Tablestore"
     description: "Serverless wide-column store that keeps three consistent copies of every table."
+  alibaba-tsdb:
+    name: "Time Series Database"
+    description: "Managed store for timestamped metric points with tags, compressed on write and queried by tag and time range."
+  alibaba-vod:
+    name: "ApsaraVideo VOD"
+    description: "Ingests, transcodes, stores and delivers video on demand with adaptive bitrate renditions."
   alibaba-vpc:
     name: "Virtual Private Cloud"
     description: "Isolated virtual network built on tunnel technology, divided into subnets by vSwitches and routed by route tables."
   alibaba-vpn-gateway:
     name: "VPN Gateway"
     description: "Gateway terminating IPsec-VPN site-to-site tunnels and SSL-VPN client connections into a VPC."
+  alibaba-vswitch:
+    name: "vSwitch"
+    description: "Subnet of a VPC, living in one zone and carrying a CIDR block cut out of the VPC range."
   alibaba-waf:
     name: "Web Application Firewall"
     description: "Inspects HTTP and HTTPS traffic for protected objects and blocks requests that match its core protection rule group."
+  alibaba-wuying-workspace:
+    name: "WUYING Workspace"
+    description: "Cloud desktops delivered to software clients, thin clients and browsers from a VPC-bound workspace."
   alibaba-yida:
     name: "YIDA"
     description: "Low-code platform that assembles and hosts form, approval process and report applications from prebuilt components and connectors."
@@ -510,6 +642,9 @@ components:
   anthropic-api:
     name: "Anthropic API"
     description: "Hosted Claude model endpoints for text and vision."
+  antrea:
+    name: "Antrea"
+    description: "Open vSwitch based Kubernetes CNI with network policy and a Geneve overlay."
   apache-helix:
     name: "Apache Helix"
     description: "Cluster partition placement and state-machine management."
@@ -534,6 +669,9 @@ components:
   apollo-config:
     name: "Apollo Config"
     description: "Self-hosted configuration centre for microservices with grayscale release."
+  apollo-graphos:
+    name: "Apollo GraphOS"
+    description: "Hosted schema registry and router serving a federated GraphQL supergraph."
   app-server:
     name: "Generic application server"
     description: "Vendor-neutral application server. Use when the real product is not in the catalogue; every rule for this kind still applies."
@@ -549,6 +687,9 @@ components:
   argo-workflows:
     name: "Argo Workflows"
     description: "Kubernetes-native engine that runs each workflow step as a pod."
+  armada:
+    name: "Armada"
+    description: "Multi-cluster batch scheduler queueing jobs centrally and dispatching to Kubernetes executors."
   arroyo:
     name: "Arroyo"
     description: "Rust stream processing engine running SQL pipelines with checkpointed state."
@@ -564,6 +705,12 @@ components:
   asterisk:
     name: "Asterisk"
     description: "Open source telephony toolkit and IP PBX with dialplan, queues and PSTN interconnect."
+  astronomer:
+    name: "Astronomer Astro"
+    description: "Managed Apache Airflow deployments with autoscaling worker queues."
+  athenz:
+    name: "Athenz"
+    description: "X.509 service identity with role-based authorization and mTLS-bound access tokens."
   atlantis:
     name: "Atlantis"
     description: "Self-hosted service that runs Terraform from pull request webhooks and comments back the output."
@@ -657,6 +804,9 @@ components:
   aws-backup:
     name: "AWS Backup"
     description: "Region-scoped vault holding incremental recovery points created by backup plans across AWS services."
+  aws-backup-gateway:
+    name: "AWS Backup gateway"
+    description: "On-premises virtual appliance that connects a hypervisor to AWS Backup."
   aws-batch:
     name: "AWS Batch"
     description: "Managed batch job scheduling on EC2, Fargate or Spot compute environments."
@@ -708,6 +858,9 @@ components:
   aws-cloudfront-functions:
     name: "CloudFront Functions"
     description: "Lightweight JavaScript running in the CloudFront edge location on viewer events."
+  aws-cloudfront-keyvaluestore:
+    name: "Amazon CloudFront KeyValueStore"
+    description: "Global key-value datastore read by CloudFront Functions at the edge."
   aws-cloudsearch:
     name: "Amazon CloudSearch"
     description: "Managed text search domain that scales its own search instances."
@@ -717,6 +870,9 @@ components:
   aws-cloudtrail-lake:
     name: "AWS CloudTrail Lake"
     description: "Immutable audit event data store queried with SQL, 366-day default retention; in maintenance since March 2026."
+  aws-cloudwatch-application-insights:
+    name: "Amazon CloudWatch Application Insights"
+    description: "Configures monitors for an application's resources and correlates observations into problems."
   aws-cloudwatch-application-signals:
     name: "Amazon CloudWatch Application Signals"
     description: "Auto-instrumented application metrics, traces, service map and SLOs."
@@ -726,6 +882,9 @@ components:
   aws-cloudwatch-logs:
     name: "Amazon CloudWatch Logs"
     description: "Managed log ingestion, storage and query, kept indefinitely by default."
+  aws-cloudwatch-network-flow-monitor:
+    name: "Amazon CloudWatch Network Flow Monitor"
+    description: "Agent-fed monitor over a workload's network flows with a network health indicator."
   aws-cloudwatch-network-monitor:
     name: "Amazon CloudWatch Network Monitor"
     description: "AWS-managed ICMP and TCP probes measuring round-trip time and packet loss to on-premises destinations."
@@ -1014,6 +1173,9 @@ components:
   aws-instance-store:
     name: "EC2 instance store"
     description: "Temporary block storage on disks attached to the host, lost when the instance stops or terminates."
+  aws-interconnect:
+    name: "AWS Interconnect"
+    description: "Managed private connection from AWS to another cloud or a remote site."
   aws-internet-gateway:
     name: "Internet gateway"
     description: "Highly available VPC attachment point for public internet traffic."
@@ -1035,6 +1197,9 @@ components:
   aws-iot-greengrass-v1:
     name: "AWS IoT Greengrass Version 1"
     description: "First-generation Greengrass core running local Lambda functions, a local MQTT broker and synced shadows; end of support 7 October 2026."
+  aws-iot-managed-integrations:
+    name: "Managed integrations for AWS IoT Device Management"
+    description: "One control plane for devices reached directly, through a hub or cloud-to-cloud."
   aws-iot-sitewise:
     name: "AWS IoT SiteWise"
     description: "Industrial data hub that ingests OPC UA and MQTT equipment data, models it as assets and stores it in hot, warm and cold tiers."
@@ -1047,6 +1212,9 @@ components:
   aws-ivs:
     name: "Amazon IVS"
     description: "Managed live video ingest and low-latency HLS delivery."
+  aws-ivs-chat:
+    name: "Amazon IVS Chat"
+    description: "Managed live chat rooms with a WebSocket messaging data plane."
   aws-kendra:
     name: "Amazon Kendra"
     description: "Managed enterprise search index over connected document repositories."
@@ -1215,9 +1383,15 @@ components:
   aws-route53-dns-firewall:
     name: "Amazon Route 53 Resolver DNS Firewall"
     description: "Domain-name filtering for outbound DNS queries leaving a VPC through the Route 53 Resolver."
+  aws-route53-global-resolver:
+    name: "Amazon Route 53 Global Resolver"
+    description: "Anycast recursive DNS resolver with client authentication and query filtering."
   aws-route53-resolver:
     name: "Amazon Route 53 Resolver endpoint"
     description: "Inbound or outbound DNS forwarding endpoint in a VPC for hybrid name resolution with an on-premises network."
+  aws-rtb-fabric:
+    name: "AWS RTB Fabric gateway"
+    description: "Managed private endpoint carrying OpenRTB bid traffic between ad tech partners."
   aws-s3-express-one-zone:
     name: "Amazon S3 Express One Zone"
     description: "Single-Availability-Zone S3 directory bucket for latency-sensitive workloads, encrypted with SSE-S3."
@@ -1239,6 +1413,12 @@ components:
   aws-sagemaker-feature-store:
     name: "Amazon SageMaker Feature Store"
     description: "Managed feature groups with a low-latency online store and an append-only offline store in S3."
+  aws-sagemaker-hyperpod:
+    name: "Amazon SageMaker HyperPod"
+    description: "Resilient accelerator cluster for training and serving foundation models."
+  aws-sagemaker-mlflow:
+    name: "Managed MLflow on Amazon SageMaker AI"
+    description: "Managed MLflow tracking server for experiments, runs and model versions."
   aws-sagemaker-model-registry:
     name: "Amazon SageMaker Model Registry"
     description: "Catalogue of versioned model packages with approval status for deployment."
@@ -1269,6 +1449,9 @@ components:
   aws-ses:
     name: "Amazon Simple Email Service"
     description: "Managed email sending and receiving from your own verified domains, with templates and delivery event publishing."
+  aws-ses-mail-manager:
+    name: "Mail Manager for Amazon SES"
+    description: "Inbound email gateway with traffic policies, SMTP relay and archiving."
   aws-shield:
     name: "AWS Shield"
     description: "DDoS protection for AWS resources: always-on network-layer defence in Standard, application-layer mitigation and response in Advanced."
@@ -1515,6 +1698,9 @@ components:
   azure-confidential-ledger:
     name: "Azure confidential ledger"
     description: "Append-only, tamper-evident record store running in hardware-backed secure enclaves."
+  azure-confidential-vm:
+    name: "Azure confidential VM"
+    description: "Virtual machine whose memory is encrypted in use by the hardware and that boots only after attestation."
   azure-connected-cache:
     name: "Microsoft Connected Cache"
     description: "Software-only cache for Microsoft content deployed on the customer's own servers and managed from the Azure portal."
@@ -1590,6 +1776,9 @@ components:
   azure-dev-box:
     name: "Microsoft Dev Box"
     description: "Self-service cloud development workstations preconfigured per project and managed through Intune."
+  azure-device-registry:
+    name: "Azure Device Registry"
+    description: "Cloud registry that projects Azure IoT Operations devices and assets into Azure Resource Manager and syncs them to the edge cluster."
   azure-device-update:
     name: "Device Update for IoT Hub"
     description: "Over-the-air update service that distributes package-based and image-based updates to devices registered in an IoT hub."
@@ -1788,9 +1977,18 @@ components:
   azure-monitor:
     name: "Azure Monitor"
     description: "Azure's managed metrics, logs, traces and alerting service."
+  azure-monitor-data-collection-endpoint:
+    name: "Data collection endpoint"
+    description: "Regional Azure Monitor endpoint carrying the logs ingestion, metrics ingestion and configuration access URLs that agents and the Logs Ingestion API call."
+  azure-monitor-data-collection-rule:
+    name: "Data collection rule"
+    description: "Declares what Azure Monitor collects, the KQL transformation applied on ingestion, and the destination workspace, metric store or event hub."
   azure-monitor-for-sap:
     name: "Azure Monitor for SAP solutions"
     description: "Collects custom logs from SAP HANA, NetWeaver, databases and cluster providers into a Log Analytics workspace."
+  azure-monitor-workspace:
+    name: "Azure Monitor workspace"
+    description: "Regional Prometheus metric repository for Azure Monitor, retaining metrics for 18 months and encrypted with a Microsoft-managed key."
   azure-multicloud-interconnect:
     name: "Azure Multicloud Interconnect"
     description: "Managed private connection from Azure to another cloud provider over ExpressRoute."
@@ -1848,6 +2046,9 @@ components:
   azure-policy:
     name: "Azure Policy"
     description: "Governance engine that audits, denies or remediates resources against assigned rules."
+  azure-power-apps:
+    name: "Microsoft Power Apps"
+    description: "Low-code canvas and model-driven business apps over Dataverse and connected data sources."
   azure-power-bi-embedded:
     name: "Power BI Embedded"
     description: "Azure-billed dedicated Power BI capacity for embedding reports and dashboards in an application."
@@ -1857,6 +2058,9 @@ components:
   azure-private-link:
     name: "Azure Private Link"
     description: "Private endpoint into one instance of a service over the Microsoft backbone."
+  azure-privileged-identity-management:
+    name: "Microsoft Entra Privileged Identity Management"
+    description: "Time-based and approval-based activation of eligible Entra, Azure resource and group roles."
   azure-public-ip:
     name: "Public IP address"
     description: "Static routable address resource for Azure front ends and gateways."
@@ -2016,6 +2220,9 @@ components:
   bentoml:
     name: "BentoML"
     description: "Python framework packaging models as HTTP services with adaptive batching."
+  bfe:
+    name: "BFE"
+    description: "Baidu's layer 7 load balancer with condition-based forwarding and hot-reloaded config."
   bi-service:
     name: "Generic BI service"
     description: "Vendor-neutral BI service. Use when the real product is not in the catalogue; every rule for this kind still applies."
@@ -2277,6 +2484,9 @@ components:
   cloudflare-firewall-for-ai:
     name: "Firewall for AI"
     description: "WAF detection for LLM endpoints that flags PII, prompt injection and unsafe topics in prompts."
+  cloudflare-flagship:
+    name: "Cloudflare Flagship"
+    description: "Feature flags evaluated in Workers through a binding or remotely through OpenFeature SDKs, with percentage rollouts."
   cloudflare-for-saas:
     name: "Cloudflare for SaaS"
     description: "Extends Cloudflare to your customers' own custom hostnames with managed certificates and a fallback origin."
@@ -2316,6 +2526,9 @@ components:
   cloudflare-magic-transit:
     name: "Cloudflare Magic Transit"
     description: "BGP-announced IP prefixes scrubbed on Cloudflare's network and delivered back over GRE, IPsec or CNI."
+  cloudflare-mcp-portal:
+    name: "MCP Server Portal"
+    description: "One authenticated endpoint that centralises upstream MCP servers and proxies tool calls behind Cloudflare Access."
   cloudflare-mesh:
     name: "Cloudflare Mesh"
     description: "Post-quantum encrypted private IP connectivity between enrolled servers and devices."
@@ -2541,6 +2754,9 @@ components:
   container-worker:
     name: "Container worker"
     description: "Generic containerised background worker consuming a queue, stream or schedule."
+  containerssh:
+    name: "ContainerSSH"
+    description: "SSH server that launches a throwaway container per session instead of a host shell."
   content-delivery-network:
     name: "Content delivery network"
     description: "Content delivery network drawn without naming a vendor."
@@ -2577,6 +2793,9 @@ components:
   courier:
     name: "Courier"
     description: "Notification API that routes one send across email, SMS, push, inbox and chat with preferences."
+  coveo:
+    name: "Coveo"
+    description: "Hosted enterprise search and relevance service fed by crawled or pushed sources."
   cron-job:
     name: "Cron job"
     description: "Fixed-schedule job run by cron or a Kubernetes CronJob."
@@ -2592,6 +2811,9 @@ components:
   cubefs:
     name: "CubeFS"
     description: "CNCF distributed storage serving the same data over POSIX, S3 and HDFS interfaces."
+  curvine:
+    name: "Curvine"
+    description: "Distributed POSIX cache file system layered over cloud object storage."
   custom:
     name: "Custom"
     description: "Untyped and unjudged: a node the catalogue has no word for. Use it to keep the diagram complete, then replace it with a catalogue component or contribute one."
@@ -2604,6 +2826,9 @@ components:
   daily:
     name: "Daily"
     description: "Hosted WebRTC video call API with rooms, recording and regional call servers."
+  dapr:
+    name: "Dapr"
+    description: "Application runtime sidecar exposing state, pub/sub, invocation, binding and actor building blocks."
   dask:
     name: "Dask"
     description: "Parallel Python cluster of a scheduler and workers for dataframe and array workloads."
@@ -2631,6 +2856,12 @@ components:
   dataproc-job:
     name: "Dataproc job"
     description: "Spark or Hadoop job on Google Cloud Dataproc clusters or serverless."
+  datastax-enterprise:
+    name: "DataStax Enterprise"
+    description: "Commercial Cassandra distribution with optional search, analytics and graph workloads."
+  datomic:
+    name: "Datomic"
+    description: "Immutable transactional database whose single transactor appends facts to a log."
   db2:
     name: "IBM Db2"
     description: "Enterprise relational database with optional HADR standby replication."
@@ -2658,15 +2889,39 @@ components:
   digdag:
     name: "Digdag"
     description: "Open source engine that runs, schedules and monitors task pipelines defined as directed acyclic graphs in .dig files."
+  digitalocean-app-platform:
+    name: "DigitalOcean App Platform"
+    description: "Managed platform-as-a-service that builds and runs apps from a Git repository or container image."
+  digitalocean-bare-metal-gpu:
+    name: "DigitalOcean Bare Metal GPUs"
+    description: "Dedicated single-tenant physical servers with eight GPUs, standalone or clustered."
   digitalocean-cloud-firewall:
     name: "DigitalOcean Cloud Firewalls"
     description: "Network-based stateful firewall applied outside the Droplet that blocks all traffic no rule permits."
+  digitalocean-container-registry:
+    name: "DigitalOcean Container Registry"
+    description: "Private Docker image registry integrated with DigitalOcean Kubernetes."
+  digitalocean-cspm:
+    name: "DigitalOcean CSPM"
+    description: "Cloud security posture management that scans resources and reports misconfigurations by severity."
+  digitalocean-ddos-protection:
+    name: "DigitalOcean DDoS Protection"
+    description: "Always-on layer 3 and 4 attack mitigation applied to every provisioned resource."
   digitalocean-dns:
     name: "DigitalOcean DNS"
     description: "Authoritative hosting for a domain's records on the DigitalOcean nameservers, with managed Let's Encrypt certificates."
   digitalocean-droplet:
     name: "Droplets"
     description: "Linux virtual machines on virtualized hardware, sized by plan family and patched by you."
+  digitalocean-droplet-autoscale:
+    name: "Droplet Autoscale Pool"
+    description: "Pool that creates and destroys Droplets from one template to hold a target load."
+  digitalocean-functions:
+    name: "DigitalOcean Functions"
+    description: "On-demand serverless functions invoked over HTTP, on a schedule or asynchronously."
+  digitalocean-inference:
+    name: "DigitalOcean Inference"
+    description: "Gradient AI control plane serving foundation models serverlessly or on dedicated capacity."
   digitalocean-kubernetes:
     name: "DigitalOcean Kubernetes"
     description: "Managed Kubernetes control plane with Cilium overlay networking, RBAC and optional node pool autoscaling."
@@ -2676,18 +2931,45 @@ components:
   digitalocean-managed-databases:
     name: "DigitalOcean Managed Databases"
     description: "Managed database clusters for PostgreSQL, MySQL, Valkey, MongoDB, Kafka and OpenSearch with daily point-in-time backups."
+  digitalocean-monitoring:
+    name: "DigitalOcean Monitoring"
+    description: "Free agent-based Droplet metrics with user-defined resource alerts."
+  digitalocean-nfs:
+    name: "DigitalOcean Network File Storage"
+    description: "Managed POSIX-compliant NFS shares mounted by Droplets and Kubernetes clusters."
+  digitalocean-paperspace:
+    name: "Paperspace"
+    description: "Machine learning platform with GPU notebooks, deployments, workflows and machines."
+  digitalocean-partner-attachment:
+    name: "DigitalOcean Partner Network Connect"
+    description: "Private cross-cloud connectivity to VPC networks through a network-as-a-service provider."
   digitalocean-reserved-ip:
     name: "Reserved IPs"
     description: "Static public IPv4 or IPv6 address remapped between Droplets in one datacenter for failover."
+  digitalocean-snapshooter:
+    name: "SnapShooter"
+    description: "Backup and recovery service for servers, volumes, databases and applications."
   digitalocean-spaces:
     name: "Spaces Object Storage"
     description: "S3-compatible bucket storage on Ceph with an optional built-in CDN and a cold storage tier."
+  digitalocean-spaces-cdn:
+    name: "Spaces CDN"
+    description: "Content delivery network placed in front of a Spaces bucket."
+  digitalocean-uptime:
+    name: "DigitalOcean Uptime"
+    description: "External health checks on a URL or IP with latency, uptime and certificate alerts."
+  digitalocean-vector-database:
+    name: "DigitalOcean Vector Databases"
+    description: "Managed clusters for vector similarity search on Weaviate, OpenSearch or PostgreSQL."
   digitalocean-volumes:
     name: "Volumes Block Storage"
     description: "SSD network block storage attached to a Droplet or Kubernetes node, LUKS encrypted at rest."
   digitalocean-vpc:
     name: "VPC"
     description: "Private regional network whose members are unreachable from the public internet and other VPC networks."
+  digitalocean-vpc-nat-gateway:
+    name: "DigitalOcean VPC NAT Gateway"
+    description: "Managed egress gateway giving VPC resources stable outbound public addresses."
   discord:
     name: "Discord API"
     description: "REST and Gateway API for Discord bots and integrations, capped at 50 requests per second per bot."
@@ -2715,6 +2997,9 @@ components:
   dokku:
     name: "Dokku"
     description: "Single-host PaaS that builds and runs applications from a git push using Herokuish buildpacks."
+  dolphindb:
+    name: "DolphinDB"
+    description: "Distributed time-series database with a built-in scripting and analytics engine."
   doppler:
     name: "Doppler"
     description: "Hosted SecretOps platform that stores secrets per config and syncs them to environments."
@@ -2727,6 +3012,12 @@ components:
   dragonfly:
     name: "Dragonfly"
     description: "Multi-threaded Redis-compatible in-memory store."
+  dragonfly-d7y:
+    name: "Dragonfly"
+    description: "Peer-to-peer distribution and acceleration for container images, files and AI models."
+  drasi:
+    name: "Drasi"
+    description: "Data change processing platform with sources, continuous queries and reactions."
   dremio:
     name: "Dremio"
     description: "Lakehouse platform querying Iceberg and other sources in place, with full SQL DML on Iceberg tables."
@@ -2748,6 +3039,12 @@ components:
   dynatrace:
     name: "Dynatrace"
     description: "SaaS observability platform fed by OneAgent and stored in Grail."
+  easegress:
+    name: "Easegress"
+    description: "Traffic orchestration system running filter pipelines over a Raft cluster."
+  edb-postgres:
+    name: "EDB Postgres Advanced Server"
+    description: "PostgreSQL distribution with Oracle-compatible syntax, packages and dictionary views."
   edge-appliance:
     name: "Generic edge appliance"
     description: "Vendor-neutral edge appliance. Use when the real product is not in the catalogue; every rule for this kind still applies."
@@ -2871,6 +3168,9 @@ components:
   filebeat:
     name: "Filebeat"
     description: "Log shipper that harvests files and delivers events to its output at least once."
+  filemaker:
+    name: "Claris FileMaker Server"
+    description: "Hosts FileMaker solution files for FileMaker Pro, Go and WebDirect clients."
   firebird:
     name: "Firebird"
     description: "Multi-generational relational database with opt-in logical replication."
@@ -2919,6 +3219,9 @@ components:
   flux:
     name: "Flux"
     description: "GitOps Toolkit controllers reconciling a Kubernetes cluster against Git on an interval."
+  fly-io:
+    name: "Fly.io"
+    description: "Runs OCI images as Firecracker microVMs in many regions behind an anycast proxy."
   forgejo:
     name: "Forgejo"
     description: "Self-hosted software forge under GPL v3+, with Actions, package registries and experimental federation."
@@ -2961,6 +3264,9 @@ components:
   gearman:
     name: "Gearman"
     description: "Lightweight job server that farms work out to workers from an in-memory queue."
+  gemfire:
+    name: "VMware GemFire"
+    description: "In-memory data grid of cache servers coordinated by locators."
   genesys-cloud:
     name: "Genesys Cloud CX"
     description: "All-in-one cloud contact center with omnichannel routing, recording and workforce engagement."
@@ -3051,6 +3357,9 @@ components:
   google-application-integration:
     name: "Application Integration"
     description: "Serverless iPaaS for drag-and-drop integration flows with triggers and tasks."
+  google-appsheet:
+    name: "AppSheet"
+    description: "Google's no-code platform for building apps and automations over connected data sources."
   google-artifact-registry:
     name: "Artifact Registry"
     description: "Regional repository for container images and language packages, encrypted by default."
@@ -3243,6 +3552,9 @@ components:
   google-compute-engine:
     name: "Compute Engine"
     description: "Virtual machine instance you boot from an image in a single zone."
+  google-confidential-space:
+    name: "Confidential Space"
+    description: "Attested workload on a hardened image over a Confidential VM, hidden from its own operator."
   google-confidential-vm:
     name: "Confidential VM"
     description: "Compute Engine VM whose memory is encrypted in use by the hardware."
@@ -3375,6 +3687,9 @@ components:
   google-firestore-mongodb:
     name: "Firestore with MongoDB compatibility"
     description: "Serverless document database speaking the MongoDB API."
+  google-fleet-engine:
+    name: "Fleet Engine"
+    description: "Google Maps Platform Mobility backend holding vehicles, on-demand trips and scheduled tasks."
   google-fraud-defense:
     name: "reCAPTCHA Fraud Prevention"
     description: "Scores transactions and accounts for payment fraud and takeover risk."
@@ -3450,6 +3765,9 @@ components:
   google-map-tiles-api:
     name: "Map Tiles API"
     description: "Serves 2D map tiles, Street View tiles and Photorealistic 3D Tiles."
+  google-maps-embed-api:
+    name: "Maps Embed API"
+    description: "API-key URL that renders an interactive Google map inside a page at no charge."
   google-maps-javascript-api:
     name: "Maps JavaScript API"
     description: "Client-side web API that renders interactive Google maps in the browser."
@@ -3507,9 +3825,15 @@ components:
   google-parallelstore:
     name: "Parallelstore"
     description: "Zonal DAOS-based parallel file system for AI and HPC scratch data."
+  google-parameter-manager:
+    name: "Parameter Manager"
+    description: "Versioned store for workload configuration parameters, able to reference Secret Manager secrets."
   google-persistent-disk:
     name: "Persistent Disk"
     description: "Zonal network block storage attached to Compute Engine instances."
+  google-places-aggregate-api:
+    name: "Places Aggregate API"
+    description: "Returns aggregate counts of places inside an area, filtered by type, status, price and rating."
   google-places-api:
     name: "Places API"
     description: "Web service for place search, details, photos and autocomplete."
@@ -3522,6 +3846,9 @@ components:
   google-private-service-connect:
     name: "Private Service Connect"
     description: "Internal endpoint that reaches a published service or Google API privately."
+  google-privileged-access-manager:
+    name: "Privileged Access Manager"
+    description: "Just-in-time, time-bound elevation of IAM roles with optional approval and automatic revocation."
   google-pubsub:
     name: "Google Cloud Pub/Sub"
     description: "Managed global topic with per-subscription retention and seek, so consumers can replay."
@@ -3558,6 +3885,9 @@ components:
   google-sensitive-data-protection:
     name: "Sensitive Data Protection"
     description: "Discovers, classifies and de-identifies sensitive data across cloud data stores."
+  google-serverless-vpc-access-connector:
+    name: "Serverless VPC Access connector"
+    description: "Regional connector that lets Cloud Run, App Engine and Cloud Run functions reach internal VPC addresses."
   google-service-directory:
     name: "Service Directory"
     description: "Managed service registry resolvable over HTTP, gRPC and DNS."
@@ -3675,6 +4005,9 @@ components:
   graph-store:
     name: "Graph store"
     description: "Graph database drawn without naming an engine."
+  graphdb:
+    name: "Ontotext GraphDB"
+    description: "RDF triplestore queried with SPARQL, with forward-chaining inference at load time."
   graphite:
     name: "Graphite"
     description: "Metrics stack of carbon ingestion and the fixed-size Whisper database."
@@ -3711,6 +4044,9 @@ components:
   hashicorp-vault:
     name: "HashiCorp Vault"
     description: "Self-managed secrets management and encryption as a service."
+  hasura:
+    name: "Hasura"
+    description: "GraphQL engine exposing a database as a permissioned GraphQL and REST API."
   hazelcast:
     name: "Hazelcast"
     description: "In-memory data grid with partitioned maps and synchronous backups."
@@ -3732,6 +4068,12 @@ components:
   here:
     name: "HERE Location Services"
     description: "HERE geocoding, routing and map tile REST APIs."
+  heroku:
+    name: "Heroku"
+    description: "Managed platform running application processes as ephemeral dynos."
+  higress:
+    name: "Higress"
+    description: "Envoy-based API gateway merging ingress, microservice and AI gateway roles."
   hive:
     name: "Apache Hive"
     description: "Batch SQL over files in HDFS or object storage."
@@ -3759,12 +4101,39 @@ components:
   hyperledger-fabric:
     name: "Hyperledger Fabric"
     description: "Permissioned distributed ledger with channels, chaincode and a Raft ordering service."
+  ibm-activity-tracker-event-routing:
+    name: "Activity Tracker Event Routing"
+    description: "Routes account auditing events to object storage, Cloud Logs or Event Streams targets."
+  ibm-analytics-engine:
+    name: "IBM Analytics Engine"
+    description: "Serverless Apache Spark clusters created per application, reading and writing object storage."
+  ibm-api-connect:
+    name: "IBM API Connect"
+    description: "Managed API lifecycle platform with a DataPower gateway, developer portal and analytics."
+  ibm-app-configuration:
+    name: "IBM Cloud App Configuration"
+    description: "Feature flags and runtime properties per environment, evaluated by SDKs against targeting rules."
+  ibm-app-connect:
+    name: "IBM App Connect"
+    description: "Integration flows that connect applications, transform messages and move data between endpoints."
+  ibm-app-id:
+    name: "IBM Cloud App ID"
+    description: "Authentication for web and mobile apps, federating Cloud Directory, SAML and social identity providers over OIDC."
+  ibm-backup-recovery:
+    name: "IBM Cloud Backup and Recovery"
+    description: "Managed data protection that runs protection groups against a policy and restores from snapshots."
   ibm-bare-metal-server:
     name: "IBM Cloud Bare Metal Servers"
     description: "Single-tenant physical servers billed hourly or monthly, ordered preconfigured or customised."
   ibm-block-storage:
     name: "IBM Cloud Block Storage for VPC"
     description: "SSD volume attached to one VPC instance, encrypted at rest and stored redundantly within one availability zone."
+  ibm-block-storage-classic:
+    name: "Block Storage for Classic"
+    description: "iSCSI LUNs attached to classic bare metal and virtual servers, provisioned with an IOPS tier."
+  ibm-cloud-logs:
+    name: "IBM Cloud Logs"
+    description: "Log analysis with parsing and enrichment pipelines and long-term storage in the customer's object storage buckets."
   ibm-cloud-monitoring:
     name: "IBM Cloud Monitoring"
     description: "Agent-based metric collection, dashboards and alerting for IBM Cloud and Kubernetes workloads."
@@ -3774,57 +4143,219 @@ components:
   ibm-cloudant:
     name: "IBM Cloudant"
     description: "Managed JSON document store where every node accepts reads and writes and the application reconciles conflicting revisions."
+  ibm-code-engine:
+    name: "IBM Cloud Code Engine"
+    description: "Serverless platform running applications, batch jobs and functions from source or containers, scaling to zero when idle."
+  ibm-cognos-dashboards:
+    name: "Cognos Dashboards Embedded"
+    description: "Dashboarding service whose charts embed inside a customer application through a JavaScript API."
+  ibm-container-registry:
+    name: "IBM Cloud Container Registry"
+    description: "Private regional registry for container images with Vulnerability Advisor scanning on push."
+  ibm-continuous-delivery:
+    name: "IBM Cloud Continuous Delivery"
+    description: "Toolchains with Tekton or classic pipelines that build, test and deploy, with DevSecOps reference pipelines."
+  ibm-data-product-hub:
+    name: "IBM Data Product Hub"
+    description: "Marketplace where producers publish data products with contracts and consumers subscribe to them."
+  ibm-data-replication:
+    name: "IBM Data Replication"
+    description: "Log-based replication capturing committed changes from a source database and applying them to a target."
+  ibm-data-virtualization:
+    name: "IBM Data Virtualization"
+    description: "Federation layer presenting remote tables as one virtual schema and pushing SQL down to the sources."
+  ibm-databases-for-elasticsearch:
+    name: "IBM Cloud Databases for Elasticsearch"
+    description: "Managed Elasticsearch with the commercial security and alerting features, backed up daily."
+  ibm-databases-for-mongodb:
+    name: "IBM Cloud Databases for MongoDB"
+    description: "Managed MongoDB replica sets with daily automatic backups kept 30 days and encryption at rest."
+  ibm-databases-for-mysql:
+    name: "IBM Cloud Databases for MySQL"
+    description: "Managed MySQL with daily automatic backups kept 30 days and encryption at rest."
+  ibm-databases-for-postgresql:
+    name: "IBM Cloud Databases for PostgreSQL"
+    description: "Managed PostgreSQL with daily automatic backups kept 30 days and encryption at rest."
+  ibm-databases-for-redis:
+    name: "IBM Cloud Databases for Redis"
+    description: "Managed Redis with persistence and daily automatic backups, sold in Standard and Enterprise plans."
+  ibm-datastage:
+    name: "IBM DataStage as a Service"
+    description: "Parallel ETL jobs that read sources, transform records in a designed flow and load them into targets."
+  ibm-db2:
+    name: "IBM Db2 SaaS"
+    description: "Db2 as a managed service with optional HADR high availability and geo-replicated disaster recovery."
+  ibm-db2-warehouse:
+    name: "Db2 Warehouse as a Service"
+    description: "Managed Db2 data warehouse with column-organised tables and massively parallel query execution."
   ibm-direct-link:
     name: "IBM Cloud Direct Link"
     description: "Private 1 to 10 Gbps connectivity from an on-premises network into IBM Cloud without crossing the public internet."
+  ibm-dns-services:
+    name: "IBM Cloud DNS Services"
+    description: "Private DNS zones resolvable only from the IBM Cloud private network, with optional global load balancing."
+  ibm-email-delivery:
+    name: "IBM Cloud Email Delivery for Classic"
+    description: "Outbound SMTP relay for transactional mail from classic infrastructure, with bounce and reputation handling."
+  ibm-event-notifications:
+    name: "IBM Cloud Event Notifications"
+    description: "Routing service that filters account events and fans them out to email, SMS, push, webhooks and cloud services."
+  ibm-event-streams:
+    name: "IBM Event Streams"
+    description: "Managed Apache Kafka message bus supporting the Kafka client APIs, Kafka Streams and Kafka Connect."
+  ibm-file-storage:
+    name: "File Storage for VPC"
+    description: "NFS file shares mounted by VPC instances through a mount target, encrypted at rest."
+  ibm-file-storage-classic:
+    name: "File Storage for Classic"
+    description: "NFS shares mounted by classic bare metal and virtual servers, provisioned with an IOPS tier."
   ibm-firewall:
     name: "IBM Cloud Hardware Firewall"
     description: "Appliance upstream of classic infrastructure servers that filters traffic with stateful packet inspection before it reaches them."
   ibm-floating-ip:
     name: "Floating IP for VPC"
     description: "Public IPv4 address bound to an instance network interface in one zone, carrying inbound and outbound traffic."
+  ibm-flow-logs:
+    name: "Flow Logs for VPC"
+    description: "Collector that records VPC IP traffic and writes flow records to a Cloud Object Storage bucket."
+  ibm-gateway-appliance:
+    name: "Gateway Appliance"
+    description: "Bare metal device terminating classic VLANs and running vSRX, Virtual Router Appliance or FortiGate."
+  ibm-hyper-protect-crypto-services:
+    name: "IBM Cloud Hyper Protect Crypto Services"
+    description: "Single-tenant key management on FIPS 140-2 Level 4 HSMs where the customer holds the master keys."
   ibm-iam:
     name: "IBM Cloud Identity and Access Management"
     description: "Account-wide access control granting roles through policies on users, service IDs, trusted profiles and access groups."
+  ibm-instance-group:
+    name: "Auto Scale for VPC"
+    description: "Instance group that creates and removes virtual servers from a template on a metric or a schedule."
   ibm-internet-services:
     name: "IBM Cloud Internet Services"
     description: "Edge delivery built on Cloudflare, combining CDN caching with DNS, global load balancing, DDoS mitigation and a web application firewall."
+  ibm-key-protect:
+    name: "IBM Key Protect"
+    description: "Key management backed by FIPS 140-2 Level 3 HSMs, wrapping data keys with root keys."
+  ibm-knowledge-studio:
+    name: "IBM Watson Knowledge Studio"
+    description: "Annotation workspace for building a domain type system and training a model for Discovery or NLU."
   ibm-kubernetes-service:
     name: "IBM Cloud Kubernetes Service"
     description: "Managed Kubernetes cluster whose three-replica master IBM runs, with access mapped from IAM roles onto Kubernetes RBAC."
   ibm-load-balancer:
     name: "IBM Cloud Load Balancer for VPC"
     description: "Public or private load balancer distributing traffic across VPC backends at layer 7 or layer 4 with health checks."
+  ibm-logs-routing:
+    name: "IBM Cloud Logs Routing"
+    description: "Forwards a region's platform logs to the Cloud Logs instances named by the tenant configuration."
+  ibm-messages-for-rabbitmq:
+    name: "IBM Cloud Messages for RabbitMQ"
+    description: "Managed RabbitMQ broker with durable queues, at-least-once delivery and daily backups."
+  ibm-metrics-routing:
+    name: "IBM Cloud Metrics Routing"
+    description: "Routes account platform metrics to the Monitoring instances named by the routing rules."
   ibm-mq:
     name: "IBM MQ"
     description: "Enterprise queue-manager messaging with assured once-only delivery of persistent messages."
+  ibm-mq-on-cloud:
+    name: "IBM MQ on Cloud"
+    description: "Managed IBM MQ queue manager on IBM Cloud with persistent, transactional message delivery."
+  ibm-natural-language-understanding:
+    name: "IBM Watson Natural Language Understanding"
+    description: "Text analysis API returning entities, keywords, categories, sentiment, relations and syntax."
+  ibm-netezza:
+    name: "Netezza Performance Server as a Service"
+    description: "Netezza massively parallel data warehouse delivered as a managed service."
+  ibm-openpages:
+    name: "IBM OpenPages"
+    description: "Governance, risk and compliance platform holding risks, controls, policies and their assessment workflows."
+  ibm-openshift:
+    name: "Red Hat OpenShift on IBM Cloud"
+    description: "Managed OpenShift Container Platform clusters on VPC, classic or Satellite infrastructure."
   ibm-power-virtual-server:
     name: "IBM Power Virtual Server"
     description: "Logical partition on IBM Power hardware in IBM Cloud data centres, running AIX, IBM i or Linux."
   ibm-public-gateway:
     name: "Public Gateway for VPC"
     description: "Outbound-only source NAT for the subnets of one zone, sharing a single floating IP address."
+  ibm-satellite:
+    name: "IBM Cloud Satellite"
+    description: "Location of customer-owned hosts, on premises or in another cloud, managed from IBM Cloud and running IBM Cloud services."
+  ibm-secrets-manager:
+    name: "IBM Cloud Secrets Manager"
+    description: "Dedicated HashiCorp Vault instance that creates, leases and centrally manages application secrets."
+  ibm-security-compliance-center:
+    name: "IBM Cloud Security and Compliance Center"
+    description: "Evaluates account resources against a compliance profile on a schedule and reports failing controls."
+  ibm-security-group:
+    name: "VPC Security Group"
+    description: "Stateful packet filter attached to VPC network interfaces, empty until rules are added."
+  ibm-security-verify:
+    name: "IBM Security Verify"
+    description: "Identity-as-a-service directory and single sign-on for workforce and consumer identities."
+  ibm-storage-ceph:
+    name: "IBM Storage Ceph as a Service"
+    description: "Managed Ceph cluster presenting block, file and S3-compatible object interfaces over replicated storage."
   ibm-subnet:
     name: "VPC Subnet"
     description: "Address range confined to one availability zone and routable across the whole VPC region."
   ibm-transit-gateway:
     name: "IBM Cloud Transit Gateway"
     description: "Interconnects VPCs, classic infrastructure and Direct Link connections over the IBM private network with local or global routing."
+  ibm-virtual-endpoint-gateway:
+    name: "Virtual Private Endpoint Gateway"
+    description: "Private IP interface in a VPC that reaches a supported IBM Cloud service over the private backbone."
   ibm-virtual-server:
     name: "IBM Cloud Virtual Servers for VPC"
     description: "Virtual server instance in a VPC subnet with an encrypted boot volume and no public address unless one is attached."
+  ibm-virtual-server-classic:
+    name: "Virtual Servers for Classic"
+    description: "Virtual machines on IBM classic infrastructure, public, dedicated, transient or reserved."
+  ibm-vmware-solutions:
+    name: "IBM Cloud for VMware Solutions"
+    description: "vSphere and VMware Cloud Foundation estates running on IBM Cloud bare metal."
   ibm-vpc:
     name: "IBM Cloud Virtual Private Cloud"
     description: "Logically isolated virtual network spanning the zones of one region, with no internet path until a gateway or floating IP is added."
   ibm-vpn-gateway:
     name: "IBM Cloud VPN for VPC"
     description: "IPsec site-to-site tunnel from a VPC to an on-premises network or another VPC, route-based or policy-based."
+  ibm-vpn-server:
+    name: "Client VPN for VPC"
+    description: "OpenVPN-compatible VPN server that remote clients dial into, authenticating by certificate, user ID or both."
+  ibm-watson-discovery:
+    name: "IBM Watson Discovery"
+    description: "Ingests and enriches documents, then answers natural language queries over the resulting index."
   ibm-watson-speech-to-text:
     name: "IBM Watson Speech to Text"
     description: "Metered endpoint that transcribes streamed or recorded audio into text, optionally with a custom model."
   ibm-watson-text-to-speech:
     name: "IBM Watson Text to Speech"
     description: "Metered endpoint that synthesises text into a streamed audio response, optionally with a custom voice."
+  ibm-watsonx-ai:
+    name: "IBM watsonx.ai"
+    description: "Studio and runtime for foundation models and machine learning, with prompt tuning, notebooks and scoring endpoints."
+  ibm-watsonx-assistant:
+    name: "IBM watsonx Assistant"
+    description: "Conversational assistant answering from configured actions and search over connected content."
+  ibm-watsonx-bi:
+    name: "IBM watsonx BI"
+    description: "Business intelligence over a governed semantic layer with natural language questions and metrics."
+  ibm-watsonx-code-assistant:
+    name: "IBM watsonx Code Assistant"
+    description: "Code generation and modernisation assistant built on Granite code models, used from an IDE."
+  ibm-watsonx-data:
+    name: "IBM watsonx.data"
+    description: "Lakehouse that queries Iceberg, Delta Lake and Hudi tables in object storage through Presto, Spark or Gluten engines."
+  ibm-watsonx-governance:
+    name: "IBM watsonx.governance"
+    description: "Model lifecycle governance recording facts, evaluating quality, drift and bias, and holding risk documentation."
+  ibm-watsonx-orchestrate:
+    name: "IBM watsonx Orchestrate"
+    description: "AI agents that call application skills and tools and chain them into an automation."
+  ibm-workload-protection:
+    name: "Security and Compliance Center Workload Protection"
+    description: "Agent-based runtime security finding vulnerabilities, misconfigurations and threats in hosts and clusters."
   icecast:
     name: "Icecast"
     description: "Streaming media server that relays source mountpoints to HTTP listeners."
@@ -3870,12 +4401,21 @@ components:
   informix:
     name: "IBM Informix"
     description: "Relational database with optional HDR and Enterprise Replication."
+  ingres:
+    name: "Actian Ingres"
+    description: "Relational database server with selectable per-table storage structures."
   inngest:
     name: "Inngest"
     description: "Hosted event-driven step functions that checkpoint each step result."
+  interbase:
+    name: "InterBase"
+    description: "Embeddable relational database with a multi-generational versioning architecture."
   intercom:
     name: "Intercom"
     description: "Hosted customer messaging and support platform whose REST API allows 10,000 calls per minute per app."
+  intersystems-iris:
+    name: "InterSystems IRIS"
+    description: "Multi-model data platform over a multidimensional global store, reached by SQL and objects."
   iot-device:
     name: "IoT device"
     description: "Embedded or IoT device client with intermittent connectivity."
@@ -3891,6 +4431,9 @@ components:
   iterable:
     name: "Iterable"
     description: "Cross-channel marketing platform for email, push, SMS, web push and in-app messages."
+  jackrabbit:
+    name: "Apache Jackrabbit Oak"
+    description: "Hierarchical content repository implementing the JCR API over a pluggable node store."
   jaeger:
     name: "Jaeger"
     description: "Self-managed distributed tracing backend."
@@ -3945,6 +4488,9 @@ components:
   k8s-endpoints:
     name: "Endpoints"
     description: "Discovery record listing the ready backend addresses behind a Service, superseded by EndpointSlice."
+  k8s-gateway:
+    name: "Kubernetes Gateway"
+    description: "Gateway API instance of traffic-handling infrastructure with listeners that routes to backend Services."
   k8s-ingress:
     name: "Ingress"
     description: "HTTP and HTTPS routing rules from outside the cluster to Services, fulfilled by an Ingress controller."
@@ -3978,6 +4524,9 @@ components:
   k8s-storage-class:
     name: "StorageClass"
     description: "Names a provisioner and its parameters so PersistentVolumeClaims can be satisfied dynamically."
+  k8s-validating-admission-policy:
+    name: "ValidatingAdmissionPolicy"
+    description: "In-process CEL admission rules evaluated by the API server instead of a validating webhook."
   k8s-volume:
     name: "Volume"
     description: "Directory mounted into a Pod's containers, ephemeral with the Pod unless backed by a persistent claim."
@@ -4005,6 +4554,9 @@ components:
   kasten:
     name: "Veeam Kasten"
     description: "Kubernetes-native backup, disaster recovery and application mobility platform."
+  kdb:
+    name: "kdb+"
+    description: "Column-oriented time-series database with the q language, partitioned on disk by date."
   keepalived:
     name: "Keepalived"
     description: "VRRP failover and IPVS layer 4 load balancing with real-server health checking."
@@ -4029,6 +4581,9 @@ components:
   kinesis:
     name: "Amazon Kinesis Data Streams"
     description: "Managed shard-based streaming log replicated across three availability zones."
+  kmesh:
+    name: "Kmesh"
+    description: "Sidecarless service mesh data plane implemented with eBPF in the kernel."
   knative:
     name: "Knative"
     description: "Request-driven serverless runtime on Kubernetes that autoscales services and scales them to zero when idle."
@@ -4041,6 +4596,9 @@ components:
   kong:
     name: "Kong Gateway"
     description: "Plugin-based API gateway built on NGINX and OpenResty."
+  kong-konnect:
+    name: "Kong Konnect"
+    description: "SaaS control plane for Kong gateways, with self-hosted or Kong-hosted data planes."
   krakend:
     name: "KrakenD"
     description: "Stateless API gateway that aggregates several backend responses into one endpoint."
@@ -4050,18 +4608,27 @@ components:
   ksqldb:
     name: "ksqlDB"
     description: "SQL streaming engine over Kafka Streams with persistent queries and materialized tables."
+  kubearmor:
+    name: "KubeArmor"
+    description: "Runtime enforcement of process, file and network policy through kernel LSMs."
   kubeedge:
     name: "KubeEdge"
     description: "Kubernetes extended to edge nodes, with locally cached metadata that keeps nodes running while the cloud link is down."
   kubeflow:
     name: "Kubeflow"
     description: "Open source AI platform toolkit for pipelines, notebooks and training on Kubernetes."
+  kuberhealthy:
+    name: "Kuberhealthy"
+    description: "Synthetic monitoring operator running checks as pods and exporting the results."
   kubernetes:
     name: "Kubernetes"
     description: "Open source container orchestrator: API server, scheduler and node pools running declarative workloads."
   kubevirt:
     name: "KubeVirt"
     description: "Kubernetes add-on that runs virtual machines as pods, each with its own libvirt and QEMU in a virt-launcher."
+  kubewarden:
+    name: "Kubewarden"
+    description: "Kubernetes policy engine running admission policies compiled to WebAssembly."
   kuma:
     name: "Kuma"
     description: "Envoy-based service mesh with a multi-zone control plane; mTLS is opt-in per mesh."
@@ -4113,6 +4680,9 @@ components:
   livekit:
     name: "LiveKit"
     description: "Open source WebRTC SFU for realtime audio, video and agent sessions."
+  llm-d:
+    name: "llm-d"
+    description: "Distributed LLM inference stack with cache-aware routing over vLLM model servers."
   load-balancer:
     name: "Generic load balancer"
     description: "Vendor-neutral load balancer. Use when the real product is not in the catalogue; every rule for this kind still applies."
@@ -4134,6 +4704,9 @@ components:
   longhorn:
     name: "Longhorn"
     description: "Cloud-native distributed block storage for Kubernetes with synchronous replicas per volume."
+  loxilb:
+    name: "loxilb"
+    description: "eBPF layer 4 load balancer and service proxy for Kubernetes services."
   luigi:
     name: "Luigi"
     description: "Python batch pipeline framework with a central in-memory task scheduler."
@@ -4272,6 +4845,9 @@ components:
   mollie:
     name: "Mollie"
     description: "European hosted-checkout PSP whose webhook posts only a payment id to refetch."
+  monetdb:
+    name: "MonetDB"
+    description: "Column-store relational database for analytical queries, held in memory-mapped files."
   mongodb:
     name: "MongoDB"
     description: "Document store with single-primary replica sets and optional sharding."
@@ -4293,6 +4869,9 @@ components:
   motherduck:
     name: "MotherDuck"
     description: "Serverless cloud data warehouse built on DuckDB with hybrid local and cloud execution."
+  mparticle:
+    name: "mParticle"
+    description: "Customer data platform resolving identities and forwarding events to output integrations."
   mqtt-broker:
     name: "MQTT broker"
     description: "Topic-based publish/subscribe broker for devices (Mosquitto, EMQX, HiveMQ, cloud IoT cores)."
@@ -4455,6 +5034,9 @@ components:
   oci-apex-service:
     name: "Oracle APEX Application Development"
     description: "Managed low-code APEX runtime on Autonomous AI Database."
+  oci-api-access-control:
+    name: "Oracle API Access Control"
+    description: "Privileged API control that makes selected database management operations need prior approval."
   oci-api-gateway:
     name: "OCI API Gateway"
     description: "Managed REST front door on Oracle Cloud."
@@ -4614,6 +5196,12 @@ components:
   oci-dedicated-vm-host:
     name: "OCI Dedicated Virtual Machine Host"
     description: "Single-tenant server that runs only your virtual machine instances."
+  oci-delegate-access-control:
+    name: "Oracle Delegate Access Control"
+    description: "Delegation control governing when a subscribed service provider may reach an Exadata resource."
+  oci-device-data-fhir:
+    name: "OCI Device Data FHIR Service"
+    description: "Managed FHIR repository for device, patient and observation resources with an OAuth 2.0 scoped API."
   oci-devops-build-pipeline:
     name: "OCI DevOps Build Pipeline"
     description: "Managed CI pipeline that builds, tests and delivers artifacts on service-managed build runners."
@@ -4656,6 +5244,9 @@ components:
   oci-exadata-database-exascale:
     name: "Exadata Database Service on Exascale Infrastructure"
     description: "Elastic Exadata VM clusters on shared Oracle-managed Exascale storage."
+  oci-exadata-fleet-update:
+    name: "Exadata Fleet Update"
+    description: "Orchestrated Grid Infrastructure, Database and Guest OS updates across a collection of Exadata targets."
   oci-external-key-management:
     name: "OCI External Key Management"
     description: "Master keys held in a third-party key management system outside OCI, referenced from a vault."
@@ -4677,6 +5268,9 @@ components:
   oci-functions:
     name: "OCI Functions"
     description: "Fn-based serverless functions on Oracle Cloud."
+  oci-fusion-applications-environment:
+    name: "Fusion Applications Environment"
+    description: "Managed environment that Fusion Applications run on, held at a family's patch and upgrade level."
   oci-fusion-data-intelligence:
     name: "Oracle Fusion Data Intelligence"
     description: "Prebuilt analytics for Fusion Applications on a provisioned Autonomous Data Warehouse and Analytics Cloud."
@@ -4704,6 +5298,9 @@ components:
   oci-gpu-instance:
     name: "OCI GPU Compute"
     description: "Compute instance on an NVIDIA or AMD GPU shape."
+  oci-guarded-data-pipelines:
+    name: "OCI Guarded Data Pipelines"
+    description: "Pipeline that moves data between isolated security domains with scanning and audit."
   oci-health-checks:
     name: "Health Checks"
     description: "Outside-in HTTP and ping probing of public endpoints from global vantage points."
@@ -4809,6 +5406,9 @@ components:
   oci-opensearch-dashboards:
     name: "OpenSearch Dashboards"
     description: "Dedicated dashboard nodes of an OCI Search with OpenSearch cluster, served on a private endpoint."
+  oci-operator-access-control:
+    name: "Oracle Operator Access Control"
+    description: "Approval and audit control over the actions Oracle staff may run on Exadata and Compute Cloud@Customer systems."
   oci-ops-insights:
     name: "OCI Ops Insights"
     description: "Capacity, host, database and SQL performance analytics over 25 months of data."
@@ -4968,12 +5568,24 @@ components:
   openbao:
     name: "OpenBao"
     description: "Open-source identity-based secrets and encryption manager, Shamir-sealed by default."
+  opencost:
+    name: "OpenCost"
+    description: "Kubernetes cost monitoring joining workload metrics with provider pricing."
   openebs:
     name: "OpenEBS"
     description: "Container-native Kubernetes storage with local and NVMe-oF replicated volume engines."
+  openedge:
+    name: "Progress OpenEdge"
+    description: "Relational database of the OpenEdge platform, served to ABL and SQL clients."
   openfga:
     name: "OpenFGA"
     description: "Zanzibar-inspired relationship-based authorization service with a pluggable datastore."
+  openfunction:
+    name: "OpenFunction"
+    description: "FaaS platform serving functions through Knative or Dapr bindings scaled by KEDA."
+  opengemini:
+    name: "openGemini"
+    description: "Distributed time-series database for telemetry, queried with InfluxQL."
   openldap:
     name: "OpenLDAP"
     description: "Standalone LDAPv3 directory server with ACL-based access control."
@@ -4995,6 +5607,12 @@ components:
   opensips:
     name: "OpenSIPS"
     description: "Open source SIP server used as proxy, registrar, session border controller or load balancer."
+  openstack-adjutant:
+    name: "OpenStack Adjutant"
+    description: "Task workflow service automating admin operations Keystone does not cover, with an approval step."
+  openstack-aodh:
+    name: "OpenStack Aodh"
+    description: "Alarming service that triggers actions on rules evaluated over Ceilometer or Gnocchi data."
   openstack-barbican:
     name: "OpenStack Barbican"
     description: "Key Manager service that stores, provisions and manages symmetric keys, asymmetric keys, certificates and raw binary secrets behind a pluggable secret store."
@@ -5037,12 +5655,21 @@ components:
   openstack-neutron:
     name: "OpenStack Neutron"
     description: "Networking service that provides networks, subnets, ports and stateful security groups over flat, VLAN or overlay segmentation."
+  openstack-neutron-vpnaas:
+    name: "Neutron VPNaaS"
+    description: "Neutron extension terminating IPsec site-to-site tunnels on a router."
   openstack-nova:
     name: "OpenStack Nova"
     description: "OpenStack compute service that provisions virtual servers, and bare metal through Ironic, via pluggable drivers."
   openstack-octavia:
     name: "OpenStack Octavia"
     description: "Load balancing service that runs HAProxy inside amphora instances, single amphora per load balancer unless an active-standby topology is chosen."
+  openstack-placement:
+    name: "OpenStack Placement"
+    description: "Tracks resource provider inventories, usages and traits so services can find where a workload fits."
+  openstack-storlets:
+    name: "OpenStack Storlets"
+    description: "Runs user-supplied computations against Swift objects in isolation, close to the data."
   openstack-tacker:
     name: "OpenStack Tacker"
     description: "NFV orchestration service and VNF Manager that deploys and operates virtual network functions and network services from VNF packages."
@@ -5121,9 +5748,18 @@ components:
   outscale-net:
     name: "Net"
     description: "Logically isolated virtual network with a private CIDR between /16 and /28, a main route table and a default security group."
+  outscale-net-access-point:
+    name: "OUTSCALE Net access point"
+    description: "Private path from a Net to another OUTSCALE service without an internet, VPN or DirectLink hop."
+  outscale-oks:
+    name: "OUTSCALE Kubernetes as a Service"
+    description: "Managed Kubernetes clusters with an OUTSCALE-run control plane and worker node pools."
   outscale-oos:
     name: "OUTSCALE Object Storage (OOS)"
     description: "S3-API-compatible object storage with erasure coding and replication inside a Region."
+  outscale-public-ip:
+    name: "OUTSCALE public IP"
+    description: "Static IPv4 address held by the account and associated with a VM, NIC, load balancer or NAT service."
   outscale-security-group:
     name: "Security Group"
     description: "Rule set attached to VMs that denies inbound flows until a rule allows them."
@@ -5136,6 +5772,9 @@ components:
   ovirt:
     name: "oVirt"
     description: "Open source management platform for KVM hosts, organising data centers, clusters and storage domains."
+  oxia:
+    name: "Oxia"
+    description: "Sharded metadata store and coordination service for distributed systems."
   ozone:
     name: "Apache Ozone"
     description: "Scalable object store for Hadoop with three-way Ratis replication or erasure-coded buckets."
@@ -5151,6 +5790,9 @@ components:
   papertrail:
     name: "SolarWinds Papertrail"
     description: "Hosted log aggregation that keeps pushed logs searchable for three to seven days and archives the rest for download."
+  paralus:
+    name: "Paralus"
+    description: "Audited, just-in-time kubectl access to Kubernetes clusters."
   partykit:
     name: "PartyKit"
     description: "Hosted stateful realtime servers, one instance per room, reached over WebSocket."
@@ -5166,6 +5808,9 @@ components:
   permit-io:
     name: "Permit.io"
     description: "Fine-grained authorization as a service with a SaaS control plane and a local policy decision point."
+  perses:
+    name: "Perses"
+    description: "Dashboards as code over Prometheus, Tempo, Loki and Pyroscope."
   pfsense:
     name: "pfSense"
     description: "FreeBSD pf firewall distribution with stateful rules, a default deny policy and optional IDS/IPS packages."
@@ -5187,6 +5832,9 @@ components:
   php-fpm:
     name: "PHP-FPM"
     description: "FastCGI process manager running pools of PHP workers behind a web server."
+  pi-hole:
+    name: "Pi-hole"
+    description: "Network DNS sinkhole that forwards queries upstream and answers blocklisted names itself."
   pinecone:
     name: "Pinecone"
     description: "Managed serverless vector database with namespaces, metadata filtering and hybrid dense-sparse search."
@@ -5196,6 +5844,12 @@ components:
   pinot:
     name: "Apache Pinot"
     description: "Real-time OLAP store ingesting directly from streams."
+  pipecd:
+    name: "PipeCD"
+    description: "GitOps continuous delivery with a control plane driving in-cluster piped agents."
+  pixie:
+    name: "Pixie"
+    description: "eBPF observability for Kubernetes that auto-collects traces, metrics and profiles in-cluster."
   plaid:
     name: "Plaid"
     description: "Bank account data access for auth, balances and transactions, with optional webhook verification."
@@ -5241,6 +5895,9 @@ components:
   prefect:
     name: "Prefect"
     description: "Python workflow orchestrator whose run state is tracked in the Prefect database."
+  prefect-cloud:
+    name: "Prefect Cloud"
+    description: "Hosted Prefect orchestration API with flow runs executing on customer infrastructure."
   presto:
     name: "Presto"
     description: "Distributed SQL query engine that queries data where it lives instead of moving it."
@@ -5310,6 +5967,9 @@ components:
   raft-event-log:
     name: "Raft event log"
     description: "Generic in-house Raft-replicated append-only log used as journal or sequencer."
+  railway:
+    name: "Railway"
+    description: "Managed platform building a repository into a container service on a private project network."
   rancher:
     name: "Rancher"
     description: "Management plane that provisions and governs many Kubernetes clusters with central authentication and project-level RBAC."
@@ -5370,6 +6030,9 @@ components:
   relational-database:
     name: "Relational database"
     description: "Relational database drawn without naming an engine."
+  render:
+    name: "Render"
+    description: "Managed platform running services, workers, cron jobs and static sites from a repository."
   replicate:
     name: "Replicate"
     description: "API that runs packaged open-source models by name, with predictions deleted after an hour."
@@ -5385,6 +6048,9 @@ components:
   rethinkdb:
     name: "RethinkDB"
     description: "JSON document store with one authoritative primary per shard and changefeeds."
+  retool:
+    name: "Retool"
+    description: "Platform for internal applications and workflows over existing databases and APIs."
   riak:
     name: "Riak KV"
     description: "Leaderless key-value store with n/r/w quorums and version-vector conflict tracking."
@@ -5541,6 +6207,9 @@ components:
   spark-streaming:
     name: "Spark Structured Streaming"
     description: "Micro-batch stream processing on Apache Spark with checkpointed state."
+  sphinx:
+    name: "Sphinx"
+    description: "Full-text search daemon serving indexes built offline by its indexer."
   spicedb:
     name: "SpiceDB"
     description: "Zanzibar-inspired relationship-based authorization database."
@@ -5565,6 +6234,9 @@ components:
   spring-cloud-gateway:
     name: "Spring Cloud Gateway"
     description: "API gateway built on Spring Boot, run standalone or embedded in an application."
+  sql-anywhere:
+    name: "SAP SQL Anywhere"
+    description: "Embeddable relational database server for edge and mobile deployments."
   sql-database:
     name: "Generic SQL database"
     description: "Vendor-neutral SQL database. Use when the real product is not in the catalogue; every rule for this kind still applies."
@@ -5628,6 +6300,9 @@ components:
   stytch:
     name: "Stytch"
     description: "Authentication platform APIs for passwordless, passkey and B2B multi-tenant login."
+  submariner:
+    name: "Submariner"
+    description: "Connects pod and service networks of separate Kubernetes clusters over IPsec tunnels."
   subversion:
     name: "Apache Subversion"
     description: "Centralised version control repository that clients connect to for every read and write."
@@ -5766,6 +6441,12 @@ components:
   travis-ci:
     name: "Travis CI"
     description: "Hosted builds driven by .travis.yml on pushes and pull requests."
+  tremor:
+    name: "Tremor"
+    description: "Event processing system for high-volume log and metric pipelines."
+  trickster:
+    name: "Trickster"
+    description: "HTTP reverse proxy cache accelerating time-series queries with a delta proxy cache."
   trie-index:
     name: "Trie index"
     description: "In-house prefix trie for typeahead, rebuilt offline and served from memory."
@@ -5952,6 +6633,9 @@ components:
   woodpecker:
     name: "Woodpecker CI"
     description: "Lightweight self-hosted CI server and agents running container pipelines."
+  workato:
+    name: "Workato"
+    description: "Hosted integration platform whose recipes connect SaaS and on-premise systems."
   worker:
     name: "Generic worker"
     description: "Vendor-neutral worker. Use when the real product is not in the catalogue; every rule for this kind still applies."
@@ -5994,6 +6678,9 @@ components:
   zabbix:
     name: "Zabbix"
     description: "Open-source infrastructure monitoring that polls agents and devices."
+  zapier:
+    name: "Zapier"
+    description: "Hosted integration service running a trigger and a chain of action steps across apps."
   zendesk:
     name: "Zendesk API"
     description: "REST interface to Zendesk Support tickets, users and help centre."

@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# ApsaraMQ for RocketMQ: "a distributed message queue service that supports reliable message-based
+# asynchronous communication among microservices, distributed systems, and serverless applications"
+# ("Introduction to ApsaraMQ for RocketMQ"). Messages are persisted and redelivered until consumed,
+# with ordered, transactional and scheduled messages as message types.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-rocketmq"
+kind: "queue"
+provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/apsaramq-for-rocketmq"
+defaults:
+  managed: true
+  delivery: "at-least-once"
+  persistence: true
+  replay: true
+properties:
+  instanceVersion:
+    type: "enum"
+    values: ["4.x", "5.x"]
+  messageType:
+    type: "enum"
+    values: ["normal", "ordered", "transactional", "scheduled"]
+    default: "normal"

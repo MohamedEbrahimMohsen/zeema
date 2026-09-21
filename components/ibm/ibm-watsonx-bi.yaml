@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM watsonx BI: business intelligence over a governed semantic layer, answering questions in
+# natural language and building metrics and dashboards from the metrics the semantic model
+# defines ("IBM watsonx BI").
+schemaVersion: "1"
+type: "component"
+id: "ibm-watsonx-bi"
+kind: "bi-service"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/watsonx-bi"
+defaults:
+  managed: true
+properties:
+  semanticLayer:
+    type: "boolean"
+    default: true
+  naturalLanguageQuery:
+    type: "boolean"
+    default: true

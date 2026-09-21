@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Microservices Engine (MSE): managed registry and configuration centre instances running Nacos,
+# ZooKeeper or Eureka, plus a cloud-native gateway ("What is MSE"). A registry instance is a
+# replicated cluster; the consensus protocol follows the engine that is chosen.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-mse"
+kind: "coordination-service"
+provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/mse"
+defaults:
+  managed: true
+  role: "discovery"
+  replicated: true
+properties:
+  engine:
+    type: "enum"
+    values: ["nacos", "zookeeper", "eureka"]

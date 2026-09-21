@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OpenCost: open-source cost monitoring for Kubernetes. It reads workload metrics from Prometheus
+# and joins them with provider pricing; per "Cloud Service Provider Configuration" it falls back to
+# public list prices until a billing export is configured.
+schemaVersion: "1"
+type: "component"
+id: "opencost"
+kind: "monitoring"
+provider: "default"
+docs: "https://www.opencost.io/docs/"
+defaults:
+  signal: "metrics"
+  collectorMode: "pull"
+  managed: false
+properties:
+  pricingSource:
+    type: "enum"
+    values: ["public-list", "cloud-billing-export", "custom"]
+    default: "public-list"
+  requiresPrometheus:
+    type: "boolean"
+    default: true

@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Elastic Block Storage (cloud disks): block devices attached to ECS instances, stored in triplicate
+# within a zone and encrypted only when encryption is switched on at creation ("What is EBS").
+# A disk lives in one zone and cannot cross zones.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-ebs"
+kind: "block-storage"
+provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/ebs/product-overview/what-is-ebs"
+defaults:
+  managed: true
+  redundancy: "zonal"
+  encryptionAtRest: false
+properties:
+  diskCategory:
+    type: "enum"
+    values: ["essd", "essd-autopl", "cloud-ssd", "cloud-efficiency", "cloud"]
+  multiAttach:
+    type: "boolean"
+    default: false

@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM DataStage as a Service: parallel ETL jobs that read from sources, transform records in a
+# designed flow and load them into targets, run on demand or on a schedule ("IBM DataStage").
+# The job is a batch process off the request path.
+schemaVersion: "1"
+type: "component"
+id: "ibm-datastage"
+kind: "worker"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/datastage"
+defaults:
+  managed: true
+  trigger: "batch"
+properties:
+  parallelism:
+    type: "boolean"
+    default: true
+  runtime:
+    type: "enum"
+    values: ["cloud", "remote-engine"]

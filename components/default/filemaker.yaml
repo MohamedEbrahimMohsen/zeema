@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Claris FileMaker Server: hosts FileMaker solution files for FileMaker Pro, FileMaker Go and
+# WebDirect clients. Per the FileMaker Server Help, ODBC/JDBC sharing and the Data API are
+# switched on per deployment rather than being available on a fresh install.
+schemaVersion: "1"
+type: "component"
+id: "filemaker"
+kind: "sql-database"
+provider: "default"
+docs: "https://help.claris.com/en/server-help/"
+defaults:
+  managed: false
+  replication: "none"
+  sharded: false
+properties:
+  webDirect:
+    type: "boolean"
+    default: false
+  odbcJdbcSharing:
+    type: "boolean"
+    default: false
+  dataApi:
+    type: "boolean"
+    default: false

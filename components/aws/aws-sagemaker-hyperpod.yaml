@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon SageMaker HyperPod cluster: a long-running, resilient accelerator cluster for training and
+# serving foundation models. "Amazon SageMaker HyperPod" says the cluster is orchestrated either by
+# Slurm or by an Amazon EKS control plane (one EKS cluster to one HyperPod cluster inside a VPC), and
+# that HyperPod monitors the instances and replaces faulty hardware so that running jobs resume.
+schemaVersion: "1"
+type: "component"
+id: "aws-sagemaker-hyperpod"
+kind: "big-data-cluster"
+provider: "aws"
+docs: "https://docs.aws.amazon.com/sagemaker/latest/dg/sagemaker-hyperpod.html"
+defaults:
+  managed: true
+  spotInstances: false
+properties:
+  orchestrator:
+    type: "enum"
+    values: ["slurm", "eks"]
+  autoResume:
+    type: "boolean"
+  sharedFileSystem:
+    type: "enum"
+    values: ["fsx-lustre", "none"]
+  topologyAwareScheduling:
+    type: "boolean"

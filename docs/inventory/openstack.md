@@ -119,6 +119,43 @@ Status: `done` = component exists in `components/openstack/`. `todo` = to be wri
 | OpenStackClient | — | — | skip: Command-line client, not a runtime node. | https://docs.openstack.org/python-openstackclient/latest/ |
 | Sahara | — | — | skip: Retired OpenStack project (retired 2024-05-10); Hadoop/Spark cluster provisioning. | https://opendev.org/openstack/sahara |
 
+---
+
+## Coverage pass 2026-09-21
+
+Re-diffed against the 42 official project teams listed at
+<https://governance.openstack.org/tc/reference/projects/index.html> and each team's docs under
+<https://docs.openstack.org/>. Deployable services inside a team (Aodh under Telemetry,
+neutron-vpnaas under Neutron) get their own row; libraries, clients, test suites, deployment
+tooling and dashboards do not.
+
+| resource | id | kind | status | source |
+|---|---|---|---|---|
+| Placement | openstack-placement | coordination-service | done | https://docs.openstack.org/placement/latest/ |
+| Aodh (Telemetry alarming) | openstack-aodh | monitoring | done | https://docs.openstack.org/aodh/latest/ |
+| Adjutant | openstack-adjutant | workflow-engine | done | https://docs.openstack.org/adjutant/latest/ |
+| Storlets | openstack-storlets | worker | done | https://docs.openstack.org/storlets/latest/ |
+| Neutron VPNaaS | openstack-neutron-vpnaas | vpn-gateway | done | https://docs.openstack.org/neutron-vpnaas/latest/ |
+| Skyline | — | — | skip: the next-generation OpenStack dashboard (API server plus console); operator consoles are not placeable runtime nodes, the same call already recorded for Horizon. | https://docs.openstack.org/skyline-apiserver/latest/ |
+| Sunbeam | — | — | skip: deployment and operation tooling that drives OpenStack through Juju charms on Kubernetes and machines, not a runtime node. | https://governance.openstack.org/tc/reference/projects/sunbeam.html |
+| ironic-inspector | — | — | skip: auxiliary hardware-introspection step of the Ironic node lifecycle; in maintenance mode with "new deployments of it are discouraged", superseded by Ironic's built-in in-band inspection. | https://docs.openstack.org/ironic-inspector/latest/ |
+| OpenStack-Helm | — | — | skip: Helm chart collection for deploying OpenStack on Kubernetes; packaging, not a runtime node. | https://docs.openstack.org/openstack-helm/latest/ |
+| OpenStack-Ansible | — | — | skip: Ansible playbooks that deploy OpenStack, not a runtime node. | https://docs.openstack.org/openstack-ansible/latest/ |
+| openstacksdk | — | — | skip: Python client SDK, not a runtime node. | https://docs.openstack.org/openstacksdk/latest/ |
+| Oslo | — | — | skip: shared Python libraries used inside the services, not a runtime node. | https://docs.openstack.org/oslo.config/latest/ |
+| Quality Assurance (Tempest) | — | — | skip: integration test suite run against a cloud, not a deployed node. | https://docs.openstack.org/tempest/latest/ |
+| Puppet OpenStack | — | — | skip: Puppet modules that configure OpenStack services; configuration management, not a node. | https://docs.openstack.org/puppet-openstack-guide/latest/ |
+| Release Management | — | — | skip: process team, not a service. | https://docs.openstack.org/project-team-guide/release-management.html |
+| Requirements | — | — | skip: cross-project dependency co-ordination, not a service. | https://docs.openstack.org/requirements/latest/ |
+
+### Already covered under another name
+
+| resource | id | kind | status | source |
+|---|---|---|---|---|
+| Ceilometer | openstack-telemetry | monitoring | done | mapping: Ceilometer is the Telemetry data-collection service already catalogued |
+| Telemetry (project team) | openstack-telemetry, openstack-aodh | monitoring | done | mapping: the team ships Ceilometer and Aodh, both catalogued |
+
 ## Counts
 
-total 50, todo 0, done 22, skip 28.
+total 66, todo 0, done 27, skip 39. Plus 2 mapping rows under
+"Already covered under another name", which point at rows already counted above.

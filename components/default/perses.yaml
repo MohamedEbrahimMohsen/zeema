@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Perses: open dashboard tool for observability data, with dashboards defined as code. Per the
+# Perses README it queries Prometheus metrics, Tempo traces, Loki logs and Pyroscope profiles and
+# stores its own dashboard definitions rather than the telemetry.
+schemaVersion: "1"
+type: "component"
+id: "perses"
+kind: "monitoring"
+provider: "default"
+docs: "https://github.com/perses/perses"
+defaults:
+  signal: "all"
+  collectorMode: "pull"
+  managed: false
+properties:
+  dashboardStorage:
+    type: "enum"
+    values: ["filesystem", "sql"]
+    default: "filesystem"
+  dashboardsAsCode:
+    type: "boolean"
+    default: true

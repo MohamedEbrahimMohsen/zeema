@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon CloudFront KeyValueStore: a global key-value datastore read from CloudFront Functions at the
+# edge. "Amazon CloudFront KeyValueStore" says CloudFront encrypts each store at rest and in transit,
+# and that function code only reads it. "Quotas on key value stores": 512 B key, 1 KB value, 5 MB per
+# store, one store per function, 200 stores per account.
+schemaVersion: "1"
+type: "component"
+id: "aws-cloudfront-keyvaluestore"
+kind: "nosql-database"
+provider: "aws"
+docs: "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/kvs-with-functions.html"
+defaults:
+  managed: true
+  model: "key-value"
+  consistency: "eventual"
+  replication: "multi-region-single-leader"
+  encryptionAtRest: true
+properties:
+  maxStoreBytes:
+    type: "integer"
+    default: 5242880
+  maxKeyBytes:
+    type: "integer"
+    default: 512
+  maxValueBytes:
+    type: "integer"
+    default: 1024
+  readOnlyAtEdge:
+    type: "boolean"
+    default: true
+  storesPerFunction:
+    type: "integer"
+    default: 1

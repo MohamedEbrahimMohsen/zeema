@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Coveo Platform: hosted enterprise search and relevance service. Per the Coveo documentation
+# content reaches an index through sources that are crawled on a schedule, or pushed through the
+# Push API, and relevance is tuned by machine-learning models attached to a query pipeline.
+schemaVersion: "1"
+type: "component"
+id: "coveo"
+kind: "search-index"
+provider: "default"
+docs: "https://docs.coveo.com/"
+defaults:
+  managed: true
+  structure: "inverted"
+  shardingStrategy: "none"
+  indexing: "async"
+properties:
+  ingestion:
+    type: "enum"
+    values: ["crawler", "push-api", "both"]
+    default: "crawler"
+  machineLearningModels:
+    type: "boolean"
+    default: false

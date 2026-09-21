@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# File Storage for Classic: NFS shares mounted by classic bare metal and virtual servers, sized
+# with an IOPS tier, with snapshots and replication as add-ons ("File Storage for Classic").
+# Distinct from File Storage for VPC (ibm-file-storage).
+schemaVersion: "1"
+type: "component"
+id: "ibm-file-storage-classic"
+kind: "file-storage"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/FileStorage"
+defaults:
+  managed: true
+  protocol: "nfs"
+  redundancy: "local"
+  publicAccess: false
+properties:
+  replication:
+    type: "boolean"
+    default: false

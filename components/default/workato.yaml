@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Workato: hosted integration and automation platform whose recipes connect SaaS and on-premise
+# systems. Per the Workato documentation a recipe starts from a trigger and runs its actions in
+# Workato's cloud; reaching systems behind a firewall needs the separately installed on-prem agent.
+schemaVersion: "1"
+type: "component"
+id: "workato"
+kind: "workflow-engine"
+provider: "default"
+docs: "https://docs.workato.com/"
+defaults:
+  managed: true
+  durable: true
+  pattern: "dag"
+  compensation: false
+  humanReview: false
+properties:
+  triggerType:
+    type: "enum"
+    values: ["polling", "webhook", "schedule"]
+    default: "polling"
+  onPremAgent:
+    type: "boolean"
+    default: false

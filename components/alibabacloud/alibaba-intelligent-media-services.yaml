@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Intelligent Media Services (IMS): media production and processing pipelines — editing, template
+# based composition, transcoding and AI understanding of the resulting media ("What is IMS"). It
+# processes media a design already stores elsewhere.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-intelligent-media-services"
+kind: "media-transcoder"
+provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/ims"
+defaults:
+  managed: true
+properties:
+  capability:
+    type: "enum"
+    values: ["editing", "transcoding", "media-ai", "live-editing"]

@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# InterSystems IRIS Data Platform: multi-model database over a multidimensional global store,
+# reachable through SQL and object access. Per the InterSystems documentation mirroring (the
+# high-availability pairing of two instances) and sharding are configured explicitly.
+schemaVersion: "1"
+type: "component"
+id: "intersystems-iris"
+kind: "sql-database"
+provider: "default"
+docs: "https://docs.intersystems.com/"
+defaults:
+  managed: false
+  replication: "none"
+  sharded: false
+  encryptionAtRest: false
+properties:
+  mirroring:
+    type: "boolean"
+    default: false
+  ecp:
+    type: "boolean"
+    default: false

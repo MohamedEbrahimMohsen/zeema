@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Db2 Warehouse as a Service: a managed Db2 data warehouse with column-organised tables and
+# massively parallel processing, deployed on IBM Cloud ("Db2 Warehouse"). Columnar is the default
+# table organisation for the warehouse.
+schemaVersion: "1"
+type: "component"
+id: "ibm-db2-warehouse"
+kind: "data-warehouse"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/Db2whc"
+defaults:
+  managed: true
+  format: "columnar"
+properties:
+  deployment:
+    type: "enum"
+    values: ["shared", "dedicated"]

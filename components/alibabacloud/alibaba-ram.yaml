@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Resource Access Management (RAM): the identity service of an Alibaba Cloud account, holding RAM
+# users, user groups and roles, and the policies that grant them actions on resources
+# ("What is RAM"). Authorisation is policy-based over actions, resources and conditions.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-ram"
+kind: "identity-provider"
+provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/ram"
+defaults:
+  managed: true
+  protocol: "iam"
+  authorizationModel: "abac"
+  centralised: true
+properties:
+  identityFederation:
+    type: "enum"
+    values: ["none", "saml", "oidc"]
+    default: "none"

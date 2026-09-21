@@ -1,8 +1,10 @@
 # IBM Cloud inventory
 
-Official product directory: the IBM Cloud catalog <https://cloud.ibm.com/catalog> and the IBM Cloud
-docs <https://cloud.ibm.com/docs>. Families follow the mingrammer `ibm` section modules, which
-mirror IBM's own architecture-icon groupings. Ids are `ibm-<product>`.
+Official product directory: the IBM Cloud docs catalogue <https://cloud.ibm.com/docs?tab=all-docs>
+and the IBM Cloud catalog <https://cloud.ibm.com/catalog>. The families down to "Mingrammer nodes
+not catalogued" follow the mingrammer `ibm` section modules, which mirror IBM's own
+architecture-icon groupings; the coverage pass at the end of this file follows IBM's own docs
+categories. Ids are `ibm-<product>`.
 
 Status: `done` = component exists in `components/ibm/`. `todo` = to be written.
 `skip: <reason>` = cannot be a node in a design.
@@ -57,6 +59,13 @@ Status: `done` = component exists in `components/ibm/`. `todo` = to be written.
 | Object Storage | — | — | skip: same product as IBM Cloud Object Storage, already written as ibm-cloud-object-storage | https://cloud.ibm.com/docs/cloud-object-storage |
 
 ## Mingrammer nodes not catalogued
+
+Several rows here are IBM's generic capability symbols rather than IBM products — `Key management`,
+`Identity provider`, `Message bus`, `Monitoring`, `Monitoring and logging`, `API Management`. They are
+`skip` in this file because they name no IBM service, but they are not uncovered: each resolves to the
+kind-id component of the same shape under `default` (`key-management`, `identity-provider`,
+`message-queue`, `monitoring`, `observability-stack`, `api-gateway`), which is what a designer places
+when the diagram means "a key manager" and not a particular one.
 
 | resource | id | kind | status | source |
 |---|---|---|---|---|
@@ -186,7 +195,7 @@ Status: `done` = component exists in `components/ibm/`. `todo` = to be written.
 | API Security | — | — | skip: Generic security category symbol, not a product. | https://diagrams.mingrammer.com/docs/nodes/ibm |
 | Blockchain Security Service | — | — | skip: Generic architecture symbol, not a named IBM Cloud product. | https://diagrams.mingrammer.com/docs/nodes/ibm |
 | Firewall | — | — | skip: Duplicate of network/Firewall, added as ibm-firewall. | https://diagrams.mingrammer.com/docs/nodes/ibm |
-| Identity and Access Management | — | — | skip: already catalogued as `ibm-iam` under ? | https://cloud.ibm.com/docs/account?topic=account-iamoverview |
+| Identity and Access Management | ibm-iam | identity-provider | done | mapping: the same service as the IBM Cloud IAM row above |
 | Physical Security | — | — | skip: Data-centre physical security concept, not a placeable runtime node. | https://diagrams.mingrammer.com/docs/nodes/ibm |
 | Security Monitoring and Intelligence | — | — | skip: Generic security category symbol, not a named product. | https://diagrams.mingrammer.com/docs/nodes/ibm |
 | Security Services | — | — | skip: Category symbol for the security tier of a reference architecture. | https://diagrams.mingrammer.com/docs/nodes/ibm |
@@ -204,6 +213,127 @@ Status: `done` = component exists in `components/ibm/`. `todo` = to be written.
 | IoT device | — | — | skip: already catalogued as `iot-device` under default | https://diagrams.mingrammer.com/docs/nodes/ibm |
 | User | — | — | skip: People/actor icon, not a placeable runtime node. | https://diagrams.mingrammer.com/docs/nodes/ibm |
 
+---
+
+## Coverage pass 2026-09-21
+
+Rebuilt from IBM's own docs catalogue <https://cloud.ibm.com/docs?tab=all-docs>, cross-checked
+against the created resources of the IBM Cloud Terraform provider. The rows above this section
+came from the mingrammer icon set and are left as they are; the rows below are the IBM Cloud
+service list. `todo` rows are services that belong in the catalogue but were not reached in
+this pass; they are recorded rather than skipped.
+
+| resource | id | kind | status | source |
+|---|---|---|---|---|
+| Code Engine | ibm-code-engine | app-server | done | https://cloud.ibm.com/docs/codeengine?topic=codeengine-about |
+| Red Hat OpenShift on IBM Cloud | ibm-openshift | container-orchestrator | done | https://cloud.ibm.com/docs/openshift?topic=openshift-getting-started |
+| Satellite | ibm-satellite | container-orchestrator | done | https://cloud.ibm.com/docs/satellite?topic=satellite-about |
+| Virtual Servers for Classic | ibm-virtual-server-classic | virtual-machine | done | https://cloud.ibm.com/docs/virtual-servers?topic=virtual-servers-about-virtual-servers |
+| VMware Solutions / VMware Cloud Foundation as a Service | ibm-vmware-solutions | virtual-machine | done | https://cloud.ibm.com/docs/vmwaresolutions?topic=vmwaresolutions-getting-started |
+| Auto Scale for VPC (instance group) | ibm-instance-group | virtual-machine | done | https://cloud.ibm.com/docs/vpc?topic=vpc-about-auto-scale |
+| Container Registry | ibm-container-registry | container-registry | done | https://cloud.ibm.com/docs/Registry?topic=Registry-registry_overview |
+| DNS Services (private DNS) | ibm-dns-services | dns | done | https://cloud.ibm.com/docs/dns-svcs?topic=dns-svcs-about-dns-services |
+| Security Groups for VPC | ibm-security-group | firewall | done | https://cloud.ibm.com/docs/vpc?topic=vpc-using-security-groups |
+| Client VPN for VPC (VPN server) | ibm-vpn-server | vpn-gateway | done | https://cloud.ibm.com/docs/vpc?topic=vpc-vpn-client-to-site-overview |
+| Virtual private endpoint gateway for VPC | ibm-virtual-endpoint-gateway | private-link | done | https://cloud.ibm.com/docs/vpc?topic=vpc-about-vpe |
+| Gateway Appliance (vSRX, VRA, FortiGate) | ibm-gateway-appliance | edge-appliance | done | https://cloud.ibm.com/docs/gateway-appliance?topic=gateway-appliance-getting-started |
+| Flow Logs for VPC | ibm-flow-logs | monitoring | done | https://cloud.ibm.com/docs/vpc?topic=vpc-flow-logs |
+| File Storage for VPC | ibm-file-storage | file-storage | done | https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-vpc-about |
+| File Storage for Classic | ibm-file-storage-classic | file-storage | done | https://cloud.ibm.com/docs/FileStorage |
+| Block Storage for Classic | ibm-block-storage-classic | block-storage | done | https://cloud.ibm.com/docs/BlockStorage |
+| IBM Storage Ceph as a Service | ibm-storage-ceph | block-storage | done | https://cloud.ibm.com/docs/storage-ceph |
+| Backup and Recovery | ibm-backup-recovery | backup-service | done | https://cloud.ibm.com/docs/backup-recovery?topic=backup-recovery-about |
+| Databases for PostgreSQL | ibm-databases-for-postgresql | sql-database | done | https://cloud.ibm.com/docs/databases-for-postgresql |
+| Databases for MySQL | ibm-databases-for-mysql | sql-database | done | https://cloud.ibm.com/docs/databases-for-mysql |
+| Databases for MongoDB | ibm-databases-for-mongodb | nosql-database | done | https://cloud.ibm.com/docs/databases-for-mongodb |
+| Databases for Redis | ibm-databases-for-redis | cache | done | https://cloud.ibm.com/docs/databases-for-redis |
+| Databases for Elasticsearch | ibm-databases-for-elasticsearch | search-index | done | https://cloud.ibm.com/docs/databases-for-elasticsearch |
+| Messages for RabbitMQ | ibm-messages-for-rabbitmq | queue | done | https://cloud.ibm.com/docs/messages-for-rabbitmq |
+| IBM Db2 SaaS | ibm-db2 | sql-database | done | https://cloud.ibm.com/docs/db2-saas |
+| Db2 Warehouse as a Service | ibm-db2-warehouse | data-warehouse | done | https://cloud.ibm.com/docs/Db2whc |
+| Netezza Performance Server as a Service | ibm-netezza | data-warehouse | done | https://cloud.ibm.com/docs/netezza |
+| IBM watsonx.data | ibm-watsonx-data | data-warehouse | done | https://cloud.ibm.com/docs/watsonxdata |
+| Data Virtualization / Watson Query | ibm-data-virtualization | database-proxy | done | https://cloud.ibm.com/docs/data-virtualization |
+| Event Streams | ibm-event-streams | stream | done | https://cloud.ibm.com/docs/EventStreams?topic=EventStreams-about |
+| Event Notifications | ibm-event-notifications | notification-service | done | https://cloud.ibm.com/docs/event-notifications?topic=event-notifications-getting-started |
+| MQ on Cloud | ibm-mq-on-cloud | queue | done | https://cloud.ibm.com/docs/mqcloud |
+| API Connect | ibm-api-connect | api-gateway | done | https://cloud.ibm.com/docs/apiconnect?topic=apiconnect-getting-started |
+| App Connect | ibm-app-connect | workflow-engine | done | https://cloud.ibm.com/docs/AppConnect |
+| DataStage as a Service | ibm-datastage | worker | done | https://cloud.ibm.com/docs/datastage |
+| Data Replication | ibm-data-replication | change-data-capture | done | https://cloud.ibm.com/docs/data-replication |
+| Email Delivery for Classic | ibm-email-delivery | notification-service | done | https://cloud.ibm.com/docs/email-delivery |
+| Key Protect | ibm-key-protect | key-management | done | https://cloud.ibm.com/docs/key-protect?topic=key-protect-about |
+| Hyper Protect Crypto Services | ibm-hyper-protect-crypto-services | key-management | done | https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-overview |
+| Secrets Manager | ibm-secrets-manager | key-management | done | https://cloud.ibm.com/docs/secrets-manager?topic=secrets-manager-getting-started |
+| App ID | ibm-app-id | identity-provider | done | https://cloud.ibm.com/docs/appid?topic=appid-getting-started |
+| IBM Security Verify | ibm-security-verify | identity-provider | done | https://cloud.ibm.com/docs/security-verify |
+| Security and Compliance Center | ibm-security-compliance-center | policy-engine | done | https://cloud.ibm.com/docs/security-compliance |
+| Security and Compliance Center Workload Protection | ibm-workload-protection | monitoring | done | https://cloud.ibm.com/docs/workload-protection |
+| Cloud Logs | ibm-cloud-logs | monitoring | done | https://cloud.ibm.com/docs/cloud-logs?topic=cloud-logs-about-cl |
+| Activity Tracker Event Routing | ibm-activity-tracker-event-routing | stream-processor | done | https://cloud.ibm.com/docs/atracker |
+| Logs Routing | ibm-logs-routing | stream-processor | done | https://cloud.ibm.com/docs/logs-router |
+| Metrics Routing | ibm-metrics-routing | stream-processor | done | https://cloud.ibm.com/docs/metrics-router |
+| App Configuration | ibm-app-configuration | feature-flag-service | done | https://cloud.ibm.com/docs/app-configuration |
+| Continuous Delivery | ibm-continuous-delivery | ci-pipeline | done | https://cloud.ibm.com/docs/ContinuousDelivery |
+| watsonx.ai | ibm-watsonx-ai | ml-platform | done | https://cloud.ibm.com/docs/watsonx |
+| watsonx Assistant | ibm-watsonx-assistant | ai-service | done | https://cloud.ibm.com/docs/watson-assistant |
+| watsonx Orchestrate | ibm-watsonx-orchestrate | ai-service | done | https://cloud.ibm.com/docs/watsonx-orchestrate |
+| watsonx.governance | ibm-watsonx-governance | ml-platform | done | https://cloud.ibm.com/docs/watsonx-governance |
+| watsonx BI | ibm-watsonx-bi | bi-service | done | https://cloud.ibm.com/docs/watsonx-bi |
+| watsonx Code Assistant | ibm-watsonx-code-assistant | ai-service | done | https://cloud.ibm.com/docs/watsonx-code-assistant |
+| Watson Discovery | ibm-watson-discovery | search-index | done | https://cloud.ibm.com/docs/discovery-data |
+| Natural Language Understanding | ibm-natural-language-understanding | ai-service | done | https://cloud.ibm.com/docs/natural-language-understanding |
+| Watson Knowledge Studio | ibm-knowledge-studio | ml-platform | done | https://cloud.ibm.com/docs/watson-knowledge-studio |
+| Analytics Engine | ibm-analytics-engine | big-data-cluster | done | https://cloud.ibm.com/docs/AnalyticsEngine |
+| Cognos Dashboards Embedded | ibm-cognos-dashboards | bi-service | done | https://cloud.ibm.com/docs/cognos-dashboard-embedded |
+| Data Product Hub | ibm-data-product-hub | data-catalog | done | https://cloud.ibm.com/docs/dph |
+| OpenPages | ibm-openpages | policy-engine | done | https://cloud.ibm.com/docs/openpages |
+| Schematics | — | — | skip: Terraform-as-a-service deployment control plane, the same call as the AWS CloudFormation and Alibaba ROS rows | https://cloud.ibm.com/docs/schematics |
+| Terraform on IBM Cloud | — | — | skip: infrastructure-as-code tooling | https://cloud.ibm.com/docs/ibm-cloud-provider-for-terraform |
+| Cloud Shell | — | — | skip: browser shell for the account, not a runtime node | https://cloud.ibm.com/docs/cloud-shell |
+| IBM Cloud CLI | — | — | skip: command line tool | https://cloud.ibm.com/docs/cli |
+| DevSecOps | — | — | skip: reference pipeline templates of Continuous Delivery (ibm-continuous-delivery, devSecOps) | https://cloud.ibm.com/docs/devsecops |
+| IBM Cloud Framework for Financial Services control requirements | — | — | skip: compliance profile evaluated by the Security and Compliance Center, not a resource | https://cloud.ibm.com/docs/framework-financial-services |
+| Bandwidth Metering for Classic | — | — | skip: billing and metering view over classic network usage | https://cloud.ibm.com/docs/bandwidth |
+| Direct Link on Classic (End of Market) | — | — | skip: end of market; current orders are Direct Link (ibm-direct-link) | https://cloud.ibm.com/docs/dl |
+| Power Enterprise Pools Metered Capacity | — | — | skip: capacity and billing construct over Power Virtual Server | https://cloud.ibm.com/docs/power-iaas |
+| Cloud Functions | — | — | skip: IBM Cloud Functions is withdrawn; Code Engine functions replace it | https://cloud.ibm.com/docs/openwhisk |
+| Certificate Manager | — | — | skip: withdrawn, folded into Secrets Manager (ibm-secrets-manager) | https://cloud.ibm.com/docs/secrets-manager |
+| Context-based restrictions | — | — | skip: network-condition rules attached to IAM access, not a node | https://cloud.ibm.com/docs/account?topic=account-context-restrictions-whatis |
+| Selling on IBM Cloud / Solution Tutorials / API and SDK handbooks | — | — | skip: documentation sections, not resources | https://cloud.ibm.com/docs |
+| Account, enterprise and billing management | — | — | skip: account constructs | https://cloud.ibm.com/docs/account |
+| Resource groups and tags | — | — | skip: account metadata applied to existing resources | https://cloud.ibm.com/docs/account?topic=account-rgs |
+| Subnets and IPs (docs family) | — | — | skip: the placeable resources are already ibm-subnet and ibm-floating-ip | https://cloud.ibm.com/docs/vpc?topic=vpc-about-subnets-vpc |
+| IBM Cloud Juniper vSRX / Virtual FortiGate / Virtual Router Appliance | — | — | skip: network operating systems of a Gateway Appliance (ibm-gateway-appliance, operatingSystem) | https://cloud.ibm.com/docs/gateway-appliance |
+| Cloudant Gen 2, Databases Gen 1 and Gen 2, Event Streams Gen 1 and Gen 2 | — | — | skip: hosting generations of the same products, a plan choice rather than separate resources | https://cloud.ibm.com/docs/cloud-databases |
+| watsonx.ai Runtime and watsonx.ai Studio (on Cloud Pak for Data or watsonx) | — | — | skip: the runtime and studio halves of watsonx.ai (ibm-watsonx-ai) | https://cloud.ibm.com/docs/watsonx |
+| Watson Query on Cloud Pak for Data as a Service | — | — | skip: the Cloud Pak for Data packaging of Data Virtualization (ibm-data-virtualization) | https://cloud.ibm.com/docs/data-virtualization |
+| Wanclouds VPC+ | — | — | skip: third-party migration tooling sold in the catalogue, not an IBM service | https://cloud.ibm.com/docs/wanclouds-vpc-plus |
+| Cloud Pak for Data as a Service | — | — | todo | https://cloud.ibm.com/docs/cloud-pak-data |
+| Cloud Pak for Integration | — | — | todo | https://cloud.ibm.com/docs?tab=all-docs |
+| Cloud Pak for Security | — | — | todo | https://cloud.ibm.com/docs?tab=all-docs |
+| Cloud Pak for Multicloud Management | — | — | todo | https://cloud.ibm.com/docs?tab=all-docs |
+| watsonx.data intelligence | — | — | todo | https://cloud.ibm.com/docs/watsonxdata |
+| watsonx.data integration | — | — | todo | https://cloud.ibm.com/docs/watsonxdata |
+| Match 360 with Watson | — | — | todo | https://cloud.ibm.com/docs?tab=all-docs |
+| Red Hat AI Inference | — | — | todo | https://cloud.ibm.com/docs?tab=all-docs |
+| IBM Quantum Platform | — | — | todo | https://cloud.ibm.com/docs?tab=all-docs |
+| IBM Spectrum Symphony | — | — | todo | https://cloud.ibm.com/docs?tab=all-docs |
+| IBM i Managed on Power Virtual Server | — | — | todo | https://cloud.ibm.com/docs/power-iaas |
+| Virtualization for Classic | — | — | todo | https://cloud.ibm.com/docs?tab=all-docs |
+| VMware for Classic | — | — | todo | https://cloud.ibm.com/docs?tab=all-docs |
+| Maximo Application Suite Dedicated | — | — | todo | https://cloud.ibm.com/docs?tab=all-docs |
+| IBM Cloud Load Balancer (classic) | — | — | todo | https://cloud.ibm.com/docs?tab=all-docs |
+| Domain Name Service (classic public DNS) | — | — | todo | https://cloud.ibm.com/docs?tab=all-docs |
+| VLANs (classic) | — | — | todo | https://cloud.ibm.com/docs?tab=all-docs |
+| Virtual Private Networks (classic SSL and IPsec VPN) | — | — | todo | https://cloud.ibm.com/docs?tab=all-docs |
+| Citrix Netscaler VPX | — | — | todo | https://cloud.ibm.com/docs?tab=all-docs |
+| IBM Cloud Backup (classic agent backup) | — | — | todo | https://cloud.ibm.com/docs?tab=all-docs |
+| SAP Adaptive Server Enterprise Cloud Edition | — | — | todo | https://cloud.ibm.com/docs?tab=all-docs |
+| IBM Aspera on Cloud | — | — | todo | https://cloud.ibm.com/docs?tab=all-docs |
+| Data Product Hub delivery connectors | — | — | todo | https://cloud.ibm.com/docs/dph |
+
 ## Counts
 
-total 165, todo 0, done 21, skip 144.
+total 271, todo 23, done 84, skip 164. Plus 1 mapping row under "Mingrammer nodes not
+catalogued", which points at a row already counted above.

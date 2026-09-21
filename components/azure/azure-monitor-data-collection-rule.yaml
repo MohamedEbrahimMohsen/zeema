@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Data collection rule: the Azure Monitor resource that declares what to collect, the KQL
+# transformation to apply on ingestion and where the data goes ("Data Collection Rules in Azure
+# Monitor"). That page states a DCR is stored in one region and backed up to its paired region and
+# deployed to all three availability zones, "for this reason, it's a zone-redundant service", and that
+# up to 30 DCRs can be associated with a single resource. A transformation is optional, so transform
+# defaults to false; the destination is chosen per data flow and therefore carries no default. The
+# destination list is the set the resource provider exposes under properties.destinations
+# ("Microsoft.Insights/dataCollectionRules").
+schemaVersion: "1"
+type: "component"
+id: "azure-monitor-data-collection-rule"
+kind: "monitoring"
+provider: "azure"
+docs: "https://learn.microsoft.com/en-us/azure/azure-monitor/data-collection/data-collection-rule-overview"
+defaults:
+  managed: true
+  signal: "all"
+  collectorMode: "push"
+properties:
+  transform:
+    type: "boolean"
+    default: false
+  destination:
+    type: "enum"
+    values: ["log-analytics", "azure-monitor-metrics", "azure-data-explorer", "event-hubs", "storage", "microsoft-fabric"]
+  dataCollectionEndpoint:
+    type: "boolean"
+    default: false
+  zoneRedundant:
+    type: "boolean"
+    default: true
+  maxAssociationsPerResource:
+    type: "integer"
+    default: 30

@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Heroku: managed platform running application processes as dynos from a slug or container image.
+# Per the Heroku Dev Center "Dynos and the Dyno Manager", the dyno filesystem is ephemeral and
+# discarded on restart, and dynos are cycled at least once a day.
+schemaVersion: "1"
+type: "component"
+id: "heroku"
+kind: "app-server"
+provider: "default"
+docs: "https://devcenter.heroku.com/categories/reference"
+defaults:
+  managed: true
+  stateless: true
+  autoscaling: false
+  ownsData: false
+  instances: 1
+properties:
+  dynoType:
+    type: "enum"
+    values: ["eco", "basic", "standard-1x", "standard-2x", "performance-m", "performance-l"]
+  ephemeralFilesystem:
+    type: "boolean"
+    default: true
+  dailyDynoRestart:
+    type: "boolean"
+    default: true

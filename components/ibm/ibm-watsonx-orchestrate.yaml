@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM watsonx Orchestrate: AI agents that call skills and tools on the user's behalf and chain
+# them into an automation, drawing on a catalogue of application skills ("IBM watsonx
+# Orchestrate"). The node is the agent runtime, not a single skill.
+schemaVersion: "1"
+type: "component"
+id: "ibm-watsonx-orchestrate"
+kind: "ai-service"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/watsonx-orchestrate"
+defaults:
+  managed: true
+  modality: "text"
+properties:
+  agentStyle:
+    type: "enum"
+    values: ["skill-based", "tool-calling", "multi-agent"]

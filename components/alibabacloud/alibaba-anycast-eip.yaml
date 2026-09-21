@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Anycast Elastic IP Address: one public IP announced from many Alibaba Cloud points of presence,
+# so clients reach the nearest one and traffic travels the backbone to the origin region
+# ("What is Anycast EIP"). Unlike an ordinary EIP it is not bound to a single region.
+schemaVersion: "1"
+type: "component"
+id: "alibaba-anycast-eip"
+kind: "network-fabric"
+provider: "alibabacloud"
+docs: "https://www.alibabacloud.com/help/en/anycast-eip/product-overview/what-is-anycast-eip"
+defaults:
+  managed: true
+properties:
+  accessArea:
+    type: "enum"
+    values: ["international", "chinese-mainland"]

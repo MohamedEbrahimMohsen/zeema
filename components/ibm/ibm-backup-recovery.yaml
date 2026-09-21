@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# IBM Cloud Backup and Recovery: a managed data-protection service that registers sources, runs
+# protection groups against a policy and restores from the resulting snapshots ("IBM Cloud Backup
+# and Recovery"). Frequency, retention and immutability come from the protection policy the
+# customer writes, so none of them is defaulted here.
+schemaVersion: "1"
+type: "component"
+id: "ibm-backup-recovery"
+kind: "backup-service"
+provider: "ibm"
+docs: "https://cloud.ibm.com/docs/backup-recovery?topic=backup-recovery-about"
+defaults:
+  managed: true
+properties:
+  sourceType:
+    type: "enum"
+    values: ["virtual-machine", "database", "file-system", "object-storage", "kubernetes"]
