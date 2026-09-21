@@ -8,6 +8,7 @@ id: "azure-static-web-apps"
 kind: "cdn"
 provider: "azure"
 docs: "https://learn.microsoft.com/en-us/azure/static-web-apps/plans"
+aliases: ["SWA"]
 defaults:
   managed: true
   caching: true

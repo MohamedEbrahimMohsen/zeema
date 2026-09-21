@@ -9,6 +9,7 @@ id: "openstack-octavia"
 kind: "load-balancer"
 provider: "openstack"
 docs: "https://docs.openstack.org/octavia/latest/"
+aliases: ["Load-balancer service", "LBaaS"]
 defaults:
   global: false
   managed: false

@@ -7,6 +7,7 @@ id: "google-identity-aware-proxy"
 kind: "bastion-host"
 provider: "gcp"
 docs: "https://cloud.google.com/iap/docs/concepts-overview"
+aliases: ["IAP"]
 defaults:
   managed: true
   protocols: "both"

@@ -6,6 +6,7 @@ id: "aws-iam"
 kind: "identity-provider"
 provider: "aws"
 docs: "https://docs.aws.amazon.com/IAM/latest/UserGuide/introduction.html"
+aliases: ["IAM"]
 defaults:
   protocol: "iam"
   authorizationModel: "rbac"

@@ -8,6 +8,7 @@ id: "ibm-natural-language-understanding"
 kind: "ai-service"
 provider: "ibm"
 docs: "https://cloud.ibm.com/docs/natural-language-understanding"
+aliases: ["NLU"]
 defaults:
   managed: true
   modality: "text"

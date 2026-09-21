@@ -7,6 +7,7 @@ id: "azure-video-indexer"
 kind: "ai-service"
 provider: "azure"
 docs: "https://learn.microsoft.com/en-us/azure/azure-video-indexer/video-indexer-overview"
+aliases: ["Video Analyzer for Media"]
 defaults:
   managed: true
   modality: "multimodal"

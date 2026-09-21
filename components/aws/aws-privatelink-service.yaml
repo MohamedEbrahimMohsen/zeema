@@ -8,6 +8,7 @@ id: "aws-privatelink-service"
 kind: "private-link"
 provider: "aws"
 docs: "https://docs.aws.amazon.com/vpc/latest/privatelink/privatelink-share-your-services.html"
+aliases: ["PrivateLink"]
 defaults:
   managed: true
   approvalRequired: true

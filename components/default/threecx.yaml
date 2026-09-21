@@ -10,6 +10,7 @@ id: "threecx"
 kind: "contact-center"
 provider: "default"
 docs: "https://www.3cx.com/docs/manual/call-center-queues/"
+aliases: ["3CX"]
 defaults:
   managed: false
   channelVoice: true

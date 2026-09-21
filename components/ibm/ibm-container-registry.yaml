@@ -8,6 +8,7 @@ id: "ibm-container-registry"
 kind: "container-registry"
 provider: "ibm"
 docs: "https://cloud.ibm.com/docs/Registry?topic=Registry-registry_overview"
+aliases: ["ICR"]
 defaults:
   managed: true
   visibility: "private"

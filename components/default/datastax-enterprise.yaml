@@ -8,6 +8,7 @@ id: "datastax-enterprise"
 kind: "nosql-database"
 provider: "default"
 docs: "https://docs.datastax.com/en/dse/6.9/index.html"
+aliases: ["DSE"]
 defaults:
   managed: false
   model: "wide-column"

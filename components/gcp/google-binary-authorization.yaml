@@ -9,6 +9,7 @@ id: "google-binary-authorization"
 kind: "policy-engine"
 provider: "gcp"
 docs: "https://cloud.google.com/binary-authorization/docs/overview"
+aliases: ["Binauthz"]
 defaults:
   effect: "deny"
   enforcementMode: "enforced"

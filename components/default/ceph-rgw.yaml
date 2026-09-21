@@ -6,6 +6,7 @@ id: "ceph-rgw"
 kind: "object-store"
 provider: "default"
 docs: "https://docs.ceph.com/en/latest/radosgw/"
+aliases: ["RGW"]
 defaults:
   replication: "quorum"
   strongReadAfterWrite: true

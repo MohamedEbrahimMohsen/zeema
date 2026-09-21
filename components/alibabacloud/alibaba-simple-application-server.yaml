@@ -11,6 +11,7 @@ id: "alibaba-simple-application-server"
 kind: "virtual-machine"
 provider: "alibabacloud"
 docs: "https://www.alibabacloud.com/help/en/simple-application-server/"
+aliases: ["SWAS"]
 defaults:
   managed: false
 properties:

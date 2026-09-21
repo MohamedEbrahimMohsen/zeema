@@ -6,6 +6,7 @@ id: "triton"
 kind: "ml-inference"
 provider: "default"
 docs: "https://docs.nvidia.com/deeplearning/triton-inference-server/"
+aliases: ["TensorRT Inference Server"]
 defaults:
   training: "batch"
   inputs: "live"

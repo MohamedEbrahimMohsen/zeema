@@ -7,6 +7,7 @@ id: "google-chrome-enterprise-premium"
 kind: "bastion-host"
 provider: "gcp"
 docs: "https://cloud.google.com/beyondcorp-enterprise/docs/overview"
+aliases: ["BeyondCorp Enterprise"]
 defaults:
   managed: true
 properties:

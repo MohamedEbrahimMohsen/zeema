@@ -9,6 +9,7 @@ id: "azure-database-migration-service"
 kind: "worker"
 provider: "azure"
 docs: "https://learn.microsoft.com/en-us/azure/dms/dms-overview"
+aliases: ["DMS"]
 defaults:
   managed: true
   trigger: "manual"

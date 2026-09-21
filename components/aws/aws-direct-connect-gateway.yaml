@@ -8,6 +8,7 @@ id: "aws-direct-connect-gateway"
 kind: "network-fabric"
 provider: "aws"
 docs: "https://docs.aws.amazon.com/directconnect/latest/UserGuide/direct-connect-gateways-intro.html"
+aliases: ["DXGW"]
 defaults:
   managed: true
   interconnect: "private"

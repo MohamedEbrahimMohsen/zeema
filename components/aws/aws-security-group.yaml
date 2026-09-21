@@ -8,6 +8,7 @@ id: "aws-security-group"
 kind: "firewall"
 provider: "aws"
 docs: "https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-groups.html"
+aliases: ["SG"]
 defaults:
   managed: true
   stateful: true

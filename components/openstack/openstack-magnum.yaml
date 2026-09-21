@@ -9,6 +9,7 @@ id: "openstack-magnum"
 kind: "container-orchestrator"
 provider: "openstack"
 docs: "https://docs.openstack.org/magnum/latest/"
+aliases: ["Container Infrastructure Management"]
 defaults:
   nodeCount: 1
   managed: false

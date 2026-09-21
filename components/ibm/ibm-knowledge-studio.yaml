@@ -9,6 +9,7 @@ id: "ibm-knowledge-studio"
 kind: "ml-platform"
 provider: "ibm"
 docs: "https://cloud.ibm.com/docs/watson-knowledge-studio"
+aliases: ["WKS"]
 defaults:
   managed: true
   modelRegistry: true

@@ -9,6 +9,7 @@ id: "aws-eventbridge"
 kind: "pubsub-topic"
 provider: "aws"
 docs: "https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-what-is.html"
+aliases: ["CloudWatch Events"]
 defaults:
   managed: true
   delivery: "at-least-once"

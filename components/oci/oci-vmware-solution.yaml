@@ -9,6 +9,7 @@ id: "oci-vmware-solution"
 kind: "virtual-machine"
 provider: "oci"
 docs: "https://docs.oracle.com/en-us/iaas/Content/VMware/Concepts/ocvsoverview.htm"
+aliases: ["OCVS"]
 defaults:
   managed: false
   zoneRedundant: false

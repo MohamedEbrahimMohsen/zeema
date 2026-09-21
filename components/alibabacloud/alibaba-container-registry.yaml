@@ -10,6 +10,7 @@ id: "alibaba-container-registry"
 kind: "container-registry"
 provider: "alibabacloud"
 docs: "https://www.alibabacloud.com/help/en/acr/"
+aliases: ["ACR"]
 defaults:
   managed: true
 properties:

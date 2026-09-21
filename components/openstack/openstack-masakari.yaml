@@ -9,6 +9,7 @@ id: "openstack-masakari"
 kind: "monitoring"
 provider: "openstack"
 docs: "https://docs.openstack.org/masakari/latest/"
+aliases: ["Instances High Availability service"]
 defaults:
   signal: "alerts"
   managed: false

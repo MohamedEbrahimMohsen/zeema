@@ -9,6 +9,7 @@ id: "oci-dynamic-routing-gateway"
 kind: "network-fabric"
 provider: "oci"
 docs: "https://docs.oracle.com/en-us/iaas/Content/Network/Tasks/managingDRGs.htm"
+aliases: ["DRG"]
 defaults:
   managed: true
   overlay: true

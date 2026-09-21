@@ -8,6 +8,7 @@ id: "oci-java-management"
 kind: "monitoring"
 provider: "oci"
 docs: "https://docs.oracle.com/en-us/iaas/jms/doc/fleet-management.html"
+aliases: ["JMS"]
 defaults:
   managed: true
   signal: "logs"

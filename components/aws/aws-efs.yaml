@@ -10,6 +10,7 @@ id: "aws-efs"
 kind: "file-storage"
 provider: "aws"
 docs: "https://docs.aws.amazon.com/efs/latest/ug/whatisefs.html"
+aliases: ["EFS"]
 defaults:
   protocol: "nfs"
   redundancy: "regional"

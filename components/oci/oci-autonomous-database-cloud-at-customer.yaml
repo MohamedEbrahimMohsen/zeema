@@ -8,6 +8,7 @@ id: "oci-autonomous-database-cloud-at-customer"
 kind: "sql-database"
 provider: "oci"
 docs: "https://docs.oracle.com/en/cloud/paas/autonomous-database/dedicated/adbaa/backup-and-restore-autonomous-ai-database-on-dedicated.html"
+aliases: ["ADB-C@C"]
 defaults:
   managed: true
   backupEnabled: true

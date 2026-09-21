@@ -10,6 +10,7 @@ id: "omnissa-horizon"
 kind: "virtual-desktop"
 provider: "default"
 docs: "https://docs.omnissa.com/HorizonOverviewDeployment/DesktopPools"
+aliases: ["VMware Horizon"]
 defaults:
   managed: false
   mfaRequired: false

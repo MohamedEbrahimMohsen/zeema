@@ -8,6 +8,7 @@ id: "alibaba-data-security-center"
 kind: "policy-engine"
 provider: "alibabacloud"
 docs: "https://www.alibabacloud.com/help/en/dsc"
+aliases: ["SDDP"]
 defaults:
   managed: true
   effect: "audit"

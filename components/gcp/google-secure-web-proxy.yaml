@@ -7,6 +7,7 @@ id: "google-secure-web-proxy"
 kind: "firewall"
 provider: "gcp"
 docs: "https://cloud.google.com/secure-web-proxy/docs/overview"
+aliases: ["SWP"]
 defaults:
   managed: true
   defaultAction: "deny"

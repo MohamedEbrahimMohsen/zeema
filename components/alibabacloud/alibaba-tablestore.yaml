@@ -10,6 +10,7 @@ id: "alibaba-tablestore"
 kind: "nosql-database"
 provider: "alibabacloud"
 docs: "https://www.alibabacloud.com/help/en/tablestore/"
+aliases: ["OTS"]
 defaults:
   model: "wide-column"
   consistency: "strong"

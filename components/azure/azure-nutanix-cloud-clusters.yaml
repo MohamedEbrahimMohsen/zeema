@@ -8,6 +8,7 @@ id: "azure-nutanix-cloud-clusters"
 kind: "virtual-machine"
 provider: "azure"
 docs: "https://learn.microsoft.com/en-us/azure/nutanix/about-nc2-on-azure"
+aliases: ["NC2"]
 defaults:
   managed: false
 properties:

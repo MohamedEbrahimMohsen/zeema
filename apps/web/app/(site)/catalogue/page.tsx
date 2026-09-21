@@ -43,8 +43,10 @@ export default async function CataloguePage({
           (c) =>
             (!sp.kind || c.kind === sp.kind) &&
             (!sp.provider || c.provider === sp.provider) &&
+            // Aliases are searched with the id, the name and the description, so "dcr" finds
+            // the data collection rule here exactly as it does in the canvas palette.
             (!q ||
-              `${c.id} ${cat.locale.components[c.id]?.name ?? ""} ${cat.locale.components[c.id]?.description ?? ""}`
+              `${c.id} ${cat.locale.components[c.id]?.name ?? ""} ${cat.locale.components[c.id]?.description ?? ""} ${(c.aliases ?? []).join(" ")}`
                 .toLowerCase()
                 .includes(q)),
         )

@@ -7,6 +7,7 @@ id: "google-network-connectivity-center"
 kind: "network-fabric"
 provider: "gcp"
 docs: "https://cloud.google.com/network-connectivity/docs/network-connectivity-center/concepts/overview"
+aliases: ["NCC"]
 defaults:
   managed: true
   overlay: true

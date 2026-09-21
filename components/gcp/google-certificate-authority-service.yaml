@@ -9,6 +9,7 @@ id: "google-certificate-authority-service"
 kind: "key-management"
 provider: "gcp"
 docs: "https://cloud.google.com/certificate-authority-service/docs/ca-service-overview"
+aliases: ["CAS"]
 defaults:
   managed: true
   hsm: true

@@ -8,6 +8,7 @@ id: "google-error-reporting"
 kind: "monitoring"
 provider: "gcp"
 docs: "https://cloud.google.com/error-reporting/quotas"
+aliases: ["Stackdriver Error Reporting"]
 defaults:
   managed: true
   signal: "logs"

@@ -7,6 +7,7 @@ id: "sap-ase"
 kind: "sql-database"
 provider: "default"
 docs: "https://help.sap.com/docs/SAP_ASE/86fcdd45cd3142af9f1b6dd75017260f/a8f5175bbc2b1014b5c7a94582fbf553.html"
+aliases: ["Sybase ASE"]
 defaults:
   replication: "none"
   concurrencyControl: "pessimistic"

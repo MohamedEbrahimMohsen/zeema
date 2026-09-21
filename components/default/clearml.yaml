@@ -8,6 +8,7 @@ id: "clearml"
 kind: "ml-platform"
 provider: "default"
 docs: "https://clear.ml/docs/latest/docs/deploying_clearml/clearml_server/"
+aliases: ["Trains"]
 defaults:
   experimentTracking: true
   modelRegistry: true

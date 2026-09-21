@@ -9,6 +9,7 @@ id: "google-managed-instance-group"
 kind: "virtual-machine"
 provider: "gcp"
 docs: "https://cloud.google.com/compute/docs/instance-groups"
+aliases: ["MIG"]
 defaults:
   managed: true
   diskEncryption: true

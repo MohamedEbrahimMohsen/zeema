@@ -11,6 +11,7 @@ id: "aws-waf"
 kind: "waf"
 provider: "aws"
 docs: "https://docs.aws.amazon.com/waf/latest/developerguide/what-is-aws-waf.html"
+aliases: ["WAF"]
 defaults:
   managed: true
   mode: "prevention"

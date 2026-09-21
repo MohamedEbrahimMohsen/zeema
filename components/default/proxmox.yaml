@@ -8,6 +8,7 @@ id: "proxmox"
 kind: "virtual-machine"
 provider: "default"
 docs: "https://pve.proxmox.com/pve-docs/pve-admin-guide.html"
+aliases: ["PVE"]
 defaults:
   managed: false
 properties:

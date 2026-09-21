@@ -8,6 +8,7 @@ id: "oci-network-load-balancer"
 kind: "load-balancer"
 provider: "oci"
 docs: "https://docs.oracle.com/en-us/iaas/Content/NetworkLoadBalancer/introduction.htm"
+aliases: ["NLB"]
 defaults:
   managed: true
   layer: "l4"

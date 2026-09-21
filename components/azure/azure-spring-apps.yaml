@@ -8,6 +8,7 @@ id: "azure-spring-apps"
 kind: "app-server"
 provider: "azure"
 docs: "https://learn.microsoft.com/en-us/azure/spring-apps/basic-standard/overview"
+aliases: ["Azure Spring Cloud"]
 defaults:
   managed: true
   stateless: true

@@ -10,6 +10,7 @@ id: "citrix-virtual-apps"
 kind: "virtual-desktop"
 provider: "default"
 docs: "https://docs.citrix.com/en-us/citrix-virtual-apps-desktops/2411/install-configure/load-balance-machines"
+aliases: ["XenApp"]
 defaults:
   managed: false
   loadBalancing: "breadth-first"

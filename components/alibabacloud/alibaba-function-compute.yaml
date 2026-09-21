@@ -10,6 +10,7 @@ id: "alibaba-function-compute"
 kind: "app-server"
 provider: "alibabacloud"
 docs: "https://www.alibabacloud.com/help/en/fc/"
+aliases: ["FC"]
 defaults:
   managed: true
   autoscaling: true

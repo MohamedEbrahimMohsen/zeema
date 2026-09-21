@@ -8,6 +8,7 @@ id: "aws-network-acl"
 kind: "firewall"
 provider: "aws"
 docs: "https://docs.aws.amazon.com/vpc/latest/userguide/vpc-network-acls.html"
+aliases: ["NACL"]
 defaults:
   managed: true
   stateful: false

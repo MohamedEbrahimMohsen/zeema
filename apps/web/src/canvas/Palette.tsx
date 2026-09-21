@@ -3,7 +3,8 @@
 import { isGeneric } from "@zeema/core/document";
 import { useEffect, useMemo, useRef } from "react";
 
-type Row = [string, string, string, string, string, string];
+/** [id, name, kind, category, provider, haystack, aliases] — see `searchRows` in @zeema/catalogue. */
+type Row = [string, string, string, string, string, string, string];
 const LIMIT = 60;
 
 function parseQuery(q: string) {
@@ -18,12 +19,16 @@ function parseQuery(q: string) {
 }
 
 function score(row: Row, words: string[]) {
-  const [id, name, , , , hay] = row;
+  const [id, name, , , , hay, aliases] = row;
   if (!words.length) return 1;
+  // An alias is a name the vendor uses, so it weighs what the name weighs: typing `dcr` should
+  // put the data collection rule first, not behind every description that mentions it.
+  const alias = (aliases ?? "").split(" ").filter(Boolean);
   let s = 0;
   for (const w of words) {
     if (!hay.includes(w)) return 0;
-    if (id.startsWith(w) || name.toLowerCase().startsWith(w)) s += 3;
+    if (id.startsWith(w) || name.toLowerCase().startsWith(w) || alias.some((a) => a.startsWith(w)))
+      s += 3;
     else if (id.includes(w)) s += 2;
     else s += 1;
   }

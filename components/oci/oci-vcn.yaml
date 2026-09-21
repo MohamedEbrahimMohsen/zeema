@@ -8,6 +8,7 @@ id: "oci-vcn"
 kind: "network-fabric"
 provider: "oci"
 docs: "https://docs.oracle.com/en-us/iaas/Content/Network/Concepts/overview.htm"
+aliases: ["VCN"]
 defaults:
   managed: true
   overlay: true

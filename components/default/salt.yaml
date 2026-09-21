@@ -9,6 +9,7 @@ id: "salt"
 kind: "ci-pipeline"
 provider: "default"
 docs: "https://docs.saltproject.io/en/latest/ref/configuration/master.html"
+aliases: ["SaltStack"]
 defaults:
   trigger: "manual"
   approvalRequired: false

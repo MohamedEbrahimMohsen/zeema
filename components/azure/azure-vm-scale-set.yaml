@@ -8,6 +8,7 @@ id: "azure-vm-scale-set"
 kind: "virtual-machine"
 provider: "azure"
 docs: "https://learn.microsoft.com/en-us/azure/virtual-machine-scale-sets/overview"
+aliases: ["VMSS"]
 defaults:
   managed: false
   diskEncryption: true

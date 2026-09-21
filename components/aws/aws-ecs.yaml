@@ -8,6 +8,7 @@ id: "aws-ecs"
 kind: "container-orchestrator"
 provider: "aws"
 docs: "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/Welcome.html"
+aliases: ["ECS"]
 defaults:
   managed: true
   autoscaling: false

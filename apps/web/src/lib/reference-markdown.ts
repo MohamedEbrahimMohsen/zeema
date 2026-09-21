@@ -234,8 +234,15 @@ export function renderLlmsTxt(origin: string): string {
     L.push(`### ${provider}`, "");
     for (const id of (byProvider.get(provider) ?? []).sort()) {
       const t = cat.locale.components[id] ?? {};
+      // The abbreviation rides in the link text, so an agent grepping this file for "DCR" lands
+      // on the component rather than on nothing.
+      const name = t.name ?? id;
+      const aliases = (cat.components[id].aliases ?? []).filter(
+        (a) => !name.toLowerCase().includes(a.toLowerCase()),
+      );
+      const known = aliases.length ? ` (${aliases.join(", ")})` : "";
       L.push(
-        `- [${t.name ?? id}](${origin}/catalogue/components/${id}.md): ${oneLine(t.description, `${cat.components[id].kind} component`)}`,
+        `- [${name}${known}](${origin}/catalogue/components/${id}.md): ${oneLine(t.description, `${cat.components[id].kind} component`)}`,
       );
     }
     L.push("");

@@ -10,6 +10,7 @@ id: "digitalocean-container-registry"
 kind: "container-registry"
 provider: "digitalocean"
 docs: "https://docs.digitalocean.com/products/container-registry/"
+aliases: ["DOCR"]
 defaults:
   managed: true
   visibility: "private"

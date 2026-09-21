@@ -9,6 +9,7 @@ id: "wildfly"
 kind: "app-server"
 provider: "default"
 docs: "https://docs.wildfly.org/36/Getting_Started_Guide.html"
+aliases: ["JBoss AS"]
 defaults:
   managed: false
   runtime: "jvm"

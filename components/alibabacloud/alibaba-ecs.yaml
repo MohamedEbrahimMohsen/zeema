@@ -10,6 +10,7 @@ id: "alibaba-ecs"
 kind: "virtual-machine"
 provider: "alibabacloud"
 docs: "https://www.alibabacloud.com/help/en/ecs/"
+aliases: ["ECS"]
 defaults:
   managed: false
   publicIp: false

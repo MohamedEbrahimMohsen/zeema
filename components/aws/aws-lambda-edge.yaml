@@ -9,6 +9,7 @@ id: "aws-lambda-edge"
 kind: "app-server"
 provider: "aws"
 docs: "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/lambda-at-edge.html"
+aliases: ["Lambda@Edge"]
 defaults:
   managed: true
   stateless: true

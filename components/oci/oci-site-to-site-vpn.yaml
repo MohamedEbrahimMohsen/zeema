@@ -8,6 +8,7 @@ id: "oci-site-to-site-vpn"
 kind: "vpn-gateway"
 provider: "oci"
 docs: "https://docs.oracle.com/en-us/iaas/Content/Network/Tasks/overviewIPsec.htm"
+aliases: ["VPN Connect"]
 defaults:
   managed: true
   peerType: "site-to-site"

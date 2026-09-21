@@ -8,6 +8,7 @@ id: "aws-ecr-public"
 kind: "container-registry"
 provider: "aws"
 docs: "https://docs.aws.amazon.com/AmazonECR/latest/public/what-is-ecr.html"
+aliases: ["ECR Public"]
 defaults:
   managed: true
   visibility: "public"

@@ -10,6 +10,7 @@ id: "azure-network-interface"
 kind: "network-fabric"
 provider: "azure"
 docs: "https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-network-interface"
+aliases: ["NIC"]
 defaults:
   managed: true
   overlay: true

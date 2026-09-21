@@ -9,6 +9,7 @@ id: "openstack-mistral"
 kind: "workflow-engine"
 provider: "openstack"
 docs: "https://docs.openstack.org/mistral/latest/"
+aliases: ["Workflow service"]
 defaults:
   pattern: "dag"
   managed: false

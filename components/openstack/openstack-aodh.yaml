@@ -9,6 +9,7 @@ id: "openstack-aodh"
 kind: "monitoring"
 provider: "openstack"
 docs: "https://docs.openstack.org/aodh/latest/"
+aliases: ["Alarming service"]
 defaults:
   signal: "alerts"
   collectorMode: "pull"

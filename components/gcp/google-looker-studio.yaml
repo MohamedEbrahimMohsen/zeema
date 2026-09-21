@@ -8,6 +8,7 @@ id: "google-looker-studio"
 kind: "bi-service"
 provider: "gcp"
 docs: "https://docs.cloud.google.com/looker/docs/studio/manage-data-freshness"
+aliases: ["Data Studio"]
 defaults:
   managed: true
   capacityMode: "shared"

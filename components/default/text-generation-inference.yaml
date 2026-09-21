@@ -8,6 +8,7 @@ id: "text-generation-inference"
 kind: "ml-inference"
 provider: "default"
 docs: "https://huggingface.co/docs/text-generation-inference/en/basic_tutorials/launcher"
+aliases: ["TGI"]
 defaults:
   training: "batch"
   inputs: "live"

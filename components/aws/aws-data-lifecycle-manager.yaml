@@ -10,6 +10,7 @@ id: "aws-data-lifecycle-manager"
 kind: "backup-service"
 provider: "aws"
 docs: "https://docs.aws.amazon.com/ebs/latest/userguide/snapshot-lifecycle.html"
+aliases: ["DLM"]
 defaults:
   redundancy: "regional"
   crossRegionRestore: false

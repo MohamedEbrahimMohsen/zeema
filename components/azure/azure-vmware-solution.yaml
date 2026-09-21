@@ -8,6 +8,7 @@ id: "azure-vmware-solution"
 kind: "virtual-machine"
 provider: "azure"
 docs: "https://learn.microsoft.com/en-us/azure/azure-vmware/introduction"
+aliases: ["AVS"]
 defaults:
   managed: true
   diskEncryption: true

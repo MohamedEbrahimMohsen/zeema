@@ -6,6 +6,7 @@ id: "zookeeper"
 kind: "coordination-service"
 provider: "default"
 docs: "https://zookeeper.apache.org/documentation.html"
+aliases: ["ZK"]
 defaults:
   role: "metadata"
   consensus: "zab"

@@ -6,6 +6,7 @@ id: "bigquery"
 kind: "data-warehouse"
 provider: "gcp"
 docs: "https://cloud.google.com/bigquery/docs/introduction"
+aliases: ["BQ"]
 defaults:
   realtime: false
   upsert: false

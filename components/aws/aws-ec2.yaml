@@ -8,6 +8,7 @@ id: "aws-ec2"
 kind: "virtual-machine"
 provider: "aws"
 docs: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/concepts.html"
+aliases: ["EC2"]
 defaults:
   managed: false
   diskEncryption: false

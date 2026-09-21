@@ -8,6 +8,7 @@ id: "aws-iam-identity-center"
 kind: "identity-provider"
 provider: "aws"
 docs: "https://docs.aws.amazon.com/singlesignon/latest/userguide/enable-mfa.html"
+aliases: ["AWS SSO"]
 defaults:
   protocol: "saml"
   authorizationModel: "rbac"

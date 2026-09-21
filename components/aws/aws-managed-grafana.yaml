@@ -9,6 +9,7 @@ id: "aws-managed-grafana"
 kind: "monitoring"
 provider: "aws"
 docs: "https://docs.aws.amazon.com/grafana/latest/APIReference/API_CreateWorkspace.html"
+aliases: ["AMG"]
 defaults:
   signal: "all"
   collectorMode: "pull"

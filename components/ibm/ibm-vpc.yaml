@@ -9,6 +9,7 @@ id: "ibm-vpc"
 kind: "network-fabric"
 provider: "ibm"
 docs: "https://cloud.ibm.com/docs/vpc?topic=vpc-about-vpc"
+aliases: ["VPC"]
 defaults:
   managed: true
   overlay: true

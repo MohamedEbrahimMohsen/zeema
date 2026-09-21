@@ -8,6 +8,7 @@ id: "aws-ec2-auto-scaling"
 kind: "virtual-machine"
 provider: "aws"
 docs: "https://docs.aws.amazon.com/autoscaling/ec2/userguide/what-is-amazon-ec2-auto-scaling.html"
+aliases: ["ASG"]
 defaults:
   managed: false
   diskEncryption: false

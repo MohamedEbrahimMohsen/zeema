@@ -10,6 +10,7 @@ id: "aws-opensearch"
 kind: "search-index"
 provider: "aws"
 docs: "https://docs.aws.amazon.com/opensearch-service/latest/developerguide/managedomains-multiaz.html"
+aliases: ["Amazon Elasticsearch Service", "Amazon ES"]
 defaults:
   managed: true
   structure: "inverted"

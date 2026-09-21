@@ -10,6 +10,7 @@ id: "alibaba-auto-scaling"
 kind: "virtual-machine"
 provider: "alibabacloud"
 docs: "https://www.alibabacloud.com/help/en/auto-scaling/"
+aliases: ["ESS"]
 defaults:
   managed: false
 properties:

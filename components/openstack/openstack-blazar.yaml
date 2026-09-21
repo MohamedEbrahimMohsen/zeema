@@ -9,6 +9,7 @@ id: "openstack-blazar"
 kind: "coordination-service"
 provider: "openstack"
 docs: "https://docs.openstack.org/blazar/latest/"
+aliases: ["Resource Reservation service"]
 defaults:
   role: "placement"
   managed: false

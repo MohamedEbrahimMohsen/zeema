@@ -9,6 +9,7 @@ id: "openstack-tacker"
 kind: "ci-pipeline"
 provider: "openstack"
 docs: "https://docs.openstack.org/tacker/latest/"
+aliases: ["NFV Orchestration service"]
 defaults:
   managed: false
 properties:

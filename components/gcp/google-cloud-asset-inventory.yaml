@@ -9,6 +9,7 @@ id: "google-cloud-asset-inventory"
 kind: "data-catalog"
 provider: "gcp"
 docs: "https://cloud.google.com/asset-inventory/docs/overview"
+aliases: ["CAI"]
 defaults:
   classification: false
   lineage: false

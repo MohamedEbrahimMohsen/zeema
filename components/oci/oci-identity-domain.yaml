@@ -8,6 +8,7 @@ id: "oci-identity-domain"
 kind: "identity-provider"
 provider: "oci"
 docs: "https://docs.oracle.com/en-us/iaas/Content/Identity/domains/overview.htm"
+aliases: ["IDCS"]
 defaults:
   managed: true
   protocol: "iam"

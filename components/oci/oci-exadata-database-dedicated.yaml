@@ -9,6 +9,7 @@ id: "oci-exadata-database-dedicated"
 kind: "sql-database"
 provider: "oci"
 docs: "https://docs.oracle.com/en-us/iaas/exadatacloud/doc/exa-service-desc.html"
+aliases: ["ExaDB-D"]
 defaults:
   managed: true
   multiWriter: true

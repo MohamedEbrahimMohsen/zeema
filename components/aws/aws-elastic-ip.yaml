@@ -8,6 +8,7 @@ id: "aws-elastic-ip"
 kind: "network-fabric"
 provider: "aws"
 docs: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/elastic-ip-addresses-eip.html"
+aliases: ["EIP"]
 defaults:
   managed: true
   interconnect: "public"

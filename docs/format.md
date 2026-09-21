@@ -85,6 +85,7 @@ properties:
 |---|---|---|
 | `kind` | yes | Id of exactly one kind. |
 | `provider` | yes | Vendor that owns the product: `aws`, `azure`, `gcp`, `oci`, `cloudflare`, `ibm`, `alibabacloud`, `digitalocean`, `openstack`, `outscale`, `k8s` or `default`. The file lives in `components/<provider>/`. `default` is open source, in-house generic, or SaaS (Stripe, Datadog). Hosting is not ownership: `postgres` is `default` even on RDS, `aurora` is `aws`. |
+| `aliases` | no | One to eight other names the vendor's own documentation uses for this product — abbreviations (`DCR`, `S3`) and nicknames (`Kusto`) — searched alongside the id and the name, never invented here. |
 | `defaults` | no | Values for kind properties that this implementation changes. Every key must exist on the kind. |
 | `properties` | no | Additional properties specific to this implementation. Same definition shape as a kind property. Must not redefine a kind property. |
 

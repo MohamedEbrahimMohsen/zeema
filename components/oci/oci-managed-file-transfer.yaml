@@ -10,6 +10,7 @@ id: "oci-managed-file-transfer"
 kind: "worker"
 provider: "oci"
 docs: "https://docs.oracle.com/en/cloud/paas/soa/soa-marketplace/soamp-components-oracle-soa-suite-marketplace.html"
+aliases: ["MFT"]
 defaults:
   managed: false
   trigger: "schedule"

@@ -8,6 +8,7 @@ id: "aws-elastic-network-interface"
 kind: "network-fabric"
 provider: "aws"
 docs: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-eni.html"
+aliases: ["ENI"]
 defaults:
   managed: true
   multicast: false

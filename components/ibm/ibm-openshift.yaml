@@ -9,6 +9,7 @@ id: "ibm-openshift"
 kind: "container-orchestrator"
 provider: "ibm"
 docs: "https://cloud.ibm.com/docs/openshift?topic=openshift-getting-started"
+aliases: ["ROKS"]
 defaults:
   managed: true
   rbac: true

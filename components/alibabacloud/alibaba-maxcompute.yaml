@@ -9,6 +9,7 @@ id: "alibaba-maxcompute"
 kind: "data-warehouse"
 provider: "alibabacloud"
 docs: "https://www.alibabacloud.com/help/en/maxcompute/product-overview/what-is-maxcompute"
+aliases: ["ODPS"]
 defaults:
   managed: true
 properties:

@@ -8,6 +8,7 @@ id: "kubernetes"
 kind: "container-orchestrator"
 provider: "default"
 docs: "https://kubernetes.io/docs/reference/command-line-tools-reference/kube-apiserver/"
+aliases: ["K8s"]
 defaults:
   managed: false
   autoscaling: false

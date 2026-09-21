@@ -9,6 +9,7 @@ id: "openstack-zun"
 kind: "container-orchestrator"
 provider: "openstack"
 docs: "https://docs.openstack.org/zun/latest/"
+aliases: ["Containers service"]
 defaults:
   managed: false
 properties:

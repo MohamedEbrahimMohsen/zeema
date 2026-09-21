@@ -9,6 +9,7 @@ id: "openstack-cyborg"
 kind: "coordination-service"
 provider: "openstack"
 docs: "https://docs.openstack.org/cyborg/latest/"
+aliases: ["Accelerator Life Cycle Management"]
 defaults:
   role: "placement"
   managed: false

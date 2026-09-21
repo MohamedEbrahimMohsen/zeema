@@ -11,6 +11,7 @@ id: "alibaba-apsaradb-redis"
 kind: "cache"
 provider: "alibabacloud"
 docs: "https://www.alibabacloud.com/help/en/redis/product-overview/what-is-apsaradb-for-redis"
+aliases: ["KVStore"]
 defaults:
   managed: true
   persistence: true

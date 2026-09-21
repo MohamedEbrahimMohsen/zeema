@@ -12,6 +12,7 @@ id: "oci-full-stack-disaster-recovery"
 kind: "backup-service"
 provider: "oci"
 docs: "https://docs.oracle.com/en-us/iaas/disaster-recovery/doc/overview-protection-groups.html"
+aliases: ["FSDR"]
 defaults:
   crossRegionRestore: true
   managed: true

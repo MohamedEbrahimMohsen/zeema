@@ -8,6 +8,7 @@ id: "oci-local-peering-gateway"
 kind: "network-fabric"
 provider: "oci"
 docs: "https://docs.oracle.com/en-us/iaas/Content/Network/Tasks/localVCNpeering.htm"
+aliases: ["LPG"]
 defaults:
   managed: true
   overlay: true

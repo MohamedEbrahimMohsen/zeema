@@ -9,6 +9,7 @@ id: "oci-goldengate"
 kind: "change-data-capture"
 provider: "oci"
 docs: "https://docs.oracle.com/en-us/iaas/goldengate/doc/create-deployment.html"
+aliases: ["OGG"]
 defaults:
   managed: true
   mode: "log-based"

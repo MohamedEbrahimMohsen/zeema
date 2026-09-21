@@ -8,6 +8,7 @@ id: "google-migrate-to-containers"
 kind: "worker"
 provider: "gcp"
 docs: "https://docs.cloud.google.com/migrate/containers/docs/getting-started"
+aliases: ["Migrate for Anthos"]
 defaults:
   managed: false
   trigger: "manual"

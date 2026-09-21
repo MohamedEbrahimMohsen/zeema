@@ -15,12 +15,63 @@ import addFormats from "ajv-formats";
 import YAML from "yaml";
 import { loadCatalogue, PROVIDERS, resolveRoot, walk } from "./index.js";
 
+/**
+ * The alias checks, over the component documents as loaded.
+ *
+ * Aliases are the other names the vendor's own docs use for a product ("DCR", "S3"). The schema
+ * has the shape (one to eight unique strings of one to forty characters); what JSON Schema cannot
+ * see is case, and two aliases differing only in case are the same alias — a problem. An alias
+ * that collides with another component's id or alias inside the same provider is a warning, not a
+ * problem: where a vendor is ambiguous, search is allowed to be ambiguous too.
+ */
+export function aliasFindings(components) {
+  const problems = [];
+  const warnings = [];
+  const list = Object.values(components);
+  const aliasesOf = new Map();
+  for (const c of list) {
+    const seen = new Set();
+    for (const a of c.aliases ?? []) {
+      const key = String(a).toLowerCase();
+      if (seen.has(key)) problems.push(`component ${c.id}: duplicate alias ${a}`);
+      seen.add(key);
+    }
+    aliasesOf.set(c.id, seen);
+  }
+  // key -> the component ids that answer to it inside one provider, ids and aliases together.
+  const claims = new Map();
+  const claim = (provider, key, id) => {
+    const k = `${provider}|${key}`;
+    claims.set(k, [...(claims.get(k) ?? []), id]);
+  };
+  for (const c of list) {
+    claim(c.provider, c.id.toLowerCase(), c.id);
+    for (const key of aliasesOf.get(c.id)) claim(c.provider, key, c.id);
+  }
+  for (const c of list)
+    for (const key of aliasesOf.get(c.id)) {
+      const others = (claims.get(`${c.provider}|${key}`) ?? []).filter((x) => x !== c.id);
+      if (others.length)
+        warnings.push(
+          `component ${c.id}: alias "${key}" is also ${others.join(", ")} in provider ${c.provider}`,
+        );
+    }
+  return { problems, warnings };
+}
+
 export function validateRepository(rootArg, options = {}) {
   const root = resolveRoot(rootArg);
   const only = options.design ? path.resolve(options.design) : null;
   const log = options.log ?? console.log;
   const problems = [];
   const fail = (m) => problems.push(m);
+  // A warning is a thing worth knowing that is not a reason to refuse the repository: it is
+  // printed and returned, and the exit code ignores it.
+  const warnings = [];
+  const warn = (m) => {
+    warnings.push(m);
+    log(`WARN ${m}`);
+  };
 
   const ajv = new Ajv({ allErrors: true, strict: false });
   // `format` keywords (component `docs` is `uri`) are otherwise ignored with a warning.
@@ -101,6 +152,10 @@ export function validateRepository(rootArg, options = {}) {
         fail(`component ${c.id}: default ${key} not string`);
     }
   }
+  const alias = aliasFindings(components);
+  for (const m of alias.problems) fail(m);
+  for (const m of alias.warnings) warn(m);
+
   // `docs` is an absolute http(s) URL or it is absent. No network call: a link that 404s is a
   // content problem for the inventory pass, not something the gate can decide offline.
   for (const c of Object.values(components)) {
@@ -263,7 +318,7 @@ export function validateRepository(rootArg, options = {}) {
       `\nkinds=${Object.keys(kinds).length} components=${Object.keys(components).length} ${JSON.stringify(byProv)} rules=${rules.length} reference=${reference.length / 2} imported=${imported.length} authored=${authored.length}`,
     );
   }
-  return { ok: problems.length === 0, problems };
+  return { ok: problems.length === 0, problems, warnings };
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
@@ -273,7 +328,10 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     console.error("usage: validate [--root <repo>] [--design <file>]");
     process.exit(2);
   }
-  const { ok, problems } = validateRepository(arg("--root"), { design: arg("--design") });
+  const { ok, problems, warnings } = validateRepository(arg("--root"), {
+    design: arg("--design"),
+  });
+  if (warnings.length) console.log(`\nWARNINGS (${warnings.length}) — listed above, not fatal.`);
   if (!ok) {
     console.log(`\nPROBLEMS (${problems.length}):`);
     for (const p of problems) console.log(` - ${p}`);

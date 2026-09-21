@@ -9,6 +9,7 @@ id: "openstack-zaqar"
 kind: "queue"
 provider: "openstack"
 docs: "https://docs.openstack.org/zaqar/latest/"
+aliases: ["Messaging service"]
 defaults:
   delivery: "at-least-once"
   ordering: "none"

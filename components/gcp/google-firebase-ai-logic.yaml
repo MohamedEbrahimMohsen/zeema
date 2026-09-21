@@ -9,6 +9,7 @@ id: "google-firebase-ai-logic"
 kind: "ai-service"
 provider: "gcp"
 docs: "https://firebase.google.com/docs/ai-logic"
+aliases: ["Vertex AI in Firebase"]
 defaults:
   modality: "multimodal"
   publicEndpoint: true

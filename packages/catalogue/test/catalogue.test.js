@@ -1,8 +1,12 @@
 // The catalogue gate as a test, plus the bundle's two properties: deterministic and complete.
+import fs from "node:fs";
+import path from "node:path";
+import Ajv from "ajv";
+import addFormats from "ajv-formats";
 import { describe, expect, it } from "vitest";
 import { renderBundle } from "../src/build.js";
-import { designIndex, loadCatalogue } from "../src/index.js";
-import { validateRepository } from "../src/validate.js";
+import { designIndex, loadCatalogue, searchRows } from "../src/index.js";
+import { aliasFindings, validateRepository } from "../src/validate.js";
 
 describe("repository gate", () => {
   it("passes on the committed repository", () => {
@@ -39,5 +43,94 @@ describe("bundle", () => {
       );
       expect(e.editable).toBe(e.tier === "authored" && !e.broken);
     }
+  });
+});
+
+describe("aliases", () => {
+  const cat = loadCatalogue();
+  const valid = () => {
+    const ajv = new Ajv({ allErrors: true, strict: false });
+    addFormats(ajv);
+    const read = (n) => JSON.parse(fs.readFileSync(path.join(cat.root, "schema", n), "utf8"));
+    // The component schema points at the kind schema for a property definition, so the gate
+    // registers that one first; do the same here rather than compiling half a schema.
+    ajv.addSchema(read("kind.schema.json"), "kind.schema.json");
+    return ajv.compile(read("component.schema.json"));
+  };
+  const doc = (aliases) => ({
+    schemaVersion: "1",
+    type: "component",
+    id: "thing",
+    kind: "queue",
+    provider: "aws",
+    aliases,
+  });
+
+  it("accepts one to eight unique names of one to forty characters", () => {
+    const check = valid();
+    expect(check(doc(["DCR"]))).toBe(true);
+    expect(check(doc(["S3", "Simple Storage Service"]))).toBe(true);
+    expect(check(doc(Array.from({ length: 8 }, (_, i) => `a${i}`)))).toBe(true);
+  });
+
+  it("refuses an empty list, nine names, a duplicate, an empty string and a long one", () => {
+    const check = valid();
+    expect(check(doc([]))).toBe(false);
+    expect(check(doc(Array.from({ length: 9 }, (_, i) => `a${i}`)))).toBe(false);
+    expect(check(doc(["DCR", "DCR"]))).toBe(false);
+    expect(check(doc([""]))).toBe(false);
+    expect(check(doc(["x".repeat(41)]))).toBe(false);
+  });
+
+  it("refuses two aliases that differ only in case", () => {
+    const { problems, warnings } = aliasFindings({
+      a: { id: "a", provider: "aws", aliases: ["DCR", "dcr"] },
+    });
+    expect(problems).toEqual(["component a: duplicate alias dcr"]);
+    expect(warnings).toEqual([]);
+  });
+
+  it("warns, without failing, when an alias is another component's id or alias", () => {
+    const sameProvider = aliasFindings({
+      a: { id: "a", provider: "aws", aliases: ["DCR"] },
+      b: { id: "b", provider: "aws", aliases: ["dcr"] },
+      c: { id: "c", provider: "aws" },
+      dcr: { id: "dcr", provider: "aws" },
+    });
+    expect(sameProvider.problems).toEqual([]);
+    expect(sameProvider.warnings.length).toBe(2);
+    expect(sameProvider.warnings[0]).toContain('alias "dcr" is also');
+    // A different provider is a different namespace, so the same abbreviation is silent.
+    const across = aliasFindings({
+      a: { id: "a", provider: "aws", aliases: ["ASG"] },
+      b: { id: "b", provider: "azure", aliases: ["ASG"] },
+    });
+    expect(across).toEqual({ problems: [], warnings: [] });
+  });
+
+  it("puts the aliases in the search row, lower-cased", () => {
+    const rows = searchRows(cat);
+    const dcr = rows.find((r) => r[0] === "azure-monitor-data-collection-rule");
+    expect(dcr[5]).toContain("dcr");
+    expect(dcr[6]).toBe("dcr");
+    const plain = rows.find((r) => r[0] === "custom");
+    expect(plain[6]).toBe("");
+  });
+
+  it("gives every alias in the catalogue a non-empty, unique name per component", () => {
+    let count = 0;
+    for (const c of Object.values(cat.components)) {
+      if (!c.aliases) continue;
+      count += c.aliases.length;
+      const keys = c.aliases.map((a) => a.toLowerCase());
+      for (const a of c.aliases) {
+        expect(a.trim(), c.id).not.toBe("");
+        expect(a.length, c.id).toBeLessThanOrEqual(40);
+      }
+      expect(new Set(keys).size, c.id).toBe(keys.length);
+      expect(keys, c.id).not.toContain(c.id.toLowerCase());
+      expect(c.aliases.length, c.id).toBeLessThanOrEqual(8);
+    }
+    expect(count).toBeGreaterThan(100);
   });
 });

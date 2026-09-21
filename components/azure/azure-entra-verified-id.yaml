@@ -9,6 +9,7 @@ id: "azure-entra-verified-id"
 kind: "identity-provider"
 provider: "azure"
 docs: "https://learn.microsoft.com/en-us/entra/verified-id/decentralized-identifier-overview"
+aliases: ["Azure AD Verifiable Credentials"]
 defaults:
   protocol: "custom"
   authorizationModel: "none"

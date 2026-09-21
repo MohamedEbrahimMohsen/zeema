@@ -8,6 +8,7 @@ id: "azure-local"
 kind: "edge-appliance"
 provider: "azure"
 docs: "https://learn.microsoft.com/en-us/azure/azure-local/overview"
+aliases: ["Azure Stack HCI"]
 defaults:
   connectivity: "connected"
   formFactor: "rack"

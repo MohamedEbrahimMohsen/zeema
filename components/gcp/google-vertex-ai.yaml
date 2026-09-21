@@ -8,6 +8,7 @@ id: "google-vertex-ai"
 kind: "ml-platform"
 provider: "gcp"
 docs: "https://cloud.google.com/vertex-ai/docs/start/introduction-unified-platform"
+aliases: ["AI Platform"]
 defaults:
   managed: true
   modelRegistry: true

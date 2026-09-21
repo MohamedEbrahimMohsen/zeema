@@ -9,6 +9,7 @@ id: "openstack-designate"
 kind: "dns"
 provider: "openstack"
 docs: "https://docs.openstack.org/designate/latest/"
+aliases: ["DNS service"]
 defaults:
   managed: false
 properties:

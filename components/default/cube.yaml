@@ -9,6 +9,7 @@ id: "cube"
 kind: "bi-service"
 provider: "default"
 docs: "https://docs.cube.dev/docs/introduction"
+aliases: ["Cube.js"]
 defaults:
   managed: false
   embeddedReports: true

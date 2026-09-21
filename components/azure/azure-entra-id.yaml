@@ -6,6 +6,7 @@ id: "azure-entra-id"
 kind: "identity-provider"
 provider: "azure"
 docs: "https://learn.microsoft.com/en-us/entra/fundamentals/whatis"
+aliases: ["Azure AD", "AAD"]
 defaults:
   protocol: "oidc"
   authorizationModel: "rbac"

@@ -9,6 +9,7 @@ id: "k8s-cronjob"
 kind: "worker"
 provider: "k8s"
 docs: "https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/"
+aliases: ["cj"]
 defaults:
   trigger: "schedule"
   managed: false

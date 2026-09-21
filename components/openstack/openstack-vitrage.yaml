@@ -9,6 +9,7 @@ id: "openstack-vitrage"
 kind: "monitoring"
 provider: "openstack"
 docs: "https://docs.openstack.org/vitrage/latest/"
+aliases: ["Root Cause Analysis service"]
 defaults:
   signal: "alerts"
   alertGrouping: true

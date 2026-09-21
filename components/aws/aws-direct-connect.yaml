@@ -6,6 +6,7 @@ id: "aws-direct-connect"
 kind: "network-fabric"
 provider: "aws"
 docs: "https://docs.aws.amazon.com/directconnect/latest/UserGuide/Welcome.html"
+aliases: ["DX"]
 defaults:
   interconnect: "private"
 properties:

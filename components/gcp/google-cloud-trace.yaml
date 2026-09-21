@@ -8,6 +8,7 @@ id: "google-cloud-trace"
 kind: "monitoring"
 provider: "gcp"
 docs: "https://cloud.google.com/trace/docs/quotas"
+aliases: ["Stackdriver Trace"]
 defaults:
   managed: true
   signal: "traces"

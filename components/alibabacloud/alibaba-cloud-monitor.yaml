@@ -8,6 +8,7 @@ id: "alibaba-cloud-monitor"
 kind: "monitoring"
 provider: "alibabacloud"
 docs: "https://www.alibabacloud.com/help/en/cms"
+aliases: ["CMS"]
 defaults:
   managed: true
   signal: "metrics"

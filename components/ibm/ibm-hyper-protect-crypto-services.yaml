@@ -10,6 +10,7 @@ id: "ibm-hyper-protect-crypto-services"
 kind: "key-management"
 provider: "ibm"
 docs: "https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-overview"
+aliases: ["HPCS"]
 defaults:
   managed: true
   hsm: true

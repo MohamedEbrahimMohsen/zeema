@@ -9,6 +9,7 @@ id: "google-privileged-access-manager"
 kind: "policy-engine"
 provider: "gcp"
 docs: "https://cloud.google.com/iam/docs/pam-overview"
+aliases: ["PAM"]
 defaults:
   effect: "modify"
   enforcementMode: "enforced"

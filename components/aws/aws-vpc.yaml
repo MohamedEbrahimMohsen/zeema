@@ -8,6 +8,7 @@ id: "aws-vpc"
 kind: "network-fabric"
 provider: "aws"
 docs: "https://docs.aws.amazon.com/vpc/latest/userguide/what-is-amazon-vpc.html"
+aliases: ["VPC"]
 defaults:
   managed: true
   interconnect: "private"

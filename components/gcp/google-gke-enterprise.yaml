@@ -10,6 +10,7 @@ id: "google-gke-enterprise"
 kind: "container-orchestrator"
 provider: "gcp"
 docs: "https://cloud.google.com/kubernetes-engine/fleet-management/docs/fleet-concepts"
+aliases: ["Anthos"]
 defaults:
   managed: true
 properties:

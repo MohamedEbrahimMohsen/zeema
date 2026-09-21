@@ -8,6 +8,7 @@ id: "oci-notifications"
 kind: "notification-service"
 provider: "oci"
 docs: "https://docs.oracle.com/en-us/iaas/Content/Notification/Concepts/notificationoverview.htm"
+aliases: ["ONS"]
 defaults:
   managed: true
   channelPush: false

@@ -9,6 +9,7 @@ id: "openstack-barbican"
 kind: "key-management"
 provider: "openstack"
 docs: "https://docs.openstack.org/barbican/latest/"
+aliases: ["Key Manager service"]
 defaults:
   managed: false
 properties:

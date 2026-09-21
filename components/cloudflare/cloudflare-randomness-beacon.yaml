@@ -8,6 +8,7 @@ id: "cloudflare-randomness-beacon"
 kind: "third-party-api"
 provider: "cloudflare"
 docs: "https://developers.cloudflare.com/randomness-beacon/"
+aliases: ["drand"]
 defaults:
   managed: true
   callbackStyle: "none"

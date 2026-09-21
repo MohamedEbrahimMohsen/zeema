@@ -9,6 +9,7 @@ id: "cloudflare-email-security"
 kind: "email-security-gateway"
 provider: "cloudflare"
 docs: "https://developers.cloudflare.com/cloudflare-one/email-security/settings/detection-settings/configure-link-actions/"
+aliases: ["Area 1"]
 defaults:
   managed: true
   deliveryMode: "inline-mx"

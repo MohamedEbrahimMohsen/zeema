@@ -8,6 +8,7 @@ id: "aws-firehose"
 kind: "stream-processor"
 provider: "aws"
 docs: "https://docs.aws.amazon.com/firehose/latest/dev/create-configure-backup.html"
+aliases: ["Kinesis Data Firehose"]
 defaults:
   managed: true
   windowing: "none"

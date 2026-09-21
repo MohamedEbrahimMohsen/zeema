@@ -14,6 +14,8 @@ export type Catalogue = {
       provider: string;
       /** Official documentation page for the product; absent when none is recorded. */
       docs?: string;
+      /** Other names the vendor's own docs use: abbreviations (DCR) and nicknames (S3). */
+      aliases?: string[];
       defaults: Record<string, unknown>;
       properties: Record<string, PropertyDef>;
     }

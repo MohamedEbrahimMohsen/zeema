@@ -10,6 +10,7 @@ id: "oci-fusion-data-intelligence"
 kind: "bi-service"
 provider: "oci"
 docs: "https://docs.oracle.com/en-us/iaas/analytics-for-applications/doc/you-begin-oracle-fusion-data-intelligence.html"
+aliases: ["FDI"]
 defaults:
   managed: true
   capacityMode: "dedicated"

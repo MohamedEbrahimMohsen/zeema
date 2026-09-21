@@ -9,6 +9,7 @@ id: "oci-file-storage"
 kind: "file-storage"
 provider: "oci"
 docs: "https://docs.oracle.com/en-us/iaas/Content/File/Concepts/filestorageoverview.htm"
+aliases: ["FSS"]
 defaults:
   managed: true
   protocol: "nfs"

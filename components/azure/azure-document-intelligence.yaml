@@ -7,6 +7,7 @@ id: "azure-document-intelligence"
 kind: "ai-service"
 provider: "azure"
 docs: "https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/service-limits"
+aliases: ["Form Recognizer"]
 defaults:
   managed: true
   modality: "vision"

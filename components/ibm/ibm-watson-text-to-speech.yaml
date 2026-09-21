@@ -8,6 +8,7 @@ id: "ibm-watson-text-to-speech"
 kind: "ai-service"
 provider: "ibm"
 docs: "https://cloud.ibm.com/docs/text-to-speech"
+aliases: ["TTS"]
 defaults:
   managed: true
   modality: "speech"

@@ -8,6 +8,7 @@ id: "google-text-to-speech"
 kind: "ai-service"
 provider: "gcp"
 docs: "https://docs.cloud.google.com/text-to-speech/quotas"
+aliases: ["TTS"]
 defaults:
   modality: "speech"
   publicEndpoint: true

@@ -8,6 +8,7 @@ id: "sql-anywhere"
 kind: "sql-database"
 provider: "default"
 docs: "https://help.sap.com/docs/SAP_SQL_Anywhere"
+aliases: ["Sybase SQL Anywhere"]
 defaults:
   managed: false
   replication: "none"

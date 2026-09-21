@@ -8,6 +8,7 @@ id: "aws-managed-prometheus"
 kind: "monitoring"
 provider: "aws"
 docs: "https://docs.aws.amazon.com/prometheus/latest/userguide/what-is-Amazon-Managed-Service-Prometheus.html"
+aliases: ["AMP"]
 defaults:
   signal: "metrics"
   collectorMode: "push"

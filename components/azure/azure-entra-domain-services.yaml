@@ -9,6 +9,7 @@ id: "azure-entra-domain-services"
 kind: "identity-provider"
 provider: "azure"
 docs: "https://learn.microsoft.com/en-us/entra/identity/domain-services/administration-concepts"
+aliases: ["Azure AD DS"]
 defaults:
   protocol: "custom"
   authorizationModel: "rbac"

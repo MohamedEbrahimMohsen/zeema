@@ -7,6 +7,7 @@ id: "kasten"
 kind: "backup-service"
 provider: "default"
 docs: "https://docs.kasten.io/latest/usage/protect.html"
+aliases: ["K10"]
 defaults:
   managed: false
   crossRegionRestore: false

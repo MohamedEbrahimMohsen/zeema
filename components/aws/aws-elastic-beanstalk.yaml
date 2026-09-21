@@ -9,6 +9,7 @@ id: "aws-elastic-beanstalk"
 kind: "app-server"
 provider: "aws"
 docs: "https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/Welcome.html"
+aliases: ["EB"]
 defaults:
   managed: true
   stateless: true

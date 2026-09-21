@@ -10,6 +10,7 @@ id: "oci-weblogic-server"
 kind: "app-server"
 provider: "oci"
 docs: "https://docs.oracle.com/en/cloud/paas/weblogic-cloud/user/components-oracle-weblogic-cloud.html"
+aliases: ["WLS"]
 defaults:
   managed: false
   runtime: "weblogic"

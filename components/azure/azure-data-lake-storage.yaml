@@ -8,6 +8,7 @@ id: "azure-data-lake-storage"
 kind: "object-store"
 provider: "azure"
 docs: "https://learn.microsoft.com/en-us/azure/storage/blobs/data-lake-storage-introduction"
+aliases: ["ADLS"]
 defaults:
   zones: 1
   durabilityNines: 11

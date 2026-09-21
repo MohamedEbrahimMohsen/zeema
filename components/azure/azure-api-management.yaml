@@ -6,6 +6,7 @@ id: "azure-api-management"
 kind: "api-gateway"
 provider: "azure"
 docs: "https://learn.microsoft.com/en-us/azure/api-management/api-management-key-concepts"
+aliases: ["APIM"]
 defaults:
   managed: true
   tls: true

@@ -8,6 +8,7 @@ id: "aws-rds"
 kind: "sql-database"
 provider: "aws"
 docs: "https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_CreateDBInstance.html"
+aliases: ["RDS"]
 defaults:
   managed: true
   backupEnabled: true

@@ -10,6 +10,7 @@ id: "ibm-internet-services"
 kind: "cdn"
 provider: "ibm"
 docs: "https://cloud.ibm.com/docs/cis?topic=cis-getting-started"
+aliases: ["CIS"]
 defaults:
   managed: true
   caching: true

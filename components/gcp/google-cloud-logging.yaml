@@ -8,6 +8,7 @@ id: "google-cloud-logging"
 kind: "monitoring"
 provider: "gcp"
 docs: "https://cloud.google.com/logging/quotas"
+aliases: ["Stackdriver Logging"]
 defaults:
   managed: true
   signal: "logs"

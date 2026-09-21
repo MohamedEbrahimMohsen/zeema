@@ -9,6 +9,7 @@ id: "azure-defender-for-cloud"
 kind: "monitoring"
 provider: "azure"
 docs: "https://learn.microsoft.com/en-us/azure/defender-for-cloud/defender-for-cloud-introduction"
+aliases: ["Azure Security Center", "ASC"]
 defaults:
   managed: true
   signal: "alerts"

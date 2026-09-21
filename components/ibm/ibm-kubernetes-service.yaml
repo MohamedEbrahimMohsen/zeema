@@ -11,6 +11,7 @@ id: "ibm-kubernetes-service"
 kind: "container-orchestrator"
 provider: "ibm"
 docs: "https://cloud.ibm.com/docs/containers"
+aliases: ["IKS"]
 defaults:
   managed: true
   rbac: true

@@ -9,6 +9,7 @@ id: "openstack-ironic"
 kind: "virtual-machine"
 provider: "openstack"
 docs: "https://docs.openstack.org/ironic/latest/"
+aliases: ["Bare Metal service"]
 defaults:
   managed: false
 properties:

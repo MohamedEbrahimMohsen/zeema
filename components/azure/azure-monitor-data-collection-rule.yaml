@@ -13,6 +13,7 @@ id: "azure-monitor-data-collection-rule"
 kind: "monitoring"
 provider: "azure"
 docs: "https://learn.microsoft.com/en-us/azure/azure-monitor/data-collection/data-collection-rule-overview"
+aliases: ["DCR"]
 defaults:
   managed: true
   signal: "all"

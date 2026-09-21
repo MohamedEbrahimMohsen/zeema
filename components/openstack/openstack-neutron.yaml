@@ -9,6 +9,7 @@ id: "openstack-neutron"
 kind: "network-fabric"
 provider: "openstack"
 docs: "https://docs.openstack.org/neutron/latest/"
+aliases: ["Networking service"]
 defaults:
   managed: false
 properties:

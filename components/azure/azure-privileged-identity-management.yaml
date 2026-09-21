@@ -10,6 +10,7 @@ id: "azure-privileged-identity-management"
 kind: "policy-engine"
 provider: "azure"
 docs: "https://learn.microsoft.com/en-us/entra/id-governance/privileged-identity-management/pim-configure"
+aliases: ["PIM"]
 defaults:
   managed: true
   effect: "modify"

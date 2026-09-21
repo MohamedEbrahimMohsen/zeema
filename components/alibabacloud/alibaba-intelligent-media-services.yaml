@@ -8,6 +8,7 @@ id: "alibaba-intelligent-media-services"
 kind: "media-transcoder"
 provider: "alibabacloud"
 docs: "https://www.alibabacloud.com/help/en/ims"
+aliases: ["IMS"]
 defaults:
   managed: true
 properties:

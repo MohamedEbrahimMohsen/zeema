@@ -7,6 +7,7 @@ id: "singlestore"
 kind: "sql-database"
 provider: "default"
 docs: "https://docs.singlestore.com/db/v9.1/user-and-cluster-administration/high-availability-and-disaster-recovery/replication-and-durability-concepts/replication/"
+aliases: ["MemSQL"]
 defaults:
   distributed: true
   sharded: true

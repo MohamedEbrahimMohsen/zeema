@@ -11,6 +11,7 @@ id: "falcon-logscale"
 kind: "monitoring"
 provider: "default"
 docs: "https://library.humio.com/"
+aliases: ["Humio"]
 defaults:
   managed: false
   signal: "logs"

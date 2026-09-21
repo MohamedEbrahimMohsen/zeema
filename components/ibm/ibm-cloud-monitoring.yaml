@@ -10,6 +10,7 @@ id: "ibm-cloud-monitoring"
 kind: "monitoring"
 provider: "ibm"
 docs: "https://cloud.ibm.com/docs/monitoring"
+aliases: ["Sysdig"]
 defaults:
   managed: true
   signal: "metrics"

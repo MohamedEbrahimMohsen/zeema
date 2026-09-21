@@ -6,6 +6,7 @@ id: "google-identity-platform"
 kind: "identity-provider"
 provider: "gcp"
 docs: "https://cloud.google.com/identity-platform/docs/concepts"
+aliases: ["GCIP"]
 defaults:
   protocol: "oidc"
   authorizationModel: "none"

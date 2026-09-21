@@ -5,6 +5,7 @@ id: "postgres"
 kind: "sql-database"
 provider: "default"
 docs: "https://www.postgresql.org/docs/current/"
+aliases: ["PostgreSQL", "PG"]
 defaults:
   managed: true
   replication: "none"

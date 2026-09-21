@@ -8,6 +8,7 @@ id: "azure-aks"
 kind: "container-orchestrator"
 provider: "azure"
 docs: "https://learn.microsoft.com/en-us/azure/aks/what-is-aks"
+aliases: ["AKS"]
 defaults:
   managed: true
   autoscaling: false

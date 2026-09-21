@@ -8,6 +8,7 @@ id: "aws-kinesis-video-streams"
 kind: "stream"
 provider: "aws"
 docs: "https://docs.aws.amazon.com/kinesisvideostreams/latest/dg/API_CreateStream.html"
+aliases: ["KVS"]
 defaults:
   managed: true
   delivery: "at-least-once"

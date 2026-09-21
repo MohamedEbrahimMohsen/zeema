@@ -6,6 +6,7 @@ id: "azure-ai-search"
 kind: "search-index"
 provider: "azure"
 docs: "https://learn.microsoft.com/en-us/azure/search/search-what-is-azure-search"
+aliases: ["Azure Cognitive Search", "Azure Search"]
 defaults:
   structure: "inverted"
   shardingStrategy: "hash"

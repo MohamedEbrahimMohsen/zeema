@@ -9,6 +9,7 @@ id: "oci-visual-builder-studio"
 kind: "ci-pipeline"
 provider: "oci"
 docs: "https://docs.oracle.com/en-us/iaas/visual-builder-studio/doc/vm-build-executors.html"
+aliases: ["VB Studio"]
 defaults:
   managed: true
 properties:

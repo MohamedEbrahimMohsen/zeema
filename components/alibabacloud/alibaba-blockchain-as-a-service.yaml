@@ -11,6 +11,7 @@ id: "alibaba-blockchain-as-a-service"
 kind: "ledger"
 provider: "alibabacloud"
 docs: "https://www.alibabacloud.com/help/en/blockchain-as-a-service/latest/architecture"
+aliases: ["BaaS"]
 defaults:
   managed: true
   appendOnly: true

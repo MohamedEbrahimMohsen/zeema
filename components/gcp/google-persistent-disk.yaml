@@ -8,6 +8,7 @@ id: "google-persistent-disk"
 kind: "block-storage"
 provider: "gcp"
 docs: "https://cloud.google.com/compute/docs/disks/persistent-disks"
+aliases: ["PD"]
 defaults:
   redundancy: "zonal"
   encryptionAtRest: true

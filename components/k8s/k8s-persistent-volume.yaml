@@ -11,6 +11,7 @@ id: "k8s-persistent-volume"
 kind: "block-storage"
 provider: "k8s"
 docs: "https://kubernetes.io/docs/concepts/storage/persistent-volumes/"
+aliases: ["pv"]
 defaults:
   managed: false
 properties:

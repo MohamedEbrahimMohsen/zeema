@@ -14,6 +14,7 @@ id: "azure-monitor-data-collection-endpoint"
 kind: "monitoring"
 provider: "azure"
 docs: "https://learn.microsoft.com/en-us/azure/azure-monitor/data-collection/data-collection-endpoint-overview"
+aliases: ["DCE"]
 defaults:
   managed: true
   signal: "all"

@@ -9,6 +9,7 @@ id: "ibm-virtual-endpoint-gateway"
 kind: "private-link"
 provider: "ibm"
 docs: "https://cloud.ibm.com/docs/vpc?topic=vpc-about-vpe"
+aliases: ["VPE"]
 defaults:
   managed: true
   privateDnsIntegration: true

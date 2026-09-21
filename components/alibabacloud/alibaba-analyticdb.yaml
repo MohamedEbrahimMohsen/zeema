@@ -10,6 +10,7 @@ id: "alibaba-analyticdb"
 kind: "data-warehouse"
 provider: "alibabacloud"
 docs: "https://www.alibabacloud.com/help/en/analyticdb/"
+aliases: ["ADB"]
 defaults:
   managed: true
   realtime: true

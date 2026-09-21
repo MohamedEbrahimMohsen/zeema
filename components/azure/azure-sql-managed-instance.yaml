@@ -8,6 +8,7 @@ id: "azure-sql-managed-instance"
 kind: "sql-database"
 provider: "azure"
 docs: "https://learn.microsoft.com/en-us/azure/azure-sql/managed-instance/sql-managed-instance-paas-overview"
+aliases: ["SQL MI"]
 defaults:
   managed: true
   replication: "none"

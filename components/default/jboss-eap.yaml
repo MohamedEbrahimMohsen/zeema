@@ -9,6 +9,7 @@ id: "jboss-eap"
 kind: "app-server"
 provider: "default"
 docs: "https://docs.redhat.com/en/documentation/red_hat_jboss_enterprise_application_platform/8.0/html-single/configuration_guide/index"
+aliases: ["EAP"]
 defaults:
   managed: false
   runtime: "jvm"

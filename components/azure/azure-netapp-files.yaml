@@ -8,6 +8,7 @@ id: "azure-netapp-files"
 kind: "file-storage"
 provider: "azure"
 docs: "https://learn.microsoft.com/en-us/azure/azure-netapp-files/azure-netapp-files-introduction"
+aliases: ["ANF"]
 defaults:
   protocol: "multi"
   managed: true

@@ -10,6 +10,7 @@ id: "oci-private-cloud-appliance"
 kind: "edge-appliance"
 provider: "oci"
 docs: "https://docs.oracle.com/en-us/iaas/private-cloud-appliance/pca/apphw-baserack.htm"
+aliases: ["PCA"]
 defaults:
   formFactor: "rack"
   cloudManaged: false

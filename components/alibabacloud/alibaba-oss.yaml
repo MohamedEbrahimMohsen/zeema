@@ -11,6 +11,7 @@ id: "alibaba-oss"
 kind: "object-store"
 provider: "alibabacloud"
 docs: "https://www.alibabacloud.com/help/en/oss/"
+aliases: ["OSS"]
 defaults:
   tier: "hot"
   strongReadAfterWrite: true

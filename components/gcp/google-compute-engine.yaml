@@ -9,6 +9,7 @@ id: "google-compute-engine"
 kind: "virtual-machine"
 provider: "gcp"
 docs: "https://cloud.google.com/compute/docs/instances"
+aliases: ["GCE"]
 defaults:
   managed: false
   diskEncryption: true

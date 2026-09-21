@@ -11,6 +11,7 @@ id: "alibaba-slb"
 kind: "load-balancer"
 provider: "alibabacloud"
 docs: "https://www.alibabacloud.com/help/en/slb/"
+aliases: ["CLB"]
 defaults:
   managed: true
   healthChecks: true

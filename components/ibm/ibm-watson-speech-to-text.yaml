@@ -10,6 +10,7 @@ id: "ibm-watson-speech-to-text"
 kind: "ai-service"
 provider: "ibm"
 docs: "https://cloud.ibm.com/docs/speech-to-text"
+aliases: ["STT"]
 defaults:
   managed: true
   modality: "speech"

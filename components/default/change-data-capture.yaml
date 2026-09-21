@@ -6,3 +6,4 @@ type: "component"
 id: "change-data-capture"
 kind: "change-data-capture"
 provider: "default"
+aliases: ["CDC"]

@@ -9,6 +9,7 @@ id: "google-sensitive-data-protection"
 kind: "monitoring"
 provider: "gcp"
 docs: "https://cloud.google.com/sensitive-data-protection/docs/sensitive-data-protection-overview"
+aliases: ["Cloud DLP", "DLP"]
 defaults:
   signal: "alerts"
   collectorMode: "pull"

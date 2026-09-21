@@ -9,6 +9,7 @@ id: "argo-cd"
 kind: "ci-pipeline"
 provider: "default"
 docs: "https://argo-cd.readthedocs.io/en/stable/user-guide/auto_sync/"
+aliases: ["ArgoCD"]
 defaults:
   trigger: "manual"
   approvalRequired: false

@@ -6,6 +6,7 @@ id: "azure-data-factory"
 kind: "worker"
 provider: "azure"
 docs: "https://learn.microsoft.com/en-us/azure/data-factory/introduction"
+aliases: ["ADF"]
 defaults:
   managed: true
   trigger: "manual"

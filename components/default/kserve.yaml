@@ -8,6 +8,7 @@ id: "kserve"
 kind: "ml-inference"
 provider: "default"
 docs: "https://github.com/kserve/kserve"
+aliases: ["KFServing"]
 defaults:
   training: "batch"
   inputs: "live"

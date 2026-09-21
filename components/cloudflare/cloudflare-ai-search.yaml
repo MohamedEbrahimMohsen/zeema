@@ -8,6 +8,7 @@ id: "cloudflare-ai-search"
 kind: "search-index"
 provider: "cloudflare"
 docs: "https://developers.cloudflare.com/ai-search/configuration/indexing/"
+aliases: ["AutoRAG"]
 defaults:
   managed: true
   structure: "vector"

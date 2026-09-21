@@ -166,6 +166,12 @@ export function componentDoc(id: string): ReferenceDoc | null {
       ? { label: "Official docs", value: c.docs, href: c.docs, external: true }
       : { label: "Official docs", value: "not recorded", muted: true },
   ];
+  // An alias the name already contains ("Amazon EC2" and "EC2") is worth having in the file and
+  // in search, and worth nothing on the page, so it is not shown twice.
+  const alsoKnown = (c.aliases ?? []).filter(
+    (a) => !(loc.name ?? id).toLowerCase().includes(a.toLowerCase()),
+  );
+  if (alsoKnown.length) facts.push({ label: "Also known as", value: alsoKnown.join(", ") });
   if (generic)
     facts.push({
       label: "Generic?",
@@ -194,6 +200,7 @@ export function componentDoc(id: string): ReferenceDoc | null {
       kind: c.kind,
       provider: c.provider,
       category,
+      aliases: c.aliases?.length ? c.aliases.join(", ") : undefined,
       docs: c.docs,
     },
     facts,

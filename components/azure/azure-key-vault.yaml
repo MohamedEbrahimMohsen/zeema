@@ -6,6 +6,7 @@ id: "azure-key-vault"
 kind: "key-management"
 provider: "azure"
 docs: "https://learn.microsoft.com/en-us/azure/key-vault/general/overview"
+aliases: ["AKV"]
 defaults:
   managed: true
   hsm: false

@@ -7,6 +7,7 @@ id: "aws-step-functions"
 kind: "workflow-engine"
 provider: "aws"
 docs: "https://docs.aws.amazon.com/step-functions/latest/dg/welcome.html"
+aliases: ["SFN"]
 defaults:
   durable: true
   pattern: "dag"

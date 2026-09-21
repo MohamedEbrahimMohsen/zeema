@@ -8,6 +8,7 @@ id: "azure-public-ip"
 kind: "network-fabric"
 provider: "azure"
 docs: "https://learn.microsoft.com/en-us/azure/virtual-network/ip-services/public-ip-addresses"
+aliases: ["PIP"]
 defaults:
   managed: true
   interconnect: "public"

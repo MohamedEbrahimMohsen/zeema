@@ -8,6 +8,7 @@ id: "trino"
 kind: "data-warehouse"
 provider: "default"
 docs: "https://trino.io/docs/current/overview.html"
+aliases: ["PrestoSQL"]
 defaults:
   realtime: false
   upsert: false

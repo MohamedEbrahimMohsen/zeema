@@ -9,6 +9,7 @@ id: "openstack-watcher"
 kind: "monitoring"
 provider: "openstack"
 docs: "https://docs.openstack.org/watcher/latest/"
+aliases: ["Resource Optimization service"]
 defaults:
   signal: "metrics"
   managed: false

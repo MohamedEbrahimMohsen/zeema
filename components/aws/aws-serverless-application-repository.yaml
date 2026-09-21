@@ -9,6 +9,7 @@ id: "aws-serverless-application-repository"
 kind: "artifact-repository"
 provider: "aws"
 docs: "https://docs.aws.amazon.com/serverlessrepo/latest/devguide/what-is-serverlessrepo.html"
+aliases: ["SAR"]
 defaults:
   managed: true
   artifactType: "package"

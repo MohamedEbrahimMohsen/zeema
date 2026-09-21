@@ -6,6 +6,7 @@ id: "opentelemetry-collector"
 kind: "monitoring"
 provider: "default"
 docs: "https://opentelemetry.io/docs/collector/"
+aliases: ["OTel Collector", "OTel"]
 defaults:
   signal: "all"
   collectorMode: "push"

@@ -10,6 +10,7 @@ id: "aws-classic-load-balancer"
 kind: "load-balancer"
 provider: "aws"
 docs: "https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/introduction.html"
+aliases: ["CLB", "ELB"]
 defaults:
   managed: true
   layer: "l7"

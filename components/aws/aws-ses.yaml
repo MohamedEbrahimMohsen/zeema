@@ -9,6 +9,7 @@ id: "aws-ses"
 kind: "notification-service"
 provider: "aws"
 docs: "https://docs.aws.amazon.com/ses/latest/dg/Welcome.html"
+aliases: ["SES"]
 defaults:
   managed: true
   channelEmail: true

@@ -6,6 +6,7 @@ id: "azure-virtual-wan"
 kind: "network-fabric"
 provider: "azure"
 docs: "https://learn.microsoft.com/en-us/azure/virtual-wan/virtual-wan-about"
+aliases: ["vWAN"]
 defaults:
   managed: true
   interconnect: "cloud-backbone"

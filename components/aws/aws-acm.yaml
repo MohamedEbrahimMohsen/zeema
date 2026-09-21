@@ -10,6 +10,7 @@ id: "aws-acm"
 kind: "key-management"
 provider: "aws"
 docs: "https://docs.aws.amazon.com/acm/latest/userguide/acm-concepts.html"
+aliases: ["ACM"]
 defaults:
   managed: true
   hsm: false

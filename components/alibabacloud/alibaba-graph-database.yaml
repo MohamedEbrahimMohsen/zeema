@@ -9,6 +9,7 @@ id: "alibaba-graph-database"
 kind: "graph-database"
 provider: "alibabacloud"
 docs: "https://help.aliyun.com/en/gdb/product-overview/"
+aliases: ["GDB"]
 defaults:
   managed: true
   inMemory: false

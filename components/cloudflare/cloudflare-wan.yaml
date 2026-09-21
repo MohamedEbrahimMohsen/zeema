@@ -8,6 +8,7 @@ id: "cloudflare-wan"
 kind: "network-fabric"
 provider: "cloudflare"
 docs: "https://developers.cloudflare.com/cloudflare-wan/"
+aliases: ["Magic WAN"]
 defaults:
   managed: true
   overlay: true

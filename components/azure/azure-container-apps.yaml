@@ -8,6 +8,7 @@ id: "azure-container-apps"
 kind: "app-server"
 provider: "azure"
 docs: "https://learn.microsoft.com/en-us/azure/container-apps/overview"
+aliases: ["ACA"]
 defaults:
   managed: true
   stateless: true

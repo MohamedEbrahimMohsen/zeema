@@ -8,6 +8,7 @@ id: "weights-and-biases"
 kind: "ml-platform"
 provider: "default"
 docs: "https://docs.wandb.ai/guides/hosting/"
+aliases: ["W&B", "wandb"]
 defaults:
   experimentTracking: true
   modelRegistry: true

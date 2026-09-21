@@ -11,6 +11,7 @@ id: "alibaba-cloud-call-center"
 kind: "contact-center"
 provider: "alibabacloud"
 docs: "https://www.alibabacloud.com/product/cloud-call-center"
+aliases: ["CCC"]
 defaults:
   managed: true
   channelVoice: true

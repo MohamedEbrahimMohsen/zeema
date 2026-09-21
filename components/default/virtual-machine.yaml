@@ -6,3 +6,4 @@ type: "component"
 id: "virtual-machine"
 kind: "virtual-machine"
 provider: "default"
+aliases: ["VM"]

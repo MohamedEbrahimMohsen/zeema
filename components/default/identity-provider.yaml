@@ -6,3 +6,4 @@ type: "component"
 id: "identity-provider"
 kind: "identity-provider"
 provider: "default"
+aliases: ["IdP"]

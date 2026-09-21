@@ -8,6 +8,7 @@ id: "aws-vpc-endpoint"
 kind: "private-link"
 provider: "aws"
 docs: "https://docs.aws.amazon.com/vpc/latest/privatelink/privatelink-access-aws-services.html"
+aliases: ["VPCE"]
 defaults:
   managed: true
   approvalRequired: false

@@ -8,6 +8,7 @@ id: "azure-container-instances"
 kind: "app-server"
 provider: "azure"
 docs: "https://learn.microsoft.com/en-us/azure/container-instances/container-instances-overview"
+aliases: ["ACI"]
 defaults:
   managed: true
   stateless: true

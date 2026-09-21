@@ -10,6 +10,7 @@ id: "oci-content-management"
 kind: "content-repository"
 provider: "oci"
 docs: "https://docs.oracle.com/en/cloud/paas/content-cloud/administer/configure-assets-settings.html"
+aliases: ["Oracle Content and Experience"]
 defaults:
   managed: true
   deliveryMode: "hybrid"

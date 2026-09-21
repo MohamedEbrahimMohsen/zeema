@@ -12,6 +12,7 @@ id: "ibm-cloud-object-storage"
 kind: "object-store"
 provider: "ibm"
 docs: "https://cloud.ibm.com/docs/cloud-object-storage"
+aliases: ["COS"]
 defaults:
   managed: true
   encryptionAtRest: true

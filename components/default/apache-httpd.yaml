@@ -8,6 +8,7 @@ id: "apache-httpd"
 kind: "load-balancer"
 provider: "default"
 docs: "https://httpd.apache.org/docs/current/mod/mod_proxy.html"
+aliases: ["Apache", "httpd"]
 defaults:
   layer: "l7"
   managed: false

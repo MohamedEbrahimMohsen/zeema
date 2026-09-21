@@ -9,6 +9,7 @@ id: "openstack-freezer"
 kind: "backup-service"
 provider: "openstack"
 docs: "https://docs.openstack.org/freezer/latest/"
+aliases: ["Backup, Restore and DR service"]
 defaults:
   managed: false
 properties:

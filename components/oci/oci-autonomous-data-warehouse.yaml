@@ -8,6 +8,7 @@ id: "oci-autonomous-data-warehouse"
 kind: "data-warehouse"
 provider: "oci"
 docs: "https://docs.oracle.com/en/cloud/paas/autonomous-database/serverless/adbsb/autonomous-provision.html"
+aliases: ["ADW"]
 defaults:
   managed: true
   format: "columnar"

@@ -9,6 +9,7 @@ id: "ibm-api-connect"
 kind: "api-gateway"
 provider: "ibm"
 docs: "https://cloud.ibm.com/docs/apiconnect?topic=apiconnect-getting-started"
+aliases: ["APIC"]
 defaults:
   managed: true
   protocol: "http"

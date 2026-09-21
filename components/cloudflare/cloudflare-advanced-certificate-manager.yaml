@@ -8,6 +8,7 @@ id: "cloudflare-advanced-certificate-manager"
 kind: "key-management"
 provider: "cloudflare"
 docs: "https://developers.cloudflare.com/ssl/edge-certificates/advanced-certificate-manager/"
+aliases: ["ACM"]
 defaults:
   managed: true
   rotationAutomated: true

@@ -33,6 +33,18 @@
       "format": "uri",
       "pattern": "^https?://"
     },
+    "aliases": {
+      "description": "Other names the vendor's own documentation uses for this product: abbreviations (DCR) and product nicknames (S3). Searched alongside the id and the name; never invented here.",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 40
+      }
+    },
     "defaults": {
       "description": "Overrides of the kind property defaults. Keys must exist on the kind.",
       "type": "object",

@@ -10,6 +10,7 @@ id: "alibaba-e-mapreduce"
 kind: "big-data-cluster"
 provider: "alibabacloud"
 docs: "https://www.alibabacloud.com/help/en/emr/"
+aliases: ["EMR"]
 defaults:
   managed: false
 properties:

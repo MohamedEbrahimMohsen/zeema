@@ -9,6 +9,7 @@ id: "cloudflare-browser-isolation"
 kind: "virtual-desktop"
 provider: "cloudflare"
 docs: "https://developers.cloudflare.com/cloudflare-one/remote-browser-isolation/isolation-policies/"
+aliases: ["RBI"]
 defaults:
   managed: true
   persistentProfiles: false

@@ -112,6 +112,9 @@ export function loadCatalogue(rootArg) {
       kind: doc.kind,
       provider: doc.provider,
       ...(doc.docs ? { docs: doc.docs } : {}),
+      // Kept in file order: an alias list reads as the vendor writes it (DCR before "rule"),
+      // and `sorted` leaves arrays alone on purpose.
+      ...(doc.aliases?.length ? { aliases: doc.aliases } : {}),
       defaults: sorted(doc.defaults ?? {}),
       properties: sorted(doc.properties ?? {}),
     };
@@ -177,7 +180,10 @@ export function toBundle(cat) {
   return { kinds, components, rules, locale, schema };
 }
 
-/** One search row per component: [id, name, kind, category, provider, haystack]. */
+/**
+ * One search row per component: [id, name, kind, category, provider, haystack].
+ * The haystack carries the aliases too, so "dcr" finds the data collection rule.
+ */
 export function searchRows(cat) {
   return Object.keys(cat.components)
     .sort()
@@ -187,7 +193,18 @@ export function searchRows(cat) {
       const name = text.name ?? "";
       const description = text.description ?? "";
       const category = cat.kinds[c.kind] ? cat.kinds[c.kind].category : "";
-      return [id, name, c.kind, category, c.provider, `${id} ${name} ${description}`.toLowerCase()];
+      // Aliases ride in the haystack (so they match) and again in their own field (so the
+      // palette can score a "dcr" prefix as heavily as it scores a name).
+      const aliases = (c.aliases ?? []).join(" ").toLowerCase();
+      return [
+        id,
+        name,
+        c.kind,
+        category,
+        c.provider,
+        `${id} ${name} ${description} ${aliases}`.trim().toLowerCase(),
+        aliases,
+      ];
     });
 }
 

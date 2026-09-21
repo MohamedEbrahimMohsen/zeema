@@ -9,6 +9,7 @@ id: "openstack-cinder"
 kind: "block-storage"
 provider: "openstack"
 docs: "https://docs.openstack.org/cinder/latest/"
+aliases: ["Block Storage service"]
 defaults:
   encryptionAtRest: false
   snapshots: true

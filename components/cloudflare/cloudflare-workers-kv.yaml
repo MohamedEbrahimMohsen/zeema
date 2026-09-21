@@ -8,6 +8,7 @@ id: "cloudflare-workers-kv"
 kind: "nosql-database"
 provider: "cloudflare"
 docs: "https://developers.cloudflare.com/kv/concepts/how-kv-works/"
+aliases: ["KV"]
 defaults:
   managed: true
   model: "key-value"

@@ -8,6 +8,7 @@ id: "ibm-netezza"
 kind: "data-warehouse"
 provider: "ibm"
 docs: "https://cloud.ibm.com/docs/netezza"
+aliases: ["NPS"]
 defaults:
   managed: true
   format: "columnar"

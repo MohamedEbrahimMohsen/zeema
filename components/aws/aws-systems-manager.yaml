@@ -8,6 +8,7 @@ id: "aws-systems-manager"
 kind: "worker"
 provider: "aws"
 docs: "https://docs.aws.amazon.com/systems-manager/latest/userguide/what-is-systems-manager.html"
+aliases: ["SSM"]
 defaults:
   trigger: "manual"
   managed: true

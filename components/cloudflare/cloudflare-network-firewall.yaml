@@ -8,6 +8,7 @@ id: "cloudflare-network-firewall"
 kind: "firewall"
 provider: "cloudflare"
 docs: "https://developers.cloudflare.com/cloudflare-network-firewall/about/ruleset-logic/"
+aliases: ["Magic Firewall"]
 defaults:
   managed: true
   defaultAction: "allow"

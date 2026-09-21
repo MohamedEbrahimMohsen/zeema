@@ -6,6 +6,7 @@ id: "sql-server"
 kind: "sql-database"
 provider: "default"
 docs: "https://learn.microsoft.com/en-us/sql/sql-server/"
+aliases: ["MSSQL"]
 defaults:
   replication: "none"
   concurrencyControl: "pessimistic"

@@ -8,6 +8,7 @@ id: "alibaba-wuying-workspace"
 kind: "virtual-desktop"
 provider: "alibabacloud"
 docs: "https://www.alibabacloud.com/help/en/wuying-workspace/product-overview/what-is-wuying-workspace"
+aliases: ["Elastic Desktop Service", "EDS"]
 defaults:
   managed: true
 properties:

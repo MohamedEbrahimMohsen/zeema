@@ -9,6 +9,7 @@ id: "google-distributed-cloud-vmware"
 kind: "container-orchestrator"
 provider: "gcp"
 docs: "https://docs.cloud.google.com/kubernetes-engine/distributed-cloud/vmware/docs/overview"
+aliases: ["Anthos clusters on VMware", "GKE on-prem"]
 defaults:
   privateControlPlane: true
   autoscaling: false

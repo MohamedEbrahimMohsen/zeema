@@ -8,6 +8,7 @@ id: "azure-analysis-services"
 kind: "data-warehouse"
 provider: "azure"
 docs: "https://learn.microsoft.com/en-us/azure/analysis-services/analysis-services-overview"
+aliases: ["AAS"]
 defaults:
   realtime: false
   upsert: false

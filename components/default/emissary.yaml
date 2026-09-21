@@ -8,6 +8,7 @@ id: "emissary"
 kind: "api-gateway"
 provider: "default"
 docs: "https://emissary-ingress.dev/docs/"
+aliases: ["Ambassador"]
 defaults:
   managed: false
   rateLimiting: false

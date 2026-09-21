@@ -9,6 +9,7 @@ id: "google-infrastructure-manager"
 kind: "ci-pipeline"
 provider: "gcp"
 docs: "https://cloud.google.com/infrastructure-manager/docs/overview"
+aliases: ["Infra Manager"]
 defaults:
   managed: true
   trigger: "manual"

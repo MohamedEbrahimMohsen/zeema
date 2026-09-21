@@ -9,6 +9,7 @@ id: "oci-exadata-database-exascale"
 kind: "sql-database"
 provider: "oci"
 docs: "https://docs.oracle.com/en-us/iaas/exadb-xs/doc/overview-exadb-xs-service.html"
+aliases: ["ExaDB-XS"]
 defaults:
   managed: true
   multiWriter: true

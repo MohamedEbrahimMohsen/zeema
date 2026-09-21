@@ -64,6 +64,8 @@ Acceptance criteria:
 - Every component-specific property is justified in the pull request by either a rule
   that will read it or a renderer that will show it. "Might be useful later" is not a
   justification.
+- `aliases` carries only abbreviations and nicknames the vendor's own documentation uses
+  (`DCR`, `ADX`, `Kusto`); an alias nobody but us would type is an invention and is refused.
 - `locales/en.yaml` has `name` and `description` entries for it.
 - The pull request either ships `icons/components/<provider>/<id>.svg` or relies deliberately on the
   component's kind glyph, which is the right picture for a generic component. A component

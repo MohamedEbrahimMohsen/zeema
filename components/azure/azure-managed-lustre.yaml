@@ -9,6 +9,7 @@ id: "azure-managed-lustre"
 kind: "file-storage"
 provider: "azure"
 docs: "https://learn.microsoft.com/en-us/azure/azure-managed-lustre/amlfs-overview"
+aliases: ["AMLFS"]
 defaults:
   protocol: "lustre"
   redundancy: "local"

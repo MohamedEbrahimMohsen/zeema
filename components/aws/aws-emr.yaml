@@ -9,6 +9,7 @@ id: "aws-emr"
 kind: "big-data-cluster"
 provider: "aws"
 docs: "https://docs.aws.amazon.com/emr/latest/ManagementGuide/emr-plan-ha.html"
+aliases: ["EMR"]
 defaults:
   managed: true
   autoscaling: false

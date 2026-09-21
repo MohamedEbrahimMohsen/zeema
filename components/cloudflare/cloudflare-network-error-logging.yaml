@@ -8,6 +8,7 @@ id: "cloudflare-network-error-logging"
 kind: "monitoring"
 provider: "cloudflare"
 docs: "https://developers.cloudflare.com/network-error-logging/"
+aliases: ["NEL"]
 defaults:
   managed: true
   signal: "logs"

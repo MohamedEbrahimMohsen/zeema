@@ -8,6 +8,7 @@ id: "matomo"
 kind: "bi-service"
 provider: "default"
 docs: "https://matomo.org/faq/on-premise/"
+aliases: ["Piwik"]
 defaults:
   managed: false
 properties:

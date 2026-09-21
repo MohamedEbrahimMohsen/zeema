@@ -8,6 +8,7 @@ id: "ibm-security-compliance-center"
 kind: "policy-engine"
 provider: "ibm"
 docs: "https://cloud.ibm.com/docs/security-compliance"
+aliases: ["SCC"]
 defaults:
   managed: true
   effect: "audit"

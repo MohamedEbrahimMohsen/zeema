@@ -8,6 +8,7 @@ id: "cloudflare-tunnel"
 kind: "private-link"
 provider: "cloudflare"
 docs: "https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/"
+aliases: ["Argo Tunnel"]
 defaults:
   managed: true
   publicAccessDisabled: true

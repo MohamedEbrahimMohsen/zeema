@@ -9,6 +9,7 @@ id: "azure-managed-grafana"
 kind: "monitoring"
 provider: "azure"
 docs: "https://learn.microsoft.com/en-us/azure/managed-grafana/overview"
+aliases: ["AMG"]
 defaults:
   managed: true
   signal: "all"

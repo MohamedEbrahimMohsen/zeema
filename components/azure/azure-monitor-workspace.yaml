@@ -11,6 +11,7 @@ id: "azure-monitor-workspace"
 kind: "timeseries-database"
 provider: "azure"
 docs: "https://learn.microsoft.com/en-us/azure/azure-monitor/metrics/azure-monitor-workspace-overview"
+aliases: ["AMW"]
 defaults:
   managed: true
   tiers: "single"
