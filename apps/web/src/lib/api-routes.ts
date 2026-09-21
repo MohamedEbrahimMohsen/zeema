@@ -70,7 +70,8 @@ export const API_ROUTES: ApiRoute[] = [
     method: "POST",
     path: "/api/v1/designs/{owner}/{slug}/discard-draft",
     auth: "owner",
-    summary: "Throw the draft away: the release becomes the head again, history untouched.",
+    summary:
+      "Throw the draft away: the release becomes the head again and the versions since it are deleted.",
   },
   {
     method: "POST",

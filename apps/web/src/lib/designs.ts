@@ -43,6 +43,12 @@ export type DesignView = {
   published: { id: string; contentHash: string; createdAt: Date; publishedAt: Date | null } | null;
   /** The head differs from the release (writers only; always false for readers). */
   unpublished: boolean;
+  /**
+   * How many versions discarding the draft would delete: every unreleased version saved after
+   * the release. Zero for readers and for a design whose head is its release. The confirmation
+   * says the number out loud, because discarding is not undoable any more.
+   */
+  draftVersionCount: number;
   stats: { viewCount: number; cloneCount: number; exportCount: number };
   can: { read: boolean; write: boolean; clone: boolean; publish: boolean };
 };
@@ -140,6 +146,22 @@ export async function resolveAlias(owner: string, slug: string): Promise<string 
   return hit.design.slug;
 }
 
+/**
+ * The versions a discard throws away: everything saved after the release that was never released
+ * itself. The release and every version before it are not touched, and neither is a broken twin.
+ * One predicate serves both the count the page shows and the delete the service performs, so the
+ * number in the confirmation is the number of rows that go.
+ */
+function abandonedSince(designId: string, release: { id: string; createdAt: Date }) {
+  return and(
+    eq(schema.designVersions.designId, designId),
+    eq(schema.designVersions.broken, false),
+    isNull(schema.designVersions.publishedAt),
+    sql`${schema.designVersions.id} <> ${release.id}`,
+    sql`${schema.designVersions.createdAt} > ${release.createdAt}`,
+  );
+}
+
 /** A design by address, or a 404 for anything the viewer may not see (private designs never 403). */
 export async function getDesign(
   owner: string,
@@ -179,6 +201,15 @@ export async function getDesign(
         publishedAt: publishedRow.publishedAt,
       }
     : null;
+  const draftVersionCount =
+    write && publishedRow && design.currentVersionId !== design.publishedVersionId
+      ? (
+          await db
+            .select({ id: schema.designVersions.id })
+            .from(schema.designVersions)
+            .where(abandonedSince(design.id, publishedRow))
+        ).length
+      : 0;
   const statsRows = await db
     .select()
     .from(schema.designStats)
@@ -197,6 +228,7 @@ export async function getDesign(
     version,
     published,
     unpublished: write && design.currentVersionId !== design.publishedVersionId,
+    draftVersionCount,
     stats: {
       viewCount: s?.viewCount ?? 0,
       cloneCount: s?.cloneCount ?? 0,
@@ -723,9 +755,12 @@ export async function publishDesign(
 /**
  * Throw the draft away and make the release the head again.
  *
- * Nothing is deleted: the draft's versions stay in the history, which is both what makes the
- * discarded work recoverable and what the interface promises. Only the pointer moves, so the
- * canvas, the page and every reader see the release from here on.
+ * The head moves back to the release first, and then the abandoned work is deleted: every
+ * unreleased version saved after the release goes, rows and layout sidecars with them (the
+ * sidecar lives on the version row, so there is nothing else to clean up, and no other table
+ * points at a version id — events and stats hang off the design). The release and everything
+ * before it stay, so the history a reader can see is untouched. This is not undoable, which is
+ * why the confirmation says how many versions it is about to take.
  */
 export async function discardDraft(owner: string, slug: string, viewer: Viewer) {
   const db = await getDb();
@@ -739,8 +774,16 @@ export async function discardDraft(owner: string, slug: string, viewer: Viewer) 
     .update(schema.designs)
     .set({ currentVersionId: release, updatedAt: new Date() })
     .where(eq(schema.designs.id, view.design.id));
+  // The pointer moves first: if the delete failed halfway, the design is still on its release
+  // rather than pointing at a row that is no longer there.
+  const deleted = view.published
+    ? await db
+        .delete(schema.designVersions)
+        .where(abandonedSince(view.design.id, view.published))
+        .returning()
+    : [];
   countWrite("discard");
-  return getDesign(owner, slug, viewer);
+  return { ...(await getDesign(owner, slug, viewer)), deletedVersionCount: deleted.length };
 }
 
 export type PatchInput = {

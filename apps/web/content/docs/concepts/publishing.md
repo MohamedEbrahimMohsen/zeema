@@ -79,6 +79,11 @@ version is never rewritten.
 sees every save, marked `released` or `draft`. A `?v=<id>` link to an unreleased version answers
 not-found to a reader.
 
+**Discarding a draft.** *Discard draft* on a published design puts the head back on the release
+and then deletes the work in between: every unreleased version saved after the release goes, with
+its layout. The release and everything before it stay, so the public history is untouched. The
+confirmation says how many versions it is about to take, because nothing brings them back.
+
 Saving requires the content hash you last saw. A mismatch is a `409` carrying `currentHash`, and
 nothing is merged for you — see [the API](/docs/api#saving-and-conflicts).
 

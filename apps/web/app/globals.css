@@ -1747,7 +1747,7 @@ kbd.key {
   /* room for the toolbar, which floats over the right of this row */
   padding-right: 160px;
 }
-/* Only the YAML head opens something, so only it takes the pointer. */
+/* A head that folds a section is a <summary>, so it takes the pointer; a plain head does not. */
 summary.doc-head {
   cursor: pointer;
 }

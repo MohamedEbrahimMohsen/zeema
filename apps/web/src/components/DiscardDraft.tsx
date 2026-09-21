@@ -1,8 +1,8 @@
 "use client";
 
-// Going back to the release. The owner's draft is thrown away as the design's head, but not as
-// history: every version stays in the list, so the discarded work is one click away for as long
-// as the design exists. The confirmation says so, because "discard" reads like "delete".
+// Going back to the release. The draft is thrown away for good: the head moves back and the
+// versions saved since the release are deleted. The confirmation says how many, and that it
+// cannot be undone, because by the time someone reads it the work is one click from gone.
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Undo } from "@/components/Glyphs";
@@ -12,9 +12,11 @@ type Props = {
   slug: string;
   /** When the release the draft would go back to was published, already formatted. */
   releasedAt: string;
+  /** How many versions the discard deletes; counted server-side by the design service. */
+  draftVersionCount: number;
 };
 
-export function DiscardDraft({ owner, slug, releasedAt }: Props) {
+export function DiscardDraft({ owner, slug, releasedAt, draftVersionCount }: Props) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,8 +26,8 @@ export function DiscardDraft({ owner, slug, releasedAt }: Props) {
     if (
       !confirm(
         `Discard the draft and go back to the released version from ${releasedAt}? ` +
-          "The draft's versions stay in History, but the canvas and readers of your draft will " +
-          "see the release.",
+          `The ${draftVersionCount} draft version${draftVersionCount === 1 ? "" : "s"} since ` +
+          "then will be deleted. This cannot be undone.",
       )
     )
       return;

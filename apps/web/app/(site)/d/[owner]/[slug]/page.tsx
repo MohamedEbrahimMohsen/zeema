@@ -264,6 +264,7 @@ export default async function DesignPage({
                     releasedAt={when(
                       view.published?.publishedAt ?? view.published?.createdAt ?? new Date(),
                     )}
+                    draftVersionCount={view.draftVersionCount}
                   />
                 ) : null
               }

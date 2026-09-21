@@ -9,7 +9,7 @@
 // it (private mode, blocked site data) simply gets the default every time. The first paint
 // always uses the default, so the server's markup and the client's agree; the stored choice is
 // applied once the component is mounted.
-import { type ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 
 const keyFor = (name: string) => `zeema-section-${name}`;
 
@@ -25,6 +25,11 @@ type Props = {
   aside?: ReactNode;
   /** The icon toolbar, floated over the right of the head. */
   actions?: ReactNode;
+  /**
+   * Bumped by the owner of a toolbar action that needs the body on screen — editing the README
+   * from a folded About. Any change opens the section and remembers it, exactly as a click does.
+   */
+  openSeq?: number;
   children: ReactNode;
 };
 
@@ -35,6 +40,7 @@ export function CollapsibleSection({
   defaultOpen = false,
   aside,
   actions,
+  openSeq,
   children,
 }: Props) {
   const [open, setOpen] = useState(defaultOpen);
@@ -51,6 +57,16 @@ export function CollapsibleSection({
       window.localStorage.setItem(keyFor(name), next ? "open" : "closed");
     } catch {}
   };
+
+  // Deliberately not `remember`: being shown the body because an action needed it is not the
+  // same as choosing to keep the section open, and the stored choice stands.
+  // The value it was mounted with means nothing; only a change to it asks for the body.
+  const seen = useRef(openSeq);
+  useEffect(() => {
+    if (openSeq === undefined || openSeq === seen.current) return;
+    seen.current = openSeq;
+    setOpen(true);
+  }, [openSeq]);
 
   return (
     <section className="panel doc-section">

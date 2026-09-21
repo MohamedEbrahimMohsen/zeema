@@ -200,7 +200,7 @@ describe("discarding a draft", () => {
     return { user, slug: made.design.slug, release: released.version.id, view };
   };
 
-  it("puts the head back on the release and leaves the versions in the history", async () => {
+  it("puts the head back on the release and deletes the versions saved since it", async () => {
     const { discardDraft, listVersions, getDesign } = await lib();
     const { user, slug, release, view } = await withDraft("nina");
     expect(view.design.currentVersionId).not.toBe(release);
@@ -210,9 +210,68 @@ describe("discarding a draft", () => {
     expect(after.design.currentVersionId).toBe(release);
     expect(after.design.publishedVersionId).toBe(release);
     expect(after.unpublished).toBe(false);
-    // Nothing was deleted: the discarded version is still there to go back to.
-    expect((await listVersions(after)).length).toBe(before);
+    expect(after.deletedVersionCount).toBe(1);
+    // The draft row is gone; the release is still the whole history.
+    const left = await listVersions(after);
+    expect(left.length).toBe(before - 1);
+    expect(left.map((v) => v.id)).toEqual([release]);
     expect((await getDesign("nina", slug, user as never)).version?.id).toBe(release);
+  });
+
+  it("keeps everything up to the release and takes everything after it", async () => {
+    const { createDesign, publishDesign, saveVersion, discardDraft, listVersions } = await lib();
+    const user = await makeUser("sami");
+    const made = await createDesign(user as never, { title: "Layers", yaml: YAML });
+    const first = made.version;
+    // A second save, released: now there are two versions and the release is the later one.
+    const second = await saveVersion("sami", made.design.slug, user as never, {
+      yaml: YAML2,
+      message: "second",
+      ifMatch: first.contentHash,
+    });
+    const released = await publishDesign("sami", made.design.slug, user as never);
+    expect(released.version.id).toBe(second.version.id);
+    // Two more drafts on top, each with its own message so neither folds into the head.
+    const third = await saveVersion("sami", made.design.slug, user as never, {
+      yaml: YAML.replace('"svc"', '"svc3"'),
+      message: "third",
+      ifMatch: second.version.contentHash,
+    });
+    const fourth = await saveVersion("sami", made.design.slug, user as never, {
+      yaml: YAML.replace('"svc"', '"svc4"'),
+      message: "fourth",
+      ifMatch: third.version.contentHash,
+    });
+    expect(fourth.version.id).not.toBe(third.version.id);
+
+    const after = await discardDraft("sami", made.design.slug, user as never);
+    expect(after.deletedVersionCount).toBe(2);
+    expect(after.design.currentVersionId).toBe(released.version.id);
+    const ids = (await listVersions(after)).map((v) => v.id).sort();
+    expect(ids).toEqual([first.id, second.version.id].sort());
+  });
+
+  it("counts in the view exactly what the discard deletes", async () => {
+    const { createDesign, publishDesign, saveVersion, discardDraft, getDesign } = await lib();
+    const user = await makeUser("tess");
+    const made = await createDesign(user as never, { title: "Counted", yaml: YAML });
+    const released = await publishDesign("tess", made.design.slug, user as never);
+    // Before any draft, there is nothing to discard and nothing to warn about.
+    expect((await getDesign("tess", made.design.slug, user as never)).draftVersionCount).toBe(0);
+    let hash = released.version.contentHash;
+    for (const [i, id] of ["a", "b", "c"].entries()) {
+      const saved = await saveVersion("tess", made.design.slug, user as never, {
+        yaml: YAML.replace('"svc"', `"svc-${id}"`),
+        message: `draft ${i}`,
+        ifMatch: hash,
+      });
+      hash = saved.version.contentHash;
+    }
+    const view = await getDesign("tess", made.design.slug, user as never);
+    expect(view.draftVersionCount).toBe(3);
+    const after = await discardDraft("tess", made.design.slug, user as never);
+    expect(after.deletedVersionCount).toBe(view.draftVersionCount);
+    expect(after.draftVersionCount).toBe(0);
   });
 
   it("refuses a design that was never published", async () => {
