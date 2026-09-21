@@ -3,6 +3,7 @@
 // component's icon and coloured by the category of their kind, groups are dashed containers,
 // edges are arrows, solid for sync and dashed for async.
 
+import { drawnLayout } from "./drawn.js";
 import { layout } from "./layout.js";
 
 const CATEGORY_HUE = {
@@ -47,12 +48,26 @@ const f1 = (n) => Number(n).toFixed(1);
  * @param {object} doc          the design
  * @param {object} catalogue    { kinds, components }
  * @param {object} [options]    { icons: { [componentId]: innerSvg }, positions, sizes, bows,
- *                                theme: "auto" | "light" | "dark" }
+ *                                theme: "auto" | "light" | "dark",
+ *                                layout: a saved layout sidecar — { nodes, edges } — which makes
+ *                                the picture the one that was drawn rather than an arrangement
+ *                                of it. Notes are canvas furniture and are never drawn here. }
  */
 export function toSvg(doc, catalogue, options = {}) {
   const icons = options.icons ?? {};
-  const lay = layout(doc, catalogue);
+  // A sidecar with no positions in it says nothing, so it falls back to the automatic layout
+  // rather than pinning a whole design at the origin.
+  const drawn =
+    options.layout &&
+    typeof options.layout === "object" &&
+    options.layout.nodes &&
+    Object.keys(options.layout.nodes).length > 0;
+  const lay = drawn ? drawnLayout(doc, catalogue, options.layout) : layout(doc, catalogue);
   const [w, h] = lay.canvas;
+  const [ox, oy] = lay.origin ?? [0, 0];
+  // The drawing keeps its own coordinates: the viewBox moves to them instead of the boxes moving
+  // to the viewBox, so what the sidecar holds is what the file says.
+  const at = ox || oy ? `x="${ox}" y="${oy}" ` : "";
   const kinds = catalogue?.kinds ?? {};
   const comps = catalogue?.components ?? {};
   const theme = options.theme ?? "auto";
@@ -78,12 +93,12 @@ export function toSvg(doc, catalogue, options = {}) {
     "stroke:var(--bg);stroke-width:3px}.ic{color:var(--ink)}";
 
   const out = [
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif">`,
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${ox} ${oy} ${w} ${h}" width="${w}" height="${h}" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif">`,
     `<title>${escapeXml(doc.id ?? "design")}</title>`,
     `<style>${style}</style>`,
     '<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">' +
       '<path d="M1 1L9 5L1 9" fill="none" stroke="var(--line)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>',
-    `<rect width="${w}" height="${h}" fill="var(--bg)"/>`,
+    `<rect ${at}width="${w}" height="${h}" fill="var(--bg)"/>`,
   ];
   for (const g of doc.groups ?? []) {
     const f = lay.frames[g.id];

@@ -248,7 +248,9 @@ export function installHttpMetrics() {
 }
 
 /** Domain counters. Called from the service layer; never throws into a request path. */
-export const countWrite = (kind: "save" | "publish" | "clone" | "create" | "delete") => {
+export const countWrite = (
+  kind: "save" | "publish" | "clone" | "create" | "delete" | "discard",
+) => {
   try {
     metrics().saves.inc({ kind });
   } catch {}

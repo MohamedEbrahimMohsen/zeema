@@ -6,6 +6,7 @@ import type { NextRequest } from "next/server";
 import { handle, viewerOf } from "@/lib/api";
 import { getCatalogue, getIcons } from "@/lib/catalogue";
 import { getDesign } from "@/lib/designs";
+import { readSidecar } from "@/lib/layout-sidecar";
 
 export async function GET(
   req: NextRequest,
@@ -22,9 +23,12 @@ export async function GET(
       return new Response(`${toMermaid(doc)}\n`, {
         headers: { "content-type": "text/plain; charset=utf-8" },
       });
+    // What you download is what the page shows: the drawing as its owner left it on the canvas,
+    // and the engine's own arrangement only when nobody has drawn one.
     const svg = toSvg(doc, getCatalogue(), {
       icons: getIcons(),
       theme: (p.get("theme") as "auto" | "light" | "dark") ?? "light",
+      layout: readSidecar(view.version?.layout),
     });
     const download = p.get("download")
       ? `attachment; filename="${view.design.slug}.svg"`

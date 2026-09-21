@@ -1,3 +1,4 @@
+import { CollapsibleSection } from "@/components/CollapsibleSection";
 import type { Finding } from "@/lib/lint";
 
 export function Tally({ findings }: { findings: Finding[] }) {
@@ -46,25 +47,43 @@ export function FindingRow({
 export function Findings({
   findings,
   title = "Findings",
+  collapsible = false,
 }: {
   findings: Finding[];
   title?: string;
+  /** Fold into a `.doc-section`, open by default when something worse than info was found. */
+  collapsible?: boolean;
 }) {
+  const body =
+    findings.length === 0 ? (
+      <p className="small muted">No findings. Every rule is satisfied.</p>
+    ) : (
+      <div className="flex flex-col gap-3">
+        {findings.map((f, i) => (
+          <FindingRow key={`${f.id}-${i}`} f={f} />
+        ))}
+      </div>
+    );
+  if (collapsible)
+    return (
+      <CollapsibleSection
+        name="findings"
+        title={title}
+        count={findings.length}
+        // Something to act on opens the panel; a clean design, or notes only, stays folded.
+        defaultOpen={findings.some((f) => f.severity !== "info")}
+        aside={<Tally findings={findings} />}
+      >
+        {body}
+      </CollapsibleSection>
+    );
   return (
     <section className="panel p-4 flex flex-col gap-3">
       <div className="flex items-baseline justify-between">
         <span className="label">{title}</span>
         <Tally findings={findings} />
       </div>
-      {findings.length === 0 ? (
-        <p className="small muted">No findings. Every rule is satisfied.</p>
-      ) : (
-        <div className="flex flex-col gap-3">
-          {findings.map((f, i) => (
-            <FindingRow key={`${f.id}-${i}`} f={f} />
-          ))}
-        </div>
-      )}
+      {body}
     </section>
   );
 }

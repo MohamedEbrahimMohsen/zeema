@@ -720,6 +720,29 @@ export async function publishDesign(
   return { design, version, unchanged: false };
 }
 
+/**
+ * Throw the draft away and make the release the head again.
+ *
+ * Nothing is deleted: the draft's versions stay in the history, which is both what makes the
+ * discarded work recoverable and what the interface promises. Only the pointer moves, so the
+ * canvas, the page and every reader see the release from here on.
+ */
+export async function discardDraft(owner: string, slug: string, viewer: Viewer) {
+  const db = await getDb();
+  const view = await getDesign(owner, slug, viewer);
+  if (!view.can.write) throw new ServiceError(403, "you cannot edit this design");
+  const release = view.design.publishedVersionId;
+  if (!release) throw new ServiceError(409, "this design has never been published");
+  if (view.design.currentVersionId === release)
+    throw new ServiceError(409, "the draft is the release; there is nothing to discard");
+  await db
+    .update(schema.designs)
+    .set({ currentVersionId: release, updatedAt: new Date() })
+    .where(eq(schema.designs.id, view.design.id));
+  countWrite("discard");
+  return getDesign(owner, slug, viewer);
+}
+
 export type PatchInput = {
   title?: string;
   slug?: string;

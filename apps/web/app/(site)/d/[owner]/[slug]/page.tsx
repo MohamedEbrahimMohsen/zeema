@@ -3,7 +3,10 @@ import { toSvg } from "@zeema/core/render";
 import { parse } from "@zeema/core/yaml";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { CollapsibleSection } from "@/components/CollapsibleSection";
 import { DesignActions } from "@/components/DesignActions";
+import { DesignPreview } from "@/components/DesignPreview";
+import { DiscardDraft } from "@/components/DiscardDraft";
 import { EditableSlug } from "@/components/EditableSlug";
 import { EditableSummary } from "@/components/EditableSummary";
 import { EditableTitle } from "@/components/EditableTitle";
@@ -27,6 +30,7 @@ import {
   resolveAlias,
   ServiceError,
 } from "@/lib/designs";
+import { readSidecar } from "@/lib/layout-sidecar";
 import { analyse } from "@/lib/lint";
 
 export const dynamic = "force-dynamic";
@@ -69,13 +73,15 @@ export default async function DesignPage({
   if (broken) version = broken;
   const yaml = version?.yaml ?? "";
   const { doc, findings } = analyse(yaml, cat);
-  // The engine's own <style> carries :root variables; strip it so the picture follows the page
-  // theme — globals.css restates the class rules under .svg-preview.
+  // The picture is the one its owner drew: the layout sidecar of the version on screen decides
+  // where the boxes are, and the engine arranges the design itself only when no canvas has. The
+  // preview panel strips the engine's own <style> so the drawing follows the page theme.
   const svg = doc
-    ? toSvg(normalize(parse(yaml).doc).doc, cat, { icons, theme: "light" }).replace(
-        /<style>[\s\S]*?<\/style>/,
-        "",
-      )
+    ? toSvg(normalize(parse(yaml).doc).doc, cat, {
+        icons,
+        theme: "light",
+        layout: readSidecar(version?.layout),
+      })
     : "";
   void recordEvent(view.design.id, viewer, "view").catch(() => {});
   const hasBroken =
@@ -86,6 +92,9 @@ export default async function DesignPage({
   // The offers only exist for the owner's own field, so nobody else pays for the query.
   const tagSuggestions = view.can.write ? await listTags(viewer) : [];
   const readme = view.design.readme ?? "";
+  // Going back to the release only makes sense for the owner of a published design whose head
+  // has moved on, and never while an older version is the one on screen.
+  const canDiscard = view.can.write && view.unpublished && Boolean(view.published) && !sp.v;
 
   return (
     <div className="flex flex-col gap-5">
@@ -179,10 +188,12 @@ export default async function DesignPage({
       ) : null}
       <div className="grid gap-5 grid-cols-[minmax(0,1fr)] lg:grid-cols-[minmax(0,1fr)_360px]">
         <div className="flex flex-col gap-5 min-w-0">
-          <section className="panel svg-preview p-2">
-            {/* biome-ignore lint/security/noDangerouslySetInnerHtml: SVG produced by the engine from escaped data */}
-            <div dangerouslySetInnerHTML={{ __html: svg }} />
-          </section>
+          <DesignPreview
+            owner={ownerSeg}
+            slug={view.design.slug}
+            canWrite={view.can.write}
+            svg={svg}
+          />
           <Readme
             owner={ownerSeg}
             slug={view.design.slug}
@@ -200,7 +211,7 @@ export default async function DesignPage({
           />
         </div>
         <aside className="flex flex-col gap-4">
-          <Findings findings={findings} />
+          <Findings findings={findings} collapsible />
           {doc?.requirements ? (
             <section className="panel p-4 flex flex-col gap-2">
               <span className="label">Promises</span>
@@ -218,8 +229,7 @@ export default async function DesignPage({
               </ul>
             </section>
           ) : null}
-          <section className="panel p-4 flex flex-col gap-2">
-            <span className="label">Components · {doc?.nodes.length ?? 0}</span>
+          <CollapsibleSection name="components" title="Components" count={doc?.nodes.length ?? 0}>
             <ul className="flex flex-col gap-2 small">
               {doc?.nodes.map((n) => {
                 const c = cat.components[n.component];
@@ -240,12 +250,24 @@ export default async function DesignPage({
                 );
               })}
             </ul>
-          </section>
+          </CollapsibleSection>
           {versions.length > 1 || (view.can.write && versions.length > 0) ? (
-            <section className="panel p-4 flex flex-col gap-2">
-              <span className="label">
-                {view.can.write ? "History" : "Releases"} · {versions.length}
-              </span>
+            <CollapsibleSection
+              name="history"
+              title={view.can.write ? "History" : "Releases"}
+              count={versions.length}
+              actions={
+                canDiscard ? (
+                  <DiscardDraft
+                    owner={ownerSeg}
+                    slug={view.design.slug}
+                    releasedAt={when(
+                      view.published?.publishedAt ?? view.published?.createdAt ?? new Date(),
+                    )}
+                  />
+                ) : null
+              }
+            >
               <ul className="flex flex-col gap-1 small">
                 {versions.slice(0, 12).map((v) => {
                   const active = (sp.v ?? currentId) === v.id;
@@ -271,7 +293,7 @@ export default async function DesignPage({
                   );
                 })}
               </ul>
-            </section>
+            </CollapsibleSection>
           ) : null}
         </aside>
       </div>

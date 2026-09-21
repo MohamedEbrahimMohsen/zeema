@@ -92,3 +92,49 @@ export const Pencil = () => (
     <path d="M15 6.5 17.5 9" />
   </svg>
 );
+
+/** The design panel's toolbar: the canvas, a raster export, and the fit/actual-size switch. */
+export const Canvas = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+    <rect x="3" y="4" width="7" height="6" rx="1.5" />
+    <rect x="14" y="14" width="7" height="6" rx="1.5" />
+    <path d="M10 7h4a3 3 0 0 1 3 3v4" />
+  </svg>
+);
+
+export const Picture = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+    <rect x="3" y="4" width="18" height="13" rx="2" />
+    <circle cx="8.5" cy="9" r="1.5" />
+    <path d="m4 16 5-4 4 3 3-2 4 3" />
+    <path d="M12 20h6" />
+  </svg>
+);
+
+export const Fit = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+    <path d="M4 9V5a1 1 0 0 1 1-1h4" />
+    <path d="M20 9V5a1 1 0 0 0-1-1h-4" />
+    <path d="M4 15v4a1 1 0 0 0 1 1h4" />
+    <path d="M20 15v4a1 1 0 0 1-1 1h-4" />
+  </svg>
+);
+
+export const Actual = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+    <path d="M9 4H5a1 1 0 0 0-1 1v4" />
+    <path d="M15 4h4a1 1 0 0 1 1 1v4" />
+    <path d="M9 20H5a1 1 0 0 1-1-1v-4" />
+    <path d="M15 20h4a1 1 0 0 0 1-1v-4" />
+    <path d="m4 4 5 5" />
+    <path d="m20 20-5-5" />
+  </svg>
+);
+
+/** History's own toolbar: throwing the draft away and going back to the release. */
+export const Undo = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+    <path d="M4 5v6h6" />
+    <path d="M4 11a8 8 0 1 1 2.3 6" />
+  </svg>
+);

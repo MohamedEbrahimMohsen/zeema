@@ -182,6 +182,70 @@ describe("publishing a draft address", () => {
   });
 });
 
+describe("discarding a draft", () => {
+  const YAML2 = YAML.replace('"svc"', '"svc2"');
+
+  // A published design whose head has since moved on: the shape every discard test needs.
+  const withDraft = async (username: string) => {
+    const { createDesign, publishDesign, saveVersion, getDesign } = await lib();
+    const user = await makeUser(username);
+    const made = await createDesign(user as never, { title: "Thing", yaml: YAML });
+    const released = await publishDesign(username, made.design.slug, user as never);
+    await saveVersion(username, made.design.slug, user as never, {
+      yaml: YAML2,
+      message: "a draft",
+      ifMatch: made.version.contentHash,
+    });
+    const view = await getDesign(username, made.design.slug, user as never);
+    return { user, slug: made.design.slug, release: released.version.id, view };
+  };
+
+  it("puts the head back on the release and leaves the versions in the history", async () => {
+    const { discardDraft, listVersions, getDesign } = await lib();
+    const { user, slug, release, view } = await withDraft("nina");
+    expect(view.design.currentVersionId).not.toBe(release);
+    const before = (await listVersions(view)).length;
+
+    const after = await discardDraft("nina", slug, user as never);
+    expect(after.design.currentVersionId).toBe(release);
+    expect(after.design.publishedVersionId).toBe(release);
+    expect(after.unpublished).toBe(false);
+    // Nothing was deleted: the discarded version is still there to go back to.
+    expect((await listVersions(after)).length).toBe(before);
+    expect((await getDesign("nina", slug, user as never)).version?.id).toBe(release);
+  });
+
+  it("refuses a design that was never published", async () => {
+    const { createDesign, discardDraft } = await lib();
+    const user = await makeUser("omar");
+    const made = await createDesign(user as never, { title: "Unreleased", yaml: YAML });
+    await expect(discardDraft("omar", made.design.slug, user as never)).rejects.toMatchObject({
+      status: 409,
+    });
+  });
+
+  it("refuses when the head already is the release", async () => {
+    const { discardDraft } = await lib();
+    const { user, slug } = await withDraft("pia");
+    await discardDraft("pia", slug, user as never);
+    await expect(discardDraft("pia", slug, user as never)).rejects.toMatchObject({ status: 409 });
+  });
+
+  it("is the owner's alone: 403 on a public design, 404 on a private one", async () => {
+    const { discardDraft, patchDesign } = await lib();
+    const stranger = await makeUser("quinn");
+    const priv = await withDraft("rosa");
+    // Private by default: a stranger is told nothing at all.
+    await expect(discardDraft("rosa", priv.slug, stranger as never)).rejects.toMatchObject({
+      status: 404,
+    });
+    await patchDesign("rosa", priv.slug, priv.user as never, { visibility: "public" });
+    await expect(discardDraft("rosa", priv.slug, stranger as never)).rejects.toMatchObject({
+      status: 403,
+    });
+  });
+});
+
 describe("deleting", () => {
   it("removes an unpublished design outright and frees its name", async () => {
     const { createDesign, deleteDesign, getTombstone } = await lib();

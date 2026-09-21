@@ -1136,6 +1136,15 @@ kbd.key {
   max-height: 70vh;
   display: block;
 }
+/* The fit/actual-size switch in the Design panel: fitted is the default, actual size lets the
+   picture overflow into the panel's own scroller rather than being shrunk to the column. It sits
+   right after the rule it overrides and carries the same weight, so order decides it. */
+.preview-actual svg {
+  width: auto;
+  height: auto;
+  max-width: none;
+  max-height: none;
+}
 
 /* ── engine SVG inlined on a page ─────────────────────────────────────
    The render engine ships its own <style> with :root variables; the page strips it before
@@ -1708,6 +1717,14 @@ kbd.key {
 }
 .btn-icon.is-done {
   color: var(--ok);
+}
+/* A destructive action in a section toolbar: the same quiet glyph, in the colour of a warning. */
+.btn-icon.is-danger {
+  color: var(--err);
+}
+.btn-icon.is-danger:hover {
+  color: var(--err);
+  border-color: var(--err);
 }
 .btn-icon-text {
   width: auto;

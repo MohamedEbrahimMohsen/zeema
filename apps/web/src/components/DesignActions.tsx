@@ -94,15 +94,6 @@ export function DesignActions({
     const res = await call("delete", () => fetch(base, { method: "DELETE" }));
     if (res) router.push("/?owner=me");
   };
-  const exportSvg = async () => {
-    fetch(`${base}/events`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ kind: "export", format: "svg" }),
-    }).catch(() => {});
-    window.open(`${base}/render?download=1`, "_blank");
-  };
-
   return (
     <div className="flex flex-wrap items-center gap-2">
       <a
@@ -111,7 +102,8 @@ export function DesignActions({
       >
         {canWrite ? "Open in canvas" : "View in canvas"}
       </a>
-      {/* Editing the YAML lives with the YAML, in the section's own toolbar. */}
+      {/* Editing the YAML lives with the YAML, and exporting the picture lives with the
+          picture: both in their own section's toolbar rather than up here. */}
       {canWrite && unpublished ? (
         <button
           type="button"
@@ -136,9 +128,6 @@ export function DesignActions({
           Sign in to clone
         </a>
       ) : null}
-      <button type="button" className="btn btn-sm" onClick={exportSvg}>
-        Export SVG
-      </button>
       {canWrite && !isCurated ? (
         <>
           <button
