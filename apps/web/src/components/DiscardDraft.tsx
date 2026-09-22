@@ -3,6 +3,10 @@
 // Going back to the release. The draft is thrown away for good: the head moves back and the
 // versions saved since the release are deleted. The confirmation says how many, and that it
 // cannot be undone, because by the time someone reads it the work is one click from gone.
+//
+// A design whose head already is the release can still carry versions after it — one discarded
+// before discarding deleted anything. There the head does not move and the button only clears
+// those rows, so it says so rather than offering to go back somewhere it already is.
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Undo } from "@/components/Glyphs";
@@ -14,23 +18,27 @@ type Props = {
   releasedAt: string;
   /** How many versions the discard deletes; counted server-side by the design service. */
   draftVersionCount: number;
+  /**
+   * Whether the head still has to move back. False for a design whose head already is the
+   * release but which kept abandoned versions behind it, where this button only deletes them.
+   */
+  headMoved: boolean;
 };
 
-export function DiscardDraft({ owner, slug, releasedAt, draftVersionCount }: Props) {
+export function DiscardDraft({ owner, slug, releasedAt, draftVersionCount, headMoved }: Props) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const discard = async () => {
     if (busy) return;
-    if (
-      !confirm(
-        `Discard the draft and go back to the released version from ${releasedAt}? ` +
-          `The ${draftVersionCount} draft version${draftVersionCount === 1 ? "" : "s"} since ` +
-          "then will be deleted. This cannot be undone.",
-      )
-    )
-      return;
+    const versions = `${draftVersionCount} draft version${draftVersionCount === 1 ? "" : "s"}`;
+    const question = headMoved
+      ? `Discard the draft and go back to the released version from ${releasedAt}? ` +
+        `The ${versions} since then will be deleted. This cannot be undone.`
+      : `Delete the ${versions} after the released version from ${releasedAt}? ` +
+        "This cannot be undone.";
+    if (!confirm(question)) return;
     setBusy(true);
     setError(null);
     try {
@@ -54,11 +62,15 @@ export function DiscardDraft({ owner, slug, releasedAt, draftVersionCount }: Pro
         className="btn-icon btn-icon-text is-danger"
         onClick={() => void discard()}
         disabled={busy}
-        aria-label="Discard the draft changes and go back to the released version"
-        title="Discard draft changes"
+        aria-label={
+          headMoved
+            ? "Discard the draft changes and go back to the released version"
+            : "Delete the draft versions kept after the released version"
+        }
+        title={headMoved ? "Discard draft changes" : "Delete the leftover draft versions"}
       >
         <Undo />
-        <span>{busy ? "Discarding…" : "Discard draft"}</span>
+        <span>{busy ? "Discarding…" : headMoved ? "Discard draft" : "Delete draft versions"}</span>
       </button>
       {error ? <span className="status status-err small">{error}</span> : null}
     </>

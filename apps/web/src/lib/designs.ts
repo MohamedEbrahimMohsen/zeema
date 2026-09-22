@@ -2,7 +2,7 @@
 // authorization matrix (plan, section 13) applied here and nowhere else. Interfaces derive
 // their own state ("can I edit this?") from the answers these functions give.
 import { createHash } from "node:crypto";
-import { and, desc, eq, ilike, isNotNull, isNull, or, sql } from "drizzle-orm";
+import { and, desc, eq, gt, ilike, isNotNull, isNull, ne, or, sql } from "drizzle-orm";
 import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import { getDb, schema } from "@/db";
 import type { Design, DesignVersion } from "@/db/schema";
@@ -151,14 +151,19 @@ export async function resolveAlias(owner: string, slug: string): Promise<string 
  * itself. The release and every version before it are not touched, and neither is a broken twin.
  * One predicate serves both the count the page shows and the delete the service performs, so the
  * number in the confirmation is the number of rows that go.
+ *
+ * Every comparison goes through drizzle's operators rather than a raw `sql` template: an operator
+ * encodes the value with the column's own mapper, so the timestamp reaches the driver as an ISO
+ * string. A Date interpolated into `sql` is bound raw, which PGlite accepts and Postgres never
+ * sees, because the query cache hashes the parameters first and throws on a Date.
  */
-function abandonedSince(designId: string, release: { id: string; createdAt: Date }) {
+export function abandonedSince(designId: string, release: { id: string; createdAt: Date }) {
   return and(
     eq(schema.designVersions.designId, designId),
     eq(schema.designVersions.broken, false),
     isNull(schema.designVersions.publishedAt),
-    sql`${schema.designVersions.id} <> ${release.id}`,
-    sql`${schema.designVersions.createdAt} > ${release.createdAt}`,
+    ne(schema.designVersions.id, release.id),
+    gt(schema.designVersions.createdAt, release.createdAt),
   );
 }
 
@@ -201,8 +206,11 @@ export async function getDesign(
         publishedAt: publishedRow.publishedAt,
       }
     : null;
+  // Counted whenever there is a release to count against, not only while the head has moved on:
+  // a design discarded before this deletion existed still carries abandoned rows with its head
+  // already back on the release, and the count is what makes them findable and removable.
   const draftVersionCount =
-    write && publishedRow && design.currentVersionId !== design.publishedVersionId
+    write && publishedRow
       ? (
           await db
             .select({ id: schema.designVersions.id })
@@ -768,12 +776,17 @@ export async function discardDraft(owner: string, slug: string, viewer: Viewer) 
   if (!view.can.write) throw new ServiceError(403, "you cannot edit this design");
   const release = view.design.publishedVersionId;
   if (!release) throw new ServiceError(409, "this design has never been published");
-  if (view.design.currentVersionId === release)
+  const moved = view.design.currentVersionId !== release;
+  // Nothing to do only when both are true: the head already is the release and no abandoned
+  // version is left behind it. A design discarded under the older behaviour is the second case
+  // on its own, and this is the only way its rows ever go.
+  if (!moved && view.draftVersionCount === 0)
     throw new ServiceError(409, "the draft is the release; there is nothing to discard");
-  await db
-    .update(schema.designs)
-    .set({ currentVersionId: release, updatedAt: new Date() })
-    .where(eq(schema.designs.id, view.design.id));
+  if (moved)
+    await db
+      .update(schema.designs)
+      .set({ currentVersionId: release, updatedAt: new Date() })
+      .where(eq(schema.designs.id, view.design.id));
   // The pointer moves first: if the delete failed halfway, the design is still on its release
   // rather than pointing at a row that is no longer there.
   const deleted = view.published

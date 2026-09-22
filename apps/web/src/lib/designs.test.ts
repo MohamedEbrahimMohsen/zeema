@@ -274,6 +274,53 @@ describe("discarding a draft", () => {
     expect(after.draftVersionCount).toBe(0);
   });
 
+  it("clears versions left behind when the head already is the release", async () => {
+    // The shape a design discarded under the older behaviour is in: the head is back on the
+    // release, and the versions saved after it were never deleted.
+    const { createDesign, publishDesign, saveVersion, discardDraft, getDesign, listVersions } =
+      await lib();
+    const { getDb, schema } = await import("@/db");
+    const { eq } = await import("drizzle-orm");
+    const db = await getDb();
+    const user = await makeUser("umar");
+    const made = await createDesign(user as never, { title: "Left behind", yaml: YAML });
+    const released = await publishDesign("umar", made.design.slug, user as never);
+    let hash = released.version.contentHash;
+    for (const id of ["a", "b"]) {
+      const saved = await saveVersion("umar", made.design.slug, user as never, {
+        yaml: YAML.replace('"svc"', `"svc-${id}"`),
+        message: `draft ${id}`,
+        ifMatch: hash,
+      });
+      hash = saved.version.contentHash;
+    }
+    await db
+      .update(schema.designs)
+      .set({ currentVersionId: released.version.id })
+      .where(eq(schema.designs.id, made.design.id));
+
+    const stale = await getDesign("umar", made.design.slug, user as never);
+    expect(stale.unpublished).toBe(false);
+    expect(stale.draftVersionCount).toBe(2);
+
+    const after = await discardDraft("umar", made.design.slug, user as never);
+    expect(after.deletedVersionCount).toBe(2);
+    expect(after.design.currentVersionId).toBe(released.version.id);
+    expect(after.draftVersionCount).toBe(0);
+    expect((await listVersions(after)).map((v) => v.id)).toEqual([released.version.id]);
+  });
+
+  it("refuses when the head is the release and nothing was left behind", async () => {
+    const { createDesign, publishDesign, discardDraft, getDesign } = await lib();
+    const user = await makeUser("vera");
+    const made = await createDesign(user as never, { title: "Nothing to do", yaml: YAML });
+    await publishDesign("vera", made.design.slug, user as never);
+    expect((await getDesign("vera", made.design.slug, user as never)).draftVersionCount).toBe(0);
+    await expect(discardDraft("vera", made.design.slug, user as never)).rejects.toMatchObject({
+      status: 409,
+    });
+  });
+
   it("refuses a design that was never published", async () => {
     const { createDesign, discardDraft } = await lib();
     const user = await makeUser("omar");
@@ -398,5 +445,28 @@ describe("browsing by tag", () => {
     expect(q.tag).toBe("billing");
     expect(q.provider).toBe("aws");
     expect(q.text).toBe("stripe");
+  });
+});
+
+// Every query this service builds is bound by the driver, and a real Postgres hashes those
+// parameters before it runs anything: a Date reaching the driver unmapped throws there while
+// PGlite shrugs and accepts it. So the shape of the parameters is asserted here, not the
+// behaviour of the embedded database.
+describe("query parameters", () => {
+  const bindable = (v: unknown) =>
+    v === null || ["string", "number", "boolean"].includes(typeof v) || Buffer.isBuffer(v);
+
+  it("binds timestamps as strings, never as Date objects", async () => {
+    const { abandonedSince } = await lib();
+    const { getDb, schema } = await import("@/db");
+    const db = await getDb();
+    const at = new Date("2024-05-01T10:00:00.000Z");
+    const { params } = db
+      .select({ id: schema.designVersions.id })
+      .from(schema.designVersions)
+      .where(abandonedSince("11111111-1111-1111-1111-111111111111", { id: "abc", createdAt: at }))
+      .toSQL();
+    for (const p of params) expect(p, `${String(p)} is not bindable`).toSatisfy(bindable);
+    expect(params).toContain(at.toISOString());
   });
 });

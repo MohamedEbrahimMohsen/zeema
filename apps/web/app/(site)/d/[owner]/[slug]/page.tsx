@@ -94,7 +94,13 @@ export default async function DesignPage({
   const readme = view.design.readme ?? "";
   // Going back to the release only makes sense for the owner of a published design whose head
   // has moved on, and never while an older version is the one on screen.
-  const canDiscard = view.can.write && view.unpublished && Boolean(view.published) && !sp.v;
+  // Either the head has moved on, or it has not but abandoned versions are still sitting behind
+  // it (a design discarded before the discard deleted anything). Both are the owner's to clear.
+  const canDiscard =
+    view.can.write &&
+    Boolean(view.published) &&
+    !sp.v &&
+    (view.unpublished || view.draftVersionCount > 0);
 
   return (
     <div className="flex flex-col gap-5">
@@ -265,6 +271,7 @@ export default async function DesignPage({
                       view.published?.publishedAt ?? view.published?.createdAt ?? new Date(),
                     )}
                     draftVersionCount={view.draftVersionCount}
+                    headMoved={view.unpublished}
                   />
                 ) : null
               }
