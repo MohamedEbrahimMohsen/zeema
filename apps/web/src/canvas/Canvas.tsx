@@ -5,7 +5,7 @@
 // through `commit`, which snapshots first, so undo and redo are uniform.
 import { ruleReads } from "@zeema/core/describe";
 import * as D from "@zeema/core/document";
-import { edgeKeys } from "@zeema/core/geometry";
+import { edgeKeys, rekeyBows } from "@zeema/core/geometry";
 import { layout } from "@zeema/core/layout";
 import { runRules } from "@zeema/core/rules";
 import { check } from "@zeema/core/structure";
@@ -751,7 +751,19 @@ export function Canvas(props: Props) {
         const key = edgeKeys(e.doc)[i];
         return [
           { label: "Edit label", hint: "double click", run: () => scene.editLabel("edge", i) },
-          { label: "Reverse direction", run: () => commit(D.reverseEdge(e.doc, i)) },
+          {
+            label: "Reverse direction",
+            // Bows are keyed by pair and order, so without re-keying, reversing one of a
+            // reciprocal pair would hand its bow to the other lane.
+            run: () => {
+              const next = D.reverseEdge(e.doc, i);
+              commit(next, {
+                apply: () => {
+                  e.bows = rekeyBows(e.doc, next, e.bows, [i]);
+                },
+              });
+            },
+          },
           {
             label: edge?.mode === "async" ? "Make synchronous" : "Make asynchronous",
             run: () =>

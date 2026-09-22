@@ -739,13 +739,20 @@ export class Scene {
       g.append(hit, line);
       const els: any = { hit, line, key: e.key, from: e.from, to: e.to, label: null };
       if (e.label) {
+        // Where geometry.js says: above a lone edge, on the outer side of a lane's own curve.
         const t = el("text", {
           class: "edge-label",
-          x: e.mid[0],
-          y: e.mid[1] - 5,
-          "text-anchor": "middle",
+          x: e.labelAt[0],
+          y: e.labelAt[1],
+          "text-anchor": e.labelAnchor,
         });
         t.textContent = e.label;
+        // A label picks its own edge: with two lanes, the label is the easiest thing to aim at.
+        t.addEventListener("pointerdown", (ev: any) => {
+          if (ev.button !== 0 || this.space) return;
+          ev.stopPropagation();
+          this.select("edge", e.i);
+        });
         g.append(t);
         els.label = t;
       }
@@ -865,8 +872,9 @@ export class Scene {
       els.line.setAttribute("d", d);
       els.hit.setAttribute("d", d);
       if (els.label) {
-        els.label.setAttribute("x", e.mid[0]);
-        els.label.setAttribute("y", e.mid[1] - 5);
+        els.label.setAttribute("x", e.labelAt[0]);
+        els.label.setAttribute("y", e.labelAt[1]);
+        els.label.setAttribute("text-anchor", e.labelAnchor);
       }
     }
   }
@@ -1259,8 +1267,9 @@ export class Scene {
       els.line.setAttribute("d", d);
       els.hit.setAttribute("d", d);
       if (els.label) {
-        els.label.setAttribute("x", e.mid[0]);
-        els.label.setAttribute("y", e.mid[1] - 5);
+        els.label.setAttribute("x", e.labelAt[0]);
+        els.label.setAttribute("y", e.labelAt[1]);
+        els.label.setAttribute("text-anchor", e.labelAnchor);
       }
     }
     this.repaintFrames();
@@ -1430,8 +1439,12 @@ export class Scene {
     } else if (kind === "edge") {
       const e = (this.geom || []).find((x) => x.i === ref);
       if (!e) return;
-      anchor = this.toScreen(e.mid[0], e.mid[1] - 12);
+      // Over the edge's own label, so of two lanes the editor opens on the one clicked.
       width = 150;
+      const at = this.toScreen(e.labelAt[0], e.labelAt[1] - 7);
+      const shift =
+        e.labelAnchor === "start" ? width / 2 : e.labelAnchor === "end" ? -width / 2 : 0;
+      anchor = [at[0] + shift, at[1]];
     } else {
       const f = this.frames[ref as string];
       if (!f) return;

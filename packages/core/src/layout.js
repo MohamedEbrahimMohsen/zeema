@@ -4,22 +4,25 @@
 // topological sort never reaches), collapse every group's members onto one rank,
 // order each rank by six barycentre sweeps followed by a group-contiguity block pass,
 // wrap ranks wider than MAX_W onto further rows, centre every row, derive group frames
-// as padded bounding boxes, then draw edges centre to centre, clipped at the box border,
-// with reciprocal pairs offset and a single quadratic bend around the first obstacle.
+// as padded bounding boxes, then hand the placed boxes to geometry.js for the edges.
 //
-// The port is bug for bug. Two things in particular are load bearing:
+// The placement is ported bug for bug. Two things in particular are load bearing:
 //
 //   * Python's round() is half to even; JavaScript's Math.round() is half up. 107 of the
 //     324 node placements in this repository land on exactly .5, so pyRound() below
 //     reproduces CPython's float.__round__ and is used exactly where the Python uses
 //     round(), and nowhere else.
 //   * Several passes depend on dict insertion order: the group rank collapse walks groups
-//     in document order, the edge `pairs` buckets are keyed by an unordered pair so
-//     parallel and reciprocal edges share one bucket in edge-array order, the obstacle
-//     scan takes the first hit in node declaration order, and frameOf() uses a `done` set
-//     so a cycle among groups yields nothing rather than recursing.
+//     in document order and frameOf() uses a `done` set so a cycle among groups yields
+//     nothing rather than recursing.
 //
-// No DOM, no imports.
+// The edges are not the port's. They come from edgeGeometry, the same code the canvas and the
+// as-drawn renderer use, so an automatic arrangement and a drawing route edges identically;
+// the Python drew a reciprocal pair on one line, and this does not.
+//
+// No DOM. The one import is geometry.js, which has none of its own.
+
+import { edgeGeometry } from "./geometry.js";
 
 const NAME_PX = 7.6,
   ID_PX = 6.2;
@@ -34,9 +37,6 @@ const CANVAS_PAD_X = 120,
 const FRAME_PAD_X = 16,
   FRAME_PAD_TOP = 32,
   FRAME_PAD_BOTTOM = 16;
-const OBSTACLE_INFLATE = 6; // hits() grows each box by this before testing
-const BEND_REACH = 46;
-const OFFSET = 16; // lateral separation between parallel / reciprocal edges
 const SWEEPS = 6;
 
 // C99 round(): half away from zero. Math.round() is half up, which differs on negatives.
@@ -182,51 +182,6 @@ function orderRanks(nodes, edges, rank) {
   return { byRank, ranksSorted };
 }
 
-// --- edge geometry helpers ---------------------------------------------------
-
-function clip(b, x, y, cx, cy) {
-  const dx = x - cx,
-    dy = y - cy;
-  if (dx === 0 && dy === 0) return [cx, cy];
-  const sx = dx ? b[2] / 2 / Math.abs(dx) : 1e9;
-  const sy = dy ? b[3] / 2 / Math.abs(dy) : 1e9;
-  const s = Math.min(sx, sy);
-  return [cx + dx * s, cy + dy * s];
-}
-
-// Liang-Barsky clip test of a segment against an inflated box.
-function hits(x1, y1, x2, y2, r) {
-  const rx0 = r[0] - OBSTACLE_INFLATE,
-    ry0 = r[1] - OBSTACLE_INFLATE;
-  const rx1 = r[0] + r[2] + OBSTACLE_INFLATE,
-    ry1 = r[1] + r[3] + OBSTACLE_INFLATE;
-  let t0 = 0.0,
-    t1 = 1.0;
-  const dx = x2 - x1,
-    dy = y2 - y1;
-  const tests = [
-    [-dx, x1 - rx0],
-    [dx, rx1 - x1],
-    [-dy, y1 - ry0],
-    [dy, ry1 - y1],
-  ];
-  for (const [p, q] of tests) {
-    if (p === 0) {
-      if (q < 0) return false;
-      continue;
-    }
-    const t = q / p;
-    if (p < 0) {
-      if (t > t1) return false;
-      t0 = Math.max(t0, t);
-    } else {
-      if (t < t0) return false;
-      t1 = Math.min(t1, t);
-    }
-  }
-  return t0 <= t1;
-}
-
 // --- the layout --------------------------------------------------------------
 
 /**
@@ -333,69 +288,11 @@ export function layout(doc, _catalogue) {
   };
   for (const g of groups) frameOf(g.id);
 
-  // edges: centre to centre, clipped at the border, reciprocal pairs offset
-  const pairs = new Map(); // keyed by the unordered pair, in edge order
-  edges.forEach((e, i) => {
-    if (!box.has(e.from) || !box.has(e.to)) return; // invalid designs only
-    const key = JSON.stringify(e.from <= e.to ? [e.from, e.to] : [e.to, e.from]);
-    if (!pairs.has(key)) pairs.set(key, []);
-    pairs.get(key).push([i, e]);
-  });
-  const boxEntries = [...box.entries()]; // node declaration order
-  const outEdges = [];
-  for (const group of pairs.values()) {
-    group.forEach(([idx, e], k) => {
-      const a = box.get(e.from),
-        b = box.get(e.to);
-      let ax = a[0] + a[2] / 2,
-        ay = a[1] + a[3] / 2;
-      let bx = b[0] + b[2] / 2,
-        by = b[1] + b[3] / 2;
-      const off = group.length === 1 ? 0 : (k - (group.length - 1) / 2) * OFFSET;
-      const dx = bx - ax,
-        dy = by - ay;
-      const ln = Math.sqrt(dx * dx + dy * dy) || 1;
-      const ox = (-dy / ln) * off,
-        oy = (dx / ln) * off;
-      ax += ox;
-      ay += oy;
-      bx += ox;
-      by += oy;
-      const [x1, y1] = clip(a, bx, by, ax, ay);
-      const [x2, y2] = clip(b, ax, ay, bx, by);
-      let bend = null;
-      for (const [other, ob] of boxEntries) {
-        if (other === e.from || other === e.to || !hits(x1, y1, x2, y2, ob)) continue;
-        const mx = (x1 + x2) / 2,
-          my = (y1 + y2) / 2;
-        const ocx = ob[0] + ob[2] / 2,
-          ocy = ob[1] + ob[3] / 2;
-        const ddx = x2 - x1,
-          ddy = y2 - y1;
-        const dln = Math.sqrt(ddx * ddx + ddy * ddy) || 1;
-        const px = -ddy / dln,
-          py = ddx / dln;
-        const side = px * (mx - ocx) + py * (my - ocy) >= 0 ? 1 : -1;
-        const reach = (ob[2] / 2 + BEND_REACH) * side;
-        bend = [mx + px * reach, my + py * reach];
-        break;
-      }
-      const lab = truthy(e.label) ? e.label : truthy(e.protocol) ? e.protocol : null;
-      outEdges.push({
-        from: e.from,
-        to: e.to,
-        i: idx,
-        points: bend
-          ? [[x1, y1], bend, [x2, y2]]
-          : [
-              [x1, y1],
-              [x2, y2],
-            ],
-        dashed: e.mode === "async",
-        label: lab === null ? null : String(lab),
-      });
-    });
-  }
+  // edges: drawn by geometry.js, the one implementation the canvas and the drawn layout share,
+  // so an arrangement and a drawing route their edges, lanes and bends identically
+  const boxes = {};
+  for (const [id, b] of box) boxes[id] = b; // node declaration order: the first obstacle wins
+  const outEdges = edgeGeometry({ edges }, boxes);
 
   const positions = {},
     sizes = {},

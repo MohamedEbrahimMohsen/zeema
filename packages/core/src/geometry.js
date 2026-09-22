@@ -1,16 +1,28 @@
 // Edge geometry, derived from node positions alone. The layout engine places boxes; this places
 // the lines between them, and it has to run again on every drag, so it is separate from ranking.
-// The rules it follows are the ones the repository's renderer already uses, because the editor
-// and the renderer must draw the same picture: centre to centre, clipped at the box border,
-// parallel and reciprocal edges spread perpendicular, and a quadratic bend around the first box
-// the straight line would cut through.
+// This is the one implementation: the editor, the automatic layout and the server renderer all
+// draw edges from here, so the canvas, the design page and every export show the same picture.
+// Centre to centre, clipped at the box border, a quadratic bend around the first box the
+// straight line would cut through, and parallel and reciprocal edges spread into lanes.
+//
+// Lanes. Every edge between the same two boxes, in either direction, shares one bucket. A lone
+// edge is straight. With n in a bucket, edge k (in document order) bows out to
+// (k - (n - 1) / 2) * LANE_STEP px off the centre line at its midpoint, measured along the
+// perpendicular of the pair taken in a fixed order, never the edge's own direction. Measured
+// along the edge's own direction, A→B and B→A flip both the lane index and the perpendicular,
+// and the two land on exactly the same line: one line with an arrowhead at each end. A lane is
+// a curve, and its ends are clipped toward the curve's control point, so each lane leaves and
+// meets the boxes at its own point and carries its own arrowhead.
 //
 // Edges carry no id in the format, so nothing here goes into the design file. The one thing a
 // person can adjust by hand, an edge's bow, lives in the layout sidecar under a key derived from
 // the pair; everything else is recomputed from the boxes on every frame.
 
-export const OFFSET_STEP = 16;
+// Distance between neighbouring lanes at their midpoints, in px.
+export const LANE_STEP = 24;
 export const BEND_REACH = 46;
+// How far a label on a lane stands off its own curve.
+export const LABEL_GAP = 6;
 
 function clip(box, towardX, towardY) {
   const [x, y, w, h] = box;
@@ -72,9 +84,50 @@ export function edgeKeys(doc) {
   });
 }
 
-// `bows` maps an edge key to a perpendicular offset in pixels for the curve's control point.
-// A bow of zero means the edge is drawn automatically, which includes the bend it takes around
-// any box the straight line would cut through.
+/**
+ * Carry the bows across an edit that keeps every edge at its index, such as reversing one.
+ * Keys come from the pair and the order within it, so reversing one of two reciprocal edges
+ * would otherwise hand one edge's bow to the other. A bow is measured along the edge's own
+ * perpendicular, so a reversed edge's bow changes sign and its curve stays where it was.
+ */
+export function rekeyBows(before, after, bows, reversed = []) {
+  const was = edgeKeys(before);
+  const now = edgeKeys(after);
+  if (was.length !== now.length) return { ...bows };
+  const flip = new Set(reversed);
+  const out = {};
+  was.forEach((k, i) => {
+    const v = Number(bows[k]) || 0;
+    if (v) out[now[i]] = flip.has(i) ? -v : v;
+  });
+  return out;
+}
+
+// Where an edge's label goes. A lone edge's sits centred just above its midpoint. An edge that
+// shares its pair has its label on the outer side of its own curve, so two lanes' labels sit on
+// opposite sides and cross neither lane. `at` is the baseline point and `anchor` the SVG
+// text-anchor; the 9 is a label's cap height, so a label hung below its curve clears it.
+function labelPlacement(mid, points, shared) {
+  const above = { at: [mid[0], mid[1] - 5], anchor: "middle" };
+  if (!shared || points.length !== 3) return above;
+  const [[x1, y1], , [x2, y2]] = points;
+  let nx = mid[0] - (x1 + x2) / 2,
+    ny = mid[1] - (y1 + y2) / 2;
+  const l = Math.hypot(nx, ny);
+  if (l < 0.5) return above;
+  nx /= l;
+  ny /= l;
+  const anchor = nx > 0.38 ? "start" : nx < -0.38 ? "end" : "middle";
+  const x = mid[0] + nx * LABEL_GAP;
+  const y =
+    ny < -0.38 ? mid[1] + ny * LABEL_GAP : ny > 0.38 ? mid[1] + ny * LABEL_GAP + 9 : mid[1] + 4;
+  return { at: [x, y], anchor };
+}
+
+// `bows` maps an edge key to a perpendicular offset in pixels for the curve's control point,
+// measured along the edge's own from→to perpendicular. A bow of zero means the edge is drawn
+// automatically: its lane, and the bend it takes around any box the straight line would cut
+// through. A manual bow replaces both.
 export function edgeGeometry(doc, boxes, bows = {}) {
   const keys = edgeKeys(doc);
   const edges = doc.edges || [];
@@ -86,63 +139,80 @@ export function edgeGeometry(doc, boxes, bows = {}) {
   });
   const out = [];
   for (const indices of buckets.values()) {
+    const n = indices.length;
     indices.forEach((i, k) => {
       const e = edges[i];
       const a = boxes[e.from],
         b = boxes[e.to];
       if (!a || !b) return;
-      let ax = a[0] + a[2] / 2,
+      const ax = a[0] + a[2] / 2,
         ay = a[1] + a[3] / 2;
-      let bx = b[0] + b[2] / 2,
+      const bx = b[0] + b[2] / 2,
         by = b[1] + b[3] / 2;
-      const off = indices.length === 1 ? 0 : (k - (indices.length - 1) / 2) * OFFSET_STEP;
-      const dx = bx - ax,
-        dy = by - ay;
-      const len = Math.hypot(dx, dy) || 1;
-      const ox = (-dy / len) * off,
-        oy = (dx / len) * off;
-      ax += ox;
-      ay += oy;
-      bx += ox;
-      by += oy;
-      const [x1, y1] = clip(a, bx, by);
-      const [x2, y2] = clip(b, ax, ay);
+      // The pair's own perpendicular, one for both directions: lesser id to greater, turned a
+      // quarter. The same order the bucket key sorts by.
+      const forward = String(e.from) <= String(e.to);
+      const pdx = forward ? bx - ax : ax - bx,
+        pdy = forward ? by - ay : ay - by;
+      const plen = Math.hypot(pdx, pdy) || 1;
+      const qx = -pdy / plen,
+        qy = pdx / plen;
+      const lane = n === 1 ? 0 : (k - (n - 1) / 2) * LANE_STEP;
       const bow = Number(bows[keys[i]]) || 0;
+      let x1, y1, x2, y2;
       let bend = null;
       if (bow) {
-        const sx = x1 + ox,
-          sy = y1 + oy,
-          tx = x2 + ox,
-          ty = y2 + oy;
-        const ddx = tx - sx,
-          ddy = ty - sy;
-        const l = Math.hypot(ddx, ddy) || 1;
-        bend = [(sx + tx) / 2 + (-ddy / l) * bow, (sy + ty) / 2 + (ddx / l) * bow];
-      }
-      for (const [id, box] of Object.entries(boxes)) {
-        if (bend) break; // a manual bow wins over the automatic bend
-        if (id === e.from || id === e.to) continue;
-        if (!hits(x1 + ox, y1 + oy, x2 + ox, y2 + oy, box)) continue;
-        const mx = (x1 + x2) / 2 + ox,
-          my = (y1 + y2) / 2 + oy;
-        const ocx = box[0] + box[2] / 2,
-          ocy = box[1] + box[3] / 2;
+        // Drawn by hand: the control point off the chord's midpoint along the edge's own
+        // perpendicular, which is the value `bowAt` wrote.
+        [x1, y1] = clip(a, bx, by);
+        [x2, y2] = clip(b, ax, ay);
         const ddx = x2 - x1,
           ddy = y2 - y1;
         const l = Math.hypot(ddx, ddy) || 1;
-        const px = -ddy / l,
-          py = ddx / l;
-        const side = px * (mx - ocx) + py * (my - ocy) >= 0 ? 1 : -1;
-        const reach = (box[2] / 2 + BEND_REACH) * side;
-        bend = [mx + px * reach, my + py * reach];
-        break;
+        bend = [(x1 + x2) / 2 + (-ddy / l) * bow, (y1 + y2) / 2 + (ddx / l) * bow];
+      } else {
+        // A lane's control point sits twice the lane out, so the curve's midpoint is on the lane.
+        const control = lane
+          ? [(ax + bx) / 2 + qx * lane * 2, (ay + by) / 2 + qy * lane * 2]
+          : null;
+        if (control) {
+          [x1, y1] = clip(a, control[0], control[1]);
+          [x2, y2] = clip(b, control[0], control[1]);
+        } else {
+          [x1, y1] = clip(a, bx, by);
+          [x2, y2] = clip(b, ax, ay);
+        }
+        const ox = qx * lane,
+          oy = qy * lane;
+        for (const [id, box] of Object.entries(boxes)) {
+          if (id === e.from || id === e.to) continue;
+          if (!hits(x1 + ox, y1 + oy, x2 + ox, y2 + oy, box)) continue;
+          const mx = (x1 + x2) / 2 + ox,
+            my = (y1 + y2) / 2 + oy;
+          const ocx = box[0] + box[2] / 2,
+            ocy = box[1] + box[3] / 2;
+          const ddx = x2 - x1,
+            ddy = y2 - y1;
+          const l = Math.hypot(ddx, ddy) || 1;
+          const px = -ddy / l,
+            py = ddx / l;
+          const side = px * (mx - ocx) + py * (my - ocy) >= 0 ? 1 : -1;
+          const reach = (box[2] / 2 + BEND_REACH) * side;
+          // Around the obstacle, and still a lane apart from the pair's other edges.
+          bend = [mx + px * reach + ox, my + py * reach + oy];
+          break;
+        }
+        if (!bend) bend = control;
       }
       const points = bend
-        ? [[x1 + ox, y1 + oy], bend, [x2 + ox, y2 + oy]]
+        ? [[x1, y1], bend, [x2, y2]]
         : [
-            [x1 + ox, y1 + oy],
-            [x2 + ox, y2 + oy],
+            [x1, y1],
+            [x2, y2],
           ];
+      const mid = midpointOf(points);
+      const place = labelPlacement(mid, points, n > 1);
+      const label = e.label || e.protocol || null;
       out.push({
         i,
         key: keys[i],
@@ -150,9 +220,12 @@ export function edgeGeometry(doc, boxes, bows = {}) {
         to: e.to,
         points,
         bow,
-        mid: midpointOf(points),
+        lane,
+        mid,
+        labelAt: place.at,
+        labelAnchor: place.anchor,
         dashed: e.mode === "async",
-        label: e.label || e.protocol || null,
+        label: label === null ? null : String(label),
       });
     });
   }

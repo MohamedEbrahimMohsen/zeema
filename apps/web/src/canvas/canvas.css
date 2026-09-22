@@ -289,6 +289,9 @@
   stroke: var(--muted);
   stroke-width: 1.2;
   fill: none;
+  /* The hit path under it takes the pointer. Drawn on top of its own hit, the visible stroke
+     would otherwise swallow a click aimed squarely at the line, and the canvas would deselect. */
+  pointer-events: none;
 }
 .zeema-canvas .edge.async {
   stroke-dasharray: 6 4;

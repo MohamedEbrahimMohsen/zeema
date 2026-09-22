@@ -118,28 +118,25 @@ export function toSvg(doc, catalogue, options = {}) {
       `<text class="gk" x="${f1(f[0] + 12 + (name ? name.length * 6.4 + 8 : 0))}" y="${f1(f[1] + 19)}">${escapeXml(g.kind)}</text>`,
     );
   }
+  // Edge shape and label placement come from geometry.js, as on the canvas: a reciprocal or
+  // parallel pair is two curves in two lanes, each with its own arrowhead and its label on the
+  // outer side of its own curve.
   for (const e of lay.edges) {
     const dash = e.dashed ? ' stroke-dasharray="6 4"' : "";
-    let lx;
-    let ly;
     if (e.points.length === 3) {
       const [[x1, y1], [cx, cy], [x2, y2]] = e.points;
       out.push(
         `<path d="M${f1(x1)} ${f1(y1)} Q${f1(cx)} ${f1(cy)} ${f1(x2)} ${f1(y2)}" fill="none" stroke="var(--line)" stroke-width="1.2"${dash} marker-end="url(#a)"/>`,
       );
-      lx = (x1 + 2 * cx + x2) / 4;
-      ly = (y1 + 2 * cy + y2) / 4;
     } else {
       const [[x1, y1], [x2, y2]] = e.points;
       out.push(
         `<line x1="${f1(x1)}" y1="${f1(y1)}" x2="${f1(x2)}" y2="${f1(y2)}" stroke="var(--line)" stroke-width="1.2"${dash} marker-end="url(#a)"/>`,
       );
-      lx = (x1 + x2) / 2;
-      ly = (y1 + y2) / 2;
     }
     if (e.label)
       out.push(
-        `<text class="e" x="${f1(lx)}" y="${f1(ly - 4)}" text-anchor="middle">${escapeXml(e.label)}</text>`,
+        `<text class="e" x="${f1(e.labelAt[0])}" y="${f1(e.labelAt[1])}" text-anchor="${e.labelAnchor}">${escapeXml(e.label)}</text>`,
       );
   }
   for (const n of doc.nodes ?? []) {
