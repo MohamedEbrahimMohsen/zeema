@@ -15,6 +15,15 @@ import addFormats from "ajv-formats";
 import YAML from "yaml";
 import { loadCatalogue, PROVIDERS, resolveRoot, walk } from "./index.js";
 
+/** Icons are inlined into pages; one icon larger than this is a vendor file nobody trimmed. */
+const ICON_MAX_BYTES = 4096;
+/**
+ * Markup no icon may carry: script, event handlers, links of any kind (`href`, `xlink:href`),
+ * embedded images or documents, and `data:` URLs. An icon is paths and shapes.
+ */
+export const UNSAFE_SVG =
+  /<script|\son[a-z]+\s*=|<image|href\s*=|<foreignObject|data:|javascript:/i;
+
 /**
  * The alias checks, over the component documents as loaded.
  *
@@ -201,13 +210,20 @@ export function validateRepository(rootArg, options = {}) {
       else if (components[id].provider !== prov)
         fail(`${rel}: component provider is ${components[id].provider}`);
       const s = fs.statSync(path.join(root, rel)).size;
-      if (s > 4096) fail(`${rel}: ${s} bytes`);
+      if (s > ICON_MAX_BYTES) fail(`${rel}: ${s} bytes`);
       const raw = fs.readFileSync(path.join(root, rel), "utf8");
-      if (
-        !raw.includes('viewBox="0 0 24 24"') ||
-        /<script|\son[a-z]+=|<image|href=|<foreignObject/i.test(raw)
-      )
-        fail(`${rel}: bad svg`);
+      if (!raw.includes('viewBox="0 0 24 24"') || UNSAFE_SVG.test(raw)) fail(`${rel}: bad svg`);
+    }
+  // Kind glyphs and provider marks are inlined into pages and served SVG exactly like component
+  // icons (Icon.tsx, DesignCard, the render route), so they pass the same markup gate.
+  if (!only)
+    for (const rel of [
+      ...walk(root, "icons/kinds", ".svg"),
+      ...walk(root, "icons/providers", ".svg"),
+    ]) {
+      const s = fs.statSync(path.join(root, rel)).size;
+      if (s > ICON_MAX_BYTES) fail(`${rel}: ${s} bytes`);
+      if (UNSAFE_SVG.test(fs.readFileSync(path.join(root, rel), "utf8"))) fail(`${rel}: bad svg`);
     }
 
   const ruleIds = new Set(rules.map((r) => r.id));

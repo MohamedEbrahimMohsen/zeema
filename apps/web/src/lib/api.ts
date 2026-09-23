@@ -2,6 +2,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { currentUser } from "./auth";
 import { ServiceError } from "./designs";
+import { clientIp as guardClientIp, LruTtl } from "./http-guards";
 
 export const json = (body: unknown, init: ResponseInit = {}) => NextResponse.json(body, init);
 
@@ -30,14 +31,15 @@ export async function readJson<T>(req: NextRequest, maxBytes = 1024 * 1024): Pro
 
 export const viewerOf = () => currentUser();
 
-export const clientIp = (req: NextRequest) =>
-  req.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
-  req.headers.get("x-real-ip") ||
-  "local";
+/** The caller's address as far as we can trust it. See `clientIp` in http-guards.ts. */
+export const clientIp = (req: Pick<NextRequest, "headers">) => guardClientIp(req.headers);
 
-// A small in-memory token bucket per key. Enough for one process; a shared store replaces it
-// when the platform runs more than one.
-const buckets = new Map<string, { tokens: number; at: number }>();
+// Token buckets per key, in process memory: one process, one set of limits. With several
+// replicas each keeps its own, so the effective limit is the per-process one times the replica
+// count (docs/deploy.md). The map is bounded and least-recently-used keys go first, so a flood
+// of fresh keys cannot wipe the buckets of everyone else; an idle bucket expires after ten
+// minutes, by which time it would have refilled anyway.
+const buckets = new LruTtl<{ tokens: number; at: number }>(10_000, 10 * 60_000);
 export function rateLimit(key: string, perMinute: number) {
   const now = Date.now();
   const b = buckets.get(key) ?? { tokens: perMinute, at: now };
@@ -49,7 +51,15 @@ export function rateLimit(key: string, perMinute: number) {
   }
   b.tokens -= 1;
   buckets.set(key, b);
-  if (buckets.size > 10_000) buckets.clear();
+}
+
+// "At most once per window" keys: the first call in a window answers true, the rest false.
+const seen = new LruTtl<true>(50_000, 60 * 60_000);
+/** True the first time `key` is seen in the last hour (per process). */
+export function firstInHour(key: string) {
+  if (seen.has(key)) return false;
+  seen.set(key, true);
+  return true;
 }
 
 export async function handle(fn: () => Promise<Response>) {

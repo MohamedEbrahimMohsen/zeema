@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { handle, viewerOf } from "@/lib/api";
 import { getDesign } from "@/lib/designs";
+import { attachment } from "@/lib/http-guards";
 
 export async function GET(
   req: NextRequest,
@@ -19,7 +20,8 @@ export async function GET(
       etag: `"${view.version?.contentHash ?? ""}"`,
       "cache-control": "no-cache",
     };
-    if (download) headers["content-disposition"] = `attachment; filename="${slug}.yaml"`;
+    // Named after the stored slug, never the address typed: the URL segment is caller text.
+    if (download) headers["content-disposition"] = attachment(view.design.slug, "yaml");
     return new Response(text, { headers });
   });
 }

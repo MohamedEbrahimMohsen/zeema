@@ -28,10 +28,22 @@ export async function GET(
   { params }: { params: Promise<{ type: string; id: string }> },
 ) {
   const { type, id } = await params;
-  const build = BUILDERS[type as keyof typeof BUILDERS];
-  if (!build) return new Response("Not found\n", { status: 404 });
-  const doc = build(decodeURIComponent(id));
-  if (!doc) return new Response(`No ${type.replace(/s$/, "")} with id "${id}".\n`, { status: 404 });
+  // Plain text, and never an echo of what was asked for: the id is caller text.
+  const notFound = () =>
+    new Response("Not found\n", {
+      status: 404,
+      headers: { "content-type": "text/plain; charset=utf-8" },
+    });
+  const build = Object.hasOwn(BUILDERS, type) ? BUILDERS[type as keyof typeof BUILDERS] : null;
+  if (!build) return notFound();
+  let key: string;
+  try {
+    key = decodeURIComponent(id);
+  } catch {
+    return notFound();
+  }
+  const doc = build(key);
+  if (!doc) return notFound();
   return new Response(renderMarkdown(doc, siteOrigin(req)), {
     headers: {
       "content-type": "text/markdown; charset=utf-8",

@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { handle, json, viewerOf } from "@/lib/api";
 import { setActingAdmin } from "@/lib/auth";
 import { ServiceError } from "@/lib/designs";
+import { nextPath } from "@/lib/http-guards";
 
 export async function POST(req: Request) {
   return handle(async () => {
@@ -22,8 +23,7 @@ export async function POST(req: Request) {
     }
     const ok = await setActingAdmin(viewer, on);
     if (!ok) throw new ServiceError(403, "this account does not hold the admin role");
-    if (next?.startsWith("/"))
-      return NextResponse.redirect(new URL(next, req.url), { status: 303 });
+    if (next) return NextResponse.redirect(new URL(nextPath(next), req.url), { status: 303 });
     return json({ actingAdmin: on });
   });
 }

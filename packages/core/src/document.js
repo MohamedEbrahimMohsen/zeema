@@ -95,9 +95,14 @@ export function randomSuffix(length = 8) {
 // What a node is called on the canvas: its own label, else the component's proper name. Never
 // the id, which is a key and reads like one. Two instances of Azure Function both say Azure
 // Function, because there is one Azure Function and these are two of it.
+// Catalogue maps are plain objects keyed by ids that come from documents, so a lookup reads own
+// keys only: a component called `constructor` or `toString` is unknown, not Object's method.
+const own = (o, k) =>
+  o != null && typeof k === "string" && Object.hasOwn(o, k) ? o[k] : undefined;
+
 export function displayName(catalogue, node) {
   if (node.label) return node.label;
-  const loc = catalogue.locale?.components[node.component];
+  const loc = own(catalogue.locale?.components, node.component);
   return loc?.name || node.component || node.id;
 }
 
@@ -137,16 +142,16 @@ const nodeIds = (doc) => new Set(doc.nodes.map((n) => n.id));
 const groupIds = (doc) => new Set((doc.groups || []).map((g) => g.id));
 
 export function propDefs(catalogue, componentId) {
-  const c = catalogue.components[componentId];
+  const c = own(catalogue.components, componentId);
   if (!c) return {};
-  const k = catalogue.kinds[c.kind];
+  const k = own(catalogue.kinds, c.kind);
   return { ...(k ? k.properties : {}), ...(c.properties || {}) };
 }
 
 // The value a design resolves to: the node's own prop, then the component default, then the
 // kind default. A property that resolves to nothing is absent, which is what the rules read.
 export function effective(catalogue, node) {
-  const c = catalogue.components[node.component];
+  const c = own(catalogue.components, node.component);
   if (!c) return {};
   const defs = propDefs(catalogue, node.component);
   const out = {};
@@ -163,7 +168,7 @@ export function effective(catalogue, node) {
 // the catalogue are in that position, so the first enum value is written and flagged.
 export function requiredGaps(catalogue, componentId) {
   const defs = propDefs(catalogue, componentId);
-  const c = catalogue.components[componentId];
+  const c = own(catalogue.components, componentId);
   const gaps = [];
   for (const [name, def] of Object.entries(defs)) {
     if (!def.required) continue;

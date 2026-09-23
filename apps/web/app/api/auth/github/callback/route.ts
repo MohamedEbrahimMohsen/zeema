@@ -10,6 +10,7 @@ import {
   setSessionCookie,
   upsertGithubUser,
 } from "@/lib/auth";
+import { nextPath } from "@/lib/http-guards";
 import { countSignin } from "@/lib/metrics";
 
 export async function GET(req: Request) {
@@ -60,7 +61,5 @@ export async function GET(req: Request) {
   await setSessionCookie(token, expiresAt);
   const next = jar.get("zeema_oauth_next")?.value;
   jar.delete("zeema_oauth_next");
-  return NextResponse.redirect(
-    new URL(next?.startsWith("/") ? next : `/u/${user.username}`, req.url),
-  );
+  return NextResponse.redirect(new URL(next ? nextPath(next) : `/u/${user.username}`, req.url));
 }

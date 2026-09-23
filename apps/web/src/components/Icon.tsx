@@ -1,3 +1,6 @@
+const escapeText = (s: string) =>
+  s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c] ?? c);
+
 // Inline SVG for a catalogue icon. `markup` is the inner markup from the icon map (sanitised at
 // build); vendor marks carry their own fills, line glyphs draw in currentColor via .ic.
 export function Icon({
@@ -22,7 +25,9 @@ export function Icon({
       role={title ? "img" : undefined}
       // biome-ignore lint/security/noDangerouslySetInnerHtml: catalogue icon markup, sanitised at build
       dangerouslySetInnerHTML={{
-        __html: (title ? `<title>${title}</title>` : "") + (markup ?? ""),
+        __html:
+          (title ? `<title>${escapeText(title)}</title>` : "") +
+          (typeof markup === "string" ? markup : ""),
       }}
     />
   );

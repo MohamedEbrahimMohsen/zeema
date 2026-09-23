@@ -17,5 +17,5 @@
   },
   "files": ["src"],
   "scripts": { "test": "vitest run" },
-  "devDependencies": { "vitest": "5.0.0", "yaml": "2.8.2" }
+  "devDependencies": { "vitest": "5.0.0", "yaml": "2.8.3" }
 }

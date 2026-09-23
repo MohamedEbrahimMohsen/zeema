@@ -101,7 +101,8 @@ export const API_ROUTES: ApiRoute[] = [
     method: "POST",
     path: "/api/v1/designs/{owner}/{slug}/events",
     auth: "none",
-    summary: "Record an export event for the design's counters.",
+    summary:
+      "Record a view for the design's counters, once per visitor an hour. Exports and clones are counted by the server.",
   },
   // ---- linting and the catalogue
   {
@@ -180,7 +181,12 @@ export const API_ROUTES: ApiRoute[] = [
     auth: "none",
     summary: "Finish it and open a session.",
   },
-  { method: "POST", path: "/api/auth/logout", auth: "viewer", summary: "End the session." },
+  {
+    method: "POST",
+    path: "/api/auth/logout",
+    auth: "viewer",
+    summary: "End this session, or every session of the account with the form field scope=all.",
+  },
   {
     method: "POST",
     path: "/api/auth/mode",

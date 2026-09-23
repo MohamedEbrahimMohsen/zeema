@@ -3,6 +3,13 @@
 // deployment has something to browse.
 export async function register() {
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
+  // Refuse to start on a configuration that would lose data or weaken the event log.
+  const { bootProblems } = await import("./src/lib/boot");
+  const problems = bootProblems();
+  if (problems.length) {
+    for (const p of problems) console.error(`[zeema] refusing to start: ${p}`);
+    throw new Error(`refusing to start: ${problems.join(" ")}`);
+  }
   const { installHttpMetrics } = await import("./src/lib/metrics");
   installHttpMetrics();
   const { getDb, schema } = await import("./src/db");

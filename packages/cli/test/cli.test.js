@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { main } from "../src/index.js";
+import { main, resolveOut } from "../src/index.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(here, "..", "..", "..");
@@ -156,4 +156,53 @@ describe("init and validate", () => {
     expect(r.code).toBe(0);
     expect(r.out).toContain("all checks passed");
   }, 120_000);
+});
+
+describe("--out stays where it is told (resolveOut)", () => {
+  it("accepts a relative path inside the working directory", () => {
+    const dir = fs.mkdtempSync(path.join(tmp, "cwd-"));
+    expect(resolveOut(dir, "reports/out.svg")).toBe(path.join(dir, "reports", "out.svg"));
+  });
+
+  it("refuses a relative path that climbs out of the working directory", () => {
+    const dir = fs.mkdtempSync(path.join(tmp, "cwd-"));
+    expect(() => resolveOut(dir, "../escape.svg")).toThrow(/outside the working directory/);
+    expect(() => resolveOut(dir, "a/../../escape.svg")).toThrow(/outside the working directory/);
+  });
+
+  it("accepts an explicit absolute path", () => {
+    const dir = fs.mkdtempSync(path.join(tmp, "abs-"));
+    const target = path.join(dir, "x.svg");
+    expect(resolveOut(process.cwd(), target)).toBe(target);
+  });
+
+  it("refuses a directory link inside cwd that points out of it", () => {
+    const dir = fs.mkdtempSync(path.join(tmp, "cwd-"));
+    const outside = fs.mkdtempSync(path.join(tmp, "outside-"));
+    // A junction needs no privilege on Windows; elsewhere it is an ordinary directory link.
+    fs.symlinkSync(outside, path.join(dir, "link"), "junction");
+    expect(() => resolveOut(dir, "link/x.svg")).toThrow(/through a link/);
+  });
+
+  it("refuses a target that is itself a symbolic link", () => {
+    const dir = fs.mkdtempSync(path.join(tmp, "cwd-"));
+    const victim = path.join(tmp, "victim.txt");
+    fs.writeFileSync(victim, "keep");
+    try {
+      fs.symlinkSync(victim, path.join(dir, "out.svg"), "file");
+    } catch {
+      return; // file links need a privilege on Windows; the directory case above still runs
+    }
+    expect(() => resolveOut(dir, "out.svg")).toThrow(/symbolic link/);
+    expect(() => resolveOut(dir, path.join(dir, "out.svg"))).toThrow(/symbolic link/);
+  });
+
+  it("reports a refused --out as a usage error without writing", async () => {
+    const dir = fs.mkdtempSync(path.join(tmp, "cwd-"));
+    const design = path.join(ROOT, clean);
+    const r = await run(["render", design, "--out", "../nope.svg"], dir);
+    expect(r.code).toBe(2);
+    expect(r.err).toMatch(/outside the working directory/);
+    expect(fs.existsSync(path.join(dir, "..", "nope.svg"))).toBe(false);
+  });
 });

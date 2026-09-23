@@ -4,6 +4,7 @@ import { and, desc, eq, ilike, isNull, sql } from "drizzle-orm";
 import { getDb, schema } from "@/db";
 import type { Role, User } from "@/db/schema";
 import { ServiceError } from "./designs";
+import { escapeLike } from "./http-guards";
 import { actingAdmin, type SessionUser } from "./viewer";
 
 export type IamUser = {
@@ -31,7 +32,7 @@ export async function listUsers(
   const db = await getDb();
   const conds = [isNull(schema.users.deletedAt)];
   if (opts.q) {
-    const t = `%${opts.q.trim()}%`;
+    const t = `%${escapeLike(opts.q.trim())}%`;
     conds.push(sql`(${ilike(schema.users.username, t)} or ${ilike(schema.users.displayName, t)})`);
   }
   if (opts.onlyAdmins)
@@ -153,11 +154,14 @@ export async function revokeRole(
       ),
     )
     .returning();
-  // Sessions that had the role switched on fall back to member on their next request.
-  await db
-    .update(schema.sessions)
-    .set({ actingAdmin: false })
-    .where(eq(schema.sessions.userId, user.id));
+  // Losing a role ends every session the account has open: whatever was done with admin power
+  // on another device stops now, not at that session's next idle expiry. The account signs in
+  // again as a member.
+  if (rows.length)
+    await db
+      .update(schema.sessions)
+      .set({ actingAdmin: false, revoked: true })
+      .where(eq(schema.sessions.userId, user.id));
   return { revoked: rows.length > 0 };
 }
 

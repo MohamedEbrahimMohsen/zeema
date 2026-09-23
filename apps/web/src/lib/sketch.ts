@@ -4,6 +4,7 @@ import { normalize } from "@zeema/core/document";
 import { layout } from "@zeema/core/layout";
 import { parse } from "@zeema/core/yaml";
 import type { Catalogue } from "./catalogue";
+import { own } from "./own";
 
 export type Sketch = {
   w: number;
@@ -36,7 +37,7 @@ export function sketchOf(yaml: string, cat: Catalogue): Sketch | null {
       const p = l.positions[n.id];
       const s = l.sizes[n.id];
       if (!p || !s) continue;
-      const c = cat.components[n.component];
+      const c = own(cat.components, n.component);
       const hue = c ? (HUE[cat.kinds[c.kind]?.category ?? ""] ?? "grey") : "grey";
       nodes.push([p[0], p[1], s[0], s[1], hue]);
     }

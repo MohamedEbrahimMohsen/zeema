@@ -12,7 +12,7 @@ and the monitoring that watches both.
 cp .env.example .env
 ```
 
-Fill in the four required secrets in `.env`. Generate each with `openssl rand -hex 24`:
+Fill in the five required secrets in `.env`. Generate each with `openssl rand -hex 24`:
 
 | Variable | What it protects |
 |---|---|
@@ -20,6 +20,7 @@ Fill in the four required secrets in `.env`. Generate each with `openssl rand -h
 | `METRICS_TOKEN` | `/api/metrics`, and the token Prometheus presents to scrape it |
 | `GRAFANA_PASSWORD` | The Grafana admin account |
 | `GRAFANA_DB_PASSWORD` | The read-only database account Grafana queries with |
+| `EVENT_SALT` | The hashed network addresses in the event log. The app refuses to start in production without a real one |
 
 Then:
 
@@ -58,16 +59,17 @@ authentication.
 | Variable | Required | Meaning |
 |---|---|---|
 | `POSTGRES_PASSWORD` | yes | Database password, used by the app, the exporter and backups |
-| `METRICS_TOKEN` | yes | Bearer token for `/api/metrics`. Without a match the endpoint answers 404 |
+| `METRICS_TOKEN` | yes | Token for `/api/metrics`, sent as `Authorization: Bearer <token>` or `X-Metrics-Token: <token>`, never in the URL. Without a match, or with no token set in production, the endpoint answers 404 |
 | `GRAFANA_PASSWORD` | yes | Grafana admin password |
 | `GRAFANA_DB_PASSWORD` | yes | Password for `grafana_ro`, the read-only database account Grafana queries with |
-| `APP_ORIGIN` | yes | The public origin, such as `https://zeema.example.com`. Used for the OAuth callback |
+| `APP_ORIGIN` | yes | The public origin, such as `https://zeema.example.com`. Used for the OAuth callback, the sign-in redirect check, the cross-site write check, and HSTS (sent only when this is `https://`) |
 | `CANVAS_URL` | no | Where the landing page's "Open Canvas" and "Get started" buttons send visitors. Defaults to `APP_ORIGIN` |
 | `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | for sign-in | From a GitHub OAuth app. Without them, reading works and creating is disabled |
 | `ZEEMA_ADMINS` | once | Usernames granted the admin role at their next sign-in. See `roles-and-publishing.md` |
-| `EVENT_SALT` | recommended | Salt for the hashed network addresses in the event log |
+| `EVENT_SALT` | yes | Salt for the hashed network addresses in the event log. Production refuses to start when it is unset, `zeema` or `change-me` |
+| `TRUSTED_PROXY` | behind a proxy | How many reverse proxies in front of the app append to `X-Forwarded-For`. `0` (default in `docker-compose.yml`) ignores the header; `1` (default in `docker-compose.deploy.yml`) takes its rightmost entry as the client. See section 8 |
 | `AUTO_SEED` | no | `0` skips seeding the curated designs into an empty database |
-| `DATABASE_URL` | outside compose | Postgres connection string. Unset locally to use the embedded database under `apps/web/.pglite` |
+| `DATABASE_URL` | outside compose | Postgres connection string. Unset locally to use the embedded database under `apps/web/.pglite`. Production refuses to start without it, and `/api/health` answers 503 with `"database":"not configured"` |
 | `ZEEMA_ROOT` | no | Repository root holding `kinds/`, `components/`, `designs/`. Defaults to the monorepo root |
 
 The embedded database is for local development only. It runs inside the app process, so it
@@ -95,12 +97,29 @@ Prometheus scrapes two targets every fifteen seconds and keeps thirty days by de
   accounts, designs by visibility, unpublished drafts, stored versions and active sessions.
 - **Postgres**, through `postgres-exporter`: connections, database size, transaction rates.
 
-Grafana also reads the application database directly, as `grafana_ro`, an account that can
-only SELECT. This is for the panels Prometheus cannot serve: a view count per design would be
-one time series per design, which is exactly the cardinality Prometheus is bad at, and the
-number already sits in `design_stats`. The role is created by
-`ops/postgres/init/10-grafana-ro.sh` when the database is first initialised. On a database that
-already exists, run it once by hand:
+Grafana also reads the application database directly, as `grafana_ro`. This is for the panels
+Prometheus cannot serve: a view count per design would be one time series per design, which is
+exactly the cardinality Prometheus is bad at, and the number already sits in `design_stats`.
+
+`grafana_ro` reads views, not tables. The app's migration `0004_grafana_views` creates a
+`grafana` schema holding four views. The account can SELECT those and nothing else; its
+`search_path` is `grafana` and every session it opens is read-only:
+
+| View | Columns |
+|---|---|
+| `grafana.designs` | `id, owner_id, slug, title, visibility, origin, created_at, updated_at, published_at, deleted_at` |
+| `grafana.design_stats` | `design_id, view_count, clone_count, export_count, updated_at` |
+| `grafana.design_events` | `id, design_id, kind, format, created_at` (no address hash, no actor) |
+| `grafana.users` | `id, username, created_at` |
+
+Sessions, role grants, design versions (the text of private designs) and everything else in
+`public` are out of its reach. A panel that needs another column needs a view change in a
+migration, which is the point.
+
+The role is created by `ops/postgres/init/10-grafana-ro.sh` when the database is first
+initialised. Postgres runs init scripts only on an empty data directory, so on a database that
+already exists, including one set up with the older blanket grants, run it once by hand. It
+revokes the old grants and is safe to repeat:
 
 ```bash
 docker compose exec -T db sh /docker-entrypoint-initdb.d/10-grafana-ro.sh
@@ -152,8 +171,10 @@ git pull
 docker compose up -d --build
 ```
 
-Migrations run on the first request after boot. Take a backup first when a release adds a
-migration.
+Migrations run on the first request after boot. On Postgres they run under an advisory lock
+(`pg_advisory_lock`), so replicas that start together take turns: the first applies the
+migrations and the others wait, then find nothing left to do. Take a backup first when a
+release adds a migration.
 
 ## 8. Without compose
 
@@ -167,11 +188,47 @@ Put the process behind TLS. The session cookie is marked `Secure` in production,
 will not keep anyone signed in.
 
 One Node process uses about one core, whatever the machine has. To use more, run several
-containers behind a reverse proxy; they share the database and need no coordination.
+containers behind a reverse proxy; they share the database, and migrations serialise themselves
+(section 7). Rate limits are the exception: each process keeps its own in memory, so with N
+replicas the effective limit is N times the per-process one.
+
+### Behind a reverse proxy
+
+Tell the app how many proxies sit in front of it with `TRUSTED_PROXY` (usually `1`). It then
+reads the client address as the rightmost `X-Forwarded-For` entry, which is the one your proxy
+wrote; anything the client put further left is ignored. With `TRUSTED_PROXY=0` the header is
+ignored entirely and every anonymous caller shares one rate-limit bucket, which is the safe
+setting whenever the app's port is reachable without the proxy. Never set it above `0` on a port
+the internet can reach directly: anyone could then choose their own address.
+
+### Security headers
+
+The app sets these itself:
+
+| Header | Value |
+|---|---|
+| `Content-Security-Policy` (pages) | `default-src 'self'; script-src 'self' 'nonce-<per request>' 'strict-dynamic'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://avatars.githubusercontent.com; connect-src 'self'; worker-src 'self'; manifest-src 'self'; frame-src 'none'; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self' https://github.com` |
+| `Content-Security-Policy` (the `render` SVG) | `sandbox; default-src 'none'; style-src 'unsafe-inline'` |
+| `X-Frame-Options` | `DENY` |
+| `X-Content-Type-Options` | `nosniff` |
+| `Referrer-Policy` | `strict-origin-when-cross-origin` |
+| `Permissions-Policy` | `camera=(), microphone=(), geolocation=(), payment=(), usb=()` |
+| `Strict-Transport-Security` | `max-age=31536000; includeSubDomains`, only when `APP_ORIGIN` is `https://` |
+
+The page policy carries a fresh nonce per request (`apps/web/proxy.ts`), so a proxy must pass
+the app's `Content-Security-Policy` through rather than replace it. The other headers a proxy
+may set as well; the values agree. `'unsafe-inline'` applies to styles only, because the canvas
+positions and colours shapes with inline styles; scripts never get it.
+
+State-changing API requests (`POST`, `PUT`, `PATCH`, `DELETE`) are refused with 403 when their
+`Origin` is neither `APP_ORIGIN` nor the host they were addressed to, or when a browser marks
+them `Sec-Fetch-Site: cross-site`. A proxy must therefore keep the `Host` header or `APP_ORIGIN`
+must be the public origin, which it has to be for sign-in anyway.
 
 ## 9. Checks after a deployment
 
-- `curl localhost:3000/api/health` returns `{"status":"ok"}`.
+- `curl localhost:3000/api/health` returns `{"status":"ok","database":"ok"}`.
+- `curl -I localhost:3000/` shows the headers listed in section 8.
 - `GET /api/v1/designs` returns the seeded list.
 - `/signin` shows "Continue with GitHub".
 - Prometheus, at `http://localhost:9090/targets`, shows `zeema-web` and `postgres` up.

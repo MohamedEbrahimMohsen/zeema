@@ -18,6 +18,7 @@ import {
   NOTE_MIN_W,
   type Note,
 } from "@/lib/layout-sidecar";
+import { own } from "@/lib/own";
 
 const NS = "http://www.w3.org/2000/svg";
 const el = (name: string, attrs: Record<string, unknown> = {}) => {
@@ -762,7 +763,7 @@ export class Scene {
 
   symbolFor(componentId: string) {
     if (this.symbols.has(componentId)) return true;
-    const body = this.model.icons ? this.model.icons[componentId] : null;
+    const body = own(this.model.icons, componentId);
     if (!body) return false;
     const sym = el("symbol", { id: `ic-${componentId}`, viewBox: "0 0 24 24" });
     sym.innerHTML = body;
@@ -772,15 +773,15 @@ export class Scene {
   }
 
   hueOf(componentId: string) {
-    const c = this.model.catalogue.components[componentId];
-    const k = c ? this.model.catalogue.kinds[c.kind] : null;
+    const c = own(this.model.catalogue.components, componentId);
+    const k = c ? own(this.model.catalogue.kinds, c.kind) : null;
     return k ? CATEGORY_HUE[k.category] || "grey" : "grey";
   }
 
   // A custom node is a hole in the model, and it is drawn as one: dashed border, washed-out
   // fill. A reader should be able to see where the rules stop applying without reading a panel.
   isCustom(componentId: string) {
-    return this.model.catalogue.components[componentId]?.kind === "custom";
+    return own(this.model.catalogue.components, componentId)?.kind === "custom";
   }
 
   renderNodes() {

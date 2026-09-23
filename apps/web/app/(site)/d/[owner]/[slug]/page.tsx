@@ -1,6 +1,7 @@
 import { normalize } from "@zeema/core/document";
 import { toSvg } from "@zeema/core/render";
 import { parse } from "@zeema/core/yaml";
+import { headers } from "next/headers";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { CollapsibleSection } from "@/components/CollapsibleSection";
@@ -16,6 +17,7 @@ import { Markdown } from "@/components/Markdown";
 import { Readme } from "@/components/Readme";
 import { TagEditor } from "@/components/TagEditor";
 import { YamlSection } from "@/components/YamlSection";
+import { firstInHour } from "@/lib/api";
 import { currentUser } from "@/lib/auth";
 import { getCatalogue, getIcons } from "@/lib/catalogue";
 import {
@@ -30,8 +32,10 @@ import {
   resolveAlias,
   ServiceError,
 } from "@/lib/designs";
+import { clientIp } from "@/lib/http-guards";
 import { readSidecar } from "@/lib/layout-sidecar";
 import { analyse } from "@/lib/lint";
+import { own } from "@/lib/own";
 
 export const dynamic = "force-dynamic";
 
@@ -83,7 +87,10 @@ export default async function DesignPage({
         layout: readSidecar(version?.layout),
       })
     : "";
-  void recordEvent(view.design.id, viewer, "view").catch(() => {});
+  // One view per visitor and hour: cheap in-process first, then the event log itself decides.
+  const ip = clientIp(await headers());
+  if (firstInHour(`view:${viewer?.id ?? ip}:${view.design.id}`))
+    void recordEvent(view.design.id, viewer, "view", { ip }).catch(() => {});
   const hasBroken =
     view.design.origin === "reference" && (await getBrokenVersion(view.design.id)) !== null;
   const ownerSeg = ownerSegment(view.owner);
@@ -238,11 +245,11 @@ export default async function DesignPage({
           <CollapsibleSection name="components" title="Components" count={doc?.nodes.length ?? 0}>
             <ul className="flex flex-col gap-2 small">
               {doc?.nodes.map((n) => {
-                const c = cat.components[n.component];
+                const c = own(cat.components, n.component);
                 return (
                   <li key={n.id} className="flex items-center gap-2 min-w-0">
                     <Icon
-                      markup={icons[n.component] ?? (c ? icons[`kind:${c.kind}`] : undefined)}
+                      markup={own(icons, n.component) ?? (c ? icons[`kind:${c.kind}`] : undefined)}
                       size="sm"
                     />
                     <span className="medium truncate">{n.label ?? n.id}</span>

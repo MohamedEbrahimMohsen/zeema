@@ -29,6 +29,37 @@ import {
 const here = path.dirname(fileURLToPath(import.meta.url));
 const VERSION = JSON.parse(fs.readFileSync(path.join(here, "..", "package.json"), "utf8")).version;
 
+/**
+ * Where `--out` may write. A relative path must stay inside the working directory once resolved
+ * (no `..` escape) and once symbolic links are followed (no link inside cwd pointing out of it).
+ * An absolute path is the caller's explicit choice of directory and is taken as given. In both
+ * cases the target itself must not be a symbolic link, so a planted link cannot redirect the
+ * write. Throws with a plain message; the command reports it and exits 2.
+ */
+export function resolveOut(cwd, out) {
+  if (typeof out !== "string" || out === "") throw new Error("--out needs a file name");
+  const target = path.resolve(cwd, out);
+  if (!path.isAbsolute(out)) {
+    const base = fs.realpathSync(cwd);
+    const inside = (p) => p === base || p.startsWith(base + path.sep);
+    if (!inside(path.resolve(base, out)))
+      throw new Error(`--out ${out} is outside the working directory; give an absolute path`);
+    // Follow the deepest part of the path that exists: a link on the way must not lead out.
+    let probe = path.dirname(target);
+    while (!fs.existsSync(probe)) probe = path.dirname(probe);
+    if (!inside(fs.realpathSync(probe)))
+      throw new Error(`--out ${out} leads outside the working directory through a link`);
+  }
+  let st = null;
+  try {
+    st = fs.lstatSync(target);
+  } catch {}
+  if (st?.isSymbolicLink())
+    throw new Error(`--out ${out} is a symbolic link; refusing to follow it`);
+  if (st?.isDirectory()) throw new Error(`--out ${out} is a directory`);
+  return target;
+}
+
 export function parseArgs(argv) {
   const positional = [];
   const flags = {};
@@ -88,6 +119,9 @@ const USAGE = `zeema <command>
   catalogue <sub>        find <words...> | component <id> | kind <id> | kinds | providers <kind>
   init [dir]             starter design, config, editor schema mapping, CI workflow
   version
+
+  --out <file>: a relative path must stay inside the current directory; give an absolute path
+  to write anywhere else. Symbolic links at or on the way to the target are refused.
 `;
 
 export async function main(argv, io = {}) {
@@ -98,8 +132,10 @@ export async function main(argv, io = {}) {
   const [cmd, ...rest] = positional;
   const writeOut = (text) => {
     if (flags.out) {
-      fs.mkdirSync(path.dirname(path.resolve(cwd, flags.out)), { recursive: true });
-      fs.writeFileSync(path.resolve(cwd, flags.out), text, "utf8");
+      const target = resolveOut(cwd, flags.out);
+      fs.mkdirSync(path.dirname(target), { recursive: true });
+      // Refuse to write through a link planted at the target itself, even in our own directory.
+      fs.writeFileSync(target, text, { encoding: "utf8", flag: "w" });
     } else stdout(text);
   };
 

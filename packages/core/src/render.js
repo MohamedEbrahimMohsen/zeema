@@ -53,6 +53,11 @@ const f1 = (n) => Number(n).toFixed(1);
  *                                the picture the one that was drawn rather than an arrangement
  *                                of it. Notes are canvas furniture and are never drawn here. }
  */
+// Catalogue maps are plain objects keyed by ids that come from documents, so a lookup reads own
+// keys only: a component called `constructor` or `toString` is unknown, not Object's method.
+const own = (o, k) =>
+  o != null && typeof k === "string" && Object.hasOwn(o, k) ? o[k] : undefined;
+
 export function toSvg(doc, catalogue, options = {}) {
   const icons = options.icons ?? {};
   // A sidecar with no positions in it says nothing, so it falls back to the automatic layout
@@ -142,13 +147,13 @@ export function toSvg(doc, catalogue, options = {}) {
   for (const n of doc.nodes ?? []) {
     const [x, y] = lay.positions[n.id];
     const [bw, bh] = lay.sizes[n.id];
-    const c = comps[n.component] ?? {};
-    const hue = CATEGORY_HUE[kinds[c.kind]?.category] ?? "grey";
+    const c = own(comps, n.component) ?? {};
+    const hue = own(CATEGORY_HUE, own(kinds, c.kind)?.category) ?? "grey";
     const cx = x + bw / 2;
     out.push(
       `<rect class="f-${hue}" x="${x}" y="${y}" width="${bw}" height="${bh}" rx="8" stroke-width="1"/>`,
     );
-    const body = icons[n.component];
+    const body = own(icons, n.component);
     if (body)
       out.push(
         `<g class="ic" transform="translate(${f1(cx - ICON / 2)} ${y + 11})" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${body}</g>`,

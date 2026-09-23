@@ -26,9 +26,14 @@ const EMPTY = Object.freeze({});
 
 /* ------------------------------------------------------------------ catalogue resolution */
 
+// Catalogue maps are plain objects keyed by ids that come from documents, so a lookup reads own
+// keys only: a component called `constructor` or `toString` is unknown, not Object's method.
+const own = (o, k) =>
+  o != null && typeof k === "string" && Object.hasOwn(o, k) ? o[k] : undefined;
+
 function componentOf(node, catalogue) {
   if (!node || typeof node.component !== "string") return null;
-  return catalogue?.components?.[node.component] ?? null;
+  return own(catalogue?.components, node.component) ?? null;
 }
 
 /** The kind object for a node, or null when the component or its kind is unknown. */

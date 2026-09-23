@@ -7,7 +7,7 @@
 # For the development stack that builds from source instead, use docker-compose.yml.
 #
 # Required environment (set these in the panel, or in a .env beside this file):
-#   POSTGRES_PASSWORD, METRICS_TOKEN, GRAFANA_PASSWORD, GRAFANA_DB_PASSWORD
+#   POSTGRES_PASSWORD, METRICS_TOKEN, GRAFANA_PASSWORD, GRAFANA_DB_PASSWORD, EVENT_SALT
 # Worth setting:
 #   APP_ORIGIN, CANVAS_URL, GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, ZEEMA_ADMINS
 #
@@ -52,7 +52,11 @@ services:
       GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
       GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
       ZEEMA_ADMINS: ${ZEEMA_ADMINS:-}
-      EVENT_SALT: ${EVENT_SALT:-zeema}
+      # Required: production refuses to start on a missing or placeholder salt.
+      EVENT_SALT: ${EVENT_SALT:?set EVENT_SALT}
+      # This file is meant to run behind one TLS-terminating reverse proxy (docs/deploy.md), so
+      # the rightmost X-Forwarded-For entry is the client. Set 0 if the app is reached directly.
+      TRUSTED_PROXY: ${TRUSTED_PROXY:-1}
       METRICS_TOKEN: ${METRICS_TOKEN:?set METRICS_TOKEN}
       AUTO_SEED: ${AUTO_SEED:-1}
     ports:

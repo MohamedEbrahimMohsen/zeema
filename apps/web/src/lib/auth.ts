@@ -129,6 +129,15 @@ export async function revokeCurrentSession() {
     .where(eq(schema.sessions.tokenHash, hash(token)));
 }
 
+/** Sign out everywhere: revoke every session of the signed-in account, this one included. */
+export async function revokeAllSessions(userId: string) {
+  const db = await getDb();
+  await db
+    .update(schema.sessions)
+    .set({ revoked: true })
+    .where(and(eq(schema.sessions.userId, userId), eq(schema.sessions.revoked, false)));
+}
+
 /** Upsert a user from an identity provider profile. The numeric id is the key; the login may change. */
 export async function upsertGithubUser(profile: {
   id: number;

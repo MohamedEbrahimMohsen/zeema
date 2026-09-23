@@ -3,6 +3,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { designIndex, iconMap, loadCatalogue, loadSources, resolveRoot } from "@zeema/catalogue";
+import { own } from "./own";
 
 export type Catalogue = {
   kinds: Record<string, { id: string; category: string; properties: Record<string, PropertyDef> }>;
@@ -101,7 +102,7 @@ export function getSources(): Sources {
 }
 
 export function componentName(cat: Catalogue, id: string) {
-  return cat.locale.components[id]?.name ?? id;
+  return own(cat.locale.components, id)?.name ?? id;
 }
 
 export function repoDesigns() {

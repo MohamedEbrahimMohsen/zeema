@@ -7,6 +7,6 @@
   "bin": { "zeema": "./src/bin.js" },
   "exports": { ".": "./src/index.js" },
   "scripts": { "test": "vitest run" },
-  "dependencies": { "@zeema/core": "workspace:*", "@zeema/catalogue": "workspace:*", "yaml": "2.8.2" },
+  "dependencies": { "@zeema/core": "workspace:*", "@zeema/catalogue": "workspace:*", "yaml": "2.8.3" },
   "devDependencies": { "vitest": "5.0.0" }
 }

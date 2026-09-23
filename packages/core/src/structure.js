@@ -30,6 +30,11 @@ const edge = (i) => ({ type: "edge", ref: i });
  * @param {{file?: string}} [options]
  * @returns {Array<{message: string, subject: {type: string, ref: any}, blocking: true}>}
  */
+// Catalogue maps are plain objects keyed by ids that come from documents, so a lookup reads own
+// keys only: a component called `constructor` or `toString` is unknown, not Object's method.
+const own = (o, k) =>
+  o != null && typeof k === "string" && Object.hasOwn(o, k) ? o[k] : undefined;
+
 export function check(doc, catalogue, options = {}) {
   const cat = catalogue ?? {};
   const file =
@@ -47,7 +52,7 @@ export function check(doc, catalogue, options = {}) {
 /* ------------------------------------------------------------------ layer 1 */
 
 const propDefs = (c, kinds) => ({
-  ...(kinds[c.kind]?.properties ?? {}),
+  ...(own(kinds, c.kind)?.properties ?? {}),
   ...(c.properties ?? {}),
 });
 
@@ -81,7 +86,7 @@ function checkDesign(doc, catalogue, file, out) {
   }
   for (const n of nodes) {
     if (!isObj(n)) continue;
-    const c = components[n.component];
+    const c = own(components, n.component);
     if (!c) {
       add(`${file}: node ${n.id} unknown component ${n.component}`, node(n.id));
       continue;
@@ -105,7 +110,7 @@ function checkDesign(doc, catalogue, file, out) {
       if (d.type === "ref") {
         const t = nodes.find((x) => isObj(x) && x.id === v);
         if (!t) add(`${file}: ref ${k} missing`, node(n.id));
-        else if (components[t.component]?.kind !== d.refKind)
+        else if (own(components, t.component)?.kind !== d.refKind)
           add(`${file}: ref ${k} wrong kind`, node(n.id));
       }
     }

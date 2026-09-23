@@ -29,19 +29,11 @@ export function DesignPreview({ owner, slug, canWrite, svg }: Props) {
   const base = `/api/v1/designs/${owner}/${slug}`;
   const preview = svg.replace(/<style>[\s\S]*?<\/style>/, "");
 
-  // The counter is the point of the event, not the download: a failed POST never stops a file
-  // from being saved.
-  const logExport = (format: "svg" | "png") => {
-    void fetch(`${base}/events`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ kind: "export", format }),
-    }).catch(() => {});
-  };
-
+  // Exports are counted by the server where it renders them: the SVG download is that render
+  // itself, and the PNG, drawn here from the same picture, asks the server for the SVG it is
+  // made from. A failed request never stops a file from being saved.
   const downloadSvg = () => {
-    logExport("svg");
-    window.open(`${base}/render?download=1`, "_blank");
+    window.open(`${base}/render?download=svg`, "_blank");
   };
 
   const downloadPng = async () => {
@@ -50,7 +42,7 @@ export function DesignPreview({ owner, slug, canWrite, svg }: Props) {
     setError(null);
     try {
       const blob = await rasterise(svg, { mime: "image/png", scale: 2, background: "#ffffff" });
-      logExport("png");
+      void fetch(`${base}/render?download=png`).catch(() => {});
       saveFile(`${slug}.png`, blob, "image/png");
     } catch (e) {
       setError((e as Error).message);

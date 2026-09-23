@@ -3,6 +3,7 @@ import { GitHub, generateState } from "arctic";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { githubConfigured } from "@/lib/auth";
+import { nextPath } from "@/lib/http-guards";
 
 export async function GET(req: Request) {
   if (!githubConfigured())
@@ -23,8 +24,16 @@ export async function GET(req: Request) {
     path: "/",
     maxAge: 600,
   });
-  const next = new URL(req.url).searchParams.get("next");
-  if (next?.startsWith("/"))
-    jar.set("zeema_oauth_next", next, { httpOnly: true, sameSite: "lax", path: "/", maxAge: 600 });
+  // Checked before it is stored, and again when the callback reads it back.
+  const raw = new URL(req.url).searchParams.get("next");
+  const next = raw ? nextPath(raw) : null;
+  if (next && next !== "/")
+    jar.set("zeema_oauth_next", next, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 600,
+    });
   return NextResponse.redirect(url);
 }

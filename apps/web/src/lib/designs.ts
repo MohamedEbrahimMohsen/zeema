@@ -6,10 +6,14 @@ import { and, desc, eq, gt, ilike, isNotNull, isNull, ne, or, sql } from "drizzl
 import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import { getDb, schema } from "@/db";
 import type { Design, DesignVersion } from "@/db/schema";
+import { eventSalt } from "./boot";
 import { brandMarkFor } from "./brand";
 import { type Catalogue, getCatalogue } from "./catalogue";
+import { escapeLike } from "./http-guards";
+import { readSidecar } from "./layout-sidecar";
 import { analyse } from "./lint";
 import { countExport, countWrite } from "./metrics";
+import { own } from "./own";
 import { type Sketch, sketchOf } from "./sketch";
 import { publishSlugFor, toSlug, toTag } from "./slug";
 import { actingAdmin, type SessionUser } from "./viewer";
@@ -311,8 +315,10 @@ export async function listDesigns(
   opts: ListOptions = {},
 ): Promise<{ items: DesignSummary[]; total: number; page: number; pageSize: number }> {
   const db = await getDb();
-  const page = Math.max(1, opts.page ?? 1);
-  const pageSize = Math.min(100, Math.max(1, opts.pageSize ?? 24));
+  const whole = (v: number | undefined, fallback: number) =>
+    typeof v === "number" && Number.isFinite(v) ? Math.trunc(v) : fallback;
+  const page = Math.max(1, whole(opts.page, 1));
+  const pageSize = Math.min(100, Math.max(1, whole(opts.pageSize, 24)));
   const conds = [isNull(schema.designs.deletedAt)];
   if (opts.scope === "mine") {
     if (!viewer) return { items: [], total: 0, page, pageSize };
@@ -334,7 +340,8 @@ export async function listDesigns(
   }
   if (opts.q) {
     const terms = opts.q.split(/\s+/).filter(Boolean).slice(0, 8);
-    for (const t of terms)
+    // A term matches itself: `%` and `_` typed into the box are text, not wildcards.
+    for (const t of terms.map(escapeLike))
       conds.push(
         or(
           ilike(schema.designs.title, `%${t}%`),
@@ -344,8 +351,9 @@ export async function listDesigns(
       );
   }
   if (opts.origin) conds.push(eq(schema.designs.origin, opts.origin));
-  if (opts.provider) conds.push(ilike(schema.designs.searchText, `%provider:${opts.provider}%`));
-  if (opts.kind) conds.push(ilike(schema.designs.searchText, `%kind:${opts.kind}%`));
+  if (opts.provider)
+    conds.push(ilike(schema.designs.searchText, `%provider:${escapeLike(opts.provider)}%`));
+  if (opts.kind) conds.push(ilike(schema.designs.searchText, `%kind:${escapeLike(opts.kind)}%`));
   // Containment rather than a text match: `tags @> '["db"]'` finds the tag "db" and never the
   // design tagged "dbt", which `like '%db%'` would have handed back.
   if (opts.tag)
@@ -469,16 +477,41 @@ function searchTextFor(yaml: string, cat: Catalogue) {
   if (!doc) return "";
   const parts = new Set<string>();
   for (const n of doc.nodes) {
-    const c = cat.components[n.component];
+    const c = own(cat.components, n.component);
     parts.add(`component:${n.component}`);
     if (c) {
       parts.add(`provider:${c.provider}`);
       parts.add(`kind:${c.kind}`);
-      parts.add(cat.locale.components[n.component]?.name ?? "");
+      parts.add(own(cat.locale.components, n.component)?.name ?? "");
     }
     if (n.label) parts.add(String(n.label));
   }
   return `${[...parts].join(" ")} nodes:${doc.nodes.length}`;
+}
+
+/** Ceilings on the layout sidecar as stored: key counts follow the document's own limits. */
+const MAX_LAYOUT_BYTES = 256 * 1024;
+const MAX_LAYOUT_NODES = 2_000;
+const MAX_LAYOUT_EDGES = 5_000;
+
+/**
+ * The sidecar as it will be stored: normalised through the same reader the canvas uses (unknown
+ * keys gone, notes capped in count and length), then bounded. Refused rather than trimmed when
+ * it is still too large, so a client never has part of its drawing silently dropped.
+ */
+export function normaliseLayout(raw: unknown) {
+  if (raw === undefined || raw === null) return null;
+  if (typeof raw !== "object" || Array.isArray(raw))
+    throw new ServiceError(400, "layout must be an object");
+  const s = readSidecar(raw);
+  if (
+    Object.keys(s.nodes).length > MAX_LAYOUT_NODES ||
+    Object.keys(s.edges).length > MAX_LAYOUT_EDGES
+  )
+    throw new ServiceError(413, "layout too large");
+  if (Buffer.byteLength(JSON.stringify(s), "utf8") > MAX_LAYOUT_BYTES)
+    throw new ServiceError(413, "layout too large");
+  return s;
 }
 
 function validateOrThrow(yaml: string, cat: Catalogue) {
@@ -576,6 +609,7 @@ export async function createDesign(
   if (!input.title || input.title.length > 120)
     throw new ServiceError(400, "title is required (at most 120 characters)");
   validateOrThrow(input.yaml, cat);
+  const layout = normaliseLayout(input.layout);
   const ownerId = opts.curated ? null : viewer!.id;
   const slug = await uniqueSlug(ownerId, input.slug ?? input.title);
   const visibility = opts.curated ? "public" : (input.visibility ?? "private");
@@ -598,7 +632,7 @@ export async function createDesign(
     .values({
       designId: design.id,
       yaml: input.yaml,
-      layout: input.layout ?? null,
+      layout,
       contentHash: contentHash(input.yaml),
       authorId: viewer?.id ?? null,
       message: input.message ?? "created",
@@ -662,11 +696,12 @@ export async function saveVersion(owner: string, slug: string, viewer: Viewer, i
       currentHash: view.version.contentHash,
     });
   validateOrThrow(input.yaml, cat);
+  const layout = normaliseLayout(input.layout);
   const hash = contentHash(input.yaml);
   if (
     view.version &&
     hash === view.version.contentHash &&
-    JSON.stringify(input.layout ?? null) === JSON.stringify(view.version.layout ?? null)
+    JSON.stringify(layout) === JSON.stringify(view.version.layout ?? null)
   )
     return { design: view.design, version: view.version, unchanged: true };
   const head = view.version;
@@ -680,7 +715,7 @@ export async function saveVersion(owner: string, slug: string, viewer: Viewer, i
   if (foldable) {
     [version] = await db
       .update(schema.designVersions)
-      .set({ yaml: input.yaml, layout: input.layout ?? null, contentHash: hash })
+      .set({ yaml: input.yaml, layout, contentHash: hash })
       .where(eq(schema.designVersions.id, head.id))
       .returning();
   } else {
@@ -689,7 +724,7 @@ export async function saveVersion(owner: string, slug: string, viewer: Viewer, i
       .values({
         designId: view.design.id,
         yaml: input.yaml,
-        layout: input.layout ?? null,
+        layout,
         contentHash: hash,
         authorId: viewer!.id,
         message: input.message ?? null,
@@ -969,6 +1004,15 @@ export async function cloneDesign(
   return created;
 }
 
+/** Views and exports count once per visitor, design and kind in this window. */
+const EVENT_DEDUP_MS = 60 * 60_000;
+
+/**
+ * Count a view, clone or export. A clone is counted every time: it creates a design, needs a
+ * session and is rate-limited. A view or an export counts once per visitor (the account, or the
+ * hashed address for anonymous readers), design and kind per hour, so a refresh loop or a
+ * script cannot move the leaderboard. Answers whether the event counted.
+ */
 export async function recordEvent(
   designId: string,
   viewer: Viewer,
@@ -976,14 +1020,33 @@ export async function recordEvent(
   opts: { format?: string; ip?: string } = {},
 ) {
   const db = await getDb();
-  if (kind === "export") countExport(opts.format ?? "unknown");
   const ipHash = opts.ip
     ? createHash("sha256")
-        .update(
-          `${process.env.EVENT_SALT ?? "zeema"}:${opts.ip}:${new Date().toISOString().slice(0, 10)}`,
-        )
+        .update(`${eventSalt()}:${opts.ip}:${new Date().toISOString().slice(0, 10)}`)
         .digest("hex")
     : null;
+  if (kind !== "clone") {
+    const who = viewer
+      ? eq(schema.designEvents.actorId, viewer.id)
+      : ipHash
+        ? and(isNull(schema.designEvents.actorId), eq(schema.designEvents.ipHash, ipHash))
+        : null;
+    if (!who) return false;
+    const recent = await db
+      .select({ id: schema.designEvents.id })
+      .from(schema.designEvents)
+      .where(
+        and(
+          eq(schema.designEvents.designId, designId),
+          eq(schema.designEvents.kind, kind),
+          who,
+          gt(schema.designEvents.createdAt, new Date(Date.now() - EVENT_DEDUP_MS)),
+        ),
+      )
+      .limit(1);
+    if (recent[0]) return false;
+  }
+  if (kind === "export") countExport(opts.format ?? "unknown");
   await db
     .insert(schema.designEvents)
     .values({ designId, actorId: viewer?.id ?? null, kind, format: opts.format ?? null, ipHash });
@@ -1009,6 +1072,7 @@ export async function recordEvent(
         updatedAt: new Date(),
       },
     });
+  return true;
 }
 
 export async function getUserProfile(username: string) {

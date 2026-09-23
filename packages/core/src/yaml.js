@@ -19,6 +19,22 @@
 // unchanged. Trivia (comment and blank lines) attaches to the entry that follows it, and the
 // tail of a block keeps the trivia after its last entry.
 
+// ------------------------------------------------------------------ limits
+//
+// A design is a few thousand nodes at most, nested a handful of levels deep. These ceilings
+// sit far above any real document and far below what would hurt: past MAX_DEPTH the recursive
+// descent would eventually overflow the stack, and past MAX_NODES the rule engine would spend
+// seconds on one request. Both are refused with a line number, like any other unsupported input.
+export const MAX_DEPTH = 64;
+export const MAX_NODES = 100_000;
+
+// The node budget of the parse in progress. parse() is synchronous, so one module-level counter
+// is never shared between two parses.
+let nodeCount = 0;
+function countNode(line) {
+  if (++nodeCount > MAX_NODES) refuse(line, `more than ${MAX_NODES} values`);
+}
+
 // ------------------------------------------------------------------ scalars
 
 const BARE_SAFE = /^[A-Za-z_][A-Za-z0-9_./-]*$/;
@@ -127,11 +143,16 @@ function bareIsSafe(s) {
 //   { kind: "scalar", value, quote }
 //   { kind: "flowmap", value, entries: [{ key, keyQuote, node }] }
 //   { kind: "flowseq", value, items: [node] }
-function parseFlowValue(text, pos, line) {
+function parseFlowValue(text, pos, line, depth = 0) {
   const i = skipSpace(text, pos);
   const c = text[i];
-  if (c === "{") return parseFlowMap(text, i, line);
-  if (c === "[") return parseFlowSeq(text, i, line);
+  countNode(line);
+  if (c === "{" || c === "[") {
+    if (depth >= MAX_DEPTH) refuse(line, `nesting deeper than ${MAX_DEPTH} levels`);
+    return c === "{"
+      ? parseFlowMap(text, i, line, depth + 1)
+      : parseFlowSeq(text, i, line, depth + 1);
+  }
   if (c === '"') {
     const r = readDouble(text, i);
     return { node: { kind: "scalar", value: r.value, quote: "double" }, end: r.end };
@@ -169,7 +190,7 @@ function parseFlowValue(text, pos, line) {
   };
 }
 
-function parseFlowMap(text, pos, line) {
+function parseFlowMap(text, pos, line, depth) {
   const entries = [];
   const value = {};
   let i = pos + 1;
@@ -203,17 +224,17 @@ function parseFlowMap(text, pos, line) {
     let node;
     if (text[i] === ":") {
       i++;
-      const r = parseFlowValue(text, i, line);
+      const r = parseFlowValue(text, i, line, depth);
       node = r.node;
       i = r.end;
     } else node = { kind: "scalar", value: null, quote: "empty" };
-    if (key in value) refuse(line, `duplicate key ${key}`);
+    if (Object.hasOwn(value, key)) refuse(line, `duplicate key ${key}`);
     entries.push({ key, keyQuote, node });
-    value[key] = node.value;
+    setOwn(value, key, node.value);
   }
 }
 
-function parseFlowSeq(text, pos, line) {
+function parseFlowSeq(text, pos, line, depth) {
   const items = [];
   const value = [];
   let i = pos + 1;
@@ -225,7 +246,7 @@ function parseFlowSeq(text, pos, line) {
       i++;
       continue;
     }
-    const r = parseFlowValue(text, i, line);
+    const r = parseFlowValue(text, i, line, depth);
     items.push(r.node);
     value.push(r.node.value);
     i = r.end;
@@ -271,29 +292,52 @@ function stripComment(raw) {
   return { body: raw.replace(/\s+$/, ""), comment: "" };
 }
 
-// Does this flow text balance its brackets (outside quotes)?
-function flowBalanced(text) {
+// Bracket balance of flow text (outside quotes), scanned incrementally: a multi-line flow
+// collection is fed one line at a time, so the scan is linear in the text rather than
+// rescanning everything read so far for every line. Nesting past MAX_DEPTH is refused here,
+// before the recursive parser ever sees it.
+function flowScanner(line) {
   let depth = 0;
   let quote = null;
-  for (let i = 0; i < text.length; i++) {
-    const c = text[i];
-    if (quote === '"') {
-      if (c === "\\") i++;
-      else if (c === '"') quote = null;
-      continue;
-    }
-    if (quote === "'") {
-      if (c === "'") quote = null;
-      continue;
-    }
-    if (c === '"' || c === "'") {
-      quote = c;
-      continue;
-    }
-    if (c === "{" || c === "[") depth++;
-    else if (c === "}" || c === "]") depth--;
-  }
-  return depth <= 0 && quote === null;
+  let escaped = false;
+  return {
+    feed(text) {
+      for (let i = 0; i < text.length; i++) {
+        const c = text[i];
+        if (quote === '"') {
+          if (escaped) escaped = false;
+          else if (c === "\\") escaped = true;
+          else if (c === '"') quote = null;
+          continue;
+        }
+        if (quote === "'") {
+          if (c === "'") quote = null;
+          continue;
+        }
+        if (c === '"' || c === "'") {
+          quote = c;
+          continue;
+        }
+        if (c === "{" || c === "[") {
+          if (++depth > MAX_DEPTH) refuse(line, `nesting deeper than ${MAX_DEPTH} levels`);
+        } else if (c === "}" || c === "]") depth--;
+      }
+      return depth <= 0 && quote === null;
+    },
+  };
+}
+
+// A plain object that takes any key as data: `__proto__` included, which plain assignment would
+// treat as the prototype.
+function setOwn(obj, key, v) {
+  if (key === "__proto__")
+    Object.defineProperty(obj, key, {
+      value: v,
+      enumerable: true,
+      writable: true,
+      configurable: true,
+    });
+  else obj[key] = v;
 }
 
 // ------------------------------------------------------------------ block parser
@@ -331,6 +375,7 @@ class Parser {
     this.orig = lines;
     this.work = lines.slice();
     this.pos = 0;
+    this.depth = 0;
     for (let i = 0; i < lines.length; i++) {
       if (/^\s*\t/.test(lines[i]) || /^ *\t/.test(lines[i]))
         refuse(i, "tab indentation is not supported");
@@ -424,7 +469,8 @@ class Parser {
         if (/^\s*\?/.test(line)) refuse(next, "complex keys are not supported");
         refuse(next, "expected a `key:` line");
       }
-      if (km.key in node.value) refuse(next, `duplicate key ${km.key}`);
+      if (Object.hasOwn(node.value, km.key)) refuse(next, `duplicate key ${km.key}`);
+      countNode(next);
       const entry = {
         key: km.key,
         keyQuote: km.keyQuote,
@@ -460,7 +506,7 @@ class Parser {
         }
         if (!entry.node) entry.node = { kind: "empty", value: null };
       }
-      node.value[km.key] = entry.node.value;
+      setOwn(node.value, km.key, entry.node.value);
       node.entries.push(entry);
       cursor = entry.lineEnd;
     }
@@ -493,6 +539,7 @@ class Parser {
         return node;
       }
       if (ind > indent) refuse(next, "unexpected indentation");
+      countNode(next);
       const item = {
         before: this.orig.slice(cursor, next),
         lineStart: next,
@@ -532,9 +579,14 @@ class Parser {
   }
 
   parseBlock(i, indent, parentIndent) {
-    return isDash(this.work[i])
-      ? this.parseBlockSeq(i, indent)
-      : this.parseBlockMap(i, indent, parentIndent);
+    if (++this.depth > MAX_DEPTH) refuse(i, `nesting deeper than ${MAX_DEPTH} levels`);
+    try {
+      return isDash(this.work[i])
+        ? this.parseBlockSeq(i, indent)
+        : this.parseBlockMap(i, indent, parentIndent);
+    } finally {
+      this.depth--;
+    }
   }
 
   // A value on the same line as its key or dash: a scalar, or a flow collection that may
@@ -546,14 +598,19 @@ class Parser {
     if (t[0] === "*") refuse(i, "aliases are not supported");
     if (t[0] === "!") refuse(i, "tags are not supported");
     if (t[0] === "{" || t[0] === "[") {
-      let text = t;
+      const parts = [t];
+      const scan = flowScanner(i);
+      let balanced = scan.feed(t);
       let end = i + 1;
-      while (!flowBalanced(text)) {
+      while (!balanced) {
         if (end >= this.work.length) refuse(i, "unterminated flow collection");
-        text += `\n${stripComment(this.work[end]).body}`;
+        const more = `\n${stripComment(this.work[end]).body}`;
+        parts.push(more);
+        balanced = scan.feed(more);
         end++;
       }
-      const r = parseFlowValue(text, 0, i);
+      const text = parts.join("");
+      const r = parseFlowValue(text, 0, i, this.depth);
       if (text.slice(r.end).trim() !== "") refuse(i, "text after a flow collection");
       r.node.multiline = end > i + 1;
       return { node: r.node, lineEnd: end };
@@ -569,6 +626,7 @@ class Parser {
 }
 
 export function parse(text) {
+  nodeCount = 0;
   const p = new Parser(text);
   const root = p.parseDocument();
   const cst = { root, lines: p.orig, crlf: p.crlf, trailingNewline: p.trailingNewline };

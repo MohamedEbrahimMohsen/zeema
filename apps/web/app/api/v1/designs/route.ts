@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { clientIp, handle, json, rateLimit, readJson, viewerOf } from "@/lib/api";
 import { type CreateInput, createDesign, listDesigns, ownerSegment } from "@/lib/designs";
+import { pagination } from "@/lib/http-guards";
 
 export async function GET(req: NextRequest) {
   return handle(async () => {
@@ -12,8 +13,7 @@ export async function GET(req: NextRequest) {
       kind: p.get("kind") ?? undefined,
       owner: p.get("owner") === "me" ? viewer?.username : (p.get("owner") ?? undefined),
       sort: (p.get("sort") as "updated" | "created" | "clones" | "exports" | null) ?? undefined,
-      page: Number(p.get("page") ?? 1),
-      pageSize: Number(p.get("pageSize") ?? 24),
+      ...pagination(p),
       scope: p.get("owner") === "me" ? "mine" : "public",
     });
     return json(result);

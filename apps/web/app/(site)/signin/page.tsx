@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { Mark } from "@/components/Logo";
 import { currentUser, githubConfigured } from "@/lib/auth";
+import { nextPath } from "@/lib/http-guards";
 
 export const dynamic = "force-dynamic";
 
@@ -11,8 +12,10 @@ export default async function SignIn({
 }) {
   const sp = await searchParams;
   const viewer = await currentUser();
-  if (viewer) redirect(sp.next?.startsWith("/") ? sp.next : `/u/${viewer.username}`);
-  const next = sp.next?.startsWith("/") ? sp.next : "";
+  // Only a path on this site: `//evil.example` and friends become "/" (http-guards.ts).
+  const safe = sp.next ? nextPath(sp.next) : null;
+  if (viewer) redirect(safe ?? `/u/${viewer.username}`);
+  const next = safe && safe !== "/" ? safe : "";
   return (
     <div className="mx-auto max-w-sm py-6">
       <div className="panel p-6 flex flex-col gap-4">

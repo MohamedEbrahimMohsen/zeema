@@ -16,6 +16,7 @@ import {
   type PropertyDef,
   repoDesigns,
 } from "@/lib/catalogue";
+import { own } from "./own";
 
 export type Fact = {
   label: string;
@@ -144,7 +145,7 @@ function propRows(
 
 export function componentDoc(id: string): ReferenceDoc | null {
   const cat = getCatalogue();
-  const c = cat.components[id];
+  const c = own(cat.components, id);
   if (!c) return null;
   const kind = cat.kinds[c.kind];
   const loc = cat.locale.components[id] ?? {};
@@ -231,7 +232,7 @@ export function componentDoc(id: string): ReferenceDoc | null {
 
 export function kindDoc(id: string): ReferenceDoc | null {
   const cat = getCatalogue();
-  const kind = cat.kinds[id];
+  const kind = own(cat.kinds, id);
   if (!kind) return null;
   const loc = cat.locale.kinds[id] ?? {};
   const components = Object.values(cat.components).filter((c) => c.kind === id);

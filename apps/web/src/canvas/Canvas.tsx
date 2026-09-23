@@ -1323,11 +1323,10 @@ export function Canvas(props: Props) {
     if (!scene) return;
     try {
       await exportScene(scene, eng.current!.doc.id, format);
-      fetch(`/api/v1/designs/${props.owner}/${props.slug}/events`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ kind: "export", format }),
-      }).catch(() => {});
+      // Counted by the server where it renders the design's export (render?download=).
+      fetch(`/api/v1/designs/${props.owner}/${props.slug}/render?download=${format}`).catch(
+        () => {},
+      );
     } catch (err) {
       setStatus(`export failed: ${(err as Error).message}`);
     }

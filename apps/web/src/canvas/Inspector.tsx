@@ -5,6 +5,7 @@
 // the user sets something. Text inputs commit on blur or Enter, never per keystroke.
 import { effective, propDefs } from "@zeema/core/document";
 import { anchorTarget, type Note } from "@/lib/layout-sidecar";
+import { own } from "@/lib/own";
 import type { Subject } from "./scene";
 
 export type InspectorApi = {
@@ -250,10 +251,10 @@ function NodePanel({
   api: InspectorApi;
   highlight: Highlight;
 }) {
-  const c = catalogue.components[node.component];
+  const c = own(catalogue.components, node.component);
   const defs: Record<string, any> = propDefs(catalogue, node.component);
   const resolved: Record<string, unknown> = effective(catalogue, node);
-  const loc = catalogue.locale.components[node.component];
+  const loc = own(catalogue.locale.components, node.component);
   const siblings = c
     ? Object.values(catalogue.components)
         .filter((x: any) => x.kind === c.kind)

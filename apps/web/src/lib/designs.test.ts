@@ -470,3 +470,127 @@ describe("query parameters", () => {
     expect(params).toContain(at.toISOString());
   });
 });
+
+describe("security review fixes", () => {
+  it("treats % and _ in the search box as text, not wildcards (F-13)", async () => {
+    const { createDesign, listDesigns, patchDesign } = await lib();
+    const uma = await makeUser("uma");
+    const d = await createDesign(uma as never, { title: "Discount 100% off", yaml: YAML });
+    await patchDesign("uma", d.design.slug, uma as never, { visibility: "public" });
+    const pct = await listDesigns(null, { q: "100%" });
+    expect(pct.items.map((i) => i.id)).toContain(d.design.id);
+    const wild = await listDesigns(null, { q: "%_%_%" });
+    expect(wild.total).toBe(0);
+    const under = await listDesigns(null, { q: "Discount_100" });
+    expect(under.total).toBe(0);
+  });
+
+  it("reads NaN pagination as the defaults (F-17)", async () => {
+    const { listDesigns } = await lib();
+    const r = await listDesigns(null, { page: Number.NaN, pageSize: Number.NaN });
+    expect(r.page).toBe(1);
+    expect(r.pageSize).toBe(24);
+  });
+
+  it("stores the layout sidecar normalised and bounded (F-10)", async () => {
+    const { createDesign, normaliseLayout } = await lib();
+    const vic = await makeUser("vic");
+    const d = await createDesign(vic as never, {
+      title: "Layout",
+      yaml: YAML,
+      layout: {
+        version: 2,
+        nodes: { svc: [1, 2] },
+        edges: {},
+        notes: [{ id: "n1", x: 0, y: 0, w: 100, h: 60, text: "x".repeat(5000) }],
+        junk: { deep: "dropped" },
+      },
+    });
+    const stored = d.version.layout as Record<string, unknown>;
+    expect(stored.junk).toBeUndefined();
+    expect((stored.notes as { text: string }[])[0].text.length).toBe(2000);
+    const huge: Record<string, [number, number]> = {};
+    for (let i = 0; i < 3000; i++) huge[`n${i}`] = [i, i];
+    expect(() => normaliseLayout({ nodes: huge })).toThrow(/layout too large/);
+    expect(() => normaliseLayout("x")).toThrow(/layout must be an object/);
+    expect(normaliseLayout(undefined)).toBeNull();
+  });
+
+  it("counts a view once per visitor and hour (F-08)", async () => {
+    const { createDesign, getDesign, patchDesign, recordEvent } = await lib();
+    const wes = await makeUser("wes");
+    const d = await createDesign(wes as never, { title: "Counted", yaml: YAML });
+    await patchDesign("wes", d.design.slug, wes as never, { visibility: "public" });
+    expect(await recordEvent(d.design.id, null, "view", { ip: "198.51.100.1" })).toBe(true);
+    expect(await recordEvent(d.design.id, null, "view", { ip: "198.51.100.1" })).toBe(false);
+    expect(await recordEvent(d.design.id, null, "view", { ip: "198.51.100.2" })).toBe(true);
+    expect(await recordEvent(d.design.id, wes as never, "export", { format: "svg" })).toBe(true);
+    expect(await recordEvent(d.design.id, wes as never, "export", { format: "png" })).toBe(false);
+    const view = await getDesign("wes", d.design.slug, null);
+    expect(view.stats.viewCount).toBe(2);
+    expect(view.stats.exportCount).toBe(1);
+  });
+});
+
+describe("sessions (F-18)", () => {
+  it("revoking a role ends every session of that account", async () => {
+    const { getDb, schema } = await import("@/db");
+    const { eq } = await import("drizzle-orm");
+    const { createSession } = await import("./auth");
+    const { grantRole, revokeRole } = await import("./iam");
+    const root = await makeUser("root-admin");
+    const target = await makeUser("xena");
+    const db = await getDb();
+    await db.insert(schema.roleGrants).values({ userId: root.id, role: "admin" });
+    const acting = { ...root, sessionId: "x", roles: ["admin"], actingAdmin: true } as never;
+    await grantRole(acting, { username: "xena", role: "admin" });
+    await createSession(target.id);
+    await createSession(target.id);
+    await revokeRole(acting, { username: "xena", role: "admin" });
+    const rows = await db
+      .select({ revoked: schema.sessions.revoked })
+      .from(schema.sessions)
+      .where(eq(schema.sessions.userId, target.id));
+    expect(rows.length).toBe(2);
+    expect(rows.every((r) => r.revoked)).toBe(true);
+  });
+
+  it("sign out everywhere revokes every session of the account", async () => {
+    const { getDb, schema } = await import("@/db");
+    const { eq } = await import("drizzle-orm");
+    const { createSession, revokeAllSessions } = await import("./auth");
+    const yan = await makeUser("yan");
+    await createSession(yan.id);
+    await createSession(yan.id);
+    await revokeAllSessions(yan.id);
+    const db = await getDb();
+    const rows = await db
+      .select({ revoked: schema.sessions.revoked })
+      .from(schema.sessions)
+      .where(eq(schema.sessions.userId, yan.id));
+    expect(rows.every((r) => r.revoked)).toBe(true);
+  });
+});
+
+describe("grafana views (F-05)", () => {
+  it("exposes only the columns the dashboards need", async () => {
+    const { getDb } = await import("@/db");
+    const db = await getDb();
+    const res = (await db.execute(
+      "select table_name, column_name from information_schema.columns where table_schema = 'grafana' order by 1, 2",
+    )) as unknown as { rows?: { table_name: string; column_name: string }[] };
+    const rows = res.rows ?? (res as unknown as { table_name: string; column_name: string }[]);
+    const cols = rows.map((r) => `${r.table_name}.${r.column_name}`);
+    expect(cols).toContain("design_stats.view_count");
+    expect(cols).toContain("users.username");
+    expect(cols).not.toContain("design_events.ip_hash");
+    expect(cols).not.toContain("design_events.actor_id");
+    expect(cols.some((c) => c.startsWith("sessions."))).toBe(false);
+    expect(cols.some((c) => c.startsWith("design_versions."))).toBe(false);
+    expect(cols.filter((c) => c.startsWith("users.")).sort()).toEqual([
+      "users.created_at",
+      "users.id",
+      "users.username",
+    ]);
+  });
+});

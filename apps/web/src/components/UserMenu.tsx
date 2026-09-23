@@ -132,6 +132,17 @@ export function UserMenu({ username, displayName, avatarUrl, isAdmin, actingAdmi
               Sign out
             </button>
           </form>
+          <form action="/api/auth/logout" method="post">
+            <input type="hidden" name="scope" value="all" />
+            <button
+              type="submit"
+              role="menuitem"
+              className="menu-item"
+              title="End every session of this account, on every device"
+            >
+              Sign out everywhere
+            </button>
+          </form>
         </div>
       ) : null}
     </div>

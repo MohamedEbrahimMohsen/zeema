@@ -4,6 +4,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { repoRoot } from "./catalogue";
+import { own } from "./own";
 
 const BRAND: Record<string, string> = {
   "airbnb-search": "airbnb",
@@ -66,7 +67,7 @@ const cache = new Map<string, string | null>();
 
 /** Inner SVG markup of the brand mark for a design slug, or null when it has none. */
 export function brandMarkFor(slug: string): string | null {
-  const name = BRAND[slug.replace(/-copy(-\d+)?$/, "")];
+  const name = own(BRAND, slug.replace(/-copy(-\d+)?$/, ""));
   if (!name) return null;
   if (!cache.has(name)) {
     const file = path.join(repoRoot(), "icons", "providers", `${name}.svg`);

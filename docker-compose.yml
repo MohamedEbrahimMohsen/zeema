@@ -50,7 +50,11 @@ services:
       GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
       GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
       ZEEMA_ADMINS: ${ZEEMA_ADMINS:-}
-      EVENT_SALT: ${EVENT_SALT:-zeema}
+      # Required: production refuses to start on a missing or placeholder salt.
+      EVENT_SALT: ${EVENT_SALT:?set EVENT_SALT in .env}
+      # Reverse proxies in front of the app that append X-Forwarded-For. 0: the app is reached
+      # directly, the header is ignored and anonymous callers share one rate-limit bucket.
+      TRUSTED_PROXY: ${TRUSTED_PROXY:-0}
       METRICS_TOKEN: ${METRICS_TOKEN:?set METRICS_TOKEN in .env}
       AUTO_SEED: ${AUTO_SEED:-1}
     ports:

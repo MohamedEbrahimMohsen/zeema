@@ -4,6 +4,7 @@ import { SearchBox, type Suggestion } from "@/components/SearchBox";
 import { actingAdmin, currentUser } from "@/lib/auth";
 import { getCatalogue } from "@/lib/catalogue";
 import { listDesigns, listOwners, listTags } from "@/lib/designs";
+import { intParam } from "@/lib/http-guards";
 import { isTier, parseQuery, providersOf, TIERS, withoutToken } from "@/lib/search-query";
 
 export const dynamic = "force-dynamic";
@@ -42,7 +43,7 @@ export default async function Browse({ searchParams }: { searchParams: Promise<S
       scope: mine ? "mine" : adminScope ? "all" : "public",
       visibility: adminScope === "private" ? "private" : undefined,
       sort: (sp.sort as "updated" | "created" | "clones" | "exports") ?? "updated",
-      page: Number(sp.page ?? 1),
+      page: intParam(sp.page, { fallback: 1, min: 1, max: 10_000 }),
     }),
     listOwners(viewer),
     listTags(viewer),
