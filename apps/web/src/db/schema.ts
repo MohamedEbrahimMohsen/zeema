@@ -4,11 +4,13 @@ import { sql } from "drizzle-orm";
 import {
   bigint,
   boolean,
+  check,
   index,
   integer,
   jsonb,
   pgEnum,
   pgTable,
+  primaryKey,
   text,
   timestamp,
   uniqueIndex,
@@ -19,6 +21,15 @@ export const visibilityEnum = pgEnum("visibility", ["public", "private"]);
 export const originEnum = pgEnum("origin", ["authored", "imported", "reference"]);
 export const eventKindEnum = pgEnum("event_kind", ["view", "clone", "export"]);
 export const roleEnum = pgEnum("role", ["admin"]);
+// In order of importance. `design_findings_changed` and `design_renamed_link` are reserved: the
+// enum carries them so a later phase adds emitters without a migration, but nothing writes them
+// yet (docs/final-plan.md, section 14).
+export const notificationKindEnum = pgEnum("notification_kind", [
+  "design_cloned",
+  "design_findings_changed",
+  "design_published_by_followed",
+  "design_renamed_link",
+]);
 
 export const users = pgTable(
   "users",
@@ -188,8 +199,49 @@ export const designEvents = pgTable(
   (t) => [index("events_design_created").on(t.designId, t.createdAt)],
 );
 
+// Who follows whom. Public, like GitHub's: anyone can list an account's followers and follows.
+export const follows = pgTable(
+  "follows",
+  {
+    followerId: uuid("follower_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    followeeId: uuid("followee_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.followerId, t.followeeId] }),
+    index("follows_followee").on(t.followeeId),
+    check("follows_not_self", sql`${t.followerId} <> ${t.followeeId}`),
+  ],
+);
+
+// In-app notifications. One row per recipient; `read_at` is null until the recipient has seen
+// it. Rows older than 90 days are deleted when their recipient next lists them.
+export const notifications = pgTable(
+  "notifications",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    kind: notificationKindEnum("kind").notNull(),
+    actorId: uuid("actor_id").references(() => users.id, { onDelete: "set null" }),
+    designId: uuid("design_id").references(() => designs.id, { onDelete: "cascade" }),
+    payload: jsonb("payload").$type<Record<string, unknown>>().notNull().default({}),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    readAt: timestamp("read_at", { withTimezone: true }),
+  },
+  (t) => [index("notifications_user_read_created").on(t.userId, t.readAt, t.createdAt.desc())],
+);
+
 export type User = typeof users.$inferSelect;
 export type Design = typeof designs.$inferSelect;
 export type DesignVersion = typeof designVersions.$inferSelect;
 export type RoleGrant = typeof roleGrants.$inferSelect;
 export type Role = (typeof roleEnum.enumValues)[number];
+export type Follow = typeof follows.$inferSelect;
+export type Notification = typeof notifications.$inferSelect;
+export type NotificationKind = (typeof notificationKindEnum.enumValues)[number];

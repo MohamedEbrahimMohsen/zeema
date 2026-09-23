@@ -995,9 +995,18 @@ format; created timestamp; hashed network address.
 
 **Session:** id; user id; created, last-seen and expiry timestamps; revoked flag.
 
+**Follow:** follower id; followee id; created timestamp. The pair is the key; a user cannot
+follow themselves. Follower and following lists are public.
+
+**Notification:** id; recipient user id; kind (`design_cloned`, `design_findings_changed`,
+`design_published_by_followed`, `design_renamed_link`, in order of importance; only the first and
+third are emitted, the others are reserved); actor id (nullable); design id (nullable); payload;
+created and read timestamps. Kept 90 days.
+
 **Indexes required by behaviour:** designs by owner and updated time; public designs by updated
 time, clone count and export count; a text index over title, summary, tags and component ids;
-versions by design and time; events by design and time; sessions by user.
+versions by design and time; events by design and time; sessions by user; follows by followee;
+notifications by recipient, read state and time.
 
 ---
 
@@ -1298,7 +1307,7 @@ Named so nobody builds them by accident before the above is done:
 
 - Real-time collaborative editing.
 - Organisations, teams, and private catalogue components; the catalogue stays global and public.
-- Comments, stars, follows.
+- Comments and stars. (Follows and in-app notifications ship in this phase; see section 14.)
 - Paid tiers or quotas beyond rate limiting.
 - Identity providers other than GitHub.
 - Generating infrastructure code from a design.

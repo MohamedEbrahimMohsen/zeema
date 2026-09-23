@@ -40,17 +40,35 @@ export const clientIp = (req: Pick<NextRequest, "headers">) => guardClientIp(req
 // of fresh keys cannot wipe the buckets of everyone else; an idle bucket expires after ten
 // minutes, by which time it would have refilled anyway.
 const buckets = new LruTtl<{ tokens: number; at: number }>(10_000, 10 * 60_000);
-export function rateLimit(key: string, perMinute: number) {
+// Hourly limits keep their buckets for the whole hour: with the ten-minute store an idle key
+// would come back full long before it had earned it.
+const hourly = new LruTtl<{ tokens: number; at: number }>(10_000, 60 * 60_000);
+
+function take(
+  store: LruTtl<{ tokens: number; at: number }>,
+  key: string,
+  limit: number,
+  windowMs: number,
+) {
   const now = Date.now();
-  const b = buckets.get(key) ?? { tokens: perMinute, at: now };
-  b.tokens = Math.min(perMinute, b.tokens + ((now - b.at) / 60_000) * perMinute);
+  const b = store.get(key) ?? { tokens: limit, at: now };
+  b.tokens = Math.min(limit, b.tokens + ((now - b.at) / windowMs) * limit);
   b.at = now;
   if (b.tokens < 1) {
-    buckets.set(key, b);
+    store.set(key, b);
     throw new ServiceError(429, "too many requests");
   }
   b.tokens -= 1;
-  buckets.set(key, b);
+  store.set(key, b);
+}
+
+export function rateLimit(key: string, perMinute: number) {
+  take(buckets, key, perMinute, 60_000);
+}
+
+/** The same token bucket over an hour: `perHour` at once, refilling across the hour. */
+export function rateLimitHourly(key: string, perHour: number) {
+  take(hourly, key, perHour, 60 * 60_000);
 }
 
 // "At most once per window" keys: the first call in a window answers true, the rest false.

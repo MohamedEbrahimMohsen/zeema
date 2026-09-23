@@ -739,6 +739,7 @@ button.finding:hover .msg {
 }
 .avatar {
   display: inline-block;
+  flex: none;
   width: 28px;
   height: 28px;
   border-radius: 50%;
@@ -867,6 +868,166 @@ button.finding:hover .msg {
 }
 .table-wrap {
   overflow-x: auto;
+}
+
+/* ── notifications: the bell and its panel ───────────────────────── */
+
+.notif {
+  position: relative;
+}
+.notif-btn {
+  position: relative;
+}
+.notif-btn[aria-expanded="true"] {
+  color: var(--ink);
+  background: var(--bg);
+}
+.notif-badge {
+  position: absolute;
+  top: -6px;
+  right: -7px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: var(--r-round);
+  background: var(--accent-solid);
+  color: var(--accent-solid-ink);
+  border: 2px solid var(--panel);
+  box-sizing: content-box;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: var(--fw-semibold);
+  line-height: 16px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+.notif-menu {
+  width: 360px;
+  max-width: calc(100vw - 32px);
+  padding: 0;
+  overflow: hidden;
+}
+.notif-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-1);
+  padding: 6px 6px 6px 12px;
+  border-bottom: var(--border) solid var(--line);
+}
+.notif-list {
+  max-height: min(420px, 60vh);
+  overflow-y: auto;
+}
+.notif-li + .notif-li {
+  border-top: var(--border) solid var(--line);
+}
+.notif-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  color: var(--ink);
+  font-size: var(--fs-small);
+}
+a.notif-item:hover {
+  background: var(--bg);
+  text-decoration: none;
+}
+.notif-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+.notif-text {
+  overflow-wrap: anywhere;
+  line-height: var(--lh-body);
+}
+.notif-text strong {
+  font-weight: var(--fw-semibold);
+}
+.notif-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin-top: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.notif-empty {
+  padding: var(--sp-3) 12px;
+  text-align: center;
+}
+.notif-all {
+  border-top: var(--border) solid var(--line);
+  border-radius: 0;
+  padding: 9px 12px;
+  text-align: center;
+  color: var(--accent);
+}
+/* Narrow screens: the bell is not the last thing in the bar, so a panel anchored to it would run
+   off the left edge. It spans the viewport instead, under the button (top set when it opens). */
+@media (max-width: 639px) {
+  .notif-menu {
+    position: fixed;
+    left: var(--sp-2);
+    right: var(--sp-2);
+    top: var(--notif-top, 56px);
+    width: auto;
+    max-width: none;
+  }
+}
+
+/* ── profiles ─────────────────────────────────────────────────────── */
+
+.profile-head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+}
+.profile-social {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1) var(--sp-2);
+}
+.profile-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.profile-stats a {
+  color: inherit;
+}
+.profile-stats .stat-n {
+  color: var(--ink);
+  font-weight: var(--fw-semibold);
+  font-variant-numeric: tabular-nums;
+}
+.profile-stats a:hover .stat-n {
+  color: var(--accent);
+}
+.follow-btn {
+  min-width: 88px;
+}
+.follow-btn[aria-pressed="true"]:hover {
+  color: var(--err);
+}
+.user-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1-5);
+  padding: 10px 14px;
+  color: var(--ink);
+}
+.user-row:hover {
+  background: var(--bg);
+  text-decoration: none;
 }
 
 /* ── design cards ─────────────────────────────────────────────────── */

@@ -13,6 +13,7 @@ import { escapeLike } from "./http-guards";
 import { readSidecar } from "./layout-sidecar";
 import { analyse } from "./lint";
 import { countExport, countWrite } from "./metrics";
+import { emit, notifyClone, notifyFollowersOfPublish } from "./notify";
 import { own } from "./own";
 import { type Sketch, sketchOf } from "./sketch";
 import { publishSlugFor, toSlug, toTag } from "./slug";
@@ -288,7 +289,12 @@ export type ListOptions = {
   owner?: string;
   /** Curation tier: reference and imported are the seeded designs, authored are people's own. */
   origin?: "authored" | "imported" | "reference";
-  sort?: "updated" | "created" | "clones" | "exports";
+  /** `published`: newest release first (profiles). */
+  sort?: "updated" | "created" | "clones" | "exports" | "published";
+  /** Only designs with a release (the profile's public list). */
+  released?: boolean;
+  /** With scope `mine`: only private designs and designs never released (the profile's drafts). */
+  drafts?: boolean;
   page?: number;
   pageSize?: number;
   /** `all` (every design, private included) is available to an acting admin only. */
@@ -351,6 +357,11 @@ export async function listDesigns(
       );
   }
   if (opts.origin) conds.push(eq(schema.designs.origin, opts.origin));
+  if (opts.released) conds.push(isNotNull(schema.designs.publishedVersionId));
+  if (opts.drafts)
+    conds.push(
+      or(eq(schema.designs.visibility, "private"), isNull(schema.designs.publishedVersionId))!,
+    );
   if (opts.provider)
     conds.push(ilike(schema.designs.searchText, `%provider:${escapeLike(opts.provider)}%`));
   if (opts.kind) conds.push(ilike(schema.designs.searchText, `%kind:${escapeLike(opts.kind)}%`));
@@ -360,13 +371,17 @@ export async function listDesigns(
     conds.push(sql`${schema.designs.tags} @> ${JSON.stringify([toTag(opts.tag)])}::jsonb`);
   const where = and(...conds);
   const order =
-    opts.sort === "clones"
-      ? desc(sql`coalesce(${schema.designStats.cloneCount}, 0)`)
-      : opts.sort === "exports"
-        ? desc(sql`coalesce(${schema.designStats.exportCount}, 0)`)
-        : opts.sort === "created"
-          ? desc(schema.designs.createdAt)
-          : desc(schema.designs.updatedAt);
+    opts.sort === "published"
+      ? desc(
+          sql`coalesce(${schema.designVersions.publishedAt}, ${schema.designs.publishedAt}, ${schema.designs.updatedAt})`,
+        )
+      : opts.sort === "clones"
+        ? desc(sql`coalesce(${schema.designStats.cloneCount}, 0)`)
+        : opts.sort === "exports"
+          ? desc(sql`coalesce(${schema.designStats.exportCount}, 0)`)
+          : opts.sort === "created"
+            ? desc(schema.designs.createdAt)
+            : desc(schema.designs.updatedAt);
   const rows = await db
     .select({
       design: schema.designs,
@@ -397,7 +412,9 @@ export async function listDesigns(
       origin: design.origin,
       updatedAt: design.updatedAt,
       owner: ownerName ? { username: ownerName } : null,
-      unpublished: design.currentVersionId !== design.publishedVersionId,
+      // Only the writer is told there is unreleased work; to a reader the release is the design.
+      unpublished:
+        design.currentVersionId !== design.publishedVersionId && canWrite(design, viewer),
       stats: {
         viewCount: stats?.viewCount ?? 0,
         cloneCount: stats?.cloneCount ?? 0,
@@ -792,6 +809,9 @@ export async function publishDesign(
     await reserveSlug(view.design.ownerId, view.design.slug, view.design.id);
   await reserveSlug(view.design.ownerId, slugNow, view.design.id);
   countWrite("publish");
+  // Followers hear about a release they can read. A private design's release waits until the
+  // design is made public (patchDesign).
+  if (design.visibility === "public") await emit("publish", () => notifyFollowersOfPublish(design));
   return { design, version, unchanged: false };
 }
 
@@ -907,6 +927,13 @@ export async function patchDesign(owner: string, slug: string, viewer: Viewer, i
     .set(set)
     .where(eq(schema.designs.id, view.design.id))
     .returning();
+  // Made public with a release: to a follower that is the moment it was published.
+  if (
+    view.design.visibility !== "public" &&
+    design.visibility === "public" &&
+    design.publishedVersionId
+  )
+    await emit("publish", () => notifyFollowersOfPublish(design));
   return design;
 }
 
@@ -1001,6 +1028,7 @@ export async function cloneDesign(
   });
   await recordEvent(view.design.id, viewer, "clone");
   countWrite("clone");
+  await emit("clone", () => notifyClone(view.design, viewer.id));
   return created;
 }
 
@@ -1088,4 +1116,58 @@ export async function getUserProfile(username: string) {
     )
     .limit(1);
   return rows[0] ?? null;
+}
+
+export type ProfileStats = {
+  /** Public designs with a release. */
+  designs: number;
+  /** Clones of those designs, summed. */
+  clones: number;
+  followers: number;
+  following: number;
+  /** The owner's private or never-released designs; null for everyone else. */
+  drafts: number | null;
+};
+
+/**
+ * A profile's header numbers in one query. Only public, released, undeleted designs count toward
+ * designs and clones; closed accounts are left out of the follow counts, as they are out of the
+ * lists. The drafts count is the owner's alone.
+ */
+export async function getProfileStats(username: string, viewer: Viewer) {
+  const user = await getUserProfile(username);
+  if (!user) return null;
+  const own = viewer?.id === user.id;
+  const db = await getDb();
+  const released = sql`d.owner_id = ${user.id} and d.deleted_at is null
+    and d.visibility = 'public' and d.published_version_id is not null`;
+  const [row] = await db
+    .select({
+      designs: sql<number>`(select count(*)::int from designs d where ${released})`,
+      clones: sql<number>`(select coalesce(sum(s.clone_count), 0)::int from designs d
+        join design_stats s on s.design_id = d.id where ${released})`,
+      followers: sql<number>`(select count(*)::int from follows f
+        join users x on x.id = f.follower_id and x.deleted_at is null
+        where f.followee_id = ${user.id})`,
+      following: sql<number>`(select count(*)::int from follows f
+        join users x on x.id = f.followee_id and x.deleted_at is null
+        where f.follower_id = ${user.id})`,
+      drafts: sql<number>`(select count(*)::int from designs d
+        where d.owner_id = ${user.id} and d.deleted_at is null
+          and (d.visibility = 'private' or d.published_version_id is null))`,
+      viewerFollows: viewer
+        ? sql<boolean>`exists (select 1 from follows f
+            where f.follower_id = ${viewer.id} and f.followee_id = ${user.id})`
+        : sql<boolean>`false`,
+    })
+    .from(schema.users)
+    .where(eq(schema.users.id, user.id));
+  const stats: ProfileStats = {
+    designs: Number(row.designs),
+    clones: Number(row.clones),
+    followers: Number(row.followers),
+    following: Number(row.following),
+    drafts: own ? Number(row.drafts) : null,
+  };
+  return { user, own, stats, viewerFollows: Boolean(row.viewerFollows) };
 }

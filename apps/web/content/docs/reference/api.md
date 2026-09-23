@@ -370,7 +370,42 @@ GET /api/v1/me
 `401` when not signed in. `PATCH /api/v1/me` takes `{ "displayName": "…", "bio": "…" }`;
 `displayName` is cut to 80 characters and `bio` to 500.
 
-`GET /api/v1/users/{username}` returns the same public shape plus the designs the caller may see.
+`GET /api/v1/users/{username}` returns the same public shape plus the designs the caller may see
+and `stats`: `{ designs, clones, followers, following, drafts }`, where `drafts` is a number for
+the account's owner and `null` for everyone else.
+
+### Follows
+
+```http
+PUT /api/v1/users/{username}/follow
+DELETE /api/v1/users/{username}/follow
+GET /api/v1/users/{username}/followers?page=2
+GET /api/v1/users/{username}/following
+```
+
+Following and unfollowing are idempotent and answer `204`. Following yourself is `422`, an
+unknown or closed account `404`, no session `401`, and more than 60 changes in an hour `429`.
+The lists are public and answer
+`{ "users": [{ "username", "displayName", "avatarUrl" }], "page", "pageSize", "total" }`.
+See [profiles, follows and notifications](/docs/profiles-and-notifications).
+
+### Notifications
+
+```http
+GET /api/v1/notifications?page=1&unread=1
+GET /api/v1/notifications/unread-count
+POST /api/v1/notifications/read
+```
+
+```json
+{ "ids": ["5f0c…", "9a1e…"] }
+```
+
+The list answers `{ items, page, pageSize, total, unread }`; each item is
+`{ id, kind, createdAt, read, actor, design }`, where `actor` and `design` are `null` once the
+account is closed or the design is no longer yours to read. `unread-count` answers `{ "count": 3 }`.
+Marking takes `{ "ids": [...] }` (at most 100) or `{ "all": true }` and answers `204`; ids that are
+not yours are ignored. All three need a session.
 
 ## Administration
 

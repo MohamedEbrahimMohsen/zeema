@@ -36,6 +36,13 @@
       "when": 1790000000000,
       "tag": "0004_grafana_views",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1790139476026,
+      "tag": "0005_social",
+      "breakpoints": true
     }
   ]
 }

@@ -129,7 +129,50 @@ export const API_ROUTES: ApiRoute[] = [
     method: "GET",
     path: "/api/v1/users/{username}",
     auth: "none",
-    summary: "A public profile and the designs the caller may see.",
+    summary: "A public profile, its stats and the designs the caller may see.",
+  },
+  {
+    method: "PUT",
+    path: "/api/v1/users/{username}/follow",
+    auth: "viewer",
+    summary: "Follow an account. Idempotent; 204. Limited to 60 follow changes an hour.",
+  },
+  {
+    method: "DELETE",
+    path: "/api/v1/users/{username}/follow",
+    auth: "viewer",
+    summary: "Stop following an account. Idempotent; 204.",
+  },
+  {
+    method: "GET",
+    path: "/api/v1/users/{username}/followers",
+    auth: "none",
+    summary: "Who follows an account, newest first, paginated. Public.",
+  },
+  {
+    method: "GET",
+    path: "/api/v1/users/{username}/following",
+    auth: "none",
+    summary: "Whom an account follows, newest first, paginated. Public.",
+  },
+  // ---- notifications
+  {
+    method: "GET",
+    path: "/api/v1/notifications",
+    auth: "viewer",
+    summary: "The caller's notifications, newest first; unread=1 for unread only.",
+  },
+  {
+    method: "POST",
+    path: "/api/v1/notifications/read",
+    auth: "viewer",
+    summary: "Mark notifications read, by id or all at once; 204.",
+  },
+  {
+    method: "GET",
+    path: "/api/v1/notifications/unread-count",
+    auth: "viewer",
+    summary: "How many notifications are unread. Cheap enough to poll.",
   },
   // ---- administration
   {

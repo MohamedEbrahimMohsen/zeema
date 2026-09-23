@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { DesignRow } from "@/components/DesignRow";
+import { Pager } from "@/components/Pager";
 import { SearchBox, type Suggestion } from "@/components/SearchBox";
 import { actingAdmin, currentUser } from "@/lib/auth";
 import { getCatalogue } from "@/lib/catalogue";
@@ -48,7 +49,6 @@ export default async function Browse({ searchParams }: { searchParams: Promise<S
     listOwners(viewer),
     listTags(viewer),
   ]);
-  const pages = Math.max(1, Math.ceil(result.total / result.pageSize));
   const link = (patch: Partial<Search>) => {
     const p = new URLSearchParams();
     for (const [k, v] of Object.entries({ ...sp, ...patch })) if (v) p.set(k, String(v));
@@ -187,29 +187,12 @@ export default async function Browse({ searchParams }: { searchParams: Promise<S
           ))}
         </ul>
       )}
-      {pages > 1 ? (
-        <div className="flex items-center gap-3 small">
-          {result.page > 1 ? (
-            <Link
-              href={link({ page: String(result.page - 1) })}
-              className="btn btn-sm no-underline"
-            >
-              ← Previous
-            </Link>
-          ) : null}
-          <span className="mono muted">
-            {result.page} / {pages}
-          </span>
-          {result.page < pages ? (
-            <Link
-              href={link({ page: String(result.page + 1) })}
-              className="btn btn-sm no-underline"
-            >
-              Next →
-            </Link>
-          ) : null}
-        </div>
-      ) : null}
+      <Pager
+        page={result.page}
+        total={result.total}
+        pageSize={result.pageSize}
+        href={(p) => link({ page: String(p) })}
+      />
     </div>
   );
 }
