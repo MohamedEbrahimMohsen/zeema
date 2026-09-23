@@ -10,9 +10,13 @@
 
 import { displayName } from "@zeema/core/document";
 import { bowAt, edgeGeometry, groupFrames, innermostFrameAt, pathOf } from "@zeema/core/geometry";
+import { FRAME_ICON_SHIFT, TINT } from "@zeema/core/render";
 import {
   anchorKey,
   anchorTarget,
+  type FrameStyle,
+  frameIconKey,
+  isTint,
   NOTE_MAX_TEXT,
   NOTE_MIN_H,
   NOTE_MIN_W,
@@ -40,6 +44,11 @@ const CATEGORY_HUE: Record<string, string> = {
   custom: "grey",
 };
 
+// A boundary icon is 16px, top-aligned with the label, which it pushes FRAME_ICON_SHIFT right.
+// The same numbers as the exported SVG (@zeema/core/render), so the two cannot disagree.
+const FRAME_ICON = 16;
+const FRAME_ICON_DY = 7;
+
 export type Box = [number, number, number, number];
 export type Subject = {
   type: "node" | "edge" | "group" | "note" | null;
@@ -53,6 +62,8 @@ export type Model = {
   sizes: Record<string, [number, number]>;
   bows: Record<string, number>;
   notes: Note[];
+  /** Boundary tint and icon by group id, from the sidecar. Absent means the default frame. */
+  frameStyles?: Record<string, FrameStyle>;
   /** The Notes toggle. Hidden means not drawn, not hit-testable and not exported. */
   showNotes: boolean;
   /**
@@ -680,6 +691,7 @@ export class Scene {
     for (const group of this.model.doc.groups || []) {
       const f = this.frames[group.id];
       if (!f) continue;
+      const style = own(this.model.frameStyles ?? {}, group.id) as FrameStyle | undefined;
       const rect = el("rect", {
         class: "frame",
         x: f[0],
@@ -687,6 +699,7 @@ export class Scene {
         width: f[2],
         height: f[3],
         rx: 10,
+        "data-tint": isTint(style?.tint) ? style.tint : null,
       });
       const hit = el("rect", {
         class: "frame-hit",
@@ -700,21 +713,35 @@ export class Scene {
       // what the author typed; the kind is a tag. With no label the id stands in, so a hand
       // -written design keeps reading as cell-a / cell-b. When that caption would only repeat
       // the kind, the tag alone says it — a fresh group whose auto-id is its kind shows one word.
-      const label = el("text", { class: "frame-label", x: f[0] + 12, y: f[1] + 19 });
+      // The icon, when the boundary has one and the catalogue can draw it, comes first and
+      // pushes the words right. A reference to an icon that is not there draws nothing.
+      const symbol = this.frameSymbol(style?.icon);
+      const icon = symbol
+        ? el("use", {
+            href: `#${symbol}`,
+            class: "frame-icon",
+            x: f[0] + 12,
+            y: f[1] + FRAME_ICON_DY,
+            width: FRAME_ICON,
+            height: FRAME_ICON,
+          })
+        : null;
+      const labelDx = 12 + (icon ? FRAME_ICON_SHIFT : 0);
+      const label = el("text", { class: "frame-label", x: f[0] + labelDx, y: f[1] + 19 });
       const caption = group.label ? String(group.label) : String(group.id);
       const name = caption === group.kind ? "" : caption;
       label.textContent = name;
-      const tag = el("text", { class: "frame-kind", x: f[0] + 12, y: f[1] + 19 });
+      const tag = el("text", { class: "frame-kind", x: f[0] + labelDx, y: f[1] + 19 });
       tag.textContent = group.kind;
-      for (const target of [hit, label, tag]) {
-        target.addEventListener("pointerdown", (ev: any) => this.startGroupDrag(group.id, ev));
+      for (const target of [hit, label, tag, icon]) {
+        target?.addEventListener("pointerdown", (ev: any) => this.startGroupDrag(group.id, ev));
       }
-      g.append(rect, hit, label, tag);
+      g.append(rect, hit, ...(icon ? [icon] : []), label, tag);
       // The tag sits just past the name. Measured once here, because the name does not change
       // while the frame is being dragged — only where the frame is.
-      const tagDx = 12 + (name ? textWidth(label, name.length * 6.2) + 8 : 0);
+      const tagDx = labelDx + (name ? textWidth(label, name.length * 6.2) + 8 : 0);
       tag.setAttribute("x", String(f[0] + tagDx));
-      this.frameEls.set(group.id, { rect, hit, label, tag, tagDx });
+      this.frameEls.set(group.id, { rect, hit, icon, label, tag, labelDx, tagDx });
     }
   }
 
@@ -770,6 +797,26 @@ export class Scene {
     this.defs.append(sym);
     this.symbols.add(componentId);
     return true;
+  }
+
+  /**
+   * The symbol id for a boundary icon reference, defining it on first use, or null when the
+   * reference is malformed or names an icon the catalogue does not have. Kind glyphs get their
+   * own prefix so they can never collide with a component id.
+   */
+  frameSymbol(ref: string | undefined) {
+    const key = frameIconKey(ref);
+    if (!key) return null;
+    if (!key.startsWith("kind:")) return this.symbolFor(key) ? `ic-${key}` : null;
+    const id = `ick-${key.slice(5)}`;
+    if (this.symbols.has(id)) return id;
+    const body = own(this.model.icons, key);
+    if (!body) return null;
+    const sym = el("symbol", { id, viewBox: "0 0 24 24" });
+    sym.innerHTML = body;
+    this.defs.append(sym);
+    this.symbols.add(id);
+    return id;
   }
 
   hueOf(componentId: string) {
@@ -1121,7 +1168,13 @@ export class Scene {
       if (els.hit === node || els.line === node || els.label === node)
         return { type: "edge", ref: i };
     for (const [id, f] of this.frameEls)
-      if (f.hit === node || f.label === node || f.tag === node || f.rect === node)
+      if (
+        f.hit === node ||
+        f.label === node ||
+        f.tag === node ||
+        f.rect === node ||
+        (f.icon && f.icon === node)
+      )
         return { type: "group", ref: id };
     return { type: null, ref: null };
   }
@@ -1309,7 +1362,11 @@ export class Scene {
         r.setAttribute("width", f[2]);
         r.setAttribute("height", f[3]);
       }
-      els.label.setAttribute("x", f[0] + 12);
+      if (els.icon) {
+        els.icon.setAttribute("x", f[0] + 12);
+        els.icon.setAttribute("y", f[1] + FRAME_ICON_DY);
+      }
+      els.label.setAttribute("x", f[0] + els.labelDx);
       els.label.setAttribute("y", f[1] + 19);
       els.tag.setAttribute("x", f[0] + els.tagDx);
       els.tag.setAttribute("y", f[1] + 19);
@@ -1594,6 +1651,11 @@ export class Scene {
       ".frame{fill:none;stroke:var(--frame);stroke-width:1;stroke-dasharray:5 4}",
       ".frame-label{font-size:11px;font-family:var(--mono);fill:var(--muted)}",
       ".frame-kind{font-size:10px;font-family:var(--mono);fill:var(--muted);opacity:0.75}",
+      ".frame-icon{color:var(--muted)}",
+      // Tints are named, never free colours; the tokens resolve to this page's theme below.
+      ...Object.keys(TINT).map(
+        (k) => `.frame[data-tint="${k}"]{stroke:var(--tint-${k});fill:var(--tint-${k}-fill)}`,
+      ),
       ".edge{stroke:var(--line);stroke-width:1.2;fill:none}",
       ".edge.async{stroke-dasharray:6 4}",
       ".edge-label{font-size:12px;fill:var(--muted);paint-order:stroke;stroke:var(--bg);stroke-width:3px}",

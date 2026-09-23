@@ -34,6 +34,38 @@ export const PALETTE = {
 
 const ICON = 24;
 
+// Boundary tints: a closed set of names, each one stroke colour per theme. The fill is the same
+// colour at about 8% so nested boundaries stay readable. The canvas stylesheet (apps/web
+// canvas.css) holds the same values; the sidecar only ever names one.
+// stroke (light) | stroke (dark)
+export const TINT = {
+  slate: ["#64748b", "#94a3b8"],
+  blue: ["#3b82f6", "#60a5fa"],
+  green: ["#16a34a", "#4ade80"],
+  amber: ["#d97706", "#fbbf24"],
+  rose: ["#e11d48", "#fb7185"],
+  violet: ["#7c3aed", "#a78bfa"],
+  teal: ["#0d9488", "#2dd4bf"],
+};
+const TINT_FILL_ALPHA = "14";
+
+/** An icon drawn before a boundary label is a reference, `kind:<id>` or `component:<p>/<id>`. */
+export const FRAME_ICON_RE = /^(kind:[a-z0-9-]+|component:[a-z0-9-]+\/[a-z0-9-]+)$/;
+const FRAME_ICON = 16;
+// How far a boundary's words move right to make room for its icon: the icon and a 6px gap.
+export const FRAME_ICON_SHIFT = 22;
+
+/** The key an icon reference has in an icon map keyed like icons.json, or null. */
+export function frameIconKey(ref) {
+  if (typeof ref !== "string" || ref.length > 120 || !FRAME_ICON_RE.test(ref)) return null;
+  return ref.startsWith("kind:") ? ref : ref.slice(ref.indexOf("/") + 1);
+}
+
+const tintTokens = (i) =>
+  `:root{${Object.entries(TINT)
+    .map(([k, v]) => `--tint-${k}:${v[i]};--tint-${k}-fill:${v[i]}${TINT_FILL_ALPHA}`)
+    .join(";")}}`;
+
 export const escapeXml = (s) =>
   String(s)
     .replace(/&/g, "&amp;")
@@ -51,7 +83,12 @@ const f1 = (n) => Number(n).toFixed(1);
  *                                theme: "auto" | "light" | "dark",
  *                                layout: a saved layout sidecar — { nodes, edges } — which makes
  *                                the picture the one that was drawn rather than an arrangement
- *                                of it. Notes are canvas furniture and are never drawn here. }
+ *                                of it. Notes are canvas furniture and are never drawn here.
+ *                                frames: { [groupId]: { tint?, icon? } } — how each boundary is
+ *                                drawn; defaults to the sidecar's own `frames`.
+ *                                frameIcons: { [iconRef]: innerSvg } — the bodies of the icons
+ *                                those styles reference; a reference missing here is looked up
+ *                                in `icons` by its icon-map key, and not drawn if absent there. }
  */
 // Catalogue maps are plain objects keyed by ids that come from documents, so a lookup reads own
 // keys only: a component called `constructor` or `toString` is unknown, not Object's method.
@@ -60,6 +97,7 @@ const own = (o, k) =>
 
 export function toSvg(doc, catalogue, options = {}) {
   const icons = options.icons ?? {};
+  const frameIcons = options.frameIcons ?? {};
   // A sidecar with no positions in it says nothing, so it falls back to the automatic layout
   // rather than pinning a whole design at the origin.
   const drawn =
@@ -82,6 +120,24 @@ export function toSvg(doc, catalogue, options = {}) {
   const dark = Object.entries(PALETTE)
     .map(([k, v]) => `.f-${k}{fill:${v[2]};stroke:${v[3]}}`)
     .join("");
+  // Boundary styles are presentation, so they come from the sidecar and never from the document.
+  // Anything that is not an own key naming a known tint or a well-formed icon is ignored.
+  const rawStyles =
+    options.frames ??
+    lay.frameStyles ??
+    (options.layout && typeof options.layout === "object" ? options.layout.frames : null);
+  const styles = rawStyles && typeof rawStyles === "object" ? rawStyles : {};
+  const styleOf = (id) => {
+    const st = own(styles, id);
+    if (!st || typeof st !== "object") return { tint: null, body: null };
+    const tint = typeof st.tint === "string" && own(TINT, st.tint) ? st.tint : null;
+    const key = frameIconKey(st.icon);
+    const body = key ? (own(frameIcons, st.icon) ?? own(icons, key) ?? null) : null;
+    return { tint, body: typeof body === "string" && body ? body : null };
+  };
+  const drawnGroups = (doc.groups ?? []).filter((g) => lay.frames[g.id]);
+  const tinted = drawnGroups.some((g) => styleOf(g.id).tint);
+  const iconed = drawnGroups.some((g) => styleOf(g.id).body);
   const vars = {
     light: ":root{--ink:#1b1b19;--muted:#6b6b66;--line:#8a8a85;--frame:#b4b4ae;--bg:#ffffff}",
     dark: ":root{--ink:#ececea;--muted:#a1a19c;--line:#7e7e88;--frame:#55555c;--bg:#17171a}",
@@ -96,6 +152,17 @@ export function toSvg(doc, catalogue, options = {}) {
     ".gk{font-size:10px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;fill:var(--muted);opacity:0.75}" +
     ".e{font-size:12px;fill:var(--muted);paint-order:stroke;" +
     "stroke:var(--bg);stroke-width:3px}.ic{color:var(--ink)}";
+  // Only a drawing that uses a tint or a boundary icon carries their styles, so every other
+  // picture is byte-for-byte what it was before either existed.
+  if (tinted) {
+    if (theme === "dark") style += tintTokens(1);
+    else if (theme === "light") style += tintTokens(0);
+    else style += `${tintTokens(0)}@media (prefers-color-scheme: dark){${tintTokens(1)}}`;
+    style += Object.keys(TINT)
+      .map((k) => `[data-tint="${k}"]{stroke:var(--tint-${k});fill:var(--tint-${k}-fill)}`)
+      .join("");
+  }
+  if (iconed) style += ".gi{color:var(--muted)}";
 
   const out = [
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${ox} ${oy} ${w} ${h}" width="${w}" height="${h}" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif">`,
@@ -108,19 +175,25 @@ export function toSvg(doc, catalogue, options = {}) {
   for (const g of doc.groups ?? []) {
     const f = lay.frames[g.id];
     if (!f) continue;
+    const { tint, body } = styleOf(g.id);
+    const dataTint = tint ? ` data-tint="${tint}"` : "";
     out.push(
-      `<rect x="${f1(f[0])}" y="${f1(f[1])}" width="${f1(f[2])}" height="${f1(f[3])}" rx="10" fill="none" stroke="var(--frame)" stroke-width="1" stroke-dasharray="5 4"/>`,
+      `<rect${dataTint} x="${f1(f[0])}" y="${f1(f[1])}" width="${f1(f[2])}" height="${f1(f[3])}" rx="10" fill="none" stroke="var(--frame)" stroke-width="1" stroke-dasharray="5 4"/>`,
     );
+    // The icon, when there is one, comes first and pushes the words right.
+    const lx = f[0] + 12 + (body ? FRAME_ICON_SHIFT : 0);
+    if (body)
+      out.push(
+        `<svg class="gi" x="${f1(f[0] + 12)}" y="${f1(f[1] + 7)}" width="${FRAME_ICON}" height="${FRAME_ICON}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`,
+      );
     // The name, then the kind as a tag beside it — never "name (kind)". With no label the id
     // stands in; when that caption would only repeat the kind, the tag alone carries it.
     const caption = g.label ? String(g.label) : String(g.id);
     const name = caption === g.kind ? "" : caption;
     if (name)
-      out.push(
-        `<text class="g" x="${f1(f[0] + 12)}" y="${f1(f[1] + 19)}">${escapeXml(name)}</text>`,
-      );
+      out.push(`<text class="g" x="${f1(lx)}" y="${f1(f[1] + 19)}">${escapeXml(name)}</text>`);
     out.push(
-      `<text class="gk" x="${f1(f[0] + 12 + (name ? name.length * 6.4 + 8 : 0))}" y="${f1(f[1] + 19)}">${escapeXml(g.kind)}</text>`,
+      `<text class="gk" x="${f1(lx + (name ? name.length * 6.4 + 8 : 0))}" y="${f1(f[1] + 19)}">${escapeXml(g.kind)}</text>`,
     );
   }
   // Edge shape and label placement come from geometry.js, as on the canvas: a reciprocal or

@@ -168,6 +168,41 @@
   color-scheme: dark;
 }
 
+/* boundary tints: a closed set of names (TINTS in src/lib/layout-sidecar.ts). Same values as
+   TINT in packages/core/src/render.js, which the exported SVG carries. */
+:root {
+  --tint-slate: #64748b;
+  --tint-slate-fill: #64748b14;
+  --tint-blue: #3b82f6;
+  --tint-blue-fill: #3b82f614;
+  --tint-green: #16a34a;
+  --tint-green-fill: #16a34a14;
+  --tint-amber: #d97706;
+  --tint-amber-fill: #d9770614;
+  --tint-rose: #e11d48;
+  --tint-rose-fill: #e11d4814;
+  --tint-violet: #7c3aed;
+  --tint-violet-fill: #7c3aed14;
+  --tint-teal: #0d9488;
+  --tint-teal-fill: #0d948814;
+}
+[data-theme="dark"] {
+  --tint-slate: #94a3b8;
+  --tint-slate-fill: #94a3b814;
+  --tint-blue: #60a5fa;
+  --tint-blue-fill: #60a5fa14;
+  --tint-green: #4ade80;
+  --tint-green-fill: #4ade8014;
+  --tint-amber: #fbbf24;
+  --tint-amber-fill: #fbbf2414;
+  --tint-rose: #fb7185;
+  --tint-rose-fill: #fb718514;
+  --tint-violet: #a78bfa;
+  --tint-violet-fill: #a78bfa14;
+  --tint-teal: #2dd4bf;
+  --tint-teal-fill: #2dd4bf14;
+}
+
 /* the render engine and the canvas read these */
 :root,
 [data-theme="dark"] {
@@ -1373,6 +1408,43 @@ kbd.key {
 }
 .svg-preview .ic {
   color: var(--ink);
+}
+.svg-preview .gk {
+  font-size: 10px;
+  font-family: var(--mono);
+  fill: var(--muted);
+  opacity: 0.75;
+}
+.svg-preview .gi {
+  color: var(--muted);
+}
+.svg-preview [data-tint="slate"] {
+  stroke: var(--tint-slate);
+  fill: var(--tint-slate-fill);
+}
+.svg-preview [data-tint="blue"] {
+  stroke: var(--tint-blue);
+  fill: var(--tint-blue-fill);
+}
+.svg-preview [data-tint="green"] {
+  stroke: var(--tint-green);
+  fill: var(--tint-green-fill);
+}
+.svg-preview [data-tint="amber"] {
+  stroke: var(--tint-amber);
+  fill: var(--tint-amber-fill);
+}
+.svg-preview [data-tint="rose"] {
+  stroke: var(--tint-rose);
+  fill: var(--tint-rose-fill);
+}
+.svg-preview [data-tint="violet"] {
+  stroke: var(--tint-violet);
+  fill: var(--tint-violet-fill);
+}
+.svg-preview [data-tint="teal"] {
+  stroke: var(--tint-teal);
+  fill: var(--tint-teal-fill);
 }
 
 .clamp-2 {

@@ -516,6 +516,22 @@ describe("security review fixes", () => {
     expect(normaliseLayout(undefined)).toBeNull();
   });
 
+  it("round-trips boundary styles through the stored layout and drops bad ones", async () => {
+    const { normaliseLayout } = await lib();
+    const s = normaliseLayout({
+      nodes: {},
+      frames: {
+        vpc: { tint: "blue", icon: "kind:api-gateway" },
+        edge: { tint: "#ff0000", icon: "component:../../x" },
+        cell: { icon: "component:aws/aws-lambda", junk: 1 },
+      },
+    }) as { frames: Record<string, unknown> };
+    expect(s.frames).toEqual({
+      vpc: { tint: "blue", icon: "kind:api-gateway" },
+      cell: { icon: "component:aws/aws-lambda" },
+    });
+  });
+
   it("counts a view once per visitor and hour (F-08)", async () => {
     const { createDesign, getDesign, patchDesign, recordEvent } = await lib();
     const wes = await makeUser("wes");

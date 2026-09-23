@@ -14,6 +14,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  type FrameStyle,
   NOTE_ANCHOR_DX,
   NOTE_ANCHOR_DY,
   NOTE_ANCHOR_H,
@@ -24,8 +25,10 @@ import {
   type NoteAnchor,
   nextNoteId,
   pruneAnchored,
+  pruneFrames,
   readSidecar,
   retargetAnchors,
+  retargetFrame,
   writeSidecar,
 } from "@/lib/layout-sidecar";
 import { ContextMenu, type MenuItem } from "./ContextMenu";
@@ -60,6 +63,8 @@ type Engine = {
   sizes: Record<string, [number, number]>;
   bows: Record<string, number>;
   notes: Note[];
+  /** Boundary tint and icon by group id: sidecar, never YAML. */
+  frames: Record<string, FrameStyle>;
   undo: any[];
   redo: any[];
   dirty: boolean;
@@ -305,6 +310,7 @@ export function Canvas(props: Props) {
         sizes: e.sizes,
         bows: e.bows,
         notes: e.notes,
+        frameStyles: e.frames,
         showNotes: showNotesRef.current,
         pinnedNotes: pinnedNotesRef.current,
         findings: [...e.structural, ...e.rules],
@@ -322,7 +328,7 @@ export function Canvas(props: Props) {
   // the YAML, because a note is not a node.
   const sidecar = useCallback(() => {
     const e = eng.current!;
-    return writeSidecar({ nodes: e.positions, edges: e.bows, notes: e.notes });
+    return writeSidecar({ nodes: e.positions, edges: e.bows, notes: e.notes, frames: e.frames });
   }, []);
 
   const save = useCallback(async () => {
@@ -391,6 +397,7 @@ export function Canvas(props: Props) {
         positions: clone(e.positions),
         bows: clone(e.bows),
         notes: clone(e.notes),
+        frames: clone(e.frames),
       };
       const now = Date.now();
       const coalesce = Boolean(opts.coalesce) && now - e.lastDragAt < 400;
@@ -406,6 +413,8 @@ export function Canvas(props: Props) {
       // snapshot above, means deleting a node and losing its notes is one undo away — and every
       // delete path gets it, without each one remembering to.
       e.notes = pruneAnchored(e.notes, anchorables(e.doc));
+      // The same for a deleted boundary's colour and icon: they go in the same undo step.
+      e.frames = pruneFrames(e.frames, anchorables(e.doc).groups);
       e.dirty = true;
       e.saveSeq++;
       setStatus(props.canWrite ? "unsaved" : "read only — Clone to keep these edits");
@@ -424,6 +433,7 @@ export function Canvas(props: Props) {
       positions: clone(e.positions),
       bows: clone(e.bows),
       notes: clone(e.notes),
+      frames: clone(e.frames),
     });
     Object.assign(e, prev);
     e.lastDragAt = 0;
@@ -443,6 +453,7 @@ export function Canvas(props: Props) {
       positions: clone(e.positions),
       bows: clone(e.bows),
       notes: clone(e.notes),
+      frames: clone(e.frames),
     });
     Object.assign(e, next);
     e.lastDragAt = 0;
@@ -877,6 +888,7 @@ export function Canvas(props: Props) {
       sizes: {},
       bows: sidecarIn.edges,
       notes: sidecarIn.notes,
+      frames: sidecarIn.frames,
       undo: [],
       redo: [],
       dirty: false,
@@ -1178,10 +1190,28 @@ export function Canvas(props: Props) {
           return notify(`${newId} is the id of another boundary`);
         sceneRef.current!.selection = { type: "group", ref: newId };
         commit(D.renameGroup(e.doc, oldId, newId), {
-          apply: () => retargetAnchors(e.notes, "group", oldId, newId),
+          apply: () => {
+            retargetAnchors(e.notes, "group", oldId, newId);
+            retargetFrame(e.frames, oldId, newId);
+          },
         });
       },
       setParent: (id, p) => commit(D.setGroupParent(eng.current!.doc, id, p)),
+      // Tint and icon are layout, like a note: the sidecar changes, the YAML never does.
+      setFrameStyle: (id, patch) => {
+        const e = eng.current!;
+        commit(null, {
+          apply: () => {
+            const next: FrameStyle = { ...(e.frames[id] ?? {}), ...patch };
+            if (!next.tint) delete next.tint;
+            if (!next.icon) delete next.icon;
+            const frames = { ...e.frames };
+            if (next.tint || next.icon) frames[id] = next;
+            else delete frames[id];
+            e.frames = frames;
+          },
+        });
+      },
       setDesignId: (v) => {
         const d = clone(eng.current!.doc);
         d.id = D.toId(v) || d.id;
@@ -1732,7 +1762,10 @@ export function Canvas(props: Props) {
                 multi={multi}
                 doc={e.doc}
                 notes={e.notes}
+                frameStyles={e.frames}
                 catalogue={bundle.catalogue}
+                icons={bundle.icons}
+                searchRows={bundle.search}
                 api={api}
                 highlight={finding?.highlight ?? null}
               />

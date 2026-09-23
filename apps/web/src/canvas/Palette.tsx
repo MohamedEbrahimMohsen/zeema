@@ -4,10 +4,10 @@ import { isGeneric } from "@zeema/core/document";
 import { useEffect, useMemo, useRef } from "react";
 
 /** [id, name, kind, category, provider, haystack, aliases] — see `searchRows` in @zeema/catalogue. */
-type Row = [string, string, string, string, string, string, string];
+export type Row = [string, string, string, string, string, string, string];
 const LIMIT = 60;
 
-function parseQuery(q: string) {
+export function parseQuery(q: string) {
   const filters: Record<string, string> = {};
   const words: string[] = [];
   for (const token of q.toLowerCase().split(/\s+/).filter(Boolean)) {
@@ -18,7 +18,7 @@ function parseQuery(q: string) {
   return { filters, words };
 }
 
-function score(row: Row, words: string[]) {
+export function score(row: Row, words: string[]) {
   const [id, name, , , , hay, aliases] = row;
   if (!words.length) return 1;
   // An alias is a name the vendor uses, so it weighs what the name weighs: typing `dcr` should

@@ -3,6 +3,10 @@
 // and its ceilings are the contract, and the anchor helpers are pure enough to pin down here.
 import { describe, expect, it } from "vitest";
 import {
+  FRAME_MAX_STYLES,
+  frameIconKey,
+  isFrameIcon,
+  isTint,
   NOTE_DEFAULT_H,
   NOTE_DEFAULT_W,
   NOTE_MAX_H,
@@ -14,9 +18,13 @@ import {
   type Note,
   nextNoteId,
   pruneAnchored,
+  pruneFrames,
   readSidecar,
   retargetAnchors,
+  retargetFrame,
   SIDECAR_VERSION,
+  TINTS,
+  writeSidecar,
 } from "./layout-sidecar";
 
 const note = (over: Partial<Note> = {}): Note => ({
@@ -33,7 +41,13 @@ describe("readSidecar tolerance", () => {
   it("returns an empty sidecar for anything that is not an object", () => {
     for (const bad of [null, undefined, 3, "x", [], true]) {
       const s = readSidecar(bad);
-      expect(s).toEqual({ version: SIDECAR_VERSION, nodes: {}, edges: {}, notes: [] });
+      expect(s).toEqual({
+        version: SIDECAR_VERSION,
+        nodes: {},
+        edges: {},
+        notes: [],
+        frames: {},
+      });
     }
   });
 
@@ -159,5 +173,105 @@ describe("nextNoteId", () => {
     expect(nextNoteId([])).toBe("note-1");
     expect(nextNoteId(["note-1", "note-3"])).toBe("note-2");
     expect(nextNoteId(["note-1", "note-2"])).toBe("note-3");
+  });
+});
+
+describe("boundary styles", () => {
+  it("keeps a named tint and a well-formed icon reference", () => {
+    const s = readSidecar({
+      frames: {
+        vpc: { tint: "blue", icon: "kind:network" },
+        cell: { icon: "component:aws/aws-lambda" },
+        zone: { tint: "teal" },
+      },
+    });
+    expect(s.frames).toEqual({
+      vpc: { tint: "blue", icon: "kind:network" },
+      cell: { icon: "component:aws/aws-lambda" },
+      zone: { tint: "teal" },
+    });
+  });
+
+  it("drops what is not a tint or not an icon reference, and an entry left empty", () => {
+    const s = readSidecar({
+      frames: {
+        a: { tint: 3, icon: "kind:queue" },
+        b: { tint: "#ff0000" },
+        c: { tint: "Blue" },
+        d: { icon: "component:../../x" },
+        e: { icon: "component:aws" },
+        f: { icon: `kind:${"x".repeat(200)}` },
+        g: { icon: "https://evil.example/x.svg" },
+        h: { icon: '<svg onload="x">' },
+        i: "blue",
+        j: null,
+        "Not-Kebab": { tint: "blue" },
+      },
+    });
+    expect(s.frames).toEqual({ a: { icon: "kind:queue" } });
+  });
+
+  it("never lets a stored key reach the prototype", () => {
+    const s = readSidecar(
+      JSON.parse('{"frames":{"__proto__":{"tint":"blue"},"constructor":{"tint":"rose"}}}'),
+    );
+    expect(Object.getPrototypeOf(s.frames)).toBe(Object.prototype);
+    expect((s.frames as Record<string, unknown>).tint).toBeUndefined();
+    expect(Object.hasOwn(s.frames, "__proto__")).toBe(false);
+  });
+
+  it("ignores a frames value that is not an object", () => {
+    for (const bad of [null, 3, "x", [{ tint: "blue" }], true])
+      expect(readSidecar({ frames: bad }).frames).toEqual({});
+  });
+
+  it("keeps at most FRAME_MAX_STYLES boundary styles", () => {
+    const raw: Record<string, unknown> = {};
+    for (let i = 0; i < 10_000; i++) raw[`g${i}`] = { tint: "blue" };
+    const s = readSidecar({ frames: raw });
+    expect(Object.keys(s.frames)).toHaveLength(FRAME_MAX_STYLES);
+  });
+
+  it("drops the style of a boundary the design no longer has, when told what it has", () => {
+    const raw = { frames: { vpc: { tint: "blue" }, gone: { tint: "rose" } } };
+    expect(readSidecar(raw, { nodes: [], groups: ["vpc"] }).frames).toEqual({
+      vpc: { tint: "blue" },
+    });
+    expect(Object.keys(readSidecar(raw).frames)).toEqual(["vpc", "gone"]);
+  });
+
+  it("writes the styles back and an empty map when there are none", () => {
+    const base = { nodes: {}, edges: {}, notes: [] };
+    expect(writeSidecar(base).frames).toEqual({});
+    expect(writeSidecar({ ...base, frames: { vpc: { tint: "green" } } }).frames).toEqual({
+      vpc: { tint: "green" },
+    });
+  });
+
+  it("prunes styles of deleted boundaries without touching the input", () => {
+    const frames = { vpc: { tint: "blue" as const }, gone: { icon: "kind:queue" } };
+    expect(pruneFrames(frames, ["vpc"])).toEqual({ vpc: { tint: "blue" } });
+    expect(Object.keys(frames)).toEqual(["vpc", "gone"]);
+  });
+
+  it("follows a boundary rename", () => {
+    const frames: Record<string, { tint?: (typeof TINTS)[number] }> = {
+      old: { tint: "amber" },
+      other: { tint: "rose" },
+    };
+    retargetFrame(frames, "old", "new");
+    expect(frames).toEqual({ new: { tint: "amber" }, other: { tint: "rose" } });
+    retargetFrame(frames, "missing", "x");
+    expect(Object.keys(frames)).toEqual(["other", "new"]);
+  });
+
+  it("resolves an icon reference to its key in the icon map", () => {
+    expect(frameIconKey("kind:queue")).toBe("kind:queue");
+    expect(frameIconKey("component:aws/aws-lambda")).toBe("aws-lambda");
+    expect(frameIconKey("component:../x")).toBeNull();
+    expect(frameIconKey(undefined)).toBeNull();
+    expect(isFrameIcon("kind:")).toBe(false);
+    expect(TINTS.every(isTint)).toBe(true);
+    expect(isTint("red")).toBe(false);
   });
 });

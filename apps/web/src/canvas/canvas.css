@@ -250,14 +250,58 @@
   stroke-width: 2;
 }
 
-/* boundaries — dashed, never filled */
+/* boundaries — dashed, unfilled unless tinted */
 .zeema-canvas .frame {
   fill: none;
   stroke: var(--frame);
   stroke-width: 1;
   stroke-dasharray: 5 4;
 }
-.zeema-canvas .frame.selected {
+/* boundary tints — named, never free colours. The --tint-* tokens live in globals.css (light and
+   dark), shared with the design page preview; the exported SVG carries the same values from TINT
+   in packages/core/src/render.js. A tint is a stroke plus the same colour at ~8% as a fill, light
+   enough that nested boundaries stay readable. */
+.zeema-canvas .frame[data-tint="slate"] {
+  stroke: var(--tint-slate);
+  fill: var(--tint-slate-fill);
+}
+.zeema-canvas .frame[data-tint="blue"] {
+  stroke: var(--tint-blue);
+  fill: var(--tint-blue-fill);
+}
+.zeema-canvas .frame[data-tint="green"] {
+  stroke: var(--tint-green);
+  fill: var(--tint-green-fill);
+}
+.zeema-canvas .frame[data-tint="amber"] {
+  stroke: var(--tint-amber);
+  fill: var(--tint-amber-fill);
+}
+.zeema-canvas .frame[data-tint="rose"] {
+  stroke: var(--tint-rose);
+  fill: var(--tint-rose-fill);
+}
+.zeema-canvas .frame[data-tint="violet"] {
+  stroke: var(--tint-violet);
+  fill: var(--tint-violet-fill);
+}
+.zeema-canvas .frame[data-tint="teal"] {
+  stroke: var(--tint-teal);
+  fill: var(--tint-teal-fill);
+}
+/* a tinted fill must not make the inside of a boundary catch the pointer: it behaves exactly
+   like an untinted one, where only the stroke is live */
+.zeema-canvas .frame[data-tint] {
+  pointer-events: stroke;
+}
+/* the icon a boundary may carry before its name */
+.zeema-canvas .frame-icon {
+  color: var(--muted);
+  cursor: move;
+}
+/* selection wins over a tint: the ring is the accent, the tinted fill stays */
+.zeema-canvas .frame.selected,
+.zeema-canvas .frame[data-tint].selected {
   stroke: var(--accent);
   stroke-width: 2;
   stroke-dasharray: 6 3;
@@ -608,6 +652,83 @@
 .zeema-canvas .field select:focus {
   outline: none;
   box-shadow: var(--ring-focus);
+}
+/* boundary colour: one swatch per named tint, and "none" */
+.zeema-canvas .swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.zeema-canvas .swatch {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: var(--border) solid var(--line);
+  border-radius: var(--r-round);
+  cursor: pointer;
+}
+.zeema-canvas .swatch-none {
+  background: linear-gradient(
+    135deg,
+    var(--panel) 45%,
+    var(--muted) 45%,
+    var(--muted) 55%,
+    var(--panel) 55%
+  );
+}
+.zeema-canvas .swatch[aria-pressed="true"] {
+  box-shadow:
+    0 0 0 2px var(--panel),
+    0 0 0 4px var(--accent);
+}
+.zeema-canvas .swatch:focus-visible {
+  outline: none;
+  box-shadow: var(--ring-focus);
+}
+/* boundary icon: what it is now, and a small search-and-pick list */
+.zeema-canvas .icon-field {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-0-5);
+  min-width: 0;
+}
+.zeema-canvas .icon-field-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.9em;
+}
+.zeema-canvas .icon-picker {
+  margin: 0 0 var(--sp-1);
+  border: var(--border) solid var(--line);
+  border-radius: var(--rc);
+  background: var(--panel);
+  padding: var(--sp-0-5);
+}
+.zeema-canvas .icon-picker input {
+  width: 100%;
+  font: inherit;
+  font-size: 0.9em;
+  padding: calc(var(--p) * 0.5) calc(var(--p) * 0.9);
+  border: var(--border) solid var(--line);
+  border-radius: var(--rc);
+  background: var(--panel);
+  color: var(--ink);
+}
+.zeema-canvas .icon-picker-results {
+  max-height: 240px;
+  overflow-y: auto;
+  margin-top: var(--sp-0-5);
+}
+.zeema-canvas .icon-picker .pal-row {
+  grid-template-columns: var(--icon-sm) 1fr auto;
+  cursor: pointer;
+}
+.zeema-canvas .icon-picker .pal-row svg {
+  width: var(--icon-sm);
+  height: var(--icon-sm);
 }
 .zeema-canvas h2 {
   font-family: var(--lab-font);

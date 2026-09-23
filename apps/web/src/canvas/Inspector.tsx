@@ -4,8 +4,18 @@
 // product is hard coded. A control shows the value the design resolves to and writes only when
 // the user sets something. Text inputs commit on blur or Enter, never per keystroke.
 import { effective, propDefs } from "@zeema/core/document";
-import { anchorTarget, type Note } from "@/lib/layout-sidecar";
+import { useMemo, useState } from "react";
+import { Icon } from "@/components/Icon";
+import {
+  anchorTarget,
+  type FrameStyle,
+  frameIconKey,
+  type Note,
+  TINTS,
+  type Tint,
+} from "@/lib/layout-sidecar";
 import { own } from "@/lib/own";
+import { parseQuery, type Row, score } from "./Palette";
 import type { Subject } from "./scene";
 
 export type InspectorApi = {
@@ -19,6 +29,8 @@ export type InspectorApi = {
   setGroupField: (id: string, field: string, value: unknown) => void;
   renameGroup: (oldId: string, newId: string) => void;
   setParent: (id: string, parent: string | null) => void;
+  /** Boundary tint and icon. Sidecar only; `undefined` clears that half. */
+  setFrameStyle: (id: string, patch: { tint?: Tint; icon?: string }) => void;
   setDesignId: (id: string) => void;
   setRequirement: (path: string, value: unknown) => void;
   setNoteText: (id: string, text: string) => void;
@@ -163,7 +175,10 @@ export function Inspector({
   multi,
   doc,
   notes,
+  frameStyles,
   catalogue,
+  icons,
+  searchRows,
   api,
   highlight,
 }: {
@@ -171,7 +186,13 @@ export function Inspector({
   multi: Set<string>;
   doc: any;
   notes: Note[];
+  /** Boundary tint and icon by group id, from the layout sidecar. */
+  frameStyles?: Record<string, FrameStyle>;
   catalogue: any;
+  /** The catalogue icon map (icons.json): component ids and `kind:<id>`. */
+  icons?: Record<string, string>;
+  /** The palette's search rows, reused by the boundary icon picker. */
+  searchRows?: Row[];
   api: InspectorApi;
   /** The fields the finding last clicked in the panel is about, or null. */
   highlight?: Highlight;
@@ -226,7 +247,15 @@ export function Inspector({
       return (
         <>
           {head}
-          <GroupPanel group={group} doc={doc} api={api} />
+          <GroupPanel
+            group={group}
+            doc={doc}
+            api={api}
+            style={own(frameStyles ?? {}, group.id) ?? {}}
+            catalogue={catalogue}
+            icons={icons ?? {}}
+            searchRows={searchRows ?? []}
+          />
         </>
       );
   }
@@ -505,7 +534,133 @@ const GROUP_KINDS = [
   "point-of-presence",
 ];
 
-function GroupPanel({ group, doc, api }: { group: any; doc: any; api: InspectorApi }) {
+const ICON_RESULTS = 40;
+
+/** What an icon reference is called, for the field and the picker: the catalogue's own name. */
+function iconName(ref: string | undefined, catalogue: any) {
+  if (!ref) return "";
+  if (ref.startsWith("kind:")) {
+    const id = ref.slice(5);
+    return own(catalogue.locale?.kinds, id)?.name ?? id;
+  }
+  const id = ref.slice(ref.indexOf("/") + 1);
+  return own(catalogue.locale?.components, id)?.name ?? id;
+}
+
+/**
+ * Choose a boundary icon: a kind glyph or a component icon, found with the palette's own search
+ * (same scoring, same `kind:` / `provider:` / `category:` filters, same aliases). Kinds have no
+ * search rows of their own, so they are made here in the same shape from the catalogue bundle.
+ */
+function IconPicker({
+  catalogue,
+  icons,
+  searchRows,
+  onPick,
+  onClose,
+}: {
+  catalogue: any;
+  icons: Record<string, string>;
+  searchRows: Row[];
+  onPick: (ref: string) => void;
+  onClose: () => void;
+}) {
+  const [q, setQ] = useState("");
+  const kindRows = useMemo<Row[]>(
+    () =>
+      Object.keys(catalogue.kinds ?? {})
+        .sort()
+        .map((id) => {
+          const loc = own(catalogue.locale?.kinds, id) ?? {};
+          const name = String(loc.name ?? id);
+          const category = String(own(catalogue.kinds, id)?.category ?? "");
+          const hay = `${id} ${name} ${loc.description ?? ""}`.toLowerCase();
+          return [id, name, id, category, "", hay, ""];
+        }),
+    [catalogue],
+  );
+  const { kinds, components } = useMemo(() => {
+    const { filters, words } = parseQuery(q);
+    const pick = (rows: Row[], isKind: boolean) => {
+      const out: Array<[number, Row]> = [];
+      for (const row of rows) {
+        if (filters.provider && (isKind || row[4] !== filters.provider)) continue;
+        if (filters.kind && row[2] !== filters.kind) continue;
+        if (filters.category && row[3] !== filters.category) continue;
+        const sc = score(row, words);
+        if (sc) out.push([sc, row]);
+      }
+      out.sort((a, b) => b[0] - a[0] || a[1][1].localeCompare(b[1][1]));
+      return out.map((h) => h[1]);
+    };
+    const k = pick(kindRows, true).slice(0, ICON_RESULTS);
+    const c = pick(searchRows, false).slice(0, ICON_RESULTS - k.length);
+    return { kinds: k, components: c };
+  }, [q, kindRows, searchRows]);
+  const row = (ref: string, key: string, name: string, meta: string) => (
+    <button
+      key={ref}
+      type="button"
+      className="pal-row icon-pick-row"
+      title={ref}
+      onClick={() => onPick(ref)}
+    >
+      <Icon markup={own(icons, key)} size="sm" />
+      <span className="name">{name}</span>
+      <span className="kind">{meta}</span>
+    </button>
+  );
+  return (
+    <div className="icon-picker">
+      <input
+        type="text"
+        // biome-ignore lint/a11y/noAutofocus: the picker opens on a click that asked to search
+        autoFocus
+        placeholder="Search kinds and components…"
+        aria-label="Search icons"
+        value={q}
+        onChange={(e) => setQ(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Escape") {
+            e.stopPropagation();
+            onClose();
+          }
+        }}
+      />
+      <div className="icon-picker-results">
+        {kinds.length ? <div className="pal-group">Kinds</div> : null}
+        {kinds.map(([id, name]) => row(`kind:${id}`, `kind:${id}`, name, "kind"))}
+        {components.length ? <div className="pal-group">Components</div> : null}
+        {components.map(([id, name, , , provider]) =>
+          row(`component:${provider}/${id}`, id, name, provider),
+        )}
+        {!kinds.length && !components.length ? (
+          <div className="muted p-2">Nothing matches.</div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function GroupPanel({
+  group,
+  doc,
+  api,
+  style,
+  catalogue,
+  icons,
+  searchRows,
+}: {
+  group: any;
+  doc: any;
+  api: InspectorApi;
+  style: FrameStyle;
+  catalogue: any;
+  icons: Record<string, string>;
+  searchRows: Row[];
+}) {
+  const [picking, setPicking] = useState(false);
+  const iconKey = frameIconKey(style.icon);
   const members = doc.nodes.filter((n: any) => n.group === group.id).length;
   return (
     <>
@@ -546,6 +701,68 @@ function GroupPanel({ group, doc, api }: { group: any; doc: any; api: InspectorA
             ))}
         </select>
       </Field>
+      <Field name="colour" note="layout only, not in the YAML" isSet={Boolean(style.tint)}>
+        <div className="swatches">
+          <button
+            type="button"
+            className="swatch swatch-none"
+            aria-label="none"
+            aria-pressed={!style.tint}
+            title="none"
+            onClick={() => api.setFrameStyle(group.id, { tint: undefined })}
+          />
+          {TINTS.map((t) => (
+            <button
+              key={t}
+              type="button"
+              className="swatch"
+              aria-label={t}
+              aria-pressed={style.tint === t}
+              title={t}
+              style={{ background: `var(--tint-${t})` }}
+              onClick={() => api.setFrameStyle(group.id, { tint: t })}
+            />
+          ))}
+        </div>
+      </Field>
+      <Field name="icon" isSet={Boolean(style.icon)}>
+        <div className="icon-field">
+          {style.icon ? (
+            <>
+              <Icon markup={iconKey ? own(icons, iconKey) : undefined} size="sm" muted />
+              <span className="icon-field-name" title={style.icon}>
+                {iconName(style.icon, catalogue)}
+              </span>
+            </>
+          ) : (
+            <span className="muted">none</span>
+          )}
+          <button type="button" className="btn btn-sm" onClick={() => setPicking((p) => !p)}>
+            Choose…
+          </button>
+          {style.icon ? (
+            <button
+              type="button"
+              className="btn btn-sm"
+              onClick={() => api.setFrameStyle(group.id, { icon: undefined })}
+            >
+              Remove
+            </button>
+          ) : null}
+        </div>
+      </Field>
+      {picking ? (
+        <IconPicker
+          catalogue={catalogue}
+          icons={icons}
+          searchRows={searchRows}
+          onPick={(ref) => {
+            setPicking(false);
+            api.setFrameStyle(group.id, { icon: ref });
+          }}
+          onClose={() => setPicking(false)}
+        />
+      ) : null}
       <div className="meta">
         {members} member{members === 1 ? "" : "s"}
       </div>

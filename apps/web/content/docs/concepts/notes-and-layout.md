@@ -20,7 +20,8 @@ The sidecar is a small JSON document stored with each version of a design.
   "version": 2,
   "nodes": { "api": [120, 80], "orders-queue": [360, 80] },
   "edges": { "api>orders-queue": 0 },
-  "notes": []
+  "notes": [],
+  "frames": { "vpc": { "tint": "blue", "icon": "kind:api-gateway" } }
 }
 ```
 
@@ -29,6 +30,7 @@ The sidecar is a small JSON document stored with each version of a design.
 | `nodes` | A node id to its `[x, y]` in world coordinates |
 | `edges` | An edge key to its bow: how far the arrow bends |
 | `notes` | Free-text annotations |
+| `frames` | A boundary id to its colour and icon (see below) |
 
 An edge key is `from>to`, or `from>to#n` for the n-th parallel edge between the same pair.
 
@@ -57,6 +59,31 @@ uses. That is the only place in the sidecar that refers to the document at all.
 
 Because the anchor is an id, moving a node carries its notes along, and renaming a node in the
 YAML editor leaves the note pointing at nothing, which the canvas shows rather than hides.
+
+## Boundary colour and icon
+
+A boundary can carry a colour and an icon drawn before its name. Both are presentation, so both
+live in the sidecar under `frames`, keyed by the boundary's id. The YAML never changes and no rule
+ever reads them. Set them from the boundary's panel in the canvas inspector; each change can be
+undone like any other edit.
+
+- **`tint`** is one of a fixed set of names: `slate`, `blue`, `green`, `amber`, `rose`, `violet`,
+  `teal`. It sets the dashed stroke and a very light fill, with separate values for the light
+  and dark themes. You cannot give a free hex colour. Leave `tint` out to get the default frame.
+- **`icon`** is a reference, never the icon itself. It takes one of two forms:
+  - `kind:<kind-id>` for a kind glyph, for example `kind:queue`.
+  - `component:<provider>/<component-id>` for a catalogue component's icon, for example
+    `component:aws/lambda`.
+
+  A reference to an icon the catalogue does not have draws nothing, and the label stays where it
+  was.
+
+The reader drops anything else: a tint that is not on the list, an icon reference in the wrong
+shape, or a style for a boundary the design no longer has. Deleting a boundary deletes its style
+too, and renaming a boundary moves its style with it.
+
+Exports keep both. The SVG and PNG you export from the canvas, and the as-drawn SVG from the
+render API, draw the tint and the icon exactly as the canvas shows them.
 
 ## Getting at it
 

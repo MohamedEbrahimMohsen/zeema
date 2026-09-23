@@ -49,11 +49,44 @@ export const NOTE_ANCHOR_DY = -8;
 export const NOTE_ANCHOR_W = 148;
 export const NOTE_ANCHOR_H = 66;
 
+/**
+ * The named tints a boundary may carry. A closed set, never a free colour: the canvas and the
+ * exported SVG each hold one token per tint (light and dark), so a tint always reads in both
+ * themes and a hand-edited sidecar cannot smuggle a colour in.
+ */
+export const TINTS = ["slate", "blue", "green", "amber", "rose", "violet", "teal"] as const;
+export type Tint = (typeof TINTS)[number];
+export const isTint = (v: unknown): v is Tint =>
+  typeof v === "string" && (TINTS as readonly string[]).includes(v);
+
+/**
+ * An icon drawn before a boundary's label, by reference and never by bytes:
+ * `kind:<kindId>` is a kind glyph (icons/kinds/<kindId>.svg) and
+ * `component:<provider>/<componentId>` is a catalogue component's icon.
+ */
+export const FRAME_ICON_RE = /^(kind:[a-z0-9-]+|component:[a-z0-9-]+\/[a-z0-9-]+)$/;
+export const FRAME_ICON_MAX = 120;
+export const isFrameIcon = (v: unknown): v is string =>
+  typeof v === "string" && v.length <= FRAME_ICON_MAX && FRAME_ICON_RE.test(v);
+
+/** The key an icon reference has in the catalogue icon map (icons.json), or null. */
+export function frameIconKey(ref: string | undefined | null) {
+  if (!ref || !isFrameIcon(ref)) return null;
+  return ref.startsWith("kind:") ? ref : ref.slice(ref.indexOf("/") + 1);
+}
+
+/** How a boundary is drawn: presentation only, so it lives here and never in the YAML. */
+export type FrameStyle = { tint?: Tint; icon?: string };
+export const FRAME_MAX_STYLES = 500;
+const GROUP_ID_RE = /^[a-z][a-z0-9-]*$/;
+
 export type LayoutSidecar = {
   version: number;
   nodes: Record<string, [number, number]>;
   edges: Record<string, number>;
   notes: Note[];
+  /** Keyed by group id. A boundary with no entry is drawn in the default frame colour. */
+  frames: Record<string, FrameStyle>;
 };
 
 export const NOTE_MIN_W = 80;
@@ -138,12 +171,65 @@ export function readSidecar(raw: unknown, targets?: AnchorTargets): LayoutSideca
         .map((n) => readNote(n, present))
         .filter(Boolean) as Note[])
     : ([] as Note[]);
-  return { version: num(r.version, SIDECAR_VERSION), nodes, edges, notes };
+  const frames = readFrames(r.frames, present);
+  return { version: num(r.version, SIDECAR_VERSION), nodes, edges, notes, frames };
+}
+
+/**
+ * The boundary styles a sidecar holds. A tint outside the named set or an icon reference of the
+ * wrong shape is dropped, and an entry left with nothing in it goes with it. With targets, a
+ * style for a boundary the design no longer has is dropped too, the way a stale anchor is.
+ */
+export function readFrames(
+  raw: unknown,
+  present?: { groups: Set<string> } | null,
+): Record<string, FrameStyle> {
+  const out: Record<string, FrameStyle> = {};
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return out;
+  let kept = 0;
+  for (const [id, v] of Object.entries(raw as Record<string, unknown>)) {
+    if (kept >= FRAME_MAX_STYLES) break;
+    // A boundary id is kebab-case (the schema says so), which also keeps `__proto__` and its
+    // friends from ever becoming a key here.
+    if (!GROUP_ID_RE.test(id) || (present && !present.groups.has(id))) continue;
+    if (!v || typeof v !== "object") continue;
+    const r = v as Record<string, unknown>;
+    const style: FrameStyle = {};
+    if (isTint(r.tint)) style.tint = r.tint;
+    if (isFrameIcon(r.icon)) style.icon = r.icon;
+    if (!style.tint && !style.icon) continue;
+    out[id] = style;
+    kept++;
+  }
+  return out;
 }
 
 /** What the canvas sends back. Notes travel with the positions, in the same save request. */
-export function writeSidecar(s: Omit<LayoutSidecar, "version">): LayoutSidecar {
-  return { version: SIDECAR_VERSION, nodes: s.nodes, edges: s.edges, notes: s.notes };
+export function writeSidecar(
+  s: Omit<LayoutSidecar, "version" | "frames"> & { frames?: Record<string, FrameStyle> },
+): LayoutSidecar {
+  return {
+    version: SIDECAR_VERSION,
+    nodes: s.nodes,
+    edges: s.edges,
+    notes: s.notes,
+    frames: s.frames ?? {},
+  };
+}
+
+/** The boundary styles whose boundary still exists. Like `pruneAnchored`, it copies. */
+export function pruneFrames(frames: Record<string, FrameStyle>, groups: Iterable<string>) {
+  const keep = new Set(groups);
+  const out: Record<string, FrameStyle> = {};
+  for (const [id, style] of Object.entries(frames)) if (keep.has(id)) out[id] = style;
+  return out;
+}
+
+/** Follow a boundary rename: its colour and icon go with it. Mutates, like `retargetAnchors`. */
+export function retargetFrame(frames: Record<string, FrameStyle>, from: string, to: string) {
+  if (from === to || !Object.hasOwn(frames, from)) return;
+  frames[to] = frames[from];
+  delete frames[from];
 }
 
 /**

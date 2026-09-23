@@ -92,9 +92,11 @@ function placeNewcomer(id, size, doc, boxes) {
  *
  * @param {object} doc        a Zeema design document
  * @param {object} catalogue  passed through to `layout()` for the box sizes
- * @param {object} sidecar    { nodes: { id: [x, y] }, edges: { key: bow } }; notes are not drawn
+ * @param {object} sidecar    { nodes: { id: [x, y] }, edges: { key: bow },
+ *                            frames: { groupId: { tint, icon } } }; notes are not drawn
  * @returns {{positions: Object, sizes: Object, frames: Object, edges: Array,
- *            canvas: [number, number], origin: [number, number]}}
+ *            canvas: [number, number], origin: [number, number], frameStyles: Object}}
+ *            `frameStyles` is the sidecar's boundary styles as stored; the renderer vets them.
  */
 export function drawnLayout(doc, catalogue, sidecar) {
   const auto = layout(doc, catalogue);
@@ -117,6 +119,9 @@ export function drawnLayout(doc, catalogue, sidecar) {
   const frames = groupFrames({ nodes, groups: doc.groups || [], edges: doc.edges || [] }, boxes);
   const bows = sidecar && typeof sidecar === "object" && sidecar.edges ? sidecar.edges : {};
   const edges = edgeGeometry(doc, boxes, bows);
+  // Boundary tint and icon ride along untouched: they change how a frame looks, never where.
+  const styles = sidecar && typeof sidecar === "object" ? sidecar.frames : null;
+  const frameStyles = styles && typeof styles === "object" && !Array.isArray(styles) ? styles : {};
 
   const xs = [];
   const ys = [];
@@ -147,6 +152,7 @@ export function drawnLayout(doc, catalogue, sidecar) {
     edges,
     canvas: [x1 - x0, y1 - y0],
     origin: [x0, y0],
+    frameStyles,
   };
 }
 
