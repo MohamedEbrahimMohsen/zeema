@@ -104,7 +104,9 @@ When you add a component:
    architecture icon pack and fit it to the 24 unit box with
    `node .claude/tools/vendor-icons/fit.mjs <map.json>`, which maps component id to source file.
    Do not hand-draw one: a redrawn product icon is worse than the kind glyph, because it looks
-   official and is not. Where the vendor publishes nothing for that product — and several do not,
+   official and is not. The one exception is `azure-monitor-data-collection-endpoint`, redrawn
+   from the glyph the Azure portal shows for Data Collection Endpoints because the V24 pack
+   ships a different drawing. Where the vendor publishes nothing for that product — and several do not,
    especially for a feature of a larger service — fall back to rule 3 and ship the badge; a
    stand-in from a different product is worse than either.
 3. If it is a branded product on any other provider, ship
@@ -160,7 +162,7 @@ repository.
 | Pack | Source | Terms as the pack states them |
 |---|---|---|
 | AWS Architecture Icons (`Icon-package_07312026`) | <https://aws.amazon.com/architecture/icons/> | The package ships no licence file; the download page carries the AWS Architecture Icons terms and asks that the icons be used unaltered except for scaling, in architecture diagrams and technical material. |
-| Azure Public Service Icons V24 | <https://learn.microsoft.com/azure/architecture/icons/> | The zip ships `Microsoft_Terms_of_Use.pdf` and `Azure_Icons_FAQ.pdf`: the icons "may be used in architecture diagrams, training materials, or documentation", must not be altered, and must not be used to imply Microsoft endorsement. `azure-fabric` comes from Microsoft's Fluent product icon package under the same rule. |
+| Azure Public Service Icons V24 | <https://learn.microsoft.com/azure/architecture/icons/> | The zip ships `Microsoft_Terms_of_Use.pdf` and `Azure_Icons_FAQ.pdf`: the icons "may be used in architecture diagrams, training materials, or documentation", must not be altered, and must not be used to imply Microsoft endorsement. `azure-fabric` comes from Microsoft's Fluent product icon package under the same rule. `azure-monitor-data-collection-endpoint` is the one exception to taking the pack's drawing: it is an original vector redrawing of the glyph the Azure portal shows for Data Collection Endpoints, because the V24 pack ships a different drawing. |
 | Google Cloud icons (`google-cloud-legacy-icons.zip`, `core-products-icons.zip`) | <https://cloud.google.com/icons> | Neither zip ships a licence file. The page exposes no icon-specific licence, only <https://cloud.google.com/product-terms> and <https://policies.google.com/terms>; Google publishes the icons for diagrams and technical documentation and the marks stay Google's. This is weaker than the CC0 that covers `providers/`, and it is the reason the GCP icons are called out separately here. |
 | Oracle graphics for diagrams | <https://docs.oracle.com/en-us/iaas/Content/General/Reference/graphicsfordiagrams.htm> | Oracle publishes the set for use in OCI architecture diagrams; the marks remain Oracle's. |
 | Kubernetes community icons | <https://github.com/kubernetes/community/tree/master/icons> | Apache License 2.0. |
