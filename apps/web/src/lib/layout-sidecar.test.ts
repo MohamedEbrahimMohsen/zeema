@@ -183,12 +183,14 @@ describe("boundary styles", () => {
         vpc: { tint: "blue", icon: "kind:network" },
         cell: { icon: "component:aws/aws-lambda" },
         zone: { tint: "teal" },
+        dc: { icon: "boundary:on-premises" },
       },
     });
     expect(s.frames).toEqual({
       vpc: { tint: "blue", icon: "kind:network" },
       cell: { icon: "component:aws/aws-lambda" },
       zone: { tint: "teal" },
+      dc: { icon: "boundary:on-premises" },
     });
   });
 
@@ -203,6 +205,11 @@ describe("boundary styles", () => {
         f: { icon: `kind:${"x".repeat(200)}` },
         g: { icon: "https://evil.example/x.svg" },
         h: { icon: '<svg onload="x">' },
+        k: { icon: "boundary:AWS" },
+        l: { icon: "boundary:aws/x" },
+        m: { icon: "boundary:-aws" },
+        n: { icon: "boundary:on--premises" },
+        o: { icon: "boundary:" },
         i: "blue",
         j: null,
         "Not-Kebab": { tint: "blue" },
@@ -269,6 +276,10 @@ describe("boundary styles", () => {
     expect(frameIconKey("kind:queue")).toBe("kind:queue");
     expect(frameIconKey("component:aws/aws-lambda")).toBe("aws-lambda");
     expect(frameIconKey("component:../x")).toBeNull();
+    expect(frameIconKey("boundary:aws")).toBe("boundary:aws");
+    expect(frameIconKey("boundary:environment-prod")).toBe("boundary:environment-prod");
+    expect(frameIconKey("boundary:../aws")).toBeNull();
+    expect(frameIconKey("boundary:aws-")).toBeNull();
     expect(frameIconKey(undefined)).toBeNull();
     expect(isFrameIcon("kind:")).toBe(false);
     expect(TINTS.every(isTint)).toBe(true);

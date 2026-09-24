@@ -801,14 +801,17 @@ export class Scene {
 
   /**
    * The symbol id for a boundary icon reference, defining it on first use, or null when the
-   * reference is malformed or names an icon the catalogue does not have. Kind glyphs get their
-   * own prefix so they can never collide with a component id.
+   * reference is malformed or names an icon the catalogue does not have. Kind glyphs (`ick-`)
+   * and boundary marks (`icb-`) get their own prefixes so they can never collide with a component
+   * id, nor with each other: `kind:network` and `boundary:network` are different drawings.
    */
   frameSymbol(ref: string | undefined) {
     const key = frameIconKey(ref);
     if (!key) return null;
-    if (!key.startsWith("kind:")) return this.symbolFor(key) ? `ic-${key}` : null;
-    const id = `ick-${key.slice(5)}`;
+    const colon = key.indexOf(":");
+    if (colon < 0) return this.symbolFor(key) ? `ic-${key}` : null;
+    const prefix = key.startsWith("boundary:") ? "icb-" : "ick-";
+    const id = `${prefix}${key.slice(colon + 1)}`;
     if (this.symbols.has(id)) return id;
     const body = own(this.model.icons, key);
     if (!body) return null;

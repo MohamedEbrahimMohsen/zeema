@@ -5,7 +5,7 @@ import Ajv from "ajv";
 import addFormats from "ajv-formats";
 import { describe, expect, it } from "vitest";
 import { renderBundle } from "../src/build.js";
-import { designIndex, loadCatalogue, searchRows } from "../src/index.js";
+import { boundaryIconIds, designIndex, loadCatalogue, searchRows } from "../src/index.js";
 import { aliasFindings, validateRepository } from "../src/validate.js";
 
 describe("repository gate", () => {
@@ -32,6 +32,30 @@ describe("bundle", () => {
     const icons = JSON.parse(a.texts["icons.json"]);
     for (const id of Object.keys(cat.components)) expect(icons[id], id).toBeTypeOf("string");
     for (const id of Object.keys(cat.kinds)) expect(icons[`kind:${id}`], id).toBeTypeOf("string");
+  }, 120_000);
+
+  it("carries every boundary icon on disk under boundary:<id>, named in the locale", () => {
+    const root = loadCatalogue().root;
+    const onDisk = fs
+      .readdirSync(path.join(root, "icons", "boundaries"))
+      .filter((f) => f.endsWith(".svg"))
+      .map((f) => f.slice(0, -4))
+      .sort();
+    expect(onDisk.length).toBeGreaterThan(0);
+    expect(boundaryIconIds(root)).toEqual(onDisk);
+    const { texts } = renderBundle();
+    const icons = JSON.parse(texts["icons.json"]);
+    const cat = JSON.parse(texts["catalogue.json"]);
+    expect(
+      Object.keys(icons)
+        .filter((k) => k.startsWith("boundary:"))
+        .sort(),
+    ).toEqual(onDisk.map((id) => `boundary:${id}`));
+    for (const id of onDisk) {
+      expect(icons[`boundary:${id}`], id).toMatch(/^<g /);
+      expect(cat.locale.boundaryIcons[id]?.name, id).toBeTruthy();
+    }
+    expect(Object.keys(cat.locale.boundaryIcons).sort()).toEqual(onDisk);
   }, 120_000);
 
   it("indexes every design on disk with its tier and writability", () => {

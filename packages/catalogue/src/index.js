@@ -138,6 +138,7 @@ export function loadCatalogue(rootArg) {
     kinds: en.kinds ?? {},
     components: en.components ?? {},
     rules: en.rules ?? {},
+    boundaryIcons: en.boundaryIcons ?? {},
   });
   const schema = sorted(
     JSON.parse(fs.readFileSync(path.join(root, "schema", "design.schema.json"), "utf8")),
@@ -216,7 +217,20 @@ const inner = (raw, rel) => {
   return raw.slice(gt + 1, close);
 };
 
-/** Icon inner markup keyed by component id and `kind:<id>`; `missing` lists absent files. */
+/**
+ * The ids of the boundary icon set, from the file names under icons/boundaries/, sorted. There is
+ * no manifest: the folder is the set, and locales/en.yaml `boundaryIcons` names each one.
+ */
+export function boundaryIconIds(rootArg) {
+  const root = resolveRoot(rootArg);
+  return walk(root, "icons/boundaries", ".svg").map((rel) => path.basename(rel, ".svg"));
+}
+
+/**
+ * Icon inner markup keyed by component id, `kind:<id>` and `boundary:<id>`; `missing` lists
+ * absent files. Boundary icons are not tied to any catalogue entry, so the folder decides which
+ * exist and none can be missing.
+ */
 export function iconMap(cat) {
   const icons = {};
   const missing = [];
@@ -237,6 +251,10 @@ export function iconMap(cat) {
       continue;
     }
     icons[`kind:${id}`] = inner(fs.readFileSync(abs, "utf8"), rel);
+  }
+  for (const id of boundaryIconIds(cat.root)) {
+    const rel = `icons/boundaries/${id}.svg`;
+    icons[`boundary:${id}`] = inner(fs.readFileSync(path.join(cat.root, rel), "utf8"), rel);
   }
   return { icons: sorted(icons), missing };
 }

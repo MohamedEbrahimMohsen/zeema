@@ -70,6 +70,24 @@ describe("boundary tint and icon", () => {
     expect(svg).not.toContain("data-tint");
   });
 
+  it("draws a boundary mark from the icon map under its own boundary: key", () => {
+    const svg = toSvg(doc, catalogue, {
+      layout: { nodes, edges: {}, frames: { vpc: { icon: "boundary:on-premises" } } },
+      theme: "light",
+      // A kind or component of the same name is a different drawing and is never used for it.
+      icons: {
+        "boundary:on-premises": GLYPH,
+        "on-premises": "<path/>",
+        "kind:on-premises": "<g/>",
+      },
+    });
+    expect(svg).toContain(`<svg class="gi"`);
+    expect(svg).toContain(GLYPH);
+    expect(frameIconKey("boundary:on-premises")).toBe("boundary:on-premises");
+    expect(frameIconKey("boundary:On-Premises")).toBeNull();
+    expect(frameIconKey("boundary:a/b")).toBeNull();
+  });
+
   it("draws no icon and leaves the label where it was when the icon body is missing", () => {
     const plain = toSvg(doc, catalogue, { layout: { nodes, edges: {} }, theme: "light" });
     const missing = toSvg(doc, catalogue, {

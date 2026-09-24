@@ -61,10 +61,13 @@ export const isTint = (v: unknown): v is Tint =>
 
 /**
  * An icon drawn before a boundary's label, by reference and never by bytes:
- * `kind:<kindId>` is a kind glyph (icons/kinds/<kindId>.svg) and
- * `component:<provider>/<componentId>` is a catalogue component's icon.
+ * `kind:<kindId>` is a kind glyph (icons/kinds/<kindId>.svg),
+ * `component:<provider>/<componentId>` is a catalogue component's icon and
+ * `boundary:<id>` is one of the boundary marks (icons/boundaries/<id>.svg): a platform or brand
+ * (AWS, Kubernetes, GitHub) or a concept (on-premises, internet, users). `<id>` is kebab-case.
  */
-export const FRAME_ICON_RE = /^(kind:[a-z0-9-]+|component:[a-z0-9-]+\/[a-z0-9-]+)$/;
+export const FRAME_ICON_RE =
+  /^(kind:[a-z0-9-]+|boundary:[a-z0-9]+(?:-[a-z0-9]+)*|component:[a-z0-9-]+\/[a-z0-9-]+)$/;
 export const FRAME_ICON_MAX = 120;
 export const isFrameIcon = (v: unknown): v is string =>
   typeof v === "string" && v.length <= FRAME_ICON_MAX && FRAME_ICON_RE.test(v);
@@ -72,7 +75,7 @@ export const isFrameIcon = (v: unknown): v is string =>
 /** The key an icon reference has in the catalogue icon map (icons.json), or null. */
 export function frameIconKey(ref: string | undefined | null) {
   if (!ref || !isFrameIcon(ref)) return null;
-  return ref.startsWith("kind:") ? ref : ref.slice(ref.indexOf("/") + 1);
+  return ref.startsWith("component:") ? ref.slice(ref.indexOf("/") + 1) : ref;
 }
 
 /** How a boundary is drawn: presentation only, so it lives here and never in the YAML. */

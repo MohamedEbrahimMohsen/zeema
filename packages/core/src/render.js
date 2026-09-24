@@ -49,8 +49,12 @@ export const TINT = {
 };
 const TINT_FILL_ALPHA = "14";
 
-/** An icon drawn before a boundary label is a reference, `kind:<id>` or `component:<p>/<id>`. */
-export const FRAME_ICON_RE = /^(kind:[a-z0-9-]+|component:[a-z0-9-]+\/[a-z0-9-]+)$/;
+/**
+ * An icon drawn before a boundary label is a reference: `kind:<id>`, `component:<p>/<id>` or
+ * `boundary:<id>` (icons/boundaries/<id>.svg, a brand or concept mark kept apart from the rest).
+ */
+export const FRAME_ICON_RE =
+  /^(kind:[a-z0-9-]+|boundary:[a-z0-9]+(?:-[a-z0-9]+)*|component:[a-z0-9-]+\/[a-z0-9-]+)$/;
 const FRAME_ICON = 16;
 // How far a boundary's words move right to make room for its icon: the icon and a 6px gap.
 export const FRAME_ICON_SHIFT = 22;
@@ -58,7 +62,7 @@ export const FRAME_ICON_SHIFT = 22;
 /** The key an icon reference has in an icon map keyed like icons.json, or null. */
 export function frameIconKey(ref) {
   if (typeof ref !== "string" || ref.length > 120 || !FRAME_ICON_RE.test(ref)) return null;
-  return ref.startsWith("kind:") ? ref : ref.slice(ref.indexOf("/") + 1);
+  return ref.startsWith("component:") ? ref.slice(ref.indexOf("/") + 1) : ref;
 }
 
 const tintTokens = (i) =>

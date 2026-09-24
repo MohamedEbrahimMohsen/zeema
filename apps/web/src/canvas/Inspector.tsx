@@ -6,6 +6,7 @@
 import { effective, propDefs } from "@zeema/core/document";
 import { useMemo, useState } from "react";
 import { Icon } from "@/components/Icon";
+import { BOUNDARY_PREVIEW, boundaryRows } from "@/lib/boundary-icons";
 import {
   anchorTarget,
   type FrameStyle,
@@ -189,7 +190,7 @@ export function Inspector({
   /** Boundary tint and icon by group id, from the layout sidecar. */
   frameStyles?: Record<string, FrameStyle>;
   catalogue: any;
-  /** The catalogue icon map (icons.json): component ids and `kind:<id>`. */
+  /** The catalogue icon map (icons.json): component ids, `kind:<id>` and `boundary:<id>`. */
   icons?: Record<string, string>;
   /** The palette's search rows, reused by the boundary icon picker. */
   searchRows?: Row[];
@@ -543,14 +544,21 @@ function iconName(ref: string | undefined, catalogue: any) {
     const id = ref.slice(5);
     return own(catalogue.locale?.kinds, id)?.name ?? id;
   }
+  if (ref.startsWith("boundary:")) {
+    const id = ref.slice(9);
+    return own(catalogue.locale?.boundaryIcons, id)?.name ?? id;
+  }
   const id = ref.slice(ref.indexOf("/") + 1);
   return own(catalogue.locale?.components, id)?.name ?? id;
 }
 
 /**
- * Choose a boundary icon: a kind glyph or a component icon, found with the palette's own search
- * (same scoring, same `kind:` / `provider:` / `category:` filters, same aliases). Kinds have no
- * search rows of their own, so they are made here in the same shape from the catalogue bundle.
+ * Choose a boundary icon: a boundary mark (icons/boundaries/), a kind glyph or a component icon,
+ * found with the palette's own search (same scoring, same `kind:` / `provider:` / `category:`
+ * filters, same aliases). Boundary marks and kinds have no search rows of their own, so they are
+ * made here in the same shape. Boundary marks come first: a few of them before any search, all
+ * that match once the reader types. A filter names a catalogue attribute they do not have, so
+ * any filter leaves them out.
  */
 function IconPicker({
   catalogue,
@@ -579,8 +587,22 @@ function IconPicker({
         }),
     [catalogue],
   );
-  const { kinds, components } = useMemo(() => {
+  const markRows = useMemo<Row[]>(
+    () => boundaryRows(icons, catalogue.locale?.boundaryIcons),
+    [icons, catalogue],
+  );
+  const { marks, kinds, components } = useMemo(() => {
     const { filters, words } = parseQuery(q);
+    // Ties keep the rows' own order (the featured marks first), so the list before a search is
+    // the curated one rather than an alphabetical run of brands.
+    const m = Object.keys(filters).length
+      ? []
+      : markRows
+          .map((row, i) => [score(row, words), i, row] as const)
+          .filter(([sc]) => sc > 0)
+          .sort((a, b) => b[0] - a[0] || a[1] - b[1])
+          .map(([, , row]) => row)
+          .slice(0, words.length ? ICON_RESULTS : BOUNDARY_PREVIEW);
     const pick = (rows: Row[], isKind: boolean) => {
       const out: Array<[number, Row]> = [];
       for (const row of rows) {
@@ -593,10 +615,10 @@ function IconPicker({
       out.sort((a, b) => b[0] - a[0] || a[1][1].localeCompare(b[1][1]));
       return out.map((h) => h[1]);
     };
-    const k = pick(kindRows, true).slice(0, ICON_RESULTS);
-    const c = pick(searchRows, false).slice(0, ICON_RESULTS - k.length);
-    return { kinds: k, components: c };
-  }, [q, kindRows, searchRows]);
+    const k = pick(kindRows, true).slice(0, Math.max(0, ICON_RESULTS - m.length));
+    const c = pick(searchRows, false).slice(0, Math.max(0, ICON_RESULTS - m.length - k.length));
+    return { marks: m, kinds: k, components: c };
+  }, [q, markRows, kindRows, searchRows]);
   const row = (ref: string, key: string, name: string, meta: string) => (
     <button
       key={ref}
@@ -616,7 +638,7 @@ function IconPicker({
         type="text"
         // biome-ignore lint/a11y/noAutofocus: the picker opens on a click that asked to search
         autoFocus
-        placeholder="Search kinds and components…"
+        placeholder="Search boundary icons, kinds and components…"
         aria-label="Search icons"
         value={q}
         onChange={(e) => setQ(e.target.value)}
@@ -628,13 +650,15 @@ function IconPicker({
         }}
       />
       <div className="icon-picker-results">
+        {marks.length ? <div className="pal-group">Boundary icons</div> : null}
+        {marks.map(([id, name]) => row(`boundary:${id}`, `boundary:${id}`, name, "boundary"))}
         {kinds.length ? <div className="pal-group">Kinds</div> : null}
         {kinds.map(([id, name]) => row(`kind:${id}`, `kind:${id}`, name, "kind"))}
         {components.length ? <div className="pal-group">Components</div> : null}
         {components.map(([id, name, , , provider]) =>
           row(`component:${provider}/${id}`, id, name, provider),
         )}
-        {!kinds.length && !components.length ? (
+        {!marks.length && !kinds.length && !components.length ? (
           <div className="muted p-2">Nothing matches.</div>
         ) : null}
       </div>

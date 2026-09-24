@@ -8,16 +8,26 @@ icon, so the set can grow or be replaced without touching the model.
 |---|---|---|
 | `kinds/` | 72 | One generic line glyph per kind. A queue, a cache, a cylinder, a gear. |
 | `providers/` | 292 | Brand marks, used as the badge in the corner of a component icon. |
+| `boundaries/` | 58 | Icons a boundary (a design group) can show before its label, kept apart from everything else here: platform and brand marks (`aws`, `gcp`, `kubernetes`, `github`) and concept glyphs (`on-premises`, `internet`, `users`, `environment-prod`). Referenced as `boundary:<id>` from a layout sidecar, never from a document. |
 | `components/<provider>/` | 2156 | One per component, in the same provider subfolder as the component file. For `aws`, `azure`, `gcp`, `oci` and `k8s` this is the vendor's own product icon wherever the vendor publishes one (see *Two styles* below); everywhere else it is the kind glyph, plus a provider badge where the component is a cloud service or a branded product. |
 
 ## Naming
 
-**The file name is the id.** `icons/kinds/<kind-id>.svg`, `icons/components/<provider>/<component-id>.svg`.
+**The file name is the id.** `icons/kinds/<kind-id>.svg`, `icons/components/<provider>/<component-id>.svg`,
+`icons/boundaries/<id>.svg`.
 `components/default/kafka.yaml` has `id: "kafka"` and `provider: "default"`, so its icon is
 `icons/components/default/kafka.svg`; `components/aws/alb.yaml` maps to `icons/components/aws/alb.svg`. No
 other lookup, no manifest, no aliases. Provider files are named for their
 [Simple Icons](https://simpleicons.org) slug (`apachekafka.svg`, `googlecloud.svg`), except
 `aws.svg`, `azure.svg`, `oci.svg`, `ibm.svg` and `outscale.svg`, which are original artwork (see *Licence* below).
+
+A boundary icon id is plain kebab-case and names what the boundary stands for, not a Simple Icons
+slug: `gcp` (Google Cloud), `kafka` (Apache Kafka), `environment-prod`. The folder is the set; there
+is no manifest. Every file needs a display name in `locales/en.yaml` under `boundaryIcons`, and the
+gate fails on a file without one or a name without a file. The bundle carries each one in
+`icons.json` as `boundary:<id>`, a namespace of its own, so `boundary:network` and `kind:network`
+never collide. They are written by `node .claude/tools/icons.mjs` from
+`.claude/tools/boundaries.mjs`, which says where each mark comes from.
 
 ## Fallback chain
 
@@ -50,7 +60,8 @@ Every file in this folder, whichever style it is in:
 - carries no `id` that another icon also uses — every icon is inlined into one document, so
   a gradient id that collides silently repaints someone else's glyph
 
-`packages/catalogue/src/validate.js` enforces the first three on every build.
+`packages/catalogue/src/validate.js` enforces the first three on every build, and for
+`boundaries/` the fourth as well: a boundary icon carries no `id` attribute at all.
 
 ## Two styles
 
@@ -76,6 +87,13 @@ larger halo circle filled with `var(--zeema-icon-bg, #fff)`, which knocks the ki
 out from under the badge. Set `--zeema-icon-bg` to the surrounding background colour on a
 dark theme; the default white is correct on a light one.
 
+**Boundary icons** are in both styles. A concept glyph is a line glyph exactly as above. A brand
+mark is the provider mark drawn full size: one path in the brand colour, inside a
+`<g fill="#hex" stroke="none">` so the stroking context a renderer gives a line glyph does not
+outline it. A mark whose brand colour is near black (GitHub, Anthropic, Apple, Vercel, Helm,
+Apache Kafka) is drawn in `currentColor` instead, so it follows the theme rather than vanishing on
+a dark canvas. The files carry no `<title>`: the name comes from the locale.
+
 ## Adding an icon
 
 When you add a component:
@@ -93,7 +111,10 @@ When you add a component:
    `icons/components/<provider>/<id>.svg`: the kind glyph, plus the provider badge in the
    bottom-right corner. Reuse an existing `icons/providers/*.svg` mark, or add one from
    Simple Icons if the product is not there yet.
-4. If you add a kind, `icons/kinds/<kind-id>.svg` is mandatory. It is the fallback for
+4. If you add a boundary icon, add its id to `.claude/tools/boundaries.mjs` (a provider key or
+   Simple Icons slug in `BOUNDARY_BRANDS`, or a line glyph in `BOUNDARY_GLYPHS`), run
+   `node .claude/tools/icons.mjs`, and add its name under `boundaryIcons` in `locales/en.yaml`.
+5. If you add a kind, `icons/kinds/<kind-id>.svg` is mandatory. It is the fallback for
    every component of that kind, so it must read at 16 px on its own.
 
 Match the style of the folder you are adding to, and check the icon at 16 px. An icon that
@@ -102,6 +123,22 @@ only reads at 48 px is not finished.
 ## Licence
 
 The kind glyphs are original work, MIT licensed with the rest of this repository.
+
+The boundary icons in `boundaries/` come from three places:
+
+- **Original glyphs**, MIT with the repository: `ai`, `analytics`, `cloud`, `database`, `edge`,
+  `environment-dev`, `environment-prod`, `environment-test`, `internet`, `iot`, `mobile`,
+  `network`, `office`, `on-premises`, `partner`, `region`, `security`, `users`.
+- **Copied from `providers/`**, under that file's licence below (Simple Icons CC0, or original
+  artwork for `aws`, `azure`, `ibm` and `oci`): `alibabacloud`, `anthropic`, `apple`, `aws`,
+  `azure`, `cisco`, `cloudflare`, `databricks`, `datadog`, `digitalocean`, `docker`, `elastic`,
+  `gcp` (from `googlecloud`), `github`, `gitlab`, `grafana`, `huggingface`, `ibm`, `kafka` (from
+  `apachekafka`), `kubernetes`, `mongodb`, `mysql`, `nvidia`, `oci`, `okta`, `openstack`,
+  `postgresql`, `prometheus`, `redis`, `snowflake`, `vercel`, `vmware`.
+- **From Simple Icons** (CC0 1.0), path precision reduced the same way as `providers/`:
+  `android`, `ansible`, `google`, `helm`, `linux`, `redhat`, `terraform`, `ubuntu`.
+
+The trademark note at the end of this section applies to every brand mark among them.
 
 The provider marks in `icons/providers/`, and therefore the badges composed from them,
 come from [Simple Icons](https://github.com/simple-icons/simple-icons), which is released

@@ -18,6 +18,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import * as si from "simple-icons";
+import { BOUNDARY_BRANDS, BOUNDARY_GLYPHS } from "./boundaries.mjs";
 import { KIND_GLYPHS } from "./kindglyphs.mjs";
 import { KIND_GLYPHS_EXTRA } from "./kindglyphs-extra.mjs";
 import { pathIsValid } from "./pathcheck.mjs";
@@ -136,6 +137,58 @@ for (const [key, p] of Object.entries(providerInfo)) {
     `${MARKER}
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" role="img" fill="#${p.hex}"><title>${p.title.replace(/&/g, "&amp;").replace(/</g, "&lt;")}</title><g fill="#${p.hex}"><path${p.source === "original" ? ' fill-rule="evenodd"' : ""} d="${p.path}"/></g></svg>\n`,
   );
+}
+// Boundary icons (icons/boundaries/<id>.svg): a mark or a concept glyph a boundary can show
+// before its label. A brand mark is copied from icons/providers/<key>.svg when there is one and
+// fitted from Simple Icons otherwise. Unlike a provider file it carries no <title> (the name is in
+// locales/en.yaml) and its <g> says stroke="none", because the renderer draws it inside a context
+// that strokes with currentColor. A near-black mark (GitHub, Anthropic, Apple) is drawn in
+// currentColor instead, so it follows the theme rather than vanishing on a dark canvas.
+const luminance = (hex) => {
+  const c = (n) => {
+    const v = parseInt(hex.substr(n, 2), 16) / 255;
+    return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * c(0) + 0.7152 * c(2) + 0.0722 * c(4);
+};
+const boundaryMark = (key) => {
+  const f = path.join(ICONS, "providers", `${key}.svg`);
+  if (fs.existsSync(f)) {
+    const raw = fs.readFileSync(f, "utf8");
+    const hex = /<g fill="#([0-9A-Fa-f]{6})"/.exec(raw)?.[1];
+    const paths = [...raw.matchAll(/<path( fill-rule="evenodd")? d="([^"]+)"\/>/g)];
+    if (hex && paths.length === 1)
+      return { hex, path: paths[0][2], evenodd: Boolean(paths[0][1]), source: "providers" };
+  }
+  const icon = bySlug[key];
+  const d = icon ? fitPath(icon.path) : null;
+  return d ? { hex: icon.hex, path: d, evenodd: false, source: "simple-icons" } : null;
+};
+fs.mkdirSync(path.join(ICONS, "boundaries"), { recursive: true });
+let bn = 0;
+const noMark = [],
+  themed = [];
+for (const [id, key] of Object.entries(BOUNDARY_BRANDS)) {
+  const m = boundaryMark(key);
+  if (!m) {
+    noMark.push(`${id} (${key})`);
+    continue;
+  }
+  const fill = luminance(m.hex) < 0.03 ? "currentColor" : `#${m.hex}`;
+  if (fill === "currentColor") themed.push(id);
+  const text = `${MARKER}
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="${fill}"><g fill="${fill}" stroke="none"><path${m.evenodd ? ' fill-rule="evenodd"' : ""} d="${m.path}"/></g></svg>
+`;
+  if (put(path.join(ICONS, "boundaries", `${id}.svg`), text)) bn++;
+}
+for (const [id, glyph] of Object.entries(BOUNDARY_GLYPHS)) {
+  if (BOUNDARY_BRANDS[id]) noMark.push(`${id} (both a brand and a glyph)`);
+  else if (put(path.join(ICONS, "boundaries", `${id}.svg`), kindSvg(glyph))) bn++;
+}
+if (!ADOPT) console.log(`boundary icons written: ${bn}${themed.length ? ` (in currentColor: ${themed.join(" ")})` : ""}`);
+if (noMark.length) {
+  console.log("BOUNDARY ICON WITHOUT A MARK:", noMark.join(", "));
+  process.exitCode = 1;
 }
 const CX = 18.5,
   CY = 18.5,

@@ -70,7 +70,14 @@ undone like any other edit.
 - **`tint`** is one of a fixed set of names: `slate`, `blue`, `green`, `amber`, `rose`, `violet`,
   `teal`. It sets the dashed stroke and a very light fill, with separate values for the light
   and dark themes. You cannot give a free hex colour. Leave `tint` out to get the default frame.
-- **`icon`** is a reference, never the icon itself. It takes one of two forms:
+- **`icon`** is a reference, never the icon itself. It takes one of three forms:
+  - `boundary:<id>` for a boundary icon, for example `boundary:aws` or `boundary:on-premises`.
+    This is a separate set made for boundaries: platform and brand marks (AWS, Azure, Google
+    Cloud, Kubernetes, GitHub, Anthropic and others) and concept marks (cloud, on-premises,
+    internet, users, office, region, security, network, the development, test and production
+    environments and others). The files live in `icons/boundaries/`, the file name is the id,
+    and their display names are in `locales/en.yaml` under `boundaryIcons`. The inspector's
+    picker lists them first.
   - `kind:<kind-id>` for a kind glyph, for example `kind:queue`.
   - `component:<provider>/<component-id>` for a catalogue component's icon, for example
     `component:aws/lambda`.

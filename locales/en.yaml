@@ -1,5 +1,6 @@
 # English display text, keyed by id. Kinds, components and rules never carry display
-# text themselves. Every id in kinds/, components/ and rules/ must have an entry here.
+# text themselves. Every id in kinds/, components/ and rules/ must have an entry here, and
+# every icon in icons/boundaries/ an entry under boundaryIcons.
 # Regenerated from the catalogue; keep entries sorted by id.
 categories:
   client:
@@ -6856,3 +6857,179 @@ rules:
     name: "Event-time windows without watermark"
     description: "A stream processor windows by event time but declares no watermark, so window completion and late data are undefined."
     rationale: "Event-time windows need a watermark to know when a window is complete. Without one the processor either waits forever or closes windows early and silently drops late events."
+
+boundaryIcons:
+  ai:
+    name: "AI"
+    description: "Artificial intelligence and machine learning: models, inference, agents."
+  alibabacloud:
+    name: "Alibaba Cloud"
+    description: "Alibaba Cloud account or region."
+  analytics:
+    name: "Analytics"
+    description: "Reporting, BI and data analysis."
+  android:
+    name: "Android"
+    description: "Android devices and apps."
+  ansible:
+    name: "Ansible"
+    description: "Red Hat Ansible automation."
+  anthropic:
+    name: "Anthropic"
+    description: "Anthropic, the maker of Claude."
+  apple:
+    name: "Apple"
+    description: "Apple devices and platforms: iOS, macOS."
+  aws:
+    name: "AWS"
+    description: "Amazon Web Services account or region."
+  azure:
+    name: "Azure"
+    description: "Microsoft Azure subscription or region."
+  cisco:
+    name: "Cisco"
+    description: "Cisco networking."
+  cloud:
+    name: "Cloud"
+    description: "Any public or private cloud."
+  cloudflare:
+    name: "Cloudflare"
+    description: "Cloudflare account and edge network."
+  database:
+    name: "Database tier"
+    description: "The data tier: databases and storage."
+  databricks:
+    name: "Databricks"
+    description: "Databricks workspace."
+  datadog:
+    name: "Datadog"
+    description: "Datadog observability."
+  digitalocean:
+    name: "DigitalOcean"
+    description: "DigitalOcean account or region."
+  docker:
+    name: "Docker"
+    description: "Docker hosts and containers."
+  edge:
+    name: "Edge"
+    description: "Edge locations, points of presence and CDN."
+  elastic:
+    name: "Elastic"
+    description: "Elastic Stack and Elastic Cloud."
+  environment-dev:
+    name: "Development"
+    description: "Development environment."
+  environment-prod:
+    name: "Production"
+    description: "Production environment."
+  environment-test:
+    name: "Test"
+    description: "Test, QA or staging environment."
+  gcp:
+    name: "Google Cloud"
+    description: "Google Cloud project or region (GCP)."
+  github:
+    name: "GitHub"
+    description: "GitHub organisation, repositories and Actions."
+  gitlab:
+    name: "GitLab"
+    description: "GitLab instance or group."
+  google:
+    name: "Google"
+    description: "Google services and Workspace."
+  grafana:
+    name: "Grafana"
+    description: "Grafana dashboards and Grafana Cloud."
+  helm:
+    name: "Helm"
+    description: "Helm charts and releases."
+  huggingface:
+    name: "Hugging Face"
+    description: "Hugging Face models and endpoints."
+  ibm:
+    name: "IBM Cloud"
+    description: "IBM Cloud account or region."
+  internet:
+    name: "Internet"
+    description: "The public internet: anything outside your network."
+  iot:
+    name: "IoT"
+    description: "Internet of things: devices, sensors and gateways."
+  kafka:
+    name: "Apache Kafka"
+    description: "Kafka cluster."
+  kubernetes:
+    name: "Kubernetes"
+    description: "Kubernetes cluster or namespace."
+  linux:
+    name: "Linux"
+    description: "Linux hosts."
+  mobile:
+    name: "Mobile"
+    description: "Mobile devices and apps."
+  mongodb:
+    name: "MongoDB"
+    description: "MongoDB cluster or Atlas project."
+  mysql:
+    name: "MySQL"
+    description: "MySQL servers."
+  network:
+    name: "Network"
+    description: "A network, subnet or network segment."
+  nvidia:
+    name: "NVIDIA"
+    description: "NVIDIA GPUs and AI platforms."
+  oci:
+    name: "Oracle Cloud"
+    description: "Oracle Cloud Infrastructure tenancy or region (OCI)."
+  office:
+    name: "Office"
+    description: "An office, branch or corporate site."
+  okta:
+    name: "Okta"
+    description: "Okta identity."
+  on-premises:
+    name: "On-premises"
+    description: "Your own datacenter or server room."
+  openstack:
+    name: "OpenStack"
+    description: "OpenStack cloud."
+  partner:
+    name: "Partner"
+    description: "A partner or third party outside your control."
+  postgresql:
+    name: "PostgreSQL"
+    description: "PostgreSQL servers."
+  prometheus:
+    name: "Prometheus"
+    description: "Prometheus monitoring."
+  redhat:
+    name: "Red Hat"
+    description: "Red Hat Enterprise Linux and OpenShift."
+  redis:
+    name: "Redis"
+    description: "Redis servers."
+  region:
+    name: "Region"
+    description: "A geographic region, location or zone."
+  security:
+    name: "Security"
+    description: "A security zone, trust boundary or DMZ."
+  snowflake:
+    name: "Snowflake"
+    description: "Snowflake account."
+  terraform:
+    name: "Terraform"
+    description: "Infrastructure managed by Terraform."
+  ubuntu:
+    name: "Ubuntu"
+    description: "Ubuntu hosts."
+  users:
+    name: "Users"
+    description: "People: customers, employees, operators."
+  vercel:
+    name: "Vercel"
+    description: "Vercel project."
+  vmware:
+    name: "VMware"
+    description: "VMware vSphere and virtual machines."

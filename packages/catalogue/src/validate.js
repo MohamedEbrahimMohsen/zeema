@@ -13,7 +13,7 @@ import { check } from "@zeema/core/structure";
 import Ajv from "ajv";
 import addFormats from "ajv-formats";
 import YAML from "yaml";
-import { loadCatalogue, PROVIDERS, resolveRoot, walk } from "./index.js";
+import { boundaryIconIds, loadCatalogue, PROVIDERS, resolveRoot, walk } from "./index.js";
 
 /** Icons are inlined into pages; one icon larger than this is a vendor file nobody trimmed. */
 const ICON_MAX_BYTES = 4096;
@@ -195,6 +195,13 @@ export function validateRepository(rootArg, options = {}) {
     if (!kinds[id]) fail(`locale unknown kind ${id}`);
   for (const k of Object.values(kinds))
     if (!locale.categories?.[k.category]) fail(`locale missing category ${k.category}`);
+  // Boundary icons have no catalogue document; the file is the entry, so the locale is checked
+  // against the folder, both ways.
+  const boundaryIds = boundaryIconIds(root);
+  for (const id of boundaryIds)
+    if (!locale.boundaryIcons?.[id]?.name) fail(`locale missing boundary icon ${id}`);
+  for (const id of Object.keys(locale.boundaryIcons ?? {}))
+    if (!boundaryIds.includes(id)) fail(`locale unknown boundary icon ${id}`);
 
   const iconExists = (p) => fs.existsSync(path.join(root, p));
   for (const id of Object.keys(kinds))
@@ -213,6 +220,21 @@ export function validateRepository(rootArg, options = {}) {
       if (s > ICON_MAX_BYTES) fail(`${rel}: ${s} bytes`);
       const raw = fs.readFileSync(path.join(root, rel), "utf8");
       if (!raw.includes('viewBox="0 0 24 24"') || UNSAFE_SVG.test(raw)) fail(`${rel}: bad svg`);
+    }
+  // Boundary icons are drawn inside a boundary's frame on the canvas, the server render and the
+  // export, so they pass the component gate: the id is the file name and must be a plain kebab-case
+  // id (it becomes `boundary:<id>` in a layout sidecar), the box is 24 units, the markup is safe,
+  // and no element carries an id, which would collide once every icon is inlined into one page.
+  if (!only)
+    for (const rel of walk(root, "icons/boundaries", ".svg")) {
+      if (rel.split("/").length !== 3) fail(`${rel}: boundary icons are not nested in folders`);
+      if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(path.basename(rel, ".svg")))
+        fail(`${rel}: id is not kebab-case`);
+      const s = fs.statSync(path.join(root, rel)).size;
+      if (s > ICON_MAX_BYTES) fail(`${rel}: ${s} bytes`);
+      const raw = fs.readFileSync(path.join(root, rel), "utf8");
+      if (!raw.includes('viewBox="0 0 24 24"') || UNSAFE_SVG.test(raw) || /\sid\s*=/.test(raw))
+        fail(`${rel}: bad svg`);
     }
   // Kind glyphs and provider marks are inlined into pages and served SVG exactly like component
   // icons (Icon.tsx, DesignCard, the render route), so they pass the same markup gate.
