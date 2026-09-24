@@ -82,7 +82,9 @@ nodes:
 "how many `region` groups are in this node's ancestry" gets the answer one.
 
 The group kinds in v1 are `region`, `availability-zone`, `vpc`, `trust-zone`, `system`, `cell` (a
-failure-isolated slice serving a subset of tenants) and `point-of-presence` (an edge site).
+failure-isolated slice serving a subset of tenants), `point-of-presence` (an edge site) and
+`namespace` (a logical partition inside a cluster or platform, such as a Kubernetes namespace; it
+scopes names and policy and does not imply a network or failure boundary).
 Groups carry no properties apart from an optional `label`.
 
 ## Requirements

@@ -113,9 +113,9 @@ An authored or imported design becomes a reference design only by a separate dec
 
 ## Imported
 
-Eleven come from one system design textbook, one chapter each; the twelfth is a diagram the
-user supplied. The book itself is not in the repository: each `source/` holds a citation and a
-factual transcription of the boxes, boundaries and arrows.
+Eleven come from one system design textbook, one chapter each; the other two are diagrams the
+user supplied. The book itself is not in the repository: each chapter's `source/` holds a
+citation and a factual transcription of the boxes, boundaries and arrows.
 
 | design | system | source | nodes | edges | groups | unresolved |
 |---|---|---|---|---|---|---|
@@ -128,6 +128,7 @@ factual transcription of the boxes, boundaries and arrows.
 | [rate-limiter](imported/rate-limiter/) | Rate limiter | book ch 4, fig 4-13 | 8 | 9 | 0 | none |
 | [scale-to-millions](imported/scale-to-millions/) | Scale from zero to millions of users | book ch 1, fig 1-23 | 15 | 11 | 3 | none |
 | [search-autocomplete](imported/search-autocomplete/) | Search autocomplete | book ch 13, fig 13-9, 13-11 | 10 | 10 | 1 | none |
+| [talmaza](imported/talmaza/) | Talmaza on Cloudflare and Azure AKS (user's diagram) | draw.io | 37 | 17 | 8 | none |
 | [url-shortener](imported/url-shortener/) | URL shortener | book ch 8, fig 8-7, 8-8 | 5 | 5 | 0 | none |
 | [web-crawler](imported/web-crawler/) | Web crawler | book ch 9, fig 9-2, 9-4 | 11 | 13 | 0 | 1 assumed |
 | [youtube](imported/youtube/) | YouTube | book ch 14, fig 14-3, 14-4, 14-5, 14-6, 14-7, 14-10 | 17 | 21 | 0 | 1 assumed |

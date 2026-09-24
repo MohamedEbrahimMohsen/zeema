@@ -1,5 +1,9 @@
 # Rate limiter: import notes
 
+An API rate limiter. Middleware in front of the API servers counts each client's requests in
+Redis against rules that workers load from storage into a cache. Allowed requests pass through;
+the rest get HTTP 429 or go to a message queue for later.
+
 - Source: *System Design Interview – An Insider's Guide*, Alex Xu, Chapter 4 "Design a Rate
   Limiter", pages 51-70. Imported figure: **Figure 4-13**, the detailed design, page 65.
   The book is copyrighted; `source/rate-limiter.md` holds the citation and a factual

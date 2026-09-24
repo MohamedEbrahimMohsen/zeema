@@ -1,9 +1,14 @@
 // Seed the curated designs (reference and imported tiers) as owner-less, public, read-only
-// designs, with broken twins attached as flagged versions. Idempotent: existing slugs are skipped.
+// designs, with broken twins attached as flagged versions. Idempotent: an existing slug is not
+// inserted again, but its summary is refreshed when the one derived from notes.md has changed,
+// so a database seeded before a notes edit does not keep the old text forever. Only that column
+// moves: no version, layout or timestamp, so listings keep their order. Owner-less designs
+// cannot be edited by any member, so this never overwrites a person's text.
 import { and, eq, isNull, sql } from "drizzle-orm";
 import { getCatalogue, repoDesigns } from "../lib/catalogue";
 import { addBrokenVersion, createDesign } from "../lib/designs";
 import { analyse } from "../lib/lint";
+import { firstParagraph } from "../lib/notes-summary";
 import { getDb, schema } from "./index";
 
 export async function seedCurated(log: (s: string) => void = console.log) {
@@ -22,20 +27,29 @@ export async function seedCurated(log: (s: string) => void = console.log) {
     if (!clean) continue;
     const slug = clean.id;
     const existing = await db
-      .select({ id: schema.designs.id })
+      .select({ id: schema.designs.id, summary: schema.designs.summary })
       .from(schema.designs)
       .where(and(isNull(schema.designs.ownerId), eq(sql`lower(${schema.designs.slug})`, slug)))
       .limit(1);
-    if (existing[0]) continue;
     const { doc } = analyse(clean.yaml, cat);
     if (!doc) {
       log(`skip ${key}: does not parse`);
       continue;
     }
-    const title = clean.id.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
     const summary =
       firstParagraph(clean.notes) ??
       `${doc.nodes.length} components, ${doc.edges.length} edges. ${clean.tier === "reference" ? "Curated reference design." : "Imported from a published source."}`;
+    if (existing[0]) {
+      if (existing[0].summary !== summary) {
+        await db
+          .update(schema.designs)
+          .set({ summary })
+          .where(and(eq(schema.designs.id, existing[0].id), isNull(schema.designs.ownerId)));
+        log(`refreshed summary ${key}`);
+      }
+      continue;
+    }
+    const title = clean.id.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
     const { design } = await createDesign(
       null,
       {
@@ -55,32 +69,6 @@ export async function seedCurated(log: (s: string) => void = console.log) {
     log(`seeded ${key}`);
   }
   return created;
-}
-
-function firstParagraph(md: string | null) {
-  if (!md) return null;
-  const lines = md.split(/\r?\n/);
-  const out: string[] = [];
-  for (const l of lines) {
-    const t = l.trim();
-    if (
-      t.startsWith("#") ||
-      t.startsWith("-") ||
-      t.startsWith("*") ||
-      t.startsWith("|") ||
-      t.startsWith("```")
-    ) {
-      if (out.length) break;
-      continue;
-    }
-    if (t === "") {
-      if (out.length) break;
-      continue;
-    }
-    out.push(t);
-  }
-  const text = out.join(" ").replace(/[*_`]/g, "");
-  return text ? text.slice(0, 280) : null;
 }
 
 if (process.argv[1] && /seed\.ts$/.test(process.argv[1])) {

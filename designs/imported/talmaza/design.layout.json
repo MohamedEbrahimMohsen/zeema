@@ -1,0 +1,268 @@
+{
+  "version": 2,
+  "nodes": {
+    "applicant": [
+      664,
+      40
+    ],
+    "visitor": [
+      1050,
+      40
+    ],
+    "ssl-tls-termination": [
+      76,
+      200
+    ],
+    "cdn": [
+      414,
+      200
+    ],
+    "waf": [
+      608,
+      200
+    ],
+    "ddos-protection": [
+      794,
+      200
+    ],
+    "bot-detection": [
+      1026,
+      200
+    ],
+    "rate-limiting": [
+      1254,
+      200
+    ],
+    "access": [
+      1474,
+      200
+    ],
+    "nsg": [
+      1560,
+      560
+    ],
+    "key-vault-tunnel-token": [
+      1560,
+      720
+    ],
+    "deployment": [
+      680,
+      470
+    ],
+    "cloudflared": [
+      846,
+      470
+    ],
+    "cloudflared-2": [
+      1023,
+      470
+    ],
+    "service-clusterip": [
+      372,
+      690
+    ],
+    "web-pod": [
+      573,
+      690
+    ],
+    "web-pod-2": [
+      739,
+      690
+    ],
+    "service-clusterip-2": [
+      975,
+      690
+    ],
+    "api-pod": [
+      1176,
+      690
+    ],
+    "api-pod-2": [
+      1342,
+      690
+    ],
+    "entra-id": [
+      673,
+      900
+    ],
+    "managed-identity": [
+      999,
+      900
+    ],
+    "azure-monitor": [
+      554,
+      1220
+    ],
+    "log-analytics": [
+      724,
+      1220
+    ],
+    "azure-alerts": [
+      914,
+      1220
+    ],
+    "communication-service": [
+      1080,
+      1220
+    ],
+    "blob-storage": [
+      575,
+      1380
+    ],
+    "file-storage": [
+      759,
+      1380
+    ],
+    "table-storage": [
+      925,
+      1380
+    ],
+    "queue-storage": [
+      1115,
+      1380
+    ],
+    "azure-sql": [
+      673,
+      1540
+    ],
+    "redis": [
+      839,
+      1540
+    ],
+    "cosmosdb": [
+      1041,
+      1540
+    ],
+    "key-vault-app-secrets": [
+      824,
+      1700
+    ],
+    "azure-ai-foundary": [
+      674,
+      1060
+    ],
+    "ai-search": [
+      874,
+      1060
+    ],
+    "azure-openai": [
+      1040,
+      1060
+    ]
+  },
+  "edges": {},
+  "notes": [
+    {
+      "id": "note-1",
+      "x": 24,
+      "y": -8,
+      "w": 220,
+      "h": 88,
+      "text": "DNS resolves app. / api. to Cloudflare anycast IPs — never to Azure",
+      "anchor": {
+        "group": "cloudflare-edge"
+      }
+    },
+    {
+      "id": "note-2",
+      "x": 24,
+      "y": -8,
+      "w": 220,
+      "h": 88,
+      "text": "Cloudflare Tunnel · TLS 1.3 / QUIC. Dialed OUTBOUND by cloudflared — requests flow back down it",
+      "anchor": {
+        "group": "ns-cloudflared"
+      }
+    },
+    {
+      "id": "note-3",
+      "x": 24,
+      "y": -8,
+      "w": 200,
+      "h": 66,
+      "text": "NetworkPolicy: cloudflared → frontend / api only",
+      "anchor": {
+        "group": "aks-cluster"
+      }
+    },
+    {
+      "id": "note-4",
+      "x": 24,
+      "y": 14,
+      "w": 184,
+      "h": 48,
+      "text": "Secretless Layer",
+      "anchor": {
+        "node": "managed-identity"
+      }
+    },
+    {
+      "id": "note-5",
+      "x": 24,
+      "y": 14,
+      "w": 184,
+      "h": 48,
+      "text": "AI",
+      "anchor": {
+        "node": "azure-openai"
+      }
+    },
+    {
+      "id": "note-6",
+      "x": 24,
+      "y": 14,
+      "w": 184,
+      "h": 48,
+      "text": "Monitoring & Alerts Tools",
+      "anchor": {
+        "node": "communication-service"
+      }
+    },
+    {
+      "id": "note-7",
+      "x": 24,
+      "y": 14,
+      "w": 184,
+      "h": 48,
+      "text": "Storage",
+      "anchor": {
+        "node": "queue-storage"
+      }
+    },
+    {
+      "id": "note-8",
+      "x": 24,
+      "y": 14,
+      "w": 184,
+      "h": 48,
+      "text": "DB & Cache",
+      "anchor": {
+        "node": "cosmosdb"
+      }
+    },
+    {
+      "id": "note-9",
+      "x": 24,
+      "y": 14,
+      "w": 184,
+      "h": 48,
+      "text": "Secret Store",
+      "anchor": {
+        "node": "key-vault-app-secrets"
+      }
+    }
+  ],
+  "frames": {
+    "cloudflare-edge": {
+      "tint": "amber",
+      "icon": "boundary:cloudflare"
+    },
+    "microsoft-azure": {
+      "tint": "blue",
+      "icon": "boundary:azure"
+    },
+    "aks-cluster": {
+      "icon": "boundary:kubernetes"
+    }
+  }
+}

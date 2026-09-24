@@ -1,5 +1,9 @@
 # unique-id-generator: notes
 
+A distributed unique ID generator built like Twitter Snowflake. Each datacenter runs its own
+generator that packs a timestamp, a machine id and a sequence into 64-bit ids; ZooKeeper assigns
+machine ids at startup, and rows keyed by the ids live in Cassandra.
+
 - Tier: reference design curated by Zeema; `design.yaml` must trip no rule, `design.broken.yaml` must trip exactly the rules named in its header.
 - Source: `source/unique-id-generator.md` (intake card of 2026-09-07, re-verified 2026-09-14)
 - Size: 6 nodes, 6 edges, 3 groups (broken twin: 7 nodes, 6 edges, 4 groups).

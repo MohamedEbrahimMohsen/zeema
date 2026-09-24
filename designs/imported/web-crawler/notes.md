@@ -1,5 +1,9 @@
 # Web crawler: import notes
 
+A web crawler. Seed URLs feed a URL frontier; downloaders resolve DNS and fetch pages, a parser
+checks them, and content not seen before is stored. A link extractor pulls out new URLs, which
+are filtered, checked against URL storage and queued back on the frontier.
+
 - Source: *System Design Interview - An Insider's Guide* (Alex Xu), chapter 9 "Design a Web
   Crawler", pages 132-150. The book is copyrighted and is not in the repository; `source/`
   holds the citation and my own factual transcription of the figures

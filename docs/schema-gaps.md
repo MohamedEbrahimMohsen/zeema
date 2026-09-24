@@ -120,7 +120,7 @@ Format for an entry:
      2026-09-08. Each names the designs that hit it. -->
 
 ## Edges cannot attach to a boundary
-- Design: designs/imported/scale-to-millions, chat-system, news-feed
+- Design: designs/imported/scale-to-millions, chat-system, news-feed, talmaza
 - Missing: figures routinely draw an arrow to the edge of a boundary rather than to a box
   ("User -> DNS" where User is a box holding a browser and a phone, four arrows landing on a
   dashed service boundary). `from` and `to` are node ids only.
@@ -153,7 +153,7 @@ Format for an entry:
 - Status: open
 
 ## A tier drawn as several instances
-- Design: designs/imported/scale-to-millions, key-value-store
+- Design: designs/imported/scale-to-millions, key-value-store, talmaza
 - Missing: "Databases" holding three shard cylinders, "Caches" as three tiles, eight ring nodes
   that are one clustered store. Nothing says a node is N instances of one thing, so cluster
   properties are repeated on every peer or collapsed into one node.
@@ -162,7 +162,7 @@ Format for an entry:
 - Status: open
 
 ## Request and response are two unrelated edges
-- Design: designs/imported/key-value-store, chat-system, rate-limiter, google-drive
+- Design: designs/imported/key-value-store, chat-system, rate-limiter, google-drive, talmaza
 - Missing: a double-headed arrow, a request with its reply, and one bidirectional WebSocket all
   become two directed edges with nothing linking them, which doubles the edge count against the
   source. A long poll (a held request carrying a server-initiated event) is neither sync nor
@@ -252,4 +252,56 @@ Format for an entry:
   A second rule candidate: a node in one ownership boundary reached synchronously from another
   crosses an IAM boundary the design should show. No schema change is made until one of those
   rules is written.
+- Status: open
+
+## No group kind for a label-only visual cluster
+- Design: designs/imported/talmaza
+- Missing: dashed frames that gather icons by theme ("Secretless Layer", "AI", "Storage",
+  "DB & Cache", "Monitoring & Alerts Tools", "Secret Store") inside one VNet. They are not a
+  network, failure or ownership boundary; they say "these belong together on the page". Every
+  v1 group kind claims more than that, and arrows in the source run from one such frame to
+  another.
+- Workaround: list the frames under `ignored`, keep their members in the enclosing VNet, and keep
+  each frame name as a note in the layout sidecar. The frame-to-frame arrows are attached to the
+  nearest box.
+- Proposed change: a `cluster` (or `tier`) group kind that rules never read as a boundary, or a
+  presentation-only frame in the layout sidecar that edges could name as an endpoint.
+- Status: open
+
+## A boundary that is also a product
+- Design: designs/imported/talmaza
+- Missing: "AKS cluster (private API server)" is drawn as the frame around three namespaces, so
+  it is a `system` group; the product and the fact on its title (a private API server) have no
+  place, because a group has no component and no properties.
+- Workaround: `system` group with the full title as its label; `azure-aks` is not used.
+- Proposed change: an optional `component` (and `props`) on a group, so a cluster, a VNet or an
+  API Management instance drawn as a container keeps its product.
+- Status: open
+
+## A cloud boundary with no region
+- Design: designs/imported/talmaza
+- Missing: a frame titled "Microsoft Azure" that names the provider and no region. `region`
+  asserts one geographic region the source never states.
+- Workaround: `region` labelled "Microsoft Azure".
+- Proposed change: a `cloud` or `provider` group kind, or allow `region` to be unnamed and let
+  rules treat a region with no stated location as unknown. Related: "No group kind for an
+  ownership boundary".
+- Status: open
+
+## Policy stated as free text
+- Design: designs/imported/talmaza
+- Missing: "no public IP · no public LB", "NetworkPolicy: cloudflared → frontend / api only" and
+  "DNS resolves app. / api. to Cloudflare anycast IPs — never to Azure" are security facts about
+  the design as a whole or about a namespace. No property or requirement path carries them.
+- Workaround: notes.md and anchored notes in the layout sidecar.
+- Proposed change: `security.noPublicIngress` requirement path and an allow-list on `namespace`
+  groups, once a rule wants them.
+- Status: open
+
+## An empty boundary is not drawn
+- Design: designs/imported/talmaza
+- Missing: "External Systems" is a titled frame with nothing inside it. The format accepts an
+  empty group, but frames are derived from members, so it has no size and does not appear.
+- Workaround: keep the empty `trust-zone` group so the boundary is not lost.
+- Proposed change: a frame size in the layout sidecar for a group with no members.
 - Status: open

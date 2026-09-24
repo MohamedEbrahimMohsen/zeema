@@ -122,6 +122,7 @@ groups:
 | `system` | A logical system or service boundary |
 | `cell` | A failure-isolated slice serving a subset of tenants |
 | `point-of-presence` | An edge site |
+| `namespace` | A logical partition inside a cluster or platform (a Kubernetes namespace, an OpenShift project). It scopes names and policy, not the network or failures |
 
 Groups carry no properties in v1 beyond `label`. They exist for rules — `inGroup`, `crossesGroup`
 — and for renderers, which draw them as nested boxes.

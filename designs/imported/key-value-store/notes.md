@@ -1,5 +1,9 @@
 # Design A Key-Value Store: import notes
 
+A distributed key-value store in the style of Dynamo and Cassandra. Nodes sit on a
+consistent-hash ring with no leader; a client sends get and put to any node, which coordinates
+copies on three nodes with quorum reads and writes and eventual consistency.
+
 - Source: *System Design Interview - An Insider's Guide* (Volume 1), Alex Xu, chapter 6
   "Design A Key-Value Store", pages 87-109. Figure used: **Figure 6-17**, the chapter's
   "system architecture diagram" (page 104).

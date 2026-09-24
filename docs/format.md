@@ -176,8 +176,11 @@ backed by at least one intake card in `docs/intake/`.
 
 Nested boundaries. A node belongs to at most one group; a group may have one `parent`.
 Group kinds in v1: `region`, `availability-zone`, `vpc`, `trust-zone`, `system`, `cell` (a
-failure-isolated slice of the system serving a subset of tenants) and `point-of-presence`
-(an edge site).
+failure-isolated slice of the system serving a subset of tenants), `point-of-presence`
+(an edge site) and `namespace` (a logical partition inside a cluster or platform, such as a
+Kubernetes namespace, an OpenShift project or a Nomad namespace). A namespace scopes names and
+policy; it does not imply a network or failure boundary. Nest it under the `system`, `cell` or
+`vpc` the source draws it in.
 
 A node's **ancestry** is its group, that group's parent, and so on. Rules ask questions
 like "how many `region` groups are in this node's ancestry".

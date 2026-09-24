@@ -158,3 +158,24 @@ describe("aliases", () => {
     expect(count).toBeGreaterThan(100);
   });
 });
+
+describe("group kinds", () => {
+  it("are one list: the rule predicates allow exactly the design schema's boundary kinds", () => {
+    const root = loadCatalogue().root;
+    const read = (n) => JSON.parse(fs.readFileSync(path.join(root, "schema", n), "utf8"));
+    const design = read("design.schema.json").properties.groups.items.properties.kind.enum;
+    const found = [];
+    const walk = (v) => {
+      if (!v || typeof v !== "object") return;
+      for (const [k, sub] of Object.entries(v)) {
+        if ((k === "inGroup" || k === "crossesGroup") && sub?.properties?.kind?.enum)
+          found.push([k, sub.properties.kind.enum]);
+        walk(sub);
+      }
+    };
+    walk(read("rule.schema.json"));
+    expect(found.map(([k]) => k).sort()).toEqual(["crossesGroup", "inGroup"]);
+    for (const [k, kinds] of found) expect(kinds, k).toEqual(design);
+    expect(design).toContain("namespace");
+  });
+});

@@ -525,15 +525,11 @@ function NotePanel({ note, api }: { note: Note; api: InspectorApi }) {
   );
 }
 
-const GROUP_KINDS = [
-  "region",
-  "availability-zone",
-  "vpc",
-  "trust-zone",
-  "system",
-  "cell",
-  "point-of-presence",
-];
+/** The boundary kinds the design schema allows, in its order: the schema is the only list. */
+function groupKinds(catalogue: any): string[] {
+  const kinds = catalogue?.schema?.properties?.groups?.items?.properties?.kind?.enum;
+  return Array.isArray(kinds) ? kinds.map(String) : [];
+}
 
 const ICON_RESULTS = 40;
 
@@ -703,7 +699,7 @@ function GroupPanel({
           value={group.kind}
           onChange={(e) => api.setGroupField(group.id, "kind", e.target.value)}
         >
-          {GROUP_KINDS.map((k) => (
+          {groupKinds(catalogue).map((k) => (
             <option key={k} value={k}>
               {k}
             </option>

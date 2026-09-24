@@ -1,5 +1,9 @@
 # Search autocomplete system: import notes
 
+A search autocomplete service. Queries go through a load balancer to API servers that read the
+top suggestions from a trie cache backed by a trie database. Offline, aggregators roll up
+analytics logs and workers rebuild the trie weekly.
+
 - Source: *System Design Interview – An Insider's Guide*, Alex Xu, chapter 13 "Design a search
   autocomplete system", pages 200-219. The book is copyrighted; `source/search-autocomplete.md`
   holds the citation and a factual transcription of the two figures (boxes, boundary, arrows),

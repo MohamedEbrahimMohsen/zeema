@@ -331,7 +331,9 @@ Every path is backed by at least one intake card (section 22). New paths go thro
 Unknown paths are structural errors.
 
 **A4.4 Groups.** Nested boundaries. Fields: `id`, `kind`, optional `label`, optional `parent`.
-Kinds: `region`, `availability-zone`, `vpc`, `trust-zone`, `system`, `cell`, `point-of-presence`.
+Kinds: `region`, `availability-zone`, `vpc`, `trust-zone`, `system`, `cell`, `point-of-presence`,
+`namespace` (a logical partition inside a cluster or platform; it scopes names and policy and
+implies no network or failure boundary).
 A node belongs to at most one group; a group has at most one parent; parent chains must not cycle.
 A node's ancestry is its group, that group's parent, and so on. Rules ask how many groups of a
 kind are in a node's ancestry.

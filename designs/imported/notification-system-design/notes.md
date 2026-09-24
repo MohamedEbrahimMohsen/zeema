@@ -1,5 +1,9 @@
 # Notification System Design: import notes
 
+The iOS lane of a notification system. Services call notification servers with auth and rate
+limiting, which read user and device data from a cache and database and queue pushes; workers
+send them through APNs with templates, retries and a log, and analytics tracks events.
+
 - Source: diagram pasted inline in chat on 2026-09-08, transcribed to
   `source/notification-system-design.md`. The original PNG was not saved by the client; add it
   as `source/notification-system-design.png` when available.

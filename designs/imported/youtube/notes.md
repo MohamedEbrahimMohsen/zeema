@@ -1,5 +1,9 @@
 # Design YouTube: import notes
 
+A video sharing service like YouTube. Users upload videos to storage; transcoding servers, run
+by a DAG scheduler and task workers, encode them into storage served by a CDN, and a completion
+queue updates the metadata that API servers keep in a cache and database.
+
 - Source: *System Design Interview - An Insider's Guide* (Alex Xu), Chapter 14 "Design
   YouTube", pages 220-243, Figures 14-3, 14-4, 14-5, 14-6, 14-7 and 14-10. The book is
   copyrighted; `source/youtube.md` holds the citation and a factual transcription of the boxes,

@@ -1,5 +1,9 @@
 # Design A URL Shortener: import notes
 
+A URL shortener like TinyURL. Users call a load balancer in front of web servers that create
+short links and redirect short URLs to the original long ones, reading the mapping from a cache
+first and a database behind it.
+
 - Source: *System Design Interview - An Insider's Guide* (Volume 1), Alex Xu, Chapter 8
   "Design A URL Shortener", pages 119-131. Figures **8-7** (URL shortening deep dive, page 128)
   and **8-8** (the detailed design of URL redirecting, page 129).

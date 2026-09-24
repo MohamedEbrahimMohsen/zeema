@@ -212,7 +212,8 @@
                 "trust-zone",
                 "system",
                 "cell",
-                "point-of-presence"
+                "point-of-presence",
+                "namespace"
               ]
             },
             "count": {
@@ -281,7 +282,8 @@
                 "trust-zone",
                 "system",
                 "cell",
-                "point-of-presence"
+                "point-of-presence",
+                "namespace"
               ]
             }
           }

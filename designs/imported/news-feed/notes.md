@@ -1,5 +1,9 @@
 # News feed system: import notes
 
+A social news feed. Clients reach web servers through DNS, a CDN and a load balancer with auth
+and rate limiting. A post service stores posts, a fanout service pushes them through a queue and
+workers into feed caches, and a news feed service reads those caches back.
+
 - Source: chapter 11, "Design a News Feed System", pages 166-177 of *System Design Interview -
   An Insider's Guide* (Alex Xu). The book is copyrighted, so `source/news-feed.md` holds the
   citation and a factual transcription of the figures (boxes, boundaries, arrows), not the

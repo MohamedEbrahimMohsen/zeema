@@ -1,0 +1,91 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Imported 2026-09-24 from source/Talmaza - 02.drawio.html, the user's own draw.io diagram
+# (HTML export; source/Talmaza - 02.drawio is the XML decoded from its data-mxgraph attribute).
+# Decisions, all recorded in mapping.yaml and notes.md:
+#   - Labels are the drawn text with line breaks joined by one space and runs of spaces collapsed.
+#   - Six dashed sub-frames (Secretless Layer, Monitoring & Alerts Tools, Storage, DB & Cache,
+#     AI, Secret Store) are visual clusters with no topology meaning; they are not groups. Their
+#     members are nodes in the VNet they are drawn in.
+#   - All sixteen drawn arrows end on a frame, not a box, at one end or both. Each such end is
+#     attached to the box nearest the point where the arrow meets the frame, except where the
+#     diagram's own text names the end ("dialed OUTBOUND by cloudflared"). Every choice is in
+#     mapping.yaml.
+#   - The Cloudflare Tunnel is a double-headed arrow, so two edges; protocol quic from its caption.
+#   - The cloudflared -> web pod / api pod arrows carry hostnames, not a protocol; http is assumed
+#     for the in-cluster hop.
+#   - Duplicate boxes (two cloudflared pods, two web pods, two api pods, two Service ClusterIP)
+#     are separate nodes, as drawn.
+#   - "Azure Alerts" maps to azure-monitor: the inventory lists Alerts as a feature of Azure
+#     Monitor, not a resource.
+#   - "External Systems" is an empty frame in the source; kept as an empty trust-zone group.
+schemaVersion: "1"
+type: "design"
+id: "talmaza"
+
+groups:
+  - { id: "cloudflare-edge", kind: "point-of-presence", label: "Cloudflare Edge" }
+  - { id: "microsoft-azure", kind: "region", label: "Microsoft Azure" }
+  - { id: "vnet", kind: "vpc", label: "VNet", parent: "microsoft-azure" }
+  - { id: "aks-cluster", kind: "system", label: "AKS cluster (private API server)", parent: "vnet" }
+  - { id: "ns-cloudflared", kind: "namespace", label: "ns: cloudflared — Deployment, 2+ replicas", parent: "aks-cluster" }
+  - { id: "ns-frontend", kind: "namespace", label: "ns: frontend", parent: "aks-cluster" }
+  - { id: "ns-api", kind: "namespace", label: "ns: api", parent: "aks-cluster" }
+  - { id: "external-systems", kind: "trust-zone", label: "External Systems" }
+
+nodes:
+  - { id: "applicant", component: "user-device", label: "Applicant" }
+  - { id: "visitor", component: "user-device", label: "Visitor" }
+  - { id: "ssl-tls-termination", component: "cloudflare-ssl-tls", label: "SSL / TLS termination (Full strict)", group: "cloudflare-edge", props: { encryptionMode: "full-strict" } }
+  - { id: "cdn", component: "cloudflare-cdn", label: "CDN static cache", group: "cloudflare-edge" }
+  - { id: "waf", component: "cloudflare-waf", label: "WAF OWASP rules", group: "cloudflare-edge" }
+  - { id: "ddos-protection", component: "cloudflare-ddos-protection", label: "DDoS protection", group: "cloudflare-edge" }
+  - { id: "bot-detection", component: "cloudflare-bot-management", label: "Bot detection", group: "cloudflare-edge" }
+  - { id: "rate-limiting", component: "cloudflare-rate-limiting", label: "Rate limiting", group: "cloudflare-edge" }
+  - { id: "access", component: "cloudflare-access", label: "Access Zero Trust SSO (admin apps)", group: "cloudflare-edge" }
+  - { id: "nsg", component: "azure-network-security-group", label: "NSG: deny ALL inbound no public IP · no public LB", group: "vnet", props: { defaultAction: "deny" } }
+  - { id: "key-vault-tunnel-token", component: "azure-key-vault", label: "Key Vault tunnel token", group: "vnet" }
+  - { id: "deployment", component: "k8s-deployment", label: "Deployment", group: "ns-cloudflared", props: { instances: 2 } }
+  - { id: "cloudflared", component: "cloudflare-tunnel", label: "cloudflared", group: "ns-cloudflared" }
+  - { id: "cloudflared-2", component: "cloudflare-tunnel", label: "cloudflared", group: "ns-cloudflared" }
+  - { id: "service-clusterip", component: "k8s-service", label: "Service ClusterIP", group: "ns-frontend", props: { serviceType: "cluster-ip" } }
+  - { id: "web-pod", component: "k8s-pod", label: "web pod", group: "ns-frontend" }
+  - { id: "web-pod-2", component: "k8s-pod", label: "web pod", group: "ns-frontend" }
+  - { id: "service-clusterip-2", component: "k8s-service", label: "Service ClusterIP", group: "ns-api", props: { serviceType: "cluster-ip" } }
+  - { id: "api-pod", component: "k8s-pod", label: "api pod", group: "ns-api" }
+  - { id: "api-pod-2", component: "k8s-pod", label: "api pod", group: "ns-api" }
+  - { id: "entra-id", component: "azure-entra-id", label: "Entra ID", group: "vnet" }
+  - { id: "managed-identity", component: "azure-managed-identity", label: "Managed Identity", group: "vnet" }
+  - { id: "azure-monitor", component: "azure-monitor", label: "Azure Monitor", group: "vnet" }
+  - { id: "log-analytics", component: "azure-log-analytics", label: "Log Analytics", group: "vnet" }
+  - { id: "azure-alerts", component: "azure-monitor", label: "Azure Alerts", group: "vnet" }
+  - { id: "communication-service", component: "azure-communication-services", label: "Communication Service", group: "vnet" }
+  - { id: "blob-storage", component: "azure-blob-storage", label: "Blob Storage", group: "vnet" }
+  - { id: "file-storage", component: "azure-files", label: "File Storage", group: "vnet" }
+  - { id: "table-storage", component: "azure-table-storage", label: "Table Storage", group: "vnet" }
+  - { id: "queue-storage", component: "azure-queue-storage", label: "Queue Storage", group: "vnet" }
+  - { id: "azure-sql", component: "azure-sql", label: "Azure SQL", group: "vnet" }
+  - { id: "redis", component: "azure-cache-for-redis", label: "Redis", group: "vnet" }
+  - { id: "cosmosdb", component: "azure-cosmos-db", label: "CosmosDB", group: "vnet" }
+  - { id: "key-vault-app-secrets", component: "azure-key-vault", label: "Key Vault App Secrets", group: "vnet" }
+  - { id: "azure-ai-foundary", component: "azure-ai-foundry", label: "Azure AI Foundary", group: "vnet" }
+  - { id: "ai-search", component: "azure-ai-search", label: "AI Search", group: "vnet" }
+  - { id: "azure-openai", component: "azure-openai", label: "Azure OpenAI", group: "vnet" }
+
+edges:
+  - { from: "applicant", to: "waf", protocol: "https", mode: "sync" }
+  - { from: "visitor", to: "rate-limiting", protocol: "https", mode: "sync" }
+  - { from: "cloudflared", to: "ddos-protection", protocol: "quic", mode: "sync", label: "Cloudflare Tunnel" }
+  - { from: "ddos-protection", to: "cloudflared", protocol: "quic", mode: "sync", label: "Cloudflare Tunnel" }
+  - { from: "cloudflared", to: "web-pod", protocol: "http", mode: "sync", label: "talmaza.com" }
+  - { from: "cloudflared", to: "api-pod", protocol: "http", mode: "sync", label: "api.talmaza.com" }
+  - { from: "cloudflared-2", to: "key-vault-tunnel-token", protocol: "https", mode: "sync", label: "Secret Store" }
+  - { from: "service-clusterip-2", to: "entra-id", protocol: "https", mode: "sync" }
+  - { from: "managed-identity", to: "azure-alerts", protocol: "https", mode: "sync" }
+  - { from: "managed-identity", to: "file-storage", protocol: "smb", mode: "sync" }
+  - { from: "managed-identity", to: "redis", protocol: "redis", mode: "sync" }
+  - { from: "managed-identity", to: "key-vault-app-secrets", protocol: "https", mode: "sync" }
+  - { from: "entra-id", to: "azure-ai-foundary", protocol: "https", mode: "sync" }
+  - { from: "azure-ai-foundary", to: "azure-monitor", protocol: "https", mode: "sync" }
+  - { from: "ai-search", to: "blob-storage", protocol: "https", mode: "sync" }
+  - { from: "azure-openai", to: "azure-sql", protocol: "sql", mode: "sync" }
+  - { from: "azure-openai", to: "key-vault-app-secrets", protocol: "https", mode: "sync" }

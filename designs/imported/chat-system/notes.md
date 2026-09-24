@@ -1,5 +1,9 @@
 # Chat system: import notes
 
+A chat service (Alex Xu, chapter 12). Clients keep a WebSocket to stateful chat servers and
+reach stateless API servers through a load balancer; presence servers track who is online,
+notification servers push alerts, and state lives in key-value stores.
+
 - Source: *System Design Interview - An Insider's Guide* (Alex Xu), Chapter 12 "Design A Chat
   System", pages 178-199. Figure imported: **Figure 12-8**, the adjusted high-level design
   (page 186), which the chapter introduces as everything put together.

@@ -1,5 +1,9 @@
 # Scale from zero to millions of users: import notes
 
+A web application scaled to millions of users (Alex Xu, chapter 1). Clients use DNS and a CDN,
+and a load balancer spreads traffic over stateless web servers backed by caches, sharded
+databases, NoSQL and a queue with workers, watched by logging and monitoring tools.
+
 - Source: Figure 1-23 of chapter 1 ("Scale from zero to millions of users", pages 5–33) of
   *System Design Interview – An Insider's Guide* by Alex Xu. The book is copyrighted; nothing of
   it is in this repository. `source/scale-to-millions.md` is a citation plus a factual

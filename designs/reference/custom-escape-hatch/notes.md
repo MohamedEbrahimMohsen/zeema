@@ -1,5 +1,9 @@
 # custom-escape-hatch
 
+A minimal system: a web client calls one API service over HTTPS inside a platform boundary. Its
+broken twin adds a legacy billing mainframe that the catalogue has no component for, drawn as a
+custom node.
+
 Why this design exists: it is the evidence for the `custom` kind and the two rules that watch
 it. The clean twin places only catalogue components. The broken twin replaces one dependency
 with a `custom` node, and the linter answers the way it must — a warning on the node and a

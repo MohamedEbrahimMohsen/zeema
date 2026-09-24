@@ -1,5 +1,9 @@
 # Notification system: import notes
 
+A notification system for iOS, Android, SMS and email. Internal services call notification
+servers, which check auth and rate limits and queue each message per channel; workers deliver
+through APNs, FCM, SMS and email providers, with retries, templates, a log and analytics.
+
 - Source: chapter 10, "Design a notification system", pages 151-165, of *System Design Interview
   - An Insider's Guide* by Alex Xu. The book is copyrighted and is not in this repository;
   `source/notification-system.md` is a citation plus my own factual transcription of the box,

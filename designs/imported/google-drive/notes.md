@@ -1,5 +1,9 @@
 # Design Google Drive: import notes
 
+A file sync service like Google Drive. Clients upload file blocks through block servers into
+cloud storage, which ages old files into cold storage, and call API servers for metadata kept in
+a cache and database. A notification service long-polls clients about changes.
+
 - Source: Alex Xu, *System Design Interview - An Insider's Guide* (Volume 1), chapter 15
   "Design Google Drive", pages 244-263. The imported figure is **Figure 15-10** (page 253),
   which the chapter introduces as the proposed high-level design.

@@ -139,7 +139,9 @@ For each node, in this order, and record `node`, `component`, `confidence`, `not
 
 Boundaries to group kinds: region -> `region`; AZ / zone -> `availability-zone`; VNet / VPC /
 VCN / subnet -> `vpc`; DMZ / public / private / on-prem / partner -> `trust-zone`; subscription /
-account / project / resource group / cluster / namespace / bounded context -> `system`; cell /
+account / project / resource group / cluster / bounded context -> `system`; Kubernetes namespace /
+OpenShift project / Nomad namespace -> `namespace` (nested under the `system`, `cell` or `vpc` the
+source draws it in; it is a naming and policy scope, never a network or failure boundary); cell /
 shard / tenant slice -> `cell`; edge / PoP / CDN edge -> `point-of-presence`. Anything else:
 closest kind plus an entry in `gaps`.
 

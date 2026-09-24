@@ -1,0 +1,96 @@
+source:
+  file: "source/Talmaza - 02.drawio.html"
+  format: "drawio"
+  decoded: "source/Talmaza - 02.drawio"
+  counts: { nodes: 37, edges: 17, groups: 8 }
+nodes:
+  - { source: "Applicant", node: "applicant", component: "user-device", confidence: "close", note: "cell -1, umlActor figure. The inventory row for a people icon says the placeable node is the generic client user-device; the diagram does not say which device." }
+  - { source: "Visitor", node: "visitor", component: "user-device", confidence: "close", note: "cell -2, umlActor figure; same reasoning as Applicant." }
+  - { source: "SSL / TLS termination (Full strict)", node: "ssl-tls-termination", component: "cloudflare-ssl-tls", confidence: "exact", note: "cell -6, drawn as a box inside the Cloudflare Edge frame. \"Full strict\" is Cloudflare's SSL/TLS encryption mode, so encryptionMode: full-strict." }
+  - { source: "CDN static cache", node: "cdn", component: "cloudflare-cdn", confidence: "exact", note: "cell -7." }
+  - { source: "WAF OWASP rules", node: "waf", component: "cloudflare-waf", confidence: "exact", note: "cell -8. OWASP rules is the managed OWASP ruleset of the WAF; no property carries it." }
+  - { source: "DDoS protection", node: "ddos-protection", component: "cloudflare-ddos-protection", confidence: "exact", note: "cell -9." }
+  - { source: "Bot detection", node: "bot-detection", component: "cloudflare-bot-management", confidence: "exact", note: "cell -10." }
+  - { source: "Rate limiting", node: "rate-limiting", component: "cloudflare-rate-limiting", confidence: "exact", note: "cell -11." }
+  - { source: "Access Zero Trust SSO (admin apps)", node: "access", component: "cloudflare-access", confidence: "exact", note: "cell -12, dashed border (the only dashed box in the edge frame; no legend explains it)." }
+  - { source: "NSG: deny ALL inbound no public IP · no public LB", node: "nsg", component: "azure-network-security-group", confidence: "exact", note: "cells -21/-22/-23: the Azure Network Security Group icon with this caption beside it, inside the VNet frame. It is a drawn product icon like every other Azure icon here, so a node, not a note. defaultAction: deny from \"deny ALL inbound\"; \"no public IP / no public LB\" has no NSG property and is recorded in notes.md." }
+  - { source: "Key Vault tunnel token", node: "key-vault-tunnel-token", component: "azure-key-vault", confidence: "exact", note: "cell -16, Key Vault icon inside the VNet, outside the AKS frame." }
+  - { source: "Deployment", node: "deployment", component: "k8s-deployment", confidence: "exact", note: "cell -70, Kubernetes deploy icon in ns: cloudflared. instances: 2 from the namespace caption \"Deployment, 2+ replicas\" (the stated minimum)." }
+  - { source: "cloudflared", node: "cloudflared", component: "cloudflare-tunnel", confidence: "close", note: "cell -71, drawn with the Kubernetes Pod icon and named cloudflared, the Cloudflare Tunnel connector. The box names the product, so the product's component rather than k8s-pod." }
+  - { source: "cloudflared", node: "cloudflared-2", component: "cloudflare-tunnel", confidence: "close", note: "cell -72, the second cloudflared pod; a separate box with the same caption, so a separate node." }
+  - { source: "Service ClusterIP", node: "service-clusterip", component: "k8s-service", confidence: "exact", note: "cell -74 in ns: frontend. serviceType: cluster-ip as drawn." }
+  - { source: "web pod", node: "web-pod", component: "k8s-pod", confidence: "exact", note: "cell -75." }
+  - { source: "web pod", node: "web-pod-2", component: "k8s-pod", confidence: "exact", note: "cell -76, second box with the same caption." }
+  - { source: "Service ClusterIP", node: "service-clusterip-2", component: "k8s-service", confidence: "exact", note: "cell -78 in ns: api. serviceType: cluster-ip as drawn." }
+  - { source: "api pod", node: "api-pod", component: "k8s-pod", confidence: "exact", note: "cell -79." }
+  - { source: "api pod", node: "api-pod-2", component: "k8s-pod", confidence: "exact", note: "cell -80, second box with the same caption." }
+  - { source: "Entra ID", node: "entra-id", component: "azure-entra-id", confidence: "exact", note: "cell -63, inside the Secretless Layer frame." }
+  - { source: "Managed Identity", node: "managed-identity", component: "azure-managed-identity", confidence: "exact", note: "cell -64, inside the Secretless Layer frame." }
+  - { source: "Azure Monitor", node: "azure-monitor", component: "azure-monitor", confidence: "exact", note: "cell -29, inside Monitoring & Alerts Tools." }
+  - { source: "Log Analytics", node: "log-analytics", component: "azure-log-analytics", confidence: "exact", note: "cell -30." }
+  - { source: "Azure Alerts", node: "azure-alerts", component: "azure-monitor", confidence: "close", note: "cell -31. No component: docs/inventory lists Azure Alerts as 'skip: alerting feature of Azure Monitor, not a resource', so the box maps to the product it is a feature of. Two nodes share azure-monitor; nothing merged." }
+  - { source: "Communication Service", node: "communication-service", component: "azure-communication-services", confidence: "exact", note: "cell -32, drawn inside the Monitoring & Alerts Tools frame." }
+  - { source: "Blob Storage", node: "blob-storage", component: "azure-blob-storage", confidence: "exact", note: "cell -44, Azure Blob Storage icon." }
+  - { source: "File Storage", node: "file-storage", component: "azure-files", confidence: "exact", note: "cell -43, Azure Files Storage icon." }
+  - { source: "Table Storage", node: "table-storage", component: "azure-table-storage", confidence: "exact", note: "cell -45." }
+  - { source: "Queue Storage", node: "queue-storage", component: "azure-queue-storage", confidence: "exact", note: "cell -46, Azure Queue Storage icon. No arrow reaches it." }
+  - { source: "Azure SQL", node: "azure-sql", component: "azure-sql", confidence: "exact", note: "cell -38, SQL Database icon." }
+  - { source: "Redis", node: "redis", component: "azure-cache-for-redis", confidence: "close", note: "cell -39. The caption is only Redis; the icon is Azure's Cache_Redis and the frame is Azure, so the Azure product, not self-hosted redis." }
+  - { source: "CosmosDB", node: "cosmosdb", component: "azure-cosmos-db", confidence: "exact", note: "cell -40. No API or consistency stated, so no props." }
+  - { source: "Key Vault App Secrets", node: "key-vault-app-secrets", component: "azure-key-vault", confidence: "exact", note: "cell -35, inside the Secret Store frame." }
+  - { source: "Azure AI Foundary", node: "azure-ai-foundary", component: "azure-ai-foundry", confidence: "exact", note: "cell -53. The label keeps the source spelling \"Foundary\"; the product is Azure AI Foundry." }
+  - { source: "AI Search", node: "ai-search", component: "azure-ai-search", confidence: "exact", note: "cell -54." }
+  - { source: "Azure OpenAI", node: "azure-openai", component: "azure-openai", confidence: "exact", note: "cell -55." }
+groups:
+  - { source: "Cloudflare Edge", group: "cloudflare-edge", kind: "point-of-presence", note: "cell -3, the orange frame, titled by text cell -5 (first line). Its second line, the DNS sentence, is a note." }
+  - { source: "Microsoft Azure", group: "microsoft-azure", kind: "region", note: "cell -13, the blue frame, titled by cell -25 beside the Azure logo. The source names a cloud, not a region; region is the closest kind (gap recorded)." }
+  - { source: "VNet", group: "vnet", kind: "vpc", note: "cell -14, dashed frame inside Microsoft Azure. Everything Azure-side is drawn inside it." }
+  - { source: "AKS cluster (private API server)", group: "aks-cluster", kind: "system", note: "cell -66 titled by text cell -68 beside the Kubernetes Services icon. A cluster is system per the skill; it only contains other boxes, so it is a group and not an azure-aks node (gap recorded: \"private API server\" has no place on a group)." }
+  - { source: "ns: cloudflared — Deployment, 2+ replicas", group: "ns-cloudflared", kind: "namespace", note: "cell -69, Kubernetes namespace inside the AKS frame." }
+  - { source: "ns: frontend", group: "ns-frontend", kind: "namespace", note: "cell -73." }
+  - { source: "ns: api", group: "ns-api", kind: "namespace", note: "cell -77." }
+  - { source: "External Systems", group: "external-systems", kind: "trust-zone", note: "cell -86, grey frame at the bottom titled by cell -88; it encloses no box. Kept as an empty group so the boundary is not lost; the layout draws no frame for a group without members." }
+edges:
+  - { source: "Applicant -> Cloudflare Edge frame (HTTPS)", from: "applicant", to: "waf", note: "edge -17. The head lands on the top of the Cloudflare Edge frame at x=546, 4 px from WAF and 16 px from CDN; attached to WAF. HTTPS is the protocol, not a label." }
+  - { source: "Visitor -> Cloudflare Edge frame (HTTPS)", from: "visitor", to: "rate-limiting", note: "edge -18. The head lands on the frame at x=1060, directly above Rate limiting." }
+  - { source: "AKS (ns: cloudflared) <-> Cloudflare Edge frame, cloudflared to edge (Cloudflare Tunnel)", from: "cloudflared", to: "ddos-protection", note: "edge -19, first head. Double-headed, dashed orange, captioned by text cell -20 \"Cloudflare Tunnel · TLS 1.3 / QUIC, dialed OUTBOUND by cloudflared\". The lower end floats just above ns: cloudflared; attached to cloudflared because the caption names it. The upper head lands on the edge frame's bottom at x=759, directly under DDoS protection. protocol quic from the caption." }
+  - { source: "AKS (ns: cloudflared) <-> Cloudflare Edge frame, edge to cloudflared (Cloudflare Tunnel)", from: "ddos-protection", to: "cloudflared", note: "edge -19, second head: \"requests flow back down it\"." }
+  - { source: "ns: cloudflared -> ns: frontend (talmaza.com)", from: "cloudflared", to: "web-pod", note: "edge -81, frame to frame. It leaves ns: cloudflared at x=794.5, under the first cloudflared pod, and enters ns: frontend at x=579.5, above the first web pod. The label is a hostname; protocol http is assumed for the in-cluster hop." }
+  - { source: "ns: cloudflared -> ns: api (api.talmaza.com)", from: "cloudflared", to: "api-pod", note: "edge -82, frame to frame. Leaves under the first cloudflared pod, enters ns: api at x=969.5, above the first api pod." }
+  - { source: "Key Vault tunnel token <- ns: cloudflared (Secret Store)", from: "cloudflared-2", to: "key-vault-tunnel-token", note: "edge -84, dashed, arrowhead at the Key Vault end only (startArrow), so drawn toward Key Vault. The other end meets the right side of ns: cloudflared, nearest box the second cloudflared pod. The edge label (cell -85) is \"Secret Store\"." }
+  - { source: "AKS cluster frame -> Secretless Layer frame", from: "service-clusterip-2", to: "entra-id", note: "edge -15, frame to frame, a straight vertical at x=774.5. Leaves the AKS frame nearest the api Service ClusterIP (55 px, against 60 px for the second web pod); enters Secretless Layer nearest Entra ID (128 px, against 132 px for Managed Identity). The drawing means the whole cluster reaches the identity layer." }
+  - { source: "Secretless Layer frame -> Monitoring & Alerts Tools frame", from: "managed-identity", to: "azure-alerts", note: "edge -47, waypoints at x=1167.7 then x=799.5. Leaves Secretless Layer nearest Managed Identity; enters Monitoring & Alerts Tools at x=799.5, nearest Azure Alerts." }
+  - { source: "Secretless Layer frame -> Storage frame", from: "managed-identity", to: "file-storage", note: "edge -48, enters Storage at its top centre x=799.5, nearest File Storage; leaves Secretless Layer at the same x, nearest Managed Identity. protocol smb, the azure-files default." }
+  - { source: "Secretless Layer frame -> DB & Cache frame", from: "managed-identity", to: "redis", note: "edge -49, vertical at x=799.5 (centre of the overlap of the two frames). Enters DB & Cache directly above Redis; leaves nearest Managed Identity." }
+  - { source: "Secretless Layer frame -> Secret Store frame", from: "managed-identity", to: "key-vault-app-secrets", note: "edge -50, vertical at x=813.5 into the top centre of Secret Store, whose only box is Key Vault App Secrets; leaves nearest Managed Identity." }
+  - { source: "Secretless Layer frame -> AI frame", from: "entra-id", to: "azure-ai-foundary", note: "edge -61, vertical at x=339.5. Leaves Secretless Layer nearest Entra ID; enters AI directly above Azure AI Foundary." }
+  - { source: "AI frame -> Monitoring & Alerts Tools frame", from: "azure-ai-foundary", to: "azure-monitor", note: "edge -56, leaves the top of AI above Azure AI Foundary and enters the left side of Monitoring & Alerts Tools beside Azure Monitor." }
+  - { source: "AI frame -> Storage frame", from: "ai-search", to: "blob-storage", note: "edge -57, horizontal at y=1680 from the right side of AI, nearest AI Search, into the left side of Storage beside Blob Storage." }
+  - { source: "AI frame -> DB & Cache frame", from: "azure-openai", to: "azure-sql", note: "edge -58, horizontal at y=1863 from the right side of AI beside Azure OpenAI into the left side of DB & Cache beside Azure SQL. protocol sql, the callee's." }
+  - { source: "AI frame -> Secret Store frame", from: "azure-openai", to: "key-vault-app-secrets", note: "edge -59, leaves the bottom of AI under Azure OpenAI and enters the left side of Secret Store beside Key Vault App Secrets." }
+ignored:
+  - { source: "Secretless Layer", reason: "visual grouping, no topology meaning. Dashed frame (cell -62) around Entra ID and Managed Identity; the format has no label-only cluster (gap). Kept as an anchored note in design.layout.json." }
+  - { source: "Monitoring & Alerts Tools", reason: "visual grouping, no topology meaning. Dashed frame (cell -28) around Azure Monitor, Log Analytics, Azure Alerts, Communication Service. Anchored note." }
+  - { source: "Storage", reason: "visual grouping, no topology meaning. Dashed frame (cell -42) around Blob, File, Table and Queue Storage. Anchored note." }
+  - { source: "DB & Cache", reason: "visual grouping, no topology meaning. Dashed frame (cell -37) around Azure SQL, Redis, CosmosDB. Anchored note." }
+  - { source: "AI", reason: "visual grouping, no topology meaning. Dashed frame (cell -52) around Azure AI Foundary, AI Search, Azure OpenAI. Anchored note." }
+  - { source: "Secret Store", reason: "visual grouping, no topology meaning. Dashed frame (cell -34) around Key Vault App Secrets. Anchored note." }
+  - { source: "DNS resolves app. / api. to Cloudflare anycast IPs — never to Azure", reason: "free text, second line of the Cloudflare Edge title (cell -5). No DNS box is drawn. notes.md and an anchored note." }
+  - { source: "Cloudflare Tunnel · TLS 1.3 / QUIC dialed OUTBOUND by cloudflared — requests flow back down it", reason: "caption of the tunnel arrow (cell -20); carried as the edges' label and protocol, the rest in notes.md and an anchored note." }
+  - { source: "NetworkPolicy: cloudflared → frontend / api only", reason: "free text inside the AKS frame (cell -83); no policy object in the format. notes.md and an anchored note." }
+  - { source: "HTTPS", reason: "label of the two client arrows; carried as protocol https." }
+  - { source: ". . . . . . . . . . . . . . . . .", reason: "dotted text between Applicant and Visitor (cell -60), read as 'and other users'; not a system element." }
+  - { source: "(Cloudflare logo)", reason: "brand icon in the Cloudflare Edge title (cell -4); carried as the frame icon boundary:cloudflare." }
+  - { source: "(Microsoft Azure logo)", reason: "brand icon in the Azure title (cell -26); carried as the frame icon boundary:azure." }
+  - { source: "(Kubernetes Services icon)", reason: "icon in the AKS title (cell -67); carried as the frame icon boundary:kubernetes." }
+  - { source: "(External Systems icon)", reason: "icon in the External Systems title (cell -87); not a system element." }
+unmapped: []
+gaps:
+  - "Six dashed frames (Secretless Layer, Monitoring & Alerts Tools, Storage, DB & Cache, AI, Secret Store) are label-only visual clusters. No group kind means 'drawn together, no network, failure or ownership meaning', and using system would claim a boundary the diagram does not. They are ignored; the members stay in the VNet and the cluster names survive only as layout notes."
+  - "Every drawn arrow ends on a frame at one end or both (ten of them end on one of the visual clusters). from and to must be node ids, so each end was attached to the nearest box, which turns 'the identity layer reaches the storage tier' into single node pairs such as Managed Identity -> File Storage."
+  - "The Cloudflare Tunnel is one double-headed arrow modelled as two directed edges; nothing links them as one persistent outbound-dialled connection."
+  - "The AKS cluster is drawn as a boundary, so it is a system group, and the fact on its title, private API server, has no place: groups carry no properties and there is no azure-aks node to hold it."
+  - "Microsoft Azure is a cloud, not a region; the source names no region. region is the closest kind and overstates what is known."
+  - "The drawn replicas (2+ cloudflared pods, two web pods, two api pods) are separate nodes; nothing says they are instances of one workload."
+  - "Free text that states policy (NSG 'no public IP, no public LB', NetworkPolicy 'cloudflared -> frontend / api only', DNS resolving only to Cloudflare anycast) has no property or requirement path; it lives in notes.md and the layout notes."
+  - "External Systems is an empty boundary. The format allows it, but the layout derives frames from members, so it is not drawn."
