@@ -6,7 +6,20 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { edgeGeometry, edgeKeys, LANE_STEP, pathOf, rekeyBows } from "../src/geometry.js";
+import {
+  bowAt,
+  edgeGeometry,
+  edgeKeys,
+  LANE_STEP,
+  midpointOf,
+  pathOf,
+  portAt,
+  portNormal,
+  portPoint,
+  rekeyBows,
+  rekeyPorts,
+  STUB,
+} from "../src/geometry.js";
 import { layout } from "../src/layout.js";
 import { toMermaid, toSvg } from "../src/render.js";
 
@@ -20,12 +33,14 @@ const centre = (b) => [b[0] + b[2] / 2, b[1] + b[3] / 2];
 
 // Where the drawn curve is halfway along: the quadratic at t = 0.5, or the chord's midpoint.
 const halfway = (points) =>
-  points.length === 3
-    ? [
-        points[0][0] / 4 + points[1][0] / 2 + points[2][0] / 4,
-        points[0][1] / 4 + points[1][1] / 2 + points[2][1] / 4,
-      ]
-    : [(points[0][0] + points[1][0]) / 2, (points[0][1] + points[1][1]) / 2];
+  points.length === 6
+    ? midpointOf(points)
+    : points.length === 3
+      ? [
+          points[0][0] / 4 + points[1][0] / 2 + points[2][0] / 4,
+          points[0][1] / 4 + points[1][1] / 2 + points[2][1] / 4,
+        ]
+      : [(points[0][0] + points[1][0]) / 2, (points[0][1] + points[1][1]) / 2];
 
 // On the border of a box, within float noise.
 const onBorder = ([x, y], [bx, by, bw, bh]) => {
@@ -288,5 +303,240 @@ describe("one implementation", () => {
     for (const n of design.nodes) boxes[n.id] = [...lay.positions[n.id], ...lay.sizes[n.id]];
     expect(lay.edges).toEqual(edgeGeometry(design, boxes));
     expect(lay.edges[0].points).not.toEqual(lay.edges[1].points);
+  });
+});
+
+describe("ports", () => {
+  it("names a point on each side, and portAt finds it again", () => {
+    expect(portPoint(A, { side: "top", t: 0.25 })).toEqual([31.5, 0]);
+    expect(portPoint(A, { side: "right", t: 0.5 })).toEqual([126, 39]);
+    expect(portPoint(A, { side: "bottom", t: 1 })).toEqual([126, 78]);
+    expect(portPoint(A, { side: "left", t: 0 })).toEqual([0, 0]);
+    for (const side of ["top", "right", "bottom", "left"])
+      for (const t of [0.1, 0.333, 0.5, 0.9]) {
+        const [x, y] = portPoint(B, { side, t });
+        expect(portAt(B, x, y)).toEqual({ side, t });
+      }
+  });
+
+  it("clamps a point off the box onto the nearest side, rounded to 3 decimals", () => {
+    expect(portAt(A, 200, 10)).toEqual({ side: "right", t: 0.128 });
+    expect(portAt(A, -50, -50)).toEqual({ side: "top", t: 0 });
+    expect(portAt(A, 60, 70)).toEqual({ side: "bottom", t: 0.476 });
+    expect(portAt(A, 5, 40)).toEqual({ side: "left", t: 0.513 });
+  });
+
+  it("puts both ends exactly on their ports", () => {
+    const doc = edgesOf([["a", "b"]]);
+    const from = { side: "bottom", t: 0.2 };
+    const to = { side: "top", t: 0.8 };
+    const [e] = edgeGeometry(doc, { a: A, b: B }, {}, { "a>b": { from, to } });
+    expect(e.points[0]).toEqual(portPoint(A, from));
+    expect(e.points[e.points.length - 1]).toEqual(portPoint(B, to));
+  });
+
+  it("clips the unported end toward the ported one's stub tip", () => {
+    const from = { side: "bottom", t: 0.5 };
+    const [e] = edgeGeometry(edgesOf([["a", "c"]]), { a: A, c: C }, {}, { "a>c": { from } });
+    expect(e.points[0]).toEqual([63, 78]);
+    expect(e.points[1]).toEqual([63, 78 + STUB]);
+    const end = e.points[e.points.length - 1];
+    expect(onBorder(end, C)).toBe(true);
+    // On the line from the stub's tip to C's centre.
+    const [px, py] = [63, 78 + STUB];
+    const [cx, cy] = centre(C);
+    expect((end[0] - px) * (cy - py) - (end[1] - py) * (cx - px)).toBeCloseTo(0, 6);
+  });
+
+  it("draws an edge with no ports exactly as before", () => {
+    const doc = edgesOf([
+      ["a", "b"],
+      ["b", "a"],
+      ["a", "c"],
+    ]);
+    const boxes = { a: A, b: B, c: C };
+    expect(edgeGeometry(doc, boxes, { "a>c": 40 }, {})).toEqual(
+      edgeGeometry(doc, boxes, { "a>c": 40 }),
+    );
+    expect(edgeGeometry(doc, boxes, {}, { "x>y": { from: { side: "top", t: 0 } } })).toEqual(
+      edgeGeometry(doc, boxes),
+    );
+  });
+
+  it("keeps ported ends in place on a lane and under a bow; only the control point moves", () => {
+    const doc = edgesOf([
+      ["a", "b"],
+      ["b", "a"],
+    ]);
+    const from = { side: "right", t: 0.2 };
+    const to = { side: "left", t: 0.9 };
+    const ports = { "a>b": { from, to } };
+    const [lane] = edgeGeometry(doc, { a: A, b: B }, {}, ports);
+    expect(lane.points).toHaveLength(6);
+    expect(lane.points[0]).toEqual(portPoint(A, from));
+    expect(lane.points[5]).toEqual(portPoint(B, to));
+    const [bowed] = edgeGeometry(doc, { a: A, b: B }, { "a>b": 60 }, ports);
+    expect(bowed.points[0]).toEqual(portPoint(A, from));
+    expect(bowed.points[5]).toEqual(portPoint(B, to));
+    expect(bowed.points.slice(2, 4)).not.toEqual(lane.points.slice(2, 4));
+    // bowAt measured from the ports writes back the bow that put the curve there.
+    const mid = halfway(bowed.points);
+    expect(bowAt({ a: A, b: B }, "a", "b", mid[0], mid[1], { from, to })).toBe(60);
+  });
+
+  // A cubic sampled along its length, stubs included, for "never enters its box".
+  const sampled = (points) => {
+    const [s, p0, p1, p2, p3, e] = points;
+    const out = [s];
+    for (let i = 0; i <= 32; i++) {
+      const t = i / 32,
+        u = 1 - t;
+      out.push(
+        [0, 1].map(
+          (k) => u ** 3 * p0[k] + 3 * u * u * t * p1[k] + 3 * u * t * t * p2[k] + t ** 3 * p3[k],
+        ),
+      );
+    }
+    out.push(e);
+    return out;
+  };
+  const strictlyInside = ([x, y], [bx, by, bw, bh]) =>
+    x > bx + 1e-6 && x < bx + bw - 1e-6 && y > by + 1e-6 && y < by + bh - 1e-6;
+
+  it("leaves a port on the side facing away outward, and never runs back under its box", () => {
+    // C is below-left of B; B's port is on its right side, facing away from C.
+    const from = { side: "right", t: 0.5 };
+    const [e] = edgeGeometry(edgesOf([["b", "c"]]), { b: B, c: C }, {}, { "b>c": { from } });
+    expect(e.points).toHaveLength(6);
+    const [[x0, y0], [x1, y1]] = e.points;
+    const [nx, ny] = portNormal(from);
+    expect((x1 - x0) * nx + (y1 - y0) * ny).toBeGreaterThan(0);
+    expect(Math.hypot(x1 - x0, y1 - y0)).toBeCloseTo(STUB, 6);
+    for (const p of e.points) expect(strictlyInside(p, B)).toBe(false);
+    for (const p of sampled(e.points)) expect(strictlyInside(p, B)).toBe(false);
+    const d = pathOf(e.points);
+    expect(d).toMatch(/^M\S+ \S+ L\S+ \S+ C/);
+    // The unported end at C has no stub: the path ends on the cubic, on C's border.
+    expect(d).not.toMatch(/ L\S+ \S+$/);
+    expect(onBorder(e.points[5], C)).toBe(true);
+    // The label sits on the drawn curve.
+    expect(e.mid).toEqual(midpointOf(e.points));
+  });
+
+  it("routes around its own box when both ports make the middle cut back across it", () => {
+    // A's right side, C's top: C is below and to the left of A's stub, and the chord between
+    // the two stub tips crosses A.
+    const from = { side: "right", t: 0.4 };
+    const to = { side: "top", t: 0.3 };
+    const [e] = edgeGeometry(edgesOf([["a", "c"]]), { a: A, c: C }, {}, { "a>c": { from, to } });
+    for (const p of sampled(e.points)) {
+      expect(strictlyInside(p, A)).toBe(false);
+      expect(strictlyInside(p, C)).toBe(false);
+    }
+    expect(e.points[0]).toEqual(portPoint(A, from));
+    expect(e.points[5]).toEqual(portPoint(C, to));
+  });
+
+  it("ends a ported arrival with a stub along the normal, so the head points squarely in", () => {
+    const to = { side: "top", t: 0.5 };
+    const [e] = edgeGeometry(edgesOf([["a", "c"]]), { a: A, c: C }, {}, { "a>c": { to } });
+    const [, , , , [x4, y4], [x5, y5]] = e.points;
+    const [nx, ny] = portNormal(to);
+    const l = Math.hypot(x5 - x4, y5 - y4);
+    expect(l).toBeGreaterThan(0);
+    // Into the box: against the outward normal, and only along it.
+    expect(((x5 - x4) * nx + (y5 - y4) * ny) / l).toBeCloseTo(-1, 9);
+    expect(pathOf(e.points)).toMatch(/ L\S+ \S+$/);
+  });
+
+  it("still gives a port on the facing side a short outward stub", () => {
+    const from = { side: "right", t: 0.5 };
+    const to = { side: "left", t: 0.5 };
+    const [e] = edgeGeometry(edgesOf([["a", "b"]]), { a: A, b: B }, {}, { "a>b": { from, to } });
+    const [[x0, y0], [x1, y1]] = e.points;
+    expect(x1 - x0).toBeGreaterThan(0);
+    expect(y1).toBe(y0);
+    expect(x1 - x0).toBeLessThanOrEqual(STUB);
+    // Close facing ports shorten their stubs so they never cross.
+    const near = [150, 0, 126, 78];
+    const [f] = edgeGeometry(edgesOf([["a", "b"]]), { a: A, b: near }, {}, { "a>b": { from, to } });
+    expect(f.points[1][0]).toBeLessThan(f.points[4][0]);
+    expect(f.points[1][0] - f.points[0][0]).toBeGreaterThan(0);
+  });
+
+  it("bends a ported edge around an obstacle on its middle part", () => {
+    const from = { side: "right", t: 0.5 };
+    const to = { side: "left", t: 0.5 };
+    const M = [170, 10, 60, 60];
+    const [free] = edgeGeometry(edgesOf([["a", "b"]]), { a: A, b: B }, {}, { "a>b": { from, to } });
+    const [bent] = edgeGeometry(
+      edgesOf([["a", "b"]]),
+      { a: A, b: B, m: M },
+      {},
+      { "a>b": { from, to } },
+    );
+    expect(bent.points[0]).toEqual(free.points[0]);
+    expect(bent.points[5]).toEqual(free.points[5]);
+    // Its middle, where the label sits, clears the obstacle as an unported bend would.
+    expect(free.mid[1]).toBe(39);
+    expect(bent.mid[1]).toBeLessThan(M[1]);
+    const [plain] = edgeGeometry(edgesOf([["a", "b"]]), { a: A, b: B, m: M });
+    expect(bent.mid[0]).toBeCloseTo(plain.mid[0], 6);
+    expect(bent.mid[1]).toBeCloseTo(plain.mid[1], 6);
+  });
+
+  it("re-keys ports by index and swaps the ends of a reversed edge", () => {
+    const before = edgesOf([
+      ["a", "b"],
+      ["b", "a"],
+    ]);
+    const reversedFirst = edgesOf([
+      ["b", "a"],
+      ["b", "a"],
+    ]);
+    const top = { side: "top", t: 0.5 };
+    const left = { side: "left", t: 0.25 };
+    const ports = { "a>b": { from: top }, "b>a": { to: left } };
+    expect(rekeyPorts(before, reversedFirst, ports, [0])).toEqual({
+      "b>a": { to: top },
+      "b>a#1": { to: left },
+    });
+    const was = edgeGeometry(before, { a: A, b: B }, {}, ports)[0].points;
+    const now = edgeGeometry(
+      reversedFirst,
+      { a: A, b: B },
+      {},
+      rekeyPorts(before, reversedFirst, ports, [0]),
+    )[0].points;
+    expect(now[now.length - 1]).toEqual(was[0]);
+  });
+
+  it("draws the server render from the same ports", () => {
+    const design = {
+      id: "ported",
+      nodes: [
+        { id: "web", component: "container-service" },
+        { id: "db", component: "container-service" },
+      ],
+      edges: [{ from: "web", to: "db", protocol: "https", mode: "sync" }],
+      groups: [],
+    };
+    const from = { side: "bottom", t: 0.25 };
+    const sidecar = {
+      nodes: { web: [0, 0], db: [400, 0] },
+      edges: {},
+      ports: { "web>db": { from } },
+    };
+    const [w, h] = layout(design, catalogue).sizes.web;
+    const [x, y] = portPoint([0, 0, w, h], from);
+    const svg = toSvg(design, catalogue, { layout: sidecar, theme: "light" });
+    // A ported edge is a <path>: a stub out of the port, then the curve.
+    const start = `d="M${x.toFixed(1)} ${y.toFixed(1)} L${x.toFixed(1)} ${(y + STUB).toFixed(1)} C`;
+    expect(svg).toContain(start);
+    const plain = toSvg(design, catalogue, {
+      layout: { nodes: sidecar.nodes, edges: {} },
+      theme: "light",
+    });
+    expect(plain).not.toContain(start);
   });
 });

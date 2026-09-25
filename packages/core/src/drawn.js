@@ -1,14 +1,14 @@
 // The picture as it was drawn, rather than as the engine would arrange it.
 //
-// The canvas stores what a person moved in the layout sidecar: a position per node and a bow per
-// edge. `drawnLayout` turns that sidecar into the same shape `layout()` returns, so the renderer
-// draws from one or the other without knowing which. The rules it follows are the canvas's own
-// (apps/web/src/canvas/scene.ts):
+// The canvas stores what a person moved in the layout sidecar: a position per node, and a bow and
+// the ports its ends attach at per edge. `drawnLayout` turns that sidecar into the same shape
+// `layout()` returns, so the renderer draws from one or the other without knowing which. The
+// rules it follows are the canvas's own (apps/web/src/canvas/scene.ts):
 //
 //   * box sizes always come from the engine — a size is derived from the text, never stored;
 //   * positions come from the sidecar;
 //   * group frames are computed from the members with `groupFrames`, never stored;
-//   * edges are recomputed with `edgeGeometry`, taking the sidecar's bows.
+//   * edges are recomputed with `edgeGeometry`, taking the sidecar's bows and ports.
 //
 // A node the sidecar has never seen — added to the YAML after the last canvas save — is placed
 // here rather than left at the origin: beside a neighbour it is connected to when there is room,
@@ -93,6 +93,7 @@ function placeNewcomer(id, size, doc, boxes) {
  * @param {object} doc        a Zeema design document
  * @param {object} catalogue  passed through to `layout()` for the box sizes
  * @param {object} sidecar    { nodes: { id: [x, y] }, edges: { key: bow },
+ *                            ports: { key: { from?: port, to?: port } },
  *                            frames: { groupId: { tint, icon } } }; notes are not drawn
  * @returns {{positions: Object, sizes: Object, frames: Object, edges: Array,
  *            canvas: [number, number], origin: [number, number], frameStyles: Object}}
@@ -118,7 +119,10 @@ export function drawnLayout(doc, catalogue, sidecar) {
   }
   const frames = groupFrames({ nodes, groups: doc.groups || [], edges: doc.edges || [] }, boxes);
   const bows = sidecar && typeof sidecar === "object" && sidecar.edges ? sidecar.edges : {};
-  const edges = edgeGeometry(doc, boxes, bows);
+  const rawPorts = sidecar && typeof sidecar === "object" ? sidecar.ports : null;
+  const ports =
+    rawPorts && typeof rawPorts === "object" && !Array.isArray(rawPorts) ? rawPorts : {};
+  const edges = edgeGeometry(doc, boxes, bows, ports);
   // Group tint and icon ride along untouched: they change how a frame looks, never where.
   const styles = sidecar && typeof sidecar === "object" ? sidecar.frames : null;
   const frameStyles = styles && typeof styles === "object" && !Array.isArray(styles) ? styles : {};

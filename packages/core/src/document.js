@@ -308,6 +308,32 @@ export function reverseEdge(doc, index) {
   return d;
 }
 
+// Dragging an arrow's end onto another component moves that end and keeps every other field.
+// Refused, with the document returned as it was, when the end would land on the other end's own
+// node (a self loop), on a node the document does not have, or when the result would be an
+// exact twin of another edge: the same ends, label and protocol.
+export function reconnectEdge(doc, index, end, nodeId) {
+  const e = doc.edges?.[index];
+  if (!e || (end !== "from" && end !== "to")) return { doc, refused: "missing" };
+  if (!doc.nodes.some((n) => n.id === nodeId)) return { doc, refused: "missing" };
+  if (e[end] === nodeId) return { doc, refused: null };
+  const from = end === "from" ? nodeId : e.from;
+  const to = end === "to" ? nodeId : e.to;
+  if (from === to) return { doc, refused: "self-loop" };
+  const twin = doc.edges.some(
+    (o, i) =>
+      i !== index &&
+      o.from === from &&
+      o.to === to &&
+      (o.label ?? null) === (e.label ?? null) &&
+      (o.protocol ?? null) === (e.protocol ?? null),
+  );
+  if (twin) return { doc, refused: "duplicate" };
+  const d = clone(doc);
+  d.edges[index][end] = nodeId;
+  return { doc: d, refused: null };
+}
+
 export function setEdgeField(doc, index, field, value) {
   const d = clone(doc);
   const e = d.edges[index];

@@ -22,6 +22,8 @@ import {
   normaliseTint,
   pruneAnchored,
   pruneFrames,
+  prunePorts,
+  readPorts,
   readSidecar,
   retargetAnchors,
   retargetFrame,
@@ -324,5 +326,50 @@ describe("boundary styles", () => {
     expect(normaliseTint("#ABCDEF")).toBe("#abcdef");
     expect(normaliseTint("teal")).toBe("teal");
     expect(normaliseTint("#abc")).toBeNull();
+  });
+});
+
+describe("edge ports", () => {
+  it("keeps a well-formed port, clamps and rounds t, and drops the rest", () => {
+    const s = readSidecar({
+      ports: {
+        "a>b": { from: { side: "right", t: 0.12345 }, to: { side: "top", t: 2 } },
+        "a>b#1": { to: { side: "left", t: -1 }, junk: 1 },
+        "b>c": { from: { side: "middle", t: 0.5 }, to: { side: "top", t: "x" } },
+        "c>d": { from: { side: "top", t: Number.NaN } },
+        nokey: { from: { side: "top", t: 0.5 } },
+        "d>e": 7,
+      },
+    });
+    expect(s.ports).toEqual({
+      "a>b": { from: { side: "right", t: 0.123 }, to: { side: "top", t: 1 } },
+      "a>b#1": { to: { side: "left", t: 0 } },
+    });
+    // As JSON arrives: `__proto__` is an own key there, and it never becomes a prototype here.
+    const hostile = readSidecar(
+      JSON.parse('{"ports":{"__proto__":{"from":{"side":"top","t":0.5}}}}'),
+    );
+    expect(hostile.ports).toBeUndefined();
+    expect(
+      Object.getPrototypeOf(readPorts(JSON.parse('{"__proto__":{"to":{"side":"top","t":0}}}'))),
+    ).toBe(Object.prototype);
+  });
+
+  it("leaves the section out when there is nothing in it, reading and writing", () => {
+    expect("ports" in readSidecar({ ports: {} })).toBe(false);
+    expect("ports" in readSidecar({ ports: [{ from: { side: "top", t: 0 } }] })).toBe(false);
+    const base = { nodes: {}, edges: {}, notes: [] };
+    expect("ports" in writeSidecar(base)).toBe(false);
+    expect("ports" in writeSidecar({ ...base, ports: {} })).toBe(false);
+    const ports = { "a>b": { to: { side: "bottom" as const, t: 0.5 } } };
+    expect(writeSidecar({ ...base, ports }).ports).toEqual(ports);
+    expect(readSidecar(writeSidecar({ ...base, ports })).ports).toEqual(ports);
+  });
+
+  it("prunes the ports of edges that have gone without touching the input", () => {
+    const ports = { "a>b": { from: { side: "top" as const, t: 0 } }, "b>c": {} };
+    expect(prunePorts(ports, ["a>b"])).toEqual({ "a>b": { from: { side: "top", t: 0 } } });
+    expect(Object.keys(ports)).toEqual(["a>b", "b>c"]);
+    expect(readPorts(null)).toEqual({});
   });
 });

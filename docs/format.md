@@ -221,7 +221,11 @@ intake cards showed rules that read them (retries without shedding, money calls 
 idempotency, fan-out without timeouts). Anything else on an edge goes in `label`.
 
 Layout, coordinates and colours are **not** part of the design. A renderer derives a
-diagram from groups, nodes and edges alone.
+diagram from groups, nodes and edges alone. What a person arranged by hand goes in the layout
+sidecar beside the design: node positions, an edge's bow (`edges`), where each end of an edge
+meets its box (`ports`: per edge key, `{ from?, to? }`, each `{ side, t }` with `side` one of
+`top`, `right`, `bottom`, `left` and `t` in [0, 1] along it) and group colours. Moving an edge's
+end to another component is not layout: it changes `from` or `to` in the design.
 
 ## 6. Rule
 

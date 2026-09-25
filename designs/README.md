@@ -13,7 +13,7 @@ designs/
     notes.md            what the design shows, what the broken variant breaks
   authored/<id>/      made in the Zeema canvas
     design.yaml         the design; no external source, so no mapping.yaml, and no broken twin
-    design.layout.json  node positions and edge bows, written by the editor
+    design.layout.json  node positions, edge bows and ports, written by the editor
   imported/<id>/      brought in from a real source by the zeema-design-import skill
     design.yaml         the same design as the source, expressed in Zeema components
     source/             the original file(s), untouched

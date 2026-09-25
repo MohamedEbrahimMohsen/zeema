@@ -104,6 +104,32 @@ describe("edits over committed designs", () => {
       });
     }
 
+    const moveTo = base.edges.length
+      ? base.nodes.find(
+          (n) =>
+            n.id !== base.edges[0].from &&
+            n.id !== base.edges[0].to &&
+            !base.edges.some((o) => o.from === base.edges[0].from && o.to === n.id),
+        )
+      : null;
+    if (moveTo) {
+      it(`${rel}: reconnecting an edge's end is a one-field edit and keeps its other fields`, () => {
+        const before = base.edges[0];
+        const { out, diff } = roundTrip(
+          text,
+          (doc) => D.reconnectEdge(doc, 0, "to", moveTo.id).doc,
+        );
+        // Exactly the diff of setting that one field, and at most one line each way.
+        expect(diff).toEqual(
+          roundTrip(text, (doc) => D.setEdgeField(doc, 0, "to", moveTo.id)).diff,
+        );
+        expect(diff.added).toBe(1);
+        const after = YAML.parse(out).edges[0];
+        expect(after.to).toBe(moveTo.id);
+        for (const k of Object.keys(before)) if (k !== "to") expect(after[k]).toEqual(before[k]);
+      });
+    }
+
     it(`${rel}: an unchanged document is byte identical`, () => {
       const { out, diff } = roundTrip(text, (doc) => doc);
       expect(out).toBe(text);
@@ -113,6 +139,26 @@ describe("edits over committed designs", () => {
 });
 
 describe("document operations", () => {
+  it("reconnectEdge refuses a self loop, an exact twin and a missing node", () => {
+    const doc = {
+      nodes: [{ id: "a" }, { id: "b" }, { id: "c" }],
+      edges: [
+        { from: "a", to: "b", protocol: "http", mode: "sync" },
+        { from: "a", to: "c", protocol: "http", mode: "sync" },
+        { from: "c", to: "b", protocol: "grpc", mode: "sync" },
+      ],
+    };
+    expect(D.reconnectEdge(doc, 0, "to", "a")).toEqual({ doc, refused: "self-loop" });
+    expect(D.reconnectEdge(doc, 0, "to", "c")).toEqual({ doc, refused: "duplicate" });
+    expect(D.reconnectEdge(doc, 0, "to", "zz")).toEqual({ doc, refused: "missing" });
+    expect(D.reconnectEdge(doc, 9, "to", "c").refused).toBe("missing");
+    // Same ends as edge 2 but another protocol: a different edge, so allowed.
+    const moved = D.reconnectEdge(doc, 0, "from", "c");
+    expect(moved.refused).toBeNull();
+    expect(moved.doc.edges[0]).toEqual({ from: "c", to: "b", protocol: "http", mode: "sync" });
+    expect(doc.edges[0].from).toBe("a");
+  });
+
   const text =
     'schemaVersion: "1"\ntype: "design"\nid: "x"\ngroups:\n  - { id: "g", kind: "system" }\n  - { id: "h", kind: "system" }\nnodes:\n  - { id: "a", component: "kafka", group: "g" }\n  - { id: "b", component: "postgres", group: "h" }\nedges: []\n';
 

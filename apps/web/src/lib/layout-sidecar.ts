@@ -1,6 +1,6 @@
 // The layout sidecar: the jsonb stored beside a design version, holding everything the picture
-// needs and the document must never carry. Node positions, edge bows and free-text notes live
-// here, so a note is not a node: it has no component, it takes no edges, no rule ever sees it,
+// needs and the document must never carry. Node positions, edge bows and ports, and free-text
+// notes live here, so a note is not a node: it has no component, it takes no edges, no rule ever sees it,
 // and adding one does not touch a byte of the YAML.
 //
 // This is the one place that says what the sidecar looks like. The API stores it opaquely, so
@@ -98,10 +98,23 @@ export type FrameStyle = { tint?: Tint | HexTint; icon?: string };
 export const FRAME_MAX_STYLES = 500;
 const GROUP_ID_RE = /^[a-z][a-z0-9-]*$/;
 
+/**
+ * Where one end of an edge meets its box: a side, and how far along it, 0 to 1 (left to right on
+ * top and bottom, top to bottom on left and right). Relative to the box, so it follows the box.
+ * `portPoint`/`portAt` in @zeema/core/geometry are the one place it is turned into a point.
+ */
+export type PortSide = "top" | "right" | "bottom" | "left";
+export type Port = { side: PortSide; t: number };
+/** The ports an edge's ends were dragged to. An end with no port is clipped automatically. */
+export type EdgePorts = { from?: Port; to?: Port };
+const PORT_SIDES: readonly PortSide[] = ["top", "right", "bottom", "left"];
+
 export type LayoutSidecar = {
   version: number;
   nodes: Record<string, [number, number]>;
   edges: Record<string, number>;
+  /** Keyed like `edges` (see `edgeKeys`). Absent when no edge has a port. */
+  ports?: Record<string, EdgePorts>;
   notes: Note[];
   /** Keyed by group id. A group with no entry is drawn in the default frame colour. */
   frames: Record<string, FrameStyle>;
@@ -190,7 +203,55 @@ export function readSidecar(raw: unknown, targets?: AnchorTargets): LayoutSideca
         .filter(Boolean) as Note[])
     : ([] as Note[]);
   const frames = readFrames(r.frames, present);
-  return { version: num(r.version, SIDECAR_VERSION), nodes, edges, notes, frames };
+  const out: LayoutSidecar = {
+    version: num(r.version, SIDECAR_VERSION),
+    nodes,
+    edges,
+    notes,
+    frames,
+  };
+  const ports = readPorts(r.ports);
+  if (Object.keys(ports).length) out.ports = ports;
+  return out;
+}
+
+/** A port as stored: a known side and a finite `t`, clamped to [0, 1] and rounded to 3 places. */
+export function readPort(raw: unknown): Port | null {
+  if (!raw || typeof raw !== "object") return null;
+  const r = raw as Record<string, unknown>;
+  if (!PORT_SIDES.includes(r.side as PortSide)) return null;
+  if (typeof r.t !== "number" || !Number.isFinite(r.t)) return null;
+  return { side: r.side as PortSide, t: Math.round(clamp(r.t, 0, 1) * 1000) / 1000 };
+}
+
+// An edge key is `from>to` or `from>to#n`, so a key without `>` is not one, and that also keeps
+// `__proto__` and its friends from ever becoming a key here.
+const EDGE_KEY_MAX = 400;
+const isEdgeKey = (k: string) => k.length <= EDGE_KEY_MAX && /^[^>]+>[^>]+$/.test(k);
+
+/** The edge ports a sidecar holds. A malformed end is dropped, and an entry left empty with it. */
+export function readPorts(raw: unknown): Record<string, EdgePorts> {
+  const out: Record<string, EdgePorts> = {};
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return out;
+  for (const [key, v] of Object.entries(raw as Record<string, unknown>)) {
+    if (!isEdgeKey(key) || !v || typeof v !== "object") continue;
+    const r = v as Record<string, unknown>;
+    const entry: EdgePorts = {};
+    const from = readPort(r.from);
+    const to = readPort(r.to);
+    if (from) entry.from = from;
+    if (to) entry.to = to;
+    if (entry.from || entry.to) out[key] = entry;
+  }
+  return out;
+}
+
+/** The ports whose edge still exists. Like `pruneFrames`, it copies. */
+export function prunePorts(ports: Record<string, EdgePorts>, keys: Iterable<string>) {
+  const keep = new Set(keys);
+  const out: Record<string, EdgePorts> = {};
+  for (const [k, v] of Object.entries(ports)) if (keep.has(k)) out[k] = v;
+  return out;
 }
 
 /**
@@ -228,13 +289,16 @@ export function readFrames(
 export function writeSidecar(
   s: Omit<LayoutSidecar, "version" | "frames"> & { frames?: Record<string, FrameStyle> },
 ): LayoutSidecar {
-  return {
+  const out: LayoutSidecar = {
     version: SIDECAR_VERSION,
     nodes: s.nodes,
     edges: s.edges,
     notes: s.notes,
     frames: s.frames ?? {},
   };
+  // Absent rather than empty, so a design nobody has ported stores the bytes it always did.
+  if (s.ports && Object.keys(s.ports).length) out.ports = s.ports;
+  return out;
 }
 
 /** The group styles whose group still exists. Like `pruneAnchored`, it copies. */

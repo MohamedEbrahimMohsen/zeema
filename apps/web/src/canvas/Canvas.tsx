@@ -5,7 +5,7 @@
 // through `commit`, which snapshots first, so undo and redo are uniform.
 import { ruleReads } from "@zeema/core/describe";
 import * as D from "@zeema/core/document";
-import { edgeKeys, rekeyBows } from "@zeema/core/geometry";
+import { edgeKeys, rekeyBows, rekeyPorts } from "@zeema/core/geometry";
 import { layout } from "@zeema/core/layout";
 import { runRules } from "@zeema/core/rules";
 import { check } from "@zeema/core/structure";
@@ -14,6 +14,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  type EdgePorts,
   type FrameStyle,
   NOTE_ANCHOR_DX,
   NOTE_ANCHOR_DY,
@@ -24,8 +25,10 @@ import {
   type Note,
   type NoteAnchor,
   nextNoteId,
+  type Port,
   pruneAnchored,
   pruneFrames,
+  prunePorts,
   readSidecar,
   retargetAnchors,
   retargetFrame,
@@ -62,6 +65,8 @@ type Engine = {
   positions: Record<string, [number, number]>;
   sizes: Record<string, [number, number]>;
   bows: Record<string, number>;
+  /** Where each edge's ends meet their boxes, by edge key: sidecar, never YAML. */
+  ports: Record<string, EdgePorts>;
   notes: Note[];
   /** Group tint and icon by group id: sidecar, never YAML. */
   frames: Record<string, FrameStyle>;
@@ -76,6 +81,22 @@ type Engine = {
 };
 
 const clone = (x: unknown) => JSON.parse(JSON.stringify(x));
+
+/** The ports with one end of one edge set, or cleared with null. Copies; an empty entry goes. */
+const withPort = (
+  ports: Record<string, EdgePorts>,
+  key: string,
+  end: "from" | "to",
+  port: Port | null,
+) => {
+  const next = { ...ports };
+  const entry: EdgePorts = { ...(next[key] ?? {}) };
+  if (port) entry[end] = port;
+  else delete entry[end];
+  if (entry.from || entry.to) next[key] = entry;
+  else delete next[key];
+  return next;
+};
 
 // Whether notes are shown is a habit, not a property of the design: it lives in this browser
 // and applies to every canvas the person opens. One key, and a storage that may refuse to
@@ -163,8 +184,12 @@ const helpSections = (mod: string): Array<[string, Array<[string[], string]>]> =
       [["Del", "Backspace"], "Delete the selection."],
       [["Drag an edge"], "Bow it away from the straight line."],
       [
+        ["Drag an arrow's end"],
+        "Along its box: choose where it attaches. Onto another component: reconnect it.",
+      ],
+      [
         ["Right-click an edge"],
-        "Reverse it, switch synchronous and asynchronous, or straighten it.",
+        "Reverse it, switch synchronous and asynchronous, straighten it or reset its ends.",
       ],
       [[mod, "Z"], "Undo."],
       [[mod, "Shift", "Z"], "Redo."],
@@ -309,6 +334,7 @@ export function Canvas(props: Props) {
       if (!e.doc.nodes.some((n: any) => n.id === id)) delete e.positions[id];
     const keys = new Set(edgeKeys(e.doc));
     for (const k of Object.keys(e.bows)) if (!keys.has(k)) delete e.bows[k];
+    e.ports = prunePorts(e.ports, keys as Set<string>);
   }, [bundle]);
 
   const derive = useCallback(() => {
@@ -345,6 +371,7 @@ export function Canvas(props: Props) {
         positions: e.positions,
         sizes: e.sizes,
         bows: e.bows,
+        ports: e.ports,
         notes: e.notes,
         frameStyles: e.frames,
         showNotes: showNotesRef.current,
@@ -364,7 +391,13 @@ export function Canvas(props: Props) {
   // the YAML, because a note is not a node.
   const sidecar = useCallback(() => {
     const e = eng.current!;
-    return writeSidecar({ nodes: e.positions, edges: e.bows, notes: e.notes, frames: e.frames });
+    return writeSidecar({
+      nodes: e.positions,
+      edges: e.bows,
+      ports: e.ports,
+      notes: e.notes,
+      frames: e.frames,
+    });
   }, []);
 
   const save = useCallback(async () => {
@@ -432,6 +465,7 @@ export function Canvas(props: Props) {
         doc: clone(e.doc),
         positions: clone(e.positions),
         bows: clone(e.bows),
+        ports: clone(e.ports),
         notes: clone(e.notes),
         frames: clone(e.frames),
       };
@@ -468,6 +502,7 @@ export function Canvas(props: Props) {
       doc: clone(e.doc),
       positions: clone(e.positions),
       bows: clone(e.bows),
+      ports: clone(e.ports),
       notes: clone(e.notes),
       frames: clone(e.frames),
     });
@@ -488,6 +523,7 @@ export function Canvas(props: Props) {
       doc: clone(e.doc),
       positions: clone(e.positions),
       bows: clone(e.bows),
+      ports: clone(e.ports),
       notes: clone(e.notes),
       frames: clone(e.frames),
     });
@@ -524,6 +560,9 @@ export function Canvas(props: Props) {
           if (now === id) return;
           movePosition(id, now);
           retargetAnchors(e.notes, "node", id, now);
+          // Edge keys name the ids at their ends: the bows and ports follow the rename.
+          e.bows = rekeyBows(e.doc, doc, e.bows);
+          e.ports = rekeyPorts(e.doc, doc, e.ports);
         },
       });
     },
@@ -807,6 +846,7 @@ export function Canvas(props: Props) {
               commit(next, {
                 apply: () => {
                   e.bows = rekeyBows(e.doc, next, e.bows, [i]);
+                  e.ports = rekeyPorts(e.doc, next, e.ports, [i]);
                 },
               });
             },
@@ -820,6 +860,18 @@ export function Canvas(props: Props) {
             label: "Straighten",
             disabled: !e.bows[key],
             run: () => commit(null, { apply: () => delete e.bows[key] }),
+          },
+          {
+            label: "Reset ends",
+            hint: "attach automatically",
+            disabled: !e.ports[key],
+            run: () =>
+              commit(null, {
+                apply: () => {
+                  const { [key]: _gone, ...rest } = e.ports;
+                  e.ports = rest;
+                },
+              }),
           },
           "-",
           {
@@ -923,6 +975,7 @@ export function Canvas(props: Props) {
       positions: sidecarIn.nodes,
       sizes: {},
       bows: sidecarIn.edges,
+      ports: sidecarIn.ports ?? {},
       notes: sidecarIn.notes,
       frames: sidecarIn.frames,
       undo: [],
@@ -965,6 +1018,30 @@ export function Canvas(props: Props) {
             else delete eng.current!.bows[key];
           },
         }),
+      onPortPreview: (key, end, port) =>
+        scene.repaintEdges(scene.model.bows, withPort(eng.current!.ports, key, end, port)),
+      onPort: (key, end, port) =>
+        commit(null, {
+          apply: () => {
+            const e = eng.current!;
+            e.ports = withPort(e.ports, key, end, port);
+          },
+        }),
+      onReconnect: (i, end, nodeId) => {
+        const e = eng.current!;
+        const { doc: next, refused } = D.reconnectEdge(e.doc, i, end, nodeId);
+        if (refused === "self-loop") return notify("an edge cannot connect a component to itself");
+        if (refused === "duplicate") return notify("that edge already exists");
+        if (refused || next === e.doc) return;
+        commit(next, {
+          apply: () => {
+            // Every edge keeps its index, so bows and ports follow by index; the moved end's
+            // port named a point on the box it has left, so it goes.
+            e.bows = rekeyBows(e.doc, next, e.bows);
+            e.ports = withPort(rekeyPorts(e.doc, next, e.ports), edgeKeys(next)[i], end, null);
+          },
+        });
+      },
       onNotePin: (key) => toggleNotePin(key),
       onNoteGeometry: (id, box) => {
         const e = eng.current!;
@@ -1210,10 +1287,13 @@ export function Canvas(props: Props) {
           return notify(`${newId} is the id of another component`);
         scene.selection = { type: "node", ref: newId };
         scene.multi = new Set([...scene.multi].map((x) => (x === oldId ? newId : x)));
-        commit(D.renameNode(e.doc, oldId, newId, bundle!.catalogue), {
+        const renamed = D.renameNode(e.doc, oldId, newId, bundle!.catalogue);
+        commit(renamed, {
           apply: () => {
             movePosition(oldId, newId);
             retargetAnchors(e.notes, "node", oldId, newId);
+            e.bows = rekeyBows(e.doc, renamed, e.bows);
+            e.ports = rekeyPorts(e.doc, renamed, e.ports);
           },
         });
       },

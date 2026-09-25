@@ -89,7 +89,7 @@ export const API_ROUTES: ApiRoute[] = [
     method: "GET",
     path: "/api/v1/designs/{owner}/{slug}/layout",
     auth: "none",
-    summary: "The layout sidecar: node positions and edge bows.",
+    summary: "The layout sidecar: node positions, edge bows and ports.",
   },
   {
     method: "GET",

@@ -431,6 +431,22 @@
   stroke-width: 1.5;
   cursor: crosshair;
 }
+.zeema-canvas .end-handle {
+  fill: var(--panel);
+  stroke: var(--accent);
+  stroke-width: 1.5;
+  cursor: move;
+}
+.zeema-canvas .end-handle.dragging {
+  fill: var(--accent);
+  pointer-events: none;
+}
+/* the end being dragged is on its own box's border: this is where it will attach */
+.zeema-canvas .node-box.port-target rect.body {
+  stroke: var(--accent);
+  stroke-width: 2.5;
+  stroke-dasharray: 4 3;
+}
 .zeema-canvas .badge-error {
   fill: var(--err);
   stroke: var(--panel);

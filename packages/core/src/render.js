@@ -4,7 +4,7 @@
 // edges are arrows, solid for sync and dashed for async.
 
 import { drawnLayout } from "./drawn.js";
-import { framesOuterFirst, framesUnderTint } from "./geometry.js";
+import { framesOuterFirst, framesUnderTint, pathOf } from "./geometry.js";
 import { layout } from "./layout.js";
 
 // A node card is one neutral surface in both themes: colour on a drawing comes only from the
@@ -71,7 +71,7 @@ const f1 = (n) => Number(n).toFixed(1);
  * @param {object} catalogue    { kinds, components }
  * @param {object} [options]    { icons: { [componentId]: innerSvg }, positions, sizes, bows,
  *                                theme: "auto" | "light" | "dark",
- *                                layout: a saved layout sidecar — { nodes, edges } — which makes
+ *                                layout: a saved layout sidecar — { nodes, edges, ports } — which makes
  *                                the picture the one that was drawn rather than an arrangement
  *                                of it. Notes are canvas furniture and are never drawn here.
  *                                frames: { [groupId]: { tint?, icon? } } — how each group is
@@ -208,7 +208,12 @@ export function toSvg(doc, catalogue, options = {}) {
   // outer side of its own curve.
   for (const e of lay.edges) {
     const dash = e.dashed ? ' stroke-dasharray="6 4"' : "";
-    if (e.points.length === 3) {
+    if (e.points.length === 6) {
+      // A ported end: stub, cubic, stub, as geometry.js spells it.
+      out.push(
+        `<path d="${pathOf(e.points)}" fill="none" stroke="var(--edge)" stroke-width="1.2"${dash} marker-end="url(#a)"/>`,
+      );
+    } else if (e.points.length === 3) {
       const [[x1, y1], [cx, cy], [x2, y2]] = e.points;
       out.push(
         `<path d="M${f1(x1)} ${f1(y1)} Q${f1(cx)} ${f1(cy)} ${f1(x2)} ${f1(y2)}" fill="none" stroke="var(--edge)" stroke-width="1.2"${dash} marker-end="url(#a)"/>`,

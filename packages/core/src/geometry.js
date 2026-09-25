@@ -14,15 +14,19 @@
 // a curve, and its ends are clipped toward the curve's control point, so each lane leaves and
 // meets the boxes at its own point and carries its own arrowhead.
 //
-// Edges carry no id in the format, so nothing here goes into the design file. The one thing a
-// person can adjust by hand, an edge's bow, lives in the layout sidecar under a key derived from
-// the pair; everything else is recomputed from the boxes on every frame.
+// Edges carry no id in the format, so nothing here goes into the design file. The two things a
+// person can adjust by hand, an edge's bow and where each of its ends meets its box (a port),
+// live in the layout sidecar under a key derived from the pair; everything else is recomputed
+// from the boxes on every frame.
 
 // Distance between neighbouring lanes at their midpoints, in px.
 export const LANE_STEP = 24;
 export const BEND_REACH = 46;
 // How far a label on a lane stands off its own curve.
 export const LABEL_GAP = 6;
+// How far a ported end runs straight out of its box, along the side's outward normal, before the
+// curve takes over. Shorter when the two ends are close, so facing ports never cross stubs.
+export const STUB = 28;
 
 function clip(box, towardX, towardY) {
   const [x, y, w, h] = box;
@@ -103,14 +107,113 @@ export function rekeyBows(before, after, bows, reversed = []) {
   return out;
 }
 
+/**
+ * Carry the ports across the same kind of edit as `rekeyBows`: every edge keeps its index. A
+ * reversed edge's ends trade places, so its `from` port becomes its `to` port and the arrow
+ * still leaves and meets its boxes where it did.
+ */
+export function rekeyPorts(before, after, ports, reversed = []) {
+  const was = edgeKeys(before);
+  const now = edgeKeys(after);
+  if (was.length !== now.length) return { ...ports };
+  const flip = new Set(reversed);
+  const out = {};
+  was.forEach((k, i) => {
+    const v = ports && Object.hasOwn(ports, k) ? ports[k] : null;
+    if (!v || (!v.from && !v.to)) return;
+    const next = {};
+    const from = flip.has(i) ? v.to : v.from;
+    const to = flip.has(i) ? v.from : v.to;
+    if (from) next.from = from;
+    if (to) next.to = to;
+    out[now[i]] = next;
+  });
+  return out;
+}
+
+// A port is where one end of an edge meets its box: a side, and how far along it (0 to 1, left
+// to right on top and bottom, top to bottom on left and right). It is relative to the box, so
+// it survives the box moving, and nothing about it is in the design document.
+export const PORT_SIDES = ["top", "right", "bottom", "left"];
+
+export function isPort(p) {
+  return (
+    p != null &&
+    typeof p === "object" &&
+    PORT_SIDES.includes(p.side) &&
+    typeof p.t === "number" &&
+    Number.isFinite(p.t)
+  );
+}
+
+const unit = (t) => (t < 0 ? 0 : t > 1 ? 1 : t);
+
+const NORMALS = { top: [0, -1], right: [1, 0], bottom: [0, 1], left: [-1, 0] };
+
+/** The outward unit normal of the side a port sits on. */
+export function portNormal(port) {
+  return NORMALS[port.side] ?? [0, 0];
+}
+
+// Where each end of an edge is anchored and what the curve between them aims at. A ported end
+// is anchored on its port and aims at the tip of its stub, the port pushed out along the side's
+// normal; an unported end has neither (null) and is clipped later. The stub is STUB long, or a
+// third of the distance between the two anchors (ports or centres) when that is shorter.
+function endsOf(a, b, from, to) {
+  const pa = isPort(from) ? portPoint(a, from) : null;
+  const pb = isPort(to) ? portPoint(b, to) : null;
+  if (!pa && !pb) return { pa, pb, sa: null, sb: null };
+  const [ax, ay] = pa ?? [a[0] + a[2] / 2, a[1] + a[3] / 2];
+  const [bx, by] = pb ?? [b[0] + b[2] / 2, b[1] + b[3] / 2];
+  const reach = Math.min(STUB, Math.hypot(bx - ax, by - ay) / 3);
+  const tip = (p, port) => {
+    const [nx, ny] = portNormal(port);
+    return [p[0] + nx * reach, p[1] + ny * reach];
+  };
+  return { pa, pb, sa: pa && tip(pa, from), sb: pb && tip(pb, to) };
+}
+
+/** The world point a port names on a box. */
+export function portPoint(box, port) {
+  const [x, y, w, h] = box;
+  const t = unit(port.t);
+  if (port.side === "top") return [x + w * t, y];
+  if (port.side === "bottom") return [x + w * t, y + h];
+  if (port.side === "left") return [x, y + h * t];
+  return [x + w, y + h * t];
+}
+
+/**
+ * The port nearest a world point: the side the point is closest to, and the fraction along it
+ * the point projects to, clamped to the side and rounded to 3 decimals. `portPoint` undoes it
+ * for any point on the border.
+ */
+export function portAt(box, px, py) {
+  const [x, y, w, h] = box;
+  const u = unit(w ? (px - x) / w : 0.5);
+  const v = unit(h ? (py - y) / h : 0.5);
+  const cx = x + w * u,
+    cy = y + h * v;
+  const sides = [
+    ["top", Math.hypot(px - cx, py - y), u],
+    ["right", Math.hypot(px - (x + w), py - cy), v],
+    ["bottom", Math.hypot(px - cx, py - (y + h)), u],
+    ["left", Math.hypot(px - x, py - cy), v],
+  ];
+  let best = sides[0];
+  for (const side of sides) if (side[1] < best[1]) best = side;
+  return { side: best[0], t: Math.round(best[2] * 1000) / 1000 };
+}
+
 // Where an edge's label goes. A lone edge's sits centred just above its midpoint. An edge that
 // shares its pair has its label on the outer side of its own curve, so two lanes' labels sit on
 // opposite sides and cross neither lane. `at` is the baseline point and `anchor` the SVG
 // text-anchor; the 9 is a label's cap height, so a label hung below its curve clears it.
 function labelPlacement(mid, points, shared) {
   const above = { at: [mid[0], mid[1] - 5], anchor: "middle" };
-  if (!shared || points.length !== 3) return above;
-  const [[x1, y1], , [x2, y2]] = points;
+  if (!shared || points.length === 2) return above;
+  const [[x1, y1], [x2, y2]] =
+    points.length === 6 ? [points[1], points[4]] : [points[0], points[2]];
   let nx = mid[0] - (x1 + x2) / 2,
     ny = mid[1] - (y1 + y2) / 2;
   const l = Math.hypot(nx, ny);
@@ -128,7 +231,21 @@ function labelPlacement(mid, points, shared) {
 // measured along the edge's own from→to perpendicular. A bow of zero means the edge is drawn
 // automatically: its lane, and the bend it takes around any box the straight line would cut
 // through. A manual bow replaces both.
-export function edgeGeometry(doc, boxes, bows = {}) {
+//
+// `ports` maps an edge key to `{ from?, to? }`, each a port (see `portPoint`). A ported end sits
+// exactly on its port and is never clipped, and it leaves its box squarely: a straight stub along
+// the side's outward normal (see `endsOf`), so a port on the side facing away from the other end
+// does not send the line back under its own box. The other end, if it has no port, is clipped
+// toward the ported end's stub tip (or toward the curve's control point, as without ports). The
+// lane, the bow and the bend around an obstacle all work on the middle part, between the two aim
+// points (a stub tip, or an unported end), and never move a ported end.
+//
+// `points` is [from, to] for a straight edge and [from, control, to] for a quadratic one, exactly
+// as before, whenever neither end is ported. With a port it is six points,
+// [from, aimFrom, c1, c2, aimTo, to]: a stub, a cubic from aim to aim, a stub. An unported end's
+// aim is the end itself, so its stub has no length and `pathOf` leaves it out. At a ported end
+// the cubic's control runs along the normal, so the stub and the curve meet without a corner.
+export function edgeGeometry(doc, boxes, bows = {}, ports = {}) {
   const keys = edgeKeys(doc);
   const edges = doc.edges || [];
   const buckets = new Map();
@@ -159,40 +276,66 @@ export function edgeGeometry(doc, boxes, bows = {}) {
         qy = pdx / plen;
       const lane = n === 1 ? 0 : (k - (n - 1) / 2) * LANE_STEP;
       const bow = Number(bows[keys[i]]) || 0;
+      const own = ports && Object.hasOwn(ports, keys[i]) ? ports[keys[i]] : null;
+      const { pa, pb, sa, sb } = endsOf(a, b, own?.from, own?.to);
+      // What each unported end is clipped toward: the other end's stub tip if it is ported,
+      // else the other box's centre.
+      const [tax, tay] = sb ?? [bx, by];
+      const [tbx, tby] = sa ?? [ax, ay];
       let x1, y1, x2, y2;
+      // The middle part's two ends: a ported end's stub tip, else the (clipped) end itself.
+      let u1, v1, u2, v2;
       let bend = null;
       if (bow) {
         // Drawn by hand: the control point off the chord's midpoint along the edge's own
         // perpendicular, which is the value `bowAt` wrote.
-        [x1, y1] = clip(a, bx, by);
-        [x2, y2] = clip(b, ax, ay);
-        const ddx = x2 - x1,
-          ddy = y2 - y1;
+        [x1, y1] = pa ?? clip(a, tax, tay);
+        [x2, y2] = pb ?? clip(b, tbx, tby);
+        [u1, v1] = sa ?? [x1, y1];
+        [u2, v2] = sb ?? [x2, y2];
+        const ddx = u2 - u1,
+          ddy = v2 - v1;
         const l = Math.hypot(ddx, ddy) || 1;
-        bend = [(x1 + x2) / 2 + (-ddy / l) * bow, (y1 + y2) / 2 + (ddx / l) * bow];
+        bend = [(u1 + u2) / 2 + (-ddy / l) * bow, (v1 + v2) / 2 + (ddx / l) * bow];
       } else {
         // A lane's control point sits twice the lane out, so the curve's midpoint is on the lane.
+        // It is measured from the middle of what the two ends aim at, which is the centres'
+        // midpoint when neither end is ported.
+        const [sax, say] = sa ?? [ax, ay];
+        const [sbx, sby] = sb ?? [bx, by];
         const control = lane
-          ? [(ax + bx) / 2 + qx * lane * 2, (ay + by) / 2 + qy * lane * 2]
+          ? [(sax + sbx) / 2 + qx * lane * 2, (say + sby) / 2 + qy * lane * 2]
           : null;
         if (control) {
-          [x1, y1] = clip(a, control[0], control[1]);
-          [x2, y2] = clip(b, control[0], control[1]);
+          [x1, y1] = pa ?? clip(a, control[0], control[1]);
+          [x2, y2] = pb ?? clip(b, control[0], control[1]);
         } else {
-          [x1, y1] = clip(a, bx, by);
-          [x2, y2] = clip(b, ax, ay);
+          [x1, y1] = pa ?? clip(a, tax, tay);
+          [x2, y2] = pb ?? clip(b, tbx, tby);
         }
+        [u1, v1] = sa ?? [x1, y1];
+        [u2, v2] = sb ?? [x2, y2];
         const ox = qx * lane,
           oy = qy * lane;
-        for (const [id, box] of Object.entries(boxes)) {
-          if (id === e.from || id === e.to) continue;
-          if (!hits(x1 + ox, y1 + oy, x2 + ox, y2 + oy, box)) continue;
-          const mx = (x1 + x2) / 2 + ox,
-            my = (y1 + y2) / 2 + oy;
+        // A ported end whose side faces away from the other end has its own box behind its
+        // stub, so the middle may cut back across it: that box is an obstacle too, tried first.
+        const away = (p, s, tx, ty) =>
+          p && (tx - s[0]) * (s[0] - p[0]) + (ty - s[1]) * (s[1] - p[1]) < 0;
+        const obstacles = [
+          ...(away(pa, sa, u2, v2) ? [a] : []),
+          ...(away(pb, sb, u1, v1) ? [b] : []),
+          ...Object.entries(boxes)
+            .filter(([id]) => id !== e.from && id !== e.to)
+            .map(([, box]) => box),
+        ];
+        for (const box of obstacles) {
+          if (!hits(u1 + ox, v1 + oy, u2 + ox, v2 + oy, box)) continue;
+          const mx = (u1 + u2) / 2 + ox,
+            my = (v1 + v2) / 2 + oy;
           const ocx = box[0] + box[2] / 2,
             ocy = box[1] + box[3] / 2;
-          const ddx = x2 - x1,
-            ddy = y2 - y1;
+          const ddx = u2 - u1,
+            ddy = v2 - v1;
           const l = Math.hypot(ddx, ddy) || 1;
           const px = -ddy / l,
             py = ddx / l;
@@ -204,12 +347,15 @@ export function edgeGeometry(doc, boxes, bows = {}) {
         }
         if (!bend) bend = control;
       }
-      const points = bend
-        ? [[x1, y1], bend, [x2, y2]]
-        : [
-            [x1, y1],
-            [x2, y2],
-          ];
+      const points =
+        pa || pb
+          ? stubbed([x1, y1], [u1, v1], [u2, v2], [x2, y2], bend, own)
+          : bend
+            ? [[x1, y1], bend, [x2, y2]]
+            : [
+                [x1, y1],
+                [x2, y2],
+              ];
       const mid = midpointOf(points);
       const place = labelPlacement(mid, points, n > 1);
       const label = e.label || e.protocol || null;
@@ -232,10 +378,38 @@ export function edgeGeometry(doc, boxes, bows = {}) {
   return out.sort((p, q) => p.i - q.i);
 }
 
+// The six points of an edge with a ported end: [start, aimStart, c1, c2, aimEnd, end]. The
+// middle is the quadratic the edge would have been between the two aims (through `bend`, or
+// straight), raised to a cubic. At a ported end its control is replaced by one along the side's
+// normal, a third of the chord out (at least a stub), carrying the same bow offset, so the curve
+// leaves the stub without a corner and a bow or a lane still pulls it the same way.
+function stubbed(start, aimStart, aimEnd, end, bend, own) {
+  const [u1, v1] = aimStart,
+    [u2, v2] = aimEnd;
+  const mx = (u1 + u2) / 2,
+    my = (v1 + v2) / 2;
+  const [qx, qy] = bend ?? [mx, my];
+  const offx = ((qx - mx) * 2) / 3,
+    offy = ((qy - my) * 2) / 3;
+  const reach = Math.max(STUB, Math.hypot(u2 - u1, v2 - v1) / 3);
+  const control = (u, v, port) => {
+    if (!isPort(port)) return [u + ((qx - u) * 2) / 3, v + ((qy - v) * 2) / 3];
+    const [nx, ny] = portNormal(port);
+    return [u + nx * reach + offx, v + ny * reach + offy];
+  };
+  return [start, aimStart, control(u1, v1, own?.from), control(u2, v2, own?.to), aimEnd, end];
+}
+
 // Where the line actually is, halfway along. For a curve that is not the control point: the
 // control point sits twice as far out as the curve it pulls, so a label placed there drifts away
-// from its own edge as the edge is bowed. This is the quadratic at t = 0.5.
+// from its own edge as the edge is bowed. This is the quadratic at t = 0.5, or, for an edge with
+// a ported end, the middle cubic at t = 0.5: the stubs are short and straight, and the middle is
+// the part that carries the shape.
 export function midpointOf(points) {
+  if (points.length === 6) {
+    const [, [x1, y1], [c1x, c1y], [c2x, c2y], [x2, y2]] = points;
+    return [(x1 + 3 * c1x + 3 * c2x + x2) / 8, (y1 + 3 * c1y + 3 * c2y + y2) / 8];
+  }
   if (points.length === 3) {
     const [[x1, y1], [cx, cy], [x2, y2]] = points;
     return [x1 * 0.25 + cx * 0.5 + x2 * 0.25, y1 * 0.25 + cy * 0.5 + y2 * 0.25];
@@ -245,6 +419,15 @@ export function midpointOf(points) {
 }
 
 export function pathOf(points) {
+  if (points.length === 6) {
+    const f = ([x, y]) => `${x.toFixed(1)} ${y.toFixed(1)}`;
+    const [start, aimStart, c1, c2, aimEnd, end] = points.map(f);
+    // A stub of no length (an unported end) is left out, so the path has no degenerate segment
+    // for the arrowhead to take its direction from.
+    const lead = aimStart === start ? "" : ` L${aimStart}`;
+    const tail = aimEnd === end ? "" : ` L${end}`;
+    return `M${start}${lead} C${c1} ${c2} ${aimEnd}${tail}`;
+  }
   if (points.length === 3) {
     const [[x1, y1], [cx, cy], [x2, y2]] = points;
     return `M${x1.toFixed(1)} ${y1.toFixed(1)} Q${cx.toFixed(1)} ${cy.toFixed(1)} ${x2.toFixed(1)} ${y2.toFixed(1)}`;
@@ -350,14 +533,17 @@ export function innermostFrameAt(frames, x, y) {
 // How far a pointer sits from the straight line between two boxes, measured along the
 // perpendicular at the midpoint. This is the value a drag writes, so dragging an edge away from
 // its twin separates them and dragging it back returns it to the automatic path.
-export function bowAt(boxes, from, to, x, y) {
+//
+// With `ends` (the edge's `{ from?, to? }` ports) a ported end is measured from its stub's tip
+// (where the middle of the edge starts) rather than its box's centre, so the curve follows the pointer on an edge whose ends were placed.
+/** @param {{ from?: object, to?: object } | null} [ends] */
+export function bowAt(boxes, from, to, x, y, ends = null) {
   const a = boxes[from],
     b = boxes[to];
   if (!a || !b) return 0;
-  const ax = a[0] + a[2] / 2,
-    ay = a[1] + a[3] / 2;
-  const bx = b[0] + b[2] / 2,
-    by = b[1] + b[3] / 2;
+  const { sa, sb } = endsOf(a, b, ends?.from, ends?.to);
+  const [ax, ay] = sa ?? [a[0] + a[2] / 2, a[1] + a[3] / 2];
+  const [bx, by] = sb ?? [b[0] + b[2] / 2, b[1] + b[3] / 2];
   const dx = bx - ax,
     dy = by - ay;
   const len = Math.hypot(dx, dy) || 1;

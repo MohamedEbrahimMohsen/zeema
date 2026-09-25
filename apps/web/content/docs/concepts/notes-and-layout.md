@@ -20,6 +20,7 @@ The sidecar is a small JSON document stored with each version of a design.
   "version": 2,
   "nodes": { "api": [120, 80], "orders-queue": [360, 80] },
   "edges": { "api>orders-queue": 0 },
+  "ports": { "api>orders-queue": { "from": { "side": "right", "t": 0.5 } } },
   "notes": [],
   "frames": { "vpc": { "tint": "blue", "icon": "kind:api-gateway" } }
 }
@@ -29,10 +30,22 @@ The sidecar is a small JSON document stored with each version of a design.
 |---|---|
 | `nodes` | A node id to its `[x, y]` in world coordinates |
 | `edges` | An edge key to its bow: how far the arrow bends |
+| `ports` | An edge key to where its ends meet their boxes (optional; see below) |
 | `notes` | Free-text annotations |
 | `frames` | A group id to its colour and icon (see below) |
 
 An edge key is `from>to`, or `from>to#n` for the n-th parallel edge between the same pair.
+
+A **port** pins one end of an arrow to a point on its box's border instead of the point the
+line from centre to centre would cross. It is `{ "side": "top" | "right" | "bottom" | "left",
+"t": 0..1 }`, where `t` runs left to right along the top and bottom and top to bottom along the
+sides. An edge may carry a port at its `from` end, its `to` end, both or neither, and the field
+is left out when no edge has one. A ported end always leaves its box squarely: a short straight
+stub out of that side, then a curve to the other end, so a port on the far side of a box never
+sends the line back under it. On the canvas you set one by dragging a selected arrow's end
+along its own box; "Reset ends" on the arrow's menu clears it. Dragging the end onto another
+component instead is not a layout change: it reconnects the edge, which changes `from` or `to`
+in the YAML.
 
 A design with no sidecar is not a design with no picture: the deterministic layout in
 `packages/core/layout.js` places it, and every renderer uses that same implementation. The

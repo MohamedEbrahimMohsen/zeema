@@ -18,11 +18,13 @@ import {
   groupFrames,
   innermostFrameAt,
   pathOf,
+  portAt,
 } from "@zeema/core/geometry";
 import { FRAME_ICON_SHIFT, TINT, TINT_FILL_ALPHA } from "@zeema/core/render";
 import {
   anchorKey,
   anchorTarget,
+  type EdgePorts,
   type FrameStyle,
   frameIconKey,
   NOTE_MAX_TEXT,
@@ -30,6 +32,7 @@ import {
   NOTE_MIN_W,
   type Note,
   normaliseTint,
+  type Port,
 } from "@/lib/layout-sidecar";
 import { own } from "@/lib/own";
 
@@ -59,6 +62,8 @@ export type Model = {
   positions: Record<string, [number, number]>;
   sizes: Record<string, [number, number]>;
   bows: Record<string, number>;
+  /** Where an edge's ends meet their boxes, by edge key, from the sidecar. */
+  ports?: Record<string, EdgePorts>;
   notes: Note[];
   /** Group tint and icon by group id, from the sidecar. Absent means the default frame. */
   frameStyles?: Record<string, FrameStyle>;
@@ -72,12 +77,23 @@ export type Model = {
   pinnedNotes: string[];
   findings: Array<{ subject?: Subject; blocking?: boolean; severity?: string }>;
 };
+export type EdgeEnd = "from" | "to";
+// How close to its own box's border, in screen pixels, an end handle has to be let go to be read
+// as "attach here" rather than "somewhere else".
+const PORT_REACH = 12;
+
 export type Handlers = {
   onSelect?: (selection: Subject, multi: Set<string>) => void;
   onMove?: (moves: Array<{ id: string; x: number; y: number; group: string | null }>) => void;
   onConnect?: (from: string, to: string) => void;
   onBowPreview?: (key: string, value: number) => void;
   onBow?: (key: string, value: number) => void;
+  /** An end handle is being dragged along its own box: draw the edge with this port (null: none). */
+  onPortPreview?: (key: string, end: EdgeEnd, port: Port | null) => void;
+  /** An end handle was let go on its own box's border: attach that end there. */
+  onPort?: (key: string, end: EdgeEnd, port: Port) => void;
+  /** An end handle was let go on another component: move that end of the edge to it. */
+  onReconnect?: (index: number, end: EdgeEnd, nodeId: string) => void;
   labelOf?: (kind: string, ref: string | number) => string | null;
   onLabel?: (kind: string, ref: string | number, value: string) => void;
   onContext?: (target: Subject, x: number, y: number) => void;
@@ -148,6 +164,26 @@ function distanceToSegment(ax: number, ay: number, bx: number, by: number, x: nu
 function distanceToPath(points: number[][], x: number, y: number) {
   if (points.length === 2)
     return distanceToSegment(points[0][0], points[0][1], points[1][0], points[1][1], x, y);
+  if (points.length === 6) {
+    // A ported end: stub, cubic, stub (geometry.js). The stubs are segments; the cubic is sampled.
+    const [s, [x1, y1], [ax, ay], [bx, by], [x2, y2], e] = points;
+    let best = Math.min(
+      distanceToSegment(s[0], s[1], x1, y1, x, y),
+      distanceToSegment(x2, y2, e[0], e[1], x, y),
+    );
+    let px = x1;
+    let py = y1;
+    for (let i = 1; i <= 16; i++) {
+      const t = i / 16;
+      const u = 1 - t;
+      const qx = u * u * u * x1 + 3 * u * u * t * ax + 3 * u * t * t * bx + t * t * t * x2;
+      const qy = u * u * u * y1 + 3 * u * u * t * ay + 3 * u * t * t * by + t * t * t * y2;
+      best = Math.min(best, distanceToSegment(px, py, qx, qy, x, y));
+      px = qx;
+      py = qy;
+    }
+    return best;
+  }
   const [[x1, y1], [cx, cy], [x2, y2]] = points;
   let best = Number.POSITIVE_INFINITY;
   let px = x1;
@@ -197,6 +233,11 @@ export class Scene {
   private peekTimer: ReturnType<typeof setTimeout> | null = null;
   wire: any = null;
   bowDrag: any = null;
+  /** An edge's end handle being dragged: to a port on its own box, or onto another component. */
+  tip: any = null;
+  /** The selected edge's two end handles, [from, to], and which edge they belong to. */
+  endHandles: SVGCircleElement[] = [];
+  endHandlesFor: number | null = null;
   marquee: any = null;
   pan: any = null;
   editor: any = null;
@@ -778,7 +819,12 @@ export class Scene {
     const g = this.layers.edges;
     g.textContent = "";
     this.edgeEls.clear();
-    this.geom = edgeGeometry(this.model.doc, this.boxes, this.model.bows || {});
+    this.geom = edgeGeometry(
+      this.model.doc,
+      this.boxes,
+      this.model.bows || {},
+      this.model.ports || {},
+    );
     for (const e of this.geom) {
       const d = pathOf(e.points);
       const hit = el("path", { class: "edge-hit", d });
@@ -938,9 +984,10 @@ export class Scene {
     }
   }
 
-  repaintEdges(bows: Record<string, number>) {
+  repaintEdges(bows: Record<string, number>, ports = this.model.ports || {}) {
     this.model.bows = bows;
-    const geom = edgeGeometry(this.model.doc, this.boxes, bows);
+    const geom = edgeGeometry(this.model.doc, this.boxes, bows, ports);
+    this.geom = geom;
     for (const e of geom) {
       const els = this.edgeEls.get(e.i);
       if (!els) continue;
@@ -953,6 +1000,52 @@ export class Scene {
         els.label.setAttribute("text-anchor", e.labelAnchor);
       }
     }
+    this.placeEndHandles();
+  }
+
+  /**
+   * A selected edge shows a handle at each end, where the arrow meets its box. Dragging one
+   * along its own box moves where that end attaches; dragging it onto another component moves
+   * the end there. They live in the overlay, above the nodes, so a handle on a border is never
+   * under the box it sits on.
+   */
+  placeEndHandles() {
+    const sel = this.selection.type === "edge" ? (this.selection.ref as number) : null;
+    const e = sel === null ? null : (this.geom || []).find((g) => g.i === sel);
+    if (sel === null || !e) {
+      for (const h of this.endHandles) h.remove();
+      this.endHandles = [];
+      this.endHandlesFor = null;
+      return;
+    }
+    if (this.endHandlesFor !== sel || !this.endHandles.length) {
+      for (const h of this.endHandles) h.remove();
+      this.endHandles = (["from", "to"] as const).map((end) => {
+        const h = el("circle", {
+          class: "end-handle",
+          r: 4.5,
+          "data-end": end,
+        }) as SVGCircleElement;
+        h.addEventListener("pointerdown", (ev: any) => {
+          if (ev.button !== 0 || this.space) return;
+          ev.stopPropagation();
+          this.startTip(sel, end, ev);
+        });
+        this.layers.overlay.append(h);
+        return h;
+      });
+      this.endHandlesFor = sel;
+    }
+    const ends: Array<[number, number]> = [e.points[0], e.points[e.points.length - 1]];
+    this.endHandles.forEach((h, k) => {
+      const dragged = Boolean(
+        this.tip && this.tip.i === sel && this.tip.end === (k ? "to" : "from"),
+      );
+      const [x, y] = dragged && !this.tip.port && this.tip.at ? this.tip.at : ends[k];
+      h.setAttribute("cx", String(x));
+      h.setAttribute("cy", String(y));
+      h.classList.toggle("dragging", dragged);
+    });
   }
 
   renderSelection() {
@@ -975,6 +1068,7 @@ export class Scene {
         "selected",
         this.selection.type === "note" && this.selection.ref === id,
       );
+    this.placeEndHandles();
   }
 
   // ---------------------------------------------------------------- selection
@@ -1162,6 +1256,7 @@ export class Scene {
       if (this.drag) this.moveDrag(ev);
       if (this.wire) this.moveWire(ev);
       if (this.bowDrag) this.moveBow(ev);
+      if (this.tip) this.moveTip(ev);
     });
 
     const end = () => {
@@ -1174,6 +1269,7 @@ export class Scene {
       if (this.drag) this.endDrag();
       if (this.wire) this.endWire();
       if (this.bowDrag) this.endBow();
+      if (this.tip) this.finishTip();
     };
     this.on(svg, "pointerup", end);
     this.on(svg, "pointercancel", end);
@@ -1241,6 +1337,13 @@ export class Scene {
     if (this.bowDrag) {
       this.h.onBowPreview?.(this.bowDrag.key, this.bowDrag.original || 0);
       this.bowDrag = null;
+    }
+    if (this.tip) {
+      const t = this.tip;
+      this.tip = null;
+      this.clearTip(t);
+      this.h.onPortPreview?.(t.key, t.end, t.original);
+      this.placeEndHandles();
     }
     if (this.noteDrag) {
       this.noteDrag = null;
@@ -1362,7 +1465,13 @@ export class Scene {
       this.nodeEls.get(id)?.setAttribute("transform", `translate(${b[0]} ${b[1]})`);
     }
     const moving = new Set(this.drag.ids);
-    for (const e of edgeGeometry(this.model.doc, this.boxes, this.model.bows || {})) {
+    this.geom = edgeGeometry(
+      this.model.doc,
+      this.boxes,
+      this.model.bows || {},
+      this.model.ports || {},
+    );
+    for (const e of this.geom) {
       if (!moving.has(e.from) && !moving.has(e.to)) continue;
       const els = this.edgeEls.get(e.i);
       if (!els) continue;
@@ -1375,6 +1484,7 @@ export class Scene {
         els.label.setAttribute("text-anchor", e.labelAnchor);
       }
     }
+    this.placeEndHandles();
     this.repaintFrames();
     this.repaintAnchored();
   }
@@ -1477,7 +1587,8 @@ export class Scene {
 
   moveBow(ev: PointerEvent) {
     const [wx, wy] = this.toWorld(ev.clientX, ev.clientY);
-    const value = bowAt(this.boxes, this.bowDrag.from, this.bowDrag.to, wx, wy);
+    const ends = this.model.ports?.[this.bowDrag.key] ?? null;
+    const value = bowAt(this.boxes, this.bowDrag.from, this.bowDrag.to, wx, wy, ends);
     this.bowDrag.moved = true;
     this.bowDrag.value = value;
     this.h.onBowPreview?.(this.bowDrag.key, value);
@@ -1487,6 +1598,79 @@ export class Scene {
     const { key, moved, value } = this.bowDrag;
     this.bowDrag = null;
     if (moved) this.h.onBow?.(key, value);
+  }
+
+  startTip(i: number, end: EdgeEnd, ev: PointerEvent) {
+    const e = (this.geom || []).find((g) => g.i === i);
+    if (!e) return;
+    const line = el("path", { class: "wire", d: "" });
+    this.layers.overlay.append(line);
+    this.tip = {
+      i,
+      end,
+      key: e.key,
+      own: end === "from" ? e.from : e.to,
+      other: end === "from" ? e.to : e.from,
+      // The end that stays put, as it is drawn now: the preview line starts there.
+      fixed: end === "from" ? e.points[e.points.length - 1] : e.points[0],
+      original: this.model.ports?.[e.key]?.[end] ?? null,
+      line,
+      port: null,
+      target: null,
+      at: null,
+      moved: false,
+    };
+    this.capture(ev);
+  }
+
+  moveTip(ev: PointerEvent) {
+    const [wx, wy] = this.toWorld(ev.clientX, ev.clientY);
+    const t = this.tip;
+    const b = this.boxes[t.own];
+    if (!b) return;
+    t.moved = true;
+    t.at = [wx, wy];
+    // Inside its own box, or within reach of the border: the end is being placed on that box.
+    const dx = Math.max(b[0] - wx, 0, wx - (b[0] + b[2]));
+    const dy = Math.max(b[1] - wy, 0, wy - (b[1] + b[3]));
+    const near = Math.hypot(dx, dy) <= PORT_REACH / this.view.k;
+    const port: Port | null = near ? (portAt(b, wx, wy) as Port) : null;
+    const target = near ? null : this.nodeAt(wx, wy, t.other);
+    const samePort =
+      (port === null && t.port === null) ||
+      (port !== null && t.port !== null && port.side === t.port.side && port.t === t.port.t);
+    t.port = port;
+    if (!samePort) this.h.onPortPreview?.(t.key, t.end, port ?? t.original);
+    this.nodeEls.get(t.own)?.classList.toggle("port-target", Boolean(port));
+    if (target !== t.target) {
+      if (t.target) this.nodeEls.get(t.target)?.classList.remove("wire-target");
+      if (target) this.nodeEls.get(target)?.classList.add("wire-target");
+      t.target = target;
+    }
+    if (port) t.line.setAttribute("d", "");
+    else t.line.setAttribute("d", `M${t.fixed[0]} ${t.fixed[1]} L${wx} ${wy}`);
+    t.line.classList.toggle("live", Boolean(target));
+    this.placeEndHandles();
+  }
+
+  clearTip(t: any) {
+    t.line.remove();
+    this.nodeEls.get(t.own)?.classList.remove("port-target");
+    if (t.target) this.nodeEls.get(t.target)?.classList.remove("wire-target");
+  }
+
+  finishTip() {
+    const t = this.tip;
+    this.tip = null;
+    this.clearTip(t);
+    const unchanged =
+      t.port && t.original && t.port.side === t.original.side && t.port.t === t.original.t;
+    if (t.moved && t.port && !unchanged) this.h.onPort?.(t.key, t.end, t.port);
+    else {
+      if (t.moved) this.h.onPortPreview?.(t.key, t.end, t.original);
+      if (t.moved && t.target) this.h.onReconnect?.(t.i, t.end, t.target);
+    }
+    this.placeEndHandles();
   }
 
   startWire(from: string, ev: PointerEvent) {
@@ -1691,7 +1875,7 @@ export class Scene {
       if (layer) layer.textContent = "";
     }
     for (const n of clone.querySelectorAll(
-      ".handle, .edge-hit, .frame-hit, .marquee, .wire, .note-grip, .note-grip-hit, .note-text.empty, .frame-label:empty, .layer-note-markers",
+      ".handle, .end-handle, .edge-hit, .frame-hit, .marquee, .wire, .note-grip, .note-grip-hit, .note-text.empty, .frame-label:empty, .layer-note-markers",
     ))
       n.remove();
     for (const n of clone.querySelectorAll(".selected, .primary"))
