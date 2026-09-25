@@ -288,6 +288,49 @@ export function groupFrames(doc, boxes) {
   return frames;
 }
 
+// The order boundaries are painted in: the document's order, except that a parent always comes
+// before its children, so a nested boundary is drawn over the one that contains it. A document
+// that already lists parents first comes back unchanged. A parent chain that loops or names a
+// missing group simply stops there.
+export function framesOuterFirst(groups) {
+  const list = groups || [];
+  const byId = new Map(list.map((g) => [g.id, g]));
+  const out = [];
+  const placed = new Set();
+  const place = (g, path) => {
+    if (placed.has(g.id) || path.has(g.id)) return;
+    path.add(g.id);
+    const parent = g.parent != null ? byId.get(g.parent) : undefined;
+    if (parent) place(parent, path);
+    placed.add(g.id);
+    out.push(g);
+  };
+  for (const g of list) place(g, new Set());
+  return out;
+}
+
+// The boundaries that sit inside a tinted one. A tint fills only its own boundary's area, so each
+// of these paints the page background behind itself first: an untinted child reads as plain
+// page, a tinted child shows its own tint over the page rather than over its parent's.
+export function framesUnderTint(groups, isTinted) {
+  const list = groups || [];
+  const byId = new Map(list.map((g) => [g.id, g]));
+  const out = new Set();
+  for (const g of list) {
+    const seen = new Set([g.id]);
+    let p = g.parent != null ? byId.get(g.parent) : undefined;
+    while (p && !seen.has(p.id)) {
+      if (isTinted(p.id)) {
+        out.add(g.id);
+        break;
+      }
+      seen.add(p.id);
+      p = p.parent != null ? byId.get(p.parent) : undefined;
+    }
+  }
+  return out;
+}
+
 // Which group frame contains a point, innermost first. Membership changes on drop use this, and
 // only this, so a drag can never re-parent a node by accident mid-move.
 export function innermostFrameAt(frames, x, y) {

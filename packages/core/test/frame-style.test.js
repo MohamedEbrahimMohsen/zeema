@@ -6,7 +6,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { drawnLayout } from "../src/drawn.js";
-import { FRAME_ICON_SHIFT, frameIconKey, TINT, toSvg } from "../src/render.js";
+import { framesOuterFirst, framesUnderTint } from "../src/geometry.js";
+import { FRAME_ICON_SHIFT, frameIconKey, TINT, TINT_FILL_ALPHA, toSvg } from "../src/render.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const catalogue = JSON.parse(fs.readFileSync(path.join(here, "catalogue.json"), "utf8"));
@@ -99,21 +100,45 @@ describe("boundary tint and icon", () => {
     expect(missing).toBe(plain);
   });
 
-  it("ignores a tint outside the set and a malformed icon reference", () => {
+  it("ignores a tint that is neither named nor #rrggbb, and a malformed icon reference", () => {
     const plain = toSvg(doc, catalogue, { layout: { nodes, edges: {} }, theme: "light" });
     const hostile = toSvg(doc, catalogue, {
       layout: {
         nodes,
         edges: {},
-        frames: { vpc: { tint: "#ff0000", icon: "component:../../x" } },
+        frames: { vpc: { tint: "#f00", icon: "component:../../x" } },
       },
       theme: "light",
       frameIcons: { "component:../../x": "<script/>" },
       icons: { x: "<script/>" },
     });
     expect(hostile).toBe(plain);
+    for (const tint of ["#ff000080", "red", "rgb(255,0,0)", '#ff0000"/><script/>', "Blue"])
+      expect(
+        toSvg(doc, catalogue, {
+          layout: { nodes, edges: {}, frames: { vpc: { tint } } },
+          theme: "light",
+        }),
+      ).toBe(plain);
     expect(frameIconKey("component:../../x")).toBeNull();
     expect(frameIconKey("component:aws/aws-lambda")).toBe("aws-lambda");
+  });
+
+  it("draws a #rrggbb tint inline, lowercased, with the named tints' fill alpha", () => {
+    const svg = toSvg(doc, catalogue, {
+      layout: { nodes, edges: {}, frames: { vpc: { tint: "#FF6600" } } },
+      theme: "light",
+    });
+    expect(svg).toContain(
+      `<rect data-tint="hex" style="stroke:#ff6600;fill:#ff6600${TINT_FILL_ALPHA}" x=`,
+    );
+    expect(TINT_FILL_ALPHA).toBe("14");
+    // the same bytes in both themes: a free colour is not re-picked for the dark one
+    const dark = toSvg(doc, catalogue, {
+      layout: { nodes, edges: {}, frames: { vpc: { tint: "#ff6600" } } },
+      theme: "dark",
+    });
+    expect(dark).toContain('style="stroke:#ff6600;fill:#ff660014"');
   });
 
   it("passes the sidecar's styles through the as-drawn layout", () => {
@@ -124,5 +149,118 @@ describe("boundary tint and icon", () => {
     });
     expect(lay.frameStyles).toEqual({ vpc: { tint: "teal" } });
     expect(drawnLayout(doc, catalogue, { nodes, edges: {}, frames: [1] }).frameStyles).toEqual({});
+  });
+});
+
+// A tint fills its own boundary and nothing nested in it (draw.io's reading): a boundary inside a
+// tinted one lays the page background down first, so its inside is page again, and a tinted
+// child shows its own tint over the page rather than over its parent's.
+describe("a tint inside a nested boundary", () => {
+  const nested = {
+    id: "nested",
+    nodes: [
+      { id: "web", component: "container-service", group: "aks" },
+      { id: "db", component: "container-service", group: "cloud" },
+    ],
+    edges: [{ from: "web", to: "db", protocol: "https", mode: "sync" }],
+    groups: [
+      { id: "cloud", kind: "vpc", label: "Cloud" },
+      { id: "aks", kind: "vpc", label: "AKS", parent: "cloud" },
+    ],
+  };
+  const at = { web: [0, 0], db: [400, 0] };
+  const rectOf = (f) =>
+    `x="${f[0].toFixed(1)}" y="${f[1].toFixed(1)}" width="${f[2].toFixed(1)}" height="${f[3].toFixed(1)}" rx="10"`;
+  const cutAt = (f) => `<rect ${rectOf(f)} fill="var(--bg)"/>`;
+  const render = (frames) =>
+    toSvg(nested, catalogue, { layout: { nodes: at, edges: {}, frames }, theme: "light" });
+  const framesOf = (frames) =>
+    drawnLayout(nested, catalogue, { nodes: at, edges: {}, frames }).frames;
+
+  it("gives an untinted child of a tinted parent the page background behind it", () => {
+    const f = framesOf({ cloud: { tint: "blue" } });
+    const svg = render({ cloud: { tint: "blue" } });
+    expect(svg).toContain(cutAt(f.aks));
+    expect(svg).not.toContain(cutAt(f.cloud));
+    // parent's tint, then the child's background, then the child's own dashed frame
+    const parent = svg.indexOf(`<rect data-tint="blue" ${rectOf(f.cloud)}`);
+    const cut = svg.indexOf(cutAt(f.aks));
+    const child = svg.indexOf(`<rect ${rectOf(f.aks)} fill="none"`);
+    expect(parent).toBeGreaterThan(-1);
+    expect(cut).toBeGreaterThan(parent);
+    expect(child).toBeGreaterThan(cut);
+  });
+
+  it("gives a tinted child of a tinted parent the page background under its own tint", () => {
+    const f = framesOf({ cloud: { tint: "blue" }, aks: { tint: "green" } });
+    const svg = render({ cloud: { tint: "blue" }, aks: { tint: "green" } });
+    const cut = svg.indexOf(cutAt(f.aks));
+    expect(cut).toBeGreaterThan(svg.indexOf(`<rect data-tint="blue" ${rectOf(f.cloud)}`));
+    expect(svg.indexOf(`<rect data-tint="green" ${rectOf(f.aks)}`)).toBeGreaterThan(cut);
+  });
+
+  it("leaves an untinted parent of a tinted child unfilled", () => {
+    const f = framesOf({ aks: { tint: "rose" } });
+    const svg = render({ aks: { tint: "rose" } });
+    expect(svg).toContain(`<rect ${rectOf(f.cloud)} fill="none"`);
+    expect(svg).not.toContain('rx="10" fill="var(--bg)"');
+    expect(svg).toContain(`<rect data-tint="rose" ${rectOf(f.aks)}`);
+  });
+
+  it("cuts under a hex-tinted parent exactly as under a named one", () => {
+    const f = framesOf({ cloud: { tint: "#ff6600" } });
+    const svg = render({ cloud: { tint: "#ff6600" } });
+    const parent = svg.indexOf(
+      `<rect data-tint="hex" style="stroke:#ff6600;fill:#ff660014" ${rectOf(f.cloud)}`,
+    );
+    const cut = svg.indexOf(cutAt(f.aks));
+    expect(parent).toBeGreaterThan(-1);
+    expect(cut).toBeGreaterThan(parent);
+    expect(svg).not.toContain(cutAt(f.cloud));
+  });
+
+  it("cuts nothing when nothing is tinted", () => {
+    expect(render(undefined)).not.toContain('rx="10" fill="var(--bg)"');
+  });
+
+  it("paints a parent before its child even when the document lists the child first", () => {
+    const flipped = { ...nested, groups: [...nested.groups].reverse() };
+    expect(framesOuterFirst(flipped.groups).map((g) => g.id)).toEqual(["cloud", "aks"]);
+    expect(framesOuterFirst(nested.groups)).toEqual(nested.groups);
+    const svg = toSvg(flipped, catalogue, {
+      layout: { nodes: at, edges: {}, frames: { cloud: { tint: "blue" } } },
+      theme: "light",
+    });
+    const f = framesOf({ cloud: { tint: "blue" } });
+    expect(svg.indexOf(cutAt(f.aks))).toBeGreaterThan(
+      svg.indexOf(`<rect data-tint="blue" ${rectOf(f.cloud)}`),
+    );
+  });
+
+  it("finds every boundary below a tint, at any depth, and survives a parent loop", () => {
+    const groups = [
+      { id: "a" },
+      { id: "b", parent: "a" },
+      { id: "c", parent: "b" },
+      { id: "x", parent: "y" },
+      { id: "y", parent: "x" },
+    ];
+    expect([...framesUnderTint(groups, (id) => id === "a")].sort()).toEqual(["b", "c"]);
+    expect([...framesUnderTint(groups, () => false)]).toEqual([]);
+    expect(framesOuterFirst(groups).map((g) => g.id)).toEqual(["a", "b", "c", "y", "x"]);
+  });
+});
+
+describe("arrowheads", () => {
+  it("are a filled triangle in the edge colour, tip on the end of the path", () => {
+    const svg = toSvg(doc, catalogue, { layout: { nodes, edges: {} }, theme: "light" });
+    expect(svg).toContain(
+      '<marker id="a" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--edge)"/></marker>',
+    );
+    expect(svg).toMatch(/stroke="var\(--edge\)" stroke-width="1.2"[^>]*marker-end="url\(#a\)"/);
+    expect(svg).toContain("--edge:#6b6b72");
+    expect(toSvg(doc, catalogue, { layout: { nodes, edges: {} }, theme: "dark" })).toContain(
+      "--edge:#a0a0a8",
+    );
   });
 });

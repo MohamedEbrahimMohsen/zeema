@@ -257,10 +257,10 @@
   stroke-width: 1;
   stroke-dasharray: 5 4;
 }
-/* boundary tints — named, never free colours. The --tint-* tokens live in globals.css (light and
-   dark), shared with the design page preview; the exported SVG carries the same values from TINT
-   in packages/core/src/render.js. A tint is a stroke plus the same colour at ~8% as a fill, light
-   enough that nested boundaries stay readable. */
+/* boundary tints — a named one, or a free #rrggbb. The named --tint-* tokens live in globals.css
+   (light and dark), shared with the design page preview; the exported SVG carries the same values
+   from TINT in packages/core/src/render.js. A tint is a stroke plus the same colour at ~8% as a
+   fill, light enough that nested boundaries stay readable. */
 .zeema-canvas .frame[data-tint="slate"] {
   stroke: var(--tint-slate);
   fill: var(--tint-slate-fill);
@@ -289,10 +289,24 @@
   stroke: var(--tint-teal);
   fill: var(--tint-teal-fill);
 }
+/* a hex tint: scene.ts sets --tint-hex and --tint-hex-fill on the rect itself. The same colour in
+   both themes, which is the trade-off of a free colour. */
+.zeema-canvas .frame[data-tint="hex"] {
+  stroke: var(--tint-hex);
+  fill: var(--tint-hex-fill);
+}
 /* a tinted fill must not make the inside of a boundary catch the pointer: it behaves exactly
    like an untinted one, where only the stroke is live */
 .zeema-canvas .frame[data-tint] {
   pointer-events: stroke;
+}
+/* a boundary inside a tinted one lays the page background down first (the rect under its own,
+   drawn only for those), so a tint fills its own boundary and nothing nested in it. It is paint
+   only: the pointer goes through it exactly as it goes through an untinted boundary. */
+.zeema-canvas .frame-under {
+  fill: var(--bg);
+  stroke: none;
+  pointer-events: none;
 }
 /* the icon a boundary may carry before its name */
 .zeema-canvas .frame-icon {
@@ -330,7 +344,7 @@
 
 /* edges — dashed is asynchronous, solid is a call */
 .zeema-canvas .edge {
-  stroke: var(--muted);
+  stroke: var(--edge);
   stroke-width: 1.2;
   fill: none;
   /* The hit path under it takes the pointer. Drawn on top of its own hit, the visible stroke
@@ -343,6 +357,8 @@
 .zeema-canvas .edge.selected {
   stroke: var(--accent);
   stroke-width: 2;
+  /* a marker cannot inherit the stroke of the path it sits on, so the accent head is its own */
+  marker-end: url(#arrowhead-sel);
 }
 .zeema-canvas .edge-hit {
   stroke: transparent;
@@ -653,7 +669,7 @@
   outline: none;
   box-shadow: var(--ring-focus);
 }
-/* boundary colour: one swatch per named tint, and "none" */
+/* boundary colour: "none", one swatch per named tint, then "More colours" */
 .zeema-canvas .swatches {
   display: flex;
   flex-wrap: wrap;
@@ -684,6 +700,130 @@
 .zeema-canvas .swatch:focus-visible {
   outline: none;
   box-shadow: var(--ring-focus);
+}
+/* "More colours": a rainbow swatch until a hex is set, then that hex with a rainbow ring */
+.zeema-canvas .swatch-more {
+  position: relative;
+  background: conic-gradient(
+    from 90deg,
+    #ef4444,
+    #f97316,
+    #eab308,
+    #22c55e,
+    #14b8a6,
+    #3b82f6,
+    #8b5cf6,
+    #ec4899,
+    #ef4444
+  );
+}
+.zeema-canvas .swatch-more.has-hex {
+  isolation: isolate;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.zeema-canvas .swatch-more.has-hex::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  z-index: -1;
+  border-radius: inherit;
+  background: conic-gradient(
+    from 90deg,
+    #ef4444,
+    #f97316,
+    #eab308,
+    #22c55e,
+    #14b8a6,
+    #3b82f6,
+    #8b5cf6,
+    #ec4899,
+    #ef4444
+  );
+}
+/* the popover: palette, recent colours, then the hex row with the system picker */
+.zeema-canvas .tint-field {
+  position: relative;
+  min-width: 0;
+}
+.zeema-canvas .tint-popover {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 20;
+  display: grid;
+  gap: 6px;
+  padding: var(--sp-1);
+  background: var(--panel);
+  color: var(--ink);
+  border: var(--border) solid var(--line);
+  border-radius: var(--rp);
+  box-shadow: var(--shadow-float);
+}
+.zeema-canvas .tint-grid {
+  display: grid;
+  gap: 4px;
+}
+.zeema-canvas .tint-cell {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: var(--border) solid color-mix(in srgb, var(--ink) 18%, transparent);
+  border-radius: var(--rc);
+  cursor: pointer;
+}
+.zeema-canvas .tint-cell:hover {
+  transform: scale(1.12);
+}
+.zeema-canvas .tint-cell[aria-pressed="true"] {
+  box-shadow:
+    0 0 0 2px var(--panel),
+    0 0 0 4px var(--accent);
+}
+.zeema-canvas .tint-cell:focus-visible {
+  outline: none;
+  box-shadow: var(--ring-focus);
+}
+.zeema-canvas .tint-heading {
+  color: var(--muted);
+  font-size: var(--fs-micro);
+  margin-top: 2px;
+}
+.zeema-canvas .tint-hex {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+.zeema-canvas .tint-hex .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+.zeema-canvas .tint-pick-chip {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--r-round);
+  border: var(--border) solid var(--line);
+}
+/* the system picker: kept in the page so .click() opens it, but not drawn */
+.zeema-canvas .field .tint-native {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+  right: var(--sp-1);
+  bottom: var(--sp-1);
+}
+.zeema-canvas .field .swatch-hex-text {
+  width: calc(7ch + 12px);
+  padding: 1px 4px;
+  font-family: var(--mono);
+  font-size: 0.85em;
 }
 /* boundary icon: what it is now, and a small search-and-pick list */
 .zeema-canvas .icon-field {

@@ -522,13 +522,16 @@ describe("security review fixes", () => {
       nodes: {},
       frames: {
         vpc: { tint: "blue", icon: "kind:api-gateway" },
-        edge: { tint: "#ff0000", icon: "component:../../x" },
+        edge: { tint: "#f00", icon: "component:../../x" },
         cell: { icon: "component:aws/aws-lambda", junk: 1 },
+        zone: { tint: "#FF0000" },
+        dmz: { tint: "rgb(255,0,0)" },
       },
     }) as { frames: Record<string, unknown> };
     expect(s.frames).toEqual({
       vpc: { tint: "blue", icon: "kind:api-gateway" },
       cell: { icon: "component:aws/aws-lambda" },
+      zone: { tint: "#ff0000" },
     });
   });
 

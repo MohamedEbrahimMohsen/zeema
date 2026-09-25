@@ -6,21 +6,30 @@
 // Pointer conventions follow draw.io and Excalidraw: left drag on empty space sweeps a selection
 // box, the middle button pans, space turns the left button into the hand, shift adds to the
 // selection, double click edits a label in place, the right button opens a menu about whatever is
-// under it.
+// under it. The wheel scrolls (shift scrolls sideways); ctrl, meta, alt or a pinch zooms around the
+// pointer.
 
 import { displayName } from "@zeema/core/document";
-import { bowAt, edgeGeometry, groupFrames, innermostFrameAt, pathOf } from "@zeema/core/geometry";
-import { FRAME_ICON_SHIFT, TINT } from "@zeema/core/render";
+import {
+  bowAt,
+  edgeGeometry,
+  framesOuterFirst,
+  framesUnderTint,
+  groupFrames,
+  innermostFrameAt,
+  pathOf,
+} from "@zeema/core/geometry";
+import { FRAME_ICON_SHIFT, TINT, TINT_FILL_ALPHA } from "@zeema/core/render";
 import {
   anchorKey,
   anchorTarget,
   type FrameStyle,
   frameIconKey,
-  isTint,
   NOTE_MAX_TEXT,
   NOTE_MIN_H,
   NOTE_MIN_W,
   type Note,
+  normaliseTint,
 } from "@/lib/layout-sidecar";
 import { own } from "@/lib/own";
 
@@ -47,6 +56,8 @@ const CATEGORY_HUE: Record<string, string> = {
 // A boundary icon is 16px, top-aligned with the label, which it pushes FRAME_ICON_SHIFT right.
 // The same numbers as the exported SVG (@zeema/core/render), so the two cannot disagree.
 const FRAME_ICON = 16;
+// The markers this scene installs in the <defs>: the edge head, and the accent one a selected edge uses.
+const ARROWHEADS = ["arrowhead", "arrowhead-sel"];
 const FRAME_ICON_DY = 7;
 
 export type Box = [number, number, number, number];
@@ -233,27 +244,35 @@ export class Scene {
     this.closeEditor();
     for (const c of this.cleanups) c();
     this.cleanups = [];
-    // The marker layer and the arrowhead are the two things this scene added to a DOM it does
+    // The marker layer and the arrowheads are the things this scene added to a DOM it does
     // not own. They go with it, or the next Scene on the same <svg> inherits a stale layer and
     // a second element with the same id.
     this.layers.markers.remove();
-    this.defs.querySelector("#arrowhead")?.remove();
+    for (const id of ARROWHEADS) this.defs.querySelector(`#${id}`)?.remove();
   }
 
+  // A filled head whose tip lands on the end of the path (refX is the tip), as render.js draws
+  // it. A marker cannot take the stroke of the path it sits on, so the selected edge's accent
+  // head is a marker of its own; at the selected stroke width it is drawn a little smaller so
+  // the head grows less than the line does.
   installArrowhead() {
-    this.defs.querySelector("#arrowhead")?.remove();
-    const m = el("marker", {
-      id: "arrowhead",
-      viewBox: "0 0 10 10",
-      refX: 9,
-      refY: 5,
-      markerWidth: 6,
-      markerHeight: 6,
-      orient: "auto",
-    });
-    m.innerHTML =
-      '<path d="M1 1L9 5L1 9" fill="none" stroke="var(--line)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>';
-    this.defs.append(m);
+    for (const [id, size, colour] of [
+      ["arrowhead", 8, "var(--edge)"],
+      ["arrowhead-sel", 6, "var(--accent)"],
+    ] as const) {
+      this.defs.querySelector(`#${id}`)?.remove();
+      const m = el("marker", {
+        id,
+        viewBox: "0 0 10 10",
+        refX: 10,
+        refY: 5,
+        markerWidth: size,
+        markerHeight: size,
+        orient: "auto",
+      });
+      m.innerHTML = `<path d="M0 0L10 5L0 10z" fill="${colour}"/>`;
+      this.defs.append(m);
+    }
   }
 
   // ---------------------------------------------------------------- view
@@ -688,10 +707,32 @@ export class Scene {
     const g = this.layers.frames;
     g.textContent = "";
     this.frameEls.clear();
-    for (const group of this.model.doc.groups || []) {
+    const styles = this.model.frameStyles ?? {};
+    const tintOf = (id: string) => normaliseTint((own(styles, id) as FrameStyle | undefined)?.tint);
+    // Outer boundaries first, so a nested one paints over its parent; every boundary inside a
+    // tinted one lays the page background down first, so a tint fills its own area only. The
+    // server render (render.js) does the same with the same two helpers.
+    const groups = this.model.doc.groups || [];
+    const cut = framesUnderTint(groups, (id: string) => tintOf(id) !== null);
+    for (const group of framesOuterFirst(groups)) {
       const f = this.frames[group.id];
       if (!f) continue;
-      const style = own(this.model.frameStyles ?? {}, group.id) as FrameStyle | undefined;
+      const style = own(styles, group.id) as FrameStyle | undefined;
+      const under = cut.has(group.id)
+        ? el("rect", {
+            class: "frame-under",
+            x: f[0],
+            y: f[1],
+            width: f[2],
+            height: f[3],
+            rx: 10,
+          })
+        : null;
+      // A named tint is a token canvas.css resolves per theme. A hex tint says "hex" and hands
+      // its colour over as two custom properties, so the same rules (selection, pointer, the
+      // cut) apply to it and the fill carries the named tints' alpha (TINT_FILL_ALPHA).
+      const tint = tintOf(group.id);
+      const hex = tint?.startsWith("#") ? tint : null;
       const rect = el("rect", {
         class: "frame",
         x: f[0],
@@ -699,7 +740,8 @@ export class Scene {
         width: f[2],
         height: f[3],
         rx: 10,
-        "data-tint": isTint(style?.tint) ? style.tint : null,
+        "data-tint": hex ? "hex" : tint,
+        style: hex ? `--tint-hex:${hex};--tint-hex-fill:${hex}${TINT_FILL_ALPHA}` : null,
       });
       const hit = el("rect", {
         class: "frame-hit",
@@ -736,12 +778,12 @@ export class Scene {
       for (const target of [hit, label, tag, icon]) {
         target?.addEventListener("pointerdown", (ev: any) => this.startGroupDrag(group.id, ev));
       }
-      g.append(rect, hit, ...(icon ? [icon] : []), label, tag);
+      g.append(...(under ? [under] : []), rect, hit, ...(icon ? [icon] : []), label, tag);
       // The tag sits just past the name. Measured once here, because the name does not change
       // while the frame is being dragged — only where the frame is.
       const tagDx = labelDx + (name ? textWidth(label, name.length * 6.2) + 8 : 0);
       tag.setAttribute("x", String(f[0] + tagDx));
-      this.frameEls.set(group.id, { rect, hit, icon, label, tag, labelDx, tagDx });
+      this.frameEls.set(group.id, { under, rect, hit, icon, label, tag, labelDx, tagDx });
     }
   }
 
@@ -1024,17 +1066,38 @@ export class Scene {
       svg.classList.remove("hand");
     });
 
+    // The wheel follows draw.io: a plain wheel or a two-finger swipe scrolls the view, shift turns
+    // a vertical wheel sideways, and only a zoom modifier (ctrl, meta, alt, or space held) zooms.
+    // A touchpad pinch arrives as a wheel event with ctrlKey set, so it zooms through the same
+    // rule. The page itself never scrolls or zooms under the canvas.
     this.on(
       svg,
       "wheel",
       (ev) => {
         ev.preventDefault();
-        const [wx, wy] = this.toWorld(ev.clientX, ev.clientY);
-        const k = Math.min(3, Math.max(0.15, this.view.k * (ev.deltaY < 0 ? 1.1 : 1 / 1.1)));
         const r = svg.getBoundingClientRect();
-        this.view.k = k;
-        this.view.x = ev.clientX - r.left - wx * k;
-        this.view.y = ev.clientY - r.top - wy * k;
+        // deltaMode: 0 pixels, 1 lines, 2 pages.
+        const unit = ev.deltaMode === 1 ? 16 : ev.deltaMode === 2 ? r.height : 1;
+        let dx = ev.deltaX * unit;
+        let dy = ev.deltaY * unit;
+        if (ev.ctrlKey || ev.metaKey || ev.altKey || this.space) {
+          // Exponential zoom so a pinch is continuous. A mouse notch (|deltaY| about 100 px)
+          // at 0.002 gives exp(0.2) ≈ 1.22, draw.io's 1.2 step. A pinch sends small pixel
+          // deltas with ctrlKey, so those get 0.01 per pixel to feel as quick as the gesture.
+          const pinch = ev.ctrlKey && ev.deltaMode === 0 && Math.abs(dy) < 50;
+          const [wx, wy] = this.toWorld(ev.clientX, ev.clientY);
+          const k = Math.min(
+            3,
+            Math.max(0.15, this.view.k * Math.exp(-dy * (pinch ? 0.01 : 0.002))),
+          );
+          this.view.k = k;
+          this.view.x = ev.clientX - r.left - wx * k;
+          this.view.y = ev.clientY - r.top - wy * k;
+        } else {
+          if (ev.shiftKey && dx === 0) [dx, dy] = [dy, 0];
+          this.view.x -= dx;
+          this.view.y -= dy;
+        }
         this.applyView();
       },
       { passive: false },
@@ -1359,7 +1422,8 @@ export class Scene {
     for (const [id, els] of this.frameEls) {
       const f = frames[id];
       if (!f) continue;
-      for (const r of [els.rect, els.hit]) {
+      for (const r of [els.under, els.rect, els.hit]) {
+        if (!r) continue;
         r.setAttribute("x", f[0]);
         r.setAttribute("y", f[1]);
         r.setAttribute("width", f[2]);
@@ -1649,17 +1713,24 @@ export class Scene {
       n.remove();
     for (const n of clone.querySelectorAll(".selected, .primary"))
       n.classList.remove("selected", "primary");
+    // A hex tint leaves as plain colours, the way the server render writes it: a file that
+    // leaves the page must not depend on a custom property only the canvas sets.
+    for (const n of clone.querySelectorAll<SVGElement>('.frame[data-tint="hex"]')) {
+      const c = n.style.getPropertyValue("--tint-hex").trim();
+      n.setAttribute("style", c ? `stroke:${c};fill:${c}${TINT_FILL_ALPHA}` : "");
+    }
     const defs = this.defs.cloneNode(true) as SVGDefsElement;
     const style = `<style>${[
       ".frame{fill:none;stroke:var(--frame);stroke-width:1;stroke-dasharray:5 4}",
       ".frame-label{font-size:11px;font-family:var(--mono);fill:var(--muted)}",
       ".frame-kind{font-size:10px;font-family:var(--mono);fill:var(--muted);opacity:0.75}",
       ".frame-icon{color:var(--muted)}",
-      // Tints are named, never free colours; the tokens resolve to this page's theme below.
+      ".frame-under{fill:var(--bg);stroke:none}",
+      // Named tints are tokens that resolve to this page's theme below; a hex tint is inline.
       ...Object.keys(TINT).map(
         (k) => `.frame[data-tint="${k}"]{stroke:var(--tint-${k});fill:var(--tint-${k}-fill)}`,
       ),
-      ".edge{stroke:var(--line);stroke-width:1.2;fill:none}",
+      ".edge{stroke:var(--edge);stroke-width:1.2;fill:none}",
       ".edge.async{stroke-dasharray:6 4}",
       ".edge-label{font-size:12px;fill:var(--muted);paint-order:stroke;stroke:var(--bg);stroke-width:3px}",
       ".node-box text.name{font-size:14px;font-weight:500;fill:var(--ink)}",

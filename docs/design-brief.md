@@ -305,7 +305,9 @@ kind:queue." The icon is the point of the row — make it larger than 20 px if t
 - **Boundary / group frame**: a dashed rounded rectangle (`--frame` colour) computed from its
   members, with the label at the top-left (`label` or `id (kind)`); nested boundaries nest
   visually (region ▸ availability-zone ▸ vpc). Selected → accent dashed. Cursor: move on the
-  border and label (the whole group drags).
+  border and label (the whole group drags). A boundary may carry a tint from the layout sidecar:
+  one of the named set (a light and a dark value each) or a `#rrggbb` colour, which is used as it
+  is in both themes. Either one strokes the frame and fills it with the same colour at about 8%.
 - **Wiring handle**: a small circle on a selected node; drag it to another node to create an
   edge; a live dashed wire follows the pointer.
 - **Marquee**: accent-tinted rectangle when dragging on empty space.

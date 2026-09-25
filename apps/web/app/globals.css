@@ -16,6 +16,9 @@
   --line: #e4e4df;
   --line-soft: #e4e4df;
   --frame: #b4b4ae;
+  /* arrows on a drawing: darker than --line, which is a UI border and all but vanishes as a
+     1px stroke. The render engine carries the same values in its own theme variables. */
+  --edge: #6b6b72;
 
   /* accent — --accent is the text/line blue and lightens in dark so it stays readable there;
      --accent-solid is the brand blue for filled surfaces, identical in both themes, because
@@ -130,6 +133,7 @@
   --line: #2c2c31;
   --line-soft: #2c2c31;
   --frame: #55555c;
+  --edge: #a0a0a8;
   --accent: #98a6f2;
   --accent-ink: #0f1526;
   --accent-solid: #3f4fc4;

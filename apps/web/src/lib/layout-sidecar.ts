@@ -50,14 +50,28 @@ export const NOTE_ANCHOR_W = 148;
 export const NOTE_ANCHOR_H = 66;
 
 /**
- * The named tints a boundary may carry. A closed set, never a free colour: the canvas and the
- * exported SVG each hold one token per tint (light and dark), so a tint always reads in both
- * themes and a hand-edited sidecar cannot smuggle a colour in.
+ * The named tints a boundary may carry. The canvas and the exported SVG each hold one token per
+ * named tint (light and dark), so a named tint always reads in both themes.
  */
 export const TINTS = ["slate", "blue", "green", "amber", "rose", "violet", "teal"] as const;
 export type Tint = (typeof TINTS)[number];
 export const isTint = (v: unknown): v is Tint =>
   typeof v === "string" && (TINTS as readonly string[]).includes(v);
+
+/**
+ * A free tint: `#rrggbb`, six hex digits and nothing else, so a hand-edited sidecar can carry a
+ * colour and never CSS (`#rgb`, an alpha byte, `rgb()`, names and anything longer are refused).
+ * It is used as it is in both themes: that is the trade-off of a free colour. HEX_TINT_RE in
+ * packages/core/src/render.js says the same.
+ */
+export type HexTint = `#${string}`;
+const HEX_TINT_RE = /^#[0-9a-fA-F]{6}$/;
+export const isHexTint = (v: unknown): v is HexTint => typeof v === "string" && HEX_TINT_RE.test(v);
+/** Either kind of tint. A hex one should go through `normaliseTint` before it is stored. */
+export const isAnyTint = (v: unknown): v is Tint | HexTint => isTint(v) || isHexTint(v);
+/** A tint as it is stored: a named one as it is, a hex one lowercased; anything else is null. */
+export const normaliseTint = (v: unknown): Tint | HexTint | null =>
+  isTint(v) ? v : isHexTint(v) ? (v.toLowerCase() as HexTint) : null;
 
 /**
  * An icon drawn before a boundary's label, by reference and never by bytes:
@@ -79,7 +93,7 @@ export function frameIconKey(ref: string | undefined | null) {
 }
 
 /** How a boundary is drawn: presentation only, so it lives here and never in the YAML. */
-export type FrameStyle = { tint?: Tint; icon?: string };
+export type FrameStyle = { tint?: Tint | HexTint; icon?: string };
 export const FRAME_MAX_STYLES = 500;
 const GROUP_ID_RE = /^[a-z][a-z0-9-]*$/;
 
@@ -179,9 +193,10 @@ export function readSidecar(raw: unknown, targets?: AnchorTargets): LayoutSideca
 }
 
 /**
- * The boundary styles a sidecar holds. A tint outside the named set or an icon reference of the
- * wrong shape is dropped, and an entry left with nothing in it goes with it. With targets, a
- * style for a boundary the design no longer has is dropped too, the way a stale anchor is.
+ * The boundary styles a sidecar holds. A tint that is neither a named one nor `#rrggbb` (kept,
+ * lowercased), or an icon reference of the wrong shape, is dropped, and an entry left with
+ * nothing in it goes with it. With targets, a style for a boundary the design no longer has is
+ * dropped too, the way a stale anchor is.
  */
 export function readFrames(
   raw: unknown,
@@ -198,7 +213,8 @@ export function readFrames(
     if (!v || typeof v !== "object") continue;
     const r = v as Record<string, unknown>;
     const style: FrameStyle = {};
-    if (isTint(r.tint)) style.tint = r.tint;
+    const tint = normaliseTint(r.tint);
+    if (tint) style.tint = tint;
     if (isFrameIcon(r.icon)) style.icon = r.icon;
     if (!style.tint && !style.icon) continue;
     out[id] = style;

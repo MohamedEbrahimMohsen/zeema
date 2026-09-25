@@ -5,7 +5,9 @@ import { describe, expect, it } from "vitest";
 import {
   FRAME_MAX_STYLES,
   frameIconKey,
+  isAnyTint,
   isFrameIcon,
+  isHexTint,
   isTint,
   NOTE_DEFAULT_H,
   NOTE_DEFAULT_W,
@@ -17,6 +19,7 @@ import {
   NOTE_MIN_W,
   type Note,
   nextNoteId,
+  normaliseTint,
   pruneAnchored,
   pruneFrames,
   readSidecar,
@@ -194,12 +197,34 @@ describe("boundary styles", () => {
     });
   });
 
+  it("keeps a #rrggbb tint, lowercased, beside the named ones", () => {
+    const s = readSidecar({
+      frames: {
+        vpc: { tint: "#FF6600", icon: "kind:network" },
+        zone: { tint: "#0d9488" },
+        cell: { tint: "violet" },
+      },
+    });
+    expect(s.frames).toEqual({
+      vpc: { tint: "#ff6600", icon: "kind:network" },
+      zone: { tint: "#0d9488" },
+      cell: { tint: "violet" },
+    });
+  });
+
   it("drops what is not a tint or not an icon reference, and an entry left empty", () => {
     const s = readSidecar({
       frames: {
         a: { tint: 3, icon: "kind:queue" },
-        b: { tint: "#ff0000" },
+        b: { tint: "#F60" },
         c: { tint: "Blue" },
+        p: { tint: "#ff660080" },
+        q: { tint: "red" },
+        r: { tint: "javascript:alert(1)" },
+        s: { tint: "rgb(255, 102, 0)" },
+        t: { tint: "#ff660" },
+        u: { tint: " #ff6600" },
+        v: { tint: "#gg6600" },
         d: { icon: "component:../../x" },
         e: { icon: "component:aws" },
         f: { icon: `kind:${"x".repeat(200)}` },
@@ -284,5 +309,20 @@ describe("boundary styles", () => {
     expect(isFrameIcon("kind:")).toBe(false);
     expect(TINTS.every(isTint)).toBe(true);
     expect(isTint("red")).toBe(false);
+    expect(isTint("#ff6600")).toBe(false);
+  });
+
+  it("tells a hex tint from a named one and refuses every other colour syntax", () => {
+    expect(isHexTint("#ff6600")).toBe(true);
+    expect(isHexTint("#FF6600")).toBe(true);
+    for (const bad of ["#f60", "#ff660080", "ff6600", "red", "rgb(1,2,3)", "javascript:x", 3])
+      expect(isHexTint(bad)).toBe(false);
+    expect(isHexTint("blue")).toBe(false);
+    expect(isAnyTint("blue")).toBe(true);
+    expect(isAnyTint("#0d9488")).toBe(true);
+    expect(isAnyTint("#0d948814")).toBe(false);
+    expect(normaliseTint("#ABCDEF")).toBe("#abcdef");
+    expect(normaliseTint("teal")).toBe("teal");
+    expect(normaliseTint("#abc")).toBeNull();
   });
 });

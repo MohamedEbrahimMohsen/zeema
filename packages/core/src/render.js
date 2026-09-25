@@ -4,6 +4,7 @@
 // edges are arrows, solid for sync and dashed for async.
 
 import { drawnLayout } from "./drawn.js";
+import { framesOuterFirst, framesUnderTint } from "./geometry.js";
 import { layout } from "./layout.js";
 
 const CATEGORY_HUE = {
@@ -34,9 +35,10 @@ export const PALETTE = {
 
 const ICON = 24;
 
-// Boundary tints: a closed set of names, each one stroke colour per theme. The fill is the same
-// colour at about 8% so nested boundaries stay readable. The canvas stylesheet (apps/web
-// canvas.css) holds the same values; the sidecar only ever names one.
+// Boundary tints: a named set, each one stroke colour per theme, or a free `#rrggbb` colour that
+// is used as it is in both themes (the trade-off of a free colour). Either way the fill is the
+// stroke colour at about 8% so nested boundaries stay readable. The canvas stylesheet (apps/web
+// canvas.css) holds the same named values; the sidecar names one or carries the hex.
 // stroke (light) | stroke (dark)
 export const TINT = {
   slate: ["#64748b", "#94a3b8"],
@@ -47,7 +49,10 @@ export const TINT = {
   violet: ["#7c3aed", "#a78bfa"],
   teal: ["#0d9488", "#2dd4bf"],
 };
-const TINT_FILL_ALPHA = "14";
+// The fill's alpha byte, appended to a tint's `#rrggbb`. The canvas imports it for hex tints.
+export const TINT_FILL_ALPHA = "14";
+// A free tint: exactly six hex digits. `#rgb`, an alpha byte, `rgb()` and colour names are refused.
+export const HEX_TINT_RE = /^#[0-9a-fA-F]{6}$/;
 
 /**
  * An icon drawn before a boundary label is a reference: `kind:<id>`, `component:<p>/<id>` or
@@ -125,7 +130,8 @@ export function toSvg(doc, catalogue, options = {}) {
     .map(([k, v]) => `.f-${k}{fill:${v[2]};stroke:${v[3]}}`)
     .join("");
   // Boundary styles are presentation, so they come from the sidecar and never from the document.
-  // Anything that is not an own key naming a known tint or a well-formed icon is ignored.
+  // Anything that is not an own key naming a known tint, a `#rrggbb` colour or a well-formed icon
+  // is ignored. A hex tint comes back lowercased, so the same colour always writes the same bytes.
   const rawStyles =
     options.frames ??
     lay.frameStyles ??
@@ -134,7 +140,14 @@ export function toSvg(doc, catalogue, options = {}) {
   const styleOf = (id) => {
     const st = own(styles, id);
     if (!st || typeof st !== "object") return { tint: null, body: null };
-    const tint = typeof st.tint === "string" && own(TINT, st.tint) ? st.tint : null;
+    const tint =
+      typeof st.tint !== "string"
+        ? null
+        : own(TINT, st.tint)
+          ? st.tint
+          : HEX_TINT_RE.test(st.tint)
+            ? st.tint.toLowerCase()
+            : null;
     const key = frameIconKey(st.icon);
     const body = key ? (own(frameIcons, st.icon) ?? own(icons, key) ?? null) : null;
     return { tint, body: typeof body === "string" && body ? body : null };
@@ -143,8 +156,8 @@ export function toSvg(doc, catalogue, options = {}) {
   const tinted = drawnGroups.some((g) => styleOf(g.id).tint);
   const iconed = drawnGroups.some((g) => styleOf(g.id).body);
   const vars = {
-    light: ":root{--ink:#1b1b19;--muted:#6b6b66;--line:#8a8a85;--frame:#b4b4ae;--bg:#ffffff}",
-    dark: ":root{--ink:#ececea;--muted:#a1a19c;--line:#7e7e88;--frame:#55555c;--bg:#17171a}",
+    light: ":root{--ink:#1b1b19;--muted:#6b6b66;--edge:#6b6b72;--frame:#b4b4ae;--bg:#ffffff}",
+    dark: ":root{--ink:#ececea;--muted:#a1a19c;--edge:#a0a0a8;--frame:#55555c;--bg:#17171a}",
   };
   let style = "";
   if (theme === "dark") style = vars.dark + dark;
@@ -172,15 +185,30 @@ export function toSvg(doc, catalogue, options = {}) {
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${ox} ${oy} ${w} ${h}" width="${w}" height="${h}" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif">`,
     `<title>${escapeXml(doc.id ?? "design")}</title>`,
     `<style>${style}</style>`,
-    '<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">' +
-      '<path d="M1 1L9 5L1 9" fill="none" stroke="var(--line)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>',
+    // A filled head whose tip lands on the end of the path (refX is the tip), in the edge colour.
+    '<defs><marker id="a" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">' +
+      '<path d="M0 0L10 5L0 10z" fill="var(--edge)"/></marker></defs>',
     `<rect ${at}width="${w}" height="${h}" fill="var(--bg)"/>`,
   ];
-  for (const g of doc.groups ?? []) {
+  // Outer boundaries first, so a nested one paints over its parent. A tint fills only its own
+  // boundary: every boundary inside a tinted one lays the page background down first. Without a
+  // tint there is nothing to cut, and the picture is what it always was.
+  const cut = tinted ? framesUnderTint(drawnGroups, (id) => styleOf(id).tint !== null) : new Set();
+  for (const g of framesOuterFirst(doc.groups ?? [])) {
     const f = lay.frames[g.id];
     if (!f) continue;
     const { tint, body } = styleOf(g.id);
-    const dataTint = tint ? ` data-tint="${tint}"` : "";
+    // A named tint is a token the style block resolves per theme. A hex tint is its own colour,
+    // written inline so the picture needs no rule for it (the design page strips the <style>).
+    const dataTint = !tint
+      ? ""
+      : tint.startsWith("#")
+        ? ` data-tint="hex" style="stroke:${tint};fill:${tint}${TINT_FILL_ALPHA}"`
+        : ` data-tint="${tint}"`;
+    if (cut.has(g.id))
+      out.push(
+        `<rect x="${f1(f[0])}" y="${f1(f[1])}" width="${f1(f[2])}" height="${f1(f[3])}" rx="10" fill="var(--bg)"/>`,
+      );
     out.push(
       `<rect${dataTint} x="${f1(f[0])}" y="${f1(f[1])}" width="${f1(f[2])}" height="${f1(f[3])}" rx="10" fill="none" stroke="var(--frame)" stroke-width="1" stroke-dasharray="5 4"/>`,
     );
@@ -208,12 +236,12 @@ export function toSvg(doc, catalogue, options = {}) {
     if (e.points.length === 3) {
       const [[x1, y1], [cx, cy], [x2, y2]] = e.points;
       out.push(
-        `<path d="M${f1(x1)} ${f1(y1)} Q${f1(cx)} ${f1(cy)} ${f1(x2)} ${f1(y2)}" fill="none" stroke="var(--line)" stroke-width="1.2"${dash} marker-end="url(#a)"/>`,
+        `<path d="M${f1(x1)} ${f1(y1)} Q${f1(cx)} ${f1(cy)} ${f1(x2)} ${f1(y2)}" fill="none" stroke="var(--edge)" stroke-width="1.2"${dash} marker-end="url(#a)"/>`,
       );
     } else {
       const [[x1, y1], [x2, y2]] = e.points;
       out.push(
-        `<line x1="${f1(x1)}" y1="${f1(y1)}" x2="${f1(x2)}" y2="${f1(y2)}" stroke="var(--line)" stroke-width="1.2"${dash} marker-end="url(#a)"/>`,
+        `<line x1="${f1(x1)}" y1="${f1(y1)}" x2="${f1(x2)}" y2="${f1(y2)}" stroke="var(--edge)" stroke-width="1.2"${dash} marker-end="url(#a)"/>`,
       );
     }
     if (e.label)

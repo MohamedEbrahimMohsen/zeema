@@ -67,9 +67,12 @@ live in the sidecar under `frames`, keyed by the boundary's id. The YAML never c
 ever reads them. Set them from the boundary's panel in the canvas inspector; each change can be
 undone like any other edit.
 
-- **`tint`** is one of a fixed set of names: `slate`, `blue`, `green`, `amber`, `rose`, `violet`,
-  `teal`. It sets the dashed stroke and a very light fill, with separate values for the light
-  and dark themes. You cannot give a free hex colour. Leave `tint` out to get the default frame.
+- **`tint`** is one of a set of names, `slate`, `blue`, `green`, `amber`, `rose`, `violet` and
+  `teal`, or a colour written `#rrggbb` (six hex digits; it is stored in lowercase). It sets the
+  dashed stroke and a very light fill of the same colour. A named tint has separate values for
+  the light and dark themes; a hex colour is used as it is in both, so pick one that reads on
+  either background. The inspector's colour field has a swatch per name, then "More colours":
+  a palette of 48 colours, the ones you applied lately, a hex box and the system colour picker. Leave `tint` out to get the default frame.
 - **`icon`** is a reference, never the icon itself. It takes one of three forms:
   - `boundary:<id>` for a boundary icon, for example `boundary:aws` or `boundary:on-premises`.
     This is a separate set made for boundaries: platform and brand marks (AWS, Azure, Google
@@ -85,7 +88,8 @@ undone like any other edit.
   A reference to an icon the catalogue does not have draws nothing, and the label stays where it
   was.
 
-The reader drops anything else: a tint that is not on the list, an icon reference in the wrong
+The reader drops anything else: a tint that is neither a name on the list nor `#rrggbb` (so not
+`#rgb`, not an alpha byte, not `rgb()` or a colour name), an icon reference in the wrong
 shape, or a style for a boundary the design no longer has. Deleting a boundary deletes its style
 too, and renaming a boundary moves its style with it.
 

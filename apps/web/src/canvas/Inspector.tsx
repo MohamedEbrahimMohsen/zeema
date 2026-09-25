@@ -4,18 +4,22 @@
 // product is hard coded. A control shows the value the design resolves to and writes only when
 // the user sets something. Text inputs commit on blur or Enter, never per keystroke.
 import { effective, propDefs } from "@zeema/core/document";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Icon } from "@/components/Icon";
 import { BOUNDARY_PREVIEW, boundaryRows } from "@/lib/boundary-icons";
 import {
   anchorTarget,
   type FrameStyle,
   frameIconKey,
+  type HexTint,
+  isHexTint,
   type Note,
+  normaliseTint,
   TINTS,
   type Tint,
 } from "@/lib/layout-sidecar";
 import { own } from "@/lib/own";
+import { PALETTE, PALETTE_COLUMNS, pushRecent, readRecent } from "@/lib/tint-palette";
 import { parseQuery, type Row, score } from "./Palette";
 import type { Subject } from "./scene";
 
@@ -31,7 +35,7 @@ export type InspectorApi = {
   renameGroup: (oldId: string, newId: string) => void;
   setParent: (id: string, parent: string | null) => void;
   /** Boundary tint and icon. Sidecar only; `undefined` clears that half. */
-  setFrameStyle: (id: string, patch: { tint?: Tint; icon?: string }) => void;
+  setFrameStyle: (id: string, patch: { tint?: Tint | HexTint; icon?: string }) => void;
   setDesignId: (id: string) => void;
   setRequirement: (path: string, value: unknown) => void;
   setNoteText: (id: string, text: string) => void;
@@ -108,6 +112,260 @@ function TextInput({
         }
       }}
     />
+  );
+}
+
+/**
+ * A boundary's colour: "none", a swatch per named tint, and a "More colours" swatch that opens
+ * a popover with a fixed palette, the colours applied lately and a hex row. A named swatch and
+ * a palette cell apply on click. The popover lives inside the field, so the Inspector's scroll
+ * carries it; it closes on Escape, on a click outside it, on a pick and when another boundary
+ * is selected (the field is keyed by the boundary).
+ */
+/**
+ * Every commit remounts the Inspector (Canvas keys it by the undo tick), so a colour applied
+ * from the popover takes the popover and its trigger with it. This asks the next "More colours"
+ * trigger to take focus when it mounts, which is where focus would have returned.
+ */
+let refocusMoreColours = false;
+
+function TintField({
+  tint,
+  onPick,
+}: {
+  tint: Tint | HexTint | undefined;
+  onPick: (t: Tint | HexTint | undefined) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const trigger = useRef<HTMLButtonElement>(null);
+  const hex = isHexTint(tint) ? tint : null;
+  const close = (refocus: boolean) => {
+    setOpen(false);
+    if (refocus) trigger.current?.focus();
+  };
+  useEffect(() => {
+    if (!refocusMoreColours) return;
+    refocusMoreColours = false;
+    trigger.current?.focus();
+  }, []);
+  return (
+    <div className="tint-field">
+      <div className="swatches">
+        <button
+          type="button"
+          className="swatch swatch-none"
+          aria-label="none"
+          aria-pressed={!tint}
+          title="none"
+          onClick={() => onPick(undefined)}
+        />
+        {TINTS.map((t) => (
+          <button
+            key={t}
+            type="button"
+            className="swatch"
+            aria-label={t}
+            aria-pressed={tint === t}
+            title={t}
+            style={{ background: `var(--tint-${t})` }}
+            onClick={() => onPick(t)}
+          />
+        ))}
+        <button
+          ref={trigger}
+          type="button"
+          className={`swatch swatch-more${hex ? " has-hex" : ""}`}
+          aria-label="More colours"
+          title={hex ? `More colours (now ${hex})` : "More colours"}
+          aria-haspopup="dialog"
+          aria-expanded={open}
+          aria-pressed={Boolean(hex)}
+          style={hex ? { background: hex } : undefined}
+          onClick={() => setOpen((o) => !o)}
+        />
+      </div>
+      {open ? (
+        <TintPopover
+          value={hex}
+          trigger={trigger}
+          onCommit={(v, done) => {
+            refocusMoreColours = true;
+            // A commit that does not remount must not leave the request for a later boundary.
+            setTimeout(() => {
+              refocusMoreColours = false;
+            }, 500);
+            onPick(v);
+            if (done) close(true);
+          }}
+          onClose={close}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+function TintPopover({
+  value,
+  trigger,
+  onCommit,
+  onClose,
+}: {
+  /** The boundary's hex tint, or null when it has a named one or none. */
+  value: HexTint | null;
+  trigger: React.RefObject<HTMLButtonElement | null>;
+  /** Apply a colour; `done` closes the popover (a commit remounts the Inspector anyway). */
+  onCommit: (v: HexTint, done: boolean) => void;
+  onClose: (refocus: boolean) => void;
+}) {
+  const [recent, setRecent] = useState<HexTint[]>(() => readRecent());
+  const [draft, setDraft] = useState(value ?? "");
+  const [picked, setPicked] = useState<HexTint>(value ?? "#888888");
+  const root = useRef<HTMLDivElement>(null);
+  const colour = useRef<HTMLInputElement>(null);
+  const commit = useRef(onCommit);
+  commit.current = onCommit;
+  const dismiss = useRef(onClose);
+  dismiss.current = onClose;
+  const apply = (v: HexTint, done: boolean) => {
+    setRecent(pushRecent(v));
+    setDraft(v);
+    setPicked(v);
+    commit.current(v, done);
+  };
+  const applyRef = useRef(apply);
+  applyRef.current = apply;
+  // What is on screen follows the boundary: a pick or an undo.
+  useEffect(() => {
+    setDraft(value ?? "");
+    if (value) setPicked(value);
+  }, [value]);
+  // Focus moves in: to the current colour when the palette has it, else the first cell.
+  useEffect(() => {
+    const el = root.current;
+    const cell =
+      el?.querySelector<HTMLButtonElement>('.tint-cell[aria-pressed="true"]') ??
+      el?.querySelector<HTMLButtonElement>(".tint-cell");
+    cell?.focus();
+  }, []);
+  // A press outside the popover and its trigger closes it, leaving focus where the press went.
+  useEffect(() => {
+    const onDown = (ev: PointerEvent) => {
+      const t = ev.target as Node | null;
+      if (!t || root.current?.contains(t) || trigger.current?.contains(t)) return;
+      dismiss.current(false);
+    };
+    document.addEventListener("pointerdown", onDown, true);
+    return () => document.removeEventListener("pointerdown", onDown, true);
+  }, [trigger]);
+  // React's onChange is the input event, which fires all the way through a drag in the native
+  // picker. The native change event fires once, when the choice is made: one pick, one undo.
+  useEffect(() => {
+    const input = colour.current;
+    if (!input) return;
+    const onChange = () => {
+      const v = normaliseTint(input.value);
+      if (v && isHexTint(v)) applyRef.current(v, false);
+    };
+    input.addEventListener("change", onChange);
+    return () => input.removeEventListener("change", onChange);
+  }, []);
+  const applyText = (text: string) => {
+    const t = text.trim();
+    const v = normaliseTint(t.startsWith("#") ? t : `#${t}`);
+    if (v && isHexTint(v)) {
+      if (v !== value) apply(v, false);
+      else setDraft(v);
+    } else setDraft(value ?? "");
+  };
+  const cell = (c: HexTint) => (
+    <button
+      key={c}
+      type="button"
+      className="tint-cell"
+      aria-label={c}
+      aria-pressed={value === c}
+      title={c}
+      style={{ background: c }}
+      onClick={() => apply(c, true)}
+    />
+  );
+  return (
+    <div
+      ref={root}
+      className="tint-popover"
+      role="dialog"
+      aria-label="More colours"
+      onKeyDown={(e) => {
+        if (e.key === "Escape") {
+          e.stopPropagation();
+          e.preventDefault();
+          onClose(true);
+        }
+      }}
+    >
+      <div
+        className="tint-grid"
+        style={{ gridTemplateColumns: `repeat(${PALETTE_COLUMNS}, 18px)` }}
+      >
+        {PALETTE.map(cell)}
+      </div>
+      {recent.length ? (
+        <>
+          <div className="tint-heading">Recent</div>
+          <div
+            className="tint-grid"
+            style={{ gridTemplateColumns: `repeat(${PALETTE_COLUMNS}, 18px)` }}
+          >
+            {recent.map(cell)}
+          </div>
+        </>
+      ) : null}
+      <div className="tint-hex">
+        <input
+          type="text"
+          className="swatch-hex-text"
+          aria-label="custom colour, #rrggbb"
+          placeholder="#rrggbb"
+          spellCheck={false}
+          autoComplete="off"
+          maxLength={7}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={(e) => applyText(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key !== "Enter") return;
+            // Focus lands on "More colours" before the key finishes; without this, the same
+            // Enter would press it and open the popover again.
+            e.preventDefault();
+            applyText((e.target as HTMLInputElement).value);
+          }}
+        />
+        <button
+          type="button"
+          className="btn btn-sm"
+          title="Open the system colour picker"
+          onClick={() => colour.current?.click()}
+        >
+          <span className="tint-pick-chip" style={{ background: picked }} aria-hidden="true" />
+          Pick…
+        </button>
+        <input
+          ref={colour}
+          type="color"
+          className="tint-native"
+          aria-label="system colour picker"
+          tabIndex={-1}
+          value={picked}
+          onChange={(e) => {
+            const v = normaliseTint(e.target.value);
+            if (v && isHexTint(v)) {
+              setPicked(v);
+              setDraft(v);
+            }
+          }}
+        />
+      </div>
+    </div>
   );
 }
 
@@ -722,28 +980,11 @@ function GroupPanel({
         </select>
       </Field>
       <Field name="colour" note="layout only, not in the YAML" isSet={Boolean(style.tint)}>
-        <div className="swatches">
-          <button
-            type="button"
-            className="swatch swatch-none"
-            aria-label="none"
-            aria-pressed={!style.tint}
-            title="none"
-            onClick={() => api.setFrameStyle(group.id, { tint: undefined })}
-          />
-          {TINTS.map((t) => (
-            <button
-              key={t}
-              type="button"
-              className="swatch"
-              aria-label={t}
-              aria-pressed={style.tint === t}
-              title={t}
-              style={{ background: `var(--tint-${t})` }}
-              onClick={() => api.setFrameStyle(group.id, { tint: t })}
-            />
-          ))}
-        </div>
+        <TintField
+          key={group.id}
+          tint={style.tint}
+          onPick={(tint) => api.setFrameStyle(group.id, { tint })}
+        />
       </Field>
       <Field name="icon" isSet={Boolean(style.icon)}>
         <div className="icon-field">

@@ -177,7 +177,9 @@ const helpSections = (mod: string): Array<[string, Array<[string[], string]>]> =
   [
     "View and file",
     [
-      [["Wheel"], "Zoom around the pointer."],
+      [["Wheel"], "Pan the canvas; a two-finger swipe pans in any direction."],
+      [["Shift", "Wheel"], "Pan sideways."],
+      [[mod, "Wheel"], "Zoom around the pointer; so does a pinch."],
       [["Middle-drag", "Space", "Drag"], "Pan the canvas."],
       [[mod, "0"], "Fit the whole design on screen."],
       [[mod, "1"], "Back to actual size."],
