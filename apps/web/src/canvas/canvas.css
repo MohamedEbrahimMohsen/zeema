@@ -1,5 +1,5 @@
 /* The canvas page. Every colour is a token from globals.css, so the scene follows the theme
-   toggle; --f-* (what the scene draws with) alias the taxonomy tokens there. */
+   toggle; nodes draw with --node-fill/--node-line and notes with --f-note-* from there. */
 .zeema-canvas {
   display: grid;
   grid-template-rows: auto 1fr;
@@ -144,7 +144,7 @@
   cursor: grabbing;
 }
 
-/* nodes — fill is category, border is selection, corner dot is findings */
+/* nodes — one neutral fill, border is selection, corner dot is findings */
 .zeema-canvas .node-box {
   cursor: grab;
 }
@@ -250,17 +250,17 @@
   stroke-width: 2;
 }
 
-/* boundaries — dashed, unfilled unless tinted */
+/* groups — dashed, unfilled unless tinted */
 .zeema-canvas .frame {
   fill: none;
   stroke: var(--frame);
   stroke-width: 1;
   stroke-dasharray: 5 4;
 }
-/* boundary tints — a named one, or a free #rrggbb. The named --tint-* tokens live in globals.css
+/* group tints — a named one, or a free #rrggbb. The named --tint-* tokens live in globals.css
    (light and dark), shared with the design page preview; the exported SVG carries the same values
    from TINT in packages/core/src/render.js. A tint is a stroke plus the same colour at ~8% as a
-   fill, light enough that nested boundaries stay readable. */
+   fill, light enough that nested groups stay readable. */
 .zeema-canvas .frame[data-tint="slate"] {
   stroke: var(--tint-slate);
   fill: var(--tint-slate-fill);
@@ -295,20 +295,20 @@
   stroke: var(--tint-hex);
   fill: var(--tint-hex-fill);
 }
-/* a tinted fill must not make the inside of a boundary catch the pointer: it behaves exactly
+/* a tinted fill must not make the inside of a group catch the pointer: it behaves exactly
    like an untinted one, where only the stroke is live */
 .zeema-canvas .frame[data-tint] {
   pointer-events: stroke;
 }
-/* a boundary inside a tinted one lays the page background down first (the rect under its own,
-   drawn only for those), so a tint fills its own boundary and nothing nested in it. It is paint
-   only: the pointer goes through it exactly as it goes through an untinted boundary. */
+/* a group inside a tinted one lays the page background down first (the rect under its own,
+   drawn only for those), so a tint fills its own group and nothing nested in it. It is paint
+   only: the pointer goes through it exactly as it goes through an untinted group. */
 .zeema-canvas .frame-under {
   fill: var(--bg);
   stroke: none;
   pointer-events: none;
 }
-/* the icon a boundary may carry before its name */
+/* the icon a group may carry before its name */
 .zeema-canvas .frame-icon {
   color: var(--muted);
   cursor: move;
@@ -546,7 +546,7 @@
   white-space: nowrap;
 }
 
-/* the boundary-wiring hint: a remark near the pointer, never a mode */
+/* the group-wiring hint: a remark near the pointer, never a mode */
 .zeema-canvas .canvas-hint {
   position: fixed;
   z-index: 60;
@@ -669,7 +669,7 @@
   outline: none;
   box-shadow: var(--ring-focus);
 }
-/* boundary colour: "none", one swatch per named tint, then "More colours" */
+/* group colour: "none", one swatch per named tint, then "More colours" */
 .zeema-canvas .swatches {
   display: flex;
   flex-wrap: wrap;
@@ -825,7 +825,7 @@
   font-family: var(--mono);
   font-size: 0.85em;
 }
-/* boundary icon: what it is now, and a small search-and-pick list */
+/* group icon: what it is now, and a small search-and-pick list */
 .zeema-canvas .icon-field {
   display: flex;
   align-items: center;

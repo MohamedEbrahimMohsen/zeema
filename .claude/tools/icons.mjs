@@ -138,7 +138,7 @@ for (const [key, p] of Object.entries(providerInfo)) {
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" role="img" fill="#${p.hex}"><title>${p.title.replace(/&/g, "&amp;").replace(/</g, "&lt;")}</title><g fill="#${p.hex}"><path${p.source === "original" ? ' fill-rule="evenodd"' : ""} d="${p.path}"/></g></svg>\n`,
   );
 }
-// Boundary icons (icons/boundaries/<id>.svg): a mark or a concept glyph a boundary can show
+// Group icons (icons/boundaries/<id>.svg): a mark or a concept glyph a group can show
 // before its label. A brand mark is copied from icons/providers/<key>.svg when there is one and
 // fitted from Simple Icons otherwise. Unlike a provider file it carries no <title> (the name is in
 // locales/en.yaml) and its <g> says stroke="none", because the renderer draws it inside a context
@@ -185,7 +185,7 @@ for (const [id, glyph] of Object.entries(BOUNDARY_GLYPHS)) {
   if (BOUNDARY_BRANDS[id]) noMark.push(`${id} (both a brand and a glyph)`);
   else if (put(path.join(ICONS, "boundaries", `${id}.svg`), kindSvg(glyph))) bn++;
 }
-if (!ADOPT) console.log(`boundary icons written: ${bn}${themed.length ? ` (in currentColor: ${themed.join(" ")})` : ""}`);
+if (!ADOPT) console.log(`group icons written: ${bn}${themed.length ? ` (in currentColor: ${themed.join(" ")})` : ""}`);
 if (noMark.length) {
   console.log("BOUNDARY ICON WITHOUT A MARK:", noMark.join(", "));
   process.exitCode = 1;

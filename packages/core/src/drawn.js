@@ -96,7 +96,7 @@ function placeNewcomer(id, size, doc, boxes) {
  *                            frames: { groupId: { tint, icon } } }; notes are not drawn
  * @returns {{positions: Object, sizes: Object, frames: Object, edges: Array,
  *            canvas: [number, number], origin: [number, number], frameStyles: Object}}
- *            `frameStyles` is the sidecar's boundary styles as stored; the renderer vets them.
+ *            `frameStyles` is the sidecar's group styles as stored; the renderer vets them.
  */
 export function drawnLayout(doc, catalogue, sidecar) {
   const auto = layout(doc, catalogue);
@@ -119,7 +119,7 @@ export function drawnLayout(doc, catalogue, sidecar) {
   const frames = groupFrames({ nodes, groups: doc.groups || [], edges: doc.edges || [] }, boxes);
   const bows = sidecar && typeof sidecar === "object" && sidecar.edges ? sidecar.edges : {};
   const edges = edgeGeometry(doc, boxes, bows);
-  // Boundary tint and icon ride along untouched: they change how a frame looks, never where.
+  // Group tint and icon ride along untouched: they change how a frame looks, never where.
   const styles = sidecar && typeof sidecar === "object" ? sidecar.frames : null;
   const frameStyles = styles && typeof styles === "object" && !Array.isArray(styles) ? styles : {};
 

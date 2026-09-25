@@ -164,7 +164,7 @@ export default async function DesignPage({
             <span>·</span>
             <span>{doc?.edges.length ?? 0} edges</span>
             <span>·</span>
-            <span>{doc?.groups?.length ?? 0} boundaries</span>
+            <span>{doc?.groups?.length ?? 0} groups</span>
             <span>·</span>
             <span>{view.stats.viewCount} views</span>
             <span>·</span>

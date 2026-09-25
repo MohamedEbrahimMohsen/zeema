@@ -3,7 +3,7 @@
   python design_to_svg.py <design.yaml> [-o out.svg] [--direction TB|LR]
 
 Everything in the picture comes from the data: nodes are boxes carrying the icon of their
-component (icons/components/<provider>/<id>.svg) and coloured by the category of their kind,
+component (icons/components/<provider>/<id>.svg) on one neutral surface (a custom node dashed),
 groups are dashed containers around their members, edges are arrows, solid for sync and dashed
 for async, labelled where the design gives a label. Layout is layered: rank by longest path
 over the edges, then barycentre ordering inside each rank, then group members pulled together.
@@ -18,15 +18,8 @@ NAME_PX, ID_PX = 7.6, 6.2          # rough advance width per character
 BOX_H, PAD_X, GAP_X, GAP_Y = 78, 16, 34, 86
 MAX_W = 1180                       # a rank wider than this wraps onto further rows
 ICON, LABEL_PX = 24, 12
-CATEGORY_HUE = {"messaging": "violet", "compute": "blue", "data": "amber", "edge": "teal",
-                "external": "rose", "client": "purple", "ops": "green", "security": "red"}
-PALETTE = {  # fill, stroke (light) | fill, stroke (dark)
-    "blue": ("#eaf1fd", "#9cc0f0", "#1b2a3f", "#3f6698"), "teal": ("#e6f5f2", "#8fcfc2", "#152e2b", "#3c7d72"),
-    "amber": ("#fbf1e0", "#dcb473", "#33280f", "#8a6a2b"), "violet": ("#f0edfc", "#b6a8ee", "#241f3d", "#5b4f9c"),
-    "purple": ("#f6ecf9", "#cda3dc", "#2d1c34", "#7a4d8c"), "green": ("#e9f5ea", "#96c99b", "#162b18", "#417a47"),
-    "rose": ("#fceceb", "#e5a7a1", "#33191a", "#8f4c48"), "red": ("#fbe9e9", "#e09b98", "#341a1a", "#8d4340"),
-    "grey": ("#f0f0ef", "#c2c2bf", "#26262a", "#5a5a60"),
-}
+# One neutral card surface for every node, as in packages/core/src/render.js (NODE).
+NODE = ("#ffffff", "#d4d4d0", "#1f1f23", "#3a3a40")  # fill, stroke (light) | fill, stroke (dark)
 
 def load(p): return yaml.safe_load(Path(p).read_text(encoding="utf-8"))
 
@@ -199,11 +192,10 @@ def render(design, direction="TB"):
     out = ['<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 %d %d" width="%d" height="%d" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif">'
            % (canvas_w, canvas_h, canvas_w, canvas_h),
            '<title>%s</title>' % esc(design["id"]),
-           '<style>:root{--ink:#1b1b19;--muted:#6b6b66;--line:#8a8a85;--frame:#b4b4ae;--bg:#ffffff}'
-           '@media (prefers-color-scheme: dark){:root{--ink:#ececea;--muted:#a1a19c;--line:#7e7e88;--frame:#55555c;--bg:#17171a}'
-           + "".join(".f-%s{fill:%s;stroke:%s}" % (k, v[2], v[3]) for k, v in PALETTE.items()) + "}"
-           + "".join(".f-%s{fill:%s;stroke:%s}" % (k, v[0], v[1]) for k, v in PALETTE.items())
-           + '.n{font-size:14px;font-weight:500;fill:var(--ink)}.c{font-size:12px;fill:var(--muted)}'
+           '<style>:root{--ink:#1b1b19;--muted:#6b6b66;--line:#8a8a85;--frame:#b4b4ae;--bg:#ffffff;--node-fill:%s;--node-line:%s}'
+           '@media (prefers-color-scheme: dark){:root{--ink:#ececea;--muted:#a1a19c;--line:#7e7e88;--frame:#55555c;--bg:#17171a;--node-fill:%s;--node-line:%s}}' % NODE
+           + '.body{fill:var(--node-fill);stroke:var(--node-line)}'
+           '.n{font-size:14px;font-weight:500;fill:var(--ink)}.c{font-size:12px;fill:var(--muted)}'
            '.g{font-size:12px;fill:var(--muted)}.e{font-size:12px;fill:var(--muted);paint-order:stroke;'
            'stroke:var(--bg);stroke-width:3px}.ic{color:var(--ink)}</style>',
            '<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">'
@@ -227,9 +219,9 @@ def render(design, direction="TB"):
             out.append('<text class="e" x="%.1f" y="%.1f" text-anchor="middle">%s</text>' % (lx, ly - 4, esc(lab)))
     for n in nodes:
         b = box[n["id"]]; c = comps.get(n["component"], {})
-        hue = CATEGORY_HUE.get(kinds.get(c.get("kind"), {}).get("category"), "grey")
+        hole = ' stroke-dasharray="6 4" fill-opacity="0.45"' if c.get("kind") == "custom" else ""  # a custom node is a hole
         cx = b[0] + b[2] / 2
-        out.append('<rect class="f-%s" x="%d" y="%d" width="%d" height="%d" rx="8" stroke-width="1"/>' % (hue, b[0], b[1], b[2], b[3]))
+        out.append('<rect class="body" x="%d" y="%d" width="%d" height="%d" rx="8" stroke-width="1"%s/>' % (b[0], b[1], b[2], b[3], hole))
         body = icon_body(c.get("provider", "default"), n["component"])
         if body: out.append('<g class="ic" transform="translate(%.1f %d)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">%s</g>' % (cx - ICON / 2, b[1] + 11, body))
         out.append('<text class="n" x="%.1f" y="%d" text-anchor="middle">%s</text>' % (cx, b[1] + 52, esc(text[n["id"]])))

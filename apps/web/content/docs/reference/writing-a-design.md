@@ -111,7 +111,7 @@ groups:
 | `id` | yes | Unique within the design |
 | `kind` | yes | One of the group kinds below |
 | `parent` | no | The id of another group in this design |
-| `label` | no | The boundary's name as drawn in the source. Read by renderers, never by rules |
+| `label` | no | The group's name as drawn in the source. Read by renderers, never by rules |
 
 | Group kind | What it is |
 |---|---|

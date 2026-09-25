@@ -27,7 +27,8 @@ export type Catalogue = {
     kinds: Record<string, LocaleEntry>;
     components: Record<string, LocaleEntry>;
     rules: Record<string, LocaleEntry>;
-    /** Names of the boundary icons in icons/boundaries/, keyed by file name. */
+    /** Names of the group icons in icons/boundaries/, keyed by file name. The user-facing word
+     *  is group; boundary stays in the stored format. */
     boundaryIcons?: Record<string, LocaleEntry>;
   };
   schema: unknown;
@@ -72,7 +73,7 @@ export function getCatalogue(): Catalogue & { root: string } {
 /**
  * The icon map (icons.json): component ids, `kind:<id>` and `boundary:<id>`, each the inner markup
  * of its SVG. The render route and the design page pass it whole to the engine renderer, which
- * looks up a boundary's icon reference in it, so a new namespace needs nothing here.
+ * looks up a group's icon reference in it, so a new namespace needs nothing here.
  */
 export function getIcons(): Record<string, string> {
   if (!holder.icons) {

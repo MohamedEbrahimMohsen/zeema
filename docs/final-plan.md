@@ -51,7 +51,7 @@ unambiguous, and acceptance criteria that a test or a reviewer can check. "Must"
 Zeema describes software architecture as **typed, queryable data** rather than as pictures.
 
 A design is a text document that names components drawn from a curated catalogue, the directed
-edges between them, the boundaries that contain them, and the promises the system makes about
+edges between them, the groups that contain them, and the promises the system makes about
 itself. Because the design is data:
 
 - a linter finds structural and design mistakes deterministically;
@@ -741,18 +741,18 @@ full catalogue stays inside the budget in section 19.
 
 **F3.1** Gestures: marquee on empty drag; pan with middle button or a held key; zoom with the
 wheel; drag a node's port to wire an edge, with the candidate target highlighted; drag an edge
-to bow it; drag a node or a selection to move it as one history entry; drop inside a boundary to
+to bow it; drag a node or a selection to move it as one history entry; drop inside a group to
 change group membership; context menu on whatever is under the pointer; double-click a label to
 edit it in place.
 
 **F3.2** Hit testing resolves the subject from the model, not only from the element under the
-pointer, so a pointer-captured drag still targets correctly. Group boundaries have a wide
+pointer, so a pointer-captured drag still targets correctly. Group frames have a wide
 invisible stroke so they are grabbable.
 
 **F3.3** Selection has a primary subject (drives the inspector) and a multi-selection set.
 
 **F3.4** Edge labels sit on the curve's true midpoint. Parallel edges are offset so they do not
-overlap. Boundaries follow their members during a drag.
+overlap. Groups follow their members during a drag.
 
 ### F4. Inspector
 
@@ -770,15 +770,15 @@ inspector has focus; the control's pending value is committed first.
 group members share a rank; the same design lays out identically in every implementation and on
 every run. "Arrange" replaces every position with the computed layout as one undoable step.
 
-### F6. Names, boundaries, edges
+### F6. Names, groups, edges
 
 **F6.1** A placed node is named what the catalogue calls its component. Two instances of one
 component are two of the same component. While a node's id is still the generated one, renaming
 the label renames the id to match; an id the user typed is never rewritten. The id field
 kebab-cases input and reports collisions.
 
-**F6.2** Grouping a selection creates a boundary; grouping nodes that already share a boundary
-nests inside it. Deleting a boundary keeps its members by default and offers deleting both.
+**F6.2** Grouping a selection creates a group; grouping nodes that already share a group
+nests inside it. Deleting a group keeps its members by default and offers deleting both.
 Renaming a group to an existing id is refused.
 
 **F6.3** Deleting nodes removes their edges and clears every `ref` property that pointed at them.

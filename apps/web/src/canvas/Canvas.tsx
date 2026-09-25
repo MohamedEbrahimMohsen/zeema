@@ -63,7 +63,7 @@ type Engine = {
   sizes: Record<string, [number, number]>;
   bows: Record<string, number>;
   notes: Note[];
-  /** Boundary tint and icon by group id: sidecar, never YAML. */
+  /** Group tint and icon by group id: sidecar, never YAML. */
   frames: Record<string, FrameStyle>;
   undo: any[];
   redo: any[];
@@ -121,8 +121,8 @@ const helpSections = (mod: string): Array<[string, Array<[string[], string]>]> =
       ],
       [["Drag a dot"], "Wire an edge: drag a component's dot onto another component."],
       [
-        ["Drag a boundary"],
-        "Boundaries don't connect. Wire the components inside one — or add an External system node for something outside your control.",
+        ["Drag a group"],
+        "Groups don't connect. Wire the components inside one — or add an External system node for something outside your control.",
       ],
     ],
   ],
@@ -133,11 +133,8 @@ const helpSections = (mod: string): Array<[string, Array<[string[], string]>]> =
       [["Shift", "Click"], "Add a component to the selection, or take it out."],
       [["Drag"], "Sweep a box over empty space to select several; Shift keeps what you had."],
       [[mod, "A"], "Select every component."],
-      [["Drag"], "Move the selection. A component dropped inside a boundary joins it."],
-      [
-        ["Drag a boundary"],
-        "Move a boundary with everything inside it; the grouping does not change.",
-      ],
+      [["Drag"], "Move the selection. A component dropped inside a group joins it."],
+      [["Drag a group"], "Move a group with everything inside it; the grouping does not change."],
       [["←", "→", "↑", "↓"], "Nudge the selection by one."],
       [["Shift", "←"], "Nudge by ten."],
       [["Esc"], "Clear the selection, or abandon what you are dragging."],
@@ -146,10 +143,10 @@ const helpSections = (mod: string): Array<[string, Array<[string[], string]>]> =
   [
     "Edit",
     [
-      [["Double-click"], "Rename what you clicked: a component, an edge or a boundary."],
+      [["Double-click"], "Rename what you clicked: a component, an edge or a group."],
       [["Enter"], "Rename the selection."],
-      [["G"], "Group the selection into a boundary."],
-      [[mod, "Shift", "G"], "Ungroup the selected boundary; its components stay."],
+      [["G"], "Put the selection in a new group."],
+      [[mod, "Shift", "G"], "Ungroup the selected group; its components stay."],
       [[mod, "D"], "Duplicate the selection."],
       [["Del", "Backspace"], "Delete the selection."],
       [["Drag an edge"], "Bow it away from the straight line."],
@@ -167,7 +164,7 @@ const helpSections = (mod: string): Array<[string, Array<[string[], string]>]> =
     [
       [["Right-click empty space"], "Add a note: an annotation, never a node."],
       [
-        ["Right-click a component", "or a boundary"],
+        ["Right-click a component", "or a group"],
         "Pin a note to it; the note then follows what it is pinned to.",
       ],
       [["N"], "Show or hide every note; a hidden one leaves a dot on its target."],
@@ -214,7 +211,7 @@ export function Canvas(props: Props) {
   const helpDialog = useRef<HTMLDivElement>(null);
   const helpClose = useRef<HTMLButtonElement>(null);
   const mod = useModKey();
-  // The boundary-wiring hint: where it sits, and nothing else. It is a remark, not a mode.
+  // The group-wiring hint: where it sits, and nothing else. It is a remark, not a mode.
   const [hint, setHint] = useState<{ x: number; y: number } | null>(null);
   const hintEl = useRef<HTMLDivElement>(null);
   const [paletteQuery, setPaletteQuery] = useState("");
@@ -415,7 +412,7 @@ export function Canvas(props: Props) {
       // snapshot above, means deleting a node and losing its notes is one undo away — and every
       // delete path gets it, without each one remembering to.
       e.notes = pruneAnchored(e.notes, anchorables(e.doc));
-      // The same for a deleted boundary's colour and icon: they go in the same undo step.
+      // The same for a deleted group's colour and icon: they go in the same undo step.
       e.frames = pruneFrames(e.frames, anchorables(e.doc).groups);
       e.dirty = true;
       e.saveSeq++;
@@ -668,7 +665,7 @@ export function Canvas(props: Props) {
     [newNote],
   );
 
-  /** A note pinned to a node or a boundary: x and y become an offset from its top-right corner. */
+  /** A note pinned to a node or a group: x and y become an offset from its top-right corner. */
   const addNoteOn = useCallback(
     (anchor: NoteAnchor) =>
       newNote({
@@ -738,7 +735,7 @@ export function Canvas(props: Props) {
             run: () => scene.editLabel("node", target.ref as string),
           },
           { label: count > 1 ? `Group these ${count}` : "Group", hint: "G", run: groupSelection },
-          grouped ? { label: "Remove from boundary", run: releaseFromGroup } : null,
+          grouped ? { label: "Remove from group", run: releaseFromGroup } : null,
           {
             label: count > 1 ? `Duplicate these ${count}` : "Duplicate",
             hint: "Ctrl D",
@@ -824,7 +821,7 @@ export function Canvas(props: Props) {
           { label: "Add note", hint: "pinned here", run: () => addNoteOn({ group: id }) },
           "-",
           {
-            label: "Remove boundary, keep members",
+            label: "Remove group, keep members",
             hint: "Del",
             run: () => {
               scene.select(null, null);
@@ -832,7 +829,7 @@ export function Canvas(props: Props) {
             },
           },
           {
-            label: `Delete boundary and ${members} member${members === 1 ? "" : "s"}`,
+            label: `Delete group and ${members} member${members === 1 ? "" : "s"}`,
             danger: true,
             disabled: !members,
             run: () => {
@@ -1119,7 +1116,7 @@ export function Canvas(props: Props) {
     return () => document.removeEventListener("pointerdown", onDown, true);
   }, [help]);
 
-  // The boundary hint is a remark that gets out of the way: six seconds, a click, or Escape.
+  // The group hint is a remark that gets out of the way: six seconds, a click, or Escape.
   useEffect(() => {
     if (!hint) return;
     const timer = setTimeout(() => setHint(null), 6000);
@@ -1186,10 +1183,9 @@ export function Canvas(props: Props) {
       setGroupField: (id, f, v) => commit(D.setGroupField(eng.current!.doc, id, f, v)),
       renameGroup: (oldId, newId) => {
         const e = eng.current!;
-        if (!newId || !/^[a-z][a-z0-9-]*$/.test(newId))
-          return notify("a boundary id is kebab-case");
+        if (!newId || !/^[a-z][a-z0-9-]*$/.test(newId)) return notify("a group id is kebab-case");
         if ((e.doc.groups ?? []).some((g: any) => g.id === newId))
-          return notify(`${newId} is the id of another boundary`);
+          return notify(`${newId} is the id of another group`);
         sceneRef.current!.selection = { type: "group", ref: newId };
         commit(D.renameGroup(e.doc, oldId, newId), {
           apply: () => {
@@ -1739,8 +1735,8 @@ export function Canvas(props: Props) {
               }}
             >
               <p>
-                Boundaries don't connect. Wire the components inside it — or add an External system
-                node for something outside your control.
+                Groups don't connect. Wire the components inside it — or add an External system node
+                for something outside your control.
               </p>
               <button
                 type="button"

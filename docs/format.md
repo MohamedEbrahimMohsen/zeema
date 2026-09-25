@@ -185,7 +185,7 @@ policy; it does not imply a network or failure boundary. Nest it under the `syst
 A node's **ancestry** is its group, that group's parent, and so on. Rules ask questions
 like "how many `region` groups are in this node's ancestry".
 
-Groups carry no properties in v1 apart from an optional `label` (the boundary's name as
+Groups carry no properties in v1 apart from an optional `label` (the group's name as
 drawn in the source). They exist for rules and for renderers, which draw them as nested boxes.
 
 ### nodes

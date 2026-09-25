@@ -6,7 +6,7 @@ path: /docs
 ---
 
 Zeema describes software architecture as typed data instead of pictures. A design names
-components from a curated catalogue, the directed edges between them, the boundaries that
+components from a curated catalogue, the directed edges between them, the groups that
 contain them, and the promises the system makes about itself. Because all of that is data, a
 linter can check it, a diff can show it, and any renderer can draw it.
 

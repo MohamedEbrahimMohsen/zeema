@@ -1,43 +1,23 @@
 // Renderers that need no browser: a standalone SVG using the shared layout, and a Mermaid
 // flowchart. Everything in the picture comes from the data: nodes are boxes carrying their
-// component's icon and coloured by the category of their kind, groups are dashed containers,
+// component's icon on one neutral surface, groups are dashed containers,
 // edges are arrows, solid for sync and dashed for async.
 
 import { drawnLayout } from "./drawn.js";
 import { framesOuterFirst, framesUnderTint } from "./geometry.js";
 import { layout } from "./layout.js";
 
-const CATEGORY_HUE = {
-  compute: "blue",
-  edge: "teal",
-  data: "amber",
-  ops: "violet",
-  security: "purple",
-  messaging: "green",
-  client: "rose",
-  external: "red",
-  // Untyped, so uncoloured: a custom node is a hole, and it should look like one.
-  custom: "grey",
-};
-
+// A node card is one neutral surface in both themes: colour on a drawing comes only from the
+// component's icon, from a group tint the author chose, and from finding badges. These are the
+// same values as --node-fill / --node-line in apps/web globals.css.
 // fill, stroke (light) | fill, stroke (dark)
-export const PALETTE = {
-  blue: ["#eaf1fd", "#9cc0f0", "#1b2a3f", "#3f6698"],
-  teal: ["#e6f5f2", "#8fcfc2", "#152e2b", "#3c7d72"],
-  amber: ["#fbf1e0", "#dcb473", "#33280f", "#8a6a2b"],
-  violet: ["#f0edfc", "#b6a8ee", "#241f3d", "#5b4f9c"],
-  purple: ["#f6ecf9", "#cda3dc", "#2d1c34", "#7a4d8c"],
-  green: ["#e9f5ea", "#96c99b", "#162b18", "#417a47"],
-  rose: ["#fceceb", "#e5a7a1", "#33191a", "#8f4c48"],
-  red: ["#fbe9e9", "#e09b98", "#341a1a", "#8d4340"],
-  grey: ["#f0f0ef", "#c2c2bf", "#26262a", "#5a5a60"],
-};
+const NODE = ["#ffffff", "#d4d4d0", "#1f1f23", "#3a3a40"];
 
 const ICON = 24;
 
-// Boundary tints: a named set, each one stroke colour per theme, or a free `#rrggbb` colour that
+// Group tints: a named set, each one stroke colour per theme, or a free `#rrggbb` colour that
 // is used as it is in both themes (the trade-off of a free colour). Either way the fill is the
-// stroke colour at about 8% so nested boundaries stay readable. The canvas stylesheet (apps/web
+// stroke colour at about 8% so nested groups stay readable. The canvas stylesheet (apps/web
 // canvas.css) holds the same named values; the sidecar names one or carries the hex.
 // stroke (light) | stroke (dark)
 export const TINT = {
@@ -55,13 +35,14 @@ export const TINT_FILL_ALPHA = "14";
 export const HEX_TINT_RE = /^#[0-9a-fA-F]{6}$/;
 
 /**
- * An icon drawn before a boundary label is a reference: `kind:<id>`, `component:<p>/<id>` or
+ * An icon drawn before a group label is a reference: `kind:<id>`, `component:<p>/<id>` or
  * `boundary:<id>` (icons/boundaries/<id>.svg, a brand or concept mark kept apart from the rest).
+ * The user-facing word is group; boundary stays in the stored format.
  */
 export const FRAME_ICON_RE =
   /^(kind:[a-z0-9-]+|boundary:[a-z0-9]+(?:-[a-z0-9]+)*|component:[a-z0-9-]+\/[a-z0-9-]+)$/;
 const FRAME_ICON = 16;
-// How far a boundary's words move right to make room for its icon: the icon and a 6px gap.
+// How far a group's words move right to make room for its icon: the icon and a 6px gap.
 export const FRAME_ICON_SHIFT = 22;
 
 /** The key an icon reference has in an icon map keyed like icons.json, or null. */
@@ -93,7 +74,7 @@ const f1 = (n) => Number(n).toFixed(1);
  *                                layout: a saved layout sidecar — { nodes, edges } — which makes
  *                                the picture the one that was drawn rather than an arrangement
  *                                of it. Notes are canvas furniture and are never drawn here.
- *                                frames: { [groupId]: { tint?, icon? } } — how each boundary is
+ *                                frames: { [groupId]: { tint?, icon? } } — how each group is
  *                                drawn; defaults to the sidecar's own `frames`.
  *                                frameIcons: { [iconRef]: innerSvg } — the bodies of the icons
  *                                those styles reference; a reference missing here is looked up
@@ -120,16 +101,9 @@ export function toSvg(doc, catalogue, options = {}) {
   // The drawing keeps its own coordinates: the viewBox moves to them instead of the boxes moving
   // to the viewBox, so what the sidecar holds is what the file says.
   const at = ox || oy ? `x="${ox}" y="${oy}" ` : "";
-  const kinds = catalogue?.kinds ?? {};
   const comps = catalogue?.components ?? {};
   const theme = options.theme ?? "auto";
-  const light = Object.entries(PALETTE)
-    .map(([k, v]) => `.f-${k}{fill:${v[0]};stroke:${v[1]}}`)
-    .join("");
-  const dark = Object.entries(PALETTE)
-    .map(([k, v]) => `.f-${k}{fill:${v[2]};stroke:${v[3]}}`)
-    .join("");
-  // Boundary styles are presentation, so they come from the sidecar and never from the document.
+  // Group styles are presentation, so they come from the sidecar and never from the document.
   // Anything that is not an own key naming a known tint, a `#rrggbb` colour or a well-formed icon
   // is ignored. A hex tint comes back lowercased, so the same colour always writes the same bytes.
   const rawStyles =
@@ -156,20 +130,21 @@ export function toSvg(doc, catalogue, options = {}) {
   const tinted = drawnGroups.some((g) => styleOf(g.id).tint);
   const iconed = drawnGroups.some((g) => styleOf(g.id).body);
   const vars = {
-    light: ":root{--ink:#1b1b19;--muted:#6b6b66;--edge:#6b6b72;--frame:#b4b4ae;--bg:#ffffff}",
-    dark: ":root{--ink:#ececea;--muted:#a1a19c;--edge:#a0a0a8;--frame:#55555c;--bg:#17171a}",
+    light: `:root{--ink:#1b1b19;--muted:#6b6b66;--edge:#6b6b72;--frame:#b4b4ae;--bg:#ffffff;--node-fill:${NODE[0]};--node-line:${NODE[1]}}`,
+    dark: `:root{--ink:#ececea;--muted:#a1a19c;--edge:#a0a0a8;--frame:#55555c;--bg:#17171a;--node-fill:${NODE[2]};--node-line:${NODE[3]}}`,
   };
   let style = "";
-  if (theme === "dark") style = vars.dark + dark;
-  else if (theme === "light") style = vars.light + light;
-  else style = `${vars.light}@media (prefers-color-scheme: dark){${vars.dark}${dark}}${light}`;
+  if (theme === "dark") style = vars.dark;
+  else if (theme === "light") style = vars.light;
+  else style = `${vars.light}@media (prefers-color-scheme: dark){${vars.dark}}`;
   style +=
+    ".body{fill:var(--node-fill);stroke:var(--node-line)}" +
     ".n{font-size:14px;font-weight:500;fill:var(--ink)}.c{font-size:12px;fill:var(--muted)}" +
     ".g{font-size:12px;fill:var(--muted)}" +
     ".gk{font-size:10px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;fill:var(--muted);opacity:0.75}" +
     ".e{font-size:12px;fill:var(--muted);paint-order:stroke;" +
     "stroke:var(--bg);stroke-width:3px}.ic{color:var(--ink)}";
-  // Only a drawing that uses a tint or a boundary icon carries their styles, so every other
+  // Only a drawing that uses a tint or a group icon carries their styles, so every other
   // picture is byte-for-byte what it was before either existed.
   if (tinted) {
     if (theme === "dark") style += tintTokens(1);
@@ -190,8 +165,8 @@ export function toSvg(doc, catalogue, options = {}) {
       '<path d="M0 0L10 5L0 10z" fill="var(--edge)"/></marker></defs>',
     `<rect ${at}width="${w}" height="${h}" fill="var(--bg)"/>`,
   ];
-  // Outer boundaries first, so a nested one paints over its parent. A tint fills only its own
-  // boundary: every boundary inside a tinted one lays the page background down first. Without a
+  // Outer groups first, so a nested one paints over its parent. A tint fills only its own
+  // group: every group inside a tinted one lays the page background down first. Without a
   // tint there is nothing to cut, and the picture is what it always was.
   const cut = tinted ? framesUnderTint(drawnGroups, (id) => styleOf(id).tint !== null) : new Set();
   for (const g of framesOuterFirst(doc.groups ?? [])) {
@@ -253,10 +228,12 @@ export function toSvg(doc, catalogue, options = {}) {
     const [x, y] = lay.positions[n.id];
     const [bw, bh] = lay.sizes[n.id];
     const c = own(comps, n.component) ?? {};
-    const hue = own(CATEGORY_HUE, own(kinds, c.kind)?.category) ?? "grey";
+    // A custom node is a hole in the model and is drawn as one: dashed border, washed-out fill,
+    // as on the canvas. Written on the element so a page that strips the <style> keeps it.
+    const hole = c.kind === "custom" ? ' stroke-dasharray="6 4" fill-opacity="0.45"' : "";
     const cx = x + bw / 2;
     out.push(
-      `<rect class="f-${hue}" x="${x}" y="${y}" width="${bw}" height="${bh}" rx="8" stroke-width="1"/>`,
+      `<rect class="body" x="${x}" y="${y}" width="${bw}" height="${bh}" rx="8" stroke-width="1"${hole}/>`,
     );
     const body = own(icons, n.component);
     if (body)

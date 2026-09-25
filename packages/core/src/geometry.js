@@ -288,8 +288,8 @@ export function groupFrames(doc, boxes) {
   return frames;
 }
 
-// The order boundaries are painted in: the document's order, except that a parent always comes
-// before its children, so a nested boundary is drawn over the one that contains it. A document
+// The order groups are painted in: the document's order, except that a parent always comes
+// before its children, so a nested group is drawn over the one that contains it. A document
 // that already lists parents first comes back unchanged. A parent chain that loops or names a
 // missing group simply stops there.
 export function framesOuterFirst(groups) {
@@ -309,7 +309,7 @@ export function framesOuterFirst(groups) {
   return out;
 }
 
-// The boundaries that sit inside a tinted one. A tint fills only its own boundary's area, so each
+// The groups that sit inside a tinted one. A tint fills only its own group's area, so each
 // of these paints the page background behind itself first: an untinted child reads as plain
 // page, a tinted child shows its own tint over the page rather than over its parent's.
 export function framesUnderTint(groups, isTinted) {

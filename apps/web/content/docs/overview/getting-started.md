@@ -44,7 +44,7 @@ First boot seeds the curated designs, which takes a minute or two. See
 1. **New design.** The button is in the site header. A new design is private and parked at a
    temporary address of the form `draft-a1b2c3` until you give it a name.
 2. **Draw it.** The canvas has the catalogue in its palette. Drop components, join them with
-   edges, nest them in boundaries. Findings update as you work: structural problems block the
+   edges, nest them in groups. Findings update as you work: structural problems block the
    save, rule findings do not.
 3. **Name it.** Click the title. The address follows the title the first time you publish, so
    `Order processing` becomes `/d/<you>/order-processing`.

@@ -30,7 +30,7 @@ The sidecar is a small JSON document stored with each version of a design.
 | `nodes` | A node id to its `[x, y]` in world coordinates |
 | `edges` | An edge key to its bow: how far the arrow bends |
 | `notes` | Free-text annotations |
-| `frames` | A boundary id to its colour and icon (see below) |
+| `frames` | A group id to its colour and icon (see below) |
 
 An edge key is `from>to`, or `from>to#n` for the n-th parallel edge between the same pair.
 
@@ -49,7 +49,7 @@ A note is a free-text annotation on the canvas. It is emphatically **not** a nod
 component, it takes no edges, no rule ever sees it, and adding one does not change a byte of the
 YAML.
 
-A note carries at most one **anchor**, naming either a node or a boundary by the id the document
+A note carries at most one **anchor**, naming either a node or a group by the id the document
 uses. That is the only place in the sidecar that refers to the document at all.
 
 - **Unanchored:** `x`/`y` are the note's own top-left corner on the canvas.
@@ -60,11 +60,11 @@ uses. That is the only place in the sidecar that refers to the document at all.
 Because the anchor is an id, moving a node carries its notes along, and renaming a node in the
 YAML editor leaves the note pointing at nothing, which the canvas shows rather than hides.
 
-## Boundary colour and icon
+## Group colour and icon
 
-A boundary can carry a colour and an icon drawn before its name. Both are presentation, so both
-live in the sidecar under `frames`, keyed by the boundary's id. The YAML never changes and no rule
-ever reads them. Set them from the boundary's panel in the canvas inspector; each change can be
+A group can carry a colour and an icon drawn before its name. Both are presentation, so both
+live in the sidecar under `frames`, keyed by the group's id. The YAML never changes and no rule
+ever reads them. Set them from the group's panel in the canvas inspector; each change can be
 undone like any other edit.
 
 - **`tint`** is one of a set of names, `slate`, `blue`, `green`, `amber`, `rose`, `violet` and
@@ -74,8 +74,8 @@ undone like any other edit.
   either background. The inspector's colour field has a swatch per name, then "More colours":
   a palette of 48 colours, the ones you applied lately, a hex box and the system colour picker. Leave `tint` out to get the default frame.
 - **`icon`** is a reference, never the icon itself. It takes one of three forms:
-  - `boundary:<id>` for a boundary icon, for example `boundary:aws` or `boundary:on-premises`.
-    This is a separate set made for boundaries: platform and brand marks (AWS, Azure, Google
+  - `boundary:<id>` for a group icon (the user-facing word is group; boundary stays in the stored format), for example `boundary:aws` or `boundary:on-premises`.
+    This is a separate set made for groups: platform and brand marks (AWS, Azure, Google
     Cloud, Kubernetes, GitHub, Anthropic and others) and concept marks (cloud, on-premises,
     internet, users, office, region, security, network, the development, test and production
     environments and others). The files live in `icons/boundaries/`, the file name is the id,
@@ -90,8 +90,8 @@ undone like any other edit.
 
 The reader drops anything else: a tint that is neither a name on the list nor `#rrggbb` (so not
 `#rgb`, not an alpha byte, not `rgb()` or a colour name), an icon reference in the wrong
-shape, or a style for a boundary the design no longer has. Deleting a boundary deletes its style
-too, and renaming a boundary moves its style with it.
+shape, or a style for a group the design no longer has. Deleting a group deletes its style
+too, and renaming a group moves its style with it.
 
 Exports keep both. The SVG and PNG you export from the canvas, and the as-drawn SVG from the
 render API, draw the tint and the icon exactly as the canvas shows them.

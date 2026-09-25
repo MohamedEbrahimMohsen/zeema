@@ -11,7 +11,7 @@ export const SIDECAR_VERSION = 2;
 
 /**
  * What a note is pinned to. A note carries at most one anchor, and it names either a node or a
- * boundary by the id the design document uses. Nothing else in the sidecar refers to the
+ * group by the id the design document uses. Nothing else in the sidecar refers to the
  * document, so this is the only place an id can go stale.
  */
 export type NoteAnchor = { node: string } | { group: string };
@@ -28,7 +28,7 @@ export const anchorKey = (a: NoteAnchor) => ("node" in a ? `node:${a.node}` : `g
  * `x`/`y` mean one of two things, and `anchor` says which:
  *  - no anchor: world coordinates, the note's own top-left corner on the canvas.
  *  - anchored: an OFFSET from the TOP-RIGHT corner of the target's box (a node's box, or a
- *    boundary's computed frame). World top-left = (targetX + targetW + x, targetY + y). The
+ *    group's computed frame). World top-left = (targetX + targetW + x, targetY + y). The
  *    default offset puts the note just outside that corner, and the target's corner is where
  *    the "hidden notes here" marker appears, so one corner explains both.
  * `w`/`h` are always a size in world units.
@@ -50,7 +50,7 @@ export const NOTE_ANCHOR_W = 148;
 export const NOTE_ANCHOR_H = 66;
 
 /**
- * The named tints a boundary may carry. The canvas and the exported SVG each hold one token per
+ * The named tints a group may carry. The canvas and the exported SVG each hold one token per
  * named tint (light and dark), so a named tint always reads in both themes.
  */
 export const TINTS = ["slate", "blue", "green", "amber", "rose", "violet", "teal"] as const;
@@ -74,11 +74,12 @@ export const normaliseTint = (v: unknown): Tint | HexTint | null =>
   isTint(v) ? v : isHexTint(v) ? (v.toLowerCase() as HexTint) : null;
 
 /**
- * An icon drawn before a boundary's label, by reference and never by bytes:
+ * An icon drawn before a group's label, by reference and never by bytes:
  * `kind:<kindId>` is a kind glyph (icons/kinds/<kindId>.svg),
  * `component:<provider>/<componentId>` is a catalogue component's icon and
- * `boundary:<id>` is one of the boundary marks (icons/boundaries/<id>.svg): a platform or brand
+ * `boundary:<id>` is one of the group marks (icons/boundaries/<id>.svg): a platform or brand
  * (AWS, Kubernetes, GitHub) or a concept (on-premises, internet, users). `<id>` is kebab-case.
+ * The user-facing word is group; boundary stays in the stored format.
  */
 export const FRAME_ICON_RE =
   /^(kind:[a-z0-9-]+|boundary:[a-z0-9]+(?:-[a-z0-9]+)*|component:[a-z0-9-]+\/[a-z0-9-]+)$/;
@@ -92,7 +93,7 @@ export function frameIconKey(ref: string | undefined | null) {
   return ref.startsWith("component:") ? ref.slice(ref.indexOf("/") + 1) : ref;
 }
 
-/** How a boundary is drawn: presentation only, so it lives here and never in the YAML. */
+/** How a group is drawn: presentation only, so it lives here and never in the YAML. */
 export type FrameStyle = { tint?: Tint | HexTint; icon?: string };
 export const FRAME_MAX_STYLES = 500;
 const GROUP_ID_RE = /^[a-z][a-z0-9-]*$/;
@@ -102,7 +103,7 @@ export type LayoutSidecar = {
   nodes: Record<string, [number, number]>;
   edges: Record<string, number>;
   notes: Note[];
-  /** Keyed by group id. A boundary with no entry is drawn in the default frame colour. */
+  /** Keyed by group id. A group with no entry is drawn in the default frame colour. */
   frames: Record<string, FrameStyle>;
 };
 
@@ -193,9 +194,9 @@ export function readSidecar(raw: unknown, targets?: AnchorTargets): LayoutSideca
 }
 
 /**
- * The boundary styles a sidecar holds. A tint that is neither a named one nor `#rrggbb` (kept,
+ * The group styles a sidecar holds. A tint that is neither a named one nor `#rrggbb` (kept,
  * lowercased), or an icon reference of the wrong shape, is dropped, and an entry left with
- * nothing in it goes with it. With targets, a style for a boundary the design no longer has is
+ * nothing in it goes with it. With targets, a style for a group the design no longer has is
  * dropped too, the way a stale anchor is.
  */
 export function readFrames(
@@ -207,7 +208,7 @@ export function readFrames(
   let kept = 0;
   for (const [id, v] of Object.entries(raw as Record<string, unknown>)) {
     if (kept >= FRAME_MAX_STYLES) break;
-    // A boundary id is kebab-case (the schema says so), which also keeps `__proto__` and its
+    // A group id is kebab-case (the schema says so), which also keeps `__proto__` and its
     // friends from ever becoming a key here.
     if (!GROUP_ID_RE.test(id) || (present && !present.groups.has(id))) continue;
     if (!v || typeof v !== "object") continue;
@@ -236,7 +237,7 @@ export function writeSidecar(
   };
 }
 
-/** The boundary styles whose boundary still exists. Like `pruneAnchored`, it copies. */
+/** The group styles whose group still exists. Like `pruneAnchored`, it copies. */
 export function pruneFrames(frames: Record<string, FrameStyle>, groups: Iterable<string>) {
   const keep = new Set(groups);
   const out: Record<string, FrameStyle> = {};
@@ -244,7 +245,7 @@ export function pruneFrames(frames: Record<string, FrameStyle>, groups: Iterable
   return out;
 }
 
-/** Follow a boundary rename: its colour and icon go with it. Mutates, like `retargetAnchors`. */
+/** Follow a group rename: its colour and icon go with it. Mutates, like `retargetAnchors`. */
 export function retargetFrame(frames: Record<string, FrameStyle>, from: string, to: string) {
   if (from === to || !Object.hasOwn(frames, from)) return;
   frames[to] = frames[from];
@@ -252,7 +253,7 @@ export function retargetFrame(frames: Record<string, FrameStyle>, from: string, 
 }
 
 /**
- * The notes that still have something to hang on. A note anchored to a node or boundary that
+ * The notes that still have something to hang on. A note anchored to a node or group that
  * has just been deleted goes with it, which is why the caller runs this inside the same undo
  * step as the deletion.
  */

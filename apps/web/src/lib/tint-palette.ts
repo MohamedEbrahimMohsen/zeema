@@ -1,4 +1,4 @@
-// The boundary colour popover's fixed palette and the colours this browser applied lately.
+// The group colour popover's fixed palette and the colours this browser applied lately.
 // A hex tint is used as it is in both themes, so the shades sit in the middle of each ramp,
 // where a dashed stroke and a light fill read on the light and the dark canvas alike.
 import type { HexTint } from "./layout-sidecar";

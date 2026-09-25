@@ -40,20 +40,7 @@ const el = (name: string, attrs: Record<string, unknown> = {}) => {
     if (v !== null && v !== undefined) n.setAttribute(k, String(v));
   return n;
 };
-const CATEGORY_HUE: Record<string, string> = {
-  compute: "blue",
-  edge: "teal",
-  data: "amber",
-  ops: "violet",
-  security: "purple",
-  messaging: "green",
-  client: "rose",
-  external: "red",
-  // Untyped, so uncoloured: a custom node is a hole, and it should look like one.
-  custom: "grey",
-};
-
-// A boundary icon is 16px, top-aligned with the label, which it pushes FRAME_ICON_SHIFT right.
+// A group icon is 16px, top-aligned with the label, which it pushes FRAME_ICON_SHIFT right.
 // The same numbers as the exported SVG (@zeema/core/render), so the two cannot disagree.
 const FRAME_ICON = 16;
 // The markers this scene installs in the <defs>: the edge head, and the accent one a selected edge uses.
@@ -73,7 +60,7 @@ export type Model = {
   sizes: Record<string, [number, number]>;
   bows: Record<string, number>;
   notes: Note[];
-  /** Boundary tint and icon by group id, from the sidecar. Absent means the default frame. */
+  /** Group tint and icon by group id, from the sidecar. Absent means the default frame. */
   frameStyles?: Record<string, FrameStyle>;
   /** The Notes toggle. Hidden means not drawn, not hit-testable and not exported. */
   showNotes: boolean;
@@ -97,7 +84,7 @@ export type Handlers = {
   onDrop?: (componentId: string, x: number, y: number) => void;
   onNoteGeometry?: (id: string, box: { x: number; y: number; w: number; h: number }) => void;
   onNotePin?: (key: string) => void;
-  /** A drag that began on a boundary ended on a component: someone tried to wire the frame. */
+  /** A drag that began on a group ended on a component: someone tried to wire the frame. */
   onFrameWire?: (clientX: number, clientY: number) => void;
 };
 
@@ -374,7 +361,7 @@ export class Scene {
     this.frames = groupFrames(model.doc, this.boxes) as Record<string, Box>;
     // An anchored note carries an offset, not a position, so every render works out afresh
     // where it lands. That is what makes it follow its target through a node drag, an Arrange,
-    // or a boundary that grew because something inside it moved.
+    // or a group that grew because something inside it moved.
     this.noteBoxes = {};
     for (const n of model.notes || []) {
       const [x, y] = this.noteOrigin(n);
@@ -401,7 +388,7 @@ export class Scene {
     return this.model?.showNotes !== false;
   }
 
-  /** The box an anchor names: a node's box, or a boundary's computed frame. */
+  /** The box an anchor names: a node's box, or a group's computed frame. */
   anchorBox(note: Note): Box | null {
     if (!note.anchor) return null;
     const id = anchorTarget(note.anchor);
@@ -536,7 +523,7 @@ export class Scene {
   }
 
   /**
-   * With notes hidden, each node or boundary that carries one shows a dot on the corner the
+   * With notes hidden, each node or group that carries one shows a dot on the corner the
    * notes hang off, so nothing is silently lost. Free-floating notes get no marker: there is
    * nothing for one to sit on. These are chrome, and the export strips them.
    */
@@ -709,7 +696,7 @@ export class Scene {
     this.frameEls.clear();
     const styles = this.model.frameStyles ?? {};
     const tintOf = (id: string) => normaliseTint((own(styles, id) as FrameStyle | undefined)?.tint);
-    // Outer boundaries first, so a nested one paints over its parent; every boundary inside a
+    // Outer groups first, so a nested one paints over its parent; every group inside a
     // tinted one lays the page background down first, so a tint fills its own area only. The
     // server render (render.js) does the same with the same two helpers.
     const groups = this.model.doc.groups || [];
@@ -751,11 +738,11 @@ export class Scene {
         height: f[3],
         rx: 10,
       });
-      // A boundary reads as a name with its kind beside it, never "name (kind)". The label is
+      // A group reads as a name with its kind beside it, never "name (kind)". The label is
       // what the author typed; the kind is a tag. With no label the id stands in, so a hand
       // -written design keeps reading as cell-a / cell-b. When that caption would only repeat
       // the kind, the tag alone says it — a fresh group whose auto-id is its kind shows one word.
-      // The icon, when the boundary has one and the catalogue can draw it, comes first and
+      // The icon, when the group has one and the catalogue can draw it, comes first and
       // pushes the words right. A reference to an icon that is not there draws nothing.
       const symbol = this.frameSymbol(style?.icon);
       const icon = symbol
@@ -842,9 +829,9 @@ export class Scene {
   }
 
   /**
-   * The symbol id for a boundary icon reference, defining it on first use, or null when the
+   * The symbol id for a group icon reference, defining it on first use, or null when the
    * reference is malformed or names an icon the catalogue does not have. Kind glyphs (`ick-`)
-   * and boundary marks (`icb-`) get their own prefixes so they can never collide with a component
+   * and group marks (`icb-`) get their own prefixes so they can never collide with a component
    * id, nor with each other: `kind:network` and `boundary:network` are different drawings.
    */
   frameSymbol(ref: string | undefined) {
@@ -852,6 +839,7 @@ export class Scene {
     if (!key) return null;
     const colon = key.indexOf(":");
     if (colon < 0) return this.symbolFor(key) ? `ic-${key}` : null;
+    // The user-facing word is group; boundary stays in the stored format.
     const prefix = key.startsWith("boundary:") ? "icb-" : "ick-";
     const id = `${prefix}${key.slice(colon + 1)}`;
     if (this.symbols.has(id)) return id;
@@ -862,12 +850,6 @@ export class Scene {
     this.defs.append(sym);
     this.symbols.add(id);
     return id;
-  }
-
-  hueOf(componentId: string) {
-    const c = own(this.model.catalogue.components, componentId);
-    const k = c ? own(this.model.catalogue.kinds, c.kind) : null;
-    return k ? CATEGORY_HUE[k.category] || "grey" : "grey";
   }
 
   // A custom node is a hole in the model, and it is drawn as one: dashed border, washed-out
@@ -882,7 +864,6 @@ export class Scene {
     this.nodeEls.clear();
     for (const n of this.model.doc.nodes) {
       const b = this.boxes[n.id];
-      const hue = this.hueOf(n.component);
       const untyped = this.isCustom(n.component);
       const box = el("g", {
         class: `node-box${untyped ? " untyped" : ""}`,
@@ -897,8 +878,10 @@ export class Scene {
           width: b[2],
           height: b[3],
           rx: 8,
-          fill: `var(--f-${hue}-fill)`,
-          stroke: `var(--f-${hue}-line)`,
+          // One neutral surface for every node: colour comes from the icon, a group tint and
+          // the finding badges, never from the kind's category.
+          fill: "var(--node-fill)",
+          stroke: "var(--node-line)",
           // Set on the element, not in a stylesheet, so the exported SVG carries it too.
           "stroke-dasharray": untyped ? "6 4" : null,
           "fill-opacity": untyped ? 0.45 : null,
@@ -1416,7 +1399,7 @@ export class Scene {
 
   repaintFrames() {
     const frames = groupFrames(this.model.doc, this.boxes) as Record<string, Box>;
-    // Kept, not just drawn: a note anchored to a boundary reads its frame back from here while
+    // Kept, not just drawn: a note anchored to a group reads its frame back from here while
     // the drag is still running.
     this.frames = frames;
     for (const [id, els] of this.frameEls) {
@@ -1462,12 +1445,12 @@ export class Scene {
       };
     });
     this.h.onMove?.(moves);
-    // A boundary is not an endpoint: `from` and `to` are node ids. Someone who drags off a
+    // A group is not an endpoint: `from` and `to` are node ids. Someone who drags off a
     // frame and lets go on a component was trying to wire it, and the canvas used to answer
-    // with silence. It has moved the boundary instead — which is the right thing to do with
+    // with silence. It has moved the group instead — which is the right thing to do with
     // that gesture — and now it also says why no edge appeared.
     if (kind === "group" && at) {
-      // Only a component the boundary does not contain counts: its own members travel with the
+      // Only a component the group does not contain counts: its own members travel with the
       // pointer, so ending on one of those is an ordinary move and says nothing.
       const inside = new Set(ids);
       const over = this.model.doc.nodes.some((n: any) => {

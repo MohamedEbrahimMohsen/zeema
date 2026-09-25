@@ -110,7 +110,7 @@ function describePredicate(p) {
   }
   if (p.inGroup) {
     const n = p.inGroup.count ? comparison(p.inGroup.count) : "at least one";
-    return leaf(`the node sits inside ${n} ${p.inGroup.kind} boundary`);
+    return leaf(`the node sits inside ${n} ${p.inGroup.kind} group`);
   }
   if (p.syncChainDepth)
     return leaf(
@@ -262,7 +262,7 @@ export function ruleReads(rule) {
       if (p.hasNode.category) add(out.nodeCategories, p.hasNode.category);
       return;
     }
-    if (p.inGroup) return; // a boundary, which the inspector offers as the node's group
+    if (p.inGroup) return; // a group, which the inspector offers as the node's group
     if (p.syncChainDepth) return; // a property of the graph, not of any one field
     if (p.from) return void walk(p.from);
     if (p.to) return void walk(p.to);

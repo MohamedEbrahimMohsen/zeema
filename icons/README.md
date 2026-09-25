@@ -8,7 +8,7 @@ icon, so the set can grow or be replaced without touching the model.
 |---|---|---|
 | `kinds/` | 72 | One generic line glyph per kind. A queue, a cache, a cylinder, a gear. |
 | `providers/` | 292 | Brand marks, used as the badge in the corner of a component icon. |
-| `boundaries/` | 58 | Icons a boundary (a design group) can show before its label, kept apart from everything else here: platform and brand marks (`aws`, `gcp`, `kubernetes`, `github`) and concept glyphs (`on-premises`, `internet`, `users`, `environment-prod`). Referenced as `boundary:<id>` from a layout sidecar, never from a document. |
+| `boundaries/` | 58 | Icons a group can show before its label (the user-facing word is group; boundary stays in the stored format, so the folder keeps its name), kept apart from everything else here: platform and brand marks (`aws`, `gcp`, `kubernetes`, `github`) and concept glyphs (`on-premises`, `internet`, `users`, `environment-prod`). Referenced as `boundary:<id>` from a layout sidecar, never from a document. |
 | `components/<provider>/` | 2156 | One per component, in the same provider subfolder as the component file. For `aws`, `azure`, `gcp`, `oci` and `k8s` this is the vendor's own product icon wherever the vendor publishes one (see *Two styles* below); everywhere else it is the kind glyph, plus a provider badge where the component is a cloud service or a branded product. |
 
 ## Naming
@@ -21,7 +21,7 @@ other lookup, no manifest, no aliases. Provider files are named for their
 [Simple Icons](https://simpleicons.org) slug (`apachekafka.svg`, `googlecloud.svg`), except
 `aws.svg`, `azure.svg`, `oci.svg`, `ibm.svg` and `outscale.svg`, which are original artwork (see *Licence* below).
 
-A boundary icon id is plain kebab-case and names what the boundary stands for, not a Simple Icons
+A group icon id is plain kebab-case and names what the group stands for, not a Simple Icons
 slug: `gcp` (Google Cloud), `kafka` (Apache Kafka), `environment-prod`. The folder is the set; there
 is no manifest. Every file needs a display name in `locales/en.yaml` under `boundaryIcons`, and the
 gate fails on a file without one or a name without a file. The bundle carries each one in
@@ -61,7 +61,7 @@ Every file in this folder, whichever style it is in:
   a gradient id that collides silently repaints someone else's glyph
 
 `packages/catalogue/src/validate.js` enforces the first three on every build, and for
-`boundaries/` the fourth as well: a boundary icon carries no `id` attribute at all.
+`boundaries/` the fourth as well: a group icon carries no `id` attribute at all.
 
 ## Two styles
 
@@ -87,7 +87,7 @@ larger halo circle filled with `var(--zeema-icon-bg, #fff)`, which knocks the ki
 out from under the badge. Set `--zeema-icon-bg` to the surrounding background colour on a
 dark theme; the default white is correct on a light one.
 
-**Boundary icons** are in both styles. A concept glyph is a line glyph exactly as above. A brand
+**Group icons** are in both styles. A concept glyph is a line glyph exactly as above. A brand
 mark is the provider mark drawn full size: one path in the brand colour, inside a
 `<g fill="#hex" stroke="none">` so the stroking context a renderer gives a line glyph does not
 outline it. A mark whose brand colour is near black (GitHub, Anthropic, Apple, Vercel, Helm,
@@ -113,7 +113,7 @@ When you add a component:
    `icons/components/<provider>/<id>.svg`: the kind glyph, plus the provider badge in the
    bottom-right corner. Reuse an existing `icons/providers/*.svg` mark, or add one from
    Simple Icons if the product is not there yet.
-4. If you add a boundary icon, add its id to `.claude/tools/boundaries.mjs` (a provider key or
+4. If you add a group icon, add its id to `.claude/tools/boundaries.mjs` (a provider key or
    Simple Icons slug in `BOUNDARY_BRANDS`, or a line glyph in `BOUNDARY_GLYPHS`), run
    `node .claude/tools/icons.mjs`, and add its name under `boundaryIcons` in `locales/en.yaml`.
 5. If you add a kind, `icons/kinds/<kind-id>.svg` is mandatory. It is the fallback for
@@ -126,7 +126,7 @@ only reads at 48 px is not finished.
 
 The kind glyphs are original work, MIT licensed with the rest of this repository.
 
-The boundary icons in `boundaries/` come from three places:
+The group icons in `boundaries/` come from three places:
 
 - **Original glyphs**, MIT with the repository: `ai`, `analytics`, `cloud`, `database`, `edge`,
   `environment-dev`, `environment-prod`, `environment-test`, `internet`, `iot`, `mobile`,

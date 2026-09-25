@@ -1,12 +1,13 @@
-// The boundary icon set: icons/boundaries/<id>.svg, written by icons.mjs.
+// The group icon set: icons/boundaries/<id>.svg, written by icons.mjs.
+// The user-facing word is group; boundary stays in the stored format (and in these names).
 //
-// A boundary (a design group) may show one icon before its label. Besides the kind glyphs and the
-// component icons, it can use one of these: the mark of the platform the boundary stands for
+// A design group may show one icon before its label. Besides the kind glyphs and the
+// component icons, it can use one of these: the mark of the platform the group stands for
 // (an AWS account, a Kubernetes cluster, a GitHub organisation) or a generic concept (on-premises,
 // the internet, users, a production environment). They live in their own folder so that nothing
 // here collides with, or is mistaken for, a kind or a component icon.
 //
-// BOUNDARY_BRANDS maps a boundary icon id to where its mark comes from:
+// BOUNDARY_BRANDS maps a group icon id to where its mark comes from:
 //   - a key of icons/providers/ ("aws", "googlecloud"): the mark is copied from that file, which is
 //     already fitted and licensed (Simple Icons CC0, or original artwork for aws/azure/oci/ibm);
 //   - otherwise a Simple Icons slug, fitted with the same path rounding the provider marks use.

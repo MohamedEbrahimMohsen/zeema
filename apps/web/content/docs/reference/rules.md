@@ -182,7 +182,7 @@ when:
 True when the design contains at least one node of that `kind` or `category`. Available on every
 subject.
 
-### Boundaries
+### Groups
 
 ```yaml
 when:

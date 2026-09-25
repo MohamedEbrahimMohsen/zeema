@@ -366,7 +366,7 @@ export function addGroup(doc, memberIds, kind = "system", label) {
   const g = { id, kind };
   if (label) g.label = label;
   // Grouping things that already share a group nests inside it rather than beside it, which is
-  // what the frames then draw: a boundary inside a region, not two boundaries crossing.
+  // what the frames then draw: a group inside a region, not two groups crossing.
   const parents = new Set(
     d.nodes.filter((n) => memberIds.includes(n.id)).map((n) => n.group || null),
   );
@@ -394,7 +394,7 @@ export function groupMembers(doc, groupId) {
   return doc.nodes.filter((n) => wanted.has(n.group)).map((n) => n.id);
 }
 
-// The other reading of deleting a boundary: take what is inside it with it. Offered next to
+// The other reading of deleting a group: take what is inside it with it. Offered next to
 // ungrouping rather than instead of it, because one of them cannot be guessed from a keystroke.
 export function deleteGroupDeep(doc, groupId) {
   const members = groupMembers(doc, groupId);

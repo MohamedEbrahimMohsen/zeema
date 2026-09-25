@@ -4,8 +4,8 @@
    Tokens mirror design-system/tokens/*.css (the "Blueprint" direction).
    Light is the default; the theme boot script in layout.tsx stamps
    data-theme="light|dark" on <html> before first paint, so dark needs only
-   the one attribute block. The --f-* names are what the render engine and
-   the canvas already use; they alias the taxonomy tokens.                */
+   the one attribute block. Node cards use --node-fill/--node-line; the
+   --f-note-* names the canvas uses alias the note tokens.                */
 
 :root {
   /* surfaces + ink */
@@ -33,25 +33,12 @@
   --warn: #b26a00;
   --err: #c2382f;
 
-  /* taxonomy — fill + line per component category */
+  /* nodes — one neutral card surface; colour on a drawing comes from icons, group tints and
+     finding badges only. Same values as NODE in packages/core/src/render.js. */
+  --node-fill: #ffffff;
+  --node-line: #d4d4d0;
+  /* the title plate a design without a drawing shows on its card */
   --t-blue-fill: #eaf1fd;
-  --t-blue-line: #9cc0f0;
-  --t-teal-fill: #e6f5f2;
-  --t-teal-line: #8fcfc2;
-  --t-amber-fill: #fbf1e0;
-  --t-amber-line: #dcb473;
-  --t-violet-fill: #f0edfc;
-  --t-violet-line: #b6a8ee;
-  --t-purple-fill: #f6ecf9;
-  --t-purple-line: #cda3dc;
-  --t-green-fill: #e9f5ea;
-  --t-green-line: #96c99b;
-  --t-rose-fill: #fceceb;
-  --t-rose-line: #e5a7a1;
-  --t-red-fill: #fbe9e9;
-  --t-red-line: #e09b98;
-  --t-grey-fill: #f0f0ef;
-  --t-grey-line: #c2c2bf;
   /* canvas notes: an annotation, not a taxonomy colour */
   --t-note-fill: #fdf6d8;
   --t-note-line: #e0cf88;
@@ -141,24 +128,9 @@
   --ok: #6fc28f;
   --warn: #e0a23d;
   --err: #ef7d75;
+  --node-fill: #1f1f23;
+  --node-line: #3a3a40;
   --t-blue-fill: #1b2a3f;
-  --t-blue-line: #3f6698;
-  --t-teal-fill: #152e2b;
-  --t-teal-line: #3c7d72;
-  --t-amber-fill: #33280f;
-  --t-amber-line: #8a6a2b;
-  --t-violet-fill: #241f3d;
-  --t-violet-line: #5b4f9c;
-  --t-purple-fill: #2d1c34;
-  --t-purple-line: #7a4d8c;
-  --t-green-fill: #162b18;
-  --t-green-line: #417a47;
-  --t-rose-fill: #33191a;
-  --t-rose-line: #8f4c48;
-  --t-red-fill: #341a1a;
-  --t-red-line: #8d4340;
-  --t-grey-fill: #26262a;
-  --t-grey-line: #5a5a60;
   --t-note-fill: #33301d;
   --t-note-line: #776c37;
   --syn-key: #98a6f2;
@@ -172,7 +144,7 @@
   color-scheme: dark;
 }
 
-/* boundary tints: a closed set of names (TINTS in src/lib/layout-sidecar.ts). Same values as
+/* group tints: a closed set of names (TINTS in src/lib/layout-sidecar.ts). Same values as
    TINT in packages/core/src/render.js, which the exported SVG carries. */
 :root {
   --tint-slate: #64748b;
@@ -207,27 +179,9 @@
   --tint-teal-fill: #2dd4bf14;
 }
 
-/* the render engine and the canvas read these */
+/* the canvas reads these */
 :root,
 [data-theme="dark"] {
-  --f-blue-fill: var(--t-blue-fill);
-  --f-blue-line: var(--t-blue-line);
-  --f-teal-fill: var(--t-teal-fill);
-  --f-teal-line: var(--t-teal-line);
-  --f-amber-fill: var(--t-amber-fill);
-  --f-amber-line: var(--t-amber-line);
-  --f-violet-fill: var(--t-violet-fill);
-  --f-violet-line: var(--t-violet-line);
-  --f-purple-fill: var(--t-purple-fill);
-  --f-purple-line: var(--t-purple-line);
-  --f-green-fill: var(--t-green-fill);
-  --f-green-line: var(--t-green-line);
-  --f-rose-fill: var(--t-rose-fill);
-  --f-rose-line: var(--t-rose-line);
-  --f-red-fill: var(--t-red-fill);
-  --f-red-line: var(--t-red-line);
-  --f-grey-fill: var(--t-grey-fill);
-  --f-grey-line: var(--t-grey-line);
   --f-note-fill: var(--t-note-fill);
   --f-note-line: var(--t-note-line);
 }
@@ -1329,6 +1283,29 @@ kbd.key {
 
 .svg-preview {
   overflow: auto;
+}
+.svg-preview svg {
+  width: 100%;
+  height: auto;
+  max-height: 70vh;
+  display: block;
+}
+/* The fit/actual-size switch in the Design panel: fitted is the default, actual size lets the
+   picture overflow into the panel's own scroller rather than being shrunk to the column. It sits
+   right after the rule it overrides and carries the same weight, so order decides it. */
+.preview-actual svg {
+  width: auto;
+  height: auto;
+  max-width: none;
+  max-height: none;
+}
+
+/* ── engine SVG inlined on a page ─────────────────────────────────────
+   The render engine ships its own <style> with :root variables; the page strips it before
+   inlining so the picture follows the page theme. These rules replace it.             */
+.svg-preview rect.body {
+  fill: var(--node-fill);
+  stroke: var(--node-line);
 }
 .svg-preview svg {
   width: 100%;

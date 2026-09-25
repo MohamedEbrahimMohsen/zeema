@@ -20,7 +20,7 @@ Three layers, always in this order:
 |---|---|---|---|
 | **Kind** | An abstract category with typed properties | `queue` has `delivery`, `ordering`, `deadLetterQueue` | 72 |
 | **Component** | A concrete product of exactly one kind, with the defaults that product really has | `sns` is a `pubsub-topic` on `aws`, and it cannot replay | 1,927 |
-| **Design** | Nodes (components), directed edges, nested boundaries, and requirements | "YouTube", "Order processing" | 68 curated + user-made |
+| **Design** | Nodes (components), directed edges, nested groups, and requirements | "YouTube", "Order processing" | 68 curated + user-made |
 
 Every number in this section is the catalogue as it stood at the time of writing; the product
 derives them from the bundle. Plus **38 rules** — declarative predicates such as *"Cache 'x' is the primary store for its data
@@ -108,9 +108,10 @@ Current tokens (keep the *roles*, feel free to change the values):
 (muted). These appear on the design page, in the editor, in the canvas side pane and as badges
 on nodes. They must read instantly in both themes.
 
-The canvas also has **eight tinted node fills** keyed to kind category (blue, teal, amber, violet,
-purple, green, rose, red, grey) with a matching line colour, each in a light and a dark variant.
-Keep this: a reader tells "messaging" from "data" by fill colour before reading the label.
+**Node cards are neutral**: one surface (`--node-fill`, `--node-line`) in each theme, whatever
+the kind. With vendor icons and tinted groups on the same drawing, a fill per category read as
+noise, so colour on a drawing comes only from the component's icon, from a group tint the author
+chose, and from finding badges. A custom node is the one exception: dashed and washed out, a hole.
 
 Vendor product icons carry fixed brand colours (AWS orange, Azure blue, OCI red) and must sit on
 both themes without a white box behind them.
@@ -234,7 +235,7 @@ The read view of one design. Public designs are readable by everyone, signed in 
 
 - Breadcrumb `@owner / slug` (or `zeema · reference / slug` for curated designs).
 - Title, summary.
-- Stat row: `N components · N edges · N boundaries · N views · N clones · N exports`, a
+- Stat row: `N components · N edges · N groups · N views · N clones · N exports`, a
   `public|private` tag, and a `broken twin` tag when viewing one (see below).
 - **Action bar** (varies by permission):
   - Owner: **Open in canvas** (primary), **Edit YAML**, **Clone**, **Export SVG**, **YAML**
@@ -294,7 +295,7 @@ kind:queue." The icon is the point of the row — make it larger than 20 px if t
 
 **Scene** (centre): a dotted-grid ground (24 px dots) on `--bg`. Elements:
 
-- **Node**: a rounded rectangle (8 px radius) filled with its category tint, the component
+- **Node**: a rounded rectangle (8 px radius) on the neutral node surface, the component
   icon centred at the top (24 px), the node label (14 px, medium) and the component id (12 px,
   mono, muted) below. Selected → accent stroke 2 px; multi-selection's primary → thicker.
   Nodes with findings carry a small red or amber **badge** in a corner. A node being wired to
@@ -302,10 +303,10 @@ kind:queue." The icon is the point of the row — make it larger than 20 px if t
 - **Edge**: 1.2 px line with an arrowhead; **async edges are dashed**; optional label with a
   background knock-out; edges can be **bowed** (curved) by dragging their middle. Selected →
   accent.
-- **Boundary / group frame**: a dashed rounded rectangle (`--frame` colour) computed from its
-  members, with the label at the top-left (`label` or `id (kind)`); nested boundaries nest
+- **Group frame**: a dashed rounded rectangle (`--frame` colour) computed from its
+  members, with the label at the top-left (`label` or `id (kind)`); nested groups nest
   visually (region ▸ availability-zone ▸ vpc). Selected → accent dashed. Cursor: move on the
-  border and label (the whole group drags). A boundary may carry a tint from the layout sidecar:
+  border and label (the whole group drags). A group may carry a tint from the layout sidecar:
   one of the named set (a light and a dark value each) or a `#rrggbb` colour, which is used as it
   is in both themes. Either one strokes the frame and fills it with the same colour at about 8%.
 - **Wiring handle**: a small circle on a selected node; drag it to another node to create an
@@ -320,7 +321,7 @@ kind:queue." The icon is the point of the row — make it larger than 20 px if t
   pans, wheel zooms; double-click a label to rename, Enter edits; G groups, Ctrl Shift G
   ungroups; Ctrl D duplicates, Delete removes, arrows nudge (Shift ×10); Ctrl Z / Ctrl Y, Ctrl
   S, Ctrl 0 fits.
-- **Context menu** (right-click on node / edge / boundary / empty space): a 190 px floating
+- **Context menu** (right-click on node / edge / group / empty space): a 190 px floating
   menu, items with a right-aligned shortcut hint, separators, a red danger item (Delete),
   disabled items dimmed. Actions include group / ungroup, duplicate, delete, reverse edge,
   sync ↔ async, arrange.
@@ -330,7 +331,7 @@ kind:queue." The icon is the point of the row — make it larger than 20 px if t
 set** vs inherited) · control · a small "resolved" note under it (type, `required`, or the
 inherited value, shown as the placeholder `unset (at-least-once)`). Panels by selection:
 
-- *Nothing selected → Design*: `id`; "N nodes · N edges · N boundaries"; **Requirements** —
+- *Nothing selected → Design*: `id`; "N nodes · N edges · N groups"; **Requirements** —
   14 collapsible groups (`availability`, `consistency`, `correctness`, `data`, `durability`,
   `freshness`, `isolation`, `latency`, `messaging`, `money`, `observability`, `security`,
   `traffic`…), each with 1–6 typed fields (booleans, enums, integers, patterned strings); a group
@@ -343,8 +344,8 @@ inherited value, shown as the placeholder `unset (at-least-once)`). Panels by se
 - *Edge*: `from`, `to` (node selects), `protocol` (required), `mode` (sync/async), `delivery`
   (async only), `label`, `timeoutMs`, `retryPolicy`, `idempotent`, `circuitBreaker`, `fallback`,
   `batched`, **Delete edge**.
-- *Boundary*: `label`, `id`, `kind` (region, availability-zone, vpc, trust-zone, system, cell,
-  point-of-presence), `parent` (a cycle is refused), "N members", **Delete boundary**.
+- *Group*: `label`, `id`, `kind` (region, availability-zone, vpc, trust-zone, system, cell,
+  point-of-presence), `parent` (a cycle is refused), "N members", **Delete group**.
 - *Multi-select*: a note "3 components selected. Right click for group, duplicate and delete.
   The fields below edit the last one you clicked."
 

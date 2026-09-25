@@ -68,7 +68,7 @@
     "when": [
       "- all of these hold:",
       "  - the design requirement `availability.multiRegion` is true",
-      "  - the node sits inside exactly 1 region boundary",
+      "  - the node sits inside exactly 1 region group",
       "  - the node's `replication` is \"none\""
     ]
   },
@@ -273,7 +273,7 @@
     "select": "every node of kind matching-engine, coordination-service or event-store",
     "when": [
       "- all of these hold:",
-      "  - the node sits inside exactly 1 availability-zone boundary",
+      "  - the node sits inside exactly 1 availability-zone group",
       "  - any of these hold:",
       "    - the node's `failover` is \"none\"",
       "    - the node's `replicated` is false",
@@ -294,9 +294,9 @@
     "when": [
       "- all of these hold:",
       "  - the node's `stateless` is false",
-      "  - the node sits inside exactly 1 availability-zone boundary",
+      "  - the node sits inside exactly 1 availability-zone group",
       "  - this does not hold:",
-      "    - the node sits inside at least one cell boundary"
+      "    - the node sits inside at least one cell group"
     ]
   },
   "stateful-websocket-scale-in-without-drain": {

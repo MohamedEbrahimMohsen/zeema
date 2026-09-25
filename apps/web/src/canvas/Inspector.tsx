@@ -34,12 +34,12 @@ export type InspectorApi = {
   setGroupField: (id: string, field: string, value: unknown) => void;
   renameGroup: (oldId: string, newId: string) => void;
   setParent: (id: string, parent: string | null) => void;
-  /** Boundary tint and icon. Sidecar only; `undefined` clears that half. */
+  /** Group tint and icon. Sidecar only; `undefined` clears that half. */
   setFrameStyle: (id: string, patch: { tint?: Tint | HexTint; icon?: string }) => void;
   setDesignId: (id: string) => void;
   setRequirement: (path: string, value: unknown) => void;
   setNoteText: (id: string, text: string) => void;
-  /** Point the palette at a query, the way the boundary hint does. */
+  /** Point the palette at a query, the way the group hint does. */
   findInPalette: (query: string) => void;
   detachNote: (id: string) => void;
   remove: (type: "node" | "edge" | "group" | "note", ref: string | number) => void;
@@ -116,11 +116,11 @@ function TextInput({
 }
 
 /**
- * A boundary's colour: "none", a swatch per named tint, and a "More colours" swatch that opens
+ * A group's colour: "none", a swatch per named tint, and a "More colours" swatch that opens
  * a popover with a fixed palette, the colours applied lately and a hex row. A named swatch and
  * a palette cell apply on click. The popover lives inside the field, so the Inspector's scroll
- * carries it; it closes on Escape, on a click outside it, on a pick and when another boundary
- * is selected (the field is keyed by the boundary).
+ * carries it; it closes on Escape, on a click outside it, on a pick and when another group
+ * is selected (the field is keyed by the group).
  */
 /**
  * Every commit remounts the Inspector (Canvas keys it by the undo tick), so a colour applied
@@ -190,7 +190,7 @@ function TintField({
           trigger={trigger}
           onCommit={(v, done) => {
             refocusMoreColours = true;
-            // A commit that does not remount must not leave the request for a later boundary.
+            // A commit that does not remount must not leave the request for a later group.
             setTimeout(() => {
               refocusMoreColours = false;
             }, 500);
@@ -210,7 +210,7 @@ function TintPopover({
   onCommit,
   onClose,
 }: {
-  /** The boundary's hex tint, or null when it has a named one or none. */
+  /** The group's hex tint, or null when it has a named one or none. */
   value: HexTint | null;
   trigger: React.RefObject<HTMLButtonElement | null>;
   /** Apply a colour; `done` closes the popover (a commit remounts the Inspector anyway). */
@@ -234,7 +234,7 @@ function TintPopover({
   };
   const applyRef = useRef(apply);
   applyRef.current = apply;
-  // What is on screen follows the boundary: a pick or an undo.
+  // What is on screen follows the group: a pick or an undo.
   useEffect(() => {
     setDraft(value ?? "");
     if (value) setPicked(value);
@@ -445,12 +445,12 @@ export function Inspector({
   multi: Set<string>;
   doc: any;
   notes: Note[];
-  /** Boundary tint and icon by group id, from the layout sidecar. */
+  /** Group tint and icon by group id, from the layout sidecar. */
   frameStyles?: Record<string, FrameStyle>;
   catalogue: any;
   /** The catalogue icon map (icons.json): component ids, `kind:<id>` and `boundary:<id>`. */
   icons?: Record<string, string>;
-  /** The palette's search rows, reused by the boundary icon picker. */
+  /** The palette's search rows, reused by the group icon picker. */
   searchRows?: Row[];
   api: InspectorApi;
   /** The fields the finding last clicked in the panel is about, or null. */
@@ -783,7 +783,7 @@ function NotePanel({ note, api }: { note: Note; api: InspectorApi }) {
   );
 }
 
-/** The boundary kinds the design schema allows, in its order: the schema is the only list. */
+/** The group kinds the design schema allows, in its order: the schema is the only list. */
 function groupKinds(catalogue: any): string[] {
   const kinds = catalogue?.schema?.properties?.groups?.items?.properties?.kind?.enum;
   return Array.isArray(kinds) ? kinds.map(String) : [];
@@ -807,10 +807,10 @@ function iconName(ref: string | undefined, catalogue: any) {
 }
 
 /**
- * Choose a boundary icon: a boundary mark (icons/boundaries/), a kind glyph or a component icon,
+ * Choose a group icon: a group mark (icons/boundaries/), a kind glyph or a component icon,
  * found with the palette's own search (same scoring, same `kind:` / `provider:` / `category:`
- * filters, same aliases). Boundary marks and kinds have no search rows of their own, so they are
- * made here in the same shape. Boundary marks come first: a few of them before any search, all
+ * filters, same aliases). Group marks and kinds have no search rows of their own, so they are
+ * made here in the same shape. Group marks come first: a few of them before any search, all
  * that match once the reader types. A filter names a catalogue attribute they do not have, so
  * any filter leaves them out.
  */
@@ -892,7 +892,7 @@ function IconPicker({
         type="text"
         // biome-ignore lint/a11y/noAutofocus: the picker opens on a click that asked to search
         autoFocus
-        placeholder="Search boundary icons, kinds and components…"
+        placeholder="Search group icons, kinds and components…"
         aria-label="Search icons"
         value={q}
         onChange={(e) => setQ(e.target.value)}
@@ -904,8 +904,8 @@ function IconPicker({
         }}
       />
       <div className="icon-picker-results">
-        {marks.length ? <div className="pal-group">Boundary icons</div> : null}
-        {marks.map(([id, name]) => row(`boundary:${id}`, `boundary:${id}`, name, "boundary"))}
+        {marks.length ? <div className="pal-group">Group icons</div> : null}
+        {marks.map(([id, name]) => row(`boundary:${id}`, `boundary:${id}`, name, "group"))}
         {kinds.length ? <div className="pal-group">Kinds</div> : null}
         {kinds.map(([id, name]) => row(`kind:${id}`, `kind:${id}`, name, "kind"))}
         {components.length ? <div className="pal-group">Components</div> : null}
@@ -942,7 +942,7 @@ function GroupPanel({
   const members = doc.nodes.filter((n: any) => n.group === group.id).length;
   return (
     <>
-      <h2>Boundary</h2>
+      <h2>Group</h2>
       <Field name="label" isSet={Boolean(group.label)}>
         <TextInput
           value={group.label ?? ""}
@@ -1032,7 +1032,7 @@ function GroupPanel({
         className="btn btn-sm btn-danger mt-3"
         onClick={() => api.remove("group", group.id)}
       >
-        Delete boundary
+        Delete group
       </button>
     </>
   );
@@ -1070,7 +1070,7 @@ function DesignPanel({
         <TextInput value={doc.id ?? ""} onCommit={(v) => api.setDesignId(v.trim())} />
       </Field>
       <div className="meta">
-        {doc.nodes.length} nodes · {doc.edges.length} edges · {(doc.groups ?? []).length} boundaries
+        {doc.nodes.length} nodes · {doc.edges.length} edges · {(doc.groups ?? []).length} groups
       </div>
       <h2>Requirements</h2>
       <p className="meta mb-2">

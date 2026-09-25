@@ -43,11 +43,12 @@ def write(doc):
     cats = {k: {"name": v} for k, v in CATEGORIES.items()}
     out = ["# English display text, keyed by id. Kinds, components and rules never carry display",
            "# text themselves. Every id in kinds/, components/ and rules/ must have an entry here, and",
-           "# every icon in icons/boundaries/ an entry under boundaryIcons.",
+           "# every icon in icons/boundaries/ an entry under boundaryIcons (the icons a group may show; the",
+           "# user-facing word is group; boundary stays in the stored format).",
            "# Regenerated from the catalogue; keep entries sorted by id.",
            block("categories", cats), "", block("kinds", doc.get("kinds", {})), "",
            block("components", doc.get("components", {})), "", block("rules", doc.get("rules", {})), ""]
-    # Boundary icon names are kept as they are: this tool manages the catalogue sections only.
+    # Group icon names (the boundaryIcons key) are kept as they are: this tool manages the catalogue sections only.
     if doc.get("boundaryIcons"):
         out += [block("boundaryIcons", doc["boundaryIcons"]), ""]
     EN.write_text("\n".join(out), encoding="utf-8", newline="\n")

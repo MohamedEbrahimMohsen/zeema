@@ -50,7 +50,7 @@ export default async function ComponentPage({ params }: { params: Promise<{ id: 
         <span className="label">{doc.rules?.caption}</span>
         <p className="small muted">
           Every rule whose selector covers this component&apos;s kind or its category. Whether a
-          rule fires depends on the design: its properties, its edges and its boundaries.
+          rule fires depends on the design: its properties, its edges and its groups.
         </p>
         <RuleList
           items={doc.rules?.items ?? []}

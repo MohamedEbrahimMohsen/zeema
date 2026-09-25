@@ -1,5 +1,5 @@
-// A design's thumbnail is a real mini-diagram: the engine's own layout, drawn as taxonomy-tinted
-// boxes and quiet edges. No labels, no icons — at card size the shape is the information.
+// A design's thumbnail is a real mini-diagram: the engine's own layout, drawn as neutral boxes
+// (as on the canvas) and quiet edges. No labels, no icons — at card size the shape is the information.
 import { normalize } from "@zeema/core/document";
 import { layout } from "@zeema/core/layout";
 import { parse } from "@zeema/core/yaml";
@@ -9,22 +9,10 @@ import { own } from "./own";
 export type Sketch = {
   w: number;
   h: number;
-  nodes: Array<[number, number, number, number, string]>;
+  /** x, y, w, h, and whether the node is custom: a hole in the model, drawn dashed. */
+  nodes: Array<[number, number, number, number, boolean]>;
   edges: Array<[number, number, number, number, boolean]>;
   frames: Array<[number, number, number, number]>;
-};
-
-const HUE: Record<string, string> = {
-  compute: "blue",
-  edge: "teal",
-  data: "amber",
-  ops: "violet",
-  security: "purple",
-  messaging: "green",
-  client: "rose",
-  external: "red",
-  // Untyped, so uncoloured: a custom node is a hole, and it should look like one.
-  custom: "grey",
 };
 
 export function sketchOf(yaml: string, cat: Catalogue): Sketch | null {
@@ -38,8 +26,7 @@ export function sketchOf(yaml: string, cat: Catalogue): Sketch | null {
       const s = l.sizes[n.id];
       if (!p || !s) continue;
       const c = own(cat.components, n.component);
-      const hue = c ? (HUE[cat.kinds[c.kind]?.category ?? ""] ?? "grey") : "grey";
-      nodes.push([p[0], p[1], s[0], s[1], hue]);
+      nodes.push([p[0], p[1], s[0], s[1], c?.kind === "custom"]);
     }
     const edges: Sketch["edges"] = [];
     for (const e of l.edges ?? []) {

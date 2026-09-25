@@ -4,7 +4,7 @@ description: Nodes, edges, groups and requirements — the four parts of a desig
 order: 2
 ---
 
-A design describes one deployable system: the components it uses, how they talk, the boundaries
+A design describes one deployable system: the components it uses, how they talk, the groups
 they sit in, and what the system promises about itself. It lives in the repository that owns the
 system, conventionally at `architecture/<system-id>.yaml`, or on this site.
 

@@ -1,4 +1,4 @@
-// The boundary colour palette is data the popover renders as buttons, and the recent list is
+// The group colour palette is data the popover renders as buttons, and the recent list is
 // kept in localStorage, which can be missing, full of junk or throwing.
 import { describe, expect, it } from "vitest";
 import {

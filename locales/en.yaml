@@ -1,6 +1,7 @@
 # English display text, keyed by id. Kinds, components and rules never carry display
 # text themselves. Every id in kinds/, components/ and rules/ must have an entry here, and
-# every icon in icons/boundaries/ an entry under boundaryIcons.
+# every icon in icons/boundaries/ an entry under boundaryIcons (the icons a group may show; the
+# user-facing word is group; boundary stays in the stored format).
 # Regenerated from the catalogue; keep entries sorted by id.
 categories:
   client:

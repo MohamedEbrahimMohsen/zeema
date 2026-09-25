@@ -1,8 +1,9 @@
-// The boundary icon set: icons/boundaries/<id>.svg, keyed `boundary:<id>` in icons.json and named
-// in locales/en.yaml under `boundaryIcons`. A boundary may show one of these before its label: a
+// The group icon set: icons/boundaries/<id>.svg, keyed `boundary:<id>` in icons.json and named
+// in locales/en.yaml under `boundaryIcons`. A group may show one of these before its label: a
 // platform it stands for (an AWS account, a Kubernetes cluster) or a concept (on-premises, the
 // internet, users). The folder is the set; nothing here lists what exists, only what to show
-// first.
+// first. The user-facing word is group; boundary stays in the stored format (and in this file's
+// name and exports).
 
 /** Shown, in this order, before the reader has typed anything; the rest follow by name. */
 export const BOUNDARY_FEATURED = [
@@ -20,13 +21,13 @@ export const BOUNDARY_FEATURED = [
   "ai",
 ] as const;
 
-/** How many boundary icons the picker shows before any search. */
+/** How many group icons the picker shows before any search. */
 export const BOUNDARY_PREVIEW = BOUNDARY_FEATURED.length;
 
 type LocaleEntry = { name?: string; description?: string };
 
 /**
- * The boundary icons in `icons` as picker rows, in the palette's row shape
+ * The group icons in `icons` as picker rows, in the palette's row shape
  * ([id, name, kind, category, provider, haystack, aliases]) so the palette's scoring applies
  * unchanged. Featured ids come first in their own order, then the rest by display name.
  */

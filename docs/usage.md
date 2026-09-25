@@ -50,7 +50,7 @@ consumer repository gets the same by adding the first-line comment:
 # yaml-language-server: $schema=https://raw.githubusercontent.com/<org>/zeema/main/schema/design.schema.json
 ```
 
-## 3. Groups and boundaries
+## 3. Groups
 
 Groups nest through `parent`. A node names only its innermost group.
 

@@ -35,7 +35,7 @@ export default async function RulesPage({
         <h1 className="title">Rules</h1>
         <p className="small muted">
           Declarative predicates over a design. A rule reads a node&apos;s effective properties, its
-          edges, its boundaries and the design&apos;s requirements. A finding never blocks a save; a
+          edges, its groups and the design&apos;s requirements. A finding never blocks a save; a
           structural problem always does. Open a rule for its rationale, the condition in plain
           English, and the reference designs that trip it.
         </p>

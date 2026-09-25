@@ -218,8 +218,9 @@ const inner = (raw, rel) => {
 };
 
 /**
- * The ids of the boundary icon set, from the file names under icons/boundaries/, sorted. There is
+ * The ids of the group icon set, from the file names under icons/boundaries/, sorted. There is
  * no manifest: the folder is the set, and locales/en.yaml `boundaryIcons` names each one.
+ * The user-facing word is group; boundary stays in the stored format.
  */
 export function boundaryIconIds(rootArg) {
   const root = resolveRoot(rootArg);
@@ -228,7 +229,7 @@ export function boundaryIconIds(rootArg) {
 
 /**
  * Icon inner markup keyed by component id, `kind:<id>` and `boundary:<id>`; `missing` lists
- * absent files. Boundary icons are not tied to any catalogue entry, so the folder decides which
+ * absent files. Group icons are not tied to any catalogue entry, so the folder decides which
  * exist and none can be missing.
  */
 export function iconMap(cat) {

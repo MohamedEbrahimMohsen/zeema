@@ -44,7 +44,7 @@ function SketchSvg({ s }: { s: Sketch }) {
           strokeWidth={3}
         />
       ))}
-      {s.nodes.map(([x, y, w, h, hue], i) => (
+      {s.nodes.map(([x, y, w, h, hole], i) => (
         <rect
           key={`n${i}`}
           x={x}
@@ -52,9 +52,11 @@ function SketchSvg({ s }: { s: Sketch }) {
           width={w}
           height={h}
           rx={8}
-          fill={`var(--t-${hue}-fill)`}
-          stroke={`var(--t-${hue}-line)`}
+          fill="var(--node-fill)"
+          stroke="var(--node-line)"
           strokeWidth={2.5}
+          strokeDasharray={hole ? "6 4" : undefined}
+          fillOpacity={hole ? 0.45 : undefined}
         />
       ))}
     </svg>

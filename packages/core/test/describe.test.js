@@ -54,7 +54,7 @@ const SAMPLES = {
   ],
   inGroup: [
     { inGroup: { kind: "availability-zone", count: { eq: 1 } } },
-    ["- the node sits inside exactly 1 availability-zone boundary"],
+    ["- the node sits inside exactly 1 availability-zone group"],
   ],
   syncChainDepth: [
     { syncChainDepth: { gt: 3 } },
