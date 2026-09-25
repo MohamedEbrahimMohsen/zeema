@@ -431,7 +431,9 @@ class Parser {
 
   // Parse a block map whose keys sit at column `indent`, starting at content line `i`.
   // `parentIndent` is the column of the enclosing block; a line at or below it ends this map.
-  parseBlockMap(i, indent, parentIndent) {
+  // `from` is the first line after the owning key or dash line: the trivia between it and `i`
+  // belongs to the first entry, so a re-emitted parent keeps it.
+  parseBlockMap(i, indent, parentIndent, from = i) {
     const node = {
       kind: "blockmap",
       value: {},
@@ -441,7 +443,7 @@ class Parser {
       lineStart: i,
       lineEnd: i,
     };
-    let cursor = i;
+    let cursor = from;
     for (;;) {
       const next = this.nextContent(cursor);
       if (next >= this.work.length) {
@@ -499,7 +501,7 @@ class Parser {
             aind > indent ||
             (aind === indent && isDash(this.work[after]) && parentIndent < indent)
           ) {
-            const child = this.parseBlock(after, aind, indent);
+            const child = this.parseBlock(after, aind, indent, next + 1);
             entry.node = child;
             entry.lineEnd = child.lineEnd;
           }
@@ -512,8 +514,8 @@ class Parser {
     }
   }
 
-  // Parse a block sequence whose dashes sit at column `indent`.
-  parseBlockSeq(i, indent) {
+  // Parse a block sequence whose dashes sit at column `indent`; `from` as for parseBlockMap.
+  parseBlockSeq(i, indent, from = i) {
     const node = {
       kind: "blockseq",
       value: [],
@@ -523,7 +525,7 @@ class Parser {
       lineStart: i,
       lineEnd: i,
     };
-    let cursor = i;
+    let cursor = from;
     for (;;) {
       const next = this.nextContent(cursor);
       if (next >= this.work.length) {
@@ -556,7 +558,7 @@ class Parser {
         item.comment = comment;
         const after = this.nextContent(next + 1);
         if (after < this.work.length && indentOf(this.work[after]) > dashCol) {
-          const child = this.parseBlock(after, indentOf(this.work[after]), dashCol);
+          const child = this.parseBlock(after, indentOf(this.work[after]), dashCol, next + 1);
           item.node = child;
           item.lineEnd = child.lineEnd;
         } else item.node = { kind: "empty", value: null };
@@ -578,12 +580,12 @@ class Parser {
     }
   }
 
-  parseBlock(i, indent, parentIndent) {
+  parseBlock(i, indent, parentIndent, from = i) {
     if (++this.depth > MAX_DEPTH) refuse(i, `nesting deeper than ${MAX_DEPTH} levels`);
     try {
       return isDash(this.work[i])
-        ? this.parseBlockSeq(i, indent)
-        : this.parseBlockMap(i, indent, parentIndent);
+        ? this.parseBlockSeq(i, indent, from)
+        : this.parseBlockMap(i, indent, parentIndent, from);
     } finally {
       this.depth--;
     }
@@ -741,10 +743,29 @@ class Emitter {
     const flowSiblings =
       node.items.length > 0 &&
       node.items.every((it) => it.node.kind === "flowmap" && !it.node.multiline);
-    for (const v of list) {
-      const o = findExact(v) ?? findById(v);
+    // Match every value to the original it came from, in passes so a weaker match never takes
+    // an original a stronger one wants: the same value, then the same identity, then the unused
+    // original at the same position, which is what an edit that changes an identity
+    // (reconnecting or reversing an edge) leaves behind.
+    const matched = list.map(() => undefined);
+    const pass = (find) =>
+      list.forEach((v, i) => {
+        if (matched[i]) return;
+        const o = find(v, i);
+        if (o) {
+          o.used = true;
+          matched[i] = o;
+        }
+      });
+    pass(findExact);
+    pass(findById);
+    pass((v, i) => {
+      const o = originals[i];
+      return o && !o.used && isObj(v) === isObj(o.it.node.value) ? o : undefined;
+    });
+    for (const [i, v] of list.entries()) {
+      const o = matched[i];
       if (o) {
-        o.used = true;
         this.push(...o.it.before);
         if (same(v, o.it.node.value)) {
           this.verbatim(o.it.lineStart, o.it.lineEnd);

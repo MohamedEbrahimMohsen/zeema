@@ -180,3 +180,81 @@ describe("emission", () => {
     });
   });
 });
+
+// An edit to one edge rewrites that edge's lines and nothing else: comments above the first
+// item, between items and after the last one stay where they were.
+const splitLines = (t) => t.replace(/\r?\n$/, "").split(/\r?\n/);
+
+describe("editing the first edge of every committed design", () => {
+  const files = designs.filter((f) => path.basename(f) === "design.yaml");
+  it("finds designs with edges", () => {
+    expect(files.some((f) => parse(fs.readFileSync(f, "utf8")).doc.edges?.length)).toBe(true);
+  });
+  for (const file of files) {
+    const rel = path.relative(ROOT, file).split(path.sep).join("/");
+    const text = fs.readFileSync(file, "utf8");
+    const { doc, cst } = parse(text);
+    const entry = cst.root.entries.find((e) => e.key === "edges");
+    const item = entry?.node.kind === "blockseq" ? entry.node.items[0] : null;
+    if (!item) continue;
+    it(`${rel}: changes only the first edge's line`, () => {
+      const edited = JSON.parse(JSON.stringify(doc));
+      edited.edges[0].label = `${edited.edges[0].label ?? ""} edited`.trim();
+      const out = serialize(cst, edited);
+      expect(parse(out).doc).toEqual(edited);
+      const src = splitLines(text);
+      const got = splitLines(out);
+      // Everything outside the edge's own lines is untouched.
+      expect(got.slice(0, item.lineStart)).toEqual(src.slice(0, item.lineStart));
+      expect(got.slice(got.length - (src.length - item.lineEnd))).toEqual(src.slice(item.lineEnd));
+      // A one-line edge, or one that already had a label, changes in place: one line differs.
+      if (item.lineEnd - item.lineStart === 1 || doc.edges[0].label !== undefined) {
+        expect(got.length).toBe(src.length);
+        const changed = src.map((l, i) => (l === got[i] ? -1 : i)).filter((i) => i >= 0);
+        expect(changed).toHaveLength(1);
+        expect(changed[0]).toBeGreaterThanOrEqual(item.lineStart);
+        expect(changed[0]).toBeLessThan(item.lineEnd);
+      }
+    });
+  }
+});
+
+describe("trivia around a changed block", () => {
+  const edit = (text, fn) => {
+    const { doc, cst } = parse(text);
+    fn(doc);
+    return serialize(cst, doc);
+  };
+
+  it("keeps a comment between a key and the first item of its sequence", () => {
+    const text =
+      'edges:\n  # first\n\n  - { from: "a", to: "b" }\n  # second\n  - { from: "b", to: "c" }\n  # tail\nnext: 1\n';
+    expect(edit(text, (d) => (d.edges[0].label = "x"))).toBe(
+      text.replace('to: "b" }', 'to: "b", label: "x" }'),
+    );
+    expect(edit(text, (d) => (d.edges[1].label = "x"))).toBe(
+      text.replace('to: "c" }', 'to: "c", label: "x" }'),
+    );
+  });
+
+  it("keeps a comment between a key and the first key of its map", () => {
+    const text = "meta:\n  # about\n  a: 1\n  # b next\n  b: 2\n  # tail\nnext: 1\n";
+    expect(edit(text, (d) => (d.meta.a = 3))).toBe(text.replace("a: 1", "a: 3"));
+    expect(edit(text, (d) => (d.meta.b = 3))).toBe(text.replace("b: 2", "b: 3"));
+  });
+
+  it("keeps comments inside and after a changed block item", () => {
+    const text =
+      'edges:\n  # first\n  - from: "a"\n    # to\n    to: "b"\n  # between\n  - from: "b"\n    to: "c"\n# end\n';
+    expect(edit(text, (d) => (d.edges[0].to = "c"))).toBe(text.replace('to: "b"', 'to: "c"'));
+    expect(edit(text, (d) => (d.edges[1].to = "a"))).toBe(text.replace('to: "c"', 'to: "a"'));
+  });
+
+  it("keeps an edge in place when it is reconnected onto another edge's endpoints", () => {
+    const text =
+      'edges:\n  # first\n  - { from: "a", to: "b", protocol: "x" }\n  - { from: "a", to: "c", protocol: "y" }\n';
+    expect(edit(text, (d) => (d.edges[0].to = "c"))).toBe(
+      text.replace('to: "b", protocol: "x"', 'to: "c", protocol: "x"'),
+    );
+  });
+});
