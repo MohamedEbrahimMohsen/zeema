@@ -30,6 +30,8 @@ export type Catalogue = {
     /** Names of the group icons in icons/boundaries/, keyed by file name. The user-facing word
      *  is group; boundary stays in the stored format. */
     boundaryIcons?: Record<string, LocaleEntry>;
+    /** Provider names, keyed by folder under components/. */
+    providers?: Record<string, LocaleEntry>;
   };
   schema: unknown;
 };

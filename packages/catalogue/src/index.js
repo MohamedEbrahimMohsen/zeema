@@ -139,6 +139,7 @@ export function loadCatalogue(rootArg) {
     components: en.components ?? {},
     rules: en.rules ?? {},
     boundaryIcons: en.boundaryIcons ?? {},
+    providers: en.providers ?? {},
   });
   const schema = sorted(
     JSON.parse(fs.readFileSync(path.join(root, "schema", "design.schema.json"), "utf8")),
@@ -225,6 +226,19 @@ const inner = (raw, rel) => {
 export function boundaryIconIds(rootArg) {
   const root = resolveRoot(rootArg);
   return walk(root, "icons/boundaries", ".svg").map((rel) => path.basename(rel, ".svg"));
+}
+
+/**
+ * The provider ids, from the folder names under components/, sorted. The folder is the set, and
+ * locales/en.yaml `providers` names each one.
+ */
+export function providerFolderIds(rootArg) {
+  const root = resolveRoot(rootArg);
+  return fs
+    .readdirSync(path.join(root, "components"), { withFileTypes: true })
+    .filter((e) => e.isDirectory())
+    .map((e) => e.name)
+    .sort();
 }
 
 /**

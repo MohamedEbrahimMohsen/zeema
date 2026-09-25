@@ -32,7 +32,8 @@ told you anything about the repository. To defeat Turbo's cache, set the variabl
 cached.
 
 Do not weaken a test to make it pass. A golden fixture (`packages/core/test/golden.json`)
-changes only when a behaviour change is intended, and the commit says why.
+changes only when a behaviour change is intended: regenerate its layout with
+`node packages/core/test/update-golden.mjs` and say why in the commit.
 
 ## Invariants
 

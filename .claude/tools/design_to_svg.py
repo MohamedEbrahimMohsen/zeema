@@ -8,6 +8,7 @@ groups are dashed containers around their members, edges are arrows, solid for s
 for async, labelled where the design gives a label. Layout is layered: rank by longest path
 over the edges, then barycentre ordering inside each rank, then group members pulled together.
 No layout information is read from the design, because the format holds none.
+No longer the layout reference: packages/core/src/layout.js is a compound layout now and differs.
 """
 import glob, os, re, sys
 from pathlib import Path

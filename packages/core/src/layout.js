@@ -1,26 +1,35 @@
-// Layout for Zeema designs: a faithful port of .claude/tools/design_to_svg.py.
+// Layout for Zeema designs: a compound (hierarchical) layered layout.
 //
-// Layered layout. Rank by longest path over the edges (with a fallback for nodes a
-// topological sort never reaches), collapse every group's members onto one rank,
-// order each rank by six barycentre sweeps followed by a group-contiguity block pass,
-// wrap ranks wider than MAX_W onto further rows, centre every row, derive group frames
-// as padded bounding boxes, then hand the placed boxes to geometry.js for the edges.
+// A group is laid out as a block, and the block is placed like a node one level up. The root
+// level holds the ungrouped nodes and the top-level groups; a group's level holds its member
+// nodes and its child groups. Every level runs the same layered pipeline over its items: rank
+// by longest path over the edges contracted to that level (with a fallback for items a
+// topological sort never reaches), order each rank by six barycentre sweeps, wrap ranks wider
+// than MAX_W onto further rows, centre every row. A group's frame is exactly its block, so two
+// frames overlap only when one group contains the other, and a node lies inside the frames of
+// its own groups and of no other.
 //
-// The placement is ported bug for bug. Two things in particular are load bearing:
+// This began as a port of .claude/tools/design_to_svg.py, whose flat layout let a parent frame
+// swallow unrelated groups; the Python tool is no longer the reference. pyRound() survives
+// from the port (half to even, as the Python rounded) for box widths and row offsets that
+// land on .5.
 //
-//   * Python's round() is half to even; JavaScript's Math.round() is half up. 107 of the
-//     324 node placements in this repository land on exactly .5, so pyRound() below
-//     reproduces CPython's float.__round__ and is used exactly where the Python uses
-//     round(), and nowhere else.
-//   * Several passes depend on dict insertion order: the group rank collapse walks groups
-//     in document order and frameOf() uses a `done` set so a cycle among groups yields
-//     nothing rather than recursing.
+// Reciprocal pairs. Two edges between the same two items in opposite directions (after
+// contraction to the level: a tunnel dialled out from inside one block to a node inside another
+// and answered back) would make the ranking keep whichever is listed first, which can put an
+// edge block below the blocks it fronts. Such a pair is oriented by flow instead. The flow
+// order is the catalogue categories client, edge, security, compute, messaging, data, ops,
+// external, custom (an unknown category counts as custom); a node's flow index is its
+// component's kind's category's place in that list, and an item's flow is taken over the nodes
+// it contains: first the minimum, then (on a tie) the mean. The edge running from the item that
+// comes first in the flow to the other is kept for ranking; if the two are level, the edge
+// listed first in the document is kept, as before. Both edges are still ordered and drawn.
+// Without a catalogue every node has the same flow index, so every pair falls to document order.
 //
-// The edges are not the port's. They come from edgeGeometry, the same code the canvas and the
-// as-drawn renderer use, so an automatic arrangement and a drawing route edges identically;
-// the Python drew a reciprocal pair on one line, and this does not.
+// The edges come from edgeGeometry, the same code the canvas and the as-drawn renderer use, so
+// an automatic arrangement and a drawing route edges identically.
 //
-// No DOM. The one import is geometry.js, which has none of its own.
+// Pure: no DOM, no fs. The one import is geometry.js, which has none of its own.
 
 import { edgeGeometry } from "./geometry.js";
 
@@ -38,6 +47,45 @@ const FRAME_PAD_X = 16,
   FRAME_PAD_TOP = 32,
   FRAME_PAD_BOTTOM = 16;
 const SWEEPS = 6;
+const FLOW = [
+  "client",
+  "edge",
+  "security",
+  "compute",
+  "messaging",
+  "data",
+  "ops",
+  "external",
+  "custom",
+];
+const FLOW_CUSTOM = FLOW.indexOf("custom");
+
+// A node's place in the flow order, from its component's kind's category.
+function flowIndex(catalogue, componentId) {
+  if (!catalogue?.components || !catalogue.kinds) return FLOW_CUSTOM;
+  const own = (o, k) => (o && Object.hasOwn(o, k) ? o[k] : undefined);
+  const comp = own(catalogue.components, componentId);
+  const kind = comp ? own(catalogue.kinds, comp.kind) : undefined;
+  const k = kind ? FLOW.indexOf(kind.category) : -1;
+  return k < 0 ? FLOW_CUSTOM : k;
+}
+
+// Negative when flow `a` ({min, sum, n}) comes before `b`: the smaller minimum, then the smaller
+// mean (compared exactly, as integer cross products).
+function flowCompare(a, b) {
+  if (a.min !== b.min) return a.min - b.min;
+  return a.sum * b.n - b.sum * a.n;
+}
+
+// The edges ranking uses: of a reciprocal pair, only the direction that runs with the flow;
+// a level pair is left alone, and rankNodes keeps the edge listed first.
+function orientReciprocal(edges, flowOf) {
+  const dirs = new Set(edges.map((e) => JSON.stringify([e.from, e.to])));
+  return edges.filter((e) => {
+    if (e.from === e.to || !dirs.has(JSON.stringify([e.to, e.from]))) return true;
+    return flowCompare(flowOf(e.from), flowOf(e.to)) <= 0;
+  });
+}
 
 // C99 round(): half away from zero. Math.round() is half up, which differs on negatives.
 function cRound(x) {
@@ -122,17 +170,17 @@ function rankNodes(nodes, edges) {
 
 // --- ordering within ranks ---------------------------------------------------
 
-function orderRanks(nodes, edges, rank) {
-  const byRank = new Map(); // insertion order = node document order
-  for (const n of nodes) {
+function orderRanks(items, edges, rank) {
+  const byRank = new Map(); // insertion order = item order
+  for (const n of items) {
     const r = rank.get(n.id);
     if (!byRank.has(r)) byRank.set(r, []);
     byRank.get(r).push(n.id);
   }
   const nbr = new Map();
-  for (const n of nodes) nbr.set(n.id, []);
+  for (const n of items) nbr.set(n.id, []);
   for (const e of edges) {
-    if (!nbr.has(e.from) || !nbr.has(e.to)) continue; // invalid designs only
+    if (!nbr.has(e.from) || !nbr.has(e.to)) continue;
     nbr.get(e.from).push(e.to);
     nbr.get(e.to).push(e.from);
   }
@@ -152,7 +200,7 @@ function orderRanks(nodes, edges, rank) {
           .map((x) => pos.get(x));
         return ns.length ? ns.reduce((a, b) => a + b, 0) / ns.length : pos.get(i);
       };
-      // Decorate-sort-undecorate: Python computes each key once, then sorts stably.
+      // Decorate-sort-undecorate: compute each key once, then sort stably.
       const dec = list.map((i, k) => [bary(i), k, i]);
       dec.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
       const sorted = dec.map((d) => d[2]);
@@ -162,88 +210,31 @@ function orderRanks(nodes, edges, rank) {
       });
     }
   }
-  const gof = new Map();
-  for (const n of nodes) gof.set(n.id, n.group === undefined ? null : n.group);
-  for (const r of ranksSorted) {
-    // keep group members side by side
-    const blocks = [],
-      seen = new Map();
-    for (const i of byRank.get(r)) {
-      const g = gof.get(i);
-      if (g !== null && g !== undefined && seen.has(g)) {
-        blocks[seen.get(g)].push(i);
-        continue;
-      }
-      if (g !== null && g !== undefined) seen.set(g, blocks.length);
-      blocks.push([i]);
-    }
-    byRank.set(r, blocks.flat());
-  }
   return { byRank, ranksSorted };
 }
 
-// --- the layout --------------------------------------------------------------
+// --- one level ---------------------------------------------------------------
 
-/**
- * @param {object} doc      a Zeema design document
- * @param {object} [catalogue]  unused: geometry reads nothing outside the document,
- *                              exactly as the Python renderer does
- * @returns {{positions: Object, sizes: Object, frames: Object,
- *            edges: Array, canvas: [number, number]}}
- */
-export function layout(doc, _catalogue) {
-  const nodes = doc && Array.isArray(doc.nodes) ? doc.nodes : [];
-  const edges = doc && Array.isArray(doc.edges) ? doc.edges : [];
-  const groups = doc && Array.isArray(doc.groups) ? doc.groups : [];
+// Place `items` ({id, w, h}) in a box whose top-left corner is (0, 0). `edges` run between
+// item ids. Returns every item's position and the content size.
+// `rankEdges` (default: `edges`) are the edges the ranking follows.
+function placeLevel(items, edges, rankEdges = edges) {
+  const rank = rankNodes(items, rankEdges);
+  const { byRank, ranksSorted } = orderRanks(items, edges, rank);
+  const size = new Map(items.map((it) => [it.id, [it.w, it.h]]));
 
-  const rank = rankNodes(nodes, edges);
-  for (const g of groups) {
-    // a group is drawn as one frame, so its
-    const members = []; // members share a rank
-    for (const n of nodes) if (n.group === g.id) members.push(n.id);
-    if (members.length) {
-      let r = rank.get(members[0]);
-      for (const i of members) r = Math.max(r, rank.get(i));
-      for (const i of members) rank.set(i, r);
-    }
-  }
-  const { byRank, ranksSorted } = orderRanks(nodes, edges, rank);
-
-  const text = new Map();
-  for (const n of nodes) text.set(n.id, truthy(n.label) ? String(n.label) : n.id);
-
-  const box = new Map(); // insertion order = node document order
-  for (const n of nodes) {
-    const w = Math.max(charLen(text.get(n.id)) * NAME_PX, charLen(n.component) * ID_PX) + 2 * PAD_X;
-    box.set(n.id, [0, 0, Math.max(MIN_W, pyRound(w)), BOX_H]);
-  }
-
-  const gmembers = new Map(),
-    gchild = new Map();
-  for (const g of groups) {
-    gmembers.set(
-      g.id,
-      nodes.filter((n) => n.group === g.id).map((n) => n.id),
-    );
-    gchild.set(
-      g.id,
-      groups.filter((h) => h.parent === g.id).map((h) => h.id),
-    );
-  }
-
-  // place: ranks stack along the flow axis, nodes spread across it
   const rows = [];
   for (const r of ranksSorted) {
     let chunk = [],
       w = 0;
     for (const i of byRank.get(r)) {
       // wrap a rank that would run off the page
-      let add = box.get(i)[2] + (chunk.length ? GAP_X : 0);
+      let add = size.get(i)[0] + (chunk.length ? GAP_X : 0);
       if (chunk.length && w + add > MAX_W) {
         rows.push(chunk);
         chunk = [];
         w = 0;
-        add = box.get(i)[2];
+        add = size.get(i)[0];
       }
       chunk.push(i);
       w += add;
@@ -251,42 +242,172 @@ export function layout(doc, _catalogue) {
     if (chunk.length) rows.push(chunk);
   }
   const widths = rows.map(
-    (ids) => ids.reduce((a, i) => a + box.get(i)[2], 0) + GAP_X * (ids.length - 1),
+    (ids) => ids.reduce((a, i) => a + size.get(i)[0], 0) + GAP_X * (ids.length - 1),
   );
-  const canvasW = (widths.length ? Math.max(...widths) : 0) + CANVAS_PAD_X;
-  let y = CANVAS_PAD_Y;
+  const width = widths.length ? Math.max(...widths) : 0;
+  const pos = new Map();
+  let y = 0;
   for (let k = 0; k < rows.length; k++) {
-    let x = (canvasW - widths[k]) / 2;
+    let x = (width - widths[k]) / 2;
+    let tallest = 0;
     for (const i of rows[k]) {
-      const b = box.get(i);
-      b[0] = pyRound(x);
-      b[1] = y;
-      x += b[2] + GAP_X;
+      const [w, h] = size.get(i);
+      pos.set(i, [pyRound(x), y]); // a row aligns its items on their top edge
+      x += w + GAP_X;
+      tallest = Math.max(tallest, h);
     }
-    y += BOX_H + GAP_Y;
+    y += tallest + GAP_Y;
   }
-  const canvasH = y - GAP_Y + CANVAS_PAD_Y;
+  return { pos, width, height: rows.length ? y - GAP_Y : 0 };
+}
 
-  // group frames: bounding box of members and of child groups
-  const frame = new Map(),
-    done = new Set();
-  const frameOf = (gid) => {
-    if (done.has(gid)) return frame.has(gid) ? frame.get(gid) : null;
-    done.add(gid);
-    const xs = (gmembers.get(gid) || []).map((i) => box.get(i));
-    const rs = (gchild.get(gid) || [])
-      .map((c) => frameOf(c))
-      .filter((r) => r)
-      .concat(xs.map((b) => [b[0], b[1], b[2], b[3]]));
-    if (!rs.length) return null;
-    const x0 = Math.min(...rs.map((r) => r[0])) - FRAME_PAD_X;
-    const y0 = Math.min(...rs.map((r) => r[1])) - FRAME_PAD_TOP;
-    const x1 = Math.max(...rs.map((r) => r[0] + r[2])) + FRAME_PAD_X;
-    const y1 = Math.max(...rs.map((r) => r[1] + r[3])) + FRAME_PAD_BOTTOM;
-    frame.set(gid, [x0, y0, x1 - x0, y1 - y0]);
-    return frame.get(gid);
+// --- the layout --------------------------------------------------------------
+
+const present = (v) => v !== undefined && v !== null;
+
+/**
+ * @param {object} doc      a Zeema design document
+ * @param {object} [catalogue]  the bundle ({kinds, components}); read only to orient reciprocal
+ *                              edge pairs by flow (see the header). Optional.
+ * @returns {{positions: Object, sizes: Object, frames: Object,
+ *            edges: Array, canvas: [number, number]}}
+ */
+export function layout(doc, catalogue) {
+  const nodes = doc && Array.isArray(doc.nodes) ? doc.nodes : [];
+  const edges = doc && Array.isArray(doc.edges) ? doc.edges : [];
+  const groups = doc && Array.isArray(doc.groups) ? doc.groups : [];
+
+  const box = new Map(); // insertion order = node document order
+  for (const n of nodes) {
+    const text = truthy(n.label) ? String(n.label) : n.id;
+    const w = Math.max(charLen(text) * NAME_PX, charLen(n.component) * ID_PX) + 2 * PAD_X;
+    box.set(n.id, [0, 0, Math.max(MIN_W, pyRound(w)), BOX_H]);
+  }
+
+  // The group tree. A parent that is missing, or that would close a cycle, leaves the group
+  // top-level; a member of a missing group is ungrouped (invalid designs only).
+  const declared = new Map();
+  for (const g of groups) if (!declared.has(g.id)) declared.set(g.id, g);
+  const declaredParent = (gid) => {
+    const p = declared.get(gid)?.parent;
+    return present(p) && declared.has(p) ? p : null;
   };
-  for (const g of groups) frameOf(g.id);
+  const parentOf = new Map();
+  for (const gid of declared.keys()) {
+    let p = declaredParent(gid);
+    const seen = new Set([gid]);
+    for (let q = p; q !== null; q = declaredParent(q)) {
+      if (seen.has(q)) {
+        p = null;
+        break;
+      }
+      seen.add(q);
+    }
+    parentOf.set(gid, p);
+  }
+  // every node's enclosing groups, innermost first
+  const chainOf = new Map();
+  for (const n of nodes) {
+    const chain = [];
+    for (let g = present(n.group) && declared.has(n.group) ? n.group : null; g !== null; ) {
+      chain.push(g);
+      g = parentOf.get(g);
+    }
+    chainOf.set(n.id, chain);
+  }
+  // the item a node falls in at the level of group `gid` (null: the root level), or null
+  const itemAt = (nid, gid) => {
+    const chain = chainOf.get(nid);
+    if (!chain) return null; // an edge to a node that does not exist
+    const k = gid === null ? chain.length : chain.indexOf(gid);
+    if (k < 0) return null;
+    return k === 0 ? `n:${nid}` : `g:${chain[k - 1]}`;
+  };
+  const docIndex = new Map(nodes.map((n, k) => [n.id, k]));
+
+  // every item's flow over the nodes it contains: {min, sum, n}
+  const flow = new Map();
+  const addFlow = (key, f) => {
+    const cur = flow.get(key);
+    if (!cur) flow.set(key, { min: f, sum: f, n: 1 });
+    else {
+      cur.min = Math.min(cur.min, f);
+      cur.sum += f;
+      cur.n++;
+    }
+  };
+  for (const n of nodes) {
+    if (flow.has(`n:${n.id}`)) continue; // a duplicate id: the first declaration counts
+    const f = flowIndex(catalogue, n.component);
+    addFlow(`n:${n.id}`, f);
+    for (const g of chainOf.get(n.id)) addFlow(`g:${g}`, f);
+  }
+  const flowOf = (key) => flow.get(key) ?? { min: FLOW_CUSTOM, sum: FLOW_CUSTOM, n: 1 };
+
+  // Lay a level out: every item's position relative to the level's top-left corner, and the
+  // level's content size. Child groups are laid out first, so each is a block of known size.
+  const rel = new Map(); // "n:<id>" | "g:<id>" -> [x, y] inside the enclosing level
+  const block = new Map(); // gid -> {w, h, items}
+  const layLevel = (gid) => {
+    const items = [],
+      first = new Map(); // item -> the smallest document index of a node inside it
+    for (const n of nodes) {
+      if (chainOf.get(n.id)[0] !== (gid === null ? undefined : gid) || first.has(`n:${n.id}`))
+        continue;
+      const b = box.get(n.id);
+      items.push({ id: `n:${n.id}`, w: b[2], h: b[3] });
+      first.set(`n:${n.id}`, docIndex.get(n.id));
+    }
+    for (const [g, p] of parentOf) {
+      if (p !== gid) continue;
+      const inner = layLevel(g);
+      if (!inner) continue; // an empty group gets no block and no frame
+      const w = inner.width + 2 * FRAME_PAD_X;
+      const h = inner.height + FRAME_PAD_TOP + FRAME_PAD_BOTTOM;
+      block.set(g, { w, h, items: inner.items });
+      items.push({ id: `g:${g}`, w, h });
+      first.set(`g:${g}`, inner.first);
+    }
+    if (!items.length) return null;
+    items.sort((a, b) => first.get(a.id) - first.get(b.id)); // stable
+    const here = new Set(items.map((it) => it.id));
+    const contracted = [];
+    for (const e of edges) {
+      const a = itemAt(e.from, gid),
+        b = itemAt(e.to, gid);
+      if (!here.has(a) || !here.has(b) || a === b) continue; // elsewhere, or inside one item
+      contracted.push({ from: a, to: b });
+    }
+    const placed = placeLevel(items, contracted, orientReciprocal(contracted, flowOf));
+    for (const it of items) rel.set(it.id, placed.pos.get(it.id));
+    return {
+      width: placed.width,
+      height: placed.height,
+      first: Math.min(...items.map((it) => first.get(it.id))),
+      items: items.map((it) => it.id),
+    };
+  };
+  const root = layLevel(null);
+
+  // Absolute placement, top down: a block's items sit inside its padding.
+  const frame = new Map();
+  const place = (keys, ox, oy) => {
+    for (const k of keys) {
+      const [x, y] = rel.get(k);
+      if (k.startsWith("n:")) {
+        const b = box.get(k.slice(2));
+        b[0] = ox + x;
+        b[1] = oy + y;
+      } else {
+        const g = block.get(k.slice(2));
+        frame.set(k.slice(2), [ox + x, oy + y, g.w, g.h]);
+        place(g.items, ox + x + FRAME_PAD_X, oy + y + FRAME_PAD_TOP);
+      }
+    }
+  };
+  if (root) place(root.items, CANVAS_PAD_X / 2, CANVAS_PAD_Y);
+  const canvasW = (root ? root.width : 0) + CANVAS_PAD_X;
+  const canvasH = (root ? root.height : 0) + 2 * CANVAS_PAD_Y;
 
   // edges: drawn by geometry.js, the one implementation the canvas and the drawn layout share,
   // so an arrangement and a drawing route their edges, lanes and bends identically

@@ -13,7 +13,14 @@ import { check } from "@zeema/core/structure";
 import Ajv from "ajv";
 import addFormats from "ajv-formats";
 import YAML from "yaml";
-import { boundaryIconIds, loadCatalogue, PROVIDERS, resolveRoot, walk } from "./index.js";
+import {
+  boundaryIconIds,
+  loadCatalogue,
+  PROVIDERS,
+  providerFolderIds,
+  resolveRoot,
+  walk,
+} from "./index.js";
 
 /** Icons are inlined into pages; one icon larger than this is a vendor file nobody trimmed. */
 const ICON_MAX_BYTES = 4096;
@@ -202,6 +209,12 @@ export function validateRepository(rootArg, options = {}) {
     if (!locale.boundaryIcons?.[id]?.name) fail(`locale missing group icon ${id}`);
   for (const id of Object.keys(locale.boundaryIcons ?? {}))
     if (!boundaryIds.includes(id)) fail(`locale unknown group icon ${id}`);
+  // Providers likewise: the folders under components/ are the set, checked both ways.
+  const providerIds = providerFolderIds(root);
+  for (const id of providerIds)
+    if (!locale.providers?.[id]?.name) fail(`locale missing provider ${id}`);
+  for (const id of Object.keys(locale.providers ?? {}))
+    if (!providerIds.includes(id)) fail(`locale unknown provider ${id}`);
 
   const iconExists = (p) => fs.existsSync(path.join(root, p));
   for (const id of Object.keys(kinds))

@@ -104,6 +104,7 @@
   display: grid;
   grid-template-columns: 260px 1fr 320px;
   min-height: 0;
+  position: relative;
 }
 .zeema-canvas .pane {
   background: var(--panel);
@@ -119,6 +120,55 @@
 .zeema-canvas .pane-right {
   border-left: var(--border) solid var(--line);
   padding: var(--sp-1-5);
+}
+/* Either side pane can be put away; its column goes to the scene and a thin strip on that edge
+   brings it back. */
+.zeema-canvas .body.no-left {
+  grid-template-columns: 0 1fr 320px;
+}
+.zeema-canvas .body.no-right {
+  grid-template-columns: 260px 1fr 0;
+}
+.zeema-canvas .body.no-left.no-right {
+  grid-template-columns: 0 1fr 0;
+}
+.zeema-canvas .pane.is-away {
+  visibility: hidden;
+  overflow: hidden;
+  border: 0;
+  padding: 0;
+}
+.zeema-canvas .pane-edge {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 5;
+  width: 8px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: var(--panel);
+  color: var(--muted);
+  cursor: pointer;
+  transition:
+    width var(--dur-fast) var(--ease),
+    color var(--dur-fast) var(--ease);
+}
+.zeema-canvas .pane-edge.left {
+  left: 0;
+  border-right: var(--border) solid var(--line);
+}
+.zeema-canvas .pane-edge.right {
+  right: 0;
+  border-left: var(--border) solid var(--line);
+}
+.zeema-canvas .pane-edge:hover,
+.zeema-canvas .pane-edge:focus-visible {
+  width: 14px;
+  color: var(--ink);
+  background: var(--bg);
 }
 .zeema-canvas .scene-wrap {
   position: relative;
@@ -570,13 +620,79 @@
   padding: 0 var(--sp-0-5) var(--sp-1);
   flex: 1;
 }
+.zeema-canvas .pal-filters {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-0-5);
+  margin: 0 var(--sp-1) var(--sp-0-5);
+}
+.zeema-canvas .pal-select {
+  width: 100%;
+  min-width: 0;
+  font-family: var(--mono);
+  font-size: var(--fs-micro);
+  padding: calc(var(--p) * 0.5) calc(var(--p) * 0.8);
+  cursor: pointer;
+}
+/* A category header folds its rows away, the way a draw.io shape library does. */
 .zeema-canvas .pal-group {
   font-family: var(--lab-font);
   text-transform: var(--lab-tt);
   letter-spacing: var(--lab-ls);
   font-size: var(--fs-micro);
   color: var(--muted);
-  margin: var(--sp-1-5) var(--sp-1) var(--sp-0-5);
+  margin: var(--sp-1-5) 0 var(--sp-0-5);
+  padding: 2px var(--sp-1);
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  border-radius: var(--rc);
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+.zeema-canvas .pal-group:hover {
+  color: var(--ink);
+  background: var(--bg);
+}
+.zeema-canvas .pal-group .chev {
+  width: 10px;
+  height: 10px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform var(--dur-fast) var(--ease);
+}
+.zeema-canvas .pal-group[aria-expanded="true"] .chev {
+  transform: rotate(90deg);
+}
+.zeema-canvas .pal-group .count {
+  margin-left: auto;
+  font-family: var(--mono);
+  text-transform: none;
+  letter-spacing: 0;
+}
+.zeema-canvas .pal-more {
+  display: block;
+  width: calc(100% - var(--sp-2));
+  margin: var(--sp-1);
+  padding: calc(var(--p) * 0.6) var(--sp-1);
+  border: var(--border) dashed var(--line);
+  border-radius: var(--rc);
+  background: none;
+  font: inherit;
+  font-size: var(--fs-meta);
+  color: var(--muted);
+  cursor: pointer;
+}
+.zeema-canvas .pal-more:hover {
+  color: var(--ink);
+  border-color: var(--muted);
 }
 .zeema-canvas .pal-row {
   width: 100%;
@@ -1090,4 +1206,28 @@
   height: 1px;
   margin: 4px 2px;
   background: var(--line);
+}
+
+/* the pane toggles and the edge strips that bring a pane back */
+.zeema-canvas .body .pane-edge svg {
+  width: 8px;
+  height: 12px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.zeema-canvas .toolbar .pane-toggle svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.zeema-canvas .toolbar .pane-toggle[aria-pressed="false"] {
+  color: var(--muted);
 }

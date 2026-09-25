@@ -89,6 +89,18 @@ const readNotesPref = () => {
   }
 };
 
+// Which side panes are out is the same kind of habit: one key for both, both out by default.
+const PANES_KEY = "zeema.canvas.panes";
+type Panes = { left: boolean; right: boolean };
+const readPanes = (): Panes => {
+  try {
+    const v = JSON.parse(window.localStorage.getItem(PANES_KEY) ?? "{}");
+    return { left: v?.left !== false, right: v?.right !== false };
+  } catch {
+    return { left: true, right: true };
+  }
+};
+
 /** Everything a note is allowed to be anchored to, as the document currently stands. */
 const anchorables = (doc: any) => ({
   nodes: doc.nodes.map((n: any) => n.id as string),
@@ -180,6 +192,8 @@ const helpSections = (mod: string): Array<[string, Array<[string[], string]>]> =
       [["Middle-drag", "Space", "Drag"], "Pan the canvas."],
       [[mod, "0"], "Fit the whole design on screen."],
       [[mod, "1"], "Back to actual size."],
+      [[mod, "Shift", "K"], "Show or hide the palette."],
+      [[mod, "Shift", "P"], "Show or hide the inspector."],
       [[mod, "S"], "Save."],
       [["?"], "Open and close this dialog."],
     ],
@@ -216,6 +230,29 @@ export function Canvas(props: Props) {
   const hintEl = useRef<HTMLDivElement>(null);
   const [paletteQuery, setPaletteQuery] = useState("");
   const [paletteFocus, setPaletteFocus] = useState(0);
+  // Both panes out until the stored preference is read after mount (server and client agree).
+  const [panes, setPanesState] = useState<Panes>({ left: true, right: true });
+  useEffect(() => setPanesState(readPanes()), []);
+  const setPane = useCallback((side: keyof Panes, open?: boolean) => {
+    setPanesState((prev) => {
+      const next = { ...prev, [side]: open ?? !prev[side] };
+      try {
+        window.localStorage.setItem(PANES_KEY, JSON.stringify(next));
+      } catch {
+        /* a browser that will not remember still toggles for this visit */
+      }
+      return next;
+    });
+  }, []);
+  // Asking for the palette (find in palette, "Add external node") brings it out if it is away.
+  const askPalette = useCallback(
+    (query: string) => {
+      setPane("left", true);
+      setPaletteQuery(query);
+      setPaletteFocus((n) => n + 1);
+    },
+    [setPane],
+  );
   const [title, setTitle] = useState(props.title);
   const [unpublished, setUnpublished] = useState(props.unpublished);
   const [editingTitle, setEditingTitle] = useState(false);
@@ -1026,6 +1063,16 @@ export function Canvas(props: Props) {
         duplicateSelection();
         return;
       }
+      if (mod && ev.shiftKey && k === "k") {
+        ev.preventDefault();
+        setPane("left");
+        return;
+      }
+      if (mod && ev.shiftKey && k === "p") {
+        ev.preventDefault();
+        setPane("right");
+        return;
+      }
       if (mod && ev.key === "0") {
         ev.preventDefault();
         scene.fit();
@@ -1090,6 +1137,7 @@ export function Canvas(props: Props) {
     nudge,
     commit,
     setNotesShown,
+    setPane,
   ]);
 
   // The dialog opens on the close button and hands focus back to the ? button when it goes, so
@@ -1225,8 +1273,7 @@ export function Canvas(props: Props) {
       setNoteText,
       detachNote,
       findInPalette: (query: string) => {
-        setPaletteQuery(query);
-        setPaletteFocus((n) => n + 1);
+        askPalette(query);
       },
       remove: (type, ref) => {
         const scene = sceneRef.current!;
@@ -1239,8 +1286,30 @@ export function Canvas(props: Props) {
         if (type === "group") commit(D.deleteGroup(e.doc, ref as string));
       },
     }),
-    [bundle, commit, deleteNote, detachNote, notify, render, renameToLabel, setNoteText],
+    [
+      bundle,
+      commit,
+      deleteNote,
+      detachNote,
+      notify,
+      render,
+      renameToLabel,
+      setNoteText,
+      askPalette,
+    ],
   );
+
+  // The palette's Provider and Category selects name them the way the locale does.
+  const [providerNames, categoryNames] = useMemo(() => {
+    const names = (section: Record<string, unknown> | undefined) => {
+      const out: Record<string, string> = {};
+      for (const [id, v] of Object.entries(section ?? {}))
+        if ((v as any)?.name) out[id] = (v as any).name;
+      return out;
+    };
+    const locale = bundle?.catalogue?.locale;
+    return [names(locale?.providers), names(locale?.categories)];
+  }, [bundle]);
 
   // Native fullscreen when the browser grants it; otherwise the canvas pins itself over the
   // page (same look, Escape leaves it), so the button works in embedded and restricted contexts.
@@ -1595,6 +1664,35 @@ export function Canvas(props: Props) {
             PNG
           </button>
         </div>
+        <span className="sep" />
+        <div className="group">
+          <button
+            type="button"
+            className={`btn pane-toggle${panes.left ? " active" : ""}`}
+            aria-pressed={panes.left}
+            onClick={() => setPane("left")}
+            title={`${panes.left ? "Hide" : "Show"} the palette (${mod.long} Shift K)`}
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="3.5" y="4.5" width="17" height="15" rx="2" />
+              <path d="M9.5 4.5v15" />
+            </svg>
+            Palette
+          </button>
+          <button
+            type="button"
+            className={`btn pane-toggle${panes.right ? " active" : ""}`}
+            aria-pressed={panes.right}
+            onClick={() => setPane("right")}
+            title={`${panes.right ? "Hide" : "Show"} the inspector (${mod.long} Shift P)`}
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="3.5" y="4.5" width="17" height="15" rx="2" />
+              <path d="M14.5 4.5v15" />
+            </svg>
+            Inspector
+          </button>
+        </div>
         <span className={`ml-auto status ${blocking ? "status-err" : ""}`}>{summary}</span>
         <button
           type="button"
@@ -1645,12 +1743,43 @@ export function Canvas(props: Props) {
           ?
         </button>
       </div>
-      <div className="body">
-        <aside className="pane pane-left">
+      <div className={`body${panes.left ? "" : " no-left"}${panes.right ? "" : " no-right"}`}>
+        {panes.left ? null : (
+          <button
+            type="button"
+            className="pane-edge left"
+            aria-label="Show the palette"
+            title={`Show the palette (${mod.long} Shift K)`}
+            onClick={() => setPane("left", true)}
+          >
+            <svg viewBox="0 0 8 12" aria-hidden="true">
+              <path d="M2.5 2 6 6l-3.5 4" />
+            </svg>
+          </button>
+        )}
+        {panes.right ? null : (
+          <button
+            type="button"
+            className="pane-edge right"
+            aria-label="Show the inspector"
+            title={`Show the inspector (${mod.long} Shift P)`}
+            onClick={() => setPane("right", true)}
+          >
+            <svg viewBox="0 0 8 12" aria-hidden="true">
+              <path d="M5.5 2 2 6l3.5 4" />
+            </svg>
+          </button>
+        )}
+        <aside
+          className={`pane pane-left${panes.left ? "" : " is-away"}`}
+          aria-hidden={!panes.left}
+        >
           {bundle ? (
             <Palette
               rows={bundle.search}
               icons={bundle.icons}
+              providerNames={providerNames}
+              categoryNames={categoryNames}
               query={paletteQuery}
               onQuery={setPaletteQuery}
               focusSeq={paletteFocus}
@@ -1742,8 +1871,7 @@ export function Canvas(props: Props) {
                 type="button"
                 className="btn btn-sm btn-primary"
                 onClick={() => {
-                  setPaletteQuery("category:external");
-                  setPaletteFocus((n) => n + 1);
+                  askPalette("category:external");
                   setHint(null);
                 }}
               >
@@ -1752,7 +1880,10 @@ export function Canvas(props: Props) {
             </div>
           ) : null}
         </div>
-        <aside className="pane pane-right">
+        <aside
+          className={`pane pane-right${panes.right ? "" : " is-away"}`}
+          aria-hidden={!panes.right}
+        >
           {bundle && e ? (
             <div key={`${selection.type}:${String(selection.ref)}:${tick}`}>
               <Inspector

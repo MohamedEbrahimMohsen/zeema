@@ -1,7 +1,8 @@
 # English display text, keyed by id. Kinds, components and rules never carry display
 # text themselves. Every id in kinds/, components/ and rules/ must have an entry here, and
 # every icon in icons/boundaries/ an entry under boundaryIcons (the icons a group may show; the
-# user-facing word is group; boundary stays in the stored format).
+# user-facing word is group; boundary stays in the stored format), and every folder in
+# components/ an entry under providers.
 # Regenerated from the catalogue; keep entries sorted by id.
 categories:
   client:
@@ -7034,3 +7035,29 @@ boundaryIcons:
   vmware:
     name: "VMware"
     description: "VMware vSphere and virtual machines."
+
+providers:
+  alibabacloud:
+    name: "Alibaba Cloud"
+  aws:
+    name: "AWS"
+  azure:
+    name: "Azure"
+  cloudflare:
+    name: "Cloudflare"
+  default:
+    name: "Generic"
+  digitalocean:
+    name: "DigitalOcean"
+  gcp:
+    name: "GCP"
+  ibm:
+    name: "IBM"
+  k8s:
+    name: "Kubernetes"
+  oci:
+    name: "OCI"
+  openstack:
+    name: "OpenStack"
+  outscale:
+    name: "Outscale"
