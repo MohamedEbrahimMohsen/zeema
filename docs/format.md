@@ -190,6 +190,8 @@ drawn in the source). They exist for rules and for renderers, which draw them as
 
 ### nodes
 
+A design may have no nodes yet (`nodes: []`): a new design starts that way on the canvas.
+
 | Field | Required | Meaning |
 |---|---|---|
 | `id` | yes | Unique within the design |

@@ -306,6 +306,7 @@
   width: 320px;
   display: flex;
   flex-direction: column;
+  gap: 8px;
   transform: translateX(calc(100% + 24px));
   opacity: 0;
   visibility: hidden;
@@ -327,6 +328,16 @@
   overflow: auto;
   padding: var(--sp-1-5);
   overscroll-behavior: contain;
+}
+/* Design settings pinned and a selection: two cards in the column, design first, each scrolling
+   on its own and sharing the height by how much each holds. */
+.zeema-canvas .float-inspector.has-two .inspector {
+  flex: 0 1 auto;
+  min-height: 0;
+  max-height: none;
+}
+.zeema-canvas .float-inspector.has-two .inspector:first-child {
+  max-height: 45%;
 }
 .zeema-canvas .float-inspector details > summary {
   cursor: pointer;
@@ -571,6 +582,19 @@
     max-height: 60dvh;
     border-radius: var(--r-card) var(--r-card) 0 0;
   }
+  /* Design settings pinned on a phone: a third of the screen, so the canvas stays reachable;
+     with a selection too, the two cards stack in the sheet, each a scrolling third */
+  .zeema-canvas .float-inspector.has-two {
+    gap: 0;
+  }
+  .zeema-canvas .float-inspector.has-pinned .inspector,
+  .zeema-canvas .float-inspector.has-two .inspector:first-child {
+    max-height: 32dvh;
+  }
+  .zeema-canvas .float-inspector.has-two .inspector + .inspector {
+    border-radius: 0;
+    border-top: 0;
+  }
 }
 
 /* the note inspector: what a note is pinned to, and the way off it */
@@ -618,6 +642,18 @@
 .zeema-canvas .node-box.wire-target rect.body {
   stroke: var(--accent);
   stroke-width: 2.5;
+}
+/* a note being dragged over what it would be pinned to on release */
+.zeema-canvas .node-box.drop-target rect.body {
+  stroke: var(--accent);
+  stroke-width: 2.5;
+}
+.zeema-canvas .frame.drop-target,
+.zeema-canvas .frame[data-tint].drop-target {
+  stroke: var(--accent);
+  stroke-width: 2.5;
+  stroke-dasharray: none;
+  fill: color-mix(in srgb, var(--accent) 6%, transparent);
 }
 .zeema-canvas .node-box.wire-source rect.body {
   stroke-dasharray: 4 3;
@@ -1276,7 +1312,8 @@
   color: var(--muted);
 }
 .zeema-canvas .field input,
-.zeema-canvas .field select {
+.zeema-canvas .field select,
+.zeema-canvas .field textarea {
   width: 100%;
   font: inherit;
   font-size: 0.9em;
@@ -1287,9 +1324,22 @@
   color: var(--ink);
 }
 .zeema-canvas .field input:focus,
-.zeema-canvas .field select:focus {
+.zeema-canvas .field select:focus,
+.zeema-canvas .field textarea:focus {
   outline: none;
   box-shadow: var(--ring-focus);
+}
+/* a long text (a note's) takes the whole row under its label, and grows only downwards */
+.zeema-canvas .field textarea {
+  grid-column: 1 / -1;
+  display: block;
+  box-sizing: border-box;
+  min-height: calc(7.5em + var(--p));
+  line-height: 1.5;
+  resize: vertical;
+}
+.zeema-canvas .field textarea::placeholder {
+  color: var(--muted);
 }
 /* group colour: "none", one swatch per named tint, then "More colours" */
 .zeema-canvas .swatches {
@@ -1706,4 +1756,69 @@
   height: 1px;
   margin: 4px 2px;
   background: var(--line);
+}
+
+/* a panel heading with a control at its end: Design settings and its pin */
+.zeema-canvas .panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-1);
+  margin: 0 0 var(--sp-0-5);
+}
+.zeema-canvas .panel-head h2 {
+  margin: 0;
+}
+.zeema-canvas .panel-head .pill-btn {
+  width: 28px;
+  height: 28px;
+}
+
+/* the owner's list badge in Design settings: the mark now, and the chooser laid inline */
+.zeema-canvas .badge-row-value {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+.zeema-canvas .badge-row-value .badge-now {
+  flex: 1;
+  font-weight: var(--fw-regular);
+  font-size: 0.9em;
+}
+.zeema-canvas .badge-row-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.zeema-canvas .badge-row-value .btn {
+  flex: none;
+}
+.zeema-canvas .badge-pop-inline {
+  position: static;
+  width: auto;
+  max-width: none;
+  margin: 0 0 var(--sp-1);
+  box-shadow: none;
+  border: var(--border) solid var(--float-line);
+  border-radius: var(--r-card);
+  background: var(--panel);
+}
+.zeema-canvas .badge-pop .menu-item {
+  display: flex;
+  align-items: center;
+  min-height: 32px;
+  box-sizing: border-box;
+  padding: 0 10px;
+  border-radius: var(--r-inner);
+}
+.zeema-canvas .badge-pop .menu-item:hover:not(:disabled),
+.zeema-canvas .badge-pop .menu-item:focus-visible {
+  background: var(--accent);
+  color: var(--accent-ink);
+  outline: none;
+}
+.zeema-canvas .badge-pop .menu-item.is-current {
+  background: var(--on-fill);
+  font-weight: var(--fw-medium);
 }

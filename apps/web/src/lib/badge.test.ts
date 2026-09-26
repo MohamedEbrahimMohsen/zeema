@@ -53,6 +53,10 @@ describe("badgeOf", () => {
     expect(badgeOf(doc("az-vm", "az-sql", "aws-s3", "aws-sqs"), cat)).toBeNull();
   });
 
+  it("returns null for a design with no components yet", () => {
+    expect(badgeOf(doc(), cat)).toBeNull();
+  });
+
   it("returns null for a design drawn only in generic components", () => {
     expect(badgeOf(doc("box", "queue", "box"), cat)).toBeNull();
   });

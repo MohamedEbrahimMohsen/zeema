@@ -31,11 +31,13 @@ import {
   NOTE_MIN_H,
   NOTE_MIN_W,
   type Note,
+  type NoteAnchor,
   normaliseTint,
   type Port,
   type PortSide,
 } from "@/lib/layout-sidecar";
 import { own } from "@/lib/own";
+import { anchorOffset, noteDropTarget, sameAnchor } from "./note-anchor";
 
 const NS = "http://www.w3.org/2000/svg";
 const el = (name: string, attrs: Record<string, unknown> = {}) => {
@@ -127,6 +129,12 @@ export type Handlers = {
   onContext?: (target: Subject, x: number, y: number) => void;
   onDrop?: (componentId: string, x: number, y: number) => void;
   onNoteGeometry?: (id: string, box: { x: number; y: number; w: number; h: number }) => void;
+  /** A note was dropped onto a component or a group: pin it there, at this offset. */
+  onNoteAnchor?: (
+    id: string,
+    anchor: NoteAnchor,
+    box: { x: number; y: number; w: number; h: number },
+  ) => void;
   onNotePin?: (key: string) => void;
   /**
    * A wire drawn from a port dot was let go on empty canvas, away from its dot: the page may
@@ -540,7 +548,7 @@ export class Scene {
   noteStored(note: Note, x: number, y: number): [number, number] {
     const t = this.anchorBox(note);
     if (!t) return [x, y];
-    return [Math.round(x - (t[0] + t[2])), Math.round(y - t[1])];
+    return anchorOffset(t, x, y);
   }
 
   /** The nearest point on a rectangle to a point outside it. */
@@ -789,6 +797,7 @@ export class Scene {
     if (d.mode === "move") {
       this.noteEls.get(d.id)?.setAttribute("transform", `translate(${b[0]} ${b[1]})`);
       this.redrawLeader(d.id);
+      this.setNoteDropTarget(this.noteDropAt(d.id, wx, wy));
     } else this.renderNotes();
     this.renderSelection();
   }
@@ -808,14 +817,57 @@ export class Scene {
     else this.layers.notes.prepend(el("path", { class: "note-leader", "data-leader-for": id, d }));
   }
 
+  /**
+   * What a note let go at this world point would be pinned to: the component under the pointer,
+   * else the innermost group around it. Its own current target is not a new one, and nor is a
+   * group around it, so they are left out: letting go there is an ordinary move.
+   */
+  noteDropAt(id: string, wx: number, wy: number): NoteAnchor | null {
+    const note = (this.model.notes || []).find((n) => n.id === id);
+    const order = this.model.doc.nodes.map((n: any) => n.id as string);
+    const current = note ? this.anchorBox(note) : null;
+    const target = noteDropTarget(order, this.boxes, this.frames || {}, wx, wy, current);
+    return target && !sameAnchor(target, note?.anchor) ? target : null;
+  }
+
+  /** The drop highlight: an accent ring on the component or group a note would be pinned to. */
+  setNoteDropTarget(target: NoteAnchor | null) {
+    const d = this.noteDrag;
+    const prev: NoteAnchor | null = d?.target ?? null;
+    if (d) d.target = target;
+    if (prev === target || sameAnchor(prev, target)) return;
+    const elOf = (a: NoteAnchor) =>
+      "node" in a ? this.nodeEls.get(a.node) : this.frameEls.get(a.group)?.rect;
+    if (prev) elOf(prev)?.classList.remove("drop-target");
+    if (target) elOf(target)?.classList.add("drop-target");
+  }
+
+  private clearNoteDropTarget() {
+    for (const box of this.nodeEls.values()) box.classList.remove("drop-target");
+    for (const f of this.frameEls.values()) f.rect.classList.remove("drop-target");
+  }
+
   endNote() {
-    const { id, moved } = this.noteDrag;
+    const { id, moved, target } = this.noteDrag;
     this.noteDrag = null;
+    this.clearNoteDropTarget();
     const b = this.noteBoxes[id];
     const note = (this.model.notes || []).find((n) => n.id === id);
     if (!moved || !b || !note) return;
-    // Dragging an anchored note changes its OFFSET, never its anchor: it stays pinned to the
-    // same thing, just further from it.
+    // Let go on a component or a group: pin it there, the offset worked out from where it was
+    // dropped so it does not jump.
+    const to = target
+      ? "node" in target
+        ? this.boxes[target.node]
+        : this.frames[target.group]
+      : null;
+    if (target && to) {
+      const [x, y] = anchorOffset(to, b[0], b[1]);
+      this.h.onNoteAnchor?.(id, target, { x, y, w: b[2], h: b[3] });
+      return;
+    }
+    // Let go anywhere else, an anchored note changes its OFFSET, never its anchor: it stays
+    // pinned to the same thing, just further from it.
     const [x, y] = this.noteStored(note, b[0], b[1]);
     this.h.onNoteGeometry?.(id, { x, y, w: b[2], h: b[3] });
   }
@@ -1431,6 +1483,7 @@ export class Scene {
     }
     if (this.noteDrag) {
       this.noteDrag = null;
+      this.clearNoteDropTarget();
       this.render(this.model);
     }
     if (this.drag) {

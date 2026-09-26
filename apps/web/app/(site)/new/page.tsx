@@ -5,15 +5,14 @@ import { newDraftSlug } from "@/lib/slug";
 
 export const dynamic = "force-dynamic";
 
-// A new design starts as one component on the canvas: private, autosaved, and called a draft
-// until its owner names it. The address is draft-<random> rather than a counted draft-1: a
+// A new design starts as an empty canvas: no components, no connections, private, autosaved,
+// and called a draft until its owner names it. The address is draft-<random> rather than a counted draft-1: a
 // number would have to be looked up. Publishing grows the address out of the title (see
 // `publishSlugFor`), and the owner can rename it by hand at any time.
 const STARTER = `schemaVersion: "1"
 type: "design"
 id: "new-design"
-nodes:
-  - { id: "service", component: "container-service" }
+nodes: []
 edges: []
 `;
 

@@ -689,3 +689,35 @@ describe("the list badge", () => {
     });
   });
 });
+
+describe("an empty design", () => {
+  // What /new creates: no components and no connections yet.
+  const EMPTY = `schemaVersion: "1"
+type: "design"
+id: "new-design"
+nodes: []
+edges: []
+`;
+
+  it("is created, read back byte for byte, and listed with no badge and no thumbnail", async () => {
+    const { createDesign, getDesign, listDesigns } = await lib();
+    const gil = await makeUser("gil");
+    const d = await createDesign(gil as never, {
+      title: "Untitled design",
+      slug: "draft-empty",
+      visibility: "private",
+      yaml: EMPTY,
+      message: "created",
+    });
+    const view = await getDesign("gil", d.design.slug, gil as never);
+    expect(view.version?.yaml).toBe(EMPTY);
+    const { items } = await listDesigns(gil as never, { scope: "mine" });
+    const row = items.find((i) => i.slug === d.design.slug);
+    expect(row).toBeDefined();
+    expect(row?.badge).toBeNull();
+    expect(row?.thumb).toBeNull();
+    expect(row?.nodeCount).toBe(0);
+    expect(row?.edgeCount).toBe(0);
+    expect(row?.findingCount).toBe(0);
+  });
+});

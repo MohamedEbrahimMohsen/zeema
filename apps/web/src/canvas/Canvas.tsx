@@ -13,8 +13,10 @@ import { parse, serialize } from "@zeema/core/yaml";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { BadgeMenuData } from "@/components/BadgePicker";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { UserMenu } from "@/components/UserMenu";
+import { badgeOf, brandOf } from "@/lib/badge";
 import {
   type EdgePorts,
   type FrameStyle,
@@ -37,6 +39,7 @@ import {
   retargetFrame,
   writeSidecar,
 } from "@/lib/layout-sidecar";
+import { BadgeRow } from "./BadgeRow";
 import { ContextMenu, type MenuItem } from "./ContextMenu";
 import { exportScene } from "./exportScene";
 import { type CanvasFinding, FindingsPanel } from "./FindingsPanel";
@@ -70,6 +73,13 @@ type Props = {
     isAdmin: boolean;
     actingAdmin: boolean;
   } | null;
+  /**
+   * The list badge chooser's marks, for the owner only (brand.ts reads them from disk, so the
+   * server sends them). `current` is ignored here: the canvas reads the choice from the sidecar
+   * it holds. `auto` is what automatic picks for a design with a brand; otherwise the canvas
+   * works it out from the live document.
+   */
+  badgeMenu?: BadgeMenuData;
 };
 
 type Bundle = { catalogue: any; search: any[]; icons: Record<string, string> };
@@ -85,8 +95,8 @@ type Engine = {
   notes: Note[];
   /** Group tint and icon by group id: sidecar, never YAML. */
   frames: Record<string, FrameStyle>;
-  /** The list badge the owner chose on the design page. The canvas never edits it; it only
-   *  carries it from the sidecar it read to the one it writes, so a save never drops it. */
+  /** The list badge the owner chose (Design settings here, or the design page): sidecar, never
+   *  YAML. It rides the canvas's own save, so a save never drops it. */
   badge?: string;
   undo: any[];
   redo: any[];
@@ -132,17 +142,19 @@ const readNotesPref = () => {
   }
 };
 
-// The two side panels are the same kind of habit, under one key. `left` is the component picker
+// The side panels are the same kind of habit, under one key. `left` is the component picker
 // pinned open as a docked panel (off by default: it is a popover over the dock); `right` is
-// whether the inspector card may show when something is selected (on by default).
+// whether the inspector card may show when something is selected (on by default); `design` is
+// the Design settings card pinned, so it stays while things are selected (off by default).
 const PANES_KEY = "zeema.canvas.panes";
-type Panes = { left: boolean; right: boolean };
+type Panes = { left: boolean; right: boolean; design: boolean };
+const PANES_DEFAULT: Panes = { left: false, right: true, design: false };
 const readPanes = (): Panes => {
   try {
     const v = JSON.parse(window.localStorage.getItem(PANES_KEY) ?? "{}");
-    return { left: v?.left === true, right: v?.right !== false };
+    return { left: v?.left === true, right: v?.right !== false, design: v?.design === true };
   } catch {
-    return { left: false, right: true };
+    return PANES_DEFAULT;
   }
 };
 
@@ -257,6 +269,10 @@ const helpSections = (mod: string): Array<[string, Array<[string[], string]>]> =
         ["Right-click a component", "or a group"],
         "Pin a note to it; the note then follows what it is pinned to.",
       ],
+      [
+        ["Drag a note", "onto a component or group"],
+        "Pin it there, where you let go; the ring shows what it will follow.",
+      ],
       [["N"], "Show or hide every note; a hidden one leaves a dot on its target."],
       [[mod, "Enter"], "Keep what you typed in a note; Esc throws the edit away."],
     ],
@@ -271,6 +287,7 @@ const helpSections = (mod: string): Array<[string, Array<[string[], string]>]> =
       [[mod, "0"], "Fit the whole design on screen."],
       [[mod, "1"], "Back to actual size."],
       [[mod, "Shift", "K"], "Pin the component picker as a side panel, or unpin it."],
+      [[mod, "Shift", "D"], "Pin Design settings so it stays beside a selection, or unpin it."],
       [[mod, "Shift", "P"], "Let the inspector show for a selection, or keep it away."],
       [[mod, "S"], "Save."],
       [["Esc"], "Close the picker, a menu or the findings."],
@@ -358,7 +375,7 @@ export function Canvas(props: Props) {
   const [paletteQuery, setPaletteQuery] = useState("");
   const [paletteFocus, setPaletteFocus] = useState(0);
   // The defaults until the stored preference is read after mount (server and client agree).
-  const [panes, setPanesState] = useState<Panes>({ left: false, right: true });
+  const [panes, setPanesState] = useState<Panes>(PANES_DEFAULT);
   useEffect(() => setPanesState(readPanes()), []);
   const pinnedRef = useRef(false);
   pinnedRef.current = panes.left;
@@ -376,11 +393,12 @@ export function Canvas(props: Props) {
   const [findingsOpen, setFindingsOpen] = useState(false);
   const findingsRef = useRef<HTMLDivElement>(null);
   // The inspector on the design itself (id, requirements): asked for from the menu or by a
-  // finding about the whole design. Any selection change puts it away again.
+  // finding about the whole design. Any selection change puts it away again, unless it is
+  // pinned (panes.design): then it stays, and the selection shows in a second card under it.
   const [designPanel, setDesignPanel] = useState(false);
-  const setPane = useCallback((side: keyof Panes, open?: boolean) => {
+  const updatePanes = useCallback((change: (prev: Panes) => Partial<Panes>) => {
     setPanesState((prev) => {
-      const next = { ...prev, [side]: open ?? !prev[side] };
+      const next = { ...prev, ...change(prev) };
       try {
         window.localStorage.setItem(PANES_KEY, JSON.stringify(next));
       } catch {
@@ -389,6 +407,22 @@ export function Canvas(props: Props) {
       return next;
     });
   }, []);
+  const setPane = useCallback(
+    (side: keyof Panes, open?: boolean) => updatePanes((prev) => ({ [side]: open ?? !prev[side] })),
+    [updatePanes],
+  );
+  // Pinning Design settings shows it (and lets the right-hand cards show at all); unpinning puts
+  // it away, the way unpinning the picker closes it.
+  const pinDesign = useCallback(
+    (on?: boolean) => {
+      updatePanes((prev) => {
+        const next = on ?? !prev.design;
+        return next ? { design: true, right: true } : { design: false };
+      });
+      setDesignPanel(false);
+    },
+    [updatePanes],
+  );
   // Where the next component chosen in the picker lands: a right-clicked point, or the end of a
   // wire let go on empty canvas (then it is wired from the dot the wire started on). Null: the
   // middle of the view, as always.
@@ -618,6 +652,7 @@ export function Canvas(props: Props) {
         ports: clone(e.ports),
         notes: clone(e.notes),
         frames: clone(e.frames),
+        badge: e.badge,
       };
       const now = Date.now();
       const coalesce = Boolean(opts.coalesce) && now - e.lastDragAt < 400;
@@ -655,6 +690,7 @@ export function Canvas(props: Props) {
       ports: clone(e.ports),
       notes: clone(e.notes),
       frames: clone(e.frames),
+      badge: e.badge,
     });
     Object.assign(e, prev);
     e.lastDragAt = 0;
@@ -676,6 +712,7 @@ export function Canvas(props: Props) {
       ports: clone(e.ports),
       notes: clone(e.notes),
       frames: clone(e.frames),
+      badge: e.badge,
     });
     Object.assign(e, next);
     e.lastDragAt = 0;
@@ -1242,6 +1279,17 @@ export function Canvas(props: Props) {
         });
       },
       onNotePin: (key) => toggleNotePin(key),
+      onNoteAnchor: (id, anchor, box) => {
+        const e = eng.current!;
+        commit(null, {
+          apply: () => {
+            const note = e.notes.find((n) => n.id === id);
+            if (!note) return;
+            note.anchor = anchor;
+            Object.assign(note, box);
+          },
+        });
+      },
       onNoteGeometry: (id, box) => {
         const e = eng.current!;
         commit(null, {
@@ -1348,6 +1396,11 @@ export function Canvas(props: Props) {
       if (mod && ev.shiftKey && k === "p") {
         ev.preventDefault();
         setPane("right");
+        return;
+      }
+      if (mod && ev.shiftKey && k === "d") {
+        ev.preventDefault();
+        pinDesign();
         return;
       }
       if (typing(ev) || onControl(ev)) return;
@@ -1616,6 +1669,16 @@ export function Canvas(props: Props) {
           },
         });
       },
+      // The list badge is layout too: the sidecar's `badge`, saved with the canvas's own save.
+      setBadge: (ref) => {
+        const e = eng.current!;
+        if ((e.badge ?? null) === ref) return;
+        commit(null, {
+          apply: () => {
+            e.badge = ref ?? undefined;
+          },
+        });
+      },
       setDesignId: (v) => {
         const d = clone(eng.current!.doc);
         d.id = D.toId(v) || d.id;
@@ -1857,25 +1920,81 @@ export function Canvas(props: Props) {
       .filter(Boolean)
       .join(" · ") || "No findings";
   const signInHref = `/signin?next=/d/${props.owner}/${props.slug}/canvas`;
-  const inspectorShown =
-    panes.right && Boolean(bundle && e) && Boolean(selection.type || multi.size || designPanel);
+  const ready = panes.right && Boolean(bundle && e);
+  const selected = Boolean(selection.type || multi.size);
+  // Pinned, Design settings is a card of its own that stays whatever is selected; the selection
+  // then gets the second card. Unpinned, the one card shows the selection, or the design when it
+  // was asked for and nothing is selected.
+  const designShown = ready && panes.design;
+  const selectionShown = ready && (selected || (!panes.design && designPanel));
+  const inspectorShown = designShown || selectionShown;
   const pickerShown = Boolean(bundle) && (panes.left || picker);
+  // The owner's list badge row: the choice from the sidecar the canvas holds, and what automatic
+  // would pick for the document as it is now (a design with a brand keeps the server's answer).
+  const badgeData: BadgeMenuData | null =
+    props.badgeMenu && props.canWrite && bundle && e
+      ? {
+          ...props.badgeMenu,
+          current: e.badge ?? null,
+          auto: brandOf(props.slug)
+            ? props.badgeMenu.auto
+            : (() => {
+                const b = badgeOf(e.doc, bundle.catalogue);
+                const ref = b ? `${b.kind}:${b.id}` : null;
+                const c = ref ? props.badgeMenu.providers.find((p) => p.ref === ref) : undefined;
+                return c ? { markup: c.markup, name: c.name } : null;
+              })(),
+        }
+      : null;
+  const designHead = (
+    <button
+      type="button"
+      className={`pill-btn${panes.design ? " is-on" : ""}`}
+      aria-pressed={panes.design}
+      aria-label={panes.design ? "Unpin Design settings" : "Pin Design settings"}
+      title={`${panes.design ? "Unpin" : "Pin, to keep it beside a selection"} (${mod.long} Shift D)`}
+      onClick={() => pinDesign()}
+    >
+      <Glyph d={G.pin} size={16} />
+    </button>
+  );
+  const designExtra = badgeData ? (
+    <BadgeRow data={badgeData} onChoose={(ref) => api.setBadge(ref)} />
+  ) : null;
+  const inspectorProps =
+    bundle && e
+      ? {
+          selection,
+          multi,
+          doc: e.doc,
+          notes: e.notes,
+          frameStyles: e.frames,
+          catalogue: bundle.catalogue,
+          icons: bundle.icons,
+          searchRows: bundle.search,
+          api,
+          highlight: finding?.highlight ?? null,
+          designHead,
+          designExtra,
+        }
+      : null;
   const inspectorCard =
-    inspectorShown && bundle && e ? (
-      <div className="card inspector" key={`${selection.type}:${String(selection.ref)}:${tick}`}>
-        <Inspector
-          selection={selection}
-          multi={multi}
-          doc={e.doc}
-          notes={e.notes}
-          frameStyles={e.frames}
-          catalogue={bundle.catalogue}
-          icons={bundle.icons}
-          searchRows={bundle.search}
-          api={api}
-          highlight={finding?.highlight ?? null}
-        />
-      </div>
+    inspectorShown && inspectorProps ? (
+      <>
+        {designShown ? (
+          <section className="card inspector" aria-label="Design settings" key={`design:${tick}`}>
+            <Inspector {...inspectorProps} mode="design" />
+          </section>
+        ) : null}
+        {selectionShown ? (
+          <div
+            className="card inspector"
+            key={`${selection.type}:${String(selection.ref)}:${tick}`}
+          >
+            <Inspector {...inspectorProps} />
+          </div>
+        ) : null}
+      </>
     ) : null;
   // The card slides out showing what it showed, not an empty box: the last one drawn stays for
   // the length of the exit transition (--dur), then goes.
@@ -1960,6 +2079,11 @@ export function Canvas(props: Props) {
       label: panes.right ? "Keep the inspector away" : "Let the inspector show",
       hint: `${mod.long} Shift P`,
       run: () => setPane("right"),
+    },
+    {
+      label: panes.design ? "Unpin design settings" : "Pin design settings",
+      hint: `${mod.long} Shift D`,
+      run: () => pinDesign(),
     },
     { label: "Keys & gestures", hint: "?", run: () => setHelp(true) },
     props.canDelete ? "-" : null,
@@ -2053,6 +2177,14 @@ export function Canvas(props: Props) {
         hint: `${k} Shift K`,
         keywords: "component panel side",
         run: () => setPane("left"),
+      },
+      {
+        id: "pin-design",
+        group: "View",
+        label: panes.design ? "Unpin design settings" : "Pin design settings",
+        hint: `${k} Shift D`,
+        keywords: "design panel requirements badge side",
+        run: () => pinDesign(),
       },
       {
         id: "help",
@@ -2444,7 +2576,9 @@ export function Canvas(props: Props) {
 
       {/* right: the inspector card, only while there is something to inspect */}
       <aside
-        className={`float float-inspector${inspectorShown ? " is-shown" : ""}`}
+        className={`float float-inspector${inspectorShown ? " is-shown" : ""}${
+          designShown ? " has-pinned" : ""
+        }${designShown && selectionShown ? " has-two" : ""}`}
         aria-hidden={!inspectorShown}
         aria-label="Inspector"
       >

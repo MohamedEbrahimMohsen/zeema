@@ -37,6 +37,8 @@ export type InspectorApi = {
   /** Group tint and icon. Sidecar only; `undefined` clears that half. */
   setFrameStyle: (id: string, patch: { tint?: Tint | HexTint; icon?: string }) => void;
   setDesignId: (id: string) => void;
+  /** The owner's list badge choice, or null for automatic. Sidecar only. */
+  setBadge: (ref: string | null) => void;
   setRequirement: (path: string, value: unknown) => void;
   setNoteText: (id: string, text: string) => void;
   /** Point the palette at a query, the way the group hint does. */
@@ -440,6 +442,9 @@ export function Inspector({
   searchRows,
   api,
   highlight,
+  mode = "auto",
+  designHead,
+  designExtra,
 }: {
   selection: Subject;
   multi: Set<string>;
@@ -455,8 +460,28 @@ export function Inspector({
   api: InspectorApi;
   /** The fields the finding last clicked in the panel is about, or null. */
   highlight?: Highlight;
+  /**
+   * `design`: the design panel whatever is selected (the pinned Design settings card).
+   * `auto`: the selection, or the design when nothing is selected.
+   */
+  mode?: "auto" | "design";
+  /** Beside the design panel's heading: its pin button. */
+  designHead?: React.ReactNode;
+  /** Under the design's id: the owner's list badge row. */
+  designExtra?: React.ReactNode;
 }) {
   const hl = highlight ?? null;
+  if (mode === "design")
+    return (
+      <DesignPanel
+        doc={doc}
+        catalogue={catalogue}
+        api={api}
+        highlight={hl}
+        head={designHead}
+        extra={designExtra}
+      />
+    );
   const head =
     multi.size > 1 ? (
       <div className="mb-3 small muted">
@@ -521,7 +546,14 @@ export function Inspector({
   return (
     <>
       {head}
-      <DesignPanel doc={doc} catalogue={catalogue} api={api} highlight={hl} />
+      <DesignPanel
+        doc={doc}
+        catalogue={catalogue}
+        api={api}
+        highlight={hl}
+        head={designHead}
+        extra={designExtra}
+      />
     </>
   );
 }
@@ -742,6 +774,7 @@ function NotePanel({ note, api }: { note: Note; api: InspectorApi }) {
       <Field name="text" isSet={Boolean(note.text)}>
         <textarea
           rows={5}
+          placeholder="What should a reader know here?"
           defaultValue={note.text}
           onBlur={(e) => {
             if (e.target.value !== note.text) api.setNoteText(note.id, e.target.value);
@@ -768,7 +801,11 @@ function NotePanel({ note, api }: { note: Note; api: InspectorApi }) {
             </button>
           </div>
         </Field>
-      ) : null}
+      ) : (
+        <Field name="anchored to">
+          <span className="muted small">nothing · drag the note onto a component or group</span>
+        </Field>
+      )}
       <div className="meta">
         {note.w} × {note.h} {note.anchor ? "offset" : "at"} {note.x}, {note.y}
       </div>
@@ -1043,11 +1080,15 @@ function DesignPanel({
   catalogue,
   api,
   highlight,
+  head,
+  extra,
 }: {
   doc: any;
   catalogue: any;
   api: InspectorApi;
   highlight: Highlight;
+  head?: React.ReactNode;
+  extra?: React.ReactNode;
 }) {
   const schema = catalogue.schema?.properties?.requirements ?? { properties: {} };
   // The rule reads `security.credentialRotationDays`; the panel shows a `security` group holding
@@ -1065,10 +1106,18 @@ function DesignPanel({
       : null;
   return (
     <>
-      <h2>Design</h2>
+      {head ? (
+        <div className="panel-head">
+          <h2>Design</h2>
+          {head}
+        </div>
+      ) : (
+        <h2>Design</h2>
+      )}
       <Field name="id" note="kebab-case" isSet>
         <TextInput value={doc.id ?? ""} onCommit={(v) => api.setDesignId(v.trim())} />
       </Field>
+      {extra}
       <div className="meta">
         {doc.nodes.length} nodes · {doc.edges.length} edges · {(doc.groups ?? []).length} groups
       </div>
