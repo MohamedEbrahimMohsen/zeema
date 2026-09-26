@@ -37,6 +37,12 @@
      finding badges only. Same values as NODE in packages/core/src/render.js. */
   --node-fill: #ffffff;
   --node-line: #d4d4d0;
+  /* the browse/profile thumbnail sketch, painted on --panel; its own tokens so dark mode can
+     lift it off the card without touching the canvas or the engine preview */
+  --sketch-node-fill: #f1f1ee;
+  --sketch-node-line: #b4b4ae;
+  --sketch-frame-line: #c8c8c2;
+  --sketch-edge: #8c8c87;
   /* the title plate a design without a drawing shows on its card */
   --t-blue-fill: #eaf1fd;
   /* canvas notes: an annotation, not a taxonomy colour */
@@ -137,6 +143,10 @@
   --err: #ef7d75;
   --node-fill: #1f1f23;
   --node-line: #3a3a40;
+  --sketch-node-fill: #2a2a30;
+  --sketch-node-line: #4a4a52;
+  --sketch-frame-line: #3a3a42;
+  --sketch-edge: #6a6a72;
   --t-blue-fill: #1b2a3f;
   --t-note-fill: #33301d;
   --t-note-line: #776c37;
@@ -2164,8 +2174,8 @@ pre.yaml {
 
 /* â”€â”€ documentation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
    Three columns on a wide screen: the section tree, the article, the heading rail. The tree
-   becomes a drawer below 1024px and the rail folds into a disclosure above the article, so the
-   same DOM serves every width and nothing is rendered twice.                            */
+   becomes a drawer below 800px and the rail folds into a disclosure above the article below
+   1100px, so the same DOM serves every width and nothing is rendered twice.                            */
 
 .docs {
   display: grid;
@@ -2784,7 +2794,7 @@ pre.yaml {
 
 /* ---- widths -------------------------------------------------------------------------- */
 
-@media (max-width: 1023px) {
+@media (max-width: 799px) {
   .docs-side {
     position: fixed;
     top: 0;
@@ -2825,22 +2835,53 @@ pre.yaml {
   }
 }
 
-@media (min-width: 1024px) {
+/* From 800px the tree is a sticky column beside the article; the heading rail stays a
+   disclosure above the article until there is room for its own column at 1100px. */
+@media (min-width: 800px) {
   .docs {
-    grid-template-columns: 224px minmax(0, 1fr) 196px;
-    gap: var(--sp-3);
+    grid-template-columns: 260px minmax(0, 1fr);
+    gap: 16px 32px;
   }
   .docs-side {
+    grid-column: 1;
+    grid-row: 1 / span 2;
     position: sticky;
     top: var(--sp-2);
     max-height: calc(100vh - var(--sp-4));
     overflow-y: auto;
     padding-right: var(--sp-0-5);
   }
+  .doc-toc {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .docs-main {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  /* a page too short for a rail has no disclosure either, and no empty row above it */
+  .docs:not(:has(.doc-toc)) .docs-main {
+    grid-row: 1;
+  }
   .docs-menu-btn {
     display: none;
   }
+}
+
+@media (min-width: 1100px) {
+  .docs {
+    grid-template-columns: 260px minmax(0, 1fr) 220px;
+    gap: 32px;
+  }
+  .docs-side {
+    grid-row: 1;
+  }
+  .docs-main {
+    grid-row: 1;
+  }
   .doc-toc {
+    grid-column: 3;
+    grid-row: 1;
     position: sticky;
     top: var(--sp-2);
     max-height: calc(100vh - var(--sp-4));
@@ -2910,12 +2951,16 @@ pre.yaml {
     var(--bg);
 }
 /* The same surface for a thumbnail, a preview or anything else that shows a drawing. */
-.surface-dots,
-.site .thumb,
-.site .row-thumb {
+.surface-dots {
   background:
     radial-gradient(circle, var(--canvas-dot) 1px, transparent 1px) 0 0 / 12px 12px,
     var(--bg);
+}
+/* A drawing inside a card sits on the card's own plain panel: the page around it is already
+   dotted, and a second grid inside the first fights the eye. */
+.site .thumb,
+.site .row-thumb {
+  background: var(--panel);
 }
 
 /* focus: the accent ring, 2px out */
@@ -3748,6 +3793,67 @@ pre.yaml {
 .site .design-crumb {
   font-size: 12px;
 }
+/* Row one is where the design sits (Browse › owner › address), row two its title with the
+   actions pill on the same line; the summary, tags and stats follow. */
+.design-head {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.design-crumb ol {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+  line-height: 20px;
+  color: var(--muted);
+}
+.design-crumb li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.design-crumb li + li::before {
+  content: "\203a";
+  color: var(--frame);
+}
+.design-crumb li > a:any-link {
+  color: var(--muted);
+  text-decoration: none;
+}
+.design-crumb li > a:any-link:hover {
+  color: var(--ink);
+  text-decoration: underline;
+}
+.design-crumb li[aria-current] {
+  color: var(--ink);
+}
+.design-titlebar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  min-width: 0;
+}
+.design-titlebar > .design-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 20rem;
+  min-width: 0;
+  margin: 0;
+}
+.design-titlebar > .actions-pill {
+  flex: none;
+}
 .site .design-title {
   font-size: 2rem;
   letter-spacing: -0.025em;
@@ -3793,7 +3899,7 @@ pre.yaml {
   white-space: nowrap;
 }
 
-/* The picture on the dotted surface, its name and its actions floating over the corners. */
+/* The picture on the card's plain panel, its name and its actions floating over the corners. */
 .preview-card {
   position: relative;
   overflow: hidden;
@@ -3823,12 +3929,9 @@ pre.yaml {
   min-height: 260px;
   padding: 60px var(--sp-2) var(--sp-2);
   overflow: auto;
-  background:
-    radial-gradient(circle, var(--canvas-dot) 1px, transparent 1px) 0 0 / var(--canvas-dot-gap)
-    var(--canvas-dot-gap),
-    var(--bg);
+  background: var(--panel);
 }
-/* the engine lays its own page colour down first; here the dots are the page */
+/* the engine lays its own page colour down first; here the card's panel is the page */
 .preview-surface svg > rect:first-of-type {
   fill: transparent;
 }
@@ -4207,14 +4310,26 @@ pre.yaml {
   border-right-color: var(--float-line);
 }
 
-/* the article on a plain card: prose never sits on the dots */
+/* The docs take a wider frame than the rest of the site: three columns in 1440px. */
+.site main:has(> .docs) {
+  max-width: 1440px;
+}
+/* the article on a plain card that fills its column: prose never sits on the dots, and the
+   measure is held by the prose itself (80ch at 17px) rather than by the card */
 .site .doc-article {
-  max-width: 800px;
-  padding: 32px 40px;
+  max-width: none;
+  padding: 40px;
   background: var(--panel);
   border: var(--border) solid var(--float-line);
   border-radius: var(--r-card);
   box-shadow: var(--float-shadow);
+}
+.site .doc-md {
+  max-width: 80ch;
+  font-size: 17px;
+}
+.site .callout .doc-md {
+  font-size: 15px;
 }
 .site .doc-title {
   border-bottom-color: var(--float-line);
@@ -4311,19 +4426,22 @@ pre.yaml {
   box-shadow: var(--shadow-control);
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 800px) {
   /* Sticky under the site bar, not under the top of the window. */
-  .site .docs-side,
-  .site .doc-toc {
+  .site .docs-side {
     top: 68px;
     max-height: calc(100vh - 84px);
-  }
-  .site .docs-side {
     padding: 8px;
     background: var(--panel);
     border: var(--border) solid var(--float-line);
     border-radius: var(--r-card);
     box-shadow: var(--float-shadow);
+  }
+}
+@media (min-width: 1100px) {
+  .site .doc-toc {
+    top: 68px;
+    max-height: calc(100vh - 84px);
   }
   .site .doc-toc {
     padding: 12px;
@@ -4341,7 +4459,7 @@ pre.yaml {
     display: contents;
   }
 }
-@media (max-width: 1023px) {
+@media (max-width: 799px) {
   .site .docs-side {
     border-radius: 0 var(--r-card) var(--r-card) 0;
   }
@@ -4349,6 +4467,9 @@ pre.yaml {
 @media (max-width: 767px) {
   .site .doc-article {
     padding: 20px 18px;
+  }
+  .site .doc-md {
+    font-size: 15.5px;
   }
 }
 

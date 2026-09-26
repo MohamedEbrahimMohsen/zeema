@@ -7,10 +7,9 @@
 // the viewport and the last heading to cross it wins; that is stable while scrolling either way
 // and costs nothing between scrolls.
 //
-// It is the same element at every width. Above 1024px the shell puts it in the right-hand column
-// and the stylesheet opens it and hides the summary, so it reads as a rail; below that the grid
-// is one column and it is an ordinary closed disclosure above the article, costing one row until
-// somebody wants it.
+// It is the same element at every width. From 1100px the shell puts it in the right-hand column
+// and the stylesheet opens it and hides the summary, so it reads as a rail; below that it is an
+// ordinary closed disclosure above the article, costing one row until somebody wants it.
 import { useEffect, useRef, useState } from "react";
 import type { DocHeading } from "@/lib/docs";
 

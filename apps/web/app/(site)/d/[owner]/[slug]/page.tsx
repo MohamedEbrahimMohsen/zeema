@@ -111,25 +111,34 @@ export default async function DesignPage({
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="design-head flex flex-wrap items-start gap-4">
-        <div className="min-w-0 flex-1 basis-[16rem] flex flex-col gap-1">
-          <div className="meta mono design-crumb">
-            {view.owner ? (
-              <Link href={`/u/${view.owner.username}`} className="link">
-                @{view.owner.username}
-              </Link>
-            ) : (
-              <span>zeema · {view.design.origin}</span>
-            )}
-            {" / "}
-            <EditableSlug
-              owner={ownerSeg}
-              slug={view.design.slug}
-              canWrite={view.can.write}
-              published={Boolean(view.design.publishedAt)}
-            />
-          </div>
-          <h1 className="display design-title flex items-center gap-2 flex-wrap">
+      {/* Two rows: where the design sits, then what it is and what can be done with it. The
+          actions pill shares the title's line and wraps under it when the line runs out. */}
+      <header className="design-head">
+        <nav className="design-crumb" aria-label="Breadcrumb">
+          <ol>
+            <li>
+              <Link href="/">Browse</Link>
+            </li>
+            <li>
+              {/* A curated design has no user behind it: its owner is the zeema listing. */}
+              {view.owner ? (
+                <Link href={`/u/${view.owner.username}`}>{view.owner.username}</Link>
+              ) : (
+                <Link href="/?owner=zeema">zeema</Link>
+              )}
+            </li>
+            <li aria-current="page">
+              <EditableSlug
+                owner={ownerSeg}
+                slug={view.design.slug}
+                canWrite={view.can.write}
+                published={Boolean(view.design.publishedAt)}
+              />
+            </li>
+          </ol>
+        </nav>
+        <div className="design-titlebar">
+          <h1 className="display design-title">
             <EditableTitle
               owner={ownerSeg}
               slug={view.design.slug}
@@ -146,41 +155,41 @@ export default async function DesignPage({
             {sp.v && !version?.publishedAt ? <span className="tag">unreleased</span> : null}
             {broken ? <span className="tag tag-danger">broken twin</span> : null}
           </h1>
-          <EditableSummary
+          <DesignActions
             owner={ownerSeg}
             slug={view.design.slug}
-            summary={view.design.summary ?? ""}
             canWrite={view.can.write}
+            canClone={view.can.clone}
+            signedIn={Boolean(viewer)}
+            visibility={view.design.visibility}
+            isCurated={view.design.origin !== "authored"}
+            unpublished={view.unpublished}
+            neverPublished={!view.published}
+            plannedSlug={publishSlugFor({ slug: view.design.slug, title: view.design.title })}
           />
-          <TagEditor
-            owner={ownerSeg}
-            slug={view.design.slug}
-            tags={view.design.tags ?? []}
-            canWrite={view.can.write}
-            suggestions={tagSuggestions}
-          />
-          <div className="stat-row">
-            <span className="stat-chip">{doc?.nodes.length ?? 0} components</span>
-            <span className="stat-chip">{doc?.edges.length ?? 0} edges</span>
-            <span className="stat-chip">{doc?.groups?.length ?? 0} groups</span>
-            <span className="stat-chip">{view.stats.viewCount} views</span>
-            <span className="stat-chip">{view.stats.cloneCount} clones</span>
-            <span className="stat-chip">{view.stats.exportCount} exports</span>
-          </div>
         </div>
-        <DesignActions
+        <EditableSummary
           owner={ownerSeg}
           slug={view.design.slug}
+          summary={view.design.summary ?? ""}
           canWrite={view.can.write}
-          canClone={view.can.clone}
-          signedIn={Boolean(viewer)}
-          visibility={view.design.visibility}
-          isCurated={view.design.origin !== "authored"}
-          unpublished={view.unpublished}
-          neverPublished={!view.published}
-          plannedSlug={publishSlugFor({ slug: view.design.slug, title: view.design.title })}
         />
-      </div>
+        <TagEditor
+          owner={ownerSeg}
+          slug={view.design.slug}
+          tags={view.design.tags ?? []}
+          canWrite={view.can.write}
+          suggestions={tagSuggestions}
+        />
+        <div className="stat-row">
+          <span className="stat-chip">{doc?.nodes.length ?? 0} components</span>
+          <span className="stat-chip">{doc?.edges.length ?? 0} edges</span>
+          <span className="stat-chip">{doc?.groups?.length ?? 0} groups</span>
+          <span className="stat-chip">{view.stats.viewCount} views</span>
+          <span className="stat-chip">{view.stats.cloneCount} clones</span>
+          <span className="stat-chip">{view.stats.exportCount} exports</span>
+        </div>
+      </header>
       {hasBroken ? (
         <div className="small">
           {broken ? (

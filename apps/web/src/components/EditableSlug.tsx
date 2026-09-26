@@ -57,7 +57,7 @@ export function EditableSlug({ owner, slug, canWrite, published }: Props) {
     router.refresh();
   };
 
-  if (!canWrite) return <span className="mono">{shown}</span>;
+  if (!canWrite) return <span>{shown}</span>;
   if (editing)
     return (
       <span className="slug-edit">
@@ -86,7 +86,7 @@ export function EditableSlug({ owner, slug, canWrite, published }: Props) {
     <>
       <button
         type="button"
-        className="slug-btn mono"
+        className="slug-btn"
         title="Change the address"
         disabled={busy}
         onClick={() => setEditing(true)}

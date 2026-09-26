@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { DesignSummary } from "@/lib/designs";
 import { ownerSegment } from "@/lib/designs";
-import type { Sketch } from "@/lib/sketch";
+import { SketchSvg } from "./Sketch";
 
 // Three thumbnail treatments, in order of preference: the brand mark of the product the design
 // models, the engine's own layout as a mini-diagram, and a title plate for a design with nothing
@@ -21,60 +21,6 @@ function Thumb({ d }: { d: DesignSummary }) {
     );
   if (d.sketch?.nodes.length) return <SketchSvg s={d.sketch} />;
   return <div className="thumb-plate">{d.title}</div>;
-}
-
-function SketchSvg({ s }: { s: Sketch }) {
-  const pad = 24;
-  return (
-    <svg
-      className="sketch"
-      viewBox={`${-pad} ${-pad} ${s.w + pad * 2} ${s.h + pad * 2}`}
-      preserveAspectRatio="xMidYMid meet"
-      aria-hidden
-    >
-      {s.frames.map(([x, y, w, h], i) => (
-        <rect
-          key={`f${i}`}
-          x={x}
-          y={y}
-          width={w}
-          height={h}
-          rx={14}
-          fill="none"
-          stroke="var(--frame)"
-          strokeWidth={2}
-          strokeDasharray="8 6"
-        />
-      ))}
-      {s.edges.map(([x1, y1, x2, y2, async], i) => (
-        <line
-          key={`e${i}`}
-          x1={x1}
-          y1={y1}
-          x2={x2}
-          y2={y2}
-          stroke="var(--muted)"
-          strokeWidth={2.5}
-          strokeDasharray={async ? "9 6" : undefined}
-        />
-      ))}
-      {s.nodes.map(([x, y, w, h, hole], i) => (
-        <rect
-          key={`n${i}`}
-          x={x}
-          y={y}
-          width={w}
-          height={h}
-          rx={12}
-          fill="var(--node-fill)"
-          stroke="var(--node-line)"
-          strokeWidth={2}
-          strokeDasharray={hole ? "6 4" : undefined}
-          fillOpacity={hole ? 0.45 : undefined}
-        />
-      ))}
-    </svg>
-  );
 }
 
 export function DesignCard({ d }: { d: DesignSummary }) {

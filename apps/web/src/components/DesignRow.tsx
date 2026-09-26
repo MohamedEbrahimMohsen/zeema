@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { DesignSummary } from "@/lib/designs";
 import { ownerSegment } from "@/lib/designs";
-import type { Sketch } from "@/lib/sketch";
+import { SketchSvg } from "./Sketch";
 
 // The browse listing is a table of designs rather than a wall of cards: at this density the
 // numbers line up down the page, so one design can be compared against the next. The card
@@ -22,45 +22,6 @@ function Thumb({ d }: { d: DesignSummary }) {
     );
   if (d.sketch?.nodes.length) return <SketchSvg s={d.sketch} />;
   return <div className="row-plate">{d.title.slice(0, 2)}</div>;
-}
-
-function SketchSvg({ s }: { s: Sketch }) {
-  const pad = 24;
-  return (
-    <svg
-      viewBox={`${-pad} ${-pad} ${s.w + pad * 2} ${s.h + pad * 2}`}
-      preserveAspectRatio="xMidYMid meet"
-      aria-hidden
-    >
-      {s.edges.map(([x1, y1, x2, y2], i) => (
-        <line
-          key={`e${i}`}
-          x1={x1}
-          y1={y1}
-          x2={x2}
-          y2={y2}
-          stroke="var(--muted)"
-          strokeOpacity={0.45}
-          strokeWidth={3}
-        />
-      ))}
-      {s.nodes.map(([x, y, w, h, hole], i) => (
-        <rect
-          key={`n${i}`}
-          x={x}
-          y={y}
-          width={w}
-          height={h}
-          rx={12}
-          fill="var(--node-fill)"
-          stroke="var(--node-line)"
-          strokeWidth={2.5}
-          strokeDasharray={hole ? "6 4" : undefined}
-          fillOpacity={hole ? 0.45 : undefined}
-        />
-      ))}
-    </svg>
-  );
 }
 
 const CloneIcon = () => (
