@@ -337,7 +337,6 @@ const G = {
   back: "M15 5l-7 7 7 7",
   chevron: "M7 10l5 5 5-5",
   pin: "M9 4h6M10 4v6l-3 4h10l-3-4V4M12 14v6",
-  close: "M6 6l12 12M18 6 6 18",
 };
 
 export function Canvas(props: Props) {
@@ -2508,18 +2507,6 @@ export function Canvas(props: Props) {
                   <Glyph d={G.pin} size={16} />
                 </button>
               )}
-              <button
-                type="button"
-                className="pill-btn"
-                aria-label="Close the picker"
-                title="Close (Esc)"
-                onClick={() => {
-                  if (panes.left && !pickAnchor) setPane("left", false);
-                  closePicker();
-                }}
-              >
-                <Glyph d={G.close} size={16} />
-              </button>
             </div>
             <Palette
               rows={bundle.search}
