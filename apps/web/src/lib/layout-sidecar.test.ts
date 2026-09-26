@@ -3,9 +3,11 @@
 // and its ceilings are the contract, and the anchor helpers are pure enough to pin down here.
 import { describe, expect, it } from "vitest";
 import {
+  BADGE_RE,
   FRAME_MAX_STYLES,
   frameIconKey,
   isAnyTint,
+  isBadgeRef,
   isFrameIcon,
   isHexTint,
   isTint,
@@ -371,5 +373,40 @@ describe("edge ports", () => {
     expect(prunePorts(ports, ["a>b"])).toEqual({ "a>b": { from: { side: "top", t: 0 } } });
     expect(Object.keys(ports)).toEqual(["a>b", "b>c"]);
     expect(readPorts(null)).toEqual({});
+  });
+});
+
+describe("the chosen list badge", () => {
+  const base = { nodes: {}, edges: {}, notes: [] };
+
+  it("keeps a provider or boundary ref and nothing else", () => {
+    expect(readSidecar({ badge: "provider:gcp" }).badge).toBe("provider:gcp");
+    expect(readSidecar({ badge: "boundary:on-premises" }).badge).toBe("boundary:on-premises");
+    for (const bad of [
+      "kind:database",
+      "component:aws/s3",
+      "provider:",
+      "provider:GCP",
+      "boundary:-x",
+      "boundary:a--b",
+      "provider:gcp ",
+      "gcp",
+      `provider:${"a".repeat(200)}`,
+      7,
+      null,
+      { provider: "gcp" },
+    ])
+      expect("badge" in readSidecar({ badge: bad })).toBe(false);
+    expect(isBadgeRef("boundary:google")).toBe(true);
+    expect(BADGE_RE.test("kind:cache")).toBe(false);
+  });
+
+  it("is written only when set, and survives a round trip", () => {
+    expect("badge" in writeSidecar(base)).toBe(false);
+    expect("badge" in writeSidecar({ ...base, badge: undefined })).toBe(false);
+    expect("badge" in writeSidecar({ ...base, badge: "kind:cache" })).toBe(false);
+    const out = writeSidecar({ ...base, badge: "boundary:google" });
+    expect(out.badge).toBe("boundary:google");
+    expect(readSidecar(JSON.parse(JSON.stringify(out))).badge).toBe("boundary:google");
   });
 });

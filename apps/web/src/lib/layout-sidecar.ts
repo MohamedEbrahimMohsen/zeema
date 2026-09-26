@@ -93,6 +93,17 @@ export function frameIconKey(ref: string | undefined | null) {
   return ref.startsWith("component:") ? ref.slice(ref.indexOf("/") + 1) : ref;
 }
 
+/**
+ * The mark a design's list row wears, when its owner chose one: `provider:<id>` is a provider
+ * (a folder under components/, its mark under icons/providers) and `boundary:<id>` is one of
+ * the group marks (icons/boundaries/<id>.svg). Kind and component refs are not badges. Absent,
+ * the list picks one itself (badge.ts). The shape is checked here; whether the id exists is
+ * the catalogue's business, and a ref it does not know falls back to the automatic choice.
+ */
+export const BADGE_RE = /^(provider:[a-z0-9]+(?:-[a-z0-9]+)*|boundary:[a-z0-9]+(?:-[a-z0-9]+)*)$/;
+export const isBadgeRef = (v: unknown): v is string =>
+  typeof v === "string" && v.length <= FRAME_ICON_MAX && BADGE_RE.test(v);
+
 /** How a group is drawn: presentation only, so it lives here and never in the YAML. */
 export type FrameStyle = { tint?: Tint | HexTint; icon?: string };
 export const FRAME_MAX_STYLES = 500;
@@ -118,6 +129,8 @@ export type LayoutSidecar = {
   notes: Note[];
   /** Keyed by group id. A group with no entry is drawn in the default frame colour. */
   frames: Record<string, FrameStyle>;
+  /** The list badge its owner chose (see `BADGE_RE`). Absent: chosen automatically. */
+  badge?: string;
 };
 
 export const NOTE_MIN_W = 80;
@@ -212,6 +225,7 @@ export function readSidecar(raw: unknown, targets?: AnchorTargets): LayoutSideca
   };
   const ports = readPorts(r.ports);
   if (Object.keys(ports).length) out.ports = ports;
+  if (isBadgeRef(r.badge)) out.badge = r.badge;
   return out;
 }
 
@@ -298,7 +312,25 @@ export function writeSidecar(
   };
   // Absent rather than empty, so a design nobody has ported stores the bytes it always did.
   if (s.ports && Object.keys(s.ports).length) out.ports = s.ports;
+  if (isBadgeRef(s.badge)) out.badge = s.badge;
   return out;
+}
+
+/**
+ * Whether a sidecar holds nothing that is drawn: no position, bow, port, note or group style.
+ * Such a sidecar draws exactly what no sidecar does (the engine lays the design out itself),
+ * whatever its `badge` says.
+ */
+export function isBlankSidecar(raw: unknown) {
+  if (raw == null) return true;
+  const s = readSidecar(raw);
+  return (
+    !Object.keys(s.nodes).length &&
+    !Object.keys(s.edges).length &&
+    !s.notes.length &&
+    !Object.keys(s.frames).length &&
+    !s.ports
+  );
 }
 
 /** The group styles whose group still exists. Like `pruneAnchored`, it copies. */

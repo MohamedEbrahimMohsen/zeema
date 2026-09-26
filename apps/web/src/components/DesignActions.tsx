@@ -7,6 +7,7 @@
 // same commands, defined once here.
 import { useRouter } from "next/navigation";
 import { useCallback, useRef, useState } from "react";
+import { type BadgeMenuData, BadgePicker } from "./BadgePicker";
 import { useMenuKeys } from "./menu-keys";
 
 export type DesignActionsProps = {
@@ -23,6 +24,8 @@ export type DesignActionsProps = {
   neverPublished: boolean;
   /** The address publishing will move this design to, when that differs from where it sits. */
   plannedSlug: string;
+  /** The list badge picker's data: given to the owner only, and only on the head. */
+  badge?: BadgeMenuData;
 };
 
 type Command = "clone" | "publish" | "visibility" | "delete";
@@ -123,13 +126,15 @@ export function DesignActions(props: DesignActionsProps) {
 }
 
 /** Whether the owner's `⋯` menu has anything in it. */
-export const hasDesignMenu = (p: DesignActionsProps) => p.canWrite && (p.canClone || !p.isCurated);
+export const hasDesignMenu = (p: DesignActionsProps) =>
+  p.canWrite && (p.canClone || !p.isCurated || Boolean(p.badge));
 
 /** The owner's overflow menu, at the far end of the header pill. */
 export function DesignMenu(props: DesignActionsProps) {
-  const { canClone, isCurated, visibility } = props;
+  const { canClone, isCurated, visibility, badge } = props;
   const { busy, error, clone, toggleVisibility, remove } = useDesignCommands(props);
   const [open, setOpen] = useState(false);
+  const [picking, setPicking] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const button = useRef<HTMLButtonElement>(null);
   const menu = useRef<HTMLDivElement>(null);
@@ -138,6 +143,10 @@ export function DesignMenu(props: DesignActionsProps) {
     if (refocus) button.current?.focus();
   }, []);
   const onMenuKey = useMenuKeys({ open, close, root, menu });
+  const closePicker = useCallback((refocus: boolean) => {
+    setPicking(false);
+    if (refocus) button.current?.focus();
+  }, []);
   // The menu closes first, so a confirmation never sits on top of an open menu.
   const run = (fn: () => Promise<void>) => () => {
     setOpen(false);
@@ -156,7 +165,10 @@ export function DesignMenu(props: DesignActionsProps) {
         aria-label="More actions"
         title="More actions"
         disabled={busy !== null}
-        onClick={() => setOpen((o) => !o)}
+        onClick={() => {
+          setPicking(false);
+          setOpen((o) => !o);
+        }}
       >
         <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
           <circle cx="5" cy="12" r="1.75" />
@@ -175,6 +187,20 @@ export function DesignMenu(props: DesignActionsProps) {
           {canClone ? (
             <button type="button" role="menuitem" className="menu-item" onClick={run(clone)}>
               Clone
+            </button>
+          ) : null}
+          {badge ? (
+            <button
+              type="button"
+              role="menuitem"
+              className="menu-item"
+              aria-haspopup="dialog"
+              onClick={() => {
+                setOpen(false);
+                setPicking(true);
+              }}
+            >
+              Badge…
             </button>
           ) : null}
           {!isCurated ? (
@@ -199,6 +225,9 @@ export function DesignMenu(props: DesignActionsProps) {
             </>
           ) : null}
         </div>
+      ) : null}
+      {picking && badge ? (
+        <BadgePicker owner={props.owner} slug={props.slug} data={badge} onClose={closePicker} />
       ) : null}
     </div>
   );

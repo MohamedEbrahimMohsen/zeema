@@ -1,6 +1,6 @@
 // The corner badge choice: brand first, then a clearly dominant provider, else none.
 import { describe, expect, it } from "vitest";
-import { BRAND, badgeOf, brandOf } from "./badge";
+import { BRAND, badgeOf, brandOf, chosenBadge } from "./badge";
 
 const cat = {
   components: {
@@ -13,6 +13,10 @@ const cat = {
     "oci-fn": { provider: "oci" },
     box: { provider: "default" },
     queue: { provider: "default" },
+  },
+  locale: {
+    providers: { azure: {}, aws: {}, gcp: {}, default: {} },
+    boundaryIcons: { google: {}, "on-premises": {} },
   },
 } as unknown as Parameters<typeof badgeOf>[1];
 
@@ -71,5 +75,40 @@ describe("badgeOf", () => {
     expect(brandOf("youtube-copy")).toBe("youtube");
     expect(brandOf("youtube-copy-3")).toBe("youtube");
     expect(brandOf("constructor")).toBeNull();
+  });
+});
+
+describe("the owner's chosen badge", () => {
+  const d = doc("az-vm", "az-sql", "az-kv");
+
+  it("wins over the brand and the dominant provider", () => {
+    expect(badgeOf(d, cat, "youtube", "provider:gcp")).toEqual({ kind: "provider", id: "gcp" });
+    expect(badgeOf(d, cat, null, "boundary:on-premises")).toEqual({
+      kind: "boundary",
+      id: "on-premises",
+    });
+    expect(badgeOf(null, cat, null, "boundary:google")).toEqual({ kind: "boundary", id: "google" });
+  });
+
+  it("falls back to the automatic choice when it is absent, malformed or unknown", () => {
+    const auto = { kind: "provider", id: "azure" };
+    for (const chosen of [
+      undefined,
+      null,
+      "",
+      "kind:cache",
+      "component:aws/s3",
+      "provider:nope",
+      "provider:default",
+      "provider:constructor",
+      "boundary:nope",
+      "boundary:__proto__",
+    ])
+      expect(badgeOf(d, cat, null, chosen)).toEqual(auto);
+    expect(badgeOf(d, cat, "youtube", "provider:nope")).toEqual({ kind: "brand", id: "youtube" });
+  });
+
+  it("reads nothing without a locale", () => {
+    expect(chosenBadge("provider:gcp", { components: {} })).toBeNull();
   });
 });

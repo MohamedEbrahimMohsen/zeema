@@ -20,6 +20,8 @@ import { TagEditor } from "@/components/TagEditor";
 import { YamlSection } from "@/components/YamlSection";
 import { firstInHour } from "@/lib/api";
 import { currentUser } from "@/lib/auth";
+import { badgeOf } from "@/lib/badge";
+import { badgeChoices, badgeMark } from "@/lib/brand";
 import { getCatalogue, getIcons } from "@/lib/catalogue";
 import {
   getBrokenVersion,
@@ -118,6 +120,17 @@ export default async function DesignPage({
   const draftAge = draftStart ? relativeTime(draftStart) : null;
   const since =
     draftAge === null ? undefined : draftAge === "just now" ? draftAge : `since ${draftAge}`;
+
+  // The list badge picker, for the owner looking at the head: the stored choice, what the
+  // automatic choice would be, and every mark on offer. Nobody else is sent the marks.
+  const badge =
+    view.can.write && !sp.v && !broken && view.version
+      ? {
+          current: readSidecar(view.version.layout).badge ?? null,
+          auto: badgeMark(badgeOf(doc, cat, view.design.slug), cat),
+          ...badgeChoices(cat),
+        }
+      : undefined;
 
   return (
     <div className="flex flex-col gap-5">
@@ -226,6 +239,7 @@ export default async function DesignPage({
               unpublished: view.unpublished,
               neverPublished: !view.published,
               plannedSlug,
+              badge,
             }}
           />
           <Readme

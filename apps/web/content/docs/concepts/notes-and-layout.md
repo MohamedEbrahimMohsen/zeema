@@ -33,6 +33,7 @@ The sidecar is a small JSON document stored with each version of a design.
 | `ports` | An edge key to where its ends meet their boxes (optional; see below) |
 | `notes` | Free-text annotations |
 | `frames` | A group id to its colour and icon (see below) |
+| `badge` | The mark the design wears in the browse list, when its owner chose one (optional; see below) |
 
 An edge key is `from>to`, or `from>to#n` for the n-th parallel edge between the same pair.
 
@@ -109,11 +110,35 @@ too, and renaming a group moves its style with it.
 Exports keep both. The SVG and PNG you export from the canvas, and the as-drawn SVG from the
 render API, draw the tint and the icon exactly as the canvas shows them.
 
+## The list badge
+
+Each row of the browse list wears a small mark in the corner of its thumbnail. By default it is
+chosen for you: a curated design of a well-known product wears that product's mark, and any
+other design wears the mark of the provider most of it is built on, when one clearly dominates.
+
+The owner can choose it instead: **⋯ → Badge…** on the design page. The picker offers
+"Automatic", every provider mark and every group mark (the `boundary:` set above, brands and
+concepts alike). The choice is stored in the sidecar as `badge`:
+
+- `provider:<id>`: a provider, the folder name under `components/`, for example `provider:gcp`.
+- `boundary:<id>`: a group mark from `icons/boundaries/`, for example `boundary:google`.
+
+Nothing else is a badge (`kind:` and `component:` references are dropped), and a reference the
+catalogue does not know falls back to the automatic choice. Leave `badge` out for automatic.
+
+The badge is not part of the picture: exports and the thumbnail itself never draw it, and
+choosing one does not change the thumbnail's cache key. Choosing it is a layout-only save, the
+same as moving a box on the canvas: it goes into the head version, folding into your unreleased
+draft when there is one and starting one otherwise. Your own listing shows it at once; readers
+see it once the draft is published. The canvas keeps a badge it did not set, so saving there
+never loses it.
+
 ## Getting at it
 
 `GET /api/v1/designs/{owner}/{slug}/layout` returns the sidecar for the current version, or for a
-specific one with `?version=`. It answers `null` where a design has none. See
-[the API](/docs/api#designs).
+specific one with `?version=`. It answers `null` where a design has none.
+`PATCH` on the same address with `{ "badge": "provider:gcp" }` (or `null`) sets the list badge.
+See [the API](/docs/api#designs).
 
 For rendering, you do not need the sidecar at all:
 

@@ -85,6 +85,9 @@ type Engine = {
   notes: Note[];
   /** Group tint and icon by group id: sidecar, never YAML. */
   frames: Record<string, FrameStyle>;
+  /** The list badge the owner chose on the design page. The canvas never edits it; it only
+   *  carries it from the sidecar it read to the one it writes, so a save never drops it. */
+  badge?: string;
   undo: any[];
   redo: any[];
   dirty: boolean;
@@ -543,6 +546,7 @@ export function Canvas(props: Props) {
       ports: e.ports,
       notes: e.notes,
       frames: e.frames,
+      badge: e.badge,
     });
   }, []);
 
@@ -1155,6 +1159,7 @@ export function Canvas(props: Props) {
       ports: sidecarIn.ports ?? {},
       notes: sidecarIn.notes,
       frames: sidecarIn.frames,
+      badge: sidecarIn.badge,
       undo: [],
       redo: [],
       dirty: false,

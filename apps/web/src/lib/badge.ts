@@ -1,16 +1,43 @@
 // Which mark a list thumbnail wears in its corner. Pure: the caller hands in the parsed design
 // and the catalogue, and brand.ts turns the answer into markup.
 //
+// An owner may choose the mark (the layout sidecar's `badge`, a provider or a group mark), and a
+// choice the catalogue knows wins over everything below.
+//
 // A design that models a well-known product keeps that product's mark (chosen by its slug:
 // the curated designs are the only ones with a brand, and their slugs are stable, so there is no
 // column for it). Otherwise the corner names the provider most of the design is built on, when
 // one clearly dominates: at least two components and at least 40% of the non-generic ones, with
 // no tie at the top. A design spread across clouds, or drawn only in generic boxes, wears none.
 import type { Catalogue } from "./catalogue";
+import { isBadgeRef } from "./layout-sidecar";
 import type { Design } from "./lint";
 import { own } from "./own";
 
-export type Badge = { kind: "provider" | "brand"; id: string } | null;
+/**
+ * `provider`: a provider's mark (icons/providers); `brand`: a curated design's product mark
+ * (icons/providers, by file name); `boundary`: a group mark (icons/boundaries).
+ */
+export type Badge = { kind: "provider" | "brand" | "boundary"; id: string } | null;
+
+type BadgeCatalogue = Pick<Catalogue, "components"> & {
+  locale?: Partial<Pick<Catalogue["locale"], "providers" | "boundaryIcons">>;
+};
+
+/**
+ * The badge a stored choice names, or null when it is not a badge ref or names something the
+ * catalogue does not have (a provider folder, a group mark), so a stale choice falls back to
+ * the automatic one rather than drawing nothing. `default` is a provider with no mark.
+ */
+export function chosenBadge(ref: unknown, cat: BadgeCatalogue): Badge {
+  if (!isBadgeRef(ref)) return null;
+  const at = ref.indexOf(":");
+  const kind = ref.slice(0, at);
+  const id = ref.slice(at + 1);
+  if (kind === "provider")
+    return id !== "default" && own(cat.locale?.providers, id) !== undefined ? { kind, id } : null;
+  return own(cat.locale?.boundaryIcons, id) !== undefined ? { kind: "boundary", id } : null;
+}
 
 /** Design slug to its brand mark, a file name under icons/providers (Simple Icons, CC0). */
 export const BRAND: Record<string, string> = {
@@ -81,9 +108,12 @@ export const DOMINANT_MIN = 2;
 
 export function badgeOf(
   doc: Pick<Design, "nodes"> | null | undefined,
-  cat: Pick<Catalogue, "components">,
+  cat: BadgeCatalogue,
   slug?: string | null,
+  chosen?: string | null,
 ): Badge {
+  const picked = chosenBadge(chosen, cat);
+  if (picked) return picked;
   const brand = brandOf(slug);
   if (brand) return { kind: "brand", id: brand };
   if (!doc) return null;

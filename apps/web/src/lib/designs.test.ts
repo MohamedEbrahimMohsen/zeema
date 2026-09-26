@@ -551,6 +551,12 @@ describe("security review fixes", () => {
     });
   });
 
+  it("keeps a chosen badge in the stored layout and drops a bad one", async () => {
+    const { normaliseLayout } = await lib();
+    expect(normaliseLayout({ nodes: {}, badge: "boundary:google" })?.badge).toBe("boundary:google");
+    expect(normaliseLayout({ nodes: {}, badge: "kind:cache" })?.badge).toBeUndefined();
+  });
+
   it("counts a view once per visitor and hour (F-08)", async () => {
     const { createDesign, getDesign, patchDesign, recordEvent } = await lib();
     const wes = await makeUser("wes");
@@ -627,5 +633,59 @@ describe("grafana views (F-05)", () => {
       "users.id",
       "users.username",
     ]);
+  });
+});
+
+describe("the list badge", () => {
+  it("is chosen by the owner through a layout-only save, and shows on their listing", async () => {
+    const { createDesign, getDesign, listDesigns, setBadge } = await lib();
+    const user = await makeUser("bea");
+    const made = await createDesign(user as never, {
+      title: "Badged",
+      yaml: YAML,
+      layout: { nodes: { svc: [4, 5] } },
+    });
+    const slug = made.design.slug;
+    const out = await setBadge("bea", slug, user as never, "provider:gcp");
+    expect(out.version.contentHash).toBe(made.version.contentHash);
+    const view = await getDesign("bea", slug, user as never);
+    const layout = view.version?.layout as { badge?: string; nodes: unknown };
+    expect(layout.badge).toBe("provider:gcp");
+    expect(layout.nodes).toEqual({ svc: [4, 5] });
+    const mine = await listDesigns(user as never, { scope: "mine" });
+    expect(mine.items.find((d) => d.slug === slug)?.badge?.name).toBe("GCP");
+    await setBadge("bea", slug, user as never, "boundary:google");
+    expect(
+      (await listDesigns(user as never, { scope: "mine" })).items.find((d) => d.slug === slug)
+        ?.badge?.markup,
+    ).toBeTruthy();
+    await setBadge("bea", slug, user as never, null);
+    const back = (await getDesign("bea", slug, user as never)).version?.layout as {
+      badge?: string;
+      nodes: unknown;
+    };
+    expect(back.badge).toBeUndefined();
+    expect(back.nodes).toEqual({ svc: [4, 5] });
+  });
+
+  it("refuses refs that are not badges, and anyone but the owner", async () => {
+    const { createDesign, patchDesign, setBadge } = await lib();
+    const user = await makeUser("cal");
+    const stranger = await makeUser("dee");
+    const priv = await createDesign(user as never, { title: "Mine", yaml: YAML });
+    for (const bad of ["kind:cache", "component:aws/s3", "provider:nope", "provider:default", 7])
+      await expect(setBadge("cal", priv.design.slug, user as never, bad)).rejects.toMatchObject({
+        status: 400,
+      });
+    await expect(
+      setBadge("cal", priv.design.slug, stranger as never, "provider:gcp"),
+    ).rejects.toMatchObject({ status: 404 });
+    await patchDesign("cal", priv.design.slug, user as never, { visibility: "public" });
+    await expect(
+      setBadge("cal", priv.design.slug, stranger as never, "provider:gcp"),
+    ).rejects.toMatchObject({ status: 403 });
+    await expect(setBadge("cal", priv.design.slug, null, "provider:gcp")).rejects.toMatchObject({
+      status: 403,
+    });
   });
 });

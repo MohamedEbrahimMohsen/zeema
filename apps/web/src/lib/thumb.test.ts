@@ -105,6 +105,16 @@ describe("the list thumbnail", () => {
     expect(thumbKey("h2", { nodes: { svc: [0, 0] } })).not.toBe(a);
   });
 
+  it("keeps its key when only the list badge changes: the badge is not in the picture", async () => {
+    const { thumbKey } = await import("./thumb-key");
+    const a = thumbKey("h", { nodes: { svc: [0, 0] } });
+    expect(thumbKey("h", { nodes: { svc: [0, 0] }, badge: "provider:gcp" })).toBe(a);
+    expect(thumbKey("h", null)).toBe(thumbKey("h", undefined));
+    // A sidecar that exists only to carry the badge keys like no sidecar at all.
+    const blank = { version: 2, nodes: {}, edges: {}, notes: [], frames: {} };
+    expect(thumbKey("h", { ...blank, badge: "boundary:google" })).toBe(thumbKey("h", null));
+  });
+
   it("names the listed version and its key on every drawable row", async () => {
     const { listDesigns } = await import("./designs");
     const { key } = await setup("yul", "public");

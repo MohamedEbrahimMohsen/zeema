@@ -6,7 +6,7 @@ import { and, desc, eq, gt, ilike, isNotNull, isNull, ne, or, sql } from "drizzl
 import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import { getDb, schema } from "@/db";
 import type { Design, DesignVersion } from "@/db/schema";
-import { badgeOf } from "./badge";
+import { badgeOf, chosenBadge } from "./badge";
 import { eventSalt } from "./boot";
 import { badgeMark } from "./brand";
 import { type Catalogue, getCatalogue } from "./catalogue";
@@ -315,19 +315,21 @@ export type ListOptions = {
 // Edges and findings are read off the version the listing shows rather than stored on the row,
 // so a catalogue change is reflected without rewriting every design. Only errors and warnings
 // count: info findings are suggestions, and a row that flagged them would never read clean.
-// The corner badge is chosen from the same parse, so a row is analysed once.
-function countsOf(yaml: string | null, cat: Catalogue, slug: string) {
+// The corner badge is chosen from the same parse, so a row is analysed once; the owner's own
+// choice, when there is one, rides in the layout sidecar of the version shown.
+function countsOf(yaml: string | null, cat: Catalogue, slug: string, layout: unknown) {
+  const chosen = readSidecar(layout).badge;
   if (!yaml)
     return {
       drawable: false,
       edgeCount: 0,
       findingCount: 0,
-      badge: badgeMark(badgeOf(null, cat, slug), cat),
+      badge: badgeMark(badgeOf(null, cat, slug, chosen), cat),
     };
   const { doc, findings } = analyse(yaml, cat);
   return {
     drawable: Boolean(doc?.nodes.length),
-    badge: badgeMark(badgeOf(doc, cat, slug), cat),
+    badge: badgeMark(badgeOf(doc, cat, slug, chosen), cat),
     edgeCount: doc?.edges.length ?? 0,
     findingCount: findings.filter((f) => f.severity !== "info").length,
   };
@@ -427,7 +429,7 @@ export async function listDesigns(
   return {
     items: rows.map(
       ({ design, ownerName, stats, yaml, layout, versionId, hash, versionPublishedAt }) => {
-        const { drawable, ...counts } = countsOf(yaml, cat, design.slug);
+        const { drawable, ...counts } = countsOf(yaml, cat, design.slug, layout);
         return {
           id: design.id,
           slug: design.slug,
@@ -791,6 +793,35 @@ export async function saveVersion(owner: string, slug: string, viewer: Viewer, i
     .returning();
   countWrite("save");
   return { design, version, unchanged: false };
+}
+
+/**
+ * Choose the list badge (`provider:<id>` or `boundary:<id>`), or go back to the automatic one
+ * with null. The badge lives in the layout sidecar, so this is a layout-only save of the head,
+ * made through `saveVersion` exactly as the canvas saves a moved box or a group tint: it folds
+ * into an unreleased head of the same author's within the window, and otherwise becomes a new
+ * (unreleased) version, which readers see once it is published.
+ */
+export async function setBadge(owner: string, slug: string, viewer: Viewer, badge: unknown) {
+  const view = await getDesign(owner, slug, viewer);
+  if (!view.can.write)
+    throw new ServiceError(
+      view.design.visibility === "public" ? 403 : 404,
+      "you cannot edit this design",
+    );
+  if (badge !== null && !chosenBadge(badge, getCatalogue()))
+    throw new ServiceError(400, "badge must be provider:<id> or boundary:<id> from the catalogue");
+  const head = view.version;
+  if (!head) throw new ServiceError(409, "this design has no version to carry a badge");
+  const { badge: _old, ...rest } = readSidecar(head.layout);
+  const layout = badge === null ? rest : { ...rest, badge: badge as string };
+  // A design nobody has laid out keeps no sidecar when its badge goes back to automatic.
+  const empty = badge === null && head.layout == null;
+  return saveVersion(owner, slug, viewer, {
+    yaml: head.yaml,
+    layout: empty ? undefined : layout,
+    ifMatch: head.contentHash,
+  });
 }
 
 /**

@@ -92,6 +92,12 @@ export const API_ROUTES: ApiRoute[] = [
     summary: "The layout sidecar: node positions, edge bows and ports.",
   },
   {
+    method: "PATCH",
+    path: "/api/v1/designs/{owner}/{slug}/layout",
+    auth: "owner",
+    summary: "Choose the list badge (or null for automatic): a layout-only save of the head.",
+  },
+  {
     method: "GET",
     path: "/api/v1/designs/{owner}/{slug}/render",
     auth: "none",

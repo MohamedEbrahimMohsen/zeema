@@ -313,6 +313,21 @@ GET /api/v1/designs/ada/order-processing/layout
 
 Answers the [layout sidecar](/docs/notes-and-layout) as JSON, or `null` where there is none.
 
+```http
+PATCH /api/v1/designs/ada/order-processing/layout
+```
+
+```json
+{ "badge": "provider:gcp" }
+```
+
+Owner only. Sets the [list badge](/docs/notes-and-layout#the-list-badge): `provider:<id>`,
+`boundary:<id>`, or `null` for the automatic one; anything else answers `400`. It is a
+layout-only save of the head, made the way the canvas saves (it folds into an unreleased head of
+yours, or starts a new unreleased version), so readers see it once it is published. Answers
+`{ "version": { "id", "contentHash", "createdAt" }, "badge", "unchanged" }`. `403` for a public
+design you do not own, `404` for a private one.
+
 ### Export events
 
 ```http
