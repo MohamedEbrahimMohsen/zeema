@@ -86,6 +86,12 @@ export const ArrowRight = () => (
   </svg>
 );
 
+export const ChevronRight = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+    <path d="m9 6 6 6-6 6" />
+  </svg>
+);
+
 export const Pencil = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
     <path d="M4 20h4L19.5 8.5a2.1 2.1 0 0 0-3-3L5 17v3Z" />

@@ -15,8 +15,8 @@ import { analyse } from "./lint";
 import { countExport, countWrite } from "./metrics";
 import { emit, notifyClone, notifyFollowersOfPublish } from "./notify";
 import { own } from "./own";
-import { type Sketch, sketchOf } from "./sketch";
 import { publishSlugFor, toSlug, toTag } from "./slug";
+import { thumbKey } from "./thumb-key";
 import { actingAdmin, type SessionUser } from "./viewer";
 
 export class ServiceError extends Error {
@@ -77,8 +77,12 @@ export type DesignSummary = {
   findingCount: number;
   /** Brand mark inner-SVG for a well-known product, else null. */
   brand: string | null;
-  /** The engine's layout of the current version, for the card thumbnail. */
-  sketch: Sketch | null;
+  /**
+   * The shown version's list thumbnail, drawn by the thumb route: the version to draw and its
+   * thumb key (the cache name). Null when there is nothing to draw, or when the listing shows a
+   * head this viewer could not open on its own (an acting admin's view of someone's draft).
+   */
+  thumb: { version: string; key: string } | null;
 };
 
 export const ownerSegment = (owner: { username: string } | null) => owner?.username ?? "zeema";
@@ -307,9 +311,10 @@ export type ListOptions = {
 // so a catalogue change is reflected without rewriting every design. Only errors and warnings
 // count: info findings are suggestions, and a row that flagged them would never read clean.
 function countsOf(yaml: string | null, cat: Catalogue) {
-  if (!yaml) return { edgeCount: 0, findingCount: 0 };
+  if (!yaml) return { drawable: false, edgeCount: 0, findingCount: 0 };
   const { doc, findings } = analyse(yaml, cat);
   return {
+    drawable: Boolean(doc?.nodes.length),
     edgeCount: doc?.edges.length ?? 0,
     findingCount: findings.filter((f) => f.severity !== "info").length,
   };
@@ -389,6 +394,9 @@ export async function listDesigns(
       stats: schema.designStats,
       yaml: schema.designVersions.yaml,
       layout: schema.designVersions.layout,
+      versionId: schema.designVersions.id,
+      hash: schema.designVersions.contentHash,
+      versionPublishedAt: schema.designVersions.publishedAt,
     })
     .from(schema.designs)
     .leftJoin(schema.users, eq(schema.users.id, schema.designs.ownerId))
@@ -404,31 +412,41 @@ export async function listDesigns(
     .where(where);
   const cat = getCatalogue();
   return {
-    items: rows.map(({ design, ownerName, stats, yaml, layout }) => ({
-      id: design.id,
-      slug: design.slug,
-      title: design.title,
-      summary: design.summary,
-      visibility: design.visibility,
-      origin: design.origin,
-      updatedAt: design.updatedAt,
-      owner: ownerName ? { username: ownerName } : null,
-      // Only the writer is told there is unreleased work; to a reader the release is the design.
-      unpublished:
-        design.currentVersionId !== design.publishedVersionId && canWrite(design, viewer),
-      stats: {
-        viewCount: stats?.viewCount ?? 0,
-        cloneCount: stats?.cloneCount ?? 0,
-        exportCount: stats?.exportCount ?? 0,
+    items: rows.map(
+      ({ design, ownerName, stats, yaml, layout, versionId, hash, versionPublishedAt }) => {
+        const { drawable, ...counts } = countsOf(yaml, cat);
+        return {
+          id: design.id,
+          slug: design.slug,
+          title: design.title,
+          summary: design.summary,
+          visibility: design.visibility,
+          origin: design.origin,
+          updatedAt: design.updatedAt,
+          owner: ownerName ? { username: ownerName } : null,
+          // Only the writer is told there is unreleased work; to a reader the release is the design.
+          unpublished:
+            design.currentVersionId !== design.publishedVersionId && canWrite(design, viewer),
+          stats: {
+            viewCount: stats?.viewCount ?? 0,
+            cloneCount: stats?.cloneCount ?? 0,
+            exportCount: stats?.exportCount ?? 0,
+          },
+          providers: [
+            ...new Set(
+              (design.searchText.match(/provider:([a-z]+)/g) ?? []).map((m) => m.slice(9)),
+            ),
+          ],
+          nodeCount: Number(/nodes:(\d+)/.exec(design.searchText)?.[1] ?? 0),
+          ...counts,
+          brand: brandMarkFor(design.slug),
+          thumb:
+            drawable && versionId && hash && (versionPublishedAt || canWrite(design, viewer))
+              ? { version: versionId, key: thumbKey(hash, layout) }
+              : null,
+        };
       },
-      providers: [
-        ...new Set((design.searchText.match(/provider:([a-z]+)/g) ?? []).map((m) => m.slice(9))),
-      ],
-      nodeCount: Number(/nodes:(\d+)/.exec(design.searchText)?.[1] ?? 0),
-      ...countsOf(yaml, cat),
-      brand: brandMarkFor(design.slug),
-      sketch: yaml ? sketchOf(yaml, cat, layout) : null,
-    })),
+    ),
     total: Number(count),
     page,
     pageSize,

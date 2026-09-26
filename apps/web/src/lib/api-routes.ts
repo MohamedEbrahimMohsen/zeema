@@ -98,6 +98,13 @@ export const API_ROUTES: ApiRoute[] = [
     summary: "Server-side render: SVG or Mermaid.",
   },
   {
+    method: "GET",
+    path: "/api/v1/designs/{owner}/{slug}/thumb",
+    auth: "none",
+    summary:
+      "The list thumbnail: the drawing as SVG on the row card's colour. `version`, `v` (its thumb key: a matching key is cached for a year) and `theme` (light or dark).",
+  },
+  {
     method: "POST",
     path: "/api/v1/designs/{owner}/{slug}/events",
     auth: "none",

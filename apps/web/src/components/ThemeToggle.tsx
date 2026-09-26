@@ -7,6 +7,25 @@ import { useEffect, useState } from "react";
 type Theme = "light" | "dark";
 const KEY = "zeema-theme";
 
+// The cookie mirrors the choice for the server (src/lib/theme.ts), which picks the theme of the
+// list thumbnails with it. The thumbnails already on the page are swapped here, so a flip (or a
+// first visit, before the cookie existed) never leaves them in the other theme.
+function remember(t: Theme) {
+  try {
+    localStorage.setItem(KEY, t);
+  } catch {}
+  // biome-ignore lint/suspicious/noDocumentCookie: the Cookie Store API is not in every browser yet
+  document.cookie = `${KEY}=${t}; Path=/; Max-Age=31536000; SameSite=Lax`;
+}
+function syncThumbs(t: Theme) {
+  for (const img of document.querySelectorAll<HTMLImageElement>("img[data-thumb]")) {
+    const url = new URL(img.src, location.href);
+    if (url.searchParams.get("theme") === t) continue;
+    url.searchParams.set("theme", t);
+    img.src = url.pathname + url.search;
+  }
+}
+
 const SUN = (
   <svg
     viewBox="0 0 24 24"
@@ -45,16 +64,16 @@ const MOON = (
 export function ThemeToggle({ variant = "icon" }: { variant?: "icon" | "menu" }) {
   const [theme, setTheme] = useState<Theme>("light");
   useEffect(() => {
-    const t = document.documentElement.getAttribute("data-theme");
-    setTheme(t === "dark" ? "dark" : "light");
+    const t = document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
+    setTheme(t);
+    syncThumbs(t);
   }, []);
   const flip = () => {
     const next: Theme = theme === "dark" ? "light" : "dark";
     setTheme(next);
     document.documentElement.setAttribute("data-theme", next);
-    try {
-      localStorage.setItem(KEY, next);
-    } catch {}
+    remember(next);
+    syncThumbs(next);
   };
   const label = theme === "dark" ? "Switch to light theme" : "Switch to dark theme";
   if (variant === "menu")

@@ -1,14 +1,17 @@
 import Link from "next/link";
 import type { DesignSummary } from "@/lib/designs";
 import { ownerSegment } from "@/lib/designs";
+import type { Theme } from "@/lib/theme";
 import { Canvas } from "./Glyphs";
-import { SketchSvg } from "./Sketch";
 
 // The browse listing is a table of designs rather than a wall of cards: at this density the
-// numbers line up down the page, so one design can be compared against the next. The card
-// treatment stays on the home page and profiles, where there are only a handful to show.
+// numbers line up down the page, so one design can be compared against the next. Browse and
+// profiles both use it.
 
-function Thumb({ d }: { d: DesignSummary }) {
+// The drawing is the engine's own SVG (icons, tints, the layout as drawn), fetched as an image
+// so the browser caches it by its thumb key rather than every listing re-drawing it inline.
+// `data-thumb` lets ThemeToggle swap the theme without a reload.
+function Thumb({ d, theme }: { d: DesignSummary; theme: Theme }) {
   if (d.brand)
     return (
       <div className="row-mark">
@@ -21,7 +24,37 @@ function Thumb({ d }: { d: DesignSummary }) {
         />
       </div>
     );
-  if (d.sketch?.nodes.length) return <SketchSvg s={d.sketch} />;
+  if (d.thumb) {
+    const q = new URLSearchParams({ version: d.thumb.version, v: d.thumb.key, theme });
+    const src = `/api/v1/designs/${ownerSegment(d.owner)}/${d.slug}/thumb?${q}`;
+    // Two layers of the one URL (one request): the top of the drawing at a readable scale, and
+    // the whole drawing, which fades in over it on row hover. object-fit itself cannot animate.
+    return (
+      <>
+        <img
+          className="row-img"
+          data-thumb
+          src={src}
+          loading="lazy"
+          decoding="async"
+          width={176}
+          height={110}
+          alt=""
+        />
+        <img
+          className="row-img row-img-whole"
+          data-thumb
+          src={src}
+          loading="lazy"
+          decoding="async"
+          width={176}
+          height={110}
+          alt=""
+          aria-hidden
+        />
+      </>
+    );
+  }
   return <div className="row-plate">{d.title.slice(0, 2)}</div>;
 }
 
@@ -35,14 +68,14 @@ const CloneIcon = () => (
 // The row's one quick action, "Open in canvas", is a sibling of the row's link rather than a
 // child (an anchor may not hold another), laid over the last grid column, which the row keeps
 // empty for it. It shows on hover and focus-within, and always where there is no hover.
-export function DesignRow({ d }: { d: DesignSummary }) {
+export function DesignRow({ d, theme }: { d: DesignSummary; theme: Theme }) {
   const owner = ownerSegment(d.owner);
   const clean = d.findingCount === 0;
   return (
     <li className="row-item">
       <Link href={`/d/${owner}/${d.slug}`} className="row no-underline">
         <div className="row-thumb">
-          <Thumb d={d} />
+          <Thumb d={d} theme={theme} />
         </div>
         <div className="row-name">
           <strong>{d.title}</strong>

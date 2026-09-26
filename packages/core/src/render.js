@@ -78,7 +78,11 @@ const f1 = (n) => Number(n).toFixed(1);
  *                                drawn; defaults to the sidecar's own `frames`.
  *                                frameIcons: { [iconRef]: innerSvg } — the bodies of the icons
  *                                those styles reference; a reference missing here is looked up
- *                                in `icons` by its icon-map key, and not drawn if absent there. }
+ *                                in `icons` by its icon-map key, and not drawn if absent there.
+ *                                background: what the picture sits on. `false` leaves out the page
+ *                                rectangle; a `#rrggbb` colour replaces --bg everywhere it is used
+ *                                (the page, the label halos, the cut under a tinted group), so a
+ *                                thumbnail blends into the card it is drawn on. }
  */
 // Catalogue maps are plain objects keyed by ids that come from documents, so a lookup reads own
 // keys only: a component called `constructor` or `toString` is unknown, not Object's method.
@@ -155,6 +159,9 @@ export function toSvg(doc, catalogue, options = {}) {
       .join("");
   }
   if (iconed) style += ".gi{color:var(--muted)}";
+  // Only a well-formed colour is written into the style block; anything else is ignored.
+  if (typeof options.background === "string" && HEX_TINT_RE.test(options.background))
+    style += `:root{--bg:${options.background.toLowerCase()}}`;
 
   const out = [
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${ox} ${oy} ${w} ${h}" width="${w}" height="${h}" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif">`,
@@ -163,8 +170,9 @@ export function toSvg(doc, catalogue, options = {}) {
     // A filled head whose tip lands on the end of the path (refX is the tip), in the edge colour.
     '<defs><marker id="a" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">' +
       '<path d="M0 0L10 5L0 10z" fill="var(--edge)"/></marker></defs>',
-    `<rect ${at}width="${w}" height="${h}" fill="var(--bg)"/>`,
   ];
+  if (options.background !== false)
+    out.push(`<rect ${at}width="${w}" height="${h}" fill="var(--bg)"/>`);
   // Outer groups first, so a nested one paints over its parent. A tint fills only its own
   // group: every group inside a tinted one lays the page background down first. Without a
   // tint there is nothing to cut, and the picture is what it always was.

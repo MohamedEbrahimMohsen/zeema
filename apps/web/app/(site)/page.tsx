@@ -7,6 +7,7 @@ import { getCatalogue } from "@/lib/catalogue";
 import { listDesigns, listOwners, listTags } from "@/lib/designs";
 import { intParam } from "@/lib/http-guards";
 import { isTier, parseQuery, providersOf, TIERS, withoutToken } from "@/lib/search-query";
+import { pageTheme } from "@/lib/theme";
 
 export const dynamic = "force-dynamic";
 
@@ -33,7 +34,7 @@ export default async function Browse({ searchParams }: { searchParams: Promise<S
   const mine = owner === "me" || (viewer ? owner === viewer.username : false);
   const admin = actingAdmin(viewer);
   const adminScope = admin && (sp.scope === "all" || sp.scope === "private") ? sp.scope : null;
-  const [result, owners, usedTags] = await Promise.all([
+  const [result, owners, usedTags, theme] = await Promise.all([
     listDesigns(viewer, {
       q: parsed.text,
       provider: parsed.provider ?? sp.provider,
@@ -48,6 +49,7 @@ export default async function Browse({ searchParams }: { searchParams: Promise<S
     }),
     listOwners(viewer),
     listTags(viewer),
+    pageTheme(),
   ]);
   const link = (patch: Partial<Search>) => {
     const p = new URLSearchParams();
@@ -184,7 +186,7 @@ export default async function Browse({ searchParams }: { searchParams: Promise<S
             <span />
           </li>
           {result.items.map((d) => (
-            <DesignRow key={d.id} d={d} />
+            <DesignRow key={d.id} d={d} theme={theme} />
           ))}
         </ul>
       )}

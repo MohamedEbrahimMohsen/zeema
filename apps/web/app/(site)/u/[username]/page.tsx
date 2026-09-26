@@ -8,6 +8,7 @@ import { UserAvatar } from "@/components/UserAvatar";
 import { currentUser } from "@/lib/auth";
 import { getProfileStats, listDesigns } from "@/lib/designs";
 import { intParam } from "@/lib/http-guards";
+import { pageTheme } from "@/lib/theme";
 
 export const dynamic = "force-dynamic";
 
@@ -44,7 +45,7 @@ export default async function Profile({
   const { user, own, stats, viewerFollows } = profile;
   const page = intParam(sp.page, { fallback: 1, min: 1, max: 10_000 });
   // What everyone sees: the public, released designs, as a reader sees them.
-  const [published, drafts] = await Promise.all([
+  const [published, drafts, theme] = await Promise.all([
     listDesigns(null, {
       owner: user.username,
       scope: "public",
@@ -54,6 +55,7 @@ export default async function Profile({
       pageSize: PAGE_SIZE,
     }),
     own ? listDesigns(viewer, { scope: "mine", drafts: true, pageSize: 50 }) : null,
+    pageTheme(),
   ]);
   const base = `/u/${user.username}`;
   return (
@@ -107,7 +109,7 @@ export default async function Profile({
           <ul className="rows">
             <RowsHead />
             {published.items.map((d) => (
-              <DesignRow key={d.id} d={d} />
+              <DesignRow key={d.id} d={d} theme={theme} />
             ))}
           </ul>
         )}
@@ -135,7 +137,7 @@ export default async function Profile({
           <ul className="rows">
             <RowsHead />
             {drafts.items.map((d) => (
-              <DesignRow key={d.id} d={d} />
+              <DesignRow key={d.id} d={d} theme={theme} />
             ))}
           </ul>
         </CollapsibleSection>

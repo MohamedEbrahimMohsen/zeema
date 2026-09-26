@@ -10,11 +10,38 @@
 //
 // Keyboard: "/" or Ctrl+K (Cmd+K) focuses the filter from anywhere on the page, Escape clears it
 // and closes the drawer, Up and Down walk the results and Enter opens the highlighted one.
+//
+// Each section of the tree folds under its heading. Which ones are folded is a habit of this
+// browser (localStorage, `zeema.docs.nav`); the section holding the current page is always open
+// on arrival, and a filter that finds something in a folded section unfolds it.
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Close, Menu, Search } from "@/components/Glyphs";
+import { ChevronRight, Close, Menu, Search } from "@/components/Glyphs";
 import type { DocNav } from "@/lib/docs";
+
+const NAV_KEY = "zeema.docs.nav";
+const readCollapsed = (): string[] => {
+  try {
+    const v = JSON.parse(window.localStorage.getItem(NAV_KEY) ?? "[]");
+    return Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : [];
+  } catch {
+    return [];
+  }
+};
+const writeCollapsed = (dirs: string[]) => {
+  try {
+    window.localStorage.setItem(NAV_KEY, JSON.stringify(dirs));
+  } catch {
+    /* a browser that will not remember still folds for this visit */
+  }
+};
+
+const matchRows = (index: SearchRow[], query: string) => {
+  const q = query.trim().toLowerCase();
+  if (!q) return [];
+  return index.filter((r) => `${r.title} ${r.page} ${r.section}`.toLowerCase().includes(q));
+};
 
 export type SearchRow = { href: string; title: string; page: string; section: string };
 
@@ -47,13 +74,35 @@ export function DocsChrome({
   const [cursor, setCursor] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const results = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return [];
-    return index
-      .filter((r) => `${r.title} ${r.page} ${r.section}`.toLowerCase().includes(q))
-      .slice(0, 12);
-  }, [index, query]);
+  const results = useMemo(() => matchRows(index, query).slice(0, 12), [index, query]);
+
+  // Folded sections, by directory. Read after mount so the server render and the first client
+  // render agree (everything open); the current page's section is never folded on arrival.
+  const currentDir = nav.find((s) => s.items.some((i) => i.href === current))?.dir;
+  const [collapsed, setCollapsed] = useState<string[]>([]);
+  useEffect(() => {
+    setCollapsed(readCollapsed().filter((d) => d !== currentDir));
+  }, [currentDir]);
+  const toggleSection = (dir: string) => {
+    setCollapsed((prev) => {
+      const next = prev.includes(dir) ? prev.filter((d) => d !== dir) : [...prev, dir];
+      writeCollapsed(next);
+      return next;
+    });
+  };
+  // A filter searches every section, folded or not; one that finds something in a folded
+  // section unfolds it, so clearing the filter shows the tree with the match in view.
+  const unfoldMatches = (value: string) => {
+    const hit = new Set(matchRows(index, value).map((r) => r.section));
+    if (!hit.size) return;
+    setCollapsed((prev) => {
+      const dirs = new Set(nav.filter((s) => hit.has(s.title)).map((s) => s.dir));
+      if (!prev.some((d) => dirs.has(d))) return prev;
+      const next = prev.filter((d) => !dirs.has(d));
+      writeCollapsed(next);
+      return next;
+    });
+  };
 
   // The highlighted row, kept inside the current result list without an effect: a filter that
   // shortens the list moves the highlight rather than pointing it past the end.
@@ -137,6 +186,7 @@ export function DocsChrome({
             onChange={(e) => {
               setQuery(e.target.value);
               setCursor(0);
+              unfoldMatches(e.target.value);
             }}
             onKeyDown={onFieldKey}
           />
@@ -167,28 +217,47 @@ export function DocsChrome({
           </div>
         ) : (
           <div className="docs-tree">
-            {nav.map((section) => (
-              <section key={section.dir}>
-                <h2 className="label docs-group">{section.title}</h2>
-                <ul>
-                  {section.items.map((item) => {
-                    const isCurrent = item.href === current;
-                    return (
-                      <li key={item.href}>
-                        <Link
-                          href={item.href}
-                          className={`docs-link${isCurrent ? " is-current" : ""}`}
-                          aria-current={isCurrent ? "page" : undefined}
-                          onClick={() => setOpen(false)}
-                        >
-                          {item.title}
-                        </Link>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </section>
-            ))}
+            {nav.map((section) => {
+              const isOpen = !collapsed.includes(section.dir);
+              const listId = `docs-nav-${section.dir}`;
+              return (
+                <section key={section.dir} className={`docs-section${isOpen ? " is-open" : ""}`}>
+                  <h2 className="docs-group-h">
+                    <button
+                      type="button"
+                      className="label docs-group"
+                      aria-expanded={isOpen}
+                      aria-controls={listId}
+                      onClick={() => toggleSection(section.dir)}
+                    >
+                      <span className="docs-chev">
+                        <ChevronRight />
+                      </span>
+                      {section.title}
+                    </button>
+                  </h2>
+                  <div className="docs-fold" id={listId} inert={!isOpen}>
+                    <ul>
+                      {section.items.map((item) => {
+                        const isCurrent = item.href === current;
+                        return (
+                          <li key={item.href}>
+                            <Link
+                              href={item.href}
+                              className={`docs-link${isCurrent ? " is-current" : ""}`}
+                              aria-current={isCurrent ? "page" : undefined}
+                              onClick={() => setOpen(false)}
+                            >
+                              {item.title}
+                            </Link>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                </section>
+              );
+            })}
           </div>
         )}
       </nav>

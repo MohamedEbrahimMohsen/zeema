@@ -11,7 +11,8 @@ export const metadata: Metadata = {
 
 // Runs before first paint: applies the stored theme so the tokens never flash. A first visit has
 // nothing stored, so the OS preference is resolved once and saved as the user's setting.
-const themeBoot = `(function(){try{var k="zeema-theme",t=localStorage.getItem(k);if(t!=="light"&&t!=="dark"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";localStorage.setItem(k,t)}document.documentElement.setAttribute("data-theme",t)}catch(e){}})();`;
+// The choice is mirrored into a cookie so server pages can draw thumbnails in the same theme.
+const themeBoot = `(function(){try{var k="zeema-theme",t=localStorage.getItem(k);if(t!=="light"&&t!=="dark"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";localStorage.setItem(k,t)}document.documentElement.setAttribute("data-theme",t);document.cookie=k+"="+t+"; Path=/; Max-Age=31536000; SameSite=Lax"}catch(e){}})();`;
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   // proxy.ts puts a fresh nonce on every page request; the CSP lets only nonced scripts run.
