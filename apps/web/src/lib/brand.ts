@@ -1,87 +1,63 @@
-// A design that models a well-known product shows that product's mark on its card. The mark is a
-// provider icon from icons/providers (Simple Icons, CC0), chosen by the design's slug. There is no
-// column for this: the curated designs are the only ones with a brand, and their slugs are stable.
+// The markup and name for a list thumbnail's corner badge (badge.ts decides which). Every mark is
+// an existing file under icons/providers (Simple Icons, CC0, plus the neutral cloud marks), which
+// the repository gate already checks, so nothing is uploaded and nothing new is drawn. The icon
+// map sent to browsers does not carry this set; the listing is server-rendered, so it is read
+// here, once per process per mark.
 import fs from "node:fs";
 import path from "node:path";
-import { repoRoot } from "./catalogue";
+import type { Badge } from "./badge";
+import { type Catalogue, repoRoot } from "./catalogue";
 import { own } from "./own";
 
-const BRAND: Record<string, string> = {
-  "airbnb-search": "airbnb",
-  "booking-search": "bookingdotcom",
-  "cloudflare-edge": "cloudflare",
-  "coinbase-exchange": "coinbase",
-  "datadog-husky": "datadog",
-  "discord-messages": "discord",
-  "distributed-message-queue": "apachekafka",
-  "doordash-delivery": "doordash",
-  "dropbox-sync": "dropbox",
-  "duolingo-backend": "duolingo",
-  "etsy-search": "etsy",
-  "facebook-messenger": "messenger",
-  "facebook-tao": "meta",
-  "figma-multiplayer": "figma",
-  github: "github",
-  "github-mysql": "github",
-  "gitlab-architecture": "gitlab",
-  "gojek-platform": "gojek",
-  "google-drive": "googledrive",
-  "google-maps": "googlemaps",
-  "grab-geo": "grab",
-  "instagram-feed": "instagram",
-  "khan-academy-goliath": "khanacademy",
-  "linear-sync": "linear",
-  "lyft-envoy": "lyft",
-  "meta-threads": "threads",
-  "metrics-monitoring": "prometheus",
-  "monzo-platform": "monzo",
-  "netflix-streaming": "netflix",
-  "notion-sharding": "notion",
-  "nubank-core": "nubank",
-  "paypal-payments": "paypal",
-  "pinterest-feed": "pinterest",
-  "reddit-feed": "reddit",
-  "robinhood-trading": "robinhood",
-  "shopify-flash-sale": "shopify",
-  "slack-messaging": "slack",
-  "snapchat-platform": "snapchat",
-  "spotify-playback": "spotify",
-  "stack-overflow": "stackoverflow",
-  "stripe-payments": "stripe",
-  "stripe-webhooks": "stripe",
-  "tiktok-recommendation": "tiktok",
-  "tinder-geo": "tinder",
-  "twitch-live": "twitch",
-  "twitter-timeline": "x",
-  "uber-dispatch": "uber",
-  "whatsapp-messaging": "whatsapp",
-  wikipedia: "wikipedia",
-  "x-recommendation": "x",
-  youtube: "youtube",
-  "youtube-upload-playback": "youtube",
-  "zerodha-kite": "zerodha",
-  "zoom-video": "zoom",
-};
+/** Catalogue provider ids whose mark has another file name under icons/providers. */
+const PROVIDER_FILE: Record<string, string> = { gcp: "googlecloud", k8s: "kubernetes" };
 
-const cache = new Map<string, string | null>();
+type Mark = { markup: string; title: string | null };
+const cache = new Map<string, Mark | null>();
 
-/** Inner SVG markup of the brand mark for a design slug, or null when it has none. */
-export function brandMarkFor(slug: string): string | null {
-  const name = own(BRAND, slug.replace(/-copy(-\d+)?$/, ""));
-  if (!name) return null;
+// The inner markup of an icon file, its root fill carried onto a group so the mark keeps its
+// colour inside the listing's own <svg>. Scripts, event handlers and foreign objects never reach
+// the page, whatever the file holds.
+function readMark(name: string): Mark | null {
+  if (!/^[a-z0-9-]+$/.test(name)) return null;
   if (!cache.has(name)) {
     const file = path.join(repoRoot(), "icons", "providers", `${name}.svg`);
-    if (!fs.existsSync(file)) cache.set(name, null);
-    else {
+    let mark: Mark | null = null;
+    if (fs.existsSync(file)) {
       const raw = fs.readFileSync(file, "utf8");
       const open = raw.indexOf("<svg");
       const gt = open < 0 ? -1 : raw.indexOf(">", open);
       const close = raw.lastIndexOf("</svg>");
-      const fill = /\sfill="(#[0-9a-fA-F]{3,8})"/.exec(raw.slice(open, gt))?.[1] ?? null;
-      const body =
-        gt < 0 || close < 0 ? null : raw.slice(gt + 1, close).replace(/<title>.*?<\/title>/s, "");
-      cache.set(name, body ? (fill ? `<g fill="${fill}">${body}</g>` : body) : null);
+      if (gt >= 0 && close > gt) {
+        const fill = /\sfill="(#[0-9a-fA-F]{3,8})"/.exec(raw.slice(open, gt))?.[1] ?? null;
+        const title = /<title>(.*?)<\/title>/s.exec(raw)?.[1]?.trim() ?? null;
+        const body = raw
+          .slice(gt + 1, close)
+          .replace(/<title>.*?<\/title>/gs, "")
+          .replace(/<(script|foreignObject)\b[\s\S]*?<\/\1\s*>/gi, "")
+          .replace(/\son[a-z]+\s*=\s*("[^"]*"|'[^']*')/gi, "")
+          .replace(/(href\s*=\s*["'])\s*javascript:[^"']*/gi, "$1#");
+        if (body.trim()) mark = { markup: fill ? `<g fill="${fill}">${body}</g>` : body, title };
+      }
     }
+    cache.set(name, mark);
   }
   return cache.get(name) ?? null;
+}
+
+/** Markup and display name for a badge, or null when its mark has no file. */
+export function badgeMark(
+  badge: Badge,
+  cat: Pick<Catalogue, "locale">,
+): { markup: string; name: string } | null {
+  if (!badge) return null;
+  if (badge.kind === "provider") {
+    const mark = readMark(own(PROVIDER_FILE, badge.id) ?? badge.id);
+    if (!mark) return null;
+    return { markup: mark.markup, name: own(cat.locale.providers, badge.id)?.name ?? badge.id };
+  }
+  const mark = readMark(badge.id);
+  if (!mark) return null;
+  const name = own(cat.locale.boundaryIcons, badge.id)?.name ?? mark.title ?? badge.id;
+  return { markup: mark.markup, name };
 }

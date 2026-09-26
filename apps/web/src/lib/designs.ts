@@ -6,8 +6,9 @@ import { and, desc, eq, gt, ilike, isNotNull, isNull, ne, or, sql } from "drizzl
 import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import { getDb, schema } from "@/db";
 import type { Design, DesignVersion } from "@/db/schema";
+import { badgeOf } from "./badge";
 import { eventSalt } from "./boot";
-import { brandMarkFor } from "./brand";
+import { badgeMark } from "./brand";
 import { type Catalogue, getCatalogue } from "./catalogue";
 import { escapeLike } from "./http-guards";
 import { readSidecar } from "./layout-sidecar";
@@ -75,8 +76,12 @@ export type DesignSummary = {
   /** Edges and open findings of the shown version, for the browse listing's columns. */
   edgeCount: number;
   findingCount: number;
-  /** Brand mark inner-SVG for a well-known product, else null. */
-  brand: string | null;
+  /**
+   * The corner badge on the list thumbnail: a well-known product's mark, else the provider the
+   * design is mostly built on (badge.ts). `markup` is inner SVG for a 0 0 24 24 box; `name` is
+   * its display name. Null when neither applies.
+   */
+  badge: { markup: string; name: string } | null;
   /**
    * The shown version's list thumbnail, drawn by the thumb route: the version to draw and its
    * thumb key (the cache name). Null when there is nothing to draw, or when the listing shows a
@@ -310,11 +315,19 @@ export type ListOptions = {
 // Edges and findings are read off the version the listing shows rather than stored on the row,
 // so a catalogue change is reflected without rewriting every design. Only errors and warnings
 // count: info findings are suggestions, and a row that flagged them would never read clean.
-function countsOf(yaml: string | null, cat: Catalogue) {
-  if (!yaml) return { drawable: false, edgeCount: 0, findingCount: 0 };
+// The corner badge is chosen from the same parse, so a row is analysed once.
+function countsOf(yaml: string | null, cat: Catalogue, slug: string) {
+  if (!yaml)
+    return {
+      drawable: false,
+      edgeCount: 0,
+      findingCount: 0,
+      badge: badgeMark(badgeOf(null, cat, slug), cat),
+    };
   const { doc, findings } = analyse(yaml, cat);
   return {
     drawable: Boolean(doc?.nodes.length),
+    badge: badgeMark(badgeOf(doc, cat, slug), cat),
     edgeCount: doc?.edges.length ?? 0,
     findingCount: findings.filter((f) => f.severity !== "info").length,
   };
@@ -414,7 +427,7 @@ export async function listDesigns(
   return {
     items: rows.map(
       ({ design, ownerName, stats, yaml, layout, versionId, hash, versionPublishedAt }) => {
-        const { drawable, ...counts } = countsOf(yaml, cat);
+        const { drawable, ...counts } = countsOf(yaml, cat, design.slug);
         return {
           id: design.id,
           slug: design.slug,
@@ -434,12 +447,11 @@ export async function listDesigns(
           },
           providers: [
             ...new Set(
-              (design.searchText.match(/provider:([a-z]+)/g) ?? []).map((m) => m.slice(9)),
+              (design.searchText.match(/provider:([a-z0-9-]+)/g) ?? []).map((m) => m.slice(9)),
             ),
           ],
           nodeCount: Number(/nodes:(\d+)/.exec(design.searchText)?.[1] ?? 0),
           ...counts,
-          brand: brandMarkFor(design.slug),
           thumb:
             drawable && versionId && hash && (versionPublishedAt || canWrite(design, viewer))
               ? { version: versionId, key: thumbKey(hash, layout) }

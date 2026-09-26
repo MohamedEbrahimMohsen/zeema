@@ -438,6 +438,22 @@ describe("browsing by tag", () => {
     expect((await listDesigns(null, { tag: "bill" })).items).toEqual([]);
   });
 
+  it("tags a design with a provider id that carries digits whole: k8s, not k", async () => {
+    const { createDesign, patchDesign, listDesigns } = await lib();
+    const kube = await makeUser("kube");
+    const yaml = `schemaVersion: "1"
+type: "design"
+id: "k"
+nodes:
+  - { id: "dep", component: "k8s-deployment" }
+edges: []
+`;
+    const d = await createDesign(kube as never, { title: "Cluster", yaml });
+    await patchDesign("kube", d.design.slug, kube as never, { visibility: "public" });
+    const [row] = (await listDesigns(null, { q: "Cluster" })).items;
+    expect(row.providers).toEqual(["k8s"]);
+  });
+
   it("reads an unknown #word in the search box as a tag rather than as text", async () => {
     const { getCatalogue } = await import("./catalogue");
     const { parseQuery } = await import("./search-query");

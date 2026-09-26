@@ -12,18 +12,6 @@ import { Canvas } from "./Glyphs";
 // so the browser caches it by its thumb key rather than every listing re-drawing it inline.
 // `data-thumb` lets ThemeToggle swap the theme without a reload.
 function Thumb({ d, theme }: { d: DesignSummary; theme: Theme }) {
-  if (d.brand)
-    return (
-      <div className="row-mark">
-        <svg
-          viewBox="0 0 24 24"
-          role="img"
-          aria-label={d.title}
-          // biome-ignore lint/security/noDangerouslySetInnerHtml: brand mark from icons/providers
-          dangerouslySetInnerHTML={{ __html: d.brand }}
-        />
-      </div>
-    );
   if (d.thumb) {
     const q = new URLSearchParams({ version: d.thumb.version, v: d.thumb.key, theme });
     const src = `/api/v1/designs/${ownerSegment(d.owner)}/${d.slug}/thumb?${q}`;
@@ -39,7 +27,7 @@ function Thumb({ d, theme }: { d: DesignSummary; theme: Theme }) {
           decoding="async"
           width={176}
           height={110}
-          alt=""
+          alt={d.badge?.name ?? ""}
         />
         <img
           className="row-img row-img-whole"
@@ -56,6 +44,21 @@ function Thumb({ d, theme }: { d: DesignSummary; theme: Theme }) {
     );
   }
   return <div className="row-plate">{d.title.slice(0, 2)}</div>;
+}
+
+// The corner mark: a product's brand, or the provider the design is mostly built on. It sits
+// over both thumbnail layers, so the hover swap to the whole drawing leaves it where it is. Its
+// name is on the thumbnail's alt; the mark itself is decoration.
+function Badge({ badge }: { badge: NonNullable<DesignSummary["badge"]> }) {
+  return (
+    <span className="row-badge" title={badge.name} aria-hidden>
+      <svg
+        viewBox="0 0 24 24"
+        // biome-ignore lint/security/noDangerouslySetInnerHtml: mark from icons/providers, stripped of scripts and handlers in brand.ts
+        dangerouslySetInnerHTML={{ __html: badge.markup }}
+      />
+    </span>
+  );
 }
 
 const CloneIcon = () => (
@@ -76,6 +79,7 @@ export function DesignRow({ d, theme }: { d: DesignSummary; theme: Theme }) {
       <Link href={`/d/${owner}/${d.slug}`} className="row no-underline">
         <div className="row-thumb">
           <Thumb d={d} theme={theme} />
+          {d.badge ? <Badge badge={d.badge} /> : null}
         </div>
         <div className="row-name">
           <strong>{d.title}</strong>

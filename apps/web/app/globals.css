@@ -1627,19 +1627,30 @@ kbd.key {
     display: none;
   }
 }
-.row-mark,
 .row-plate {
   position: absolute;
   inset: 0;
   display: grid;
   place-items: center;
 }
-.row-mark {
-  background: repeating-linear-gradient(135deg, var(--bg) 0 8px, var(--panel) 8px 16px);
-}
-.row-mark svg {
-  width: 44%;
-  height: 44%;
+/* The corner mark (a product's brand, or the provider the design mostly uses). Above both
+   drawing layers, so the hover swap to the whole drawing leaves it in place. Its svg is sized
+   by `.row-thumb svg` above. */
+.row-thumb .row-badge {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  z-index: 1;
+  width: 20px;
+  height: 20px;
+  box-sizing: border-box;
+  padding: 2px;
+  border-radius: 50%;
+  border: var(--border) solid var(--line);
+  background: var(--panel);
+  display: grid;
+  place-items: center;
+  pointer-events: auto;
 }
 .row-plate {
   background: var(--t-blue-fill);
@@ -3848,8 +3859,8 @@ pre.yaml {
 .site .row-thumb {
   border-color: var(--float-line);
 }
-.site .row-mark {
-  background: transparent;
+.site .row-thumb .row-badge {
+  border-color: var(--float-line);
 }
 .site .row-slug {
   font-size: 12px;
