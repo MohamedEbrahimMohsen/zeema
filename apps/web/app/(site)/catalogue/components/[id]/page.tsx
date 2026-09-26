@@ -16,28 +16,35 @@ export default async function ComponentPage({ params }: { params: Promise<{ id: 
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="meta">
-        <Link href="/catalogue" className="link">
-          Catalogue
-        </Link>
-        {" / "}
-        <Link href={`/catalogue/kinds/${c.kind}`} className="link mono">
-          {c.kind}
-        </Link>
-      </div>
-
-      <div className="flex items-start gap-4">
-        <Icon markup={icons[id] ?? icons[`kind:${c.kind}`]} size="lg" />
-        <div className="flex flex-col gap-1 min-w-0">
-          <h1 className="display flex items-baseline gap-3 flex-wrap">
-            {doc.title}
-            {c.provider !== "default" ? <span className="tag tag-mono">{c.provider}</span> : null}
-            <span className="tag">{cat.locale.kinds[c.kind]?.name ?? c.kind}</span>
-          </h1>
-          <div className="mono meta">{id}</div>
-          {doc.description ? <p className="muted">{doc.description}</p> : null}
+      <header className="ref-head">
+        <div className="meta mono design-crumb">
+          <Link href="/catalogue" className="link">
+            Catalogue
+          </Link>
+          {" / "}
+          <Link href={`/catalogue/kinds/${c.kind}`} className="link">
+            {c.kind}
+          </Link>
         </div>
-      </div>
+        <div className="ref-title">
+          <span className="ref-icon">
+            <Icon markup={icons[id] ?? icons[`kind:${c.kind}`]} size="lg" />
+          </span>
+          <h1 className="display design-title">{doc.title}</h1>
+        </div>
+        <div className="stat-row">
+          {c.provider !== "default" ? (
+            <Link href={`/catalogue?provider=${c.provider}`} className="chip no-underline mono">
+              {c.provider}
+            </Link>
+          ) : null}
+          <Link href={`/catalogue/kinds/${c.kind}`} className="chip no-underline">
+            {cat.locale.kinds[c.kind]?.name ?? c.kind}
+          </Link>
+          <span className="stat-chip">{id}</span>
+        </div>
+        {doc.description ? <p className="muted ref-lede">{doc.description}</p> : null}
+      </header>
 
       <Facts facts={doc.facts} />
 
@@ -60,7 +67,7 @@ export default async function ComponentPage({ params }: { params: Promise<{ id: 
 
       <section className="flex flex-col gap-2">
         <span className="label">Use it in a design</span>
-        <pre className="code">{`nodes:
+        <pre className="code snippet">{`nodes:
   - { id: "${id.replace(/^(aws|azure|gcp|google|oci|cloudflare|ibm|alibaba|digitalocean|openstack|outscale|k8s)-/, "")}", component: "${id}" }`}</pre>
       </section>
 
@@ -69,16 +76,18 @@ export default async function ComponentPage({ params }: { params: Promise<{ id: 
           <span className="label">
             Other {cat.locale.kinds[c.kind]?.name ?? c.kind} products · {doc.siblings.total}
           </span>
-          <div className="list">
+          <div className="cat-rows">
             {doc.siblings.items.map((s) => (
-              <Link key={s.id} href={s.href} className="row no-underline">
+              <Link key={s.id} href={s.href} className="cat-row no-underline">
                 <Icon markup={icons[s.id] ?? icons[`kind:${c.kind}`]} />
-                <span className="flex items-baseline gap-2 min-w-0">
+                <span className="cat-row-name">
                   <span className="name">{s.name}</span>
                   <span className="slug truncate">{s.id}</span>
                 </span>
-                {s.note !== "default" ? <span className="tag tag-mono">{s.note}</span> : <span />}
-                <span className="kind">{c.kind}</span>
+                <span className="cat-row-meta">
+                  {s.note !== "default" ? <span className="tag tag-mono">{s.note}</span> : <span />}
+                  <span className="kind">{c.kind}</span>
+                </span>
               </Link>
             ))}
           </div>

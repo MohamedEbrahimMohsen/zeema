@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Condition, Facts, SeverityDot, Source } from "@/components/Reference";
+import { Condition, Facts, SeverityChip, SeverityDot, Source } from "@/components/Reference";
 import { ruleDoc } from "@/lib/reference";
 
 export default async function RulePage({ params }: { params: Promise<{ id: string }> }) {
@@ -12,29 +12,32 @@ export default async function RulePage({ params }: { params: Promise<{ id: strin
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="meta">
-        <Link href="/catalogue" className="link">
-          Catalogue
-        </Link>
-        {" / "}
-        <Link href="/catalogue/rules" className="link">
-          rules
-        </Link>
-      </div>
-
-      <div className="flex flex-col gap-1 min-w-0">
-        <h1 className="display flex items-baseline gap-3 flex-wrap">
-          <SeverityDot severity={rule.severity} />
-          {doc.title}
-          <span className="tag tag-mono">{rule.severity}</span>
-        </h1>
-        <div className="mono meta">{id}</div>
-        {rule.rationale ? <p className="muted">{rule.rationale}</p> : null}
-      </div>
+      <header className="ref-head">
+        <div className="meta mono design-crumb">
+          <Link href="/catalogue" className="link">
+            Catalogue
+          </Link>
+          {" / "}
+          <Link href="/catalogue/rules" className="link">
+            rules
+          </Link>
+        </div>
+        <div className="ref-title">
+          <span className={`ref-icon ref-sev ${rule.severity}`}>
+            <SeverityDot severity={rule.severity} />
+          </span>
+          <h1 className="display design-title">{doc.title}</h1>
+        </div>
+        <div className="stat-row">
+          <SeverityChip severity={rule.severity} />
+          <span className="stat-chip">{id}</span>
+        </div>
+        {rule.rationale ? <p className="muted ref-lede">{rule.rationale}</p> : null}
+      </header>
 
       <Facts facts={doc.facts} />
 
-      <section className="flex flex-col gap-2">
+      <section className={`rule-card ${rule.severity} flex flex-col gap-2`}>
         <span className="label">What it checks</span>
         {rule.selectText ? (
           <p className="small">
@@ -68,7 +71,7 @@ export default async function RulePage({ params }: { params: Promise<{ id: strin
         {doc.appliesTo?.kinds.length ? (
           <div className="flex flex-wrap gap-2">
             {doc.appliesTo.kinds.map((k) => (
-              <Link key={k.id} href={k.href} className="tag no-underline">
+              <Link key={k.id} href={k.href} className="chip no-underline">
                 {k.name} <span className="mono muted">{k.id}</span>
               </Link>
             ))}
@@ -85,16 +88,16 @@ export default async function RulePage({ params }: { params: Promise<{ id: strin
           header, and fails when a rule no design trips.
         </p>
         {doc.trippedBy?.length ? (
-          <div className="list">
+          <div className="cat-rows">
             {doc.trippedBy.map((d) => (
               <Link
                 key={d.id}
                 href={d.href}
-                className="row no-underline"
-                style={{ gridTemplateColumns: "1fr auto" }}
+                className="cat-row no-underline"
+                style={{ gridTemplateColumns: "minmax(0, 1fr) auto" }}
               >
                 <span className="name">{d.name}</span>
-                <span className="kind">reference</span>
+                <span className="tag tag-mono">reference</span>
               </Link>
             ))}
           </div>

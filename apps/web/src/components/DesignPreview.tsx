@@ -52,11 +52,11 @@ export function DesignPreview({ owner, slug, canWrite, svg }: Props) {
   };
 
   return (
-    <section className="panel doc-section">
-      <div className="doc-head">Design</div>
-      <div className="doc-actions">
+    <section className="panel preview-card">
+      <div className="preview-label label">Design</div>
+      <div className="pill preview-actions">
         <a
-          className="btn-icon"
+          className="pill-btn"
           href={`/d/${owner}/${slug}/canvas`}
           aria-label={canWrite ? "Open in canvas" : "View in canvas"}
           title={canWrite ? "Open in canvas" : "View in canvas"}
@@ -65,7 +65,7 @@ export function DesignPreview({ owner, slug, canWrite, svg }: Props) {
         </a>
         <button
           type="button"
-          className="btn-icon"
+          className="pill-btn"
           onClick={downloadSvg}
           aria-label={`Download ${slug}.svg`}
           title="Download SVG"
@@ -74,7 +74,7 @@ export function DesignPreview({ owner, slug, canWrite, svg }: Props) {
         </button>
         <button
           type="button"
-          className="btn-icon"
+          className="pill-btn"
           onClick={() => void downloadPng()}
           disabled={busy}
           aria-label={`Download ${slug}.png`}
@@ -82,10 +82,10 @@ export function DesignPreview({ owner, slug, canWrite, svg }: Props) {
         >
           <Picture />
         </button>
-        <CopyButton text={svg} label="Copy the SVG" className="btn-icon" />
+        <CopyButton text={svg} label="Copy the SVG" className="pill-btn" />
         <button
           type="button"
-          className="btn-icon"
+          className="pill-btn"
           onClick={() => setActual(!actual)}
           aria-label={actual ? "Fit the drawing to the page" : "Show the drawing at actual size"}
           title={actual ? "Fit" : "Actual size"}
@@ -93,11 +93,11 @@ export function DesignPreview({ owner, slug, canWrite, svg }: Props) {
           {actual ? <Fit /> : <Actual />}
         </button>
       </div>
-      <div className={`doc-body svg-preview${actual ? " preview-actual" : ""}`}>
+      <div className={`preview-surface svg-preview${actual ? " preview-actual" : ""}`}>
         {/* biome-ignore lint/security/noDangerouslySetInnerHtml: SVG produced by the engine from escaped data */}
         <div dangerouslySetInnerHTML={{ __html: preview }} />
       </div>
-      {error ? <span className="status status-err small">{error}</span> : null}
+      {error ? <span className="preview-error status status-err small">{error}</span> : null}
     </section>
   );
 }

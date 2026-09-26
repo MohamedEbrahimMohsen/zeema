@@ -16,6 +16,22 @@ const CATEGORY_ORDER = [
   "custom",
 ];
 
+// The providers offered as filter chips, in the order the picker lists them.
+const PROVIDERS = [
+  "default",
+  "aws",
+  "azure",
+  "gcp",
+  "oci",
+  "cloudflare",
+  "ibm",
+  "alibabacloud",
+  "digitalocean",
+  "openstack",
+  "outscale",
+  "k8s",
+];
+
 export default async function CataloguePage({
   searchParams,
 }: {
@@ -54,66 +70,95 @@ export default async function CataloguePage({
         .slice(0, 300)
     : [];
 
+  // The provider filter as the canvas picker draws it: a row of chips, one pressed. Each is a
+  // link carrying the rest of the query, so the page still works without JavaScript.
+  const href = (patch: { provider?: string; kind?: string; q?: string }) => {
+    const p = new URLSearchParams();
+    for (const [k, v] of Object.entries({
+      q: sp.q,
+      kind: sp.kind,
+      provider: sp.provider,
+      ...patch,
+    }))
+      if (v) p.set(k, v);
+    const s = p.toString();
+    return s ? `/catalogue?${s}` : "/catalogue";
+  };
+  const categories = [...byCategory.keys()];
+
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex flex-col gap-1">
-        <h1 className="title">Catalogue</h1>
-        <p className="small muted">
+      <div className="browse-head flex flex-col gap-1">
+        <h1 className="display">Catalogue</h1>
+        <p className="small muted" style={{ maxWidth: 760 }}>
           A kind is the abstract thing (a queue); a component is the concrete product (Kafka, SQS)
           with the defaults it really has; a rule is a deterministic check the linter runs over a
           design. Every kind, component and rule below has a reference page: its properties, the
           rules that apply to it in plain English, and the verbatim YAML from the repository.
         </p>
-        <p className="small muted">
-          <b>{totals.kinds}</b> kinds · <b>{totals.components.toLocaleString()}</b> components
-          across <b>{totals.providers}</b> providers · <b>{totals.rules}</b> rules ·{" "}
-          <Link href="/llms.txt" className="link">
+        <div className="stat-row">
+          <span className="stat-chip">{totals.kinds} kinds</span>
+          <span className="stat-chip">
+            {totals.components.toLocaleString()} components across {totals.providers} providers
+          </span>
+          <span className="stat-chip">{totals.rules} rules</span>
+          <Link href="/llms.txt" className="stat-chip stat-link no-underline">
             Machine-readable index
           </Link>
-        </p>
+        </div>
       </div>
-      <form className="flex flex-wrap items-center gap-3" method="get">
-        <input
-          className="input"
-          style={{ maxWidth: 340 }}
-          name="q"
-          defaultValue={sp.q ?? ""}
-          placeholder="sqs, kafka, cache"
-        />
-        <select
-          className="input"
-          style={{ width: 170 }}
-          name="provider"
-          defaultValue={sp.provider ?? ""}
-        >
-          <option value="">Any provider</option>
-          {[
-            "default",
-            "aws",
-            "azure",
-            "gcp",
-            "oci",
-            "cloudflare",
-            "ibm",
-            "alibabacloud",
-            "digitalocean",
-            "openstack",
-            "outscale",
-            "k8s",
-          ].map((p) => (
-            <option key={p} value={p}>
-              {p}
-            </option>
+      <div className="flex flex-col gap-3">
+        <form className="browse-tools" method="get">
+          <div className="searchbox">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden>
+              <circle cx="11" cy="11" r="7" />
+              <path d="m20 20-3.5-3.5" strokeLinecap="round" />
+            </svg>
+            <input
+              className="searchbox-input"
+              type="search"
+              name="q"
+              defaultValue={sp.q ?? ""}
+              placeholder="sqs, kafka, cache"
+              aria-label="Search components"
+            />
+          </div>
+          {sp.provider ? <input type="hidden" name="provider" value={sp.provider} /> : null}
+          {sp.kind ? <input type="hidden" name="kind" value={sp.kind} /> : null}
+          <button className="btn btn-primary" type="submit">
+            Search
+          </button>
+          <Link href="/catalogue/rules" className="chip no-underline">
+            Rules <span className="mono">{cat.rules.length}</span>
+          </Link>
+        </form>
+        <fieldset className="chip-row">
+          <legend className="sr-only">Provider</legend>
+          <span className="chip-row-label" aria-hidden>
+            Provider
+          </span>
+          {["", ...PROVIDERS].map((p) => (
+            <Link
+              key={p || "any"}
+              href={href({ provider: p || undefined })}
+              className={`chip no-underline${(sp.provider ?? "") === p ? " is-on" : ""}`}
+              aria-current={(sp.provider ?? "") === p ? "true" : undefined}
+            >
+              {p || "Any"}
+            </Link>
           ))}
-        </select>
-        {sp.kind ? <input type="hidden" name="kind" value={sp.kind} /> : null}
-        <button className="btn" type="submit">
-          Search
-        </button>
-        <Link href="/catalogue/rules" className="btn ml-auto no-underline">
-          Rules <span className="mono muted">{cat.rules.length}</span>
-        </Link>
-      </form>
+        </fieldset>
+        <nav className="chip-row" aria-label="Categories">
+          <span className="chip-row-label" aria-hidden>
+            Category
+          </span>
+          {categories.map((c) => (
+            <a key={c} href={`#category-${c}`} className="chip no-underline">
+              {cat.locale.categories[c]?.name ?? c}
+            </a>
+          ))}
+        </nav>
+      </div>
 
       {active ? (
         <section className="flex flex-col gap-2">
@@ -128,24 +173,26 @@ export default async function CataloguePage({
             </Link>
           </div>
           {components.length ? (
-            <div className="list">
+            <div className="cat-rows">
               {components.map((c) => (
                 <Link
                   key={c.id}
                   href={`/catalogue/components/${c.id}`}
-                  className="row no-underline"
+                  className="cat-row no-underline"
                 >
                   <Icon markup={icons[c.id] ?? icons[`kind:${c.kind}`]} />
-                  <span className="flex items-baseline gap-2 min-w-0">
+                  <span className="cat-row-name">
                     <span className="name">{cat.locale.components[c.id]?.name ?? c.id}</span>
                     <span className="slug truncate">{c.id}</span>
                   </span>
-                  {c.provider !== "default" ? (
-                    <span className="tag tag-mono">{c.provider}</span>
-                  ) : (
-                    <span />
-                  )}
-                  <span className="kind">{c.kind}</span>
+                  <span className="cat-row-meta">
+                    {c.provider !== "default" ? (
+                      <span className="tag tag-mono">{c.provider}</span>
+                    ) : (
+                      <span />
+                    )}
+                    <span className="kind">{c.kind}</span>
+                  </span>
                 </Link>
               ))}
             </div>
@@ -156,7 +203,11 @@ export default async function CataloguePage({
       ) : null}
 
       {[...byCategory.entries()].map(([category, ks]) => (
-        <section key={category} className="flex flex-col gap-2">
+        <section
+          key={category}
+          id={`category-${category}`}
+          className="cat-section flex flex-col gap-2"
+        >
           <span className="label">
             {cat.locale.categories[category]?.name ?? category} · {ks.length} kinds
           </span>
@@ -165,16 +216,20 @@ export default async function CataloguePage({
               <Link
                 key={k.id}
                 href={`/catalogue/kinds/${k.id}`}
-                className="panel flex items-center gap-3 p-3 no-underline"
+                className="kind-card flex items-center gap-3 no-underline"
               >
-                <Icon markup={icons[`kind:${k.id}`]} />
+                <span className="kind-card-icon">
+                  <Icon markup={icons[`kind:${k.id}`]} />
+                </span>
                 <span className="flex flex-col min-w-0">
-                  <span className="medium">{cat.locale.kinds[k.id]?.name ?? k.id}</span>
+                  <span className="flex items-baseline gap-2 min-w-0">
+                    <span className="medium truncate">{cat.locale.kinds[k.id]?.name ?? k.id}</span>
+                    <span className="mono meta truncate">{k.id}</span>
+                  </span>
                   <span className="meta">
                     {counts[k.id] ?? 0} components · {Object.keys(k.properties).length} properties
                   </span>
                 </span>
-                <span className="ml-auto mono meta">{k.id}</span>
               </Link>
             ))}
           </div>

@@ -59,10 +59,10 @@ export default async function Profile({
     <div className="flex flex-col gap-6">
       <header className="profile-head">
         <UserAvatar user={user} size={72} />
-        <div className="flex min-w-0 flex-col gap-1.5">
-          <div>
-            <h1 className="display">{user.displayName ?? user.username}</h1>
-            <div className="mono meta">
+        <div className="flex min-w-0 flex-1 flex-col gap-2">
+          <div className="flex flex-col gap-0.5">
+            <h1 className="display design-title">{user.displayName ?? user.username}</h1>
+            <div className="mono meta design-crumb">
               @{user.username} · Joined {joined(user.createdAt)}
             </div>
           </div>

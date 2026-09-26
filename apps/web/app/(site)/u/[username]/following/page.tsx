@@ -26,14 +26,15 @@ export default async function FollowingPage({
   const base = `/u/${user.username}/following`;
   return (
     <div className="flex flex-col gap-4" style={{ maxWidth: 640 }}>
-      <div>
-        <Link href={`/u/${user.username}`} className="small link">
+      <div className="flex flex-col gap-1">
+        <Link href={`/u/${user.username}`} className="meta mono design-crumb link">
           ← {user.displayName ?? user.username}
         </Link>
-        <h1 className="display">Following</h1>
-        <span className="label">
-          @{user.username} · {result.total}
-        </span>
+        <h1 className="display design-title">Following</h1>
+        <div className="stat-row">
+          <span className="stat-chip">@{user.username}</span>
+          <span className="stat-chip">{result.total}</span>
+        </div>
       </div>
       <UserList users={result.users} empty={`@${user.username} does not follow anyone yet.`} />
       <Pager

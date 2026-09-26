@@ -50,19 +50,19 @@ export function ProfileSocial({ username, stats, following: initial, canFollow, 
   const n = (v: number) => v.toLocaleString("en-US");
   return (
     <div className="profile-social">
-      <ul className="profile-stats" aria-label="Profile stats">
-        <li>
+      <ul className="stat-row profile-stats" aria-label="Profile stats">
+        <li className="stat-chip">
           <b className="stat-n">{n(stats.designs)}</b> design{stats.designs === 1 ? "" : "s"}
         </li>
-        <li>
+        <li className="stat-chip">
           <b className="stat-n">{n(stats.clones)}</b> clone{stats.clones === 1 ? "" : "s"}
         </li>
-        <li>
+        <li className="stat-chip">
           <Link href={`${base}/followers`} className="no-underline">
             <b className="stat-n">{n(followers)}</b> follower{followers === 1 ? "" : "s"}
           </Link>
         </li>
-        <li>
+        <li className="stat-chip">
           <Link href={`${base}/following`} className="no-underline">
             <b className="stat-n">{n(stats.following)}</b> following
           </Link>
@@ -71,7 +71,7 @@ export function ProfileSocial({ username, stats, following: initial, canFollow, 
       {canFollow ? (
         <button
           type="button"
-          className={`btn btn-sm follow-btn${following ? "" : " btn-primary"}`}
+          className={`btn btn-sm follow-btn${following ? " is-following" : " btn-primary"}`}
           aria-pressed={following}
           disabled={busy}
           onClick={() => void toggle()}

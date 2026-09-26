@@ -3,6 +3,7 @@
 // The IAM page body: search users, see who holds the admin role, grant and revoke it.
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { ShieldMinus, ShieldPlus } from "@/components/Glyphs";
 import type { IamUser } from "@/lib/iam";
 
 type Props = { users: IamUser[]; q: string; onlyAdmins: boolean; me: string };
@@ -43,25 +44,32 @@ export function IamTable({ users, q, onlyAdmins, me }: Props) {
 
   return (
     <div className="flex flex-col gap-4">
-      <form className="flex flex-wrap items-center gap-3" method="get">
-        <input
-          className="input"
-          style={{ maxWidth: 320 }}
-          name="q"
-          defaultValue={q}
-          placeholder="Search by username or name"
-        />
-        <label className="flex items-center gap-2 small">
+      <form className="browse-tools" method="get">
+        <div className="searchbox">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden>
+            <circle cx="11" cy="11" r="7" />
+            <path d="m20 20-3.5-3.5" strokeLinecap="round" />
+          </svg>
+          <input
+            className="searchbox-input"
+            type="search"
+            name="q"
+            defaultValue={q}
+            placeholder="Search by username or name"
+            aria-label="Search users"
+          />
+        </div>
+        <label className="chip chip-check">
           <input type="checkbox" name="admins" value="1" defaultChecked={onlyAdmins} />
           Admins only
         </label>
-        <button className="btn" type="submit">
+        <button className="btn btn-primary" type="submit">
           Filter
         </button>
-        {error ? <span className="status status-err">{error}</span> : null}
       </form>
+      {error ? <span className="status status-err">{error}</span> : null}
       <div className="table-wrap">
-        <table className="table">
+        <table className="table iam-table">
           <thead>
             <tr>
               <th>User</th>
@@ -119,21 +127,24 @@ export function IamTable({ users, q, onlyAdmins, me }: Props) {
                     {admin ? (
                       <button
                         type="button"
-                        className="btn btn-sm btn-danger"
+                        className="btn-icon is-danger"
                         disabled={busy !== null || self}
-                        title={self ? "Another admin has to revoke yours" : undefined}
+                        aria-label={`Revoke admin from @${u.username}`}
+                        title={self ? "Another admin has to revoke yours" : "Revoke admin"}
                         onClick={() => void change(u.username, false)}
                       >
-                        {busy === u.username ? "…" : "Revoke admin"}
+                        {busy === u.username ? "…" : <ShieldMinus />}
                       </button>
                     ) : (
                       <button
                         type="button"
-                        className="btn btn-sm"
+                        className="btn-icon"
                         disabled={busy !== null}
+                        aria-label={`Grant admin to @${u.username}`}
+                        title="Grant admin"
                         onClick={() => void change(u.username, true)}
                       >
-                        {busy === u.username ? "…" : "Grant admin"}
+                        {busy === u.username ? "…" : <ShieldPlus />}
                       </button>
                     )}
                   </td>

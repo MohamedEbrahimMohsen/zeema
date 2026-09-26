@@ -82,18 +82,18 @@ export default async function Browse({ searchParams }: { searchParams: Promise<S
       <div className="browse-head flex flex-wrap items-baseline gap-4">
         <h1>{heading}</h1>
         {admin ? (
-          <span className="small flex gap-3">
+          <span className="flex flex-wrap gap-2">
             <Link
               href={
                 adminScope === "private" ? link({ scope: undefined }) : link({ scope: "private" })
               }
-              className="link"
+              className="chip no-underline"
             >
               {adminScope === "private" ? "Public only" : "Private designs"}
             </Link>
             <Link
               href={adminScope === "all" ? link({ scope: undefined }) : link({ scope: "all" })}
-              className="link"
+              className="chip no-underline"
             >
               {adminScope === "all" ? "Public only" : "Everything"}
             </Link>
@@ -133,7 +133,7 @@ export default async function Browse({ searchParams }: { searchParams: Promise<S
           <option value="clones">Most cloned</option>
           <option value="exports">Most exported</option>
         </select>
-        <button className="btn" type="submit">
+        <button className="btn btn-primary" type="submit">
           Search
         </button>
         {viewer ? (
@@ -143,7 +143,7 @@ export default async function Browse({ searchParams }: { searchParams: Promise<S
                 ? link({ q: withoutToken(sp.q, `@${viewer.username}`), owner: undefined })
                 : `/?q=@${viewer.username}`
             }
-            className="btn btn-sm no-underline"
+            className="chip no-underline"
           >
             {mine ? "Show all" : "Only mine"}
           </Link>
@@ -155,7 +155,7 @@ export default async function Browse({ searchParams }: { searchParams: Promise<S
             <Link
               key={t.raw}
               href={link({ q: withoutToken(sp.q, t.raw) || undefined, page: undefined })}
-              className="pill-filter no-underline"
+              className="chip is-on pill-filter no-underline"
               title={`Remove ${t.raw}`}
             >
               <span className="mono">{t.raw}</span>
@@ -163,7 +163,7 @@ export default async function Browse({ searchParams }: { searchParams: Promise<S
               <span className="sr-only">remove filter</span>
             </Link>
           ))}
-          <Link href={link({ q: undefined, page: undefined })} className="small link no-underline">
+          <Link href={link({ q: undefined, page: undefined })} className="chip no-underline">
             Clear
           </Link>
         </div>

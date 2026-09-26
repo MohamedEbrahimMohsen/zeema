@@ -38,7 +38,11 @@ const MOON = (
   </svg>
 );
 
-export function ThemeToggle() {
+/**
+ * `menu` renders the switch as a row of a dropdown menu (the phone nav menu) rather than as a
+ * bare icon button in the bar.
+ */
+export function ThemeToggle({ variant = "icon" }: { variant?: "icon" | "menu" }) {
   const [theme, setTheme] = useState<Theme>("light");
   useEffect(() => {
     const t = document.documentElement.getAttribute("data-theme");
@@ -53,6 +57,13 @@ export function ThemeToggle() {
     } catch {}
   };
   const label = theme === "dark" ? "Switch to light theme" : "Switch to dark theme";
+  if (variant === "menu")
+    return (
+      <button type="button" role="menuitem" className="menu-item menu-switch" onClick={flip}>
+        <span>{label}</span>
+        {theme === "dark" ? SUN : MOON}
+      </button>
+    );
   return (
     <button type="button" className="icon-btn" onClick={flip} aria-label={label} title={label}>
       {theme === "dark" ? SUN : MOON}

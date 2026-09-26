@@ -1,10 +1,11 @@
 "use client";
 
-// Replaces Next's bottom-left activity indicator with the Zeema spinner. It appears when an
-// internal link is followed and disappears once the URL has changed (or after a safety timeout).
+// Replaces Next's bottom-left activity indicator with a thin accent bar across the very top of
+// the window, as modern apps do: fixed, 2px, over everything, so it never moves the page. It
+// appears when an internal link is followed and disappears once the URL has changed (or after a
+// safety timeout).
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Spinner } from "./Logo";
 
 export function RouteSpinner() {
   const [pending, setPending] = useState(false);
@@ -50,8 +51,8 @@ export function RouteSpinner() {
 
   if (!pending) return null;
   return (
-    <div className="route-spinner" aria-live="polite">
-      <Spinner size={20} />
+    <div className="route-bar" role="progressbar" aria-label="Loading">
+      <span className="route-bar-fill" />
     </div>
   );
 }

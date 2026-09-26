@@ -16,17 +16,17 @@ export function Pager({
   const pages = Math.max(1, Math.ceil(total / pageSize));
   if (pages <= 1) return null;
   return (
-    <nav className="flex items-center gap-3 small" aria-label="Pages">
+    <nav className="pill pager" aria-label="Pages">
       {page > 1 ? (
-        <Link href={href(page - 1)} className="btn btn-sm no-underline" rel="prev">
+        <Link href={href(page - 1)} className="pill-btn no-underline" rel="prev">
           ← Previous
         </Link>
       ) : null}
-      <span className="mono muted">
+      <span className="pager-at mono muted">
         {page} / {pages}
       </span>
       {page < pages ? (
-        <Link href={href(page + 1)} className="btn btn-sm no-underline" rel="next">
+        <Link href={href(page + 1)} className="pill-btn no-underline" rel="next">
           Next →
         </Link>
       ) : null}

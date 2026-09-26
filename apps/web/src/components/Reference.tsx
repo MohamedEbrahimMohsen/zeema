@@ -8,7 +8,7 @@ import type { Fact, RuleRef } from "@/lib/reference";
 export function SeverityDot({ severity }: { severity: string }) {
   return (
     <span
-      className="dot"
+      className="dot sev-dot"
       style={{
         width: 8,
         height: 8,
@@ -24,34 +24,31 @@ export function SeverityDot({ severity }: { severity: string }) {
   );
 }
 
-/** The facts strip: one label/value pair per column, links where a fact points somewhere. */
+/** The facts, one chip each: a label and its value, a link where the fact points somewhere. */
 export function Facts({ facts }: { facts: Fact[] }) {
   return (
-    <div className="panel grid gap-4 p-4 sm:grid-cols-2 lg:grid-cols-4">
+    <dl className="fact-row">
       {facts.map((f) => (
-        <div key={f.label} className="flex flex-col gap-1 min-w-0">
-          <span className="label">{f.label}</span>
-          {f.href ? (
-            f.external ? (
-              <a
-                className="link small truncate"
-                href={f.href}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {f.value}
-              </a>
+        <div key={f.label} className="fact-chip">
+          <dt className="fact-label">{f.label}</dt>
+          <dd className="fact-value" title={f.value}>
+            {f.href ? (
+              f.external ? (
+                <a className="link" href={f.href} target="_blank" rel="noopener noreferrer">
+                  {f.value}
+                </a>
+              ) : (
+                <Link className="link" href={f.href}>
+                  {f.value}
+                </Link>
+              )
             ) : (
-              <Link className="link small truncate" href={f.href}>
-                {f.value}
-              </Link>
-            )
-          ) : (
-            <span className={`small${f.muted ? " muted" : ""}`}>{f.value}</span>
-          )}
+              <span className={f.muted ? "muted" : undefined}>{f.value}</span>
+            )}
+          </dd>
         </div>
       ))}
-    </div>
+    </dl>
   );
 }
 
@@ -84,23 +81,29 @@ export function Condition({ rule }: { rule: RuleRef }) {
   );
 }
 
-/** One row per rule: severity, name, rationale, and the condition in plain English. */
+/** Severity as a chip in the finding colours: red for an error, amber for a warning. */
+export function SeverityChip({ severity }: { severity: string }) {
+  const tone = severity === "error" ? " tag-danger" : severity === "warning" ? " tag-warn" : "";
+  return <span className={`tag tag-mono${tone}`}>{severity}</span>;
+}
+
+/** One card per rule, in the findings' shape: severity, name, rationale, the condition. */
 export function RuleList({ items, empty }: { items: RuleRef[]; empty: string }) {
   if (!items.length) return <div className="empty">{empty}</div>;
   return (
-    <div className="list">
+    <div className="rule-cards">
       {items.map((r) => (
-        <div key={r.id} className="flex flex-col gap-2 p-4">
-          <div className="flex items-baseline gap-3 flex-wrap">
+        <div key={r.id} className={`rule-card ${r.severity}`}>
+          <div className="flex items-center gap-2 flex-wrap">
             <SeverityDot severity={r.severity} />
             <Link href={`/catalogue/rules/${r.id}`} className="medium no-underline">
               {r.name}
             </Link>
-            <span className={`mono meta ${r.severity === "error" ? "sev-error" : "sev-warning"}`}>
-              {r.id}
-            </span>
-            <span className="tag tag-mono">{r.severity}</span>
+            <SeverityChip severity={r.severity} />
           </div>
+          <span className={`rule-id mono ${r.severity === "error" ? "sev-error" : "sev-warning"}`}>
+            {r.id}
+          </span>
           {r.rationale ? <p className="small muted">{r.rationale}</p> : null}
           <Condition rule={r} />
         </div>

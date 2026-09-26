@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { GitHub } from "@/components/Glyphs";
 import { Mark } from "@/components/Logo";
 import { currentUser, githubConfigured } from "@/lib/auth";
 import { nextPath } from "@/lib/http-guards";
@@ -17,25 +18,22 @@ export default async function SignIn({
   if (viewer) redirect(safe ?? `/u/${viewer.username}`);
   const next = safe && safe !== "/" ? safe : "";
   return (
-    <div className="mx-auto max-w-sm py-6">
-      <div className="panel p-6 flex flex-col gap-4">
+    <div className="center-stage">
+      <div className="center-card signin-card">
+        <span className="signin-mark" aria-hidden>
+          <Mark size={32} />
+        </span>
         <div className="flex flex-col gap-1">
-          <span className="wordmark">
-            <Mark size={24} />
-            Zeema
-          </span>
-          <span className="small muted">Architecture as typed, queryable data.</span>
+          <h1 className="signin-title">Zeema</h1>
+          <p className="muted">Architecture as typed, queryable data.</p>
         </div>
-        <p className="small muted">
-          Reading is open to everyone. Creating, cloning and publishing designs needs an account,
-          and the account is your GitHub identity. Zeema never sees a password.
-        </p>
         {sp.error ? <p className="status status-err">sign-in failed: {sp.error}</p> : null}
         {githubConfigured() ? (
           <a
-            className="btn btn-primary no-underline"
+            className="btn btn-primary signin-btn no-underline"
             href={`/api/auth/github${next ? `?next=${encodeURIComponent(next)}` : ""}`}
           >
+            <GitHub />
             Continue with GitHub
           </a>
         ) : (
@@ -44,6 +42,10 @@ export default async function SignIn({
             <code>GITHUB_CLIENT_SECRET</code>.
           </p>
         )}
+        <p className="meta signin-note">
+          Reading is open to everyone. Creating, cloning and publishing designs needs an account,
+          and the account is your GitHub identity. Zeema never sees a password.
+        </p>
       </div>
     </div>
   );

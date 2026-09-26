@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SeverityChip, SeverityDot } from "@/components/Reference";
 import { getCatalogue } from "@/lib/catalogue";
 
 const selectText = (sel: unknown) => {
@@ -25,22 +26,22 @@ export default async function RulesPage({
   for (const r of cat.rules) counts[r.severity] = (counts[r.severity] ?? 0) + 1;
   return (
     <div className="flex flex-col gap-5">
-      <div className="meta">
-        <Link href="/catalogue" className="link">
-          Catalogue
-        </Link>
-        {" / rules"}
-      </div>
-      <div className="flex flex-col gap-1">
-        <h1 className="title">Rules</h1>
-        <p className="small muted">
+      <div className="browse-head flex flex-col gap-1">
+        <div className="meta mono design-crumb">
+          <Link href="/catalogue" className="link">
+            Catalogue
+          </Link>
+          {" / rules"}
+        </div>
+        <h1 className="display">Rules</h1>
+        <p className="small muted" style={{ maxWidth: 760 }}>
           Declarative predicates over a design. A rule reads a node&apos;s effective properties, its
           edges, its groups and the design&apos;s requirements. A finding never blocks a save; a
           structural problem always does. Open a rule for its rationale, the condition in plain
           English, and the reference designs that trip it.
         </p>
       </div>
-      <div className="flex items-center gap-2">
+      <nav className="tabs self-start" aria-label="Severity">
         {[
           ["", "All", cat.rules.length],
           ["error", "Errors", counts.error],
@@ -49,41 +50,36 @@ export default async function RulesPage({
           <Link
             key={String(v)}
             href={v ? `/catalogue/rules?severity=${v}` : "/catalogue/rules"}
-            className={`btn btn-sm no-underline${(sp.severity ?? "") === v ? " active" : ""}`}
+            className={`tab no-underline${(sp.severity ?? "") === v ? " active" : ""}`}
+            aria-current={(sp.severity ?? "") === v ? "page" : undefined}
           >
-            {l} <span className="mono muted">{n}</span>
+            {l} <span className="mono muted tab-count">{n}</span>
           </Link>
         ))}
-      </div>
-      <div className="list">
+      </nav>
+      <div className="rule-cards">
         {rules.map((r) => (
           <Link
             key={r.id}
             id={r.id}
             href={`/catalogue/rules/${r.id}`}
-            className="flex flex-col gap-1 p-4 no-underline"
+            className={`rule-card is-link ${r.severity} no-underline`}
           >
-            <div className="finding" style={{ gridTemplateColumns: "10px 1fr" }}>
-              <span
-                className="dot"
-                style={{ background: r.severity === "error" ? "var(--err)" : "var(--warn)" }}
-              />
-              <div className="flex flex-col gap-1">
-                <div className="flex items-baseline gap-3 flex-wrap">
-                  <span className="medium">{cat.locale.rules[r.id]?.name ?? r.id}</span>
-                  <span
-                    className={`mono meta ${r.severity === "error" ? "sev-error" : "sev-warning"}`}
-                  >
-                    {r.id}
-                  </span>
-                  <span className="tag tag-mono">{selectText(r.select)}</span>
-                </div>
-                <div className="small">{r.message}</div>
-                {cat.locale.rules[r.id]?.rationale ? (
-                  <div className="small muted">{cat.locale.rules[r.id]?.rationale}</div>
-                ) : null}
-              </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <SeverityDot severity={r.severity} />
+              <span className="medium">{cat.locale.rules[r.id]?.name ?? r.id}</span>
+              <SeverityChip severity={r.severity} />
+              <span className="tag tag-mono">{selectText(r.select)}</span>
             </div>
+            <span
+              className={`rule-id mono ${r.severity === "error" ? "sev-error" : "sev-warning"}`}
+            >
+              {r.id}
+            </span>
+            <div className="small">{r.message}</div>
+            {cat.locale.rules[r.id]?.rationale ? (
+              <div className="small muted">{cat.locale.rules[r.id]?.rationale}</div>
+            ) : null}
           </Link>
         ))}
       </div>

@@ -111,9 +111,9 @@ export default async function DesignPage({
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex flex-wrap items-start gap-4">
+      <div className="design-head flex flex-wrap items-start gap-4">
         <div className="min-w-0 flex-1 basis-[16rem] flex flex-col gap-1">
-          <div className="meta">
+          <div className="meta mono design-crumb">
             {view.owner ? (
               <Link href={`/u/${view.owner.username}`} className="link">
                 @{view.owner.username}
@@ -129,7 +129,7 @@ export default async function DesignPage({
               published={Boolean(view.design.publishedAt)}
             />
           </div>
-          <h1 className="display flex items-baseline gap-3 flex-wrap">
+          <h1 className="display design-title flex items-center gap-2 flex-wrap">
             <EditableTitle
               owner={ownerSeg}
               slug={view.design.slug}
@@ -159,18 +159,13 @@ export default async function DesignPage({
             canWrite={view.can.write}
             suggestions={tagSuggestions}
           />
-          <div className="card-strip pt-1">
-            <span>{doc?.nodes.length ?? 0} components</span>
-            <span>·</span>
-            <span>{doc?.edges.length ?? 0} edges</span>
-            <span>·</span>
-            <span>{doc?.groups?.length ?? 0} groups</span>
-            <span>·</span>
-            <span>{view.stats.viewCount} views</span>
-            <span>·</span>
-            <span>{view.stats.cloneCount} clones</span>
-            <span>·</span>
-            <span>{view.stats.exportCount} exports</span>
+          <div className="stat-row">
+            <span className="stat-chip">{doc?.nodes.length ?? 0} components</span>
+            <span className="stat-chip">{doc?.edges.length ?? 0} edges</span>
+            <span className="stat-chip">{doc?.groups?.length ?? 0} groups</span>
+            <span className="stat-chip">{view.stats.viewCount} views</span>
+            <span className="stat-chip">{view.stats.cloneCount} clones</span>
+            <span className="stat-chip">{view.stats.exportCount} exports</span>
           </div>
         </div>
         <DesignActions
@@ -226,8 +221,8 @@ export default async function DesignPage({
         <aside className="flex flex-col gap-4">
           <Findings findings={findings} collapsible />
           {doc?.requirements ? (
-            <section className="panel p-4 flex flex-col gap-2">
-              <span className="label">Promises</span>
+            <section className="panel card-section flex flex-col gap-2">
+              <span className="card-title">Promises</span>
               <ul className="flex flex-col gap-1 small">
                 {Object.entries(doc.requirements).flatMap(([group, paths]) =>
                   Object.entries(paths).map(([k, v]) => (

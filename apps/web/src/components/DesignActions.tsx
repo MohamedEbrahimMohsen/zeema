@@ -95,7 +95,7 @@ export function DesignActions({
     if (res) router.push("/?owner=me");
   };
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="pill actions-pill">
       <a
         className={`btn btn-sm ${canWrite ? "btn-primary" : ""} no-underline`}
         href={`/d/${owner}/${slug}/canvas`}

@@ -30,10 +30,10 @@ export default async function Notifications({
   };
   return (
     <div className="flex flex-col gap-4" style={{ maxWidth: 720 }}>
-      <div className="flex flex-wrap items-baseline gap-3">
-        <h1 className="display">Notifications</h1>
-        <span className="label">{result.unread} unread</span>
-        <div className="ml-auto flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-3">
+        <h1 className="display design-title">Notifications</h1>
+        <span className="stat-chip">{result.unread} unread</span>
+        <div className="pill notif-tools ml-auto">
           <nav className="tabs" aria-label="Filter">
             <Link
               href={href(1, false)}
@@ -50,6 +50,7 @@ export default async function Notifications({
               Unread
             </Link>
           </nav>
+          <span className="pill-sep" aria-hidden />
           <MarkAllRead disabled={result.unread === 0} />
         </div>
       </div>
@@ -77,7 +78,7 @@ export default async function Notifications({
               </>
             );
             return (
-              <li key={n.id} className="notif-li">
+              <li key={n.id} className={`notif-li${n.read ? "" : " is-unread"}`}>
                 {n.design ? (
                   <Link href={n.design.address} className="notif-item no-underline">
                     {body}

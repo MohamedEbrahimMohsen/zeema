@@ -180,7 +180,7 @@ export function NotificationBell({ initialCount }: { initialCount: number }) {
             <span className="menu-name">Notifications</span>
             <button
               type="button"
-              className="btn btn-ghost btn-sm"
+              className="pill-btn"
               onClick={() => void markAll()}
               disabled={!items?.some((n) => !n.read) && count === 0}
             >
@@ -196,7 +196,7 @@ export function NotificationBell({ initialCount }: { initialCount: number }) {
           ) : (
             <ul className="notif-list">
               {items.map((n) => (
-                <li key={n.id} className="notif-li">
+                <li key={n.id} className={`notif-li${n.read ? "" : " is-unread"}`}>
                   <NotificationRow n={n} onFollow={() => close(false)} />
                 </li>
               ))}

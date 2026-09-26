@@ -5,7 +5,8 @@
 // turns the role on for this session only from here.
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
+import { useMenuKeys } from "./menu-keys";
 
 type Props = {
   username: string;
@@ -22,21 +23,13 @@ export function UserMenu({ username, displayName, avatarUrl, isAdmin, actingAdmi
   const [broken, setBroken] = useState(false);
   const [busy, setBusy] = useState(false);
   const root = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!open) return;
-    const away = (e: MouseEvent) => {
-      if (!root.current?.contains(e.target as Node)) setOpen(false);
-    };
-    const esc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
-    };
-    document.addEventListener("mousedown", away);
-    document.addEventListener("keydown", esc);
-    return () => {
-      document.removeEventListener("mousedown", away);
-      document.removeEventListener("keydown", esc);
-    };
-  }, [open]);
+  const button = useRef<HTMLButtonElement>(null);
+  const menu = useRef<HTMLDivElement>(null);
+  const close = useCallback((refocus: boolean) => {
+    setOpen(false);
+    if (refocus) button.current?.focus();
+  }, []);
+  const onMenuKey = useMenuKeys({ open, close, root, menu });
   const initial = (displayName || username).trim().charAt(0).toUpperCase() || "?";
 
   const switchMode = async (admin: boolean) => {
@@ -61,6 +54,7 @@ export function UserMenu({ username, displayName, avatarUrl, isAdmin, actingAdmi
   return (
     <div ref={root} className={`user-menu${actingAdmin ? " is-admin" : ""}`}>
       <button
+        ref={button}
         type="button"
         className="avatar-btn"
         aria-haspopup="menu"
@@ -86,7 +80,7 @@ export function UserMenu({ username, displayName, avatarUrl, isAdmin, actingAdmi
         {actingAdmin ? <span className="admin-dot" aria-hidden="true" /> : null}
       </button>
       {open ? (
-        <div className="menu" role="menu">
+        <div ref={menu} className="menu" role="menu" onKeyDown={onMenuKey}>
           <div className="menu-head">
             <div className="menu-name">{displayName || username}</div>
             <div className="mono meta">

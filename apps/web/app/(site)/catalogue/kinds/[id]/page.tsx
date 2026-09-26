@@ -16,25 +16,28 @@ export default async function KindPage({ params }: { params: Promise<{ id: strin
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="meta">
-        <Link href="/catalogue" className="link">
-          Catalogue
-        </Link>
-        {" / "}
-        <span className="mono">{cat.locale.categories[kind.category]?.name ?? kind.category}</span>
-      </div>
-
-      <div className="flex items-start gap-4">
-        <Icon markup={icons[`kind:${id}`]} size="lg" />
-        <div className="flex flex-col gap-1 min-w-0">
-          <h1 className="display flex items-baseline gap-3">
-            {doc.title}
-            <span className="tag">{kind.category}</span>
-          </h1>
-          <div className="mono meta">{id}</div>
-          {doc.description ? <p className="muted">{doc.description}</p> : null}
+      <header className="ref-head">
+        <div className="meta mono design-crumb">
+          <Link href="/catalogue" className="link">
+            Catalogue
+          </Link>
+          {" / "}
+          <span>{cat.locale.categories[kind.category]?.name ?? kind.category}</span>
         </div>
-      </div>
+        <div className="ref-title">
+          <span className="ref-icon">
+            <Icon markup={icons[`kind:${id}`]} size="lg" />
+          </span>
+          <h1 className="display design-title">{doc.title}</h1>
+        </div>
+        <div className="stat-row">
+          <a href={`/catalogue#category-${kind.category}`} className="chip no-underline">
+            {kind.category}
+          </a>
+          <span className="stat-chip">{id}</span>
+        </div>
+        {doc.description ? <p className="muted ref-lede">{doc.description}</p> : null}
+      </header>
 
       <Facts facts={doc.facts} />
 
@@ -61,21 +64,23 @@ export default async function KindPage({ params }: { params: Promise<{ id: strin
         </span>
         {doc.componentGroups?.map((g) => (
           <div key={g.provider} className="flex flex-col gap-2">
-            <span className="meta mono">{g.provider}</span>
-            <div className="list">
+            <span className="stat-chip cat-group">{g.provider}</span>
+            <div className="cat-rows">
               {g.items.map((c) => (
-                <Link key={c.id} href={c.href} className="row no-underline">
+                <Link key={c.id} href={c.href} className="cat-row no-underline">
                   <Icon markup={icons[c.id] ?? icons[`kind:${id}`]} />
-                  <span className="flex items-baseline gap-2 min-w-0">
+                  <span className="cat-row-name">
                     <span className="name">{c.name}</span>
                     <span className="slug truncate">{c.id}</span>
                   </span>
-                  {g.provider === "vendor-neutral" ? (
-                    <span className="tag tag-mono">generic</span>
-                  ) : (
-                    <span />
-                  )}
-                  <span className="kind">{c.note}</span>
+                  <span className="cat-row-meta">
+                    {g.provider === "vendor-neutral" ? (
+                      <span className="tag tag-mono">generic</span>
+                    ) : (
+                      <span />
+                    )}
+                    <span className="kind">{c.note}</span>
+                  </span>
                 </Link>
               ))}
             </div>

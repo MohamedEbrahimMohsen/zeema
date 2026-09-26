@@ -11,7 +11,7 @@ export function PropertyTable({ rows }: { rows: PropRow[] }) {
   if (!rows.length) return <div className="empty">No properties.</div>;
   const hasOverrides = rows.some((r) => r.overridden);
   return (
-    <div className="list">
+    <div className="table-wrap">
       <table className="table mono">
         <thead>
           <tr>

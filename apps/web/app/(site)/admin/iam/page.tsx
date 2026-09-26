@@ -20,11 +20,13 @@ export default async function IamPage({
   const admins = users.filter((u) => u.roles.includes("admin")).length;
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-baseline gap-4">
-        <h1 className="title">IAM</h1>
-        <span className="small muted">
-          {users.length} user{users.length === 1 ? "" : "s"} shown · {admins} admin
-          {admins === 1 ? "" : "s"}
+      <div className="flex flex-wrap items-center gap-3">
+        <h1 className="display design-title">IAM</h1>
+        <span className="stat-chip">
+          {users.length} user{users.length === 1 ? "" : "s"} shown
+        </span>
+        <span className="stat-chip">
+          {admins} admin{admins === 1 ? "" : "s"}
         </span>
       </div>
       <p className="small muted" style={{ maxWidth: 640 }}>

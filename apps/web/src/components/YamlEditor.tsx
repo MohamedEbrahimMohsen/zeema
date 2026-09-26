@@ -4,6 +4,9 @@
 // the storage gate gives), save with the last-seen content hash, and a plain conflict path.
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { saveFile } from "@/canvas/exportScene";
+import { CopyButton } from "@/components/CopyButton";
+import { Download } from "@/components/Glyphs";
 import type { Finding } from "@/lib/lint";
 import { FindingRow } from "./Findings";
 
@@ -100,16 +103,20 @@ export function YamlEditor({ owner, slug, initialYaml, contentHash, title }: Pro
   const rules = findings.filter((f) => !f.blocking);
   const [word, tone] = STATUS[state];
 
+  const lines = text.split("\n").length;
+
   return (
-    <div className="grid gap-6 grid-cols-[minmax(0,1fr)] lg:grid-cols-[minmax(0,1fr)_360px]">
-      <div className="panel flex flex-col overflow-hidden">
-        <div
-          className="flex items-center gap-3 border-b px-3 py-2"
-          style={{ borderColor: "var(--line)" }}
-        >
-          <span className="medium">{title}</span>
-          <span className={`status ${tone}`}>{word}</span>
-          <div className="ml-auto flex gap-2">
+    <div className="grid gap-5 grid-cols-[minmax(0,1fr)] lg:grid-cols-[minmax(0,1fr)_360px]">
+      <div className="flex flex-col gap-3 min-w-0">
+        <div className="editor-top">
+          <div className="min-w-0 flex flex-col gap-0.5">
+            <span className="meta mono design-crumb truncate">
+              {owner}/{slug}
+            </span>
+            <span className="editor-title truncate">{title}</span>
+          </div>
+          <div className="pill editor-actions">
+            {word ? <span className={`status ${tone} editor-status`}>{word}</span> : null}
             <button
               type="button"
               className="btn btn-sm btn-primary"
@@ -121,34 +128,48 @@ export function YamlEditor({ owner, slug, initialYaml, contentHash, title }: Pro
             </button>
             <button
               type="button"
-              className="btn btn-sm"
+              className="pill-btn"
               onClick={() => router.push(`/d/${owner}/${slug}`)}
             >
               Done
             </button>
           </div>
         </div>
-        <textarea
-          className="mono min-h-[70vh] w-full resize-y bg-transparent p-3 text-sm leading-5 outline-none"
-          spellCheck={false}
-          value={text}
-          onChange={(e) => {
-            setText(e.target.value);
-            setState("dirty");
-          }}
-        />
-        {message ? (
-          <div
-            className="status status-err border-t px-3 py-2"
-            style={{ borderColor: "var(--line)" }}
-          >
-            {message}
+        <div className="panel editor-card">
+          <div className="editor-head">
+            <span className="editor-file mono">{slug}.yaml</span>
+            <span className="editor-lines mono">
+              {lines} line{lines === 1 ? "" : "s"}
+            </span>
+            <span className="ml-auto flex items-center gap-0.5">
+              <CopyButton text={text} className="btn-icon" />
+              <button
+                type="button"
+                className="btn-icon"
+                aria-label={`Download ${slug}.yaml`}
+                title="Download"
+                onClick={() => saveFile(`${slug}.yaml`, text, "application/yaml")}
+              >
+                <Download />
+              </button>
+            </span>
           </div>
-        ) : null}
+          <textarea
+            className="editor-text mono"
+            spellCheck={false}
+            aria-label={`${slug}.yaml`}
+            value={text}
+            onChange={(e) => {
+              setText(e.target.value);
+              setState("dirty");
+            }}
+          />
+          {message ? <div className="editor-message status status-err">{message}</div> : null}
+        </div>
       </div>
       <aside className="flex flex-col gap-4">
-        <section className="panel p-4 flex flex-col gap-2">
-          <span className="label">Structure</span>
+        <section className="panel card-section flex flex-col gap-2">
+          <span className="card-title">Structure</span>
           {blocking.length === 0 ? (
             <p className="status status-ok">Structurally valid. Save is enabled.</p>
           ) : (
@@ -159,27 +180,28 @@ export function YamlEditor({ owner, slug, initialYaml, contentHash, title }: Pro
             </div>
           )}
         </section>
-        <section className="panel p-4 flex flex-col gap-2">
-          <span className="label">Rules</span>
+        <section className="panel card-section flex flex-col gap-2">
+          <span className="card-title">Rules</span>
           {rules.length === 0 ? (
             <p className="small muted">No rule fires.</p>
           ) : (
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-2">
               {rules.map((f, i) => (
                 <FindingRow key={i} f={f} />
               ))}
             </div>
           )}
         </section>
-        <section className="panel p-4 flex flex-col gap-2">
-          <span className="label">Preview</span>
-          <p className="meta">The picture updates after each save.</p>
-          <img
-            src={`/api/v1/designs/${owner}/${slug}/render?theme=light&v=${hash}`}
-            alt=""
-            className="w-full"
-            style={{ border: "1px solid var(--line)", borderRadius: "var(--rc)" }}
-          />
+        <section className="panel preview-card editor-preview">
+          <div className="preview-label label">Preview</div>
+          <div className="preview-surface">
+            <img
+              src={`/api/v1/designs/${owner}/${slug}/render?theme=light&v=${hash}`}
+              alt=""
+              className="w-full"
+            />
+          </div>
+          <p className="meta editor-preview-note">The picture updates after each save.</p>
         </section>
       </aside>
     </div>

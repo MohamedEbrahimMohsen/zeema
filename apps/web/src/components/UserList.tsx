@@ -2,11 +2,12 @@ import Link from "next/link";
 import type { PublicUser } from "@/lib/social";
 import { UserAvatar } from "./UserAvatar";
 
-// A plain list of accounts, each linking to its profile: the followers and following pages.
+// A list of accounts as row cards, each linking to its profile: the followers and following
+// pages.
 export function UserList({ users, empty }: { users: PublicUser[]; empty: string }) {
   if (users.length === 0) return <div className="empty">{empty}</div>;
   return (
-    <ul className="list user-list">
+    <ul className="user-rows">
       {users.map((u) => (
         <li key={u.username}>
           <Link href={`/u/${u.username}`} className="user-row no-underline">

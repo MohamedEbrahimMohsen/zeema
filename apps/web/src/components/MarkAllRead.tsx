@@ -10,7 +10,7 @@ export function MarkAllRead({ disabled }: { disabled: boolean }) {
   return (
     <button
       type="button"
-      className="btn btn-sm"
+      className="pill-btn"
       disabled={disabled || busy}
       onClick={async () => {
         setBusy(true);
