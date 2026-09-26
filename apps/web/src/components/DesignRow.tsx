@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { DesignSummary } from "@/lib/designs";
 import { ownerSegment } from "@/lib/designs";
+import { Canvas } from "./Glyphs";
 import { SketchSvg } from "./Sketch";
 
 // The browse listing is a table of designs rather than a wall of cards: at this density the
@@ -31,11 +32,14 @@ const CloneIcon = () => (
   </svg>
 );
 
+// The row's one quick action, "Open in canvas", is a sibling of the row's link rather than a
+// child (an anchor may not hold another), laid over the last grid column, which the row keeps
+// empty for it. It shows on hover and focus-within, and always where there is no hover.
 export function DesignRow({ d }: { d: DesignSummary }) {
   const owner = ownerSegment(d.owner);
   const clean = d.findingCount === 0;
   return (
-    <li>
+    <li className="row-item">
       <Link href={`/d/${owner}/${d.slug}`} className="row no-underline">
         <div className="row-thumb">
           <Thumb d={d} />
@@ -84,7 +88,16 @@ export function DesignRow({ d }: { d: DesignSummary }) {
             {d.stats.cloneCount}
           </span>
         </div>
+        <span className="row-act-slot" aria-hidden />
       </Link>
+      <a
+        className="row-act no-underline"
+        href={`/d/${owner}/${d.slug}/canvas`}
+        aria-label={`Open ${d.title} in canvas`}
+        title="Open in canvas"
+      >
+        <Canvas />
+      </a>
     </li>
   );
 }

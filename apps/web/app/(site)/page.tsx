@@ -181,6 +181,7 @@ export default async function Browse({ searchParams }: { searchParams: Promise<S
             <span>Edges</span>
             <span>Findings</span>
             <span>Clones</span>
+            <span />
           </li>
           {result.items.map((d) => (
             <DesignRow key={d.id} d={d} />

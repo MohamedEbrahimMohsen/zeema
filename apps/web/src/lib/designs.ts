@@ -388,6 +388,7 @@ export async function listDesigns(
       ownerName: schema.users.username,
       stats: schema.designStats,
       yaml: schema.designVersions.yaml,
+      layout: schema.designVersions.layout,
     })
     .from(schema.designs)
     .leftJoin(schema.users, eq(schema.users.id, schema.designs.ownerId))
@@ -403,7 +404,7 @@ export async function listDesigns(
     .where(where);
   const cat = getCatalogue();
   return {
-    items: rows.map(({ design, ownerName, stats, yaml }) => ({
+    items: rows.map(({ design, ownerName, stats, yaml, layout }) => ({
       id: design.id,
       slug: design.slug,
       title: design.title,
@@ -426,7 +427,7 @@ export async function listDesigns(
       nodeCount: Number(/nodes:(\d+)/.exec(design.searchText)?.[1] ?? 0),
       ...countsOf(yaml, cat),
       brand: brandMarkFor(design.slug),
-      sketch: yaml ? sketchOf(yaml, cat) : null,
+      sketch: yaml ? sketchOf(yaml, cat, layout) : null,
     })),
     total: Number(count),
     page,

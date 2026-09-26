@@ -1,7 +1,13 @@
 "use client";
 
+// What can be done with a design, grouped by intent. The preview card's header carries only the
+// way in (open or view in the canvas) and, for everyone but the owner, Clone; the owner's
+// housekeeping (clone, visibility, delete) sits behind the `⋯` at the pill's end; Publish is a
+// notice above the card, shown only while there is something to publish. All of them call the
+// same commands, defined once here.
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
+import { useMenuKeys } from "./menu-keys";
 
 export type DesignActionsProps = {
   owner: string;
@@ -19,24 +25,20 @@ export type DesignActionsProps = {
   plannedSlug: string;
 };
 
-export function DesignActions({
+type Command = "clone" | "publish" | "visibility" | "delete";
+
+export function useDesignCommands({
   owner,
   slug,
-  canWrite,
-  canClone,
-  signedIn,
   visibility,
-  isCurated,
-  unpublished,
-  neverPublished,
   plannedSlug,
-}: DesignActionsProps) {
+}: Pick<DesignActionsProps, "owner" | "slug" | "visibility" | "plannedSlug">) {
   const router = useRouter();
-  const [busy, setBusy] = useState<string | null>(null);
+  const [busy, setBusy] = useState<Command | null>(null);
   const [error, setError] = useState<string | null>(null);
   const base = `/api/v1/designs/${owner}/${slug}`;
 
-  const call = async (label: string, fn: () => Promise<Response>) => {
+  const call = async (label: Command, fn: () => Promise<Response>) => {
     setBusy(label);
     setError(null);
     try {
@@ -94,14 +96,19 @@ export function DesignActions({
     const res = await call("delete", () => fetch(base, { method: "DELETE" }));
     if (res) router.push("/?owner=me");
   };
-  // The text actions of the preview card's header pill: the card owns the pill and the icon
-  // buttons after it, so this renders only its own group, in reading (and tab) order.
+  return { busy, error, moving, clone, publish, toggleVisibility, remove };
+}
+
+/** The header pill's text group: the way into the canvas, then Clone for anyone but the owner. */
+export function DesignActions(props: DesignActionsProps) {
+  const { owner, slug, canWrite, canClone, signedIn } = props;
+  const { busy, error, clone } = useDesignCommands(props);
   return (
     <div className="design-actions">
       <a className="btn btn-sm btn-primary no-underline" href={`/d/${owner}/${slug}/canvas`}>
         {canWrite ? "Open in canvas" : "View in canvas"}
       </a>
-      {canClone ? (
+      {canWrite ? null : canClone ? (
         <button type="button" className="btn btn-sm" onClick={clone} disabled={busy !== null}>
           {busy === "clone" ? "cloning…" : "Clone"}
         </button>
@@ -110,43 +117,89 @@ export function DesignActions({
           Sign in to clone
         </a>
       ) : null}
-      {/* Editing the YAML lives with the YAML: in its own section's toolbar rather than here. */}
-      {canWrite && unpublished ? (
-        <button
-          type="button"
-          className="btn btn-sm btn-primary"
-          onClick={publish}
-          disabled={busy !== null}
-          title={`${
-            neverPublished
-              ? "Release this version; it shows to others once the design is public"
-              : "Release the current draft; readers see the previous release until then"
-          }${moving ? `. This draft moves to /d/${owner}/${plannedSlug}` : ""}`}
-        >
-          {busy === "publish" ? "publishing…" : "Publish"}
-        </button>
-      ) : null}
-      {canWrite && !isCurated ? (
-        <>
-          <button
-            type="button"
-            className="btn btn-sm"
-            onClick={toggleVisibility}
-            disabled={busy !== null}
-          >
-            {visibility === "public" ? "Make private" : "Make public"}
-          </button>
-          <button
-            type="button"
-            className="btn btn-sm btn-danger"
-            onClick={remove}
-            disabled={busy !== null}
-          >
-            Delete
-          </button>
-        </>
-      ) : null}
       {error ? <span className="status status-err">{error}</span> : null}
+    </div>
+  );
+}
+
+/** Whether the owner's `⋯` menu has anything in it. */
+export const hasDesignMenu = (p: DesignActionsProps) => p.canWrite && (p.canClone || !p.isCurated);
+
+/** The owner's overflow menu, at the far end of the header pill. */
+export function DesignMenu(props: DesignActionsProps) {
+  const { canClone, isCurated, visibility } = props;
+  const { busy, error, clone, toggleVisibility, remove } = useDesignCommands(props);
+  const [open, setOpen] = useState(false);
+  const root = useRef<HTMLDivElement>(null);
+  const button = useRef<HTMLButtonElement>(null);
+  const menu = useRef<HTMLDivElement>(null);
+  const close = useCallback((refocus: boolean) => {
+    setOpen(false);
+    if (refocus) button.current?.focus();
+  }, []);
+  const onMenuKey = useMenuKeys({ open, close, root, menu });
+  // The menu closes first, so a confirmation never sits on top of an open menu.
+  const run = (fn: () => Promise<void>) => () => {
+    setOpen(false);
+    void fn();
+  };
+
+  return (
+    <div ref={root} className="preview-more">
+      {error ? <span className="status status-err">{error}</span> : null}
+      <button
+        ref={button}
+        type="button"
+        className="pill-btn"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-label="More actions"
+        title="More actions"
+        disabled={busy !== null}
+        onClick={() => setOpen((o) => !o)}
+      >
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <circle cx="5" cy="12" r="1.75" />
+          <circle cx="12" cy="12" r="1.75" />
+          <circle cx="19" cy="12" r="1.75" />
+        </svg>
+      </button>
+      {open ? (
+        <div
+          ref={menu}
+          className="menu"
+          role="menu"
+          aria-label="More actions"
+          onKeyDown={onMenuKey}
+        >
+          {canClone ? (
+            <button type="button" role="menuitem" className="menu-item" onClick={run(clone)}>
+              Clone
+            </button>
+          ) : null}
+          {!isCurated ? (
+            <>
+              <button
+                type="button"
+                role="menuitem"
+                className="menu-item"
+                onClick={run(toggleVisibility)}
+              >
+                {visibility === "public" ? "Make private" : "Make public"}
+              </button>
+              <div className="menu-sep" />
+              <button
+                type="button"
+                role="menuitem"
+                className="menu-item is-danger"
+                onClick={run(remove)}
+              >
+                Delete design
+              </button>
+            </>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }

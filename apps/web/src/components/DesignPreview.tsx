@@ -12,13 +12,18 @@
 import { useState } from "react";
 import { rasterise, saveFile } from "@/canvas/exportScene";
 import { CopyButton } from "@/components/CopyButton";
-import { DesignActions, type DesignActionsProps } from "@/components/DesignActions";
+import {
+  DesignActions,
+  type DesignActionsProps,
+  DesignMenu,
+  hasDesignMenu,
+} from "@/components/DesignActions";
 import { Actual, Download, Fit, Picture } from "@/components/Glyphs";
 
 type Props = {
   owner: string;
   slug: string;
-  /** The design's text actions (canvas, clone, the owner's own), first in the header pill. */
+  /** The design's actions: the way in and Clone first in the header pill, the owner's `⋯` last. */
   actions?: DesignActionsProps;
   /** The engine's SVG for the version on screen, styles included. */
   svg: string;
@@ -56,8 +61,9 @@ export function DesignPreview({ owner, slug, actions, svg }: Props) {
   return (
     <section className="panel preview-card">
       {/* One header row: the name on the left, one pill on the right holding the design's text
-          actions and then the picture's own icon buttons. On a phone the icons wrap to a second
-          line inside the pill. DOM order is focus order: label, text actions, icons. */}
+          actions, the picture's own icon buttons, and for the owner the `⋯` menu. On a phone the
+          icons wrap to a second line inside the pill and the `⋯` stays at the end of the first.
+          DOM order is focus order: label, text actions, icons, menu. */}
       <div className="preview-head">
         <div className="preview-label label">Design</div>
         <div className="pill preview-actions">
@@ -100,6 +106,7 @@ export function DesignPreview({ owner, slug, actions, svg }: Props) {
               {actual ? <Fit /> : <Actual />}
             </button>
           </div>
+          {actions && hasDesignMenu(actions) ? <DesignMenu {...actions} /> : null}
         </div>
       </div>
       <div className={`preview-surface svg-preview${actual ? " preview-actual" : ""}`}>

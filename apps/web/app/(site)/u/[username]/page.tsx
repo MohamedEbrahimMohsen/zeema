@@ -25,6 +25,7 @@ function RowsHead() {
       <span>Edges</span>
       <span>Findings</span>
       <span>Clones</span>
+      <span />
     </li>
   );
 }

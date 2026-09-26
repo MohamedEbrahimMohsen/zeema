@@ -13,6 +13,8 @@ import { EditableTitle } from "@/components/EditableTitle";
 import { Findings } from "@/components/Findings";
 import { Icon } from "@/components/Icon";
 import { Markdown } from "@/components/Markdown";
+import { relativeTime } from "@/components/NotificationLine";
+import { PublishNotice } from "@/components/PublishNotice";
 import { Readme } from "@/components/Readme";
 import { TagEditor } from "@/components/TagEditor";
 import { YamlSection } from "@/components/YamlSection";
@@ -108,6 +110,15 @@ export default async function DesignPage({
     !sp.v &&
     (view.unpublished || view.draftVersionCount > 0);
 
+  // The owner's unreleased work began with the first version after the release (or with the
+  // first version at all, for a design never released): that is what the notice dates.
+  const plannedSlug = publishSlugFor({ slug: view.design.slug, title: view.design.title });
+  const releasedAt = view.published?.createdAt.getTime() ?? Number.NEGATIVE_INFINITY;
+  const draftStart = versions.filter((v) => v.createdAt.getTime() > releasedAt).at(-1)?.createdAt;
+  const draftAge = draftStart ? relativeTime(draftStart) : null;
+  const since =
+    draftAge === null ? undefined : draftAge === "just now" ? draftAge : `since ${draftAge}`;
+
   return (
     <div className="flex flex-col gap-5">
       {/* Where the design sits, then what it is. What can be done with it lives in the preview
@@ -190,6 +201,16 @@ export default async function DesignPage({
       ) : null}
       <div className="grid gap-5 grid-cols-[minmax(0,1fr)] lg:grid-cols-[minmax(0,1fr)_360px]">
         <div className="flex flex-col gap-5 min-w-0">
+          {view.can.write && view.unpublished ? (
+            <PublishNotice
+              owner={ownerSeg}
+              slug={view.design.slug}
+              visibility={view.design.visibility}
+              plannedSlug={plannedSlug}
+              neverPublished={!view.published}
+              since={since}
+            />
+          ) : null}
           <DesignPreview
             owner={ownerSeg}
             slug={view.design.slug}
@@ -204,7 +225,7 @@ export default async function DesignPage({
               isCurated: view.design.origin !== "authored",
               unpublished: view.unpublished,
               neverPublished: !view.published,
-              plannedSlug: publishSlugFor({ slug: view.design.slug, title: view.design.title }),
+              plannedSlug,
             }}
           />
           <Readme

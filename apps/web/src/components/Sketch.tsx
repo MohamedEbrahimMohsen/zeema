@@ -2,9 +2,13 @@ import type { Sketch } from "@/lib/sketch";
 
 // The engine's layout drawn as a mini-diagram, shared by the browse rows and the cards. A tall
 // design is shrunk hard to fit a thumbnail, so strokes are held at screen pixels
-// (non-scaling-stroke; dashes follow suit) rather than scaled with the drawing, and the nodes are
-// filled a shade off the card so their shapes read even where the outlines crowd together.
+// (non-scaling-stroke; dashes follow suit) rather than scaled with the drawing. Everything is
+// tinted with the accent (the --sketch-* tokens), except a group that carries its own tint in
+// the sidecar: that frame is drawn in its colour, filled faintly.
 const NSS = "non-scaling-stroke";
+
+/** A named tint is a theme token; a hex one is used as it is, as on the canvas. */
+const tintColour = (t: string) => (t.startsWith("#") ? t : `var(--tint-${t})`);
 
 export function SketchSvg({ s }: { s: Sketch }) {
   const pad = 24;
@@ -15,7 +19,7 @@ export function SketchSvg({ s }: { s: Sketch }) {
       preserveAspectRatio="xMidYMid meet"
       aria-hidden
     >
-      {s.frames.map(([x, y, w, h], i) => (
+      {s.frames.map(([x, y, w, h, tint], i) => (
         <rect
           key={`f${i}`}
           x={x}
@@ -23,8 +27,14 @@ export function SketchSvg({ s }: { s: Sketch }) {
           width={w}
           height={h}
           rx={14}
-          fill="none"
-          stroke="var(--sketch-frame-line)"
+          style={
+            tint
+              ? {
+                  fill: `color-mix(in srgb, ${tintColour(tint)} 10%, transparent)`,
+                  stroke: `color-mix(in srgb, ${tintColour(tint)} 60%, transparent)`,
+                }
+              : { fill: "none", stroke: "var(--sketch-frame-line)" }
+          }
           strokeWidth={1}
           strokeDasharray="3 2"
           vectorEffect={NSS}
@@ -38,7 +48,6 @@ export function SketchSvg({ s }: { s: Sketch }) {
           x2={x2}
           y2={y2}
           stroke="var(--sketch-edge)"
-          strokeOpacity={0.7}
           strokeWidth={1}
           strokeDasharray={async ? "3 2" : undefined}
           vectorEffect={NSS}

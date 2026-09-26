@@ -37,12 +37,13 @@
      finding badges only. Same values as NODE in packages/core/src/render.js. */
   --node-fill: #ffffff;
   --node-line: #d4d4d0;
-  /* the browse/profile thumbnail sketch, painted on --panel; its own tokens so dark mode can
-     lift it off the card without touching the canvas or the engine preview */
-  --sketch-node-fill: #f1f1ee;
-  --sketch-node-line: #b4b4ae;
-  --sketch-frame-line: #c8c8c2;
-  --sketch-edge: #8c8c87;
+  /* the browse/profile thumbnail sketch, painted on --panel and tinted with the accent so the
+     shape reads as a drawing, not as grey noise; restated under dark so it mixes that theme's
+     accent and panel. The canvas and the engine preview keep their neutral --node-* tokens. */
+  --sketch-node-fill: color-mix(in srgb, var(--accent) 12%, var(--panel));
+  --sketch-node-line: color-mix(in srgb, var(--accent) 55%, transparent);
+  --sketch-frame-line: color-mix(in srgb, var(--accent) 35%, transparent);
+  --sketch-edge: color-mix(in srgb, var(--accent) 40%, transparent);
   /* the title plate a design without a drawing shows on its card */
   --t-blue-fill: #eaf1fd;
   /* canvas notes: an annotation, not a taxonomy colour */
@@ -143,10 +144,10 @@
   --err: #ef7d75;
   --node-fill: #1f1f23;
   --node-line: #3a3a40;
-  --sketch-node-fill: #2a2a30;
-  --sketch-node-line: #4a4a52;
-  --sketch-frame-line: #3a3a42;
-  --sketch-edge: #6a6a72;
+  --sketch-node-fill: color-mix(in srgb, var(--accent) 12%, var(--panel));
+  --sketch-node-line: color-mix(in srgb, var(--accent) 55%, transparent);
+  --sketch-frame-line: color-mix(in srgb, var(--accent) 35%, transparent);
+  --sketch-edge: color-mix(in srgb, var(--accent) 40%, transparent);
   --t-blue-fill: #1b2a3f;
   --t-note-fill: #33301d;
   --t-note-line: #776c37;
@@ -1609,7 +1610,7 @@ kbd.key {
 .row-cols,
 .row {
   display: grid;
-  grid-template-columns: 88px 1fr 90px 90px 110px 70px;
+  grid-template-columns: 88px 1fr 90px 90px 110px 70px 30px;
   gap: 20px;
   align-items: center;
 }
@@ -1630,7 +1631,8 @@ kbd.key {
   color: inherit;
   transition: background var(--dur-fast) var(--ease);
 }
-.row:hover {
+.row:hover,
+:where(.row-item:hover) > .row {
   background: var(--panel);
   text-decoration: none;
 }
@@ -1736,6 +1738,51 @@ kbd.key {
   height: 14px;
 }
 
+/* The row's quick action: a sibling of the row's link, laid over the empty last column. */
+.row-item {
+  position: relative;
+}
+.row-act-slot {
+  width: 30px;
+  height: 30px;
+}
+.row-act {
+  position: absolute;
+  right: calc(12px + var(--border));
+  top: 50%;
+  translate: 0 -50%;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-inner);
+  color: var(--muted);
+  opacity: 0;
+  transition:
+    opacity var(--dur-fast) var(--ease),
+    color var(--dur-fast) var(--ease),
+    background var(--dur-fast) var(--ease),
+    transform var(--dur) var(--ease);
+}
+.row-act svg {
+  width: 16px;
+  height: 16px;
+}
+.row-item:hover > .row-act,
+.row-item:focus-within > .row-act {
+  opacity: 1;
+}
+.row-act:hover {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  text-decoration: none;
+}
+@media (hover: none) {
+  .row-act {
+    opacity: 1;
+  }
+}
+
 @media (min-width: 861px) {
   .row-meta {
     display: contents;
@@ -1779,6 +1826,19 @@ kbd.key {
   .row-find,
   .row-clones {
     justify-self: start;
+  }
+  /* no last column here: the action sits at the end of the meta line, which leaves it room */
+  .row-act-slot {
+    display: none;
+  }
+  .row-meta {
+    padding-right: 36px;
+  }
+  .row-act {
+    top: auto;
+    bottom: 8px;
+    translate: none;
+    opacity: 1;
   }
 }
 
@@ -3370,6 +3430,7 @@ pre.yaml {
     animation: none;
   }
   .site .rows .row,
+  .site .rows .row-act,
   .site .card {
     transition: none;
   }
@@ -3765,9 +3826,14 @@ pre.yaml {
 .site .rows li:hover + li .row {
   box-shadow: var(--shadow-control);
 }
-.site .rows .row:hover {
+.site .rows .row:hover,
+.site .rows .row-item:hover > .row {
   transform: translateY(-1px);
   box-shadow: var(--float-shadow-lift);
+}
+/* the action rides the row's lift */
+.site .rows .row-item:hover > .row-act {
+  transform: translateY(-1px);
 }
 .site .row-cols {
   padding: 4px 13px 0;
@@ -3868,9 +3934,10 @@ pre.yaml {
 /* The card's header row: its name on the left, one pill on the right holding the design's text
    actions, a separator, then the picture's icon buttons. On a phone the icons wrap to a second
    line inside the pill; the text actions keep the first and scroll if they outgrow it. */
+/* Not overflow: hidden, so the owner's `⋯` menu can open past the card's edge; the header and
+   the surface round their own corners instead. */
 .preview-card {
   position: relative;
-  overflow: hidden;
 }
 .preview-head {
   display: flex;
@@ -3879,6 +3946,7 @@ pre.yaml {
   gap: 8px;
   padding: 8px 8px 0 12px;
   background: var(--panel);
+  border-radius: calc(var(--r-card) - var(--border)) calc(var(--r-card) - var(--border)) 0 0;
 }
 .preview-label {
   display: inline-flex;
@@ -3926,6 +3994,26 @@ pre.yaml {
 .preview-icons {
   flex: none;
 }
+/* The owner's overflow: last in the pill, its menu hanging below the button's right edge. */
+.preview-more {
+  position: relative;
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 2px;
+}
+.site .preview-more .status {
+  padding: 0 8px;
+  white-space: nowrap;
+}
+.site .menu-item.is-danger {
+  color: var(--err);
+}
+.site .menu-item.is-danger:hover:not(:disabled),
+.site .menu-item.is-danger:focus-visible {
+  background: var(--err);
+  color: var(--panel);
+}
 @media (max-width: 639px) {
   .site .preview-actions {
     flex-wrap: wrap;
@@ -3937,8 +4025,17 @@ pre.yaml {
   .site .preview-actions > .pill-sep {
     display: none;
   }
+  /* first line: the text actions, then the `⋯`; second line: the icons, on the right */
   .site .preview-actions > .design-actions {
+    flex: 1 1 0;
+  }
+  .site .preview-actions > .preview-more {
+    order: 1;
+  }
+  .site .preview-actions > .preview-icons {
+    order: 2;
     flex: 1 1 100%;
+    justify-content: flex-end;
   }
 }
 .preview-surface {
@@ -3946,6 +4043,57 @@ pre.yaml {
   padding: var(--sp-2);
   overflow: auto;
   background: var(--panel);
+  border-radius: 0 0 calc(var(--r-card) - var(--border)) calc(var(--r-card) - var(--border));
+}
+
+/* A slim bar above the preview card for the owner's pending release: a dot, what is pending
+   and since when, and the one button that settles it. */
+.site .notice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 40px;
+  box-sizing: border-box;
+  padding: 0 4px 0 14px;
+  background: var(--panel);
+  border: var(--border) solid var(--float-line);
+  border-radius: var(--r-card);
+  box-shadow: var(--float-shadow);
+}
+.notice-dot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--warn);
+}
+.notice-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--mono);
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+.notice-error {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.site .notice-action {
+  flex: none;
+  height: 30px;
+  margin: 0;
+}
+/* a phone keeps what is pending and drops when it began rather than cutting it off */
+@media (max-width: 419px) {
+  .notice-since {
+    display: none;
+  }
 }
 /* the engine lays its own page colour down first; here the card's panel is the page */
 .preview-surface svg > rect:first-of-type {
