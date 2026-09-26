@@ -51,7 +51,7 @@ function SketchSvg({ s }: { s: Sketch }) {
           y={y}
           width={w}
           height={h}
-          rx={8}
+          rx={12}
           fill="var(--node-fill)"
           stroke="var(--node-line)"
           strokeWidth={2.5}

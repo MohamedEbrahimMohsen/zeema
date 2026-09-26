@@ -182,10 +182,10 @@ export function toSvg(doc, catalogue, options = {}) {
         : ` data-tint="${tint}"`;
     if (cut.has(g.id))
       out.push(
-        `<rect x="${f1(f[0])}" y="${f1(f[1])}" width="${f1(f[2])}" height="${f1(f[3])}" rx="10" fill="var(--bg)"/>`,
+        `<rect x="${f1(f[0])}" y="${f1(f[1])}" width="${f1(f[2])}" height="${f1(f[3])}" rx="14" fill="var(--bg)"/>`,
       );
     out.push(
-      `<rect${dataTint} x="${f1(f[0])}" y="${f1(f[1])}" width="${f1(f[2])}" height="${f1(f[3])}" rx="10" fill="none" stroke="var(--frame)" stroke-width="1" stroke-dasharray="5 4"/>`,
+      `<rect${dataTint} x="${f1(f[0])}" y="${f1(f[1])}" width="${f1(f[2])}" height="${f1(f[3])}" rx="14" fill="none" stroke="var(--frame)" stroke-width="1" stroke-dasharray="6 4"/>`,
     );
     // The icon, when there is one, comes first and pushes the words right.
     const lx = f[0] + 12 + (body ? FRAME_ICON_SHIFT : 0);
@@ -211,17 +211,17 @@ export function toSvg(doc, catalogue, options = {}) {
     if (e.points.length === 6) {
       // A ported end: stub, cubic, stub, as geometry.js spells it.
       out.push(
-        `<path d="${pathOf(e.points)}" fill="none" stroke="var(--edge)" stroke-width="1.2"${dash} marker-end="url(#a)"/>`,
+        `<path d="${pathOf(e.points)}" fill="none" stroke="var(--edge)" stroke-width="1.4"${dash} marker-end="url(#a)"/>`,
       );
     } else if (e.points.length === 3) {
       const [[x1, y1], [cx, cy], [x2, y2]] = e.points;
       out.push(
-        `<path d="M${f1(x1)} ${f1(y1)} Q${f1(cx)} ${f1(cy)} ${f1(x2)} ${f1(y2)}" fill="none" stroke="var(--edge)" stroke-width="1.2"${dash} marker-end="url(#a)"/>`,
+        `<path d="M${f1(x1)} ${f1(y1)} Q${f1(cx)} ${f1(cy)} ${f1(x2)} ${f1(y2)}" fill="none" stroke="var(--edge)" stroke-width="1.4"${dash} marker-end="url(#a)"/>`,
       );
     } else {
       const [[x1, y1], [x2, y2]] = e.points;
       out.push(
-        `<line x1="${f1(x1)}" y1="${f1(y1)}" x2="${f1(x2)}" y2="${f1(y2)}" stroke="var(--edge)" stroke-width="1.2"${dash} marker-end="url(#a)"/>`,
+        `<line x1="${f1(x1)}" y1="${f1(y1)}" x2="${f1(x2)}" y2="${f1(y2)}" stroke="var(--edge)" stroke-width="1.4"${dash} marker-end="url(#a)"/>`,
       );
     }
     if (e.label)
@@ -238,7 +238,7 @@ export function toSvg(doc, catalogue, options = {}) {
     const hole = c.kind === "custom" ? ' stroke-dasharray="6 4" fill-opacity="0.45"' : "";
     const cx = x + bw / 2;
     out.push(
-      `<rect class="body" x="${x}" y="${y}" width="${bw}" height="${bh}" rx="8" stroke-width="1"${hole}/>`,
+      `<rect class="body" x="${x}" y="${y}" width="${bw}" height="${bh}" rx="12" stroke-width="1"${hole}/>`,
     );
     const body = own(icons, n.component);
     if (body)

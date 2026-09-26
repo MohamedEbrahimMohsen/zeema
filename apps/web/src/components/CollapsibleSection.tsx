@@ -49,6 +49,8 @@ export function CollapsibleSection({
       const stored = window.localStorage.getItem(keyFor(name));
       if (stored === "open" || stored === "closed") setOpen(stored === "open");
     } catch {}
+    // A link to the section (the canvas menu's Releases) opens it, without remembering that.
+    if (window.location.hash === `#section-${name}`) setOpen(true);
   }, [name]);
 
   const remember = (next: boolean) => {
@@ -69,7 +71,7 @@ export function CollapsibleSection({
   }, [openSeq]);
 
   return (
-    <section className="panel doc-section">
+    <section className="panel doc-section" id={`section-${name}`}>
       <details
         className="doc-details"
         open={open}

@@ -64,6 +64,8 @@ export function Palette({
   onQuery,
   focusSeq,
   onCreate,
+  recent = [],
+  suggested = [],
 }: {
   rows: Row[];
   icons: Record<string, string>;
@@ -76,7 +78,12 @@ export function Palette({
   onQuery: (q: string) => void;
   /** Bumped when someone asked for the palette rather than typed in it; the box takes focus. */
   focusSeq: number;
+  /** A row was clicked: place that component in the middle of the view. */
   onCreate: (id: string) => void;
+  /** Component ids this browser added most recently, newest first: the "Most used" section. */
+  recent?: string[];
+  /** Component ids to offer first, before any typing: the "Suggested" section. */
+  suggested?: string[];
 }) {
   const q = query;
   const box = useRef<HTMLInputElement>(null);
@@ -174,6 +181,77 @@ export function Palette({
   const pick = (key: "provider" | "category", value: string) =>
     onQuery(setToken(q, key, value || null));
 
+  // "Most used" is what this browser placed last. It answers "the usual thing" before any typing,
+  // so it shows only on an empty query and steps aside the moment the person searches.
+  const recentRows = useMemo(() => {
+    if (q.trim() || !recent.length) return [];
+    const byId = new Map(rows.map((r) => [r[0], r]));
+    return recent.map((id) => byId.get(id)).filter((r): r is Row => Boolean(r));
+  }, [q, recent, rows]);
+
+  // "Suggested" is what the caller thinks fits here (the design's own most-used components, when
+  // a wire was let go on empty canvas). Like "Most used", it answers an empty query only.
+  const suggestedRows = useMemo(() => {
+    if (q.trim() || !suggested.length) return [];
+    const byId = new Map(rows.map((r) => [r[0], r]));
+    return suggested.map((id) => byId.get(id)).filter((r): r is Row => Boolean(r));
+  }, [q, suggested, rows]);
+
+  const rowButton = (row: Row, keyPrefix = "") => {
+    const [id, name, kind] = row;
+    const generic = isGeneric(id, kind);
+    return (
+      <button
+        key={`${keyPrefix}${id}`}
+        type="button"
+        className={`pal-row${generic ? " is-generic" : ""}`}
+        draggable
+        title={
+          id === "custom"
+            ? "custom · a last resort: no rule can judge a custom node"
+            : generic
+              ? `${id} · ${kind} · vendor-neutral`
+              : `${id} · ${kind}`
+        }
+        onDragStart={(e) => e.dataTransfer.setData("text/zeema-component", id)}
+        onClick={() => onCreate(id)}
+      >
+        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: catalogue icon markup, sanitised at build */}
+        <svg viewBox="0 0 24 24" dangerouslySetInnerHTML={{ __html: icons[id] ?? "" }} />
+        <span className="name">{name}</span>
+        <span className="kind">{generic ? "generic" : kind}</span>
+      </button>
+    );
+  };
+
+  // A chip row is a single-select: "All" clears the token, any other chip writes it. A typed
+  // value the catalogue does not offer still gets a chip, so the row never hides the filter.
+  const chips = (
+    key: "provider" | "category",
+    label: string,
+    values: string[],
+    name: (v: string) => string,
+  ) => {
+    const current = filters[key] ?? "";
+    const all = current && !values.includes(current) ? [...values, current] : values;
+    return (
+      <fieldset className="pal-chips">
+        <legend className="pal-chips-label">{label}</legend>
+        {["", ...all].map((v) => (
+          <button
+            key={v || "all"}
+            type="button"
+            aria-pressed={current === v}
+            className={`chip${current === v ? " is-on" : ""}`}
+            onClick={() => pick(key, v)}
+          >
+            {v ? name(v) : "All"}
+          </button>
+        ))}
+      </fieldset>
+    );
+  };
+
   return (
     <>
       <input
@@ -185,43 +263,31 @@ export function Palette({
         onChange={(e) => onQuery(e.target.value)}
       />
       <div className="pal-filters">
-        <select
-          className="input pal-select"
-          aria-label="Provider"
-          value={filters.provider ?? ""}
-          onChange={(e) => pick("provider", e.target.value)}
-        >
-          <option value="">All providers</option>
-          {filters.provider && !providers.includes(filters.provider) ? (
-            <option value={filters.provider}>{filters.provider}</option>
-          ) : null}
-          {providers.map((p) => (
-            <option key={p} value={p}>
-              {providerLabel(p, providerNames)}
-            </option>
-          ))}
-        </select>
-        <select
-          className="input pal-select"
-          aria-label="Category"
-          value={filters.category ?? ""}
-          onChange={(e) => pick("category", e.target.value)}
-        >
-          <option value="">All categories</option>
-          {filters.category && !categories.includes(filters.category) ? (
-            <option value={filters.category}>{filters.category}</option>
-          ) : null}
-          {categories.map((c) => (
-            <option key={c} value={c}>
-              {categoryLabel(c, categoryNames)}
-            </option>
-          ))}
-        </select>
+        {chips("provider", "Provider", providers, (p) => providerLabel(p, providerNames))}
+        {chips("category", "Category", categories, (c) => categoryLabel(c, categoryNames))}
       </div>
       <div className="pal-results">
         {sorted.length === 0 ? (
           <div className="muted p-3">
             Nothing matches. Try a product name, or <code>kind:queue</code>.
+          </div>
+        ) : null}
+        {suggestedRows.length ? (
+          <div className="pal-recent">
+            <div className="pal-group pal-group-static">
+              <span>Suggested</span>
+              <span className="count">{suggestedRows.length}</span>
+            </div>
+            {suggestedRows.map((row) => rowButton(row, "suggested:"))}
+          </div>
+        ) : null}
+        {recentRows.length ? (
+          <div className="pal-recent">
+            <div className="pal-group pal-group-static">
+              <span>Most used</span>
+              <span className="count">{recentRows.length}</span>
+            </div>
+            {recentRows.map((row) => rowButton(row, "recent:"))}
           </div>
         ) : null}
         {items.map((item) => {
@@ -249,30 +315,7 @@ export function Palette({
               </div>
             );
           }
-          const [id, name, kind] = item.row;
-          const generic = isGeneric(id, kind);
-          return (
-            <button
-              key={id}
-              type="button"
-              className={`pal-row${generic ? " is-generic" : ""}`}
-              draggable
-              title={
-                id === "custom"
-                  ? "custom · a last resort: no rule can judge a custom node"
-                  : generic
-                    ? `${id} · ${kind} · vendor-neutral`
-                    : `${id} · ${kind}`
-              }
-              onDragStart={(e) => e.dataTransfer.setData("text/zeema-component", id)}
-              onDoubleClick={() => onCreate(id)}
-            >
-              {/* biome-ignore lint/security/noDangerouslySetInnerHtml: catalogue icon markup, sanitised at build */}
-              <svg viewBox="0 0 24 24" dangerouslySetInnerHTML={{ __html: icons[id] ?? "" }} />
-              <span className="name">{name}</span>
-              <span className="kind">{generic ? "generic" : kind}</span>
-            </button>
-          );
+          return rowButton(item.row);
         })}
         {remaining > 0 ? (
           <button

@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { Canvas } from "@/canvas/Canvas";
-import { currentUser } from "@/lib/auth";
+import { actingAdmin, currentUser, isAdmin } from "@/lib/auth";
 import { getDesign, ownerSegment, resolveAlias, ServiceError } from "@/lib/designs";
 
 export const dynamic = "force-dynamic";
@@ -35,6 +35,18 @@ export default async function CanvasPage({
       unpublished={view.unpublished}
       canClone={view.can.clone}
       signedIn={Boolean(viewer)}
+      canDelete={view.can.write && view.design.origin === "authored"}
+      user={
+        viewer
+          ? {
+              username: viewer.username,
+              displayName: viewer.displayName,
+              avatarUrl: viewer.avatarUrl,
+              isAdmin: isAdmin(viewer),
+              actingAdmin: actingAdmin(viewer),
+            }
+          : null
+      }
     />
   );
 }

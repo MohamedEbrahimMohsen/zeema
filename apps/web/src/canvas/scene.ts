@@ -33,6 +33,7 @@ import {
   type Note,
   normaliseTint,
   type Port,
+  type PortSide,
 } from "@/lib/layout-sidecar";
 import { own } from "@/lib/own";
 
@@ -49,6 +50,32 @@ const FRAME_ICON = 16;
 // The markers this scene installs in the <defs>: the edge head, and the accent one a selected edge uses.
 const ARROWHEADS = ["arrowhead", "arrowhead-sel"];
 const FRAME_ICON_DY = 7;
+// The canvas-only drop shadow under node cards and notes (a <filter> in the <defs>).
+const NODE_SHADOW = "node-shadow";
+// A port dot sits this far outside the border, at the middle of its side.
+const PORT_DOT_GAP = 6;
+const PORT_SIDES: PortSide[] = ["top", "right", "bottom", "left"];
+
+/** Where a side's port dot sits for a box, in that box's coordinates. */
+function portDotAt(b: Box, side: PortSide): [number, number] {
+  const [x, y, w, h] = b;
+  if (side === "top") return [x + w / 2, y - PORT_DOT_GAP];
+  if (side === "bottom") return [x + w / 2, y + h + PORT_DOT_GAP];
+  if (side === "left") return [x - PORT_DOT_GAP, y + h / 2];
+  return [x + w + PORT_DOT_GAP, y + h / 2];
+}
+
+/** The side of a box whose middle is nearest a point: the side that faces it. */
+export function facingSide(b: Box, [px, py]: [number, number]): PortSide {
+  let best: PortSide = "top";
+  let bestD = Number.POSITIVE_INFINITY;
+  for (const side of PORT_SIDES) {
+    const [mx, my] = portDotAt(b, side);
+    const d = Math.hypot(px - mx, py - my);
+    if (d < bestD) [best, bestD] = [side, d];
+  }
+  return best;
+}
 
 export type Box = [number, number, number, number];
 export type Subject = {
@@ -85,7 +112,8 @@ const PORT_REACH = 12;
 export type Handlers = {
   onSelect?: (selection: Subject, multi: Set<string>) => void;
   onMove?: (moves: Array<{ id: string; x: number; y: number; group: string | null }>) => void;
-  onConnect?: (from: string, to: string) => void;
+  /** A wire was let go on another component. `ends` is set when it was drawn from a port dot. */
+  onConnect?: (from: string, to: string, ends?: EdgePorts) => void;
   onBowPreview?: (key: string, value: number) => void;
   onBow?: (key: string, value: number) => void;
   /** An end handle is being dragged along its own box: draw the edge with this port (null: none). */
@@ -100,9 +128,27 @@ export type Handlers = {
   onDrop?: (componentId: string, x: number, y: number) => void;
   onNoteGeometry?: (id: string, box: { x: number; y: number; w: number; h: number }) => void;
   onNotePin?: (key: string) => void;
+  /**
+   * A wire drawn from a port dot was let go on empty canvas, away from its dot: the page may
+   * offer to add a component there and wire it. `start` is the dot, `at` the release point
+   * (both world), `client` the release point on screen.
+   */
+  onWireOut?: (
+    from: string,
+    side: PortSide,
+    start: [number, number],
+    at: [number, number],
+    client: [number, number],
+  ) => void;
   /** A drag that began on a group ended on a component: someone tried to wire the frame. */
   onFrameWire?: (clientX: number, clientY: number) => void;
+  /** The zoom changed (every applyView reports it; the page shows it as a percentage). */
+  onView?: (k: number) => void;
 };
+
+// The zoom range every path shares: the wheel, the zoom menu and fit's lower bound all stay in it.
+export const ZOOM_MIN = 0.15;
+export const ZOOM_MAX = 3;
 
 // A note is drawn, not laid out: its text is wrapped here at roughly the width one character
 // takes at the note font size, which is all an annotation needs. One step under the node label
@@ -241,7 +287,12 @@ export class Scene {
   marquee: any = null;
   pan: any = null;
   editor: any = null;
+  /** The left button pans: Space is held, or the hand tool is on. Every drag handler checks it. */
   space = false;
+  /** Space itself is down. Only this makes the plain wheel zoom; the hand tool leaves it a scroll. */
+  spaceHeld = false;
+  /** The hand tool (H): a pan mode that stays until the select tool (V) takes over again. */
+  hand = false;
   disposed = false;
   private cleanups: Array<() => void> = [];
 
@@ -263,6 +314,7 @@ export class Scene {
     };
     this.layers.overlay.before(this.layers.markers);
     this.installArrowhead();
+    this.installShadow();
     this.bind();
   }
 
@@ -277,6 +329,7 @@ export class Scene {
     // a second element with the same id.
     this.layers.markers.remove();
     for (const id of ARROWHEADS) this.defs.querySelector(`#${id}`)?.remove();
+    this.defs.querySelector(`#${NODE_SHADOW}`)?.remove();
   }
 
   // A filled head whose tip lands on the end of the path (refX is the tip), as render.js draws
@@ -303,14 +356,50 @@ export class Scene {
     }
   }
 
+  // The soft lift under node cards and notes. Canvas only: canvas.css applies it (and turns it
+  // off in the dark theme), the export's stylesheet never names it and toSVG drops it from the
+  // cloned <defs>, and the server render has no such thing.
+  installShadow() {
+    this.defs.querySelector(`#${NODE_SHADOW}`)?.remove();
+    const f = el("filter", {
+      id: NODE_SHADOW,
+      x: "-10%",
+      y: "-10%",
+      width: "120%",
+      height: "140%",
+      "color-interpolation-filters": "sRGB",
+    });
+    f.innerHTML =
+      '<feDropShadow dx="0" dy="1" stdDeviation="1" flood-color="#000" flood-opacity="0.08"/>';
+    this.defs.append(f);
+  }
+
   // ---------------------------------------------------------------- view
 
   applyView() {
     const { x, y, k } = this.view;
     this.viewport.setAttribute("transform", `translate(${x} ${y}) scale(${k})`);
+    this.h.onView?.(k);
   }
 
-  fit(padding = 48) {
+  /** Zoom to `k` around the middle of the view, so what is in the centre stays there. */
+  setZoom(k: number) {
+    const r = this.svg.getBoundingClientRect();
+    const next = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, k));
+    const [wx, wy] = this.toWorld(r.left + r.width / 2, r.top + r.height / 2);
+    this.view = { k: next, x: r.width / 2 - wx * next, y: r.height / 2 - wy * next };
+    this.applyView();
+  }
+
+  /** The hand tool on or off. Held Space still pans on top of the select tool, as before. */
+  setHand(on: boolean) {
+    this.hand = on;
+    this.space = on || this.spaceHeld;
+    this.svg.classList.toggle("hand", this.space);
+  }
+
+  // The padding clears the floating chrome: the pills at the top and the dock at the bottom.
+  fit(padding = 72) {
     const boxes = [
       ...Object.values(this.boxes || {}),
       ...(this.notesVisible() ? Object.values(this.noteBoxes || {}) : []),
@@ -528,7 +617,7 @@ export class Scene {
           y: 0,
           width: bw,
           height: bh,
-          rx: 3,
+          rx: 10,
           fill: "var(--f-note-fill)",
           stroke: "var(--f-note-line)",
         }),
@@ -753,7 +842,7 @@ export class Scene {
             y: f[1],
             width: f[2],
             height: f[3],
-            rx: 10,
+            rx: 14,
           })
         : null;
       // A named tint is a token canvas.css resolves per theme. A hex tint says "hex" and hands
@@ -767,7 +856,7 @@ export class Scene {
         y: f[1],
         width: f[2],
         height: f[3],
-        rx: 10,
+        rx: 14,
         "data-tint": hex ? "hex" : tint,
         style: hex ? `--tint-hex:${hex};--tint-hex-fill:${hex}${TINT_FILL_ALPHA}` : null,
       });
@@ -777,7 +866,7 @@ export class Scene {
         y: f[1],
         width: f[2],
         height: f[3],
-        rx: 10,
+        rx: 14,
       });
       // A group reads as a name with its kind beside it, never "name (kind)". The label is
       // what the author typed; the kind is a tag. With no label the id stands in, so a hand
@@ -923,7 +1012,7 @@ export class Scene {
           y: 0,
           width: b[2],
           height: b[3],
-          rx: 8,
+          rx: 12,
           // One neutral surface for every node: colour comes from the icon, a group tint and
           // the finding badges, never from the kind's category.
           fill: "var(--node-fill)",
@@ -958,26 +1047,18 @@ export class Scene {
           : "badge-warn";
         box.append(el("circle", { class: worst, cx: b[2] - 10, cy: 10, r: 4 }));
       }
-      for (const [hx, hy] of [
-        [b[2] / 2, 0],
-        [b[2], b[3] / 2],
-        [b[2] / 2, b[3]],
-        [0, b[3] / 2],
-      ]) {
-        const handle = el("circle", { class: "handle", cx: hx, cy: hy, r: 4.5, opacity: 0 });
-        handle.addEventListener("pointerdown", (ev: any) => {
+      // A port dot at the middle of each side, just outside the border. canvas.css shows them
+      // on hover and on the selected node; dragging one draws a wire from that side.
+      for (const side of PORT_SIDES) {
+        const [hx, hy] = portDotAt([0, 0, b[2], b[3]], side);
+        const dot = el("circle", { class: "port-dot", cx: hx, cy: hy, r: 4, "data-side": side });
+        dot.addEventListener("pointerdown", (ev: any) => {
           if (ev.button !== 0 || this.space) return;
           ev.stopPropagation();
-          this.startWire(n.id, ev);
+          this.startWire(n.id, ev, side);
         });
-        box.append(handle);
+        box.append(dot);
       }
-      box.addEventListener("pointerenter", () => {
-        for (const h of box.querySelectorAll(".handle")) h.setAttribute("opacity", "1");
-      });
-      box.addEventListener("pointerleave", () => {
-        for (const h of box.querySelectorAll(".handle")) h.setAttribute("opacity", "0");
-      });
       box.addEventListener("pointerdown", (ev) => this.startDrag(n.id, ev));
       g.append(box);
       this.nodeEls.set(n.id, box);
@@ -1128,19 +1209,22 @@ export class Scene {
       /input|select|textarea/i.test((ev.target as HTMLElement)?.tagName ?? "");
 
     this.on(window, "keydown", (ev) => {
-      if (ev.code !== "Space" || this.space || typing(ev)) return;
+      if (ev.code !== "Space" || this.spaceHeld || typing(ev)) return;
+      this.spaceHeld = true;
       this.space = true;
       svg.classList.add("hand");
       ev.preventDefault();
     });
     this.on(window, "keyup", (ev) => {
       if (ev.code !== "Space") return;
-      this.space = false;
-      svg.classList.remove("hand");
+      this.spaceHeld = false;
+      this.space = this.hand;
+      svg.classList.toggle("hand", this.hand);
     });
     this.on(window, "blur", () => {
-      this.space = false;
-      svg.classList.remove("hand");
+      this.spaceHeld = false;
+      this.space = this.hand;
+      svg.classList.toggle("hand", this.hand);
     });
 
     // The wheel follows draw.io: a plain wheel or a two-finger swipe scrolls the view, shift turns
@@ -1157,15 +1241,15 @@ export class Scene {
         const unit = ev.deltaMode === 1 ? 16 : ev.deltaMode === 2 ? r.height : 1;
         let dx = ev.deltaX * unit;
         let dy = ev.deltaY * unit;
-        if (ev.ctrlKey || ev.metaKey || ev.altKey || this.space) {
+        if (ev.ctrlKey || ev.metaKey || ev.altKey || this.spaceHeld) {
           // Exponential zoom so a pinch is continuous. A mouse notch (|deltaY| about 100 px)
           // at 0.002 gives exp(0.2) ≈ 1.22, draw.io's 1.2 step. A pinch sends small pixel
           // deltas with ctrlKey, so those get 0.01 per pixel to feel as quick as the gesture.
           const pinch = ev.ctrlKey && ev.deltaMode === 0 && Math.abs(dy) < 50;
           const [wx, wy] = this.toWorld(ev.clientX, ev.clientY);
           const k = Math.min(
-            3,
-            Math.max(0.15, this.view.k * Math.exp(-dy * (pinch ? 0.01 : 0.002))),
+            ZOOM_MAX,
+            Math.max(ZOOM_MIN, this.view.k * Math.exp(-dy * (pinch ? 0.01 : 0.002))),
           );
           this.view.k = k;
           this.view.x = ev.clientX - r.left - wx * k;
@@ -1673,11 +1757,15 @@ export class Scene {
     this.placeEndHandles();
   }
 
-  startWire(from: string, ev: PointerEvent) {
+  startWire(from: string, ev: PointerEvent, side: PortSide | null = null) {
     const [wx, wy] = this.toWorld(ev.clientX, ev.clientY);
-    const line = el("path", { class: "wire", d: `M${wx} ${wy} L${wx} ${wy}` });
+    const b = this.boxes[from];
+    // From a port dot the wire starts on that dot; otherwise from the middle of the box.
+    const start = side && b ? portDotAt(b, side) : null;
+    const [sx, sy] = start ?? [wx, wy];
+    const line = el("path", { class: "wire", d: `M${sx} ${sy} L${wx} ${wy}` });
     this.layers.overlay.append(line);
-    this.wire = { from, line, x: wx, y: wy, target: null };
+    this.wire = { from, line, x: wx, y: wy, target: null, side, start };
     this.nodeEls.get(from)?.classList.add("wire-source");
     this.capture(ev);
   }
@@ -1685,7 +1773,8 @@ export class Scene {
   moveWire(ev: PointerEvent) {
     const [wx, wy] = this.toWorld(ev.clientX, ev.clientY);
     const b = this.boxes[this.wire.from];
-    this.wire.line.setAttribute("d", `M${b[0] + b[2] / 2} ${b[1] + b[3] / 2} L${wx} ${wy}`);
+    const [sx, sy] = this.wire.start ?? [b[0] + b[2] / 2, b[1] + b[3] / 2];
+    this.wire.line.setAttribute("d", `M${sx} ${sy} L${wx} ${wy}`);
     this.wire.x = wx;
     this.wire.y = wy;
     const target = this.nodeAt(wx, wy, this.wire.from);
@@ -1701,12 +1790,29 @@ export class Scene {
   }
 
   endWire() {
-    const { from, line, target } = this.wire;
+    const wire = this.wire;
+    const { from, line, target, side, start } = wire;
     this.wire = null;
     line.remove();
     this.clearWireTarget();
     this.nodeEls.get(from)?.classList.remove("wire-source");
-    if (target && target !== from) this.h.onConnect?.(from, target);
+    if (!target && side && start) {
+      // Let go on nothing, far enough from the dot to be a gesture rather than a slip.
+      const { x, y } = wire;
+      const moved = Math.hypot(x - start[0], y - start[1]) * this.view.k;
+      if (moved > 16 && !this.nodeAt(x, y)) {
+        this.h.onWireOut?.(from, side, start, [x, y], this.toScreen(x, y));
+      }
+      return;
+    }
+    if (!target || target === from) return;
+    // Drawn from a dot: that side on the source, and the target's side that faces the dot.
+    const tb = this.boxes[target];
+    const ends: EdgePorts | undefined =
+      side && start && tb
+        ? { from: { side, t: 0.5 }, to: { side: facingSide(tb, start), t: 0.5 } }
+        : undefined;
+    this.h.onConnect?.(from, target, ends);
   }
 
   // ---------------------------------------------------------------- editing a label in place
@@ -1875,7 +1981,7 @@ export class Scene {
       if (layer) layer.textContent = "";
     }
     for (const n of clone.querySelectorAll(
-      ".handle, .end-handle, .edge-hit, .frame-hit, .marquee, .wire, .note-grip, .note-grip-hit, .note-text.empty, .frame-label:empty, .layer-note-markers",
+      ".port-dot, .end-handle, .edge-hit, .frame-hit, .marquee, .wire, .note-grip, .note-grip-hit, .note-text.empty, .frame-label:empty, .layer-note-markers",
     ))
       n.remove();
     for (const n of clone.querySelectorAll(".selected, .primary"))
@@ -1887,8 +1993,9 @@ export class Scene {
       n.setAttribute("style", c ? `stroke:${c};fill:${c}${TINT_FILL_ALPHA}` : "");
     }
     const defs = this.defs.cloneNode(true) as SVGDefsElement;
+    defs.querySelector(`#${NODE_SHADOW}`)?.remove();
     const style = `<style>${[
-      ".frame{fill:none;stroke:var(--frame);stroke-width:1;stroke-dasharray:5 4}",
+      ".frame{fill:none;stroke:var(--frame);stroke-width:1;stroke-dasharray:6 4}",
       ".frame-label{font-size:11px;font-family:var(--mono);fill:var(--muted)}",
       ".frame-kind{font-size:10px;font-family:var(--mono);fill:var(--muted);opacity:0.75}",
       ".frame-icon{color:var(--muted)}",
@@ -1897,7 +2004,7 @@ export class Scene {
       ...Object.keys(TINT).map(
         (k) => `.frame[data-tint="${k}"]{stroke:var(--tint-${k});fill:var(--tint-${k}-fill)}`,
       ),
-      ".edge{stroke:var(--edge);stroke-width:1.2;fill:none}",
+      ".edge{stroke:var(--edge);stroke-width:1.4;fill:none}",
       ".edge.async{stroke-dasharray:6 4}",
       ".edge-label{font-size:12px;fill:var(--muted);paint-order:stroke;stroke:var(--bg);stroke-width:3px}",
       ".node-box text.name{font-size:14px;font-weight:500;fill:var(--ink)}",

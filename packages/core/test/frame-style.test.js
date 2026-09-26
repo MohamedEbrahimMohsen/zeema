@@ -170,7 +170,7 @@ describe("a tint inside a nested boundary", () => {
   };
   const at = { web: [0, 0], db: [400, 0] };
   const rectOf = (f) =>
-    `x="${f[0].toFixed(1)}" y="${f[1].toFixed(1)}" width="${f[2].toFixed(1)}" height="${f[3].toFixed(1)}" rx="10"`;
+    `x="${f[0].toFixed(1)}" y="${f[1].toFixed(1)}" width="${f[2].toFixed(1)}" height="${f[3].toFixed(1)}" rx="14"`;
   const cutAt = (f) => `<rect ${rectOf(f)} fill="var(--bg)"/>`;
   const render = (frames) =>
     toSvg(nested, catalogue, { layout: { nodes: at, edges: {}, frames }, theme: "light" });
@@ -203,7 +203,7 @@ describe("a tint inside a nested boundary", () => {
     const f = framesOf({ aks: { tint: "rose" } });
     const svg = render({ aks: { tint: "rose" } });
     expect(svg).toContain(`<rect ${rectOf(f.cloud)} fill="none"`);
-    expect(svg).not.toContain('rx="10" fill="var(--bg)"');
+    expect(svg).not.toContain('rx="14" fill="var(--bg)"');
     expect(svg).toContain(`<rect data-tint="rose" ${rectOf(f.aks)}`);
   });
 
@@ -220,7 +220,7 @@ describe("a tint inside a nested boundary", () => {
   });
 
   it("cuts nothing when nothing is tinted", () => {
-    expect(render(undefined)).not.toContain('rx="10" fill="var(--bg)"');
+    expect(render(undefined)).not.toContain('rx="14" fill="var(--bg)"');
   });
 
   it("paints a parent before its child even when the document lists the child first", () => {
@@ -257,7 +257,7 @@ describe("arrowheads", () => {
     expect(svg).toContain(
       '<marker id="a" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--edge)"/></marker>',
     );
-    expect(svg).toMatch(/stroke="var\(--edge\)" stroke-width="1.2"[^>]*marker-end="url\(#a\)"/);
+    expect(svg).toMatch(/stroke="var\(--edge\)" stroke-width="1.4"[^>]*marker-end="url\(#a\)"/);
     expect(svg).toContain("--edge:#6b6b72");
     expect(toSvg(doc, catalogue, { layout: { nodes, edges: {} }, theme: "dark" })).toContain(
       "--edge:#a0a0a8",
