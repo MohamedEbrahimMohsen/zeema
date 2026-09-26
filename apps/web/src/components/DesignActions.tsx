@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-type Props = {
+export type DesignActionsProps = {
   owner: string;
   slug: string;
   canWrite: boolean;
@@ -30,7 +30,7 @@ export function DesignActions({
   unpublished,
   neverPublished,
   plannedSlug,
-}: Props) {
+}: DesignActionsProps) {
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -94,16 +94,23 @@ export function DesignActions({
     const res = await call("delete", () => fetch(base, { method: "DELETE" }));
     if (res) router.push("/?owner=me");
   };
+  // The text actions of the preview card's header pill: the card owns the pill and the icon
+  // buttons after it, so this renders only its own group, in reading (and tab) order.
   return (
-    <div className="pill actions-pill">
-      <a
-        className={`btn btn-sm ${canWrite ? "btn-primary" : ""} no-underline`}
-        href={`/d/${owner}/${slug}/canvas`}
-      >
+    <div className="design-actions">
+      <a className="btn btn-sm btn-primary no-underline" href={`/d/${owner}/${slug}/canvas`}>
         {canWrite ? "Open in canvas" : "View in canvas"}
       </a>
-      {/* Editing the YAML lives with the YAML, and exporting the picture lives with the
-          picture: both in their own section's toolbar rather than up here. */}
+      {canClone ? (
+        <button type="button" className="btn btn-sm" onClick={clone} disabled={busy !== null}>
+          {busy === "clone" ? "cloning…" : "Clone"}
+        </button>
+      ) : !signedIn ? (
+        <a className="btn btn-sm no-underline" href={`/signin?next=/d/${owner}/${slug}`}>
+          Sign in to clone
+        </a>
+      ) : null}
+      {/* Editing the YAML lives with the YAML: in its own section's toolbar rather than here. */}
       {canWrite && unpublished ? (
         <button
           type="button"
@@ -118,15 +125,6 @@ export function DesignActions({
         >
           {busy === "publish" ? "publishing…" : "Publish"}
         </button>
-      ) : null}
-      {canClone ? (
-        <button type="button" className="btn btn-sm" onClick={clone} disabled={busy !== null}>
-          {busy === "clone" ? "cloning…" : "Clone"}
-        </button>
-      ) : !signedIn ? (
-        <a className="btn btn-sm no-underline" href={`/signin?next=/d/${owner}/${slug}`}>
-          Sign in to clone
-        </a>
       ) : null}
       {canWrite && !isCurated ? (
         <>

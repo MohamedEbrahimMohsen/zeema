@@ -3834,25 +3834,13 @@ pre.yaml {
 .design-crumb li[aria-current] {
   color: var(--ink);
 }
-.design-titlebar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px 16px;
-  min-width: 0;
-}
-.design-titlebar > .design-title {
+.design-head > .design-title {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
-  flex: 1 1 20rem;
   min-width: 0;
   margin: 0;
-}
-.design-titlebar > .actions-pill {
-  flex: none;
 }
 .site .design-title {
   font-size: 2rem;
@@ -3877,57 +3865,85 @@ pre.yaml {
   color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
-.site .actions-pill {
-  max-width: 100%;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-.site .actions-pill .btn {
-  height: 32px;
-  margin: 0;
-  box-shadow: none;
-}
-.site .actions-pill .btn:not(.btn-primary) {
-  border-color: transparent;
-  background: transparent;
-}
-.site .actions-pill .btn:not(.btn-primary):hover {
-  background: var(--hover-fill);
-}
-.site .actions-pill .status {
-  padding: 0 8px;
-  white-space: nowrap;
-}
-
-/* The picture on the card's plain panel, its name and its actions floating over the corners. */
+/* The card's header row: its name on the left, one pill on the right holding the design's text
+   actions, a separator, then the picture's icon buttons. On a phone the icons wrap to a second
+   line inside the pill; the text actions keep the first and scroll if they outgrow it. */
 .preview-card {
   position: relative;
   overflow: hidden;
 }
+.preview-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 8px 0 12px;
+  background: var(--panel);
+}
 .preview-label {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  z-index: 1;
   display: inline-flex;
+  flex: none;
   align-items: center;
   height: 28px;
+  margin-top: 6px;
   padding: 0 10px;
   border: var(--border) solid var(--float-line);
   border-radius: var(--r-round);
   background: var(--float-bg);
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
 }
-.preview-actions {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  z-index: 1;
+.site .preview-actions {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+.design-actions,
+.preview-icons {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.design-actions {
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.site .design-actions .btn {
+  flex: none;
+  height: 32px;
+  margin: 0;
+  box-shadow: none;
+}
+.site .design-actions .btn:not(.btn-primary) {
+  border-color: transparent;
+  background: transparent;
+}
+.site .design-actions .btn:not(.btn-primary):hover {
+  background: var(--hover-fill);
+}
+.site .design-actions .status {
+  padding: 0 8px;
+  white-space: nowrap;
+}
+.preview-icons {
+  flex: none;
+}
+@media (max-width: 639px) {
+  .site .preview-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    height: auto;
+    padding: 4px;
+    row-gap: 2px;
+  }
+  .site .preview-actions > .pill-sep {
+    display: none;
+  }
+  .site .preview-actions > .design-actions {
+    flex: 1 1 100%;
+  }
 }
 .preview-surface {
   min-height: 260px;
-  padding: 60px var(--sp-2) var(--sp-2);
+  padding: var(--sp-2);
   overflow: auto;
   background: var(--panel);
 }

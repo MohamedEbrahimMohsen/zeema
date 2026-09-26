@@ -12,17 +12,19 @@
 import { useState } from "react";
 import { rasterise, saveFile } from "@/canvas/exportScene";
 import { CopyButton } from "@/components/CopyButton";
-import { Actual, Canvas, Download, Fit, Picture } from "@/components/Glyphs";
+import { DesignActions, type DesignActionsProps } from "@/components/DesignActions";
+import { Actual, Download, Fit, Picture } from "@/components/Glyphs";
 
 type Props = {
   owner: string;
   slug: string;
-  canWrite: boolean;
+  /** The design's text actions (canvas, clone, the owner's own), first in the header pill. */
+  actions?: DesignActionsProps;
   /** The engine's SVG for the version on screen, styles included. */
   svg: string;
 };
 
-export function DesignPreview({ owner, slug, canWrite, svg }: Props) {
+export function DesignPreview({ owner, slug, actions, svg }: Props) {
   const [actual, setActual] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -53,45 +55,52 @@ export function DesignPreview({ owner, slug, canWrite, svg }: Props) {
 
   return (
     <section className="panel preview-card">
-      <div className="preview-label label">Design</div>
-      <div className="pill preview-actions">
-        <a
-          className="pill-btn"
-          href={`/d/${owner}/${slug}/canvas`}
-          aria-label={canWrite ? "Open in canvas" : "View in canvas"}
-          title={canWrite ? "Open in canvas" : "View in canvas"}
-        >
-          <Canvas />
-        </a>
-        <button
-          type="button"
-          className="pill-btn"
-          onClick={downloadSvg}
-          aria-label={`Download ${slug}.svg`}
-          title="Download SVG"
-        >
-          <Download />
-        </button>
-        <button
-          type="button"
-          className="pill-btn"
-          onClick={() => void downloadPng()}
-          disabled={busy}
-          aria-label={`Download ${slug}.png`}
-          title={busy ? "Drawing the PNG…" : "Download PNG"}
-        >
-          <Picture />
-        </button>
-        <CopyButton text={svg} label="Copy the SVG" className="pill-btn" />
-        <button
-          type="button"
-          className="pill-btn"
-          onClick={() => setActual(!actual)}
-          aria-label={actual ? "Fit the drawing to the page" : "Show the drawing at actual size"}
-          title={actual ? "Fit" : "Actual size"}
-        >
-          {actual ? <Fit /> : <Actual />}
-        </button>
+      {/* One header row: the name on the left, one pill on the right holding the design's text
+          actions and then the picture's own icon buttons. On a phone the icons wrap to a second
+          line inside the pill. DOM order is focus order: label, text actions, icons. */}
+      <div className="preview-head">
+        <div className="preview-label label">Design</div>
+        <div className="pill preview-actions">
+          {actions ? (
+            <>
+              <DesignActions {...actions} />
+              <span className="pill-sep" aria-hidden="true" />
+            </>
+          ) : null}
+          <div className="preview-icons">
+            <button
+              type="button"
+              className="pill-btn"
+              onClick={downloadSvg}
+              aria-label={`Download ${slug}.svg`}
+              title="Download SVG"
+            >
+              <Download />
+            </button>
+            <button
+              type="button"
+              className="pill-btn"
+              onClick={() => void downloadPng()}
+              disabled={busy}
+              aria-label={`Download ${slug}.png`}
+              title={busy ? "Drawing the PNG…" : "Download PNG"}
+            >
+              <Picture />
+            </button>
+            <CopyButton text={svg} label="Copy the SVG" className="pill-btn" />
+            <button
+              type="button"
+              className="pill-btn"
+              onClick={() => setActual(!actual)}
+              aria-label={
+                actual ? "Fit the drawing to the page" : "Show the drawing at actual size"
+              }
+              title={actual ? "Fit" : "Actual size"}
+            >
+              {actual ? <Fit /> : <Actual />}
+            </button>
+          </div>
+        </div>
       </div>
       <div className={`preview-surface svg-preview${actual ? " preview-actual" : ""}`}>
         {/* biome-ignore lint/security/noDangerouslySetInnerHtml: SVG produced by the engine from escaped data */}

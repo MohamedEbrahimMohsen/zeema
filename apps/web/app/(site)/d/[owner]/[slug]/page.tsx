@@ -5,7 +5,6 @@ import { headers } from "next/headers";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { CollapsibleSection } from "@/components/CollapsibleSection";
-import { DesignActions } from "@/components/DesignActions";
 import { DesignPreview } from "@/components/DesignPreview";
 import { DiscardDraft } from "@/components/DiscardDraft";
 import { EditableSlug } from "@/components/EditableSlug";
@@ -111,8 +110,8 @@ export default async function DesignPage({
 
   return (
     <div className="flex flex-col gap-5">
-      {/* Two rows: where the design sits, then what it is and what can be done with it. The
-          actions pill shares the title's line and wraps under it when the line runs out. */}
+      {/* Where the design sits, then what it is. What can be done with it lives in the preview
+          card's header, beside the picture it acts on. */}
       <header className="design-head">
         <nav className="design-crumb" aria-label="Breadcrumb">
           <ol>
@@ -137,37 +136,23 @@ export default async function DesignPage({
             </li>
           </ol>
         </nav>
-        <div className="design-titlebar">
-          <h1 className="display design-title">
-            <EditableTitle
-              owner={ownerSeg}
-              slug={view.design.slug}
-              title={view.design.title}
-              canWrite={view.can.write && view.design.origin === "authored"}
-            />
-            <span className="tag">{view.design.visibility}</span>
-            {view.unpublished && !sp.v ? (
-              <span className="tag tag-accent" title="Readers see the last release">
-                draft
-              </span>
-            ) : null}
-            {sp.v && version?.publishedAt ? <span className="tag">released</span> : null}
-            {sp.v && !version?.publishedAt ? <span className="tag">unreleased</span> : null}
-            {broken ? <span className="tag tag-danger">broken twin</span> : null}
-          </h1>
-          <DesignActions
+        <h1 className="display design-title">
+          <EditableTitle
             owner={ownerSeg}
             slug={view.design.slug}
-            canWrite={view.can.write}
-            canClone={view.can.clone}
-            signedIn={Boolean(viewer)}
-            visibility={view.design.visibility}
-            isCurated={view.design.origin !== "authored"}
-            unpublished={view.unpublished}
-            neverPublished={!view.published}
-            plannedSlug={publishSlugFor({ slug: view.design.slug, title: view.design.title })}
+            title={view.design.title}
+            canWrite={view.can.write && view.design.origin === "authored"}
           />
-        </div>
+          <span className="tag">{view.design.visibility}</span>
+          {view.unpublished && !sp.v ? (
+            <span className="tag tag-accent" title="Readers see the last release">
+              draft
+            </span>
+          ) : null}
+          {sp.v && version?.publishedAt ? <span className="tag">released</span> : null}
+          {sp.v && !version?.publishedAt ? <span className="tag">unreleased</span> : null}
+          {broken ? <span className="tag tag-danger">broken twin</span> : null}
+        </h1>
         <EditableSummary
           owner={ownerSeg}
           slug={view.design.slug}
@@ -208,8 +193,19 @@ export default async function DesignPage({
           <DesignPreview
             owner={ownerSeg}
             slug={view.design.slug}
-            canWrite={view.can.write}
             svg={svg}
+            actions={{
+              owner: ownerSeg,
+              slug: view.design.slug,
+              canWrite: view.can.write,
+              canClone: view.can.clone,
+              signedIn: Boolean(viewer),
+              visibility: view.design.visibility,
+              isCurated: view.design.origin !== "authored",
+              unpublished: view.unpublished,
+              neverPublished: !view.published,
+              plannedSlug: publishSlugFor({ slug: view.design.slug, title: view.design.title }),
+            }}
           />
           <Readme
             owner={ownerSeg}
