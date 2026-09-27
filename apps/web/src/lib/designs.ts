@@ -10,8 +10,9 @@ import { badgeOf, chosenBadge } from "./badge";
 import { eventSalt } from "./boot";
 import { badgeMark } from "./brand";
 import { type Catalogue, getCatalogue } from "./catalogue";
+import { targetsOfDoc } from "./design-files";
 import { escapeLike } from "./http-guards";
-import { readSidecar } from "./layout-sidecar";
+import { isBlankSidecar, pruneSidecar, readSidecar } from "./layout-sidecar";
 import { analyse } from "./lint";
 import { countExport, countWrite } from "./metrics";
 import { emit, notifyClone, notifyFollowersOfPublish } from "./notify";
@@ -659,8 +660,14 @@ export async function createDesign(
   if (!opts.curated && !viewer) throw new ServiceError(401, "sign in to create a design");
   if (!input.title || input.title.length > 120)
     throw new ServiceError(400, "title is required (at most 120 characters)");
-  validateOrThrow(input.yaml, cat);
-  const layout = normaliseLayout(input.layout);
+  const doc = validateOrThrow(input.yaml, cat);
+  // A sidecar that arrives with its design (an import, a clone) keeps only what names something
+  // in it; one left saying nothing is not stored, so it draws exactly as no sidecar does.
+  let layout = normaliseLayout(input.layout);
+  if (layout) {
+    layout = pruneSidecar(layout, targetsOfDoc(doc));
+    if (isBlankSidecar(layout) && !layout.badge) layout = null;
+  }
   const ownerId = opts.curated ? null : viewer!.id;
   const slug = await uniqueSlug(ownerId, input.slug ?? input.title);
   const visibility = opts.curated ? "public" : (input.visibility ?? "private");

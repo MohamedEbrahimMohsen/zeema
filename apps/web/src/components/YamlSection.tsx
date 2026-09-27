@@ -18,8 +18,14 @@ type Props = {
 };
 
 export function YamlSection({ owner, slug, yaml, canWrite, version }: Props) {
-  const raw = `/api/v1/designs/${owner}/${slug}/yaml${version ? `?version=${version}` : ""}`;
-  const download = `${raw}${version ? "&" : "?"}download=1`;
+  const base = `/api/v1/designs/${owner}/${slug}`;
+  const q = version ? `?version=${version}` : "";
+  const raw = `${base}/yaml${q}`;
+  const download = `${raw}${q ? "&" : "?"}download=1`;
+  // The layout and the pair: the two files a design leaves the site as (design.yaml beside
+  // design.layout.json), and come back in through New design ▾ Import YAML.
+  const layout = `${base}/layout${q}${q ? "&" : "?"}download=1`;
+  const zip = `${base}/zip${q}`;
   return (
     <section className="panel doc-section">
       <details className="doc-details">
@@ -46,9 +52,27 @@ export function YamlSection({ owner, slug, yaml, canWrite, version }: Props) {
           className="btn-icon"
           href={download}
           aria-label={`Download ${slug}.yaml`}
-          title="Download"
+          title="Download YAML"
         >
           <Download />
+        </a>
+        <a
+          className="btn-icon btn-icon-text"
+          href={layout}
+          aria-label={`Download layout (JSON): ${slug}.layout.json`}
+          title="Download layout (JSON)"
+        >
+          <Download />
+          <span>Layout</span>
+        </a>
+        <a
+          className="btn-icon btn-icon-text"
+          href={zip}
+          aria-label={`Download both (.zip): ${slug}.zip`}
+          title="Download both (.zip): design.yaml and design.layout.json"
+        >
+          <Download />
+          <span>Both .zip</span>
         </a>
         {canWrite ? (
           <a

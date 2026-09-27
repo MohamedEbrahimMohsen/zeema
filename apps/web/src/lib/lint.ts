@@ -3,7 +3,7 @@
 import { normalize } from "@zeema/core/document";
 import { runRules } from "@zeema/core/rules";
 import { check } from "@zeema/core/structure";
-import { parse } from "@zeema/core/yaml";
+import { lineAt, parse } from "@zeema/core/yaml";
 import type { Catalogue } from "./catalogue";
 
 export type Finding = {
@@ -12,6 +12,8 @@ export type Finding = {
   message: string;
   blocking: boolean;
   subject: { type: string; ref: string | number | null };
+  /** The 1-based line in the text the finding is about, when one can be named. */
+  line?: number;
 };
 
 export type Design = {
@@ -39,36 +41,74 @@ export type Design = {
   }>;
 };
 
+/**
+ * Where in the text a finding points: the schema check's JSON pointer when it has one, otherwise
+ * the item its subject names (found by id in the document as written, which keeps its order).
+ */
+function pathOf(raw: unknown, subject: Finding["subject"], pointer?: string): (string | number)[] {
+  if (pointer)
+    return pointer
+      .split("/")
+      .slice(1)
+      .map((s) => s.replace(/~1/g, "/").replace(/~0/g, "~"))
+      .map((s) => (/^\d+$/.test(s) ? Number(s) : s));
+  const r = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
+  const indexOf = (key: string, id: unknown) =>
+    Array.isArray(r[key])
+      ? (r[key] as unknown[]).findIndex(
+          (x) => x && typeof x === "object" && (x as { id?: unknown }).id === id,
+        )
+      : -1;
+  if (subject.type === "edge" && typeof subject.ref === "number") return ["edges", subject.ref];
+  for (const [type, key] of [
+    ["node", "nodes"],
+    ["group", "groups"],
+  ] as const) {
+    if (subject.type !== type || subject.ref === null) continue;
+    const i = indexOf(key, subject.ref);
+    return i >= 0 ? [key, i] : [key];
+  }
+  return [];
+}
+
 export function analyse(
   yamlText: string,
   cat: Catalogue,
 ): { doc: Design | null; findings: Finding[] } {
   let doc: Design;
+  let parsed: ReturnType<typeof parse>;
   try {
-    doc = normalize(parse(yamlText).doc).doc as Design;
+    parsed = parse(yamlText);
+    doc = normalize(parsed.doc).doc as Design;
   } catch (e) {
-    return {
-      doc: null,
-      findings: [
-        {
-          id: "yaml",
-          severity: "error",
-          message: (e as Error).message,
-          blocking: true,
-          subject: { type: "design", ref: null },
-        },
-      ],
+    const message = (e as Error).message;
+    const at = /at line (\d+)$/.exec(message);
+    const finding: Finding = {
+      id: "yaml",
+      severity: "error",
+      message,
+      blocking: true,
+      subject: { type: "design", ref: null },
     };
+    if (at) finding.line = Number(at[1]);
+    return { doc: null, findings: [finding] };
   }
   const findings: Finding[] = [];
-  for (const f of check(doc, cat) as Array<{ message: string; subject: Finding["subject"] }>) {
-    findings.push({
+  for (const f of check(doc, cat) as Array<{
+    message: string;
+    subject: Finding["subject"];
+    pointer?: string;
+  }>) {
+    const finding: Finding = {
       id: "structure",
       severity: "error",
       message: f.message.replace(/^[^:]+: /, ""),
       blocking: true,
       subject: f.subject,
-    });
+    };
+    const line = lineAt(parsed.cst, pathOf(parsed.doc, f.subject, f.pointer));
+    if (line) finding.line = line;
+    findings.push(finding);
   }
   if (!findings.length) {
     for (const h of runRules(doc, cat) as Array<{

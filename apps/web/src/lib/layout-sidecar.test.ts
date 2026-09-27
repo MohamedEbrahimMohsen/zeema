@@ -25,11 +25,13 @@ import {
   pruneAnchored,
   pruneFrames,
   prunePorts,
+  pruneSidecar,
   readPorts,
   readSidecar,
   retargetAnchors,
   retargetFrame,
   SIDECAR_VERSION,
+  sidecarFile,
   TINTS,
   writeSidecar,
 } from "./layout-sidecar";
@@ -408,5 +410,48 @@ describe("the chosen list badge", () => {
     const out = writeSidecar({ ...base, badge: "boundary:google" });
     expect(out.badge).toBe("boundary:google");
     expect(readSidecar(JSON.parse(JSON.stringify(out))).badge).toBe("boundary:google");
+  });
+});
+
+describe("sidecarFile", () => {
+  it("writes the same bytes whatever order the keys arrive in", () => {
+    const a = {
+      version: 2,
+      nodes: { b: [1, 2], a: [3, 4] },
+      edges: { "a>b": 5 },
+      notes: [],
+      frames: {},
+    };
+    const b = {
+      frames: {},
+      notes: [],
+      edges: { "a>b": 5 },
+      nodes: { a: [3, 4], b: [1, 2] },
+      version: 2,
+    };
+    expect(sidecarFile(a)).toBe(sidecarFile(b));
+    expect(sidecarFile(a).startsWith('{\n  "version": 2,\n  "nodes": {\n    "a"')).toBe(true);
+    expect(sidecarFile(null).endsWith("}\n")).toBe(true);
+  });
+});
+
+describe("pruneSidecar", () => {
+  it("keeps what the design names and unanchors a note whose target is gone", () => {
+    const s = readSidecar({
+      nodes: { a: [0, 0], x: [1, 1] },
+      edges: { "a>b": 3, "x>a": 4 },
+      ports: { "x>a": { to: { side: "top", t: 0.5 } } },
+      frames: { g: { tint: "blue" }, h: { tint: "rose" } },
+      notes: [{ id: "n", x: 1, y: 2, w: 100, h: 60, text: "t", anchor: { node: "x" } }],
+      badge: "provider:aws",
+    });
+    const p = pruneSidecar(s, { nodes: ["a", "b"], groups: ["g"], edges: ["a>b"] });
+    expect(p.nodes).toEqual({ a: [0, 0] });
+    expect(p.edges).toEqual({ "a>b": 3 });
+    expect(p.ports).toBeUndefined();
+    expect(p.frames).toEqual({ g: { tint: "blue" } });
+    expect(p.notes[0].anchor).toBeUndefined();
+    expect(p.badge).toBe("provider:aws");
+    expect(s.notes[0].anchor).toEqual({ node: "x" }); // it copies
   });
 });

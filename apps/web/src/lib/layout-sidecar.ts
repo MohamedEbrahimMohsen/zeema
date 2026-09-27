@@ -376,3 +376,85 @@ export function nextNoteId(taken: Iterable<string>) {
   const used = new Set(taken);
   for (let i = 1; ; i++) if (!used.has(`note-${i}`)) return `note-${i}`;
 }
+
+/** What a design holds, by the ids a sidecar keys on: node ids, group ids and edge keys. */
+export type SidecarTargets = {
+  nodes: Iterable<string>;
+  groups: Iterable<string>;
+  /** Edge keys as `edgeKeys` in @zeema/core/geometry makes them. */
+  edges: Iterable<string>;
+};
+
+/**
+ * The sidecar cut down to what the design holds: positions, bows, ports and group styles whose
+ * node, edge or group is gone are dropped, and a note whose anchor is gone is kept, unanchored,
+ * the way the canvas opens it. The canvas prunes as it edits; this is for a sidecar that arrives
+ * from outside with its design (an import) or leaves beside it (an export). It copies.
+ */
+export function pruneSidecar(s: LayoutSidecar, targets: SidecarTargets): LayoutSidecar {
+  const nodes = new Set(targets.nodes);
+  const groups = new Set(targets.groups);
+  const edges = new Set(targets.edges);
+  const keep = <T>(o: Record<string, T>, ids: Set<string>) =>
+    Object.fromEntries(Object.entries(o).filter(([k]) => ids.has(k)));
+  const out: LayoutSidecar = {
+    version: s.version,
+    nodes: keep(s.nodes, nodes),
+    edges: keep(s.edges, edges),
+    notes: s.notes.map((n) => {
+      if (!n.anchor) return { ...n };
+      const live = "node" in n.anchor ? nodes.has(n.anchor.node) : groups.has(n.anchor.group);
+      if (live) return { ...n, anchor: { ...n.anchor } };
+      const { anchor: _gone, ...free } = n;
+      return free;
+    }),
+    frames: keep(s.frames, groups),
+  };
+  const ports = s.ports ? keep(s.ports, edges) : {};
+  if (Object.keys(ports).length) out.ports = ports;
+  if (s.badge) out.badge = s.badge;
+  return out;
+}
+
+const sortedEntries = <T>(o: Record<string, T>) =>
+  Object.entries(o).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+
+/**
+ * A sidecar as the file `design.layout.json`: read through `readSidecar`, then written with a
+ * fixed key order (version, nodes, edges, ports, frames, notes, badge; map keys sorted; a note's
+ * fields in declaration order), two-space indent and a trailing newline. The same sidecar always
+ * gives the same bytes, whatever order the database handed its keys back in.
+ */
+export function sidecarFile(raw: unknown): string {
+  const s = readSidecar(raw);
+  const file: Record<string, unknown> = {
+    version: s.version,
+    nodes: Object.fromEntries(sortedEntries(s.nodes)),
+    edges: Object.fromEntries(sortedEntries(s.edges)),
+  };
+  if (s.ports)
+    file.ports = Object.fromEntries(
+      sortedEntries(s.ports).map(([k, p]) => {
+        const e: EdgePorts = {};
+        if (p.from) e.from = { side: p.from.side, t: p.from.t };
+        if (p.to) e.to = { side: p.to.side, t: p.to.t };
+        return [k, e];
+      }),
+    );
+  file.frames = Object.fromEntries(
+    sortedEntries(s.frames).map(([k, f]) => {
+      const st: FrameStyle = {};
+      if (f.tint) st.tint = f.tint;
+      if (f.icon) st.icon = f.icon;
+      return [k, st];
+    }),
+  );
+  file.notes = s.notes.map((n) => {
+    const note: Note = { id: n.id, x: n.x, y: n.y, w: n.w, h: n.h, text: n.text };
+    if (n.anchor)
+      note.anchor = "node" in n.anchor ? { node: n.anchor.node } : { group: n.anchor.group };
+    return note;
+  });
+  if (s.badge) file.badge = s.badge;
+  return `${JSON.stringify(file, null, 2)}\n`;
+}

@@ -119,6 +119,32 @@ describe("render", () => {
     expect(r.out).toContain("</svg>");
     expect(r.out).toContain('class="ic"');
   });
+  it("draws with the design.layout.json beside the design, as the spec says", async () => {
+    const dir = path.join(tmp, "sidecar");
+    fs.mkdirSync(dir, { recursive: true });
+    fs.copyFileSync(path.join(ROOT, clean), path.join(dir, "design.yaml"));
+    const auto = await run(["render", "design.yaml"], dir);
+    expect(auto.code).toBe(0);
+    fs.writeFileSync(
+      path.join(dir, "design.layout.json"),
+      JSON.stringify({ version: 2, nodes: { api: [4321, 1234] }, edges: {} }),
+    );
+    const drawn = await run(["render", "design.yaml"], dir);
+    expect(drawn.code).toBe(0);
+    expect(drawn.out).not.toBe(auto.out);
+    expect(drawn.out).toContain("4321");
+    // `--layout none` is the engine's own arrangement; `--layout <file>` names another file.
+    expect((await run(["render", "design.yaml", "--layout", "none"], dir)).out).toBe(auto.out);
+    fs.renameSync(path.join(dir, "design.layout.json"), path.join(dir, "other.json"));
+    expect((await run(["render", "design.yaml"], dir)).out).toBe(auto.out);
+    expect((await run(["render", "design.yaml", "--layout", "other.json"], dir)).out).toBe(
+      drawn.out,
+    );
+    fs.writeFileSync(path.join(dir, "design.layout.json"), "{ not json");
+    const bad = await run(["render", "design.yaml"], dir);
+    expect(bad.code).toBe(2);
+    expect(bad.err).toMatch(/design\.layout\.json: not JSON/);
+  });
   it("mermaid", async () => {
     const r = await run(["render", clean, "--format", "mermaid"]);
     expect(r.code).toBe(0);

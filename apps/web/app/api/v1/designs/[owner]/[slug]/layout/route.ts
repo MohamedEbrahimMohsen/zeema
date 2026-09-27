@@ -1,6 +1,8 @@
 import type { NextRequest } from "next/server";
 import { clientIp, handle, json, rateLimit, readJson, viewerOf } from "@/lib/api";
+import { layoutFile } from "@/lib/design-files";
 import { getDesign, ServiceError, setBadge } from "@/lib/designs";
+import { attachment } from "@/lib/http-guards";
 
 export async function GET(
   req: NextRequest,
@@ -10,6 +12,18 @@ export async function GET(
     const { owner, slug } = await params;
     const version = req.nextUrl.searchParams.get("version") ?? undefined;
     const view = await getDesign(owner, slug, await viewerOf(), { version });
+    // `download=1` is the file that goes beside design.yaml: normalised, cut down to the ids the
+    // version's YAML holds, keys in a fixed order. A version with no sidecar downloads the empty
+    // one, which draws exactly what no sidecar does. Without it, the stored value as it is.
+    if (req.nextUrl.searchParams.get("download") === "1")
+      return new Response(layoutFile(view.version?.yaml ?? "", view.version?.layout ?? null), {
+        headers: {
+          "content-type": "application/json; charset=utf-8",
+          "content-disposition": attachment(view.design.slug, "layout.json"),
+          etag: `"${view.version?.contentHash ?? ""}"`,
+          "cache-control": "no-cache",
+        },
+      });
     return json(view.version?.layout ?? null);
   });
 }

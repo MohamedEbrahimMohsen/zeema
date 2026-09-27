@@ -126,7 +126,9 @@ Content-Type: application/json
 `title` is required and at most 120 characters. `yaml` is required and is validated before
 anything is stored: a structurally invalid design answers `422` and nothing is written. Without
 `slug`, the address is derived from the title; where that is taken, a numeric suffix is added.
-Answers `201`.
+`layout` is optional: it goes through the same reader and limits as a save, and entries naming a
+node, edge or group the YAML does not hold are dropped. A blocking finding carries `line`, the
+1-based line of the text it is about, where one can be named. Answers `201`.
 
 ```json
 {
@@ -312,6 +314,19 @@ GET /api/v1/designs/ada/order-processing/layout
 ```
 
 Answers the [layout sidecar](/docs/notes-and-layout) as JSON, or `null` where there is none.
+`?download=1` saves it as `<slug>.layout.json` instead: normalised, cut down to the ids the
+version's YAML holds, keys in a fixed order, two-space indent. A version with no sidecar downloads
+the empty one, `{ "version": 2, "nodes": {}, "edges": {}, "frames": {}, "notes": [] }`.
+`?version=` as for the YAML.
+
+```http
+GET /api/v1/designs/ada/order-processing/zip?version=a4d0
+```
+
+Answers `application/zip`, saved as `<slug>.zip`: `design.yaml` (the stored bytes) and
+`design.layout.json` (as above), stored without compression. Unzipped, it is a repository design
+folder. Import it again from **New design ▾ Import YAML…** (`/new/import`), which creates a
+private draft through `POST /api/v1/designs` with `yaml` and `layout`.
 
 ```http
 PATCH /api/v1/designs/ada/order-processing/layout

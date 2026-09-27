@@ -89,13 +89,21 @@ export const API_ROUTES: ApiRoute[] = [
     method: "GET",
     path: "/api/v1/designs/{owner}/{slug}/layout",
     auth: "none",
-    summary: "The layout sidecar: node positions, edge bows and ports.",
+    summary:
+      "The layout sidecar: node positions, edge bows and ports. `download=1` saves it as `<slug>.layout.json`, the file that goes beside design.yaml.",
   },
   {
     method: "PATCH",
     path: "/api/v1/designs/{owner}/{slug}/layout",
     auth: "owner",
     summary: "Choose the list badge (or null for automatic): a layout-only save of the head.",
+  },
+  {
+    method: "GET",
+    path: "/api/v1/designs/{owner}/{slug}/zip",
+    auth: "none",
+    summary:
+      "The design as a folder: `<slug>.zip` holding design.yaml and design.layout.json. Takes `version`.",
   },
   {
     method: "GET",

@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import YAML from "yaml";
 import { normalize } from "../src/document.js";
-import { parse, serialize } from "../src/yaml.js";
+import { lineAt, parse, serialize } from "../src/yaml.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(here, "..", "..", "..");
@@ -256,5 +256,34 @@ describe("trivia around a changed block", () => {
     expect(edit(text, (d) => (d.edges[0].to = "c"))).toBe(
       text.replace('to: "b", protocol: "x"', 'to: "c", protocol: "x"'),
     );
+  });
+});
+
+describe("lineAt", () => {
+  const text = `# a comment
+schemaVersion: "1"
+id: "x"
+nodes:
+  - id: "a"
+    component: "c"
+  - id: "b"
+    component: "d"
+edges: [{ from: "a", to: "b" }]
+`;
+  const { cst } = parse(text);
+
+  it("names the line of a key, an item and a field inside it", () => {
+    expect(lineAt(cst, ["id"])).toBe(3);
+    expect(lineAt(cst, ["nodes"])).toBe(4);
+    expect(lineAt(cst, ["nodes", 1])).toBe(7);
+    expect(lineAt(cst, ["nodes", 1, "component"])).toBe(8);
+  });
+
+  it("stops at the closest line it can follow, and says null when it cannot start", () => {
+    expect(lineAt(cst, ["nodes", 1, "props", "tier"])).toBe(7);
+    expect(lineAt(cst, ["edges", 0, "from"])).toBe(9);
+    expect(lineAt(cst, ["nodes", 9])).toBe(4);
+    expect(lineAt(cst, ["groups"])).toBeNull();
+    expect(lineAt(cst, [])).toBeNull();
   });
 });

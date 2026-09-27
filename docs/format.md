@@ -231,6 +231,25 @@ meets its box (`ports`: per edge key, `{ from?, to? }`, each `{ side, t }` with 
 `boundary:<id>`, absent for the automatic one). Moving an edge's end to another component is not
 layout: it changes `from` or `to` in the design.
 
+### Export and import
+
+A design leaves the site, and comes back, as two files with the repository's names:
+
+| File | Required | Holds |
+|---|---|---|
+| `design.yaml` | yes | The design, byte for byte as stored |
+| `design.layout.json` | no | The sidecar above: `version`, `nodes`, `edges`, `ports`, `frames`, `notes`, `badge`; keys in that order, map keys sorted, two-space indent |
+
+The design page and the canvas download either, or both as a zip that unzips to a design folder
+(`zeema render design.yaml` draws with the sidecar beside it). **New design ▾ Import YAML…**
+takes them back as a private draft, under the same structural gate as any save. Without a
+sidecar the design is laid out automatically.
+
+The sidecar follows the design by id: node ids, group ids and edge keys (`from>to`, `from>to#n`).
+Edit only `design.yaml`. An entry whose id the YAML no longer holds is dropped on import; a node
+with no position is placed around the others. Rename an id in both files, or accept that its
+position, bow or colour goes.
+
 ## 6. Rule
 
 ```yaml

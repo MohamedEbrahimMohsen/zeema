@@ -3527,6 +3527,30 @@ pre.yaml {
 .sitebar .btn-sm {
   margin: 0 2px;
 }
+/* New design as a split button: the action and, joined to it, the chevron for its menu. */
+.new-split {
+  position: relative;
+  display: inline-flex;
+  margin: 0 2px;
+}
+.sitebar .new-split .btn-sm {
+  margin: 0;
+}
+.site .new-split-main {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.site .new-split-more {
+  width: 26px;
+  padding: 0;
+  justify-content: center;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-left: 1px solid color-mix(in srgb, var(--accent-solid-ink) 28%, transparent);
+}
+.site .new-split-menu {
+  min-width: 180px;
+}
 .sitebar-signin {
   color: var(--ink);
   font-weight: var(--fw-medium);
@@ -3610,6 +3634,49 @@ pre.yaml {
   .sitebar .wordmark-text {
     display: none;
   }
+}
+
+/* ---- import (/new/import) ------------------------------------------------------------ */
+
+.site .import-drop {
+  transition: box-shadow var(--dur-fast) var(--ease);
+}
+.site .import-drop.is-over {
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--accent-solid) 70%, transparent),
+    var(--float-shadow);
+}
+.import-pick {
+  cursor: pointer;
+}
+.site textarea.import-text {
+  min-height: 240px;
+  font-family: var(--mono);
+  resize: vertical;
+  font-size: 12.5px;
+  line-height: 1.55;
+  white-space: pre;
+  overflow-wrap: normal;
+  overflow-x: auto;
+}
+.site textarea.import-text-sm {
+  min-height: 120px;
+}
+.import-title {
+  flex: 1 1 280px;
+}
+.import-finding {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.import-finding > .finding {
+  flex: 1;
+  min-width: 0;
+}
+.import-goto {
+  flex: none;
+  white-space: nowrap;
 }
 
 /* ---- findings ---------------------------------------------------------------------- */

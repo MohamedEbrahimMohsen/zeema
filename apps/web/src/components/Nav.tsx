@@ -5,6 +5,7 @@ import { Mark } from "./Logo";
 import { NavMenu } from "./NavMenu";
 import { NavSearch } from "./NavSearch";
 import { NavTabs } from "./NavTabs";
+import { NewDesignButton } from "./NewDesignButton";
 import { NotificationBell } from "./NotificationBell";
 import { ThemeToggle } from "./ThemeToggle";
 import { UserMenu } from "./UserMenu";
@@ -29,9 +30,7 @@ export async function Nav() {
       </div>
       <div className="pill sitebar-pill">
         <NavSearch />
-        <Link href="/new" className="btn btn-primary btn-sm no-underline">
-          New design
-        </Link>
+        <NewDesignButton />
         <span className="sitebar-wide sitebar-icons">
           {user ? <NotificationBell initialCount={unread} /> : null}
           <ThemeToggle />

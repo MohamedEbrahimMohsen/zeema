@@ -635,6 +635,26 @@ export function parse(text) {
   return { doc: clone(root.value), cst };
 }
 
+/**
+ * The 1-based line a path points at in a parsed text: `path` is keys and indexes, like
+ * `["nodes", 3, "component"]`. It walks block maps and block sequences and stops at the deepest
+ * step it can follow (a flow collection keeps its own line), so a path that runs out early still
+ * names the closest line. Null when not even the first step is found, or for an empty path.
+ */
+export function lineAt(cst, path) {
+  let node = cst?.root;
+  let line = null;
+  for (const step of path ?? []) {
+    let next = null;
+    if (node?.kind === "blockmap") next = node.entries.find((e) => e.key === String(step));
+    else if (node?.kind === "blockseq" && Number.isInteger(step)) next = node.items[step];
+    if (!next) break;
+    line = next.lineStart + 1;
+    node = next.node;
+  }
+  return line;
+}
+
 // ------------------------------------------------------------------ serialiser
 
 const clone = (v) => (v === undefined ? undefined : JSON.parse(JSON.stringify(v)));

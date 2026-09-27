@@ -2,6 +2,7 @@
 //   zeema lint [paths...] [--format human|json|sarif] [--fail-on error|warning|info|never] [--out file]
 //   zeema validate [--root <repo>]
 //   zeema render <design> [--format svg|mermaid] [--out file] [--theme auto|light|dark]
+//                         [--layout <file>|none]  (default: <design>.layout.json beside it)
 //   zeema catalogue find|component|kind|kinds|providers ...
 //   zeema init [dir]
 //   zeema version
@@ -60,6 +61,27 @@ export function resolveOut(cwd, out) {
   return target;
 }
 
+/**
+ * The layout sidecar a render draws with (docs/final-plan.md §D5, §D6): `--layout <file>`, or
+ * `--layout none` for the engine's own arrangement, or else the file beside the design with the
+ * same name and `.layout.json` in place of `.yaml` (design.yaml -> design.layout.json). A missing
+ * sidecar is no sidecar; one that is not JSON is an input error, never silently ignored.
+ */
+export function readLayout(designFile, flag, cwd = process.cwd()) {
+  if (flag === "none") return null;
+  const explicit = typeof flag === "string";
+  const p = explicit
+    ? path.resolve(cwd, flag)
+    : `${designFile.replace(/\.ya?ml$/i, "")}.layout.json`;
+  if (!explicit && !fs.existsSync(p)) return null;
+  const raw = fs.readFileSync(p, "utf8");
+  try {
+    return JSON.parse(raw);
+  } catch (e) {
+    throw new Error(`${path.relative(cwd, p) || p}: not JSON (${e.message})`);
+  }
+}
+
 export function parseArgs(argv) {
   const positional = [];
   const flags = {};
@@ -116,6 +138,7 @@ const USAGE = `zeema <command>
                          --format human|json|sarif  --fail-on error|warning|info|never  --out <file>
   validate               the whole catalogue repository gate            --root <repo>
   render <design>        --format svg|mermaid  --out <file>  --theme auto|light|dark
+                         --layout <file>|none (default: the .layout.json beside the design)
   catalogue <sub>        find <words...> | component <id> | kind <id> | kinds | providers <kind>
   init [dir]             starter design, config, editor schema mapping, CI workflow
   version
@@ -176,12 +199,19 @@ export async function main(argv, io = {}) {
         stderr("usage: zeema render <design> [--format svg|mermaid] [--out file]\n");
         return 2;
       }
-      const text = fs.readFileSync(path.resolve(cwd, rest[0]), "utf8");
+      const file = path.resolve(cwd, rest[0]);
+      const text = fs.readFileSync(file, "utf8");
       const doc = normalize(parse(text).doc).doc;
       const format = flags.format ?? "svg";
       if (format === "mermaid") writeOut(`${toMermaid(doc, flags.direction ?? "TD")}\n`);
       else if (format === "svg")
-        writeOut(toSvg(doc, cat, { icons: iconMap(cat).icons, theme: flags.theme ?? "auto" }));
+        writeOut(
+          toSvg(doc, cat, {
+            icons: iconMap(cat).icons,
+            theme: flags.theme ?? "auto",
+            layout: readLayout(file, flags.layout, cwd),
+          }),
+        );
       else {
         stderr(`unknown format ${format}\n`);
         return 2;

@@ -1836,6 +1836,29 @@ export function Canvas(props: Props) {
     }
   };
 
+  // The design as files, from the server so the bytes are the stored ones: the YAML, its layout
+  // (design.layout.json) or both in a zip. Unsaved edits are saved first, as for publishing, so
+  // what downloads is what is on screen.
+  const doDownload = async (what: "yaml" | "layout" | "zip") => {
+    const e = eng.current;
+    if (!e) return;
+    if (props.canWrite && (e.dirty || saving.current.inFlight)) {
+      if (e.structural.length) {
+        setStatus("fix structural errors first: the download is the saved design");
+        return;
+      }
+      await save();
+      if (eng.current?.dirty) return; // the save reported its own failure
+    }
+    const base = `/api/v1/designs/${props.owner}/${props.slug}`;
+    const a = document.createElement("a");
+    a.href = what === "zip" ? `${base}/zip` : `${base}/${what}?download=1`;
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  };
+
   const centerOn = (subject: Subject) => {
     const scene = sceneRef.current;
     if (!scene || subject.ref === null || subject.ref === undefined) return;
@@ -2068,6 +2091,13 @@ export function Canvas(props: Props) {
     "-",
     { label: "Export SVG", run: () => void doExport("svg") },
     { label: "Export PNG", run: () => void doExport("png") },
+    { label: "Download YAML", hint: "design.yaml", run: () => void doDownload("yaml") },
+    {
+      label: "Download layout (JSON)",
+      hint: "positions, notes",
+      run: () => void doDownload("layout"),
+    },
+    { label: "Download both (.zip)", hint: "re-importable", run: () => void doDownload("zip") },
     "-",
     { label: "Undo", hint: `${mod.long} Z`, disabled: !e?.undo.length, run: undo },
     { label: "Redo", hint: `${mod.long} Y`, disabled: !e?.redo.length, run: redo },
@@ -2228,6 +2258,27 @@ export function Canvas(props: Props) {
         label: "Export PNG",
         keywords: "download image",
         run: () => void doExport("png"),
+      },
+      {
+        id: "download-yaml",
+        group: "Design",
+        label: "Download YAML",
+        keywords: "export source file",
+        run: () => void doDownload("yaml"),
+      },
+      {
+        id: "download-layout",
+        group: "Design",
+        label: "Download layout (JSON)",
+        keywords: "export sidecar positions notes",
+        run: () => void doDownload("layout"),
+      },
+      {
+        id: "download-zip",
+        group: "Design",
+        label: "Download both (.zip)",
+        keywords: "export yaml layout archive",
+        run: () => void doDownload("zip"),
       },
       props.canWrite
         ? {

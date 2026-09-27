@@ -721,3 +721,114 @@ edges: []
     expect(row?.findingCount).toBe(0);
   });
 });
+
+// A design leaves as design.yaml and design.layout.json and comes back through the create path.
+describe("export and import", () => {
+  const TWO = `schemaVersion: "1"
+type: "design"
+id: "round-trip"
+# a comment the bytes must keep
+groups:
+  - { id: "core", kind: "system" }
+nodes:
+  - { id: "api", component: "container-service", group: "core" }
+  - { id: "worker", component: "container-service", group: "core" }
+edges:
+  - { from: "api", to: "worker", protocol: "http", mode: "sync" }
+  - { from: "api", to: "worker", protocol: "http", mode: "async" }
+`;
+  const LAYOUT = {
+    version: 2,
+    nodes: { worker: [400, 80], api: [40, 80], gone: [1, 2] },
+    edges: { "api>worker": 30, "api>worker#1": -30, "gone>api": 5 },
+    ports: {
+      "api>worker": { from: { side: "right", t: 0.25 } },
+      "gone>api": { to: { side: "top", t: 0.5 } },
+    },
+    frames: { core: { tint: "#AABBCC", icon: "kind:queue" }, gone: { tint: "blue" } },
+    notes: [
+      { id: "note-1", x: 24, y: -8, w: 148, h: 66, text: "anchored", anchor: { node: "api" } },
+      { id: "note-2", x: 10, y: 10, w: 100, h: 60, text: "stale", anchor: { group: "gone" } },
+    ],
+    badge: "provider:aws",
+    extra: "dropped",
+  };
+
+  it("round-trips exactly: the same YAML bytes, the same layout file", async () => {
+    const { createDesign, getDesign } = await lib();
+    const { layoutFile, designZip } = await import("./design-files");
+    const { unzipStore } = await import("./zip");
+    const ivy = await makeUser("ivy");
+    const a = await createDesign(ivy as never, { title: "A", yaml: TWO, layout: LAYOUT });
+    const va = await getDesign("ivy", a.design.slug, ivy as never);
+    expect(va.version?.yaml).toBe(TWO);
+    const file = layoutFile(va.version!.yaml, va.version!.layout);
+    // What names nothing in the YAML is gone; the stale anchor is dropped, its note kept.
+    const parsed = JSON.parse(file);
+    expect(Object.keys(parsed)).toEqual([
+      "version",
+      "nodes",
+      "edges",
+      "ports",
+      "frames",
+      "notes",
+      "badge",
+    ]);
+    expect(Object.keys(parsed.nodes)).toEqual(["api", "worker"]);
+    expect(parsed.edges).toEqual({ "api>worker": 30, "api>worker#1": -30 });
+    expect(Object.keys(parsed.ports)).toEqual(["api>worker"]);
+    expect(parsed.frames).toEqual({ core: { tint: "#aabbcc", icon: "kind:queue" } });
+    expect(parsed.notes[1]).toEqual({ id: "note-2", x: 10, y: 10, w: 100, h: 60, text: "stale" });
+    expect(file.endsWith("}\n")).toBe(true);
+
+    const zip = unzipStore(designZip(va.version!.yaml, va.version!.layout));
+    expect(zip.map((e) => e.name)).toEqual(["design.yaml", "design.layout.json"]);
+    const dec = new TextDecoder();
+    const b = await createDesign(ivy as never, {
+      title: "B",
+      yaml: dec.decode(zip[0].data),
+      layout: JSON.parse(dec.decode(zip[1].data)),
+    });
+    const vb = await getDesign("ivy", b.design.slug, ivy as never);
+    expect(vb.version?.yaml).toBe(TWO);
+    expect(layoutFile(vb.version!.yaml, vb.version!.layout)).toBe(file);
+  });
+
+  it("stores no sidecar for an empty one, and exports the empty file for none", async () => {
+    const { createDesign, getDesign } = await lib();
+    const { layoutFile } = await import("./design-files");
+    const jo = await makeUser("jody");
+    const d = await createDesign(jo as never, {
+      title: "Empty layout",
+      yaml: TWO,
+      layout: { version: 2, nodes: { gone: [1, 1] } },
+    });
+    const v = await getDesign("jody", d.design.slug, jo as never);
+    expect(v.version?.layout).toBeNull();
+    expect(layoutFile(TWO, null)).toBe(
+      '{\n  "version": 2,\n  "nodes": {},\n  "edges": {},\n  "frames": {},\n  "notes": []\n}\n',
+    );
+  });
+
+  it("refuses a structurally broken import with findings that name their line", async () => {
+    const { createDesign, ServiceError } = await lib();
+    const kit = await makeUser("kit");
+    const broken = TWO.replace(
+      'component: "container-service", group: "core" }\n  - { id: "worker"',
+      'component: "no-such-thing", group: "core" }\n  - { id: "worker"',
+    );
+    const err = await createDesign(kit as never, { title: "Broken", yaml: broken }).catch((e) => e);
+    expect(err).toBeInstanceOf(ServiceError);
+    expect(err.status).toBe(422);
+    const f = (err.findings as { subject: { ref: unknown }; line?: number }[]).find(
+      (x) => x.subject.ref === "api",
+    );
+    expect(f?.line).toBe(8);
+    const refused = await createDesign(kit as never, {
+      title: "Tabs",
+      yaml: `${TWO}\tbad: 1\n`,
+    }).catch((e) => e);
+    expect(refused.status).toBe(422);
+    expect(refused.findings[0].line).toBe(13);
+  });
+});
