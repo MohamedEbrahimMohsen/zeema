@@ -1300,7 +1300,8 @@ kbd.key {
   fill: var(--ink);
 }
 .svg-preview .c {
-  font-size: 12px;
+  /* COMP_FONT in @zeema/core/render: the id line is fitted to the box at this size */
+  font-size: 11px;
   fill: var(--muted);
   font-family: var(--mono);
 }

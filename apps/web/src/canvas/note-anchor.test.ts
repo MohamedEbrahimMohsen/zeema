@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { anchorOffset, noteDropTarget, sameAnchor } from "./note-anchor";
+import { anchorOffset, coversTarget, noteDropTarget, sameAnchor } from "./note-anchor";
 
 type Box = [number, number, number, number];
 const boxes: Record<string, Box> = { a: [100, 100, 140, 78], b: [400, 100, 140, 78] };
@@ -30,6 +30,31 @@ describe("noteDropTarget", () => {
   it("takes the topmost of two overlapping nodes", () => {
     const overlap: Record<string, Box> = { a: [0, 0, 100, 100], b: [50, 50, 100, 100] };
     expect(noteDropTarget(["a", "b"], overlap, {}, 75, 75)).toEqual({ node: "b" });
+  });
+  it("takes the node the note's box mostly covers when the pointer is off it", () => {
+    // pointer at (90, 90), inside "inner" but on no node; the note covers most of "a"
+    const note: Box = [95, 95, 140, 70];
+    expect(noteDropTarget(["a", "b"], boxes, frames, 90, 90, null, note)).toEqual({ node: "a" });
+    // a note bigger than the node counts by the node's share
+    const big: Box = [80, 80, 300, 200];
+    expect(noteDropTarget(["a", "b"], boxes, frames, 90, 90, null, big)).toEqual({ node: "a" });
+  });
+  it("does not pin a note that only grazes a node", () => {
+    const graze: Box = [200, 150, 140, 70]; // a sliver of "a"'s bottom-right corner
+    expect(noteDropTarget(["a", "b"], boxes, frames, 90, 90, null, graze)).toEqual({
+      group: "inner",
+    });
+  });
+  it("prefers the node under the pointer over the one the box covers most", () => {
+    const note: Box = [95, 95, 140, 70];
+    expect(noteDropTarget(["a", "b"], boxes, frames, 420, 120, null, note)).toEqual({ node: "b" });
+  });
+});
+
+describe("coversTarget", () => {
+  it("is true only when the two boxes overlap", () => {
+    expect(coversTarget([0, 0, 100, 50], [90, 40, 20, 20])).toBe(true);
+    expect(coversTarget([0, 0, 100, 50], [124, -8, 20, 20])).toBe(false);
   });
 });
 

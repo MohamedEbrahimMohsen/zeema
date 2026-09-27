@@ -3,9 +3,15 @@
 // component's icon on one neutral surface, groups are dashed containers,
 // edges are arrows, solid for sync and dashed for async.
 
+import { displayName } from "./document.js";
 import { drawnLayout } from "./drawn.js";
 import { framesOuterFirst, framesUnderTint, pathOf } from "./geometry.js";
 import { layout } from "./layout.js";
+import { nodeText } from "./text.js";
+
+// The node-text measure lives in text.js, with the box sizing that uses it; re-exported here
+// because the canvas and older callers import it from the renderer.
+export { monoWidth, nodeText, nodeWidth, textWidth } from "./text.js";
 
 // A node card is one neutral surface in both themes: colour on a drawing comes only from the
 // component's icon, from a group tint the author chose, and from finding badges. These are the
@@ -143,7 +149,7 @@ export function toSvg(doc, catalogue, options = {}) {
   else style = `${vars.light}@media (prefers-color-scheme: dark){${vars.dark}}`;
   style +=
     ".body{fill:var(--node-fill);stroke:var(--node-line)}" +
-    ".n{font-size:14px;font-weight:500;fill:var(--ink)}.c{font-size:12px;fill:var(--muted)}" +
+    ".n{font-size:14px;font-weight:500;fill:var(--ink)}.c{font-size:11px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;fill:var(--muted)}" +
     ".g{font-size:12px;fill:var(--muted)}" +
     ".gk{font-size:10px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;fill:var(--muted);opacity:0.75}" +
     ".e{font-size:12px;fill:var(--muted);paint-order:stroke;" +
@@ -216,8 +222,8 @@ export function toSvg(doc, catalogue, options = {}) {
   // outer side of its own curve.
   for (const e of lay.edges) {
     const dash = e.dashed ? ' stroke-dasharray="6 4"' : "";
-    if (e.points.length === 6) {
-      // A ported end: stub, cubic, stub, as geometry.js spells it.
+    if (e.points.length === 7) {
+      // A ported end: two smooth cubics, as geometry.js spells it.
       out.push(
         `<path d="${pathOf(e.points)}" fill="none" stroke="var(--edge)" stroke-width="1.4"${dash} marker-end="url(#a)"/>`,
       );
@@ -245,21 +251,29 @@ export function toSvg(doc, catalogue, options = {}) {
     // as on the canvas. Written on the element so a page that strips the <style> keeps it.
     const hole = c.kind === "custom" ? ' stroke-dasharray="6 4" fill-opacity="0.45"' : "";
     const cx = x + bw / 2;
+    // The same name the canvas shows (the label, else the component's proper name), fitted to
+    // the box by the same measure. A node whose words were cut short is a group whose <title>
+    // carries them whole; every other node is drawn exactly as it always was.
+    const t = nodeText(displayName(catalogue ?? {}, n), n.component, bw);
+    if (t.full) out.push(`<g><title>${escapeXml(t.full)}</title>`);
     out.push(
       `<rect class="body" x="${x}" y="${y}" width="${bw}" height="${bh}" rx="12" stroke-width="1"${hole}/>`,
     );
     const body = own(icons, n.component);
-    if (body)
+    if (body) {
+      const scale = t.icon.size === ICON ? "" : ` scale(${t.icon.size / ICON})`;
       out.push(
-        `<g class="ic" transform="translate(${f1(cx - ICON / 2)} ${y + 11})" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${body}</g>`,
+        `<g class="ic" transform="translate(${f1(cx - t.icon.size / 2)} ${y + t.icon.y})${scale}" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${body}</g>`,
       );
-    const text = n.label ? String(n.label) : n.id;
+    }
+    for (const line of t.name)
+      out.push(
+        `<text class="n" x="${f1(cx)}" y="${y + line.y}" text-anchor="middle">${escapeXml(line.text)}</text>`,
+      );
     out.push(
-      `<text class="n" x="${f1(cx)}" y="${y + 52}" text-anchor="middle">${escapeXml(text)}</text>`,
+      `<text class="c" x="${f1(cx)}" y="${y + t.comp.y}" text-anchor="middle">${escapeXml(t.comp.text)}</text>`,
     );
-    out.push(
-      `<text class="c" x="${f1(cx)}" y="${y + 68}" text-anchor="middle">${escapeXml(n.component)}</text>`,
-    );
+    if (t.full) out.push("</g>");
   }
   out.push("</svg>");
   return `${out.join("\n")}\n`;

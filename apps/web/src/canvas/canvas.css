@@ -646,7 +646,8 @@
 /* a note being dragged over what it would be pinned to on release */
 .zeema-canvas .node-box.drop-target rect.body {
   stroke: var(--accent);
-  stroke-width: 2.5;
+  stroke-width: 3;
+  fill: color-mix(in srgb, var(--accent) 10%, var(--node-fill));
 }
 .zeema-canvas .frame.drop-target,
 .zeema-canvas .frame[data-tint].drop-target {
@@ -675,6 +676,12 @@
 /* notes — sticky annotations from the layout sidecar. No glyph, no ports, no edges. */
 .zeema-canvas .note-box {
   cursor: grab;
+}
+/* while it moves the note is lifted over the components, and see-through: the ring on
+   what it would be pinned to on release shows under it */
+.zeema-canvas .note-box.dragging {
+  cursor: grabbing;
+  opacity: 0.72;
 }
 .zeema-canvas .note-body {
   stroke-width: 1;

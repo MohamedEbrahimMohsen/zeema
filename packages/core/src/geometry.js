@@ -24,8 +24,9 @@ export const LANE_STEP = 24;
 export const BEND_REACH = 46;
 // How far a label on a lane stands off its own curve.
 export const LABEL_GAP = 6;
-// How far a ported end runs straight out of its box, along the side's outward normal, before the
-// curve takes over. Shorter when the two ends are close, so facing ports never cross stubs.
+// How far out along a port's outward normal the curve aims its routing (the "aim point" the lane,
+// the bow and the bend around an obstacle are measured from), and the least reach of the control
+// that makes a ported end leave its box squarely. Nothing is drawn straight along it.
 export const STUB = 28;
 
 function clip(box, towardX, towardY) {
@@ -155,10 +156,11 @@ export function portNormal(port) {
   return NORMALS[port.side] ?? [0, 0];
 }
 
-// Where each end of an edge is anchored and what the curve between them aims at. A ported end
-// is anchored on its port and aims at the tip of its stub, the port pushed out along the side's
-// normal; an unported end has neither (null) and is clipped later. The stub is STUB long, or a
-// third of the distance between the two anchors (ports or centres) when that is shorter.
+// Where each end of an edge is anchored and what the routing between them aims at. A ported end
+// is anchored on its port and aims at a point pushed out along the side's normal; an unported
+// end has neither (null) and is clipped later. The aim is STUB out, or a third of the distance
+// between the two anchors (ports or centres) when that is shorter. Only the routing uses it; the
+// drawn curve is one smooth piece from port to port (see `smooth`).
 function endsOf(a, b, from, to) {
   const pa = isPort(from) ? portPoint(a, from) : null;
   const pb = isPort(to) ? portPoint(b, to) : null;
@@ -213,7 +215,7 @@ function labelPlacement(mid, points, shared) {
   const above = { at: [mid[0], mid[1] - 5], anchor: "middle" };
   if (!shared || points.length === 2) return above;
   const [[x1, y1], [x2, y2]] =
-    points.length === 6 ? [points[1], points[4]] : [points[0], points[2]];
+    points.length === 7 ? [points[0], points[6]] : [points[0], points[2]];
   let nx = mid[0] - (x1 + x2) / 2,
     ny = mid[1] - (y1 + y2) / 2;
   const l = Math.hypot(nx, ny);
@@ -233,18 +235,17 @@ function labelPlacement(mid, points, shared) {
 // through. A manual bow replaces both.
 //
 // `ports` maps an edge key to `{ from?, to? }`, each a port (see `portPoint`). A ported end sits
-// exactly on its port and is never clipped, and it leaves its box squarely: a straight stub along
-// the side's outward normal (see `endsOf`), so a port on the side facing away from the other end
-// does not send the line back under its own box. The other end, if it has no port, is clipped
-// toward the ported end's stub tip (or toward the curve's control point, as without ports). The
-// lane, the bow and the bend around an obstacle all work on the middle part, between the two aim
-// points (a stub tip, or an unported end), and never move a ported end.
+// exactly on its port and is never clipped, and it leaves its box squarely: the curve's tangent
+// there is the side's outward normal, so a port on the side facing away from the other end does
+// not send the line back under its own box. The other end, if it has no port, is clipped toward
+// the ported end's aim point (see `endsOf`), or toward the curve's control point, as without
+// ports. The lane, the bow and the bend around an obstacle are all measured between the two aim
+// points (a ported end's, or an unported end itself), and never move a ported end.
 //
 // `points` is [from, to] for a straight edge and [from, control, to] for a quadratic one, exactly
-// as before, whenever neither end is ported. With a port it is six points,
-// [from, aimFrom, c1, c2, aimTo, to]: a stub, a cubic from aim to aim, a stub. An unported end's
-// aim is the end itself, so its stub has no length and `pathOf` leaves it out. At a ported end
-// the cubic's control runs along the normal, so the stub and the curve meet without a corner.
+// as before, whenever neither end is ported. With a port it is seven points,
+// [from, c1, d1, middle, d2, c2, to]: two cubics meeting smoothly at the curve's middle, with no
+// straight segment and no corner anywhere (see `smooth`).
 export function edgeGeometry(doc, boxes, bows = {}, ports = {}) {
   const keys = edgeKeys(doc);
   const edges = doc.edges || [];
@@ -278,12 +279,12 @@ export function edgeGeometry(doc, boxes, bows = {}, ports = {}) {
       const bow = Number(bows[keys[i]]) || 0;
       const own = ports && Object.hasOwn(ports, keys[i]) ? ports[keys[i]] : null;
       const { pa, pb, sa, sb } = endsOf(a, b, own?.from, own?.to);
-      // What each unported end is clipped toward: the other end's stub tip if it is ported,
+      // What each unported end is clipped toward: the other end's aim point if it is ported,
       // else the other box's centre.
       const [tax, tay] = sb ?? [bx, by];
       const [tbx, tby] = sa ?? [ax, ay];
       let x1, y1, x2, y2;
-      // The middle part's two ends: a ported end's stub tip, else the (clipped) end itself.
+      // What the routing is measured between: a ported end's aim point, else the end itself.
       let u1, v1, u2, v2;
       let bend = null;
       if (bow) {
@@ -318,7 +319,8 @@ export function edgeGeometry(doc, boxes, bows = {}, ports = {}) {
         const ox = qx * lane,
           oy = qy * lane;
         // A ported end whose side faces away from the other end has its own box behind its
-        // stub, so the middle may cut back across it: that box is an obstacle too, tried first.
+        // aim point, so the middle may cut back across it: that box is an obstacle too, tried
+        // first.
         const away = (p, s, tx, ty) =>
           p && (tx - s[0]) * (s[0] - p[0]) + (ty - s[1]) * (s[1] - p[1]) < 0;
         const obstacles = [
@@ -349,7 +351,7 @@ export function edgeGeometry(doc, boxes, bows = {}, ports = {}) {
       }
       const points =
         pa || pb
-          ? stubbed([x1, y1], [u1, v1], [u2, v2], [x2, y2], bend, own)
+          ? smooth([x1, y1], [u1, v1], [u2, v2], [x2, y2], bend, own)
           : bend
             ? [[x1, y1], bend, [x2, y2]]
             : [
@@ -378,38 +380,65 @@ export function edgeGeometry(doc, boxes, bows = {}, ports = {}) {
   return out.sort((p, q) => p.i - q.i);
 }
 
-// The six points of an edge with a ported end: [start, aimStart, c1, c2, aimEnd, end]. The
-// middle is the quadratic the edge would have been between the two aims (through `bend`, or
-// straight), raised to a cubic. At a ported end its control is replaced by one along the side's
-// normal, a third of the chord out (at least a stub), carrying the same bow offset, so the curve
-// leaves the stub without a corner and a bow or a lane still pulls it the same way.
-function stubbed(start, aimStart, aimEnd, end, bend, own) {
+// The seven points of an edge with a ported end: two cubics joined smoothly at the curve's
+// middle, [start, c1, d1, middle, d2, c2, end]. There are no straight stubs: at a ported end the
+// first control runs along the side's outward normal, so the curve leaves its box squarely and
+// arrives squarely, and the arrowhead (which takes its direction from the last control) points
+// straight into the box. The middle is where the quadratic through `bend` would put its own
+// midpoint, so a bow drag still puts the curve under the pointer; with no bend, the one cubic
+// between the ports is split in half, so every ported edge has the same seven-point shape. An
+// unported end aims its control at the middle; it is clipped as without ports.
+function smooth(start, aimStart, aimEnd, end, bend, own) {
   const [u1, v1] = aimStart,
     [u2, v2] = aimEnd;
+  const toward = (p, q, f) => [p[0] + (q[0] - p[0]) * f, p[1] + (q[1] - p[1]) * f];
+  const along = (p, port, reach) => {
+    const [nx, ny] = portNormal(port);
+    return [p[0] + nx * reach, p[1] + ny * reach];
+  };
+  if (!bend) {
+    const d = Math.hypot(end[0] - start[0], end[1] - start[1]);
+    // Far enough out to read as square, never so far that two close facing ports loop back.
+    const reach = Math.max(Math.min(STUB, d / 3), d * 0.4);
+    const c1 = isPort(own?.from) ? along(start, own.from, reach) : toward(start, end, 1 / 3);
+    const c2 = isPort(own?.to) ? along(end, own.to, reach) : toward(end, start, 1 / 3);
+    // de Casteljau at t = 0.5.
+    const ab = toward(start, c1, 0.5),
+      bc = toward(c1, c2, 0.5),
+      cd = toward(c2, end, 0.5);
+    const abc = toward(ab, bc, 0.5),
+      bcd = toward(bc, cd, 0.5);
+    return [start, ab, abc, toward(abc, bcd, 0.5), bcd, cd, end];
+  }
   const mx = (u1 + u2) / 2,
     my = (v1 + v2) / 2;
-  const [qx, qy] = bend ?? [mx, my];
-  const offx = ((qx - mx) * 2) / 3,
-    offy = ((qy - my) * 2) / 3;
-  const reach = Math.max(STUB, Math.hypot(u2 - u1, v2 - v1) / 3);
-  const control = (u, v, port) => {
-    if (!isPort(port)) return [u + ((qx - u) * 2) / 3, v + ((qy - v) * 2) / 3];
-    const [nx, ny] = portNormal(port);
-    return [u + nx * reach + offx, v + ny * reach + offy];
-  };
-  return [start, aimStart, control(u1, v1, own?.from), control(u2, v2, own?.to), aimEnd, end];
+  const middle = [mx + (bend[0] - mx) / 2, my + (bend[1] - my) / 2];
+  let tx = u2 - u1,
+    ty = v2 - v1;
+  let tl = Math.hypot(tx, ty);
+  if (tl < 1e-9) {
+    tx = end[0] - start[0];
+    ty = end[1] - start[1];
+    tl = Math.hypot(tx, ty) || 1;
+  }
+  tx /= tl;
+  ty /= tl;
+  const la = Math.hypot(middle[0] - start[0], middle[1] - start[1]);
+  const lb = Math.hypot(end[0] - middle[0], end[1] - middle[1]);
+  const reach = (l) => Math.max(Math.min(STUB, l / 2), l * 0.55);
+  const c1 = isPort(own?.from) ? along(start, own.from, reach(la)) : toward(start, middle, 0.4);
+  const c2 = isPort(own?.to) ? along(end, own.to, reach(lb)) : toward(end, middle, 0.4);
+  const d1 = [middle[0] - tx * la * 0.4, middle[1] - ty * la * 0.4];
+  const d2 = [middle[0] + tx * lb * 0.4, middle[1] + ty * lb * 0.4];
+  return [start, c1, d1, middle, d2, c2, end];
 }
 
 // Where the line actually is, halfway along. For a curve that is not the control point: the
 // control point sits twice as far out as the curve it pulls, so a label placed there drifts away
 // from its own edge as the edge is bowed. This is the quadratic at t = 0.5, or, for an edge with
-// a ported end, the middle cubic at t = 0.5: the stubs are short and straight, and the middle is
-// the part that carries the shape.
+// a ported end, the point where its two cubics join.
 export function midpointOf(points) {
-  if (points.length === 6) {
-    const [, [x1, y1], [c1x, c1y], [c2x, c2y], [x2, y2]] = points;
-    return [(x1 + 3 * c1x + 3 * c2x + x2) / 8, (y1 + 3 * c1y + 3 * c2y + y2) / 8];
-  }
+  if (points.length === 7) return [points[3][0], points[3][1]];
   if (points.length === 3) {
     const [[x1, y1], [cx, cy], [x2, y2]] = points;
     return [x1 * 0.25 + cx * 0.5 + x2 * 0.25, y1 * 0.25 + cy * 0.5 + y2 * 0.25];
@@ -419,14 +448,10 @@ export function midpointOf(points) {
 }
 
 export function pathOf(points) {
-  if (points.length === 6) {
+  if (points.length === 7) {
     const f = ([x, y]) => `${x.toFixed(1)} ${y.toFixed(1)}`;
-    const [start, aimStart, c1, c2, aimEnd, end] = points.map(f);
-    // A stub of no length (an unported end) is left out, so the path has no degenerate segment
-    // for the arrowhead to take its direction from.
-    const lead = aimStart === start ? "" : ` L${aimStart}`;
-    const tail = aimEnd === end ? "" : ` L${end}`;
-    return `M${start}${lead} C${c1} ${c2} ${aimEnd}${tail}`;
+    const [start, c1, d1, middle, d2, c2, end] = points.map(f);
+    return `M${start} C${c1} ${d1} ${middle} C${d2} ${c2} ${end}`;
   }
   if (points.length === 3) {
     const [[x1, y1], [cx, cy], [x2, y2]] = points;
@@ -534,8 +559,9 @@ export function innermostFrameAt(frames, x, y) {
 // perpendicular at the midpoint. This is the value a drag writes, so dragging an edge away from
 // its twin separates them and dragging it back returns it to the automatic path.
 //
-// With `ends` (the edge's `{ from?, to? }` ports) a ported end is measured from its stub's tip
-// (where the middle of the edge starts) rather than its box's centre, so the curve follows the pointer on an edge whose ends were placed.
+// With `ends` (the edge's `{ from?, to? }` ports) a ported end is measured from its aim point
+// (see `endsOf`) rather than its box's centre, so the curve's middle sits under the pointer on an
+// edge whose ends were placed.
 /** @param {{ from?: object, to?: object } | null} [ends] */
 export function bowAt(boxes, from, to, x, y, ends = null) {
   const a = boxes[from],

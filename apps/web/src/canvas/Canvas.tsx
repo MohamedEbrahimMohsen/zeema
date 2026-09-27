@@ -1205,6 +1205,9 @@ export function Canvas(props: Props) {
       structural: [],
       rules: [],
     };
+    // A design with nothing in it yet opens with the picker pinned, so the first thing in reach
+    // is what to add. Stored like pressing the pin, so unpinning it is remembered as usual.
+    if (props.canWrite && doc.nodes.length === 0) updatePanes(() => ({ left: true }));
     const scene = new Scene(svgRef.current, {
       onSelect: (sel, m) => {
         setSelection({ ...sel });
@@ -2328,6 +2331,7 @@ export function Canvas(props: Props) {
           <defs />
           <g className="viewport">
             <g className="layer-frames" />
+            {/* Notes sit under the components; a note being dragged is lifted over them. */}
             <g className="layer-notes" />
             <g className="layer-edges" />
             <g className="layer-nodes" />
@@ -2337,7 +2341,9 @@ export function Canvas(props: Props) {
         {error ? <div className="empty-state sev-error">{error}</div> : null}
         {!error && e && e.doc.nodes.length === 0 ? (
           <div className="empty-state">
-            Press + or / to open the picker, then click a component or drag it here.
+            {pickerShown
+              ? "Click a component in the picker, or drag it here."
+              : "Press + or / to open the picker, then click a component or drag it here."}
           </div>
         ) : null}
       </div>

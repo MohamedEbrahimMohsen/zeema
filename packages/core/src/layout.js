@@ -11,7 +11,7 @@
 //
 // This began as a port of .claude/tools/design_to_svg.py, whose flat layout let a parent frame
 // swallow unrelated groups; the Python tool is no longer the reference. pyRound() survives
-// from the port (half to even, as the Python rounded) for box widths and row offsets that
+// from the port (half to even, as the Python rounded) for row offsets that
 // land on .5.
 //
 // Reciprocal pairs. Two edges between the same two items in opposite directions (after
@@ -29,17 +29,16 @@
 // The edges come from edgeGeometry, the same code the canvas and the as-drawn renderer use, so
 // an automatic arrangement and a drawing route edges identically.
 //
-// Pure: no DOM, no fs. The one import is geometry.js, which has none of its own.
+// Pure: no DOM, no fs. It imports geometry.js for the edges, text.js for the box widths and
+// document.js for the name a box shows; none of them imports anything.
 
+import { displayName } from "./document.js";
 import { edgeGeometry } from "./geometry.js";
+import { nodeWidth } from "./text.js";
 
-const NAME_PX = 7.6,
-  ID_PX = 6.2;
 const BOX_H = 78,
-  PAD_X = 16,
   GAP_X = 34,
   GAP_Y = 86;
-const MIN_W = 126;
 const MAX_W = 1180; // a rank wider than this wraps onto further rows
 const CANVAS_PAD_X = 120,
   CANVAS_PAD_Y = 46;
@@ -98,17 +97,6 @@ export function pyRound(x) {
   const r = cRound(x);
   if (Math.abs(x - r) === 0.5) return 2 * cRound(x / 2);
   return r;
-}
-
-// Python's len() counts code points; String.length counts UTF-16 code units.
-function charLen(s) {
-  let n = 0;
-  for (const _ of String(s)) n++;
-  return n;
-}
-
-function truthy(v) {
-  return v !== undefined && v !== null && v !== "" && v !== false && v !== 0;
 }
 
 // --- ranking ----------------------------------------------------------------
@@ -279,9 +267,9 @@ export function layout(doc, catalogue) {
 
   const box = new Map(); // insertion order = node document order
   for (const n of nodes) {
-    const text = truthy(n.label) ? String(n.label) : n.id;
-    const w = Math.max(charLen(text) * NAME_PX, charLen(n.component) * ID_PX) + 2 * PAD_X;
-    box.set(n.id, [0, 0, Math.max(MIN_W, pyRound(w)), BOX_H]);
+    // Sized for the words the box shows: the name the canvas and the renderer draw (the label,
+    // else the component's proper name) and the component id, by the one measure that fits them.
+    box.set(n.id, [0, 0, nodeWidth(displayName(catalogue ?? {}, n), n.component), BOX_H]);
   }
 
   // The group tree. A parent that is missing, or that would close a cycle, leaves the group

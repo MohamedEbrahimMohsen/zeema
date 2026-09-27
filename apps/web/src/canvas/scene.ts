@@ -20,13 +20,15 @@ import {
   pathOf,
   portAt,
 } from "@zeema/core/geometry";
-import { FRAME_ICON_SHIFT, TINT, TINT_FILL_ALPHA } from "@zeema/core/render";
+import { FRAME_ICON_SHIFT, nodeText, TINT, TINT_FILL_ALPHA } from "@zeema/core/render";
 import {
   anchorKey,
   anchorTarget,
   type EdgePorts,
   type FrameStyle,
   frameIconKey,
+  NOTE_ANCHOR_DX,
+  NOTE_ANCHOR_DY,
   NOTE_MAX_TEXT,
   NOTE_MIN_H,
   NOTE_MIN_W,
@@ -37,7 +39,7 @@ import {
   type PortSide,
 } from "@/lib/layout-sidecar";
 import { own } from "@/lib/own";
-import { anchorOffset, noteDropTarget, sameAnchor } from "./note-anchor";
+import { anchorOffset, coversTarget, noteDropTarget, sameAnchor } from "./note-anchor";
 
 const NS = "http://www.w3.org/2000/svg";
 const el = (name: string, attrs: Record<string, unknown> = {}) => {
@@ -218,23 +220,23 @@ function distanceToSegment(ax: number, ay: number, bx: number, by: number, x: nu
 function distanceToPath(points: number[][], x: number, y: number) {
   if (points.length === 2)
     return distanceToSegment(points[0][0], points[0][1], points[1][0], points[1][1], x, y);
-  if (points.length === 6) {
-    // A ported end: stub, cubic, stub (geometry.js). The stubs are segments; the cubic is sampled.
-    const [s, [x1, y1], [ax, ay], [bx, by], [x2, y2], e] = points;
-    let best = Math.min(
-      distanceToSegment(s[0], s[1], x1, y1, x, y),
-      distanceToSegment(x2, y2, e[0], e[1], x, y),
-    );
-    let px = x1;
-    let py = y1;
-    for (let i = 1; i <= 16; i++) {
-      const t = i / 16;
-      const u = 1 - t;
-      const qx = u * u * u * x1 + 3 * u * u * t * ax + 3 * u * t * t * bx + t * t * t * x2;
-      const qy = u * u * u * y1 + 3 * u * u * t * ay + 3 * u * t * t * by + t * t * t * y2;
-      best = Math.min(best, distanceToSegment(px, py, qx, qy, x, y));
-      px = qx;
-      py = qy;
+  if (points.length === 7) {
+    // A ported edge: two cubics meeting at the middle (geometry.js), each sampled.
+    let best = Number.POSITIVE_INFINITY;
+    for (const [p0, p1, p2, p3] of [points.slice(0, 4), points.slice(3, 7)]) {
+      let px = p0[0];
+      let py = p0[1];
+      for (let i = 1; i <= 16; i++) {
+        const t = i / 16;
+        const u = 1 - t;
+        const qx =
+          u * u * u * p0[0] + 3 * u * u * t * p1[0] + 3 * u * t * t * p2[0] + t * t * t * p3[0];
+        const qy =
+          u * u * u * p0[1] + 3 * u * u * t * p1[1] + 3 * u * t * t * p2[1] + t * t * t * p3[1];
+        best = Math.min(best, distanceToSegment(px, py, qx, qy, x, y));
+        px = qx;
+        py = qy;
+      }
     }
     return best;
   }
@@ -795,9 +797,17 @@ export class Scene {
     // The model is left alone until the drag ends: `noteBoxes` is the world truth while the
     // pointer is down, and an anchored note's stored offset is worked out from it at the end.
     if (d.mode === "move") {
-      this.noteEls.get(d.id)?.setAttribute("transform", `translate(${b[0]} ${b[1]})`);
+      const el = this.noteEls.get(d.id);
+      el?.setAttribute("transform", `translate(${b[0]} ${b[1]})`);
+      // Lifted over the components while it moves, so it stays in sight when it is dragged
+      // onto one, and see-through, so the ring on what it would be pinned to shows under it.
+      // Notes otherwise sit under the components, where a pinned note never hides one.
+      if (!el?.classList.contains("dragging")) {
+        this.layers.nodes.after(this.layers.notes);
+        el?.classList.add("dragging");
+      }
       this.redrawLeader(d.id);
-      this.setNoteDropTarget(this.noteDropAt(d.id, wx, wy));
+      this.setNoteDropTarget(this.noteDropAt(d.id, wx, wy, b));
     } else this.renderNotes();
     this.renderSelection();
   }
@@ -822,11 +832,11 @@ export class Scene {
    * else the innermost group around it. Its own current target is not a new one, and nor is a
    * group around it, so they are left out: letting go there is an ordinary move.
    */
-  noteDropAt(id: string, wx: number, wy: number): NoteAnchor | null {
+  noteDropAt(id: string, wx: number, wy: number, box: Box | null = null): NoteAnchor | null {
     const note = (this.model.notes || []).find((n) => n.id === id);
     const order = this.model.doc.nodes.map((n: any) => n.id as string);
     const current = note ? this.anchorBox(note) : null;
-    const target = noteDropTarget(order, this.boxes, this.frames || {}, wx, wy, current);
+    const target = noteDropTarget(order, this.boxes, this.frames || {}, wx, wy, current, box);
     return target && !sameAnchor(target, note?.anchor) ? target : null;
   }
 
@@ -851,6 +861,8 @@ export class Scene {
     const { id, moved, target } = this.noteDrag;
     this.noteDrag = null;
     this.clearNoteDropTarget();
+    this.noteEls.get(id)?.classList.remove("dragging");
+    this.layers.edges.before(this.layers.notes);
     const b = this.noteBoxes[id];
     const note = (this.model.notes || []).find((n) => n.id === id);
     if (!moved || !b || !note) return;
@@ -862,7 +874,12 @@ export class Scene {
         : this.frames[target.group]
       : null;
     if (target && to) {
-      const [x, y] = anchorOffset(to, b[0], b[1]);
+      // Left where it was let go, unless that covers the component it now describes: then it
+      // goes to the usual pinned place, just off the component's top-right corner.
+      const [x, y] =
+        "node" in target && coversTarget(to, b)
+          ? [NOTE_ANCHOR_DX, NOTE_ANCHOR_DY]
+          : anchorOffset(to, b[0], b[1]);
       this.h.onNoteAnchor?.(id, target, { x, y, w: b[2], h: b[3] });
       return;
     }
@@ -1074,22 +1091,43 @@ export class Scene {
           "fill-opacity": untyped ? 0.45 : null,
         }),
       );
+      // The name and id fitted to the box exactly as the server render fits them (nodeText in
+      // @zeema/core/render): two lines at most, then an ellipsis, the whole text in a <title>.
+      const text = nodeText(displayName(this.model.catalogue, n), n.component, b[2]);
+      if (text.full) {
+        const title = el("title", {});
+        title.textContent = text.full;
+        box.prepend(title);
+      }
       if (this.symbolFor(n.component))
         box.append(
           el("use", {
             href: `#ic-${n.component}`,
-            x: b[2] / 2 - 12,
-            y: 11,
-            width: 24,
-            height: 24,
+            x: b[2] / 2 - text.icon.size / 2,
+            y: text.icon.y,
+            width: text.icon.size,
+            height: text.icon.size,
             class: "glyph",
           }),
         );
-      const name = el("text", { class: "name", x: b[2] / 2, y: 52, "text-anchor": "middle" });
-      name.textContent = displayName(this.model.catalogue, n);
-      const comp = el("text", { class: "comp", x: b[2] / 2, y: 68, "text-anchor": "middle" });
-      comp.textContent = n.component;
-      box.append(name, comp);
+      for (const line of text.name) {
+        const name = el("text", {
+          class: "name",
+          x: b[2] / 2,
+          y: line.y,
+          "text-anchor": "middle",
+        });
+        name.textContent = line.text;
+        box.append(name);
+      }
+      const comp = el("text", {
+        class: "comp",
+        x: b[2] / 2,
+        y: text.comp.y,
+        "text-anchor": "middle",
+      });
+      comp.textContent = text.comp.text;
+      box.append(comp);
       const bad = (this.model.findings || []).filter(
         (f) => f.subject && f.subject.type === "node" && f.subject.ref === n.id,
       );
@@ -1484,6 +1522,7 @@ export class Scene {
     if (this.noteDrag) {
       this.noteDrag = null;
       this.clearNoteDropTarget();
+      this.layers.edges.before(this.layers.notes);
       this.render(this.model);
     }
     if (this.drag) {
@@ -2061,7 +2100,7 @@ export class Scene {
       ".edge.async{stroke-dasharray:6 4}",
       ".edge-label{font-size:12px;fill:var(--muted);paint-order:stroke;stroke:var(--bg);stroke-width:3px}",
       ".node-box text.name{font-size:14px;font-weight:500;fill:var(--ink)}",
-      ".node-box text.comp{font-size:12px;fill:var(--muted)}",
+      ".node-box text.comp{font-size:11px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;fill:var(--muted)}",
       ".glyph{color:var(--ink)}",
       ".badge-error{fill:var(--err)}.badge-warn{fill:var(--warn)}",
       `.note-text{font-size:${NOTE_FONT}px;fill:var(--ink)}`,
