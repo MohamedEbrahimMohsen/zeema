@@ -4241,6 +4241,44 @@ pre.yaml {
   border-radius: 0 0 calc(var(--r-card) - var(--border)) calc(var(--r-card) - var(--border));
 }
 
+/* Nothing drawn yet: a short, centred note in place of the picture rather than a tall blank. */
+.preview-surface.preview-empty {
+  min-height: 240px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
+  overflow: visible;
+}
+.preview-empty-icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin-bottom: 4px;
+  border-radius: 50%;
+  border: var(--border) solid var(--line);
+  color: var(--muted);
+}
+.preview-empty .preview-empty-icon svg {
+  width: 18px;
+  height: 18px;
+}
+.preview-empty-title {
+  font-weight: var(--fw-semibold);
+}
+.preview-empty-text {
+  margin: 0 0 8px;
+  max-width: 34ch;
+  color: var(--muted);
+  font-size: var(--fs-small);
+}
+.preview-empty-text:last-child {
+  margin-bottom: 0;
+}
+
 /* A slim bar above the preview card for the owner's pending release: a dot, what is pending
    and since when, and the one button that settles it. */
 .site .notice {

@@ -228,6 +228,7 @@ export default async function DesignPage({
             owner={ownerSeg}
             slug={view.design.slug}
             svg={svg}
+            empty={doc ? doc.nodes.length === 0 : false}
             actions={{
               owner: ownerSeg,
               slug: view.design.slug,
