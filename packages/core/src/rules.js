@@ -10,7 +10,7 @@
 //     name that is not a property of the node's kind at all.
 //   - render substitutes {{node.id}} style paths and leaves an unresolved path as written.
 //
-// Three deliberate differences, all required by the editor and none of which changes a result
+// Four deliberate differences, all required by the editor and none of which changes a result
 // on a design the validator itself accepts:
 //   1. Findings carry a subject: {type:"node"|"edge"|"design", ref}.
 //   2. A node whose component (or whose component's kind) is missing from the catalogue is
@@ -19,6 +19,11 @@
 //   3. syncChainDepth keeps the validator's longest-simple-path answer but memoises the
 //      nodes whose sync-reachable subgraph is provably acyclic, and bounds the exponential
 //      enumeration used for the rest. See syncPass below.
+//   4. An edge end may name a group (the validator knows only node ends). An edge rule whose
+//      `when` reads an end's node (`from`, `to`, `crossesGroup`) skips an edge whose end that
+//      is a group: it neither fires nor guesses a component for the group. Rules that read only
+//      the edge's own fields still apply. A node rule's hasEdge counts such an edge, but a
+//      group peer never matches peerKind or peerCategory, as an unknown peer does not.
 //
 // DOM free, no imports.
 
@@ -382,6 +387,21 @@ function render(tpl, ctx) {
   });
 }
 
+// Which ends of an edge a predicate reads a node at: `from`, `to`, or both for crossesGroup.
+function endsRead(p, out = new Set()) {
+  if (!p || typeof p !== "object") return out;
+  if (p.from) out.add("from");
+  if (p.to) out.add("to");
+  if (p.crossesGroup) {
+    out.add("from");
+    out.add("to");
+  }
+  for (const x of p.all ?? []) endsRead(x, out);
+  for (const x of p.any ?? []) endsRead(x, out);
+  if (p.not) endsRead(p.not, out);
+  return out;
+}
+
 /* ------------------------------------------------------------------------- rule selection */
 
 /**
@@ -420,6 +440,9 @@ export function runRules(doc, catalogue) {
   const edges = doc.edges ?? [];
   const pass = syncPass(doc);
   const cat = catalogue;
+  // ids that name a group and no node: an edge end there is the group as a unit
+  const nodeIdSet = new Set(nodes.map((n) => n?.id));
+  const groupEnd = new Set((doc.groups ?? []).map((g) => g?.id).filter((id) => !nodeIdSet.has(id)));
   for (const r of rules) {
     try {
       if (r.select?.node) {
@@ -436,8 +459,10 @@ export function runRules(doc, catalogue) {
             });
         }
       } else if (r.select?.edge) {
+        const reads = endsRead(r.when);
         for (let i = 0; i < edges.length; i++) {
           const edge = edges[i];
+          if ([...reads].some((end) => groupEnd.has(edge[end]))) continue;
           if (r.select.edge.mode && edge.mode !== r.select.edge.mode) continue;
           if (r.select.edge.delivery && edge.delivery !== r.select.edge.delivery) continue;
           if (evalPred(r.when, { doc, edge, cat, pass }))

@@ -26,10 +26,13 @@ import {
   pruneFrames,
   prunePorts,
   pruneSidecar,
+  pruneTints,
   readPorts,
   readSidecar,
+  readTints,
   retargetAnchors,
   retargetFrame,
+  retargetTint,
   SIDECAR_VERSION,
   sidecarFile,
   TINTS,
@@ -453,5 +456,79 @@ describe("pruneSidecar", () => {
     expect(p.notes[0].anchor).toBeUndefined();
     expect(p.badge).toBe("provider:aws");
     expect(s.notes[0].anchor).toEqual({ node: "x" }); // it copies
+  });
+});
+
+describe("component tints and tint strength", () => {
+  it("reads a tint per node, lowercasing hex, and drops what is not one", () => {
+    const t = readTints({
+      api: { tint: "teal" },
+      db: { tint: "#AABBCC", strength: "bold" },
+      web: { tint: "chartreuse" },
+      q: { tint: "rose", strength: "heavy" },
+      n: { tint: "rose", strength: "normal" },
+      Bad_Id: { tint: "blue" },
+      x: "blue",
+    });
+    expect(t).toEqual({
+      api: { tint: "teal" },
+      db: { tint: "#aabbcc", strength: "bold" },
+      q: { tint: "rose" },
+      n: { tint: "rose" },
+    });
+  });
+
+  it("keeps a frame's strength only beside its tint", () => {
+    const s = readSidecar({
+      frames: {
+        a: { tint: "blue", strength: "light" },
+        b: { icon: "kind:queue", strength: "bold" },
+        c: { tint: "blue", strength: "loud" },
+      },
+    });
+    expect(s.frames).toEqual({
+      a: { tint: "blue", strength: "light" },
+      b: { icon: "kind:queue" },
+      c: { tint: "blue" },
+    });
+  });
+
+  it("is absent when no component has a tint, so an old sidecar keeps its bytes", () => {
+    expect(readSidecar({ nodes: {} }).tints).toBeUndefined();
+    const base = { nodes: {}, edges: {}, notes: [], frames: {} };
+    expect("tints" in writeSidecar(base)).toBe(false);
+    expect(writeSidecar({ ...base, tints: { a: { tint: "blue" } } }).tints).toEqual({
+      a: { tint: "blue" },
+    });
+  });
+
+  it("drops a tint whose node is gone, follows a rename, and rides the file and an import", () => {
+    expect(
+      readSidecar({ tints: { a: { tint: "blue" }, b: { tint: "rose" } } }, { nodes: ["a"] }).tints,
+    ).toEqual({
+      a: { tint: "blue" },
+    });
+    expect(pruneTints({ a: { tint: "blue" }, b: { tint: "rose" } }, ["b"])).toEqual({
+      b: { tint: "rose" },
+    });
+    const m = { a: { tint: "blue" as const } };
+    retargetTint(m, "a", "z");
+    expect(m).toEqual({ z: { tint: "blue" } });
+    const raw = {
+      nodes: { a: [0, 0] },
+      tints: {
+        b: { tint: "rose", strength: "light" },
+        a: { tint: "#112233" },
+        gone: { tint: "teal" },
+      },
+      frames: { g: { tint: "amber", strength: "bold" } },
+    };
+    const file = JSON.parse(
+      sidecarFile(pruneSidecar(readSidecar(raw), { nodes: ["a", "b"], groups: ["g"], edges: [] })),
+    );
+    expect(file.tints).toEqual({ a: { tint: "#112233" }, b: { tint: "rose", strength: "light" } });
+    expect(file.frames).toEqual({ g: { tint: "amber", strength: "bold" } });
+    expect(Object.keys(file)).toEqual(["version", "nodes", "edges", "frames", "tints", "notes"]);
+    expect(readSidecar(file).tints).toEqual(file.tints);
   });
 });

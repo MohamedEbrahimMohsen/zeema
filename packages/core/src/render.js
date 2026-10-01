@@ -40,6 +40,64 @@ export const TINT_FILL_ALPHA = "14";
 // A free tint: exactly six hex digits. `#rgb`, an alpha byte, `rgb()` and colour names are refused.
 export const HEX_TINT_RE = /^#[0-9a-fA-F]{6}$/;
 
+// How strongly a tint fills what it colours. `normal` is TINT_FILL_ALPHA (about 8%), drawn by the
+// [data-tint] rules as it always was. `light` halves it and `bold` doubles it; bold stops there so
+// a node's text and a group's members stay readable on the dark page. The stroke never changes.
+export const TINT_STRENGTHS = ["light", "normal", "bold"];
+const STRENGTH_OPACITY = { light: 0.04, bold: 0.16 };
+
+/** A stored tint as drawn: a known name, or `#rrggbb` lowercased; anything else is null. */
+export function readTint(v) {
+  if (typeof v !== "string") return null;
+  if (Object.hasOwn(TINT, v)) return v;
+  return HEX_TINT_RE.test(v) ? v.toLowerCase() : null;
+}
+
+/** A stored strength: `light` or `bold`; `normal`, absent and anything else are null. */
+export function readStrength(v) {
+  return v === "light" || v === "bold" ? v : null;
+}
+
+/**
+ * A tint's colour and fill opacity at a strength, as `{ color, opacity }`: the colour is the
+ * hex itself or the named tint's token (`var(--tint-<name>)`), the opacity is normal's
+ * TINT_FILL_ALPHA as a number unless light or bold say otherwise. Null for no tint. The canvas
+ * draws a tinted component and a tint's strength from this.
+ */
+export function tintFill(tint, strength) {
+  const t = readTint(tint);
+  if (!t) return null;
+  const color = t.startsWith("#") ? t : `var(--tint-${t})`;
+  const a = STRENGTH_OPACITY[readStrength(strength)];
+  return {
+    color,
+    opacity: a ?? Math.round((Number.parseInt(TINT_FILL_ALPHA, 16) / 255) * 1000) / 1000,
+    strength: a === undefined ? null : readStrength(strength),
+  };
+}
+
+/**
+ * How a tint paints a shape, as `{ data, style }`: the `data-tint` value ("hex" for a free
+ * colour) and an inline style or null. A named tint at normal strength needs no inline style,
+ * the [data-tint] rules draw it in either theme; a hex tint carries its colour inline, and a
+ * light or bold strength sets the fill to the stroke colour at its own opacity.
+ */
+export function tintPaint(tint, strength) {
+  const t = readTint(tint);
+  if (!t) return null;
+  const a = STRENGTH_OPACITY[readStrength(strength)];
+  const hex = t.startsWith("#");
+  const color = hex ? t : `var(--tint-${t})`;
+  if (a !== undefined)
+    return { data: hex ? "hex" : t, style: `stroke:${color};fill:${color};fill-opacity:${a}` };
+  return hex
+    ? { data: "hex", style: `stroke:${t};fill:${t}${TINT_FILL_ALPHA}` }
+    : { data: t, style: null };
+}
+
+const paintAttrs = (p) =>
+  !p ? "" : ` data-tint="${p.data}"${p.style ? ` style="${p.style}"` : ""}`;
+
 /**
  * An icon drawn before a group label is a reference: `kind:<id>`, `component:<p>/<id>` or
  * `boundary:<id>` (icons/boundaries/<id>.svg, a brand or concept mark kept apart from the rest).
@@ -123,21 +181,29 @@ export function toSvg(doc, catalogue, options = {}) {
   const styles = rawStyles && typeof rawStyles === "object" ? rawStyles : {};
   const styleOf = (id) => {
     const st = own(styles, id);
-    if (!st || typeof st !== "object") return { tint: null, body: null };
-    const tint =
-      typeof st.tint !== "string"
-        ? null
-        : own(TINT, st.tint)
-          ? st.tint
-          : HEX_TINT_RE.test(st.tint)
-            ? st.tint.toLowerCase()
-            : null;
+    if (!st || typeof st !== "object") return { tint: null, body: null, paint: null };
+    const tint = readTint(st.tint);
     const key = frameIconKey(st.icon);
     const body = key ? (own(frameIcons, st.icon) ?? own(icons, key) ?? null) : null;
-    return { tint, body: typeof body === "string" && body ? body : null };
+    return {
+      tint,
+      body: typeof body === "string" && body ? body : null,
+      paint: tintPaint(tint, st.strength),
+    };
+  };
+  // A component's tint, from the sidecar's `tints` (presentation, never the document).
+  const rawTints =
+    options.tints ??
+    lay.nodeStyles ??
+    (options.layout && typeof options.layout === "object" ? options.layout.tints : null);
+  const nodeTints = rawTints && typeof rawTints === "object" ? rawTints : {};
+  const nodePaint = (id) => {
+    const st = own(nodeTints, id);
+    return st && typeof st === "object" ? tintPaint(st.tint, st.strength) : null;
   };
   const drawnGroups = (doc.groups ?? []).filter((g) => lay.frames[g.id]);
-  const tinted = drawnGroups.some((g) => styleOf(g.id).tint);
+  const tintedFrames = drawnGroups.some((g) => styleOf(g.id).tint);
+  const tinted = tintedFrames || (doc.nodes ?? []).some((n) => nodePaint(n.id));
   const iconed = drawnGroups.some((g) => styleOf(g.id).body);
   const vars = {
     light: `:root{--ink:#1b1b19;--muted:#6b6b66;--edge:#6b6b72;--frame:#b4b4ae;--bg:#ffffff;--node-fill:${NODE[0]};--node-line:${NODE[1]}}`,
@@ -182,18 +248,16 @@ export function toSvg(doc, catalogue, options = {}) {
   // Outer groups first, so a nested one paints over its parent. A tint fills only its own
   // group: every group inside a tinted one lays the page background down first. Without a
   // tint there is nothing to cut, and the picture is what it always was.
-  const cut = tinted ? framesUnderTint(drawnGroups, (id) => styleOf(id).tint !== null) : new Set();
+  const cut = tintedFrames
+    ? framesUnderTint(drawnGroups, (id) => styleOf(id).tint !== null)
+    : new Set();
   for (const g of framesOuterFirst(doc.groups ?? [])) {
     const f = lay.frames[g.id];
     if (!f) continue;
-    const { tint, body } = styleOf(g.id);
+    const { body, paint } = styleOf(g.id);
     // A named tint is a token the style block resolves per theme. A hex tint is its own colour,
     // written inline so the picture needs no rule for it (the design page strips the <style>).
-    const dataTint = !tint
-      ? ""
-      : tint.startsWith("#")
-        ? ` data-tint="hex" style="stroke:${tint};fill:${tint}${TINT_FILL_ALPHA}"`
-        : ` data-tint="${tint}"`;
+    const dataTint = paintAttrs(paint);
     if (cut.has(g.id))
       out.push(
         `<rect x="${f1(f[0])}" y="${f1(f[1])}" width="${f1(f[2])}" height="${f1(f[3])}" rx="14" fill="var(--bg)"/>`,
@@ -259,6 +323,13 @@ export function toSvg(doc, catalogue, options = {}) {
     out.push(
       `<rect class="body" x="${x}" y="${y}" width="${bw}" height="${bh}" rx="12" stroke-width="1"${hole}/>`,
     );
+    // A tinted component: the card stays opaque, and a second rect over it carries the tint's
+    // border and faint fill, so the icon and the words above it are drawn exactly as before.
+    const paint = nodePaint(n.id);
+    if (paint)
+      out.push(
+        `<rect${paintAttrs(paint)} x="${x}" y="${y}" width="${bw}" height="${bh}" rx="12" stroke-width="1"${c.kind === "custom" ? ' stroke-dasharray="6 4"' : ""}/>`,
+      );
     const body = own(icons, n.component);
     if (body) {
       const scale = t.icon.size === ICON ? "" : ` scale(${t.icon.size / ICON})`;
@@ -309,11 +380,15 @@ export function toMermaid(doc, direction = "TD") {
   };
   for (const n of members.get(null) ?? []) nodeLine(n, "  ");
   for (const g of children.get(null) ?? []) emitGroup(g, 1);
+  // An end naming a group (and no node) is the group's subgraph.
+  const nodeIds = new Set((doc.nodes ?? []).map((n) => n.id));
+  const groupIds = new Set(groups.map((g) => g.id));
+  const end = (id) => mid(!nodeIds.has(id) && groupIds.has(id) ? `g_${id}` : id);
   for (const e of doc.edges ?? []) {
     const meta = e.protocol + (e.delivery ? `, ${e.delivery}` : "");
     const lab = mesc(e.label ? `${e.label} [${meta}]` : meta);
     const arrow = e.mode === "sync" ? "-->" : "-.->";
-    out.push(`  ${mid(e.from)} ${arrow}|"${lab}"| ${mid(e.to)}`);
+    out.push(`  ${end(e.from)} ${arrow}|"${lab}"| ${end(e.to)}`);
   }
   return out.join("\n");
 }

@@ -128,7 +128,8 @@ anything is stored: a structurally invalid design answers `422` and nothing is w
 `slug`, the address is derived from the title; where that is taken, a numeric suffix is added.
 `layout` is optional: it goes through the same reader and limits as a save, and entries naming a
 node, edge or group the YAML does not hold are dropped. A blocking finding carries `line`, the
-1-based line of the text it is about, where one can be named. Answers `201`.
+1-based line of the text it is about, where one can be named. An edge end may name a group as
+well as a node; `edgeCount` counts those edges like any other. Answers `201`.
 
 ```json
 {

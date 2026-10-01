@@ -13,8 +13,11 @@ import {
   frameIconKey,
   type HexTint,
   isHexTint,
+  type NodeTint,
   type Note,
   normaliseTint,
+  STRENGTHS,
+  type Strength,
   TINTS,
   type Tint,
 } from "@/lib/layout-sidecar";
@@ -34,8 +37,13 @@ export type InspectorApi = {
   setGroupField: (id: string, field: string, value: unknown) => void;
   renameGroup: (oldId: string, newId: string) => void;
   setParent: (id: string, parent: string | null) => void;
-  /** Group tint and icon. Sidecar only; `undefined` clears that half. */
-  setFrameStyle: (id: string, patch: { tint?: Tint | HexTint; icon?: string }) => void;
+  /** Group tint, its strength and icon. Sidecar only; `undefined` clears that part. */
+  setFrameStyle: (
+    id: string,
+    patch: { tint?: Tint | HexTint; icon?: string; strength?: Strength },
+  ) => void;
+  /** A component tint and its strength, on every id given. Sidecar only; no tint clears it. */
+  setNodeTint: (ids: string[], patch: { tint?: Tint | HexTint; strength?: Strength }) => void;
   setDesignId: (id: string) => void;
   /** The owner's list badge choice, or null for automatic. Sidecar only. */
   setBadge: (ref: string | null) => void;
@@ -130,6 +138,35 @@ function TextInput({
  * trigger to take focus when it mounts, which is where focus would have returned.
  */
 let refocusMoreColours = false;
+
+/**
+ * How strongly a tint fills: light, normal or bold, as three segments. Shown only beside a tint,
+ * since a strength without one means nothing.
+ */
+function StrengthField({
+  value,
+  onPick,
+}: {
+  value: Strength | undefined;
+  onPick: (s: Strength) => void;
+}) {
+  const current = value ?? "normal";
+  return (
+    <fieldset className="strength-field" aria-label="Tint strength">
+      {STRENGTHS.map((s) => (
+        <button
+          key={s}
+          type="button"
+          aria-pressed={current === s}
+          className={current === s ? "strength-seg on" : "strength-seg"}
+          onClick={() => onPick(s)}
+        >
+          {s}
+        </button>
+      ))}
+    </fieldset>
+  );
+}
 
 function TintField({
   tint,
@@ -437,6 +474,7 @@ export function Inspector({
   doc,
   notes,
   frameStyles,
+  nodeTints,
   catalogue,
   icons,
   searchRows,
@@ -452,6 +490,8 @@ export function Inspector({
   notes: Note[];
   /** Group tint and icon by group id, from the layout sidecar. */
   frameStyles?: Record<string, FrameStyle>;
+  /** Component tints by node id, from the layout sidecar. */
+  nodeTints?: Record<string, NodeTint>;
   catalogue: any;
   /** The catalogue icon map (icons.json): component ids, `kind:<id>` and `boundary:<id>`. */
   icons?: Record<string, string>;
@@ -495,7 +535,15 @@ export function Inspector({
       return (
         <>
           {head}
-          <NodePanel node={node} doc={doc} catalogue={catalogue} api={api} highlight={hl} />
+          <NodePanel
+            node={node}
+            doc={doc}
+            catalogue={catalogue}
+            api={api}
+            highlight={hl}
+            tint={own(nodeTints ?? {}, node.id)}
+            selected={multi.size > 1 && multi.has(node.id) ? [...multi] : [node.id]}
+          />
         </>
       );
   }
@@ -564,12 +612,18 @@ function NodePanel({
   catalogue,
   api,
   highlight,
+  tint,
+  selected,
 }: {
   node: any;
   doc: any;
   catalogue: any;
   api: InspectorApi;
   highlight: Highlight;
+  /** This component's tint, from the layout sidecar. */
+  tint?: NodeTint;
+  /** The ids a tint applies to: the whole multi-selection, or this node alone. */
+  selected: string[];
 }) {
   const c = own(catalogue.components, node.component);
   const defs: Record<string, any> = propDefs(catalogue, node.component);
@@ -605,6 +659,27 @@ function NodePanel({
         </select>
       </Field>
       {loc?.description ? <p className="muted my-2 small">{loc.description}</p> : null}
+      <Field
+        name="tint"
+        note={
+          selected.length > 1
+            ? `layout only · applies to all ${selected.length} selected`
+            : "layout only, not in the YAML"
+        }
+        isSet={Boolean(tint)}
+      >
+        <TintField
+          key={node.id}
+          tint={tint?.tint}
+          onPick={(t) => api.setNodeTint(selected, { tint: t })}
+        />
+        {tint ? (
+          <StrengthField
+            value={tint.strength}
+            onPick={(strength) => api.setNodeTint(selected, { strength })}
+          />
+        ) : null}
+      </Field>
       {Object.keys(defs).length ? <h2>Properties</h2> : null}
       {Object.entries(defs).map(([name, def]) => {
         const value = node.props ? node.props[name] : undefined;
@@ -680,15 +755,52 @@ function EdgePanel({
 }) {
   const lit = (name: string) => highlight?.fields.includes(name);
   const ids = doc.nodes.map((n: any) => n.id as string);
-  const pick = (name: string) => (
-    <select value={edge[name]} onChange={(e) => api.setEdge(index, name, e.target.value)}>
-      {ids.map((id: string) => (
-        <option key={id} value={id}>
-          {id}
-        </option>
-      ))}
-    </select>
-  );
+  // An end may name a group: the edge then runs to the group as a unit.
+  const groups: any[] = doc.groups ?? [];
+  const groupOf = (id: string) =>
+    ids.includes(id) ? null : (groups.find((g: any) => g.id === id) ?? null);
+  const pick = (name: string) => {
+    const group = groupOf(edge[name]);
+    return (
+      <>
+        <select value={edge[name]} onChange={(e) => api.setEdge(index, name, e.target.value)}>
+          <optgroup label="Components">
+            {ids.map((id: string) => (
+              <option key={id} value={id}>
+                {id}
+              </option>
+            ))}
+          </optgroup>
+          {groups.length ? (
+            <optgroup label="Groups">
+              {groups.map((g: any) => (
+                <option key={`g:${g.id}`} value={g.id}>
+                  group · {g.label || g.id}
+                </option>
+              ))}
+            </optgroup>
+          ) : null}
+        </select>
+        {group ? (
+          <div className="resolved endpoint-group">
+            <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
+              <rect
+                x="1"
+                y="1"
+                width="10"
+                height="10"
+                rx="2.5"
+                fill="none"
+                stroke="currentColor"
+                strokeDasharray="2.5 1.5"
+              />
+            </svg>{" "}
+            group · {group.label || group.id}
+          </div>
+        ) : null}
+      </>
+    );
+  };
   const enumField = (name: string, values: string[], note?: string) => (
     <Field name={name} note={note} isSet={edge[name] !== undefined} hl={lit(name)}>
       <Control
@@ -1022,6 +1134,12 @@ function GroupPanel({
           tint={style.tint}
           onPick={(tint) => api.setFrameStyle(group.id, { tint })}
         />
+        {style.tint ? (
+          <StrengthField
+            value={style.strength}
+            onPick={(strength) => api.setFrameStyle(group.id, { strength })}
+          />
+        ) : null}
       </Field>
       <Field name="icon" isSet={Boolean(style.icon)}>
         <div className="icon-field">

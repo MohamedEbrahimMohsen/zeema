@@ -74,6 +74,20 @@ export const normaliseTint = (v: unknown): Tint | HexTint | null =>
   isTint(v) ? v : isHexTint(v) ? (v.toLowerCase() as HexTint) : null;
 
 /**
+ * How strongly a tint fills: `light` (half), `normal` (the default, never stored) or `bold`
+ * (double). Only `light` and `bold` are kept; anything else reads as normal. TINT_STRENGTHS in
+ * packages/core/src/render.js draws them.
+ */
+export const STRENGTHS = ["light", "normal", "bold"] as const;
+export type Strength = (typeof STRENGTHS)[number];
+export type StoredStrength = Exclude<Strength, "normal">;
+export const readStrength = (v: unknown): StoredStrength | null =>
+  v === "light" || v === "bold" ? v : null;
+
+/** A component's tint: presentation only, so it lives here and never in the YAML. */
+export type NodeTint = { tint: Tint | HexTint; strength?: StoredStrength };
+
+/**
  * An icon drawn before a group's label, by reference and never by bytes:
  * `kind:<kindId>` is a kind glyph (icons/kinds/<kindId>.svg),
  * `component:<provider>/<componentId>` is a catalogue component's icon and
@@ -105,7 +119,7 @@ export const isBadgeRef = (v: unknown): v is string =>
   typeof v === "string" && v.length <= FRAME_ICON_MAX && BADGE_RE.test(v);
 
 /** How a group is drawn: presentation only, so it lives here and never in the YAML. */
-export type FrameStyle = { tint?: Tint | HexTint; icon?: string };
+export type FrameStyle = { tint?: Tint | HexTint; icon?: string; strength?: StoredStrength };
 export const FRAME_MAX_STYLES = 500;
 const GROUP_ID_RE = /^[a-z][a-z0-9-]*$/;
 
@@ -129,6 +143,8 @@ export type LayoutSidecar = {
   notes: Note[];
   /** Keyed by group id. A group with no entry is drawn in the default frame colour. */
   frames: Record<string, FrameStyle>;
+  /** Component tints, keyed by node id. Absent when no component has one. */
+  tints?: Record<string, NodeTint>;
   /** The list badge its owner chose (see `BADGE_RE`). Absent: chosen automatically. */
   badge?: string;
 };
@@ -225,8 +241,54 @@ export function readSidecar(raw: unknown, targets?: AnchorTargets): LayoutSideca
   };
   const ports = readPorts(r.ports);
   if (Object.keys(ports).length) out.ports = ports;
+  const tints = readTints(r.tints, present);
+  if (Object.keys(tints).length) out.tints = tints;
   if (isBadgeRef(r.badge)) out.badge = r.badge;
   return out;
+}
+
+/**
+ * The component tints a sidecar holds: a tint that is neither named nor `#rrggbb` drops the
+ * entry, a strength other than light or bold is dropped (normal is the default). With targets,
+ * a tint for a node the design no longer has is dropped, as a stale group style is.
+ */
+export function readTints(
+  raw: unknown,
+  present?: { nodes: Set<string> } | null,
+): Record<string, NodeTint> {
+  const out: Record<string, NodeTint> = {};
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return out;
+  let kept = 0;
+  for (const [id, v] of Object.entries(raw as Record<string, unknown>)) {
+    if (kept >= FRAME_MAX_STYLES) break;
+    // A node id is kebab-case too, which keeps `__proto__` out of the map.
+    if (!GROUP_ID_RE.test(id) || (present && !present.nodes.has(id))) continue;
+    if (!v || typeof v !== "object") continue;
+    const r = v as Record<string, unknown>;
+    const tint = normaliseTint(r.tint);
+    if (!tint) continue;
+    const entry: NodeTint = { tint };
+    const strength = readStrength(r.strength);
+    if (strength) entry.strength = strength;
+    out[id] = entry;
+    kept++;
+  }
+  return out;
+}
+
+/** The component tints whose node still exists. Like `pruneFrames`, it copies. */
+export function pruneTints(tints: Record<string, NodeTint>, nodes: Iterable<string>) {
+  const keep = new Set(nodes);
+  const out: Record<string, NodeTint> = {};
+  for (const [id, t] of Object.entries(tints)) if (keep.has(id)) out[id] = t;
+  return out;
+}
+
+/** Follow a node rename: its tint goes with it. Mutates, like `retargetFrame`. */
+export function retargetTint(tints: Record<string, NodeTint>, from: string, to: string) {
+  if (from === to || !Object.hasOwn(tints, from)) return;
+  tints[to] = tints[from];
+  delete tints[from];
 }
 
 /** A port as stored: a known side and a finite `t`, clamped to [0, 1] and rounded to 3 places. */
@@ -291,6 +353,9 @@ export function readFrames(
     const style: FrameStyle = {};
     const tint = normaliseTint(r.tint);
     if (tint) style.tint = tint;
+    // A strength says how a tint fills, so it means nothing without one.
+    const strength = readStrength(r.strength);
+    if (tint && strength) style.strength = strength;
     if (isFrameIcon(r.icon)) style.icon = r.icon;
     if (!style.tint && !style.icon) continue;
     out[id] = style;
@@ -312,6 +377,7 @@ export function writeSidecar(
   };
   // Absent rather than empty, so a design nobody has ported stores the bytes it always did.
   if (s.ports && Object.keys(s.ports).length) out.ports = s.ports;
+  if (s.tints && Object.keys(s.tints).length) out.tints = s.tints;
   if (isBadgeRef(s.badge)) out.badge = s.badge;
   return out;
 }
@@ -329,7 +395,8 @@ export function isBlankSidecar(raw: unknown) {
     !Object.keys(s.edges).length &&
     !s.notes.length &&
     !Object.keys(s.frames).length &&
-    !s.ports
+    !s.ports &&
+    !s.tints
   );
 }
 
@@ -412,6 +479,8 @@ export function pruneSidecar(s: LayoutSidecar, targets: SidecarTargets): LayoutS
   };
   const ports = s.ports ? keep(s.ports, edges) : {};
   if (Object.keys(ports).length) out.ports = ports;
+  const tints = s.tints ? keep(s.tints, nodes) : {};
+  if (Object.keys(tints).length) out.tints = tints;
   if (s.badge) out.badge = s.badge;
   return out;
 }
@@ -421,7 +490,7 @@ const sortedEntries = <T>(o: Record<string, T>) =>
 
 /**
  * A sidecar as the file `design.layout.json`: read through `readSidecar`, then written with a
- * fixed key order (version, nodes, edges, ports, frames, notes, badge; map keys sorted; a note's
+ * fixed key order (version, nodes, edges, ports, frames, tints, notes, badge; map keys sorted; a note's
  * fields in declaration order), two-space indent and a trailing newline. The same sidecar always
  * gives the same bytes, whatever order the database handed its keys back in.
  */
@@ -446,9 +515,18 @@ export function sidecarFile(raw: unknown): string {
       const st: FrameStyle = {};
       if (f.tint) st.tint = f.tint;
       if (f.icon) st.icon = f.icon;
+      if (f.strength) st.strength = f.strength;
       return [k, st];
     }),
   );
+  if (s.tints)
+    file.tints = Object.fromEntries(
+      sortedEntries(s.tints).map(([k, t]) => {
+        const e: NodeTint = { tint: t.tint };
+        if (t.strength) e.strength = t.strength;
+        return [k, e];
+      }),
+    );
   file.notes = s.notes.map((n) => {
     const note: Note = { id: n.id, x: n.x, y: n.y, w: n.w, h: n.h, text: n.text };
     if (n.anchor)

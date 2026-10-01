@@ -5,7 +5,7 @@
 // through `commit`, which snapshots first, so undo and redo are uniform.
 import { ruleReads } from "@zeema/core/describe";
 import * as D from "@zeema/core/document";
-import { edgeKeys, rekeyBows, rekeyPorts } from "@zeema/core/geometry";
+import { edgeKeys, innermostFrameAt, rekeyBows, rekeyPorts } from "@zeema/core/geometry";
 import { layout } from "@zeema/core/layout";
 import { runRules } from "@zeema/core/rules";
 import { check } from "@zeema/core/structure";
@@ -26,6 +26,7 @@ import {
   NOTE_ANCHOR_W,
   NOTE_DEFAULT_H,
   NOTE_DEFAULT_W,
+  type NodeTint,
   type Note,
   type NoteAnchor,
   nextNoteId,
@@ -34,9 +35,11 @@ import {
   pruneAnchored,
   pruneFrames,
   prunePorts,
+  pruneTints,
   readSidecar,
   retargetAnchors,
   retargetFrame,
+  retargetTint,
   writeSidecar,
 } from "@/lib/layout-sidecar";
 import { BadgeRow } from "./BadgeRow";
@@ -95,6 +98,8 @@ type Engine = {
   notes: Note[];
   /** Group tint and icon by group id: sidecar, never YAML. */
   frames: Record<string, FrameStyle>;
+  /** Component tints by node id: sidecar, never YAML. */
+  tints: Record<string, NodeTint>;
   /** The list badge the owner chose (Design settings here, or the design page): sidecar, never
    *  YAML. It rides the canvas's own save, so a save never drops it. */
   badge?: string;
@@ -556,6 +561,7 @@ export function Canvas(props: Props) {
         ports: e.ports,
         notes: e.notes,
         frameStyles: e.frames,
+        nodeTints: e.tints,
         showNotes: showNotesRef.current,
         pinnedNotes: pinnedNotesRef.current,
         findings: [...e.structural, ...e.rules],
@@ -579,6 +585,7 @@ export function Canvas(props: Props) {
       ports: e.ports,
       notes: e.notes,
       frames: e.frames,
+      tints: e.tints,
       badge: e.badge,
     });
   }, []);
@@ -651,6 +658,7 @@ export function Canvas(props: Props) {
         ports: clone(e.ports),
         notes: clone(e.notes),
         frames: clone(e.frames),
+        tints: clone(e.tints),
         badge: e.badge,
       };
       const now = Date.now();
@@ -669,6 +677,8 @@ export function Canvas(props: Props) {
       e.notes = pruneAnchored(e.notes, anchorables(e.doc));
       // The same for a deleted group's colour and icon: they go in the same undo step.
       e.frames = pruneFrames(e.frames, anchorables(e.doc).groups);
+      // And a deleted component's tint.
+      e.tints = pruneTints(e.tints, anchorables(e.doc).nodes);
       e.dirty = true;
       e.saveSeq++;
       setStatus(props.canWrite ? "unsaved" : "read only — Clone to keep these edits");
@@ -689,6 +699,7 @@ export function Canvas(props: Props) {
       ports: clone(e.ports),
       notes: clone(e.notes),
       frames: clone(e.frames),
+      tints: clone(e.tints),
       badge: e.badge,
     });
     Object.assign(e, prev);
@@ -711,6 +722,7 @@ export function Canvas(props: Props) {
       ports: clone(e.ports),
       notes: clone(e.notes),
       frames: clone(e.frames),
+      tints: clone(e.tints),
       badge: e.badge,
     });
     Object.assign(e, next);
@@ -849,7 +861,15 @@ export function Canvas(props: Props) {
     (componentId: string, at?: [number, number], from?: Wiring) => {
       const e = eng.current!;
       const scene = sceneRef.current!;
-      const added = D.addNode(e.doc, componentId, bundle!.catalogue);
+      // Wired out into a frame's open interior: the new component is a member of that group.
+      const into =
+        from && at ? (innermostFrameAt(scene.frames, at[0], at[1]) as string | null) : null;
+      const added = D.addNode(
+        e.doc,
+        componentId,
+        bundle!.catalogue,
+        into ? { group: into } : undefined,
+      );
       const id = added.id;
       const doc = from ? D.addEdge(added.doc, from.id, id) : added.doc;
       const sizes = (layout(doc, bundle!.catalogue) as any).sizes;
@@ -1195,6 +1215,7 @@ export function Canvas(props: Props) {
       ports: sidecarIn.ports ?? {},
       notes: sidecarIn.notes,
       frames: sidecarIn.frames,
+      tints: sidecarIn.tints ?? {},
       badge: sidecarIn.badge,
       undo: [],
       redo: [],
@@ -1623,6 +1644,8 @@ export function Canvas(props: Props) {
         if (!typed.trim()) return notify("an id cannot be empty");
         if (e.doc.nodes.some((n: any) => n.id === newId))
           return notify(`${newId} is the id of another component`);
+        if ((e.doc.groups ?? []).some((g: any) => g.id === newId))
+          return notify(`${newId} is the id of a group`);
         scene.selection = { type: "node", ref: newId };
         scene.multi = new Set([...scene.multi].map((x) => (x === oldId ? newId : x)));
         const renamed = D.renameNode(e.doc, oldId, newId, bundle!.catalogue);
@@ -1630,6 +1653,7 @@ export function Canvas(props: Props) {
           apply: () => {
             movePosition(oldId, newId);
             retargetAnchors(e.notes, "node", oldId, newId);
+            retargetTint(e.tints, oldId, newId);
             e.bows = rekeyBows(e.doc, renamed, e.bows);
             e.ports = rekeyPorts(e.doc, renamed, e.ports);
           },
@@ -1652,11 +1676,17 @@ export function Canvas(props: Props) {
         if (!newId || !/^[a-z][a-z0-9-]*$/.test(newId)) return notify("a group id is kebab-case");
         if ((e.doc.groups ?? []).some((g: any) => g.id === newId))
           return notify(`${newId} is the id of another group`);
+        if (e.doc.nodes.some((n: any) => n.id === newId))
+          return notify(`${newId} is the id of a component`);
         sceneRef.current!.selection = { type: "group", ref: newId };
-        commit(D.renameGroup(e.doc, oldId, newId), {
+        const renamed = D.renameGroup(e.doc, oldId, newId);
+        commit(renamed, {
           apply: () => {
             retargetAnchors(e.notes, "group", oldId, newId);
             retargetFrame(e.frames, oldId, newId);
+            // an edge to the group is keyed by the group's id, like an edge to a node
+            e.bows = rekeyBows(e.doc, renamed, e.bows);
+            e.ports = rekeyPorts(e.doc, renamed, e.ports);
           },
         });
       },
@@ -1666,13 +1696,40 @@ export function Canvas(props: Props) {
         const e = eng.current!;
         commit(null, {
           apply: () => {
-            const next: FrameStyle = { ...(e.frames[id] ?? {}), ...patch };
+            const { strength, ...rest } = { ...(e.frames[id] ?? {}), ...patch };
+            const next: FrameStyle = rest;
             if (!next.tint) delete next.tint;
             if (!next.icon) delete next.icon;
+            // A strength only says how a tint fills: normal is the default and never stored.
+            if (next.tint && (strength === "light" || strength === "bold"))
+              next.strength = strength;
             const frames = { ...e.frames };
             if (next.tint || next.icon) frames[id] = next;
             else delete frames[id];
             e.frames = frames;
+          },
+        });
+      },
+      // A component tint is layout too. Applied to every id given: the whole multi-selection.
+      setNodeTint: (ids, patch) => {
+        const e = eng.current!;
+        commit(null, {
+          apply: () => {
+            const tints = { ...e.tints };
+            for (const id of ids) {
+              const merged = { ...(tints[id] ?? {}), ...patch } as Partial<NodeTint> & {
+                strength?: string;
+              };
+              if (!merged.tint) {
+                delete tints[id];
+                continue;
+              }
+              const entry: NodeTint = { tint: merged.tint };
+              if (merged.strength === "light" || merged.strength === "bold")
+                entry.strength = merged.strength;
+              tints[id] = entry;
+            }
+            e.tints = tints;
           },
         });
       },
@@ -1999,6 +2056,7 @@ export function Canvas(props: Props) {
           doc: e.doc,
           notes: e.notes,
           frameStyles: e.frames,
+          nodeTints: e.tints,
           catalogue: bundle.catalogue,
           icons: bundle.icons,
           searchRows: bundle.search,
@@ -2725,8 +2783,10 @@ export function Canvas(props: Props) {
           }}
         >
           <p>
-            Groups don't connect. Wire the components inside it — or add an External system node for
-            something outside your control.
+            Dragging a group moves it. To connect a group as a whole, drop a wire on its dashed
+            border or its name, or select it and drag from a dot on its border. Dropping inside a
+            group adds a new member there. For something outside your control, add an External
+            system node.
           </p>
           <button
             type="button"

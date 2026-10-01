@@ -205,6 +205,13 @@ A design may have no nodes yet (`nodes: []`): a new design starts that way on th
 
 Directed. `from` and `to` are node ids in this design.
 
+An end may instead name a group: the edge then runs to the group as a unit ("the API talks to
+the whole cluster"), drawn to the group's dashed frame, not fanned out to its members. A node may
+connect to its own group, and a group to another group, nested or not. An id that names both a
+node and a group means the node; the editor never makes such a pair. Rules that read only the
+edge's own fields apply as usual; a rule that needs the component at an end (`from`, `to`,
+`crossesGroup`) skips an edge whose end is a group.
+
 | Field | Required | Meaning |
 |---|---|---|
 | `protocol` | yes | Free string in v1: `http`, `grpc`, `kafka`, `postgres`, `redis`. Will become an enum once real designs show the real set. |
@@ -227,7 +234,9 @@ diagram from groups, nodes and edges alone. What a person arranged by hand goes 
 sidecar beside the design: node positions, an edge's bow (`edges`), where each end of an edge
 meets its box (`ports`: per edge key, `{ from?, to? }`, each `{ side, t }` with `side` one of
 `top`, `right`, `bottom`, `left` and `t` in [0, 1] along it), group colours and icons
-(`frames`), notes, and the list badge its owner chose (`badge`: `provider:<id>` or
+(`frames`), component tints (`tints`: per node id, `{ tint, strength? }`, the same tint values
+as a group's), how strongly a tint fills (`strength`, on a frame or a component tint: `light`,
+`normal` or `bold`; absent is normal), notes, and the list badge its owner chose (`badge`: `provider:<id>` or
 `boundary:<id>`, absent for the automatic one). Moving an edge's end to another component is not
 layout: it changes `from` or `to` in the design.
 
@@ -238,7 +247,7 @@ A design leaves the site, and comes back, as two files with the repository's nam
 | File | Required | Holds |
 |---|---|---|
 | `design.yaml` | yes | The design, byte for byte as stored |
-| `design.layout.json` | no | The sidecar above: `version`, `nodes`, `edges`, `ports`, `frames`, `notes`, `badge`; keys in that order, map keys sorted, two-space indent |
+| `design.layout.json` | no | The sidecar above: `version`, `nodes`, `edges`, `ports`, `frames`, `tints`, `notes`, `badge`; keys in that order, map keys sorted, two-space indent |
 
 The design page and the canvas download either, or both as a zip that unzips to a design folder
 (`zeema render design.yaml` draws with the sidecar beside it). **New design ▾ Import YAML…**

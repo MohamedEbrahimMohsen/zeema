@@ -20,7 +20,14 @@ import {
   pathOf,
   portAt,
 } from "@zeema/core/geometry";
-import { FRAME_ICON_SHIFT, nodeText, TINT, TINT_FILL_ALPHA } from "@zeema/core/render";
+import {
+  FRAME_ICON_SHIFT,
+  nodeText,
+  TINT,
+  TINT_FILL_ALPHA,
+  tintFill,
+  tintPaint,
+} from "@zeema/core/render";
 import {
   anchorKey,
   anchorTarget,
@@ -32,6 +39,7 @@ import {
   NOTE_MAX_TEXT,
   NOTE_MIN_H,
   NOTE_MIN_W,
+  type NodeTint,
   type Note,
   type NoteAnchor,
   normaliseTint,
@@ -39,6 +47,7 @@ import {
   type PortSide,
 } from "@/lib/layout-sidecar";
 import { own } from "@/lib/own";
+import { frameTargetAt } from "./frame-target";
 import { anchorOffset, coversTarget, noteDropTarget, sameAnchor } from "./note-anchor";
 
 const NS = "http://www.w3.org/2000/svg";
@@ -98,6 +107,8 @@ export type Model = {
   notes: Note[];
   /** Group tint and icon by group id, from the sidecar. Absent means the default frame. */
   frameStyles?: Record<string, FrameStyle>;
+  /** Component tints by node id, from the sidecar. Absent means the neutral card. */
+  nodeTints?: Record<string, NodeTint>;
   /** The Notes toggle. Hidden means not drawn, not hit-testable and not exported. */
   showNotes: boolean;
   /**
@@ -116,7 +127,10 @@ const PORT_REACH = 12;
 export type Handlers = {
   onSelect?: (selection: Subject, multi: Set<string>) => void;
   onMove?: (moves: Array<{ id: string; x: number; y: number; group: string | null }>) => void;
-  /** A wire was let go on another component. `ends` is set when it was drawn from a port dot. */
+  /**
+   * A wire was let go on another component, or on a group's frame (`to` is then the group id: an
+   * edge to the group as a unit). `ends` is set when it was drawn from a port dot.
+   */
   onConnect?: (from: string, to: string, ends?: EdgePorts) => void;
   onBowPreview?: (key: string, value: number) => void;
   onBow?: (key: string, value: number) => void;
@@ -124,7 +138,7 @@ export type Handlers = {
   onPortPreview?: (key: string, end: EdgeEnd, port: Port | null) => void;
   /** An end handle was let go on its own box's border: attach that end there. */
   onPort?: (key: string, end: EdgeEnd, port: Port) => void;
-  /** An end handle was let go on another component: move that end of the edge to it. */
+  /** An end handle was let go on another component or a group's frame: move that end there. */
   onReconnect?: (index: number, end: EdgeEnd, nodeId: string) => void;
   labelOf?: (kind: string, ref: string | number) => string | null;
   onLabel?: (kind: string, ref: string | number, value: string) => void;
@@ -294,6 +308,9 @@ export class Scene {
   /** The selected edge's two end handles, [from, to], and which edge they belong to. */
   endHandles: SVGCircleElement[] = [];
   endHandlesFor: number | null = null;
+  /** The selected group's four port dots, and which group they belong to. */
+  frameDots: SVGCircleElement[] = [];
+  frameDotsFor: string | null = null;
   marquee: any = null;
   pan: any = null;
   editor: any = null;
@@ -483,6 +500,28 @@ export class Scene {
         return n.id as string;
     }
     return null;
+  }
+
+  /**
+   * What an edge end would attach to under a point: a component, else a group as a unit, but
+   * only when the point is on that frame's border band or label strip (see frame-target.ts). A
+   * point in a frame's open interior attaches to nothing: a wire let go there adds a member.
+   */
+  endAt(wx: number, wy: number, except: string | null = null) {
+    const node = this.nodeAt(wx, wy, except);
+    if (node) return node;
+    return frameTargetAt(this.frames, wx, wy, this.view.k, except);
+  }
+
+  /** The box an edge end names: a component's box, else a group's frame. */
+  boxOf(id: string): Box | undefined {
+    return this.boxes[id] ?? (Object.hasOwn(this.frames, id) ? this.frames[id] : undefined);
+  }
+
+  /** The element a wire highlights for an end: a component's card, or a group's frame. */
+  endEl(id: string | null): Element | null {
+    if (!id) return null;
+    return this.nodeEls.get(id) ?? this.frameEls.get(id)?.rect ?? null;
   }
 
   // ---------------------------------------------------------------- render
@@ -919,6 +958,9 @@ export class Scene {
       // cut) apply to it and the fill carries the named tints' alpha (TINT_FILL_ALPHA).
       const tint = tintOf(group.id);
       const hex = tint?.startsWith("#") ? tint : null;
+      // A light or bold strength fills with the tint itself at its own opacity, inline.
+      const fill = tintFill(tint, style?.strength);
+      const strong = fill?.strength ? `fill:${fill.color};fill-opacity:${fill.opacity}` : null;
       const rect = el("rect", {
         class: "frame",
         x: f[0],
@@ -927,7 +969,11 @@ export class Scene {
         height: f[3],
         rx: 14,
         "data-tint": hex ? "hex" : tint,
-        style: hex ? `--tint-hex:${hex};--tint-hex-fill:${hex}${TINT_FILL_ALPHA}` : null,
+        "data-strength": fill?.strength ?? null,
+        style:
+          [hex ? `--tint-hex:${hex};--tint-hex-fill:${hex}${TINT_FILL_ALPHA}` : null, strong]
+            .filter(Boolean)
+            .join(";") || null,
       });
       const hit = el("rect", {
         class: "frame-hit",
@@ -982,6 +1028,7 @@ export class Scene {
       this.boxes,
       this.model.bows || {},
       this.model.ports || {},
+      this.frames,
     );
     for (const e of this.geom) {
       const d = pathOf(e.points);
@@ -1091,6 +1138,26 @@ export class Scene {
           "fill-opacity": untyped ? 0.45 : null,
         }),
       );
+      // A tinted component: the card stays opaque and a second rect over it carries the tint's
+      // border and faint fill, as the server render draws it. The border is an attribute, so a
+      // selection or wiring state (canvas.css) can take it over.
+      const tinted = own(this.model.nodeTints ?? {}, n.id) as NodeTint | undefined;
+      const fill = tinted ? tintFill(tinted.tint, tinted.strength) : null;
+      if (fill)
+        box.append(
+          el("rect", {
+            class: "node-tint",
+            x: 0,
+            y: 0,
+            width: b[2],
+            height: b[3],
+            rx: 12,
+            stroke: fill.color,
+            "stroke-width": 1,
+            "stroke-dasharray": untyped ? "6 4" : null,
+            style: `fill:${fill.color};fill-opacity:${fill.opacity}`,
+          }),
+        );
       // The name and id fitted to the box exactly as the server render fits them (nodeText in
       // @zeema/core/render): two lines at most, then an ellipsis, the whole text in a <title>.
       const text = nodeText(displayName(this.model.catalogue, n), n.component, b[2]);
@@ -1157,7 +1224,7 @@ export class Scene {
 
   repaintEdges(bows: Record<string, number>, ports = this.model.ports || {}) {
     this.model.bows = bows;
-    const geom = edgeGeometry(this.model.doc, this.boxes, bows, ports);
+    const geom = edgeGeometry(this.model.doc, this.boxes, bows, ports, this.frames);
     this.geom = geom;
     for (const e of geom) {
       const els = this.edgeEls.get(e.i);
@@ -1240,6 +1307,46 @@ export class Scene {
         this.selection.type === "note" && this.selection.ref === id,
       );
     this.placeEndHandles();
+    this.placeFrameDots();
+  }
+
+  /**
+   * A selected group shows a port dot at the middle of each side of its frame, as a component
+   * does, so a wire can start from the group as a unit. They live in the overlay: the frame's
+   * own hit area is its outline, and a dot just outside it must not start a move of the group.
+   */
+  placeFrameDots() {
+    const gid = this.selection.type === "group" ? (this.selection.ref as string) : null;
+    const f = gid ? this.frames[gid] : null;
+    if (!gid || !f) {
+      for (const d of this.frameDots) d.remove();
+      this.frameDots = [];
+      this.frameDotsFor = null;
+      return;
+    }
+    if (this.frameDotsFor !== gid || !this.frameDots.length) {
+      for (const d of this.frameDots) d.remove();
+      this.frameDots = PORT_SIDES.map((side) => {
+        const dot = el("circle", {
+          class: "port-dot frame-port-dot",
+          r: 4,
+          "data-side": side,
+        }) as SVGCircleElement;
+        dot.addEventListener("pointerdown", (ev: any) => {
+          if (ev.button !== 0 || this.space) return;
+          ev.stopPropagation();
+          this.startWire(gid, ev, side);
+        });
+        this.layers.overlay.append(dot);
+        return dot;
+      });
+      this.frameDotsFor = gid;
+    }
+    this.frameDots.forEach((dot, k) => {
+      const [x, y] = portDotAt(f, PORT_SIDES[k]);
+      dot.setAttribute("cx", String(x));
+      dot.setAttribute("cy", String(y));
+    });
   }
 
   // ---------------------------------------------------------------- selection
@@ -1641,14 +1748,18 @@ export class Scene {
       this.nodeEls.get(id)?.setAttribute("transform", `translate(${b[0]} ${b[1]})`);
     }
     const moving = new Set(this.drag.ids);
+    // Frames follow their members, so an edge to a group moves with any drag.
+    this.frames = groupFrames(this.model.doc, this.boxes) as Record<string, Box>;
     this.geom = edgeGeometry(
       this.model.doc,
       this.boxes,
       this.model.bows || {},
       this.model.ports || {},
+      this.frames,
     );
     for (const e of this.geom) {
-      if (!moving.has(e.from) && !moving.has(e.to)) continue;
+      const toGroup = !this.boxes[e.from] || !this.boxes[e.to];
+      if (!toGroup && !moving.has(e.from) && !moving.has(e.to)) continue;
       const els = this.edgeEls.get(e.i);
       if (!els) continue;
       const d = pathOf(e.points);
@@ -1707,6 +1818,7 @@ export class Scene {
       els.tag.setAttribute("x", f[0] + els.tagDx);
       els.tag.setAttribute("y", f[1] + 19);
     }
+    this.placeFrameDots();
   }
 
   endDrag() {
@@ -1731,10 +1843,9 @@ export class Scene {
       };
     });
     this.h.onMove?.(moves);
-    // A group is not an endpoint: `from` and `to` are node ids. Someone who drags off a
-    // frame and lets go on a component was trying to wire it, and the canvas used to answer
-    // with silence. It has moved the group instead — which is the right thing to do with
-    // that gesture — and now it also says why no edge appeared.
+    // Dragging a frame moves the group; a group is wired from the port dots its frame shows
+    // when selected. Someone who drags off a frame and lets go on a component was trying to
+    // wire it, so the canvas moves the group (the right thing for that gesture) and says how.
     if (kind === "group" && at) {
       // Only a component the group does not contain counts: its own members travel with the
       // pointer, so ending on one of those is an ordinary move and says nothing.
@@ -1764,7 +1875,7 @@ export class Scene {
   moveBow(ev: PointerEvent) {
     const [wx, wy] = this.toWorld(ev.clientX, ev.clientY);
     const ends = this.model.ports?.[this.bowDrag.key] ?? null;
-    const value = bowAt(this.boxes, this.bowDrag.from, this.bowDrag.to, wx, wy, ends);
+    const value = bowAt(this.boxes, this.bowDrag.from, this.bowDrag.to, wx, wy, ends, this.frames);
     this.bowDrag.moved = true;
     this.bowDrag.value = value;
     this.h.onBowPreview?.(this.bowDrag.key, value);
@@ -1802,7 +1913,7 @@ export class Scene {
   moveTip(ev: PointerEvent) {
     const [wx, wy] = this.toWorld(ev.clientX, ev.clientY);
     const t = this.tip;
-    const b = this.boxes[t.own];
+    const b = this.boxOf(t.own);
     if (!b) return;
     t.moved = true;
     t.at = [wx, wy];
@@ -1810,17 +1921,21 @@ export class Scene {
     const dx = Math.max(b[0] - wx, 0, wx - (b[0] + b[2]));
     const dy = Math.max(b[1] - wy, 0, wy - (b[1] + b[3]));
     const near = Math.hypot(dx, dy) <= PORT_REACH / this.view.k;
-    const port: Port | null = near ? (portAt(b, wx, wy) as Port) : null;
-    const target = near ? null : this.nodeAt(wx, wy, t.other);
+    // A frame end is placed only near its outline: well inside the frame is a drop on what the
+    // group holds, or on the group itself, which leaves the end where it is.
+    const rim = Math.min(wx - b[0], b[0] + b[2] - wx, wy - b[1], b[1] + b[3] - wy);
+    const onOwn = near && (Boolean(this.boxes[t.own]) || rim <= PORT_REACH / this.view.k);
+    const port: Port | null = onOwn ? (portAt(b, wx, wy) as Port) : null;
+    const target = onOwn ? null : this.endAt(wx, wy, t.other);
     const samePort =
       (port === null && t.port === null) ||
       (port !== null && t.port !== null && port.side === t.port.side && port.t === t.port.t);
     t.port = port;
     if (!samePort) this.h.onPortPreview?.(t.key, t.end, port ?? t.original);
-    this.nodeEls.get(t.own)?.classList.toggle("port-target", Boolean(port));
+    this.endEl(t.own)?.classList.toggle("port-target", Boolean(port));
     if (target !== t.target) {
-      if (t.target) this.nodeEls.get(t.target)?.classList.remove("wire-target");
-      if (target) this.nodeEls.get(target)?.classList.add("wire-target");
+      this.endEl(t.target)?.classList.remove("wire-target");
+      this.endEl(target)?.classList.add("wire-target");
       t.target = target;
     }
     if (port) t.line.setAttribute("d", "");
@@ -1831,8 +1946,8 @@ export class Scene {
 
   clearTip(t: any) {
     t.line.remove();
-    this.nodeEls.get(t.own)?.classList.remove("port-target");
-    if (t.target) this.nodeEls.get(t.target)?.classList.remove("wire-target");
+    this.endEl(t.own)?.classList.remove("port-target");
+    this.endEl(t.target)?.classList.remove("wire-target");
   }
 
   finishTip() {
@@ -1851,34 +1966,35 @@ export class Scene {
 
   startWire(from: string, ev: PointerEvent, side: PortSide | null = null) {
     const [wx, wy] = this.toWorld(ev.clientX, ev.clientY);
-    const b = this.boxes[from];
+    const b = this.boxOf(from);
     // From a port dot the wire starts on that dot; otherwise from the middle of the box.
     const start = side && b ? portDotAt(b, side) : null;
     const [sx, sy] = start ?? [wx, wy];
     const line = el("path", { class: "wire", d: `M${sx} ${sy} L${wx} ${wy}` });
     this.layers.overlay.append(line);
     this.wire = { from, line, x: wx, y: wy, target: null, side, start };
-    this.nodeEls.get(from)?.classList.add("wire-source");
+    this.endEl(from)?.classList.add("wire-source");
     this.capture(ev);
   }
 
   moveWire(ev: PointerEvent) {
     const [wx, wy] = this.toWorld(ev.clientX, ev.clientY);
-    const b = this.boxes[this.wire.from];
+    const b = this.boxOf(this.wire.from) ?? [wx, wy, 0, 0];
     const [sx, sy] = this.wire.start ?? [b[0] + b[2] / 2, b[1] + b[3] / 2];
     this.wire.line.setAttribute("d", `M${sx} ${sy} L${wx} ${wy}`);
     this.wire.x = wx;
     this.wire.y = wy;
-    const target = this.nodeAt(wx, wy, this.wire.from);
+    const target = this.endAt(wx, wy, this.wire.from);
     if (target === this.wire.target) return;
     this.clearWireTarget();
     this.wire.target = target;
-    if (target) this.nodeEls.get(target)?.classList.add("wire-target");
+    this.endEl(target)?.classList.add("wire-target");
     this.wire.line.classList.toggle("live", !!target);
   }
 
   clearWireTarget() {
     for (const box of this.nodeEls.values()) box.classList.remove("wire-target");
+    for (const f of this.frameEls.values()) f.rect.classList.remove("wire-target");
   }
 
   endWire() {
@@ -1887,19 +2003,19 @@ export class Scene {
     this.wire = null;
     line.remove();
     this.clearWireTarget();
-    this.nodeEls.get(from)?.classList.remove("wire-source");
+    this.endEl(from)?.classList.remove("wire-source");
     if (!target && side && start) {
       // Let go on nothing, far enough from the dot to be a gesture rather than a slip.
       const { x, y } = wire;
       const moved = Math.hypot(x - start[0], y - start[1]) * this.view.k;
-      if (moved > 16 && !this.nodeAt(x, y)) {
+      if (moved > 16 && !this.endAt(x, y)) {
         this.h.onWireOut?.(from, side, start, [x, y], this.toScreen(x, y));
       }
       return;
     }
     if (!target || target === from) return;
     // Drawn from a dot: that side on the source, and the target's side that faces the dot.
-    const tb = this.boxes[target];
+    const tb = this.boxOf(target);
     const ends: EdgePorts | undefined =
       side && start && tb
         ? { from: { side, t: 0.5 }, to: { side: facingSide(tb, start), t: 0.5 } }
@@ -2082,7 +2198,7 @@ export class Scene {
     // leaves the page must not depend on a custom property only the canvas sets.
     for (const n of clone.querySelectorAll<SVGElement>('.frame[data-tint="hex"]')) {
       const c = n.style.getPropertyValue("--tint-hex").trim();
-      n.setAttribute("style", c ? `stroke:${c};fill:${c}${TINT_FILL_ALPHA}` : "");
+      n.setAttribute("style", tintPaint(c, n.getAttribute("data-strength"))?.style ?? "");
     }
     const defs = this.defs.cloneNode(true) as SVGDefsElement;
     defs.querySelector(`#${NODE_SHADOW}`)?.remove();

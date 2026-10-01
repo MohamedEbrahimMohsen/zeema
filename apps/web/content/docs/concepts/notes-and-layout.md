@@ -33,6 +33,7 @@ The sidecar is a small JSON document stored with each version of a design.
 | `ports` | An edge key to where its ends meet their boxes (optional; see below) |
 | `notes` | Free-text annotations |
 | `frames` | A group id to its colour and icon (see below) |
+| `tints` | A component's node id to its colour, `{ "tint": "teal", "strength": "bold" }`: the same tint values as a group's, drawn as the card's border and a faint fill (optional) |
 | `badge` | The mark the design wears in the browse list, when its owner chose one (optional; see below) |
 
 An edge key is `from>to`, or `from>to#n` for the n-th parallel edge between the same pair.
@@ -87,6 +88,8 @@ undone like any other edit.
   the light and dark themes; a hex colour is used as it is in both, so pick one that reads on
   either background. The inspector's colour field has a swatch per name, then "More colours":
   a palette of 48 colours, the ones you applied lately, a hex box and the system colour picker. Leave `tint` out to get the default frame.
+- **`strength`**, beside a tint on a group or a component, is `light` (half the fill), `normal`
+  (the default, never stored) or `bold` (double the fill); the stroke stays as it is.
 - **`icon`** is a reference, never the icon itself. It takes one of three forms:
   - `boundary:<id>` for a group icon (the user-facing word is group; boundary stays in the stored format), for example `boundary:aws` or `boundary:on-premises`.
     This is a separate set made for groups: platform and brand marks (AWS, Azure, Google

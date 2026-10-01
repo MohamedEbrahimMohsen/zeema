@@ -927,6 +927,27 @@
   stroke-width: 2.5;
   stroke-dasharray: 4 3;
 }
+/* a group's frame as an edge end: the wire's target, its source, or the frame an end is placed on */
+.zeema-canvas .frame.wire-target,
+.zeema-canvas .frame[data-tint].wire-target,
+.zeema-canvas .frame.port-target,
+.zeema-canvas .frame[data-tint].port-target {
+  stroke: var(--accent);
+  stroke-width: 2.5;
+}
+.zeema-canvas .frame.wire-target,
+.zeema-canvas .frame[data-tint].wire-target {
+  fill: color-mix(in srgb, var(--accent) 6%, transparent);
+}
+.zeema-canvas .frame.wire-source,
+.zeema-canvas .frame[data-tint].wire-source {
+  stroke: var(--accent);
+  stroke-dasharray: 4 3;
+}
+/* the selected group's port dots sit in the overlay, so they are shown whenever drawn */
+.zeema-canvas .frame-port-dot {
+  opacity: 1;
+}
 .zeema-canvas .badge-error {
   fill: var(--err);
   stroke: var(--panel);
@@ -1318,6 +1339,11 @@
   font-size: var(--fs-micro);
   color: var(--muted);
 }
+.zeema-canvas .field .endpoint-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
 .zeema-canvas .field input,
 .zeema-canvas .field select,
 .zeema-canvas .field textarea {
@@ -1419,6 +1445,46 @@
     #ec4899,
     #ef4444
   );
+}
+/* a component's tint: drawn over the card, never in the way of the pointer. While the card
+   shows a state (selected, a wire's source or target, an end being placed, a note drop) the
+   state's ring is the border, and the tint keeps only its fill. */
+.zeema-canvas rect.node-tint {
+  pointer-events: none;
+}
+.zeema-canvas .node-box.selected rect.node-tint,
+.zeema-canvas .node-box.wire-target rect.node-tint,
+.zeema-canvas .node-box.wire-source rect.node-tint,
+.zeema-canvas .node-box.port-target rect.node-tint,
+.zeema-canvas .node-box.drop-target rect.node-tint {
+  stroke: none;
+}
+/* a tint's strength: three segments under the swatches, in the value column */
+.zeema-canvas .strength-field {
+  grid-column: 2;
+  padding: 0;
+  min-inline-size: 0;
+  display: inline-flex;
+  width: max-content;
+  margin-top: 4px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.zeema-canvas .strength-seg {
+  padding: 2px 10px;
+  font-size: var(--fs-micro);
+  color: var(--muted);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+.zeema-canvas .strength-seg + .strength-seg {
+  border-left: 1px solid var(--line);
+}
+.zeema-canvas .strength-seg.on {
+  color: var(--ink);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
 }
 /* the popover: palette, recent colours, then the hex row with the system picker */
 .zeema-canvas .tint-field {

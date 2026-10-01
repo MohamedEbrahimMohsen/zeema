@@ -1,9 +1,10 @@
 // structure.js — the blocking layer of the editor's validation.
 //
 // Two layers, in this order:
-//   1. a port of checkDesign() in .claude/tools/validate.mjs. Its 14 message templates are
-//      reproduced verbatim, interpolation included, so a message shown in the editor is the
-//      message CI prints. Do not reword them.
+//   1. a port of checkDesign() in .claude/tools/validate.mjs. Its message templates are
+//      reproduced verbatim, interpolation included, except that an edge end may also name a
+//      group here (so the "missing" message says so). The repository gate runs this file, not
+//      validate.mjs.
 //   2. a hand-written JSON Schema check against catalogue.schema (the parsed
 //      schema/design.schema.json). Ajv cannot be a dependency here, so the nine keywords the
 //      schema actually uses are implemented directly and the wording is our own.
@@ -119,11 +120,16 @@ function checkDesign(doc, catalogue, file, out) {
       if (d?.required && eff[k] === undefined)
         add(`${file}: node ${n.id} missing required ${k}`, node(n.id));
   }
+  // An edge end names a node or a group (an edge to the group as a unit, drawn to its frame).
+  // An id that is both is not refused: committed designs already name a group after the node
+  // that fronts it, and their edges have always meant the node. Such an end is the node, here
+  // and in rules, layout and geometry; the editor never creates a new collision.
   for (let i = 0; i < edges.length; i++) {
     const e = edges[i];
     if (!isObj(e)) continue;
     for (const end of ["from", "to"])
-      if (!nodeIds.has(e[end])) add(`${file}: edge ${end} ${e[end]} missing`, edge(i));
+      if (!nodeIds.has(e[end]) && !groupIds.has(e[end]))
+        add(`${file}: edge ${end} ${e[end]} missing: no node or group`, edge(i));
   }
 }
 

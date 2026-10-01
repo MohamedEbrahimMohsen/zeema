@@ -26,6 +26,12 @@
 // listed first in the document is kept, as before. Both edges are still ordered and drawn.
 // Without a catalogue every node has the same flow index, so every pair falls to document order.
 //
+// An edge end may name a group: the group as a unit. At a level above the group it counts as an
+// edge from or to the block that holds the group (the group's own block, or an ancestor's), so
+// it ranks and orders like any other contracted edge, and its flow is that block's flow. At the
+// group's own level and below it is inside one item and ranks nothing, so an edge from a member
+// to its own group, or from a group to a child group, never pulls a block out of its frame.
+//
 // The edges come from edgeGeometry, the same code the canvas and the as-drawn renderer use, so
 // an automatic arrangement and a drawing route edges identically.
 //
@@ -303,10 +309,23 @@ export function layout(doc, catalogue) {
     }
     chainOf.set(n.id, chain);
   }
-  // the item a node falls in at the level of group `gid` (null: the root level), or null
+  // A group as an edge end: the group itself, then its ancestors, outermost last.
+  const groupChain = (gid) => {
+    const chain = [];
+    for (let g = gid; g !== null; g = parentOf.get(g)) chain.push(g);
+    return chain;
+  };
+  // the item a node (or, for an edge end naming a group, that group) falls in at the level of
+  // group `gid` (null: the root level), or null
   const itemAt = (nid, gid) => {
     const chain = chainOf.get(nid);
-    if (!chain) return null; // an edge to a node that does not exist
+    if (!chain) {
+      if (!declared.has(nid)) return null; // an edge to a node that does not exist
+      const own = groupChain(nid);
+      const k = gid === null ? own.length : own.indexOf(gid);
+      // k === 0: the level is the group itself, so the end is not one of its items
+      return k <= 0 ? null : `g:${own[k - 1]}`;
+    }
     const k = gid === null ? chain.length : chain.indexOf(gid);
     if (k < 0) return null;
     return k === 0 ? `n:${nid}` : `g:${chain[k - 1]}`;
@@ -401,7 +420,9 @@ export function layout(doc, catalogue) {
   // so an arrangement and a drawing route their edges, lanes and bends identically
   const boxes = {};
   for (const [id, b] of box) boxes[id] = b; // node declaration order: the first obstacle wins
-  const outEdges = edgeGeometry({ edges }, boxes);
+  const frameBoxes = {};
+  for (const [gid, f] of frame) frameBoxes[gid] = f;
+  const outEdges = edgeGeometry({ edges }, boxes, {}, {}, frameBoxes);
 
   const positions = {},
     sizes = {},

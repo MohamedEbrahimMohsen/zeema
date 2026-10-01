@@ -169,7 +169,8 @@ Anything else is a structural error, not a warning.
 
 ## edges
 
-Directed. `from` and `to` are node ids in this design.
+Directed. `from` and `to` are node ids in this design, or a group id for an edge to the group as
+a unit, drawn to its frame; a rule that needs the component at an end skips such an edge.
 
 ```yaml
 edges:
@@ -187,7 +188,7 @@ edges:
 
 | Field | Required | Values |
 |---|---|---|
-| `from`, `to` | yes | Node ids in this design |
+| `from`, `to` | yes | Node or group ids in this design |
 | `protocol` | yes | Free string in v1: `http`, `https`, `grpc`, `kafka`, `postgres`, `redis`, … |
 | `mode` | yes | `sync` (the caller waits) or `async` (the caller continues) |
 | `delivery` | no | `at-most-once`, `at-least-once`, `exactly-once`. Meaningful on async edges |
@@ -222,7 +223,7 @@ the wording the linter uses.
 | A `ref` property names an existing node | `ref <name> missing` |
 | …of the right kind | `ref <name> wrong kind` |
 | Every required property resolves | `node <id> missing required <name>` |
-| Both ends of every edge exist | `edge from <id> missing`, `edge to <id> missing` |
+| Both ends of every edge exist | `edge from <id> missing: no node or group`, `edge to <id> missing: no node or group` |
 
 On top of that, the document is checked against `schema/design.schema.json`: unknown fields,
 missing required fields and wrong types are reported with the path that carried them.

@@ -124,7 +124,7 @@ Primary use cases, each of which must be possible end to end:
 | Provider | The owner of a component: a cloud vendor, or `default` for open source, in-house and independent SaaS |
 | Design | A document naming nodes, edges, groups and requirements |
 | Node | One instance of a component inside a design |
-| Edge | A directed connection between two nodes with a protocol and a mode |
+| Edge | A directed connection between two nodes (or a node and a group, or two groups) with a protocol and a mode |
 | Group | A nested boundary (region, zone, network, trust zone, system, cell, point of presence) |
 | Requirement | A promise the design makes about itself, under a governed dotted path |
 | Property | A typed value defined on a kind or a component and resolvable on a node |
@@ -395,7 +395,7 @@ message: "Queue '{{node.id}}' receives async traffic but has no dead-letter queu
 | `hasEdge` | `{direction: in\|out\|any, mode?, peerKind?, peerCategory?, count?}` |
 | `inGroup` | `{kind: <group kind>, count?}` |
 | `crossesGroup` | `{kind: <group kind>}`, for edge selectors |
-| `from` / `to` | a predicate applied to an edge's endpoint node |
+| `from` / `to` | a predicate applied to an edge's endpoint node; an edge whose endpoint is a group is skipped |
 | `syncChainDepth` | integer comparison |
 | `nfr` | `{rps?\|latencyP95Ms?}` with a comparison |
 | `hasNode` | `{kind?, category?}`, for design selectors |

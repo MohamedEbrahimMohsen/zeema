@@ -42,6 +42,22 @@ function clip(box, towardX, towardY) {
   return [cx + dx * s, cy + dy * s];
 }
 
+// True when box `inner` lies wholly inside box `outer`: a member and its own group's frame, or a
+// child group's frame and its parent's.
+function inside(inner, outer) {
+  return (
+    inner[0] >= outer[0] &&
+    inner[1] >= outer[1] &&
+    inner[0] + inner[2] <= outer[0] + outer[2] &&
+    inner[1] + inner[3] <= outer[1] + outer[3]
+  );
+}
+
+// The point on a box's border nearest a point inside it.
+function nearestBorder(box, px, py) {
+  return portPoint(box, portAt(box, px, py));
+}
+
 // Segment against rectangle, with the renderer's 6px slack, by the slab method.
 function hits(x1, y1, x2, y2, box) {
   const [bx, by, bw, bh] = box;
@@ -161,18 +177,35 @@ export function portNormal(port) {
 // end has neither (null) and is clipped later. The aim is STUB out, or a third of the distance
 // between the two anchors (ports or centres) when that is shorter. Only the routing uses it; the
 // drawn curve is one smooth piece from port to port (see `smooth`).
-function endsOf(a, b, from, to) {
-  const pa = isPort(from) ? portPoint(a, from) : null;
-  const pb = isPort(to) ? portPoint(b, to) : null;
-  if (!pa && !pb) return { pa, pb, sa: null, sb: null };
-  const [ax, ay] = pa ?? [a[0] + a[2] / 2, a[1] + a[3] / 2];
-  const [bx, by] = pb ?? [b[0] + b[2] / 2, b[1] + b[3] / 2];
+//
+// `frameA` / `frameB` say an end is a group's frame. An unported frame end whose frame holds the
+// other end's box is anchored on its border at the side nearest the other end, and that point is
+// its own aim; `ca` / `cb` return that point for the end anchored so (null otherwise).
+function endsOf(a, b, from, to, frameA = false, frameB = false) {
+  let pa = isPort(from) ? portPoint(a, from) : null;
+  let pb = isPort(to) ? portPoint(b, to) : null;
+  let ca = null,
+    cb = null;
+  if (!pb && frameB && a !== b && inside(a, b)) {
+    const [px, py] = pa ?? [a[0] + a[2] / 2, a[1] + a[3] / 2];
+    cb = nearestBorder(b, px, py);
+  } else if (!pa && frameA && a !== b && inside(b, a)) {
+    const [px, py] = pb ?? [b[0] + b[2] / 2, b[1] + b[3] / 2];
+    ca = nearestBorder(a, px, py);
+  }
+  if (!pa && !pb) return { pa: ca, pb: cb, sa: ca, sb: cb, ca, cb };
+  const [ax, ay] = pa ?? ca ?? [a[0] + a[2] / 2, a[1] + a[3] / 2];
+  const [bx, by] = pb ?? cb ?? [b[0] + b[2] / 2, b[1] + b[3] / 2];
   const reach = Math.min(STUB, Math.hypot(bx - ax, by - ay) / 3);
   const tip = (p, port) => {
     const [nx, ny] = portNormal(port);
     return [p[0] + nx * reach, p[1] + ny * reach];
   };
-  return { pa, pb, sa: pa && tip(pa, from), sb: pb && tip(pb, to) };
+  const sa = pa ? tip(pa, from) : ca;
+  const sb = pb ? tip(pb, to) : cb;
+  pa = pa ?? ca;
+  pb = pb ?? cb;
+  return { pa, pb, sa, sb, ca, cb };
 }
 
 /** The world point a port names on a box. */
@@ -242,11 +275,19 @@ function labelPlacement(mid, points, shared) {
 // ports. The lane, the bow and the bend around an obstacle are all measured between the two aim
 // points (a ported end's, or an unported end itself), and never move a ported end.
 //
+// `frames` maps a group id to its frame box. An edge end that names no node but a group is drawn
+// to the group's frame, ports and all, exactly as to a node's box; a frame is never an obstacle.
+// When one end's box lies inside the other's (a member and its own group, a child group and its
+// parent) the line runs from the inner box out to the nearest side of the outer one, unless that
+// end is ported.
+//
 // `points` is [from, to] for a straight edge and [from, control, to] for a quadratic one, exactly
 // as before, whenever neither end is ported. With a port it is seven points,
 // [from, c1, d1, middle, d2, c2, to]: two cubics meeting smoothly at the curve's middle, with no
 // straight segment and no corner anywhere (see `smooth`).
-export function edgeGeometry(doc, boxes, bows = {}, ports = {}) {
+export function edgeGeometry(doc, boxes, bows = {}, ports = {}, frames = {}) {
+  const isFrame = (id) => !boxes[id] && frames != null && Object.hasOwn(frames, id);
+  const boxOf = (id) => (isFrame(id) ? frames[id] : boxes[id]);
   const keys = edgeKeys(doc);
   const edges = doc.edges || [];
   const buckets = new Map();
@@ -260,12 +301,12 @@ export function edgeGeometry(doc, boxes, bows = {}, ports = {}) {
     const n = indices.length;
     indices.forEach((i, k) => {
       const e = edges[i];
-      const a = boxes[e.from],
-        b = boxes[e.to];
+      const a = boxOf(e.from),
+        b = boxOf(e.to);
       if (!a || !b) return;
-      const ax = a[0] + a[2] / 2,
+      let ax = a[0] + a[2] / 2,
         ay = a[1] + a[3] / 2;
-      const bx = b[0] + b[2] / 2,
+      let bx = b[0] + b[2] / 2,
         by = b[1] + b[3] / 2;
       // The pair's own perpendicular, one for both directions: lesser id to greater, turned a
       // quarter. The same order the bucket key sorts by.
@@ -278,7 +319,18 @@ export function edgeGeometry(doc, boxes, bows = {}, ports = {}) {
       const lane = n === 1 ? 0 : (k - (n - 1) / 2) * LANE_STEP;
       const bow = Number(bows[keys[i]]) || 0;
       const own = ports && Object.hasOwn(ports, keys[i]) ? ports[keys[i]] : null;
-      const { pa, pb, sa, sb } = endsOf(a, b, own?.from, own?.to);
+      const { pa, pb, sa, sb, ca, cb } = endsOf(
+        a,
+        b,
+        own?.from,
+        own?.to,
+        isFrame(e.from),
+        isFrame(e.to),
+      );
+      // One box inside the other: the frame's end is its border point, so everything measured
+      // from that end's centre is measured from there instead.
+      if (cb) [bx, by] = cb;
+      if (ca) [ax, ay] = ca;
       // What each unported end is clipped toward: the other end's aim point if it is ported,
       // else the other box's centre.
       const [tax, tay] = sb ?? [bx, by];
@@ -563,11 +615,12 @@ export function innermostFrameAt(frames, x, y) {
 // (see `endsOf`) rather than its box's centre, so the curve's middle sits under the pointer on an
 // edge whose ends were placed.
 /** @param {{ from?: object, to?: object } | null} [ends] */
-export function bowAt(boxes, from, to, x, y, ends = null) {
-  const a = boxes[from],
-    b = boxes[to];
+export function bowAt(boxes, from, to, x, y, ends = null, frames = {}) {
+  const isFrame = (id) => !boxes[id] && frames != null && Object.hasOwn(frames, id);
+  const a = isFrame(from) ? frames[from] : boxes[from],
+    b = isFrame(to) ? frames[to] : boxes[to];
   if (!a || !b) return 0;
-  const { sa, sb } = endsOf(a, b, ends?.from, ends?.to);
+  const { sa, sb } = endsOf(a, b, ends?.from, ends?.to, isFrame(from), isFrame(to));
   const [ax, ay] = sa ?? [a[0] + a[2] / 2, a[1] + a[3] / 2];
   const [bx, by] = sb ?? [b[0] + b[2] / 2, b[1] + b[3] / 2];
   const dx = bx - ax,

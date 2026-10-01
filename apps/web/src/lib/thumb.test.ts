@@ -105,6 +105,20 @@ describe("the list thumbnail", () => {
     expect(thumbKey("h2", { nodes: { svc: [0, 0] } })).not.toBe(a);
   });
 
+  it("changes its key when a component tint or a tint's strength changes", async () => {
+    const { thumbKey } = await import("./thumb-key");
+    const base = { nodes: { svc: [0, 0] }, frames: { g: { tint: "blue" } } };
+    const a = thumbKey("h", base);
+    const tinted = { ...base, tints: { svc: { tint: "rose" } } };
+    expect(thumbKey("h", tinted)).not.toBe(a);
+    expect(
+      thumbKey("h", { ...tinted, tints: { svc: { tint: "rose", strength: "bold" } } }),
+    ).not.toBe(thumbKey("h", tinted));
+    expect(thumbKey("h", { ...base, frames: { g: { tint: "blue", strength: "light" } } })).not.toBe(
+      a,
+    );
+  });
+
   it("keeps its key when only the list badge changes: the badge is not in the picture", async () => {
     const { thumbKey } = await import("./thumb-key");
     const a = thumbKey("h", { nodes: { svc: [0, 0] } });

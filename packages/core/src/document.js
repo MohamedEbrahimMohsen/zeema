@@ -132,6 +132,7 @@ export function setNodeLabel(doc, id, label, catalogue) {
   const next = setNodeField(doc, id, "label", label);
   if (!node || !label || !isGeneratedId(node)) return { doc: next, id };
   const taken = new Set(next.nodes.filter((n) => n.id !== id).map((n) => n.id));
+  for (const g of next.groups || []) taken.add(g.id);
   const wanted = uniqueId(taken, label);
   return wanted === id
     ? { doc: next, id }
@@ -140,6 +141,9 @@ export function setNodeLabel(doc, id, label, catalogue) {
 
 const nodeIds = (doc) => new Set(doc.nodes.map((n) => n.id));
 const groupIds = (doc) => new Set((doc.groups || []).map((g) => g.id));
+// An edge end names a node or a group, so the two share one id space: a fresh id of either is
+// unique across both.
+const allIds = (doc) => new Set([...nodeIds(doc), ...groupIds(doc)]);
 
 export function propDefs(catalogue, componentId) {
   const c = own(catalogue.components, componentId);
@@ -180,7 +184,7 @@ export function requiredGaps(catalogue, componentId) {
 
 export function addNode(doc, componentId, catalogue, opts = {}) {
   const d = clone(doc);
-  const id = opts.id || uniqueId(nodeIds(d), componentId);
+  const id = opts.id || uniqueId(allIds(d), componentId);
   const node = { id, component: componentId };
   if (opts.label) node.label = opts.label;
   if (opts.group) node.group = opts.group;
@@ -241,7 +245,7 @@ export function renameNode(doc, oldId, newId, catalogue) {
   const d = clone(doc);
   const n = d.nodes.find((x) => x.id === oldId);
   if (!n || oldId === newId) return d;
-  if (d.nodes.some((x) => x.id === newId)) throw new Error(`node id ${newId} already exists`);
+  if (allIds(d).has(newId)) throw new Error(`node id ${newId} already exists`);
   n.id = newId;
   for (const e of d.edges) {
     if (e.from === oldId) e.from = newId;
@@ -261,9 +265,13 @@ export function renameGroup(doc, oldId, newId) {
   const d = clone(doc);
   const g = (d.groups || []).find((x) => x.id === oldId);
   if (!g || oldId === newId) return d;
-  if (d.groups.some((x) => x.id === newId)) throw new Error(`group id ${newId} already exists`);
+  if (allIds(d).has(newId)) throw new Error(`group id ${newId} already exists`);
   g.id = newId;
   for (const n of d.nodes) if (n.group === oldId) n.group = newId;
+  for (const e of d.edges) {
+    if (e.from === oldId) e.from = newId;
+    if (e.to === oldId) e.to = newId;
+  }
   for (const other of d.groups) if (other.parent === oldId) other.parent = newId;
   return d;
 }
@@ -308,14 +316,14 @@ export function reverseEdge(doc, index) {
   return d;
 }
 
-// Dragging an arrow's end onto another component moves that end and keeps every other field.
-// Refused, with the document returned as it was, when the end would land on the other end's own
-// node (a self loop), on a node the document does not have, or when the result would be an
-// exact twin of another edge: the same ends, label and protocol.
+// Dragging an arrow's end onto another component, or onto a group's frame, moves that end and
+// keeps every other field. Refused, with the document returned as it was, when the end would land
+// on the other end's own node or group (a self loop), on an id the document does not have, or
+// when the result would be an exact twin of another edge: the same ends, label and protocol.
 export function reconnectEdge(doc, index, end, nodeId) {
   const e = doc.edges?.[index];
   if (!e || (end !== "from" && end !== "to")) return { doc, refused: "missing" };
-  if (!doc.nodes.some((n) => n.id === nodeId)) return { doc, refused: "missing" };
+  if (!allIds(doc).has(nodeId)) return { doc, refused: "missing" };
   if (e[end] === nodeId) return { doc, refused: null };
   const from = end === "from" ? nodeId : e.from;
   const to = end === "to" ? nodeId : e.to;
@@ -358,7 +366,7 @@ export function deleteEdge(doc, index) {
 export function duplicateNodes(doc, ids, catalogue) {
   const d = clone(doc);
   const wanted = doc.nodes.filter((n) => ids.includes(n.id));
-  const taken = nodeIds(d);
+  const taken = allIds(d);
   const map = {};
   for (const n of wanted) {
     const copy = clone(n);
@@ -388,7 +396,7 @@ export function duplicateNodes(doc, ids, catalogue) {
 export function addGroup(doc, memberIds, kind = "system", label) {
   const d = clone(doc);
   d.groups = d.groups || [];
-  const id = uniqueId(groupIds(d), label || kind);
+  const id = uniqueId(allIds(d), label || kind);
   const g = { id, kind };
   if (label) g.label = label;
   // Grouping things that already share a group nests inside it rather than beside it, which is
@@ -436,6 +444,7 @@ export function deleteGroupDeep(doc, groupId) {
   }
   const d = deleteNodes(doc, members);
   d.groups = (d.groups || []).filter((g) => !doomed.has(g.id));
+  d.edges = d.edges.filter((e) => !doomed.has(e.from) && !doomed.has(e.to));
   if (!d.groups.length) delete d.groups;
   return d;
 }
@@ -487,6 +496,8 @@ export function deleteGroup(doc, groupId) {
       if (g.parent) n.group = g.parent;
       else delete n.group;
     }
+  // An edge to the group as a unit has nothing left to point at.
+  d.edges = d.edges.filter((e) => e.from !== groupId && e.to !== groupId);
   if (!d.groups.length) delete d.groups;
   return d;
 }

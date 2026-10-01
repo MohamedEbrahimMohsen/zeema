@@ -1,0 +1,20 @@
+# Edges whose ends name groups: the API talks to the whole cluster, not to each member.
+# node -> group, group -> group (nested and sibling), and a member -> its own group.
+schemaVersion: "1"
+type: "design"
+id: "group-edges"
+groups:
+  - { id: "platform", kind: "system", label: "Platform" }
+  - { id: "cluster", kind: "system", parent: "platform", label: "Cluster" }
+  - { id: "data", kind: "trust-zone", parent: "platform", label: "Data" }
+nodes:
+  - { id: "edge-lb", component: "nginx" }
+  - { id: "api-1", component: "tomcat", group: "cluster" }
+  - { id: "api-2", component: "tomcat", group: "cluster" }
+  - { id: "db", component: "postgres", group: "data" }
+edges:
+  - { from: "edge-lb", to: "cluster", protocol: "http", mode: "sync", retryPolicy: "fixed" }
+  - { from: "cluster", to: "data", protocol: "postgres", mode: "sync" }
+  - { from: "platform", to: "cluster", protocol: "grpc", mode: "async" }
+  - { from: "api-1", to: "cluster", protocol: "http", mode: "sync" }
+  - { from: "edge-lb", to: "api-2", protocol: "http", mode: "sync", retryPolicy: "fixed" }
