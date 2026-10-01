@@ -1206,8 +1206,13 @@ export function Canvas(props: Props) {
       rules: [],
     };
     // A design with nothing in it yet opens with the picker pinned, so the first thing in reach
-    // is what to add. Stored like pressing the pin, so unpinning it is remembered as usual.
-    if (props.canWrite && doc.nodes.length === 0) updatePanes(() => ({ left: true }));
+    // is what to add, and the Design settings card pinned beside it (but not on a phone, where
+    // the two cards would cover each other: there the picker wins). Stored like pressing the
+    // pins, so unpinning either is remembered as usual.
+    if (props.canWrite && doc.nodes.length === 0) {
+      const roomy = window.matchMedia("(min-width: 768px)").matches;
+      updatePanes(() => (roomy ? { left: true, design: true, right: true } : { left: true }));
+    }
     const scene = new Scene(svgRef.current, {
       onSelect: (sel, m) => {
         setSelection({ ...sel });

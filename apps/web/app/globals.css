@@ -1546,7 +1546,7 @@ kbd.key {
 .row-cols,
 .row {
   display: grid;
-  grid-template-columns: 176px 1fr 90px 90px 110px 70px 30px;
+  grid-template-columns: 176px minmax(0, 1fr) 90px 90px 110px 70px 30px;
   gap: 20px;
   align-items: center;
 }
@@ -1660,13 +1660,23 @@ kbd.key {
   text-transform: uppercase;
 }
 
+/* The name column shrinks rather than grows: a long title or slug never pushes the number
+   columns right, under the row's action. The title is one line (whole in its tooltip). */
+.row-name {
+  min-width: 0;
+}
 .row-name strong {
   display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: 1rem;
   font-weight: var(--fw-semibold);
   letter-spacing: var(--ls-title);
 }
 .row-slug {
+  display: block;
+  overflow-wrap: anywhere;
   font-family: var(--mono);
   font-size: 0.8rem;
   color: var(--muted);
@@ -1773,7 +1783,7 @@ kbd.key {
     display: none;
   }
   .row {
-    grid-template-columns: 120px 1fr;
+    grid-template-columns: 120px minmax(0, 1fr);
     grid-template-areas: "t n" "t m";
     column-gap: 14px;
     row-gap: 8px;
@@ -1823,7 +1833,7 @@ kbd.key {
 }
 @media (max-width: 639px) {
   .row {
-    grid-template-columns: 96px 1fr;
+    grid-template-columns: 96px minmax(0, 1fr);
   }
   .row-thumb {
     width: 96px;

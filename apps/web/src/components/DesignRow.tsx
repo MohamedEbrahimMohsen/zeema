@@ -82,7 +82,7 @@ export function DesignRow({ d, theme }: { d: DesignSummary; theme: Theme }) {
           {d.badge ? <Badge badge={d.badge} /> : null}
         </div>
         <div className="row-name">
-          <strong>{d.title}</strong>
+          <strong title={d.title}>{d.title}</strong>
           <span className="row-slug">
             {owner}/{d.slug}
           </span>
