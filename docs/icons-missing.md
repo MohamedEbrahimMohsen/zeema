@@ -1,6 +1,6 @@
 # Components with no vendor icon
 
-The 81 components listed here carry the generated badge — the kind glyph with the provider mark
+The 85 components listed here carry the generated badge — the kind glyph with the provider mark
 in the corner — instead of the vendor's product icon. The rule they follow is the one in
 `icons/README.md`: a stand-in taken from a different product is worse than a badge, because it
 looks official and is not, so a component waits until the vendor publishes artwork of its own.
@@ -10,7 +10,9 @@ the only artwork the vendor publishes is a raster (the icon contract allows no r
 reduction and sub-pixel decimation. To install one later, add a line to a map file and run
 `node .claude/tools/vendor-icons/fit.mjs <map.json>`, where the map is
 `{"<provider>": {"<component-id>": "<path to the source .svg>"}}`, then delete the row here.
-Pack versions and counts are as of 2026-09-22.
+The Cloudflare map is committed as `.claude/tools/vendor-icons/cloudflare.json`; fetch its sources
+with `node .claude/tools/vendor-icons/cloudflare-fetch.mjs <dir>` and pass `--src <dir>` to `fit.mjs`.
+Pack versions and counts are as of 2026-09-22, and 2026-10-02 for Cloudflare.
 
 ## aws
 
@@ -36,6 +38,19 @@ Pack versions and counts are as of 2026-09-22.
 | `azure-quantum` | Azure Quantum | not in vendor set (Azure Public Service Icons V24) |
 | `azure-stack-edge` | Azure Stack Edge | not in vendor set (Azure Public Service Icons V24) |
 | `azure-stack-hub` | Azure Stack Hub | not in vendor set (Azure Public Service Icons V24) |
+
+## cloudflare
+
+4 components. Look next at <https://github.com/cloudflare/cloudflare-docs/tree/production/src/icons>
+(a new file there is the product's icon; `src/content/directory/<product>.yaml` says which docs
+entry it belongs to) and at `es/reactsvgs/` in the npm package `@cloudflare/component-icon`.
+
+| Component id | Name | Reason |
+|---|---|---|
+| `cloudflare-mcp-portal` | MCP Server Portal | not in vendor set (Cloudflare docs `src/icons/` at `1805e7cc`, `@cloudflare/component-icon` 13.15.3); a Cloudflare One Access feature with no icon of its own, and the npm `McpServerOutline` is a generic MCP glyph, not the product's |
+| `cloudflare-one-identity-provider` | Cloudflare One identity provider | not in vendor set (Cloudflare docs `src/icons/` at `1805e7cc`, `@cloudflare/component-icon` 13.15.3); a Cloudflare One feature with no icon of its own |
+| `cloudflare-rdp` | Cloudflare One RDP | not in vendor set (Cloudflare docs `src/icons/` at `1805e7cc`, `@cloudflare/component-icon` 13.15.3); the docs entry for it (Access for Infrastructure) has no icon |
+| `cloudflare-wallets` | Cloudflare Wallets | not in vendor set (Cloudflare docs `src/icons/` at `1805e7cc`, `@cloudflare/component-icon` 13.15.3); the docs directory entry `wallets` has no icon |
 
 ## gcp
 
@@ -150,6 +165,26 @@ correctly. If a vendor draws a dedicated icon later, change the source in the ma
 | `azure-monitor-data-collection-endpoint` | Data collection endpoint | `00001-icon-service-Monitor.svg` | the pack ships Data Collection Rules but no Data Collection Endpoint icon; the Azure Monitor icon |
 | `azure-monitor-workspace` | Azure Monitor workspace | `00001-icon-service-Monitor.svg` | no Azure Monitor workspace icon; the Azure Monitor icon |
 | `azure-power-apps` | Microsoft Power Apps | `03335-icon-service-Power-Platform.svg` | no per-app Power Platform icon in the set; the Power Platform icon |
+| `cloudflare-advanced-certificate-manager` | Advanced Certificate Manager | `ssl.svg` | an SSL/TLS edge-certificate feature (`/ssl/edge-certificates/`); the SSL/TLS icon |
+| `cloudflare-analytics-engine` | Workers Analytics Engine | `analytics.svg` | documented under Analytics (`/analytics/analytics-engine/`); the Analytics icon |
+| `cloudflare-cache-reserve` | Cache Reserve | `cache.svg` | a Cache feature (`/cache/advanced-configuration/cache-reserve/`); the Cache / CDN icon |
+| `cloudflare-dns-firewall` | Cloudflare DNS Firewall | `dns.svg` | documented under DNS (`/dns/dns-firewall/`); the DNS icon |
+| `cloudflare-email-routing` | Email Routing | `email-service.svg` | Email Routing is part of Email Service, whose icon replaced the old Email Routing one |
+| `cloudflare-email-workers` | Email Workers | `email-service.svg` | Email Workers run inside Email Routing; the Email Service icon |
+| `cloudflare-firewall-for-ai` | Firewall for AI | `waf.svg` | a WAF detection (`/waf/detections/ai-security-for-apps/`); the WAF icon |
+| `cloudflare-for-saas` | Cloudflare for SaaS | `cloudflare-for-platforms.svg` | documented under Cloudflare for Platforms; that product's icon |
+| `cloudflare-geo-key-manager` | Cloudflare Geo Key Manager | `ssl.svg` | an SSL/TLS feature (`/ssl/edge-certificates/geokey-manager/`); the SSL/TLS icon |
+| `cloudflare-image-transformations` | Image Transformations | `images.svg` | a Cloudflare Images feature; the Images icon |
+| `cloudflare-internal-dns` | Cloudflare Internal DNS | `dns.svg` | documented under DNS (`/dns/internal-dns/`); the DNS icon |
+| `cloudflare-keyless-ssl` | Cloudflare Keyless SSL | `ssl.svg` | documented under SSL/TLS (`/ssl/keyless-ssl/`); the SSL/TLS icon |
+| `cloudflare-logpush` | Cloudflare Logpush | `logs.svg` | documented under Logs (`/logs/logpush/`); the Logs icon |
+| `cloudflare-mtls` | Cloudflare mTLS client certificates | `ssl.svg` | client certificates are an SSL/TLS feature; the SSL/TLS icon |
+| `cloudflare-one-appliance` | Cloudflare One Appliance | `cloudflare-wan.svg` | documented under Cloudflare WAN (`/cloudflare-wan/configuration/appliance/`); the WAN icon |
+| `cloudflare-origin-ca` | Cloudflare Origin CA | `ssl.svg` | an SSL/TLS origin-configuration feature; the SSL/TLS icon |
+| `cloudflare-rate-limiting` | Cloudflare Rate Limiting | `waf.svg` | rate limiting rules are part of WAF (`/waf/rate-limiting-rules/`); the WAF icon |
+| `cloudflare-secondary-dns` | Cloudflare Secondary DNS | `dns.svg` | zone transfers are a DNS feature; the DNS icon |
+| `cloudflare-snippets` | Cloudflare Snippets | `rules.svg` | documented under Rules (`/rules/snippets/`); the Rules icon |
+| `cloudflare-stream-live` | Stream Live | `stream.svg` | live inputs are part of Stream; the Stream icon |
 | `google-confidential-space` | Confidential Space | `compute_engine.svg` | Confidential Space runs on Confidential VMs; Google ships no icon of its own for it |
 | `google-maps-embed-api` | Maps Embed API | `google_maps_platform.svg` | Google publishes one Maps Platform icon, not one per API |
 | `google-parameter-manager` | Parameter Manager | `secret_manager.svg` | Parameter Manager ships with Secret Manager |

@@ -3,10 +3,12 @@
 // pack: it reuses the rewriter in ../k8s-icons/lib.mjs (viewBox fitting, gradient href inlining,
 // id namespacing, path-precision reduction) and only adds the pre-cleaning each pack needs.
 //
-//   node .claude/tools/vendor-icons/fit.mjs <map.json> [--dry]
+//   node .claude/tools/vendor-icons/fit.mjs <map.json> [--src <dir>] [--dry]
 //
 // map.json is { "<provider>": { "<component-id>": "<path to the source .svg>" } }. Paths are
-// absolute, or relative to the map file. Nothing is written for a component that is absent from
+// absolute, or relative to --src when given and to the map file otherwise. Keys that start with
+// "_" are notes, not providers, except "_colour": a hex that monochrome artwork is painted in
+// instead of currentColor, for a vendor whose single colour is the brand (Cloudflare orange). Nothing is written for a component that is absent from
 // the map, and no marker comment is written, so `icons.mjs --force` leaves these files alone.
 //
 // A source is refused rather than degraded when it carries a raster, a script, an event handler
@@ -357,17 +359,48 @@ const preFlatten = (raw) => {
   return head + flattenNested(body) + raw.slice(end);
 };
 
-const mapPath = process.argv[2];
+// Monochrome artwork is drawn in currentColor, in black, or in no colour at all, and leaves the
+// rest to the page. The root's presentation attributes move onto a group of their own (the
+// rewriter keeps only what is inside the root, so a root fill="none" or stroke-width would be
+// lost), and every one of those colours becomes the brand colour.
+const paint = (raw, colour) => {
+  const open = /<svg\b[^>]*>/i.exec(raw);
+  if (!open) return raw;
+  const end = raw.lastIndexOf("</svg>");
+  const keep = [];
+  let root = open[0];
+  for (const k of PROPS) {
+    const re = new RegExp(`\\s${k}\\s*=\\s*"([^"]*)"`, "i");
+    const m = re.exec(root);
+    if (m) {
+      keep.push(` ${k}="${m[1]}"`);
+      root = root.replace(re, "");
+    }
+  }
+  root = root.replace(/<svg\b/i, `<svg fill="${colour}"`);
+  const inner = raw.slice(open.index + open[0].length, end);
+  const body = keep.length ? `<g${keep.join("")}>${inner}</g>` : inner;
+  return (root + body + "</svg>").replace(
+    /\s(fill|stroke)\s*=\s*"\s*(?:currentColor|#000|#000000|black)\s*"/gi,
+    ` $1="${colour}"`,
+  );
+};
+
+const argv = process.argv.slice(2);
+const mapPath = argv[0];
 if (!mapPath) {
-  console.error("usage: node .claude/tools/vendor-icons/fit.mjs <map.json> [--dry]");
+  console.error("usage: node .claude/tools/vendor-icons/fit.mjs <map.json> [--src <dir>] [--dry]");
   process.exit(2);
 }
-const DRY = process.argv.includes("--dry");
-const mapDir = path.dirname(path.resolve(mapPath));
+const DRY = argv.includes("--dry");
+const srcAt = argv.indexOf("--src");
+const mapDir = srcAt > 0 ? path.resolve(argv[srcAt + 1]) : path.dirname(path.resolve(mapPath));
 const map = JSON.parse(fs.readFileSync(mapPath, "utf8"));
+const COLOUR = map._colour;
 
 const report = { installed: [], refused: [] };
 for (const [provider, entries] of Object.entries(map)) {
+  if (provider.startsWith("_")) continue;
   const dir = path.join(ROOT, "icons/components", provider);
   if (!fs.existsSync(dir)) {
     report.refused.push({ id: provider, why: `no icons/components/${provider}` });
@@ -384,7 +417,7 @@ for (const [provider, entries] of Object.entries(map)) {
       report.refused.push({ provider, id, src: rel, why: "source embeds a raster" });
       continue;
     }
-    const cleaned = preFlatten(pre(raw));
+    const cleaned = preFlatten(pre(COLOUR ? paint(raw, COLOUR) : raw));
     const vb = /viewBox\s*=\s*"([^"]+)"/i.exec(cleaned)?.[1]?.trim().split(/[\s,]+/).map(Number);
     const span = vb && vb.length === 4 ? Math.max(vb[2], vb[3]) : 24;
     let best = null;
