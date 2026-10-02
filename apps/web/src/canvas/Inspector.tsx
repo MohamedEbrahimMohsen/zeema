@@ -86,7 +86,7 @@ function Field({
   children,
 }: {
   name: string;
-  note?: string | null;
+  note?: React.ReactNode;
   isSet?: boolean;
   /** A finding is about this field: it keeps an accent bar until the finding is dismissed. */
   hl?: boolean;
@@ -100,6 +100,16 @@ function Field({
       {children}
       {note ? <div className="resolved">{note}</div> : null}
     </div>
+  );
+}
+
+/** A small arrow to this entry's catalogue page, in a new tab. */
+function CatalogueLink({ href, name }: { href: string; name: string }) {
+  const say = `Open ${name} in the catalogue`;
+  return (
+    <a className="cat-link" href={href} target="_blank" rel="noopener" aria-label={say} title={say}>
+      ↗
+    </a>
   );
 }
 
@@ -756,16 +766,38 @@ function NodePanel({
       <Field
         name="component"
         note={
-          c ? `${loc?.name ?? node.component} · ${c.kind} · ${c.provider}` : "not in the catalogue"
+          c ? (
+            <>
+              {loc?.name ?? node.component} ·{" "}
+              <span className="nowrap">
+                {own(catalogue.locale.kinds, c.kind)?.name ?? c.kind}
+                <CatalogueLink
+                  href={`/catalogue/kinds/${encodeURIComponent(c.kind)}`}
+                  name={own(catalogue.locale.kinds, c.kind)?.name ?? c.kind}
+                />
+              </span>{" "}
+              · {c.provider}
+            </>
+          ) : (
+            "not in the catalogue"
+          )
         }
       >
-        <select value={node.component} onChange={(e) => api.swap(node.id, e.target.value)}>
-          {siblings.map((id) => (
-            <option key={id} value={id}>
-              {catalogue.locale.components[id]?.name ?? id}
-            </option>
-          ))}
-        </select>
+        <div className="with-link">
+          <select value={node.component} onChange={(e) => api.swap(node.id, e.target.value)}>
+            {siblings.map((id) => (
+              <option key={id} value={id}>
+                {catalogue.locale.components[id]?.name ?? id}
+              </option>
+            ))}
+          </select>
+          {c ? (
+            <CatalogueLink
+              href={`/catalogue/components/${encodeURIComponent(node.component)}`}
+              name={loc?.name ?? node.component}
+            />
+          ) : null}
+        </div>
       </Field>
       {loc?.description ? <p className="muted my-2 small">{loc.description}</p> : null}
       {tintRow ? (

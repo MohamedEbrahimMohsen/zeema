@@ -48,6 +48,7 @@ import {
 } from "@/lib/layout-sidecar";
 import { own } from "@/lib/own";
 import { frameTargetAt } from "./frame-target";
+import { groupAndDescendants, regroupTarget } from "./group-info";
 import { anchorOffset, coversTarget, noteDropTarget, sameAnchor } from "./note-anchor";
 
 const NS = "http://www.w3.org/2000/svg";
@@ -132,7 +133,14 @@ const PORT_REACH = 12;
 
 export type Handlers = {
   onSelect?: (selection: Subject, picked: Picked) => void;
-  onMove?: (moves: Array<{ id: string; x: number; y: number; group: string | null }>) => void;
+  /**
+   * A drag of the selection ended. `into` is set when it was let go over another group's frame
+   * (Shift not held): the selected components and groups move into that group, in the same step.
+   */
+  onMove?: (
+    moves: Array<{ id: string; x: number; y: number }>,
+    into: { group: string; nodes: string[]; groups: string[] } | null,
+  ) => void;
   /**
    * A wire was let go on another component, or on a group's frame (`to` is then the group id: an
    * edge to the group as a unit). `ends` is set when it was drawn from a port dot.
@@ -175,8 +183,8 @@ export type Handlers = {
   /** The zoom changed (every applyView reports it; the page shows it as a percentage). */
   onView?: (k: number) => void;
   /**
-   * The pointer is over a component's box or a group's label strip (null: over neither, or a
-   * gesture began). Sent again as it moves, so the page knows where the pointer is.
+   * The pointer is over a component's box, or a group's label strip or border band (null: over
+   * none of them, or a gesture began). Sent again as it moves, so the page knows where it is.
    */
   onHover?: (
     at: { type: "node" | "group"; id: string; clientX: number; clientY: number } | null,
@@ -334,6 +342,8 @@ export class Scene {
   space = false;
   /** Space itself is down. Only this makes the plain wheel zoom; the hand tool leaves it a scroll. */
   spaceHeld = false;
+  /** The group whose card the pointer is on, from its label strip or border band. */
+  frameHover: string | null = null;
   /** The hand tool (H): a pan mode that stays until the select tool (V) takes over again. */
   hand = false;
   disposed = false;
@@ -1030,8 +1040,6 @@ export class Scene {
       for (const target of [hit, label, tag, icon]) {
         target?.addEventListener("pointerdown", (ev: any) => this.startGroupDrag(group.id, ev));
       }
-      for (const target of [label, tag, icon])
-        if (target) this.hoverable(target, "group", group.id);
       g.append(...(under ? [under] : []), rect, hit, ...(icon ? [icon] : []), label, tag);
       // The tag sits just past the name. Measured once here, because the name does not change
       // while the frame is being dragged — only where the frame is.
@@ -1535,6 +1543,14 @@ export class Scene {
       this.space = this.hand;
       svg.classList.toggle("hand", this.hand);
     });
+    // Shift pressed or let go mid-drag turns the move-into-group highlight off or back on at once.
+    const shift = (ev: KeyboardEvent) => {
+      if (ev.key !== "Shift" || !this.drag?.moved) return;
+      this.drag.shift = ev.shiftKey;
+      this.setRegroupTarget(this.regroupAt(ev.shiftKey));
+    };
+    this.on(window, "keydown", shift);
+    this.on(window, "keyup", shift);
     this.on(window, "blur", () => {
       this.spaceHeld = false;
       this.space = this.hand;
@@ -1621,6 +1637,24 @@ export class Scene {
     this.on(svg, "pointerdown", () => this.h.onHover?.(null), { capture: true });
     this.on(svg, "wheel", () => this.h.onHover?.(null), { capture: true, passive: true });
     this.on(svg, "pointerleave", () => this.h.onHover?.(null));
+    // A group's card comes from its label strip or its border band (frame-target.ts), the
+    // same places a wire aims at the group. Its open interior belongs to its members: no card.
+    this.on(svg, "pointermove", (ev) => {
+      const t = ev.target as Element;
+      if (t.closest?.(".node-box")) {
+        this.frameHover = null; // the node reports itself
+        return;
+      }
+      const [wx, wy] = this.toWorld(ev.clientX, ev.clientY);
+      const over =
+        ev.buttons || this.busy() || t.closest?.(".note-box, .edge-hit, .end-handle, .port-dot")
+          ? null
+          : (this.frameOfLabel(t) ?? frameTargetAt(this.frames || {}, wx, wy, this.view.k));
+      if (over)
+        this.h.onHover?.({ type: "group", id: over, clientX: ev.clientX, clientY: ev.clientY });
+      else if (this.frameHover) this.h.onHover?.(null);
+      this.frameHover = over;
+    });
 
     this.on(svg, "pointerdown", (ev) => {
       if (ev.button === 1 || (ev.button === 0 && this.space)) {
@@ -1672,14 +1706,14 @@ export class Scene {
       if (this.tip) this.moveTip(ev);
     });
 
-    const end = () => {
+    const end = (ev: PointerEvent) => {
       if (this.pan) {
         this.pan = null;
         svg.classList.remove("panning");
       }
       if (this.marquee) this.endMarquee();
       if (this.noteDrag) this.endNote();
-      if (this.drag) this.endDrag();
+      if (this.drag) this.endDrag(ev);
       if (this.wire) this.endWire();
       if (this.bowDrag) this.endBow();
       if (this.tip) this.finishTip();
@@ -1860,6 +1894,7 @@ export class Scene {
       held,
       kind: "group",
       moved: false,
+      ...this.regroupScope(),
       offsets: Object.fromEntries(
         ids.map((n) => [n, [wx - this.boxes[n][0], wy - this.boxes[n][1]]]),
       ),
@@ -1886,11 +1921,56 @@ export class Scene {
       ids,
       held,
       moved: false,
+      ...this.regroupScope(),
       offsets: Object.fromEntries(
         ids.map((n) => [n, [wx - this.boxes[n][0], wy - this.boxes[n][1]]]),
       ),
     };
     this.capture(ev);
+  }
+
+  /**
+   * What a drag needs to tell which group it is over: the frames as they stand now (they stretch
+   * after their members while the drag runs) and the groups it can never move into — every
+   * selected group and everything inside one.
+   */
+  regroupScope() {
+    const skip = new Set<string>();
+    for (const g of this.picked().groups)
+      for (const id of groupAndDescendants(this.model.doc, g)) skip.add(id);
+    return { frames0: this.frames || {}, skip, into: null as string | null };
+  }
+
+  /** The group the dragged item's centre is over, if it would move there (Shift: never). */
+  regroupAt(shift: boolean): string | null {
+    const d = this.drag;
+    if (!d || shift || !this.h.onMove) return null;
+    const box = d.kind === "group" ? this.frames[d.id] : this.boxes[d.id];
+    if (!box) return null;
+    const current =
+      d.kind === "group"
+        ? ((this.model.doc.groups || []).find((g: any) => g.id === d.id)?.parent ?? null)
+        : (this.model.doc.nodes.find((n: any) => n.id === d.id)?.group ?? null);
+    return regroupTarget(d.frames0, box[0] + box[2] / 2, box[1] + box[3] / 2, d.skip, current);
+  }
+
+  /**
+   * The group whose name, kind tag or icon this is. Its own words win over the band test: a
+   * child frame's band can reach up over its parent's label, and the label names the parent.
+   */
+  frameOfLabel(t: Element): string | null {
+    for (const [id, f] of this.frameEls)
+      if (f.label === t || f.tag === t || f.icon === t) return id;
+    return null;
+  }
+
+  /** The drop highlight on the frame a drag would move its selection into. */
+  setRegroupTarget(target: string | null) {
+    const d = this.drag;
+    if (!d || d.into === target) return;
+    if (d.into) this.frameEls.get(d.into)?.rect.classList.remove("drop-target");
+    if (target) this.frameEls.get(target)?.rect.classList.add("drop-target");
+    d.into = target;
   }
 
   moveDrag(ev: PointerEvent) {
@@ -1932,6 +2012,8 @@ export class Scene {
     this.placeEndHandles();
     this.repaintFrames();
     this.repaintAnchored();
+    this.drag.shift = ev.shiftKey;
+    this.setRegroupTarget(this.regroupAt(ev.shiftKey));
   }
 
   /**
@@ -1979,28 +2061,28 @@ export class Scene {
     this.placeFrameDots();
   }
 
-  endDrag() {
-    const { ids, moved, kind, at, client, held: carried } = this.drag;
+  endDrag(ev?: PointerEvent) {
+    const shift = ev ? ev.shiftKey : Boolean(this.drag.shift);
+    const into = this.drag.moved ? this.regroupAt(shift) : null;
+    this.setRegroupTarget(null);
+    const { ids, moved, kind, at, client, held } = this.drag;
     this.drag = null;
     if (!moved) return;
-    // Dragging a node drops it into whatever frame it lands in. Dragging a group carries its
-    // members with it, so they keep the group they already had — the whole point of the gesture
-    // is that the grouping does not change.
-    const held = new Map(this.model.doc.nodes.map((n: any) => [n.id, n.group ?? null]));
-    const frames = groupFrames(this.model.doc, this.boxes) as Record<string, Box>;
-    const moves = ids.map((id: string) => {
-      const b = this.boxes[id];
-      return {
-        id,
-        x: b[0],
-        y: b[1],
-        group:
-          kind === "group" || carried?.has(id)
-            ? (held.get(id) ?? null)
-            : innermostFrameAt(frames, b[0] + b[2] / 2, b[1] + b[3] / 2),
-      };
-    });
-    this.h.onMove?.(moves);
+    // Let go over another group's frame: the selected components and groups move into it.
+    // Anywhere else the grouping stays as it was — a frame stretches after its members, so
+    // dragging a component out over empty canvas never takes it out of its group.
+    const picked = this.picked();
+    const moves = ids.map((id: string) => ({ id, x: this.boxes[id][0], y: this.boxes[id][1] }));
+    this.h.onMove?.(
+      moves,
+      into
+        ? {
+            group: into,
+            nodes: [...picked.nodes].filter((n) => !held?.has(n)),
+            groups: [...picked.groups],
+          }
+        : null,
+    );
     // Dragging a frame moves the group; a group is wired from the port dots its frame shows
     // when selected. Someone who drags off a frame and lets go on a component was trying to
     // wire it, so the canvas moves the group (the right thing for that gesture) and says how.

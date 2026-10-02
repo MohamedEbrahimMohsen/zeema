@@ -280,8 +280,15 @@ const helpSections = (mod: string): Array<[string, Array<[string[], string]>]> =
       ],
       [["Drag"], "Sweep a box over empty space to select several; Shift keeps what you had."],
       [[mod, "A"], "Select everything: components, groups and edges."],
-      [["Drag"], "Move the selection. A component dropped inside a group joins it."],
-      [["Drag a group"], "Move a group with everything inside it; the grouping does not change."],
+      [["Drag"], "Move the selection."],
+      [
+        ["Drag"],
+        "Drag a component into a group to move it there; hold Shift to move without regrouping.",
+      ],
+      [
+        ["Drag a group"],
+        "Move a group with everything inside it; let go over another group to nest it there.",
+      ],
       [["←", "→", "↑", "↓"], "Nudge the selection by one."],
       [["Shift", "←"], "Nudge by ten."],
       [["Esc"], "Clear the selection, or abandon what you are dragging."],
@@ -339,8 +346,8 @@ const helpSections = (mod: string): Array<[string, Array<[string[], string]>]> =
       [[mod, "0"], "Fit the whole design on screen."],
       [[mod, "1"], "Back to actual size."],
       [[mod, "Shift", "K"], "Pin the component picker as a side panel, or unpin it."],
-      [[mod, "Shift", "D"], "Pin Design settings so it stays beside a selection, or unpin it."],
-      [[mod, "Shift", "P"], "Let the inspector show for a selection, or keep it away."],
+      [["\\", "or D"], "Show Design settings, pinned beside any selection, or put it away."],
+      [[mod, "Shift", "P"], "Let the card for a selection show, or keep it away."],
       [[mod, "S"], "Save."],
       [["Esc"], "Close the picker, a menu or the findings."],
       [["?"], "Open and close this dialog."],
@@ -470,14 +477,11 @@ export function Canvas(props: Props) {
     (side: keyof Panes, open?: boolean) => updatePanes((prev) => ({ [side]: open ?? !prev[side] })),
     [updatePanes],
   );
-  // Pinning Design settings shows it (and lets the right-hand cards show at all); unpinning puts
-  // it away, the way unpinning the picker closes it.
+  // Pinning Design settings shows it; unpinning puts it away, the way unpinning the picker closes
+  // it. It is its own card: whether the selection's card may show (panes.right) does not touch it.
   const pinDesign = useCallback(
     (on?: boolean) => {
-      updatePanes((prev) => {
-        const next = on ?? !prev.design;
-        return next ? { design: true, right: true } : { design: false };
-      });
+      updatePanes((prev) => ({ design: on ?? !prev.design }));
       setDesignPanel(false);
     },
     [updatePanes],
@@ -524,6 +528,9 @@ export function Canvas(props: Props) {
   const closeMoveTo = useCallback(() => setMoveTo(null), []);
   // A menu, a popover or a dialog holds the pointer's attention: no hover card meanwhile.
   hoverQuiet.current = !!(menu || moveTo || quick || help || picker || pickAnchor);
+  // The same, for the bare-key shortcuts — except the picker pinned as a panel, which is no popover.
+  const popoverOpen = useRef(false);
+  popoverOpen.current = !!(menu || moveTo || help || pickAnchor || (picker && !panes.left));
   useEffect(() => {
     if (!hoverQuiet.current) return;
     if (hoverTimer.current) clearTimeout(hoverTimer.current);
@@ -1194,6 +1201,19 @@ export function Canvas(props: Props) {
             hint: "pinned here",
             run: () => addNoteOn({ node: target.ref as string }),
           },
+          {
+            label: "Open in catalogue",
+            hint: "new tab",
+            run: () => {
+              const n = e.doc.nodes.find((x: any) => x.id === target.ref);
+              if (n)
+                window.open(
+                  `/catalogue/components/${encodeURIComponent(n.component)}`,
+                  "_blank",
+                  "noopener",
+                );
+            },
+          },
           "-",
           {
             label: count > 1 ? `Delete these ${count}` : "Delete",
@@ -1379,16 +1399,26 @@ export function Canvas(props: Props) {
           setDesignPanel(false);
         }
       },
-      onMove: (moves) => {
+      onMove: (moves, into) => {
         const e = eng.current!;
+        // Let go over another group: the selection moves into it, in the same undo step as the
+        // positions. A group is never put inside itself (setGroupParent refuses the cycle).
         let next: any = null;
-        for (const m of moves) {
-          const node = (next || e.doc).nodes.find((n: any) => n.id === m.id);
-          if (node && (node.group || null) !== (m.group || null))
-            next = D.setNodeGroup(next || e.doc, m.id, m.group);
+        if (into) {
+          for (const id of into.nodes) {
+            const node = (next || e.doc).nodes.find((n: any) => n.id === id);
+            if (node && node.group !== into.group)
+              next = D.setNodeGroup(next || e.doc, id, into.group);
+          }
+          for (const id of into.groups) {
+            const g = ((next || e.doc).groups || []).find((x: any) => x.id === id);
+            if (!g || id === into.group || g.parent === into.group) continue;
+            const after = D.setGroupParent(next || e.doc, id, into.group);
+            if (after !== (next || e.doc)) next = after;
+          }
         }
         commit(next, {
-          coalesce: true,
+          coalesce: !next,
           apply: () => {
             for (const m of moves) e.positions[m.id] = [m.x, m.y];
           },
@@ -1587,12 +1617,15 @@ export function Canvas(props: Props) {
         setPane("right");
         return;
       }
-      if (mod && ev.shiftKey && k === "d") {
+      if (typing(ev) || onControl(ev)) return;
+      // Design settings: \ (whatever modifiers a layout needs to type it: AltGr is Ctrl+Alt on
+      // Windows) or a bare D. Not while a menu, a popover or a dialog has the keyboard.
+      if (ev.key === "\\" || (!mod && !ev.altKey && k === "d")) {
+        if (popoverOpen.current) return;
         ev.preventDefault();
         pinDesign();
         return;
       }
-      if (typing(ev) || onControl(ev)) return;
       if (mod && k === "s") {
         ev.preventDefault();
         void save();
@@ -1619,7 +1652,9 @@ export function Canvas(props: Props) {
         return;
       }
       if (mod && k === "d") {
+        // Ctrl+D duplicates; Ctrl+Shift+D means nothing here (Design settings is \ or D).
         ev.preventDefault();
+        if (ev.shiftKey) return;
         duplicateSelection();
         return;
       }
@@ -1702,6 +1737,7 @@ export function Canvas(props: Props) {
     commit,
     setNotesShown,
     setPane,
+    pinDesign,
     openPicker,
     closePicker,
   ]);
@@ -2154,15 +2190,16 @@ export function Canvas(props: Props) {
       .filter(Boolean)
       .join(" · ") || "No findings";
   const signInHref = `/signin?next=/d/${props.owner}/${props.slug}/canvas`;
-  const ready = panes.right && Boolean(bundle && e);
+  const ready = Boolean(bundle && e);
   const selected = Boolean(
     selection.type || multi.nodes.size || multi.groups.size || multi.edges.size,
   );
   // Pinned, Design settings is a card of its own that stays whatever is selected; the selection
   // then gets the second card. Unpinned, the one card shows the selection, or the design when it
-  // was asked for and nothing is selected.
+  // was asked for and nothing is selected. panes.right governs that one card only: keeping it
+  // away never hides a pinned Design settings.
   const designShown = ready && panes.design;
-  const selectionShown = ready && (selected || (!panes.design && designPanel));
+  const selectionShown = ready && panes.right && (selected || (!panes.design && designPanel));
   const inspectorShown = designShown || selectionShown;
   const pickerShown = Boolean(bundle) && (panes.left || picker);
   // The owner's list badge row: the choice from the sidecar the canvas holds, and what automatic
@@ -2188,7 +2225,7 @@ export function Canvas(props: Props) {
       className={`pill-btn${panes.design ? " is-on" : ""}`}
       aria-pressed={panes.design}
       aria-label={panes.design ? "Unpin Design settings" : "Pin Design settings"}
-      title={`${panes.design ? "Unpin" : "Pin, to keep it beside a selection"} (${mod.long} Shift D)`}
+      title={`${panes.design ? "Unpin" : "Pin, to keep it beside a selection"} (\\ or D)`}
       onClick={() => pinDesign()}
     >
       <Glyph d={G.pin} size={16} />
@@ -2326,7 +2363,7 @@ export function Canvas(props: Props) {
     },
     {
       label: panes.design ? "Unpin design settings" : "Pin design settings",
-      hint: `${mod.long} Shift D`,
+      hint: "\\ or D",
       run: () => pinDesign(),
     },
     { label: "Keys & gestures", hint: "?", run: () => setHelp(true) },
@@ -2426,7 +2463,7 @@ export function Canvas(props: Props) {
         id: "pin-design",
         group: "View",
         label: panes.design ? "Unpin design settings" : "Pin design settings",
-        hint: `${k} Shift D`,
+        hint: "\\ or D",
         keywords: "design panel requirements badge side",
         run: () => pinDesign(),
       },

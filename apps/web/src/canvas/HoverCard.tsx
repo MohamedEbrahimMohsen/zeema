@@ -1,10 +1,11 @@
 "use client";
 
-// The card the canvas shows beside the pointer when it rests on a component or a group's label:
+// The card the canvas shows beside the pointer when it rests on a component or a group's label or border:
 // the name, what it is, and the ids behind it. It replaces the native <title> tooltip, which is
 // slow to come and cannot be styled. It never takes the pointer: it is a remark, not a control.
 import { nodeLines } from "@zeema/core/document";
 import { useLayoutEffect, useRef } from "react";
+import { edgeCrossings, edgesText, memberCounts, membersText, parentPath } from "./group-info";
 
 export type HoverAt = { type: "node" | "group"; id: string; x: number; y: number };
 
@@ -27,6 +28,12 @@ export function HoverCard({ at, doc, catalogue }: { at: HoverAt; doc: any; catal
     el.style.top = `${Math.max(8, top)}px`;
   }, [at]);
 
+  const row = (label: string, value: React.ReactNode, cls = "") => (
+    <>
+      <span className="hc-label">{label}</span>
+      <span className={`hc-value${cls ? ` ${cls}` : ""}`}>{value}</span>
+    </>
+  );
   let body: React.ReactNode = null;
   if (at.type === "node") {
     const n = doc.nodes.find((x: any) => x.id === at.id);
@@ -35,34 +42,33 @@ export function HoverCard({ at, doc, catalogue }: { at: HoverAt; doc: any; catal
     const comp = own(catalogue.components, n.component);
     const kindName = comp ? own(catalogue.locale?.kinds, comp.kind)?.name || comp.kind : "";
     const product = own(catalogue.locale?.components, n.component)?.name || n.component;
-    const what = [n.label ? product : null, kindName].filter(Boolean).join(" · ");
     const provider = comp?.provider && comp.provider !== "default" ? comp.provider : null;
     body = (
       <>
-        <div className="hc-name">{lines.name}</div>
-        {what ? <div className="hc-what">{what}</div> : null}
-        <div className="hc-ids">
-          <span>
-            {n.id} · {n.component}
-          </span>
-          {provider ? (
-            <span className="hc-chip">
-              {own(catalogue.locale?.providers, provider)?.name || provider}
-            </span>
-          ) : null}
-        </div>
+        {row("Name", lines.name, "hc-name")}
+        {lines.name !== product ? row("Product", product) : null}
+        {kindName ? row("Kind", kindName) : null}
+        {provider
+          ? row("Provider", own(catalogue.locale?.providers, provider)?.name || provider)
+          : null}
+        <span className="hc-rule" />
+        {row("Id", `${n.id} · ${n.component}`, "hc-mono")}
       </>
     );
   } else {
     const g = (doc.groups || []).find((x: any) => x.id === at.id);
     if (!g) return null;
+    const path = parentPath(doc, g.id);
+    const edges = edgesText(edgeCrossings(doc, g.id));
     body = (
       <>
-        <div className="hc-name">{g.label || g.id}</div>
-        <div className="hc-what">{g.kind}</div>
-        <div className="hc-ids">
-          <span>{g.id}</span>
-        </div>
+        {row("Name", g.label || g.id, "hc-name")}
+        {row("Kind", own(catalogue.locale?.kinds, g.kind)?.name || g.kind)}
+        {path.length ? row("Parent", path.join(" › ")) : null}
+        {row("Members", membersText(memberCounts(doc, g.id)))}
+        {edges ? row("Edges", edges) : null}
+        <span className="hc-rule" />
+        {row("Id", g.id, "hc-mono")}
       </>
     );
   }

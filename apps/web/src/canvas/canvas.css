@@ -1364,6 +1364,43 @@
   outline: none;
   box-shadow: var(--ring-focus);
 }
+/* a control with its catalogue arrow beside it */
+.zeema-canvas .field .with-link {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+.zeema-canvas .field .with-link select {
+  flex: 1;
+  min-width: 0;
+}
+.zeema-canvas .field .resolved .nowrap {
+  white-space: nowrap;
+}
+.zeema-canvas .cat-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  margin-left: 2px;
+  padding: 0 2px;
+  border-radius: var(--rc);
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 0.95em;
+  line-height: 1;
+  text-decoration: none;
+}
+.zeema-canvas .cat-link:hover {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.zeema-canvas .cat-link:focus-visible {
+  outline: none;
+  box-shadow: var(--ring-focus);
+}
 /* a long text (a note's) takes the whole row under its label, and grows only downwards */
 .zeema-canvas .field textarea {
   grid-column: 1 / -1;
@@ -1934,8 +1971,13 @@
 .zeema-canvas .hover-card {
   position: fixed;
   z-index: 45;
-  max-width: 300px;
-  padding: 8px 10px;
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  column-gap: 10px;
+  row-gap: 4px;
+  align-items: baseline;
+  max-width: 320px;
+  padding: 10px 12px;
   pointer-events: none;
   background: var(--float-bg);
   border: var(--border) solid var(--float-line);
@@ -1948,31 +1990,39 @@
   line-height: 1.35;
   animation: zeema-float-up var(--dur) var(--ease);
 }
+.zeema-canvas .hover-card .hc-label {
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.zeema-canvas .hover-card .hc-value {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .zeema-canvas .hover-card .hc-name {
   font-weight: var(--fw-semibold);
+  white-space: normal;
   overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
 }
-.zeema-canvas .hover-card .hc-what {
-  color: var(--ink);
-  opacity: 0.85;
-}
-.zeema-canvas .hover-card .hc-ids {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 3px;
+.zeema-canvas .hover-card .hc-mono {
   font-family: var(--mono);
   font-size: var(--fs-micro);
   color: var(--muted);
-  overflow-wrap: anywhere;
 }
-.zeema-canvas .hover-card .hc-chip {
-  padding: 0 6px;
-  border: var(--border) solid var(--float-line);
-  border-radius: var(--r-round);
-  font-family: inherit;
-  color: var(--ink);
+.zeema-canvas .hover-card .hc-rule {
+  grid-column: 1 / -1;
+  height: 0;
+  margin: 2px 0;
+  border-top: var(--border) solid var(--float-line);
 }
 @media (prefers-reduced-motion: reduce) {
   .zeema-canvas .hover-card {
