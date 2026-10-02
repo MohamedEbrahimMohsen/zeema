@@ -196,7 +196,7 @@ A design may have no nodes yet (`nodes: []`): a new design starts that way on th
 |---|---|---|
 | `id` | yes | Unique within the design |
 | `component` | yes | Id of a component in `components/` |
-| `label` | no | Display name as it appears in the source design, kept verbatim by importers. Read by renderers, never by rules. |
+| `label` | no | Display name as it appears in the source design, kept verbatim by importers. Read by renderers, never by rules. A box draws the label over the component's name, or with no label the component's name over its kind's; the component id is hover text only. |
 | `group` | no | Id of a group in this design |
 | `props` | no | Property values; see resolution order above |
 | `nfr` | no | `rps` (integer), `latencyP95Ms` (integer), `consistency` (`strong` or `eventual`) |

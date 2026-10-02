@@ -46,6 +46,8 @@ import { BadgeRow } from "./BadgeRow";
 import { ContextMenu, type MenuItem } from "./ContextMenu";
 import { exportScene } from "./exportScene";
 import { type CanvasFinding, FindingsPanel } from "./FindingsPanel";
+import { GroupPicker } from "./GroupPicker";
+import { type HoverAt, HoverCard } from "./HoverCard";
 import { type Highlight, Inspector, type InspectorApi } from "./Inspector";
 import { Palette } from "./Palette";
 import { QuickActions } from "./QuickActions";
@@ -219,6 +221,8 @@ function tintNodes(
 }
 
 const ZOOM_STEP = 1.25;
+// How long the pointer rests on a component or a group label before its hover card shows.
+const HOVER_DELAY = 350;
 const plural = (n: number, one: string) => `${n} ${one}${n === 1 ? "" : "s"}`;
 
 /** Everything a note is allowed to be anchored to, as the document currently stands. */
@@ -407,6 +411,14 @@ export function Canvas(props: Props) {
     from?: HTMLElement | null;
   } | null>(null);
   const [help, setHelp] = useState(false);
+  // "Move to group…": the searchable group list, at the point the menu was opened, for these.
+  const [moveTo, setMoveTo] = useState<{ x: number; y: number; ids: string[] } | null>(null);
+  // The hover card: what the pointer has rested on (after HOVER_DELAY), and where.
+  const [hoverCard, setHoverCard] = useState<HoverAt | null>(null);
+  const hoverPending = useRef<HoverAt | null>(null);
+  const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // True while something else holds the pointer's attention (a menu, a popover, a dialog).
+  const hoverQuiet = useRef(false);
   // The dialog owns Escape while it is open, and the other Escape handlers stand down; a ref,
   // because those handlers are bound once and must read the current answer, not a stale one.
   const helpOpen = useRef(false);
@@ -509,6 +521,22 @@ export function Canvas(props: Props) {
   const quickOpen = useRef(false);
   quickOpen.current = quick;
   const closeQuick = useCallback(() => setQuick(false), []);
+  const closeMoveTo = useCallback(() => setMoveTo(null), []);
+  // A menu, a popover or a dialog holds the pointer's attention: no hover card meanwhile.
+  hoverQuiet.current = !!(menu || moveTo || quick || help || picker || pickAnchor);
+  useEffect(() => {
+    if (!hoverQuiet.current) return;
+    if (hoverTimer.current) clearTimeout(hoverTimer.current);
+    hoverTimer.current = null;
+    hoverPending.current = null;
+    setHoverCard(null);
+  }, [menu, moveTo, quick, help, picker, pickAnchor]);
+  useEffect(
+    () => () => {
+      if (hoverTimer.current) clearTimeout(hoverTimer.current);
+    },
+    [],
+  );
   const [title, setTitle] = useState(props.title);
   const [unpublished, setUnpublished] = useState(props.unpublished);
   const [editingTitle, setEditingTitle] = useState(false);
@@ -899,6 +927,22 @@ export function Canvas(props: Props) {
     commit(doc);
   }, [commit]);
 
+  // Put these components in a group (null: top level), as one undo step. Positions stay; the
+  // group's frame is computed from its members, so it reaches out to them on the redraw.
+  const moveToGroup = useCallback(
+    (sel: string[], groupId: string | null) => {
+      if (!sel.length) return;
+      let doc = eng.current!.doc;
+      for (const id of sel) doc = D.setNodeGroup(doc, id, groupId);
+      commit(doc);
+    },
+    [commit],
+  );
+  const openMoveTo = useCallback((x: number, y: number) => {
+    const sel = ids();
+    if (sel.length) setMoveTo({ x, y, ids: sel });
+  }, []);
+
   const arrange = useCallback(() => {
     commit(null, {
       apply: () => {
@@ -1098,7 +1142,7 @@ export function Canvas(props: Props) {
   );
 
   const menuFor = useCallback(
-    (target: Subject, at: [number, number]): MenuItem[] => {
+    (target: Subject, at: [number, number], client: [number, number] = [0, 0]): MenuItem[] => {
       const scene = sceneRef.current!;
       const e = eng.current!;
       const count = scene.multi.size;
@@ -1133,6 +1177,12 @@ export function Canvas(props: Props) {
             run: () => scene.editLabel("node", target.ref as string),
           },
           { label: count > 1 ? `Group these ${count}` : "Group", hint: "G", run: groupSelection },
+          {
+            label: "Move to group…",
+            hint: (e.doc.groups || []).length ? undefined : "no groups yet",
+            disabled: !(e.doc.groups || []).length,
+            run: () => openMoveTo(client[0], client[1]),
+          },
           grouped ? { label: "Remove from group", run: releaseFromGroup } : null,
           {
             label: count > 1 ? `Duplicate these ${count}` : "Duplicate",
@@ -1274,6 +1324,7 @@ export function Canvas(props: Props) {
       duplicateSelection,
       groupSelection,
       releaseFromGroup,
+      openMoveTo,
     ],
   );
 
@@ -1436,7 +1487,32 @@ export function Canvas(props: Props) {
         if (kind === "group")
           commit(D.setGroupField(e.doc, ref as string, "label", value || undefined));
       },
-      onContext: (target, x, y) => setMenu({ x, y, items: menuFor(target, scene.toWorld(x, y)) }),
+      onContext: (target, x, y) =>
+        setMenu({ x, y, items: menuFor(target, scene.toWorld(x, y), [x, y]) }),
+      onHover: (at) => {
+        const clear = () => {
+          if (hoverTimer.current) clearTimeout(hoverTimer.current);
+          hoverTimer.current = null;
+        };
+        if (!at || hoverQuiet.current) {
+          clear();
+          hoverPending.current = null;
+          setHoverCard(null);
+          return;
+        }
+        const prev = hoverPending.current;
+        const next = { type: at.type, id: at.id, x: at.clientX, y: at.clientY };
+        hoverPending.current = next;
+        // Moving within the same thing only updates where the card will appear.
+        if (prev && prev.type === next.type && prev.id === next.id) return;
+        clear();
+        setHoverCard(null);
+        hoverTimer.current = setTimeout(() => {
+          hoverTimer.current = null;
+          const p = hoverPending.current;
+          if (p && !hoverQuiet.current && !sceneRef.current?.busy()) setHoverCard({ ...p });
+        }, HOVER_DELAY);
+      },
       onDrop: (componentId, x, y) => {
         // A drag from the picker opened at a wire's end still wires it, wherever it is dropped.
         addComponent(componentId, [x, y], placeRef.current?.from);
@@ -2362,6 +2438,15 @@ export function Canvas(props: Props) {
         keywords: "help shortcuts keyboard",
         run: () => setHelp(true),
       },
+      multi.nodes.size && e?.doc.groups?.length
+        ? {
+            id: "move-to-group",
+            group: "Design",
+            label: "Move to group…",
+            keywords: "group parent put into frame",
+            run: () => openMoveTo(window.innerWidth / 2 - 140, window.innerHeight * 0.22),
+          }
+        : null,
       { id: "arrange", group: "Design", label: "Arrange", keywords: "layout tidy", run: arrange },
       e?.undo.length
         ? { id: "undo", group: "Design", label: "Undo", hint: `${k} Z`, run: undo }
@@ -2514,7 +2599,6 @@ export function Canvas(props: Props) {
     <div className="zeema-canvas" ref={rootRef}>
       <div className="scene-wrap">
         <svg ref={svgRef} className="scene" role="img" aria-label="Design canvas">
-          <title>Design canvas</title>
           <defs />
           <g className="viewport">
             <g className="layer-frames" />
@@ -2882,6 +2966,26 @@ export function Canvas(props: Props) {
           onComponent={(id) => addComponent(id)}
           onGoto={(t) => centerOn({ type: t.type, ref: t.id })}
           onClose={closeQuick}
+        />
+      ) : null}
+      {hoverCard && bundle && e ? (
+        <HoverCard at={hoverCard} doc={e.doc} catalogue={bundle.catalogue} />
+      ) : null}
+      {moveTo && e ? (
+        <GroupPicker
+          x={moveTo.x}
+          y={moveTo.y}
+          groups={e.doc.groups || []}
+          current={(() => {
+            const now = new Set(
+              e.doc.nodes
+                .filter((n: any) => moveTo.ids.includes(n.id))
+                .map((n: any) => n.group ?? null),
+            );
+            return now.size === 1 ? ([...now][0] as string | null) : undefined;
+          })()}
+          onPick={(g) => moveToGroup(moveTo.ids, g)}
+          onClose={closeMoveTo}
         />
       ) : null}
       {menu ? (

@@ -106,6 +106,17 @@ export function displayName(catalogue, node) {
   return loc?.name || node.component || node.id;
 }
 
+// The two lines a node's box shows, and the id behind them: the label over the component's
+// proper name when it has a label, else the proper name over its kind's ("Network security
+// group" over "Firewall"). The id is never drawn; it is hover text, the Inspector and the YAML.
+export function nodeLines(catalogue, node) {
+  const kind = own(catalogue.components, node.component)?.kind;
+  const sub = node.label
+    ? own(catalogue.locale?.components, node.component)?.name || node.component || ""
+    : own(catalogue.locale?.kinds, kind)?.name || kind || "";
+  return { name: displayName(catalogue, node), sub, id: node.component ?? node.id };
+}
+
 // The catalogue carries one vendor-neutral component per kind, and the convention that names it
 // is that its id is the kind id: `queue` is the generic queue, `kafka` is a product. Readers that
 // want to put the generic first ask here rather than re-deriving the convention.

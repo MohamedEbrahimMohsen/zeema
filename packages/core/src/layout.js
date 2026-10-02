@@ -38,7 +38,7 @@
 // Pure: no DOM, no fs. It imports geometry.js for the edges, text.js for the box widths and
 // document.js for the name a box shows; none of them imports anything.
 
-import { displayName } from "./document.js";
+import { nodeLines } from "./document.js";
 import { edgeGeometry } from "./geometry.js";
 import { nodeWidth } from "./text.js";
 
@@ -273,9 +273,10 @@ export function layout(doc, catalogue) {
 
   const box = new Map(); // insertion order = node document order
   for (const n of nodes) {
-    // Sized for the words the box shows: the name the canvas and the renderer draw (the label,
-    // else the component's proper name) and the component id, by the one measure that fits them.
-    box.set(n.id, [0, 0, nodeWidth(displayName(catalogue ?? {}, n), n.component), BOX_H]);
+    // Sized for the two lines the box shows (nodeLines: the label or proper name, over the
+    // proper name or the kind), by the one measure the canvas and the renderer fit them with.
+    const l = nodeLines(catalogue ?? {}, n);
+    box.set(n.id, [0, 0, nodeWidth(l.name, l.sub), BOX_H]);
   }
 
   // The group tree. A parent that is missing, or that would close a cycle, leaves the group

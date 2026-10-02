@@ -3,7 +3,7 @@
 // component's icon on one neutral surface, groups are dashed containers,
 // edges are arrows, solid for sync and dashed for async.
 
-import { displayName } from "./document.js";
+import { nodeLines } from "./document.js";
 import { drawnLayout } from "./drawn.js";
 import { framesOuterFirst, framesUnderTint, pathOf } from "./geometry.js";
 import { layout } from "./layout.js";
@@ -11,7 +11,7 @@ import { nodeText } from "./text.js";
 
 // The node-text measure lives in text.js, with the box sizing that uses it; re-exported here
 // because the canvas and older callers import it from the renderer.
-export { monoWidth, nodeText, nodeWidth, textWidth } from "./text.js";
+export { nodeText, nodeWidth, textWidth } from "./text.js";
 
 // A node card is one neutral surface in both themes: colour on a drawing comes only from the
 // component's icon, from a group tint the author chose, and from finding badges. These are the
@@ -215,7 +215,7 @@ export function toSvg(doc, catalogue, options = {}) {
   else style = `${vars.light}@media (prefers-color-scheme: dark){${vars.dark}}`;
   style +=
     ".body{fill:var(--node-fill);stroke:var(--node-line)}" +
-    ".n{font-size:14px;font-weight:500;fill:var(--ink)}.c{font-size:11px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;fill:var(--muted)}" +
+    ".n{font-size:14px;font-weight:500;fill:var(--ink)}.c{font-size:11px;fill:var(--muted)}" +
     ".g{font-size:12px;fill:var(--muted)}" +
     ".gk{font-size:10px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;fill:var(--muted);opacity:0.75}" +
     ".e{font-size:12px;fill:var(--muted);paint-order:stroke;" +
@@ -315,11 +315,11 @@ export function toSvg(doc, catalogue, options = {}) {
     // as on the canvas. Written on the element so a page that strips the <style> keeps it.
     const hole = c.kind === "custom" ? ' stroke-dasharray="6 4" fill-opacity="0.45"' : "";
     const cx = x + bw / 2;
-    // The same name the canvas shows (the label, else the component's proper name), fitted to
-    // the box by the same measure. A node whose words were cut short is a group whose <title>
-    // carries them whole; every other node is drawn exactly as it always was.
-    const t = nodeText(displayName(catalogue ?? {}, n), n.component, bw);
-    if (t.full) out.push(`<g><title>${escapeXml(t.full)}</title>`);
+    // The same two lines the canvas shows (nodeLines), fitted to the box by the same measure,
+    // in a group whose <title> carries them whole with the id, which is not drawn.
+    const l = nodeLines(catalogue ?? {}, n);
+    const t = nodeText(l.name, l.sub, bw, l.id);
+    out.push(`<g><title>${escapeXml(t.title)}</title>`);
     out.push(
       `<rect class="body" x="${x}" y="${y}" width="${bw}" height="${bh}" rx="12" stroke-width="1"${hole}/>`,
     );
@@ -344,7 +344,7 @@ export function toSvg(doc, catalogue, options = {}) {
     out.push(
       `<text class="c" x="${f1(cx)}" y="${y + t.comp.y}" text-anchor="middle">${escapeXml(t.comp.text)}</text>`,
     );
-    if (t.full) out.push("</g>");
+    out.push("</g>");
   }
   out.push("</svg>");
   return `${out.join("\n")}\n`;
@@ -353,8 +353,14 @@ export function toSvg(doc, catalogue, options = {}) {
 const mid = (s) => `n_${String(s).replace(/[^A-Za-z0-9]/g, "_")}`;
 const mesc = (s) => String(s).replace(/"/g, "'").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-/** Render a design as a Mermaid flowchart. Groups are subgraphs, sync solid, async dotted. */
-export function toMermaid(doc, direction = "TD") {
+/**
+ * Render a design as a Mermaid flowchart. Groups are subgraphs, sync solid, async dotted. Given
+ * the catalogue, a node reads as its box does: the name over the proper name or the kind.
+ * @param {any} doc
+ * @param {string} [direction]
+ * @param {any} [catalogue]
+ */
+export function toMermaid(doc, direction = "TD", catalogue = null) {
   const groups = doc.groups ?? [];
   const children = new Map();
   for (const g of groups) {
@@ -369,8 +375,14 @@ export function toMermaid(doc, direction = "TD") {
     members.get(k).push(n);
   }
   const out = [`flowchart ${direction}`];
-  const nodeLine = (n, ind) =>
-    out.push(`${ind}${mid(n.id)}["${mesc(n.label || n.id)}<br/><i>${mesc(n.component)}</i>"]`);
+  // The two lines the drawing shows; without a catalogue, the label or id over the component.
+  const nodeLine = (n, ind) => {
+    const l = catalogue
+      ? nodeLines(catalogue, n)
+      : { name: n.label || n.id, sub: n.component ?? "" };
+    const sub = l.sub ? `<br/><i>${mesc(l.sub)}</i>` : "";
+    out.push(`${ind}${mid(n.id)}["${mesc(l.name)}${sub}"]`);
+  };
   const emitGroup = (g, depth) => {
     const ind = "  ".repeat(depth);
     out.push(`${ind}subgraph ${mid(`g_${g.id}`)}["${mesc(g.label || g.id)} (${mesc(g.kind)})"]`);

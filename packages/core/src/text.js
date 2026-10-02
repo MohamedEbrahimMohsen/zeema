@@ -5,13 +5,12 @@
 //
 // Text is measured by estimate, with no DOM, so the picture is the same wherever it is drawn:
 // an average advance per class of character, in ems of the sans face (a little generous, so an
-// estimate that errs, errs toward fitting), and a little over 0.6em per character in the mono
-// face (JetBrains Mono and the system monospace faces all advance 0.6em).
+// estimate that errs, errs toward fitting). Both lines of a box are set in the sans face.
 //
 // Pure: no DOM, no fs, no imports.
 
 const NAME_FONT = 14;
-const COMP_FONT = 11;
+const SUB_FONT = 11;
 // Room between the words and the box's sides, each side.
 const TEXT_PAD = 12;
 // The narrowest box, and the widest: past that a name wraps, and past two lines it is cut.
@@ -44,18 +43,9 @@ export function textWidth(text, px = NAME_FONT) {
   return em * px * 1.04;
 }
 
-/** The estimated width, in px, of `text` in the mono face at `px`. */
-export function monoWidth(text, px = COMP_FONT) {
-  let n = 0;
-  for (const _ of String(text)) n++;
-  // The faces advance 0.6em; 0.62 leaves room for the rounding a browser does when the canvas
-  // is zoomed out and the text is hinted to whole pixels.
-  return n * 0.62 * px;
-}
-
 const words = (text) => String(text).split(/\s+/).filter(Boolean);
 const nameWidth = (t) => textWidth(t, NAME_FONT);
-const compWidth = (t) => monoWidth(t, COMP_FONT);
+const subWidth = (t) => textWidth(t, SUB_FONT);
 
 // Cut `text` to fit `max` px, with an ellipsis, by whichever measure it is given.
 function ellipsize(text, max, measure) {
@@ -110,46 +100,45 @@ function bestSplit(text, measure) {
 }
 
 /**
- * How wide a node's box is, from the name it shows and its component id: wide enough for the
- * id on one line and the name on one line when that makes a box no wider than 200px, else on
- * the two lines that need the least width; never narrower than 126px nor wider than 256px, and
- * a whole number. The layout sizes every box with this and nothing else.
+ * How wide a node's box is, from the two lines it shows (nodeLines in document.js): wide enough
+ * for the second line on one line and the name on one line when that makes a box no wider than
+ * 200px, else on the two lines that need the least width; never narrower than 126px nor wider
+ * than 256px, and a whole number. The layout sizes every box with this and nothing else.
  */
-export function nodeWidth(name, component) {
+export function nodeWidth(name, sub) {
   const pad = 2 * TEXT_PAD;
   const one = nameWidth(name) + pad;
   const split = bestSplit(name, nameWidth);
   const needName = one <= ONE_LINE_BOX_W || !split ? one : Math.min(one, split.widest + pad);
-  const need = Math.max(needName, compWidth(String(component ?? "")) + pad);
+  const need = Math.max(needName, subWidth(String(sub ?? "")) + pad);
   return Math.max(MIN_BOX_W, Math.min(MAX_BOX_W, Math.ceil(need)));
 }
 
 /**
  * Where a node's icon and words go in a box `w` px wide (78 high): the name on one line, or on
- * two when it does not fit one, the second ellipsized if even two are not enough; the component
- * id on one line, ellipsized. With a two-line name the icon is a little smaller and the block
- * sits higher, so it still fits the same box. The canvas and the server render both draw from
- * this, so a long name looks the same in both. `full` is set when anything was cut, so the
- * caller can carry the whole text in a <title>.
+ * two when it does not fit one, the second ellipsized if even two are not enough; the second
+ * line (the proper name under a label, else the kind) on one line, smaller, ellipsized. With a
+ * two-line name the icon is a little smaller and the block sits higher, so it still fits the
+ * same box. The canvas and the server render both draw from this, so a node looks the same in
+ * both. `title` is the hover text: both lines whole, and the id that is no longer drawn.
  * @returns {{ icon: { y: number, size: number }, name: Array<{ text: string, y: number }>,
- *   comp: { text: string, y: number }, full: string | null }}
+ *   comp: { text: string, y: number }, title: string }}
  */
-export function nodeText(name, component, w) {
+export function nodeText(name, sub, w, id) {
   const inner = Math.max(24, w - 2 * TEXT_PAD);
   let lines = wrap(name, inner, 2, nameWidth);
   if (lines.length === 2) {
     const split = bestSplit(name, nameWidth);
     if (split && split.widest <= inner) lines = split.lines;
   }
-  const comp = ellipsize(String(component ?? ""), inner, compWidth);
-  const cut = lines.join(" ") !== words(name).join(" ");
-  const full = cut || comp !== String(component ?? "") ? `${name}\n${component ?? ""}` : null;
+  const comp = ellipsize(String(sub ?? ""), inner, subWidth);
+  const title = [...new Set([name, sub, id].filter(Boolean))].join(" · ");
   if (lines.length === 1)
     return {
       icon: { y: 11, size: 24 },
       name: [{ text: lines[0], y: 52 }],
       comp: { text: comp, y: 68 },
-      full,
+      title,
     };
   return {
     icon: { y: 6, size: 22 },
@@ -158,6 +147,6 @@ export function nodeText(name, component, w) {
       { text: lines[1], y: 59 },
     ],
     comp: { text: comp, y: 73 },
-    full,
+    title,
   };
 }

@@ -36,7 +36,7 @@ export async function GET(
     }
     const doc = normalize(parse(view.version?.yaml ?? "").doc).doc;
     if (p.get("format") === "mermaid")
-      return new Response(`${toMermaid(doc)}\n`, {
+      return new Response(`${toMermaid(doc, "TD", getCatalogue())}\n`, {
         headers: { "content-type": "text/plain; charset=utf-8" },
       });
     // What you download is what the page shows: the drawing as its owner left it on the canvas,

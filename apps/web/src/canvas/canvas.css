@@ -669,7 +669,6 @@
 }
 .zeema-canvas .node-box text.comp {
   font-size: 11px;
-  font-family: var(--mono);
   fill: var(--muted);
 }
 .zeema-canvas .node-box .glyph {
@@ -1929,4 +1928,116 @@
 }
 .zeema-canvas .multi-hint {
   margin: var(--sp-1) 0 0;
+}
+
+/* the hover card: a component's or a group's name and ids, beside the resting pointer */
+.zeema-canvas .hover-card {
+  position: fixed;
+  z-index: 45;
+  max-width: 300px;
+  padding: 8px 10px;
+  pointer-events: none;
+  background: var(--float-bg);
+  border: var(--border) solid var(--float-line);
+  border-radius: var(--r-card);
+  box-shadow: var(--float-shadow);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  color: var(--ink);
+  font-size: var(--fs-small);
+  line-height: 1.35;
+  animation: zeema-float-up var(--dur) var(--ease);
+}
+.zeema-canvas .hover-card .hc-name {
+  font-weight: var(--fw-semibold);
+  overflow-wrap: anywhere;
+}
+.zeema-canvas .hover-card .hc-what {
+  color: var(--ink);
+  opacity: 0.85;
+}
+.zeema-canvas .hover-card .hc-ids {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 3px;
+  font-family: var(--mono);
+  font-size: var(--fs-micro);
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.zeema-canvas .hover-card .hc-chip {
+  padding: 0 6px;
+  border: var(--border) solid var(--float-line);
+  border-radius: var(--r-round);
+  font-family: inherit;
+  color: var(--ink);
+}
+@media (prefers-reduced-motion: reduce) {
+  .zeema-canvas .hover-card {
+    animation: none;
+  }
+}
+
+/* "Move to group…": a search box over the design's groups, styled as a menu */
+.zeema-menu.group-picker {
+  width: 300px;
+  max-width: calc(100vw - 16px);
+  display: flex;
+  flex-direction: column;
+}
+.zeema-menu.group-picker .gp-search {
+  margin: 0 0 4px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.zeema-menu.group-picker .gp-list {
+  max-height: 280px;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.zeema-menu.group-picker .gp-empty {
+  padding: 5px 10px;
+}
+.zeema-menu.group-picker .gp-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-1);
+  padding: 5px 10px;
+  border-radius: calc(var(--rc) - 2px);
+  cursor: pointer;
+}
+.zeema-menu.group-picker .gp-row.is-active {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+.zeema-menu.group-picker .gp-row.gp-none {
+  margin-top: 4px;
+  border-top: 1px solid var(--line);
+  border-radius: 0 0 calc(var(--rc) - 2px) calc(var(--rc) - 2px);
+}
+.zeema-menu.group-picker .gp-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.zeema-menu.group-picker .gp-sub,
+.zeema-menu.group-picker .gp-current {
+  font-family: var(--mono);
+  font-size: var(--fs-micro);
+  color: var(--muted);
+  white-space: nowrap;
+}
+.zeema-menu.group-picker .gp-current {
+  padding: 0 5px;
+  border: var(--border) solid var(--line);
+  border-radius: var(--r-round);
+}
+.zeema-menu.group-picker .gp-row.is-active .gp-sub,
+.zeema-menu.group-picker .gp-row.is-active .gp-current {
+  color: inherit;
+  opacity: 0.8;
 }

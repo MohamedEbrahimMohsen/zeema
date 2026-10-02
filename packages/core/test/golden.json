@@ -447,7 +447,7 @@
     618
    ],
    "placement": [
-    440,
+    435,
     782
    ],
    "data-router": [
@@ -501,7 +501,7 @@
     78
    ],
    "placement": [
-    126,
+    135,
     78
    ],
    "data-router": [
@@ -586,7 +586,7 @@
     666
    ],
    "placement": [
-    291,
+    286,
     862
    ],
    "data-router": [
@@ -594,7 +594,7 @@
     666
    ],
    "data-nodes-hot": [
-    451,
+    455,
     862
    ],
    "warm-tier": [
@@ -636,7 +636,7 @@
     78
    ],
    "placement": [
-    126,
+    135,
     78
    ],
    "data-router": [
@@ -1115,11 +1115,11 @@
   "rules": [],
   "positions": {
    "slack-client": [
-    288,
+    292,
     46
    ],
    "edge-envoy": [
-    288,
+    292,
     730
    ],
    "gateway-server-a": [
@@ -1127,23 +1127,23 @@
     1386
    ],
    "channel-server-a": [
-    186,
+    190,
     1222
    ],
    "admin-server-a": [
-    118,
+    122,
     1058
    ],
    "channel-server-b": [
-    274,
+    278,
     470
    ],
    "admin-server-b": [
-    278,
+    282,
     306
    ],
    "webapp": [
-    278,
+    282,
     894
    ],
    "consul": [
@@ -1155,27 +1155,27 @@
     1386
    ],
    "messages-db": [
-    288,
+    292,
     1714
    ],
    "object-cache": [
-    297,
+    302,
     1058
    ],
    "job-log": [
-    457,
+    462,
     1058
    ],
    "jq-relay": [
-    374,
+    378,
     1222
    ],
    "jobs-redis": [
-    467,
+    476,
     1386
    ],
    "job-workers": [
-    360,
+    368,
     1550
    ]
   },
@@ -1213,11 +1213,11 @@
     78
    ],
    "consul": [
-    126,
+    135,
     78
    ],
    "ring-manager": [
-    126,
+    135,
     78
    ],
    "messages-db": [
@@ -1315,7 +1315,7 @@
     470
    ],
    "consul": [
-    200,
+    195,
     1126
    ],
    "messages-db": [
@@ -1343,7 +1343,7 @@
     962
    ],
    "job-workers": [
-    360,
+    364,
     1126
    ]
   },
@@ -1377,7 +1377,7 @@
     78
    ],
    "consul": [
-    126,
+    135,
     78
    ],
    "messages-db": [
@@ -1439,7 +1439,7 @@
     650
    ],
    "tweet-cdc": [
-    280,
+    276,
     814
    ],
    "tweet-events": [
@@ -1501,7 +1501,7 @@
     78
    ],
    "tweet-cdc": [
-    126,
+    136,
     78
    ],
    "tweet-events": [
@@ -1684,11 +1684,11 @@
   ],
   "positions": {
    "user": [
-    270,
+    262,
     46
    ],
    "load-balancer": [
-    259,
+    262,
     210
    ],
    "chat-servers": [
@@ -1696,11 +1696,11 @@
     570
    ],
    "presence-servers": [
-    250,
+    236,
     570
    ],
    "notification-servers": [
-    445,
+    431,
     538
    ],
    "api-servers": [
@@ -1708,15 +1708,15 @@
     374
    ],
    "kv-store": [
-    110,
+    102,
     782
    ],
    "kv-store-2": [
-    270,
+    262,
     782
    ],
    "kv-store-3": [
-    430,
+    422,
     782
    ]
   },
@@ -1726,11 +1726,11 @@
     78
    ],
    "load-balancer": [
-    147,
+    126,
     78
    ],
    "chat-servers": [
-    140,
+    126,
     78
    ],
    "presence-servers": [
@@ -1742,7 +1742,7 @@
     78
    ],
    "api-servers": [
-    140,
+    126,
     78
    ],
    "kv-store": [
@@ -1785,27 +1785,27 @@
   ],
   "positions": {
    "user": [
-    256,
+    244,
     46
    ],
    "block-servers": [
-    249,
+    244,
     210
    ],
    "cloud-storage": [
-    256,
+    244,
     374
    ],
    "cold-storage": [
-    166,
+    164,
     538
    ],
    "load-balancer": [
-    326,
+    324,
     538
    ],
    "api-servers": [
-    249,
+    244,
     702
    ],
    "metadata-cache": [
@@ -1817,11 +1817,11 @@
     866
    ],
    "notification-service": [
-    418,
+    395,
     866
    ],
    "offline-backup-queue": [
-    234,
+    222,
     1030
    ]
   },
@@ -1831,7 +1831,7 @@
     78
    ],
    "block-servers": [
-    140,
+    126,
     78
    ],
    "cloud-storage": [
@@ -1843,11 +1843,11 @@
     78
    ],
    "load-balancer": [
-    147,
+    126,
     78
    ],
    "api-servers": [
-    140,
+    126,
     78
    ],
    "metadata-cache": [
@@ -1855,7 +1855,7 @@
     78
    ],
    "metadata-db": [
-    154,
+    131,
     78
    ],
    "notification-service": [
@@ -1995,19 +1995,19 @@
   ],
   "positions": {
    "web-browser": [
-    332,
+    320,
     290
    ],
    "mobile-app": [
-    492,
+    480,
     290
    ],
    "dns": [
-    241,
+    220,
     470
    ],
    "cdn": [
-    401,
+    380,
     470
    ],
    "load-balancer": [
@@ -2015,63 +2015,63 @@
     470
    ],
    "web-servers": [
-    401,
+    392,
     78
    ],
    "authentication": [
-    575,
+    552,
     78
    ],
    "rate-limiting": [
-    749,
+    712,
     78
    ],
    "post-service": [
-    668,
+    656,
     258
    ],
    "post-cache": [
-    623,
+    575,
     470
    ],
    "post-db": [
-    562,
+    560,
     634
    ],
    "notification-service": [
-    122,
+    110,
     258
    ],
    "fanout-service": [
-    1036,
+    1010,
     258
    ],
    "graph-db": [
-    1111,
+    1063,
     470
    ],
    "message-queue": [
-    783,
+    735,
     470
    ],
    "user-cache": [
-    951,
+    903,
     470
    ],
    "user-db": [
-    750,
+    725,
     634
    ],
    "fanout-workers": [
-    394,
+    393,
     634
    ],
    "news-feed-cache": [
-    573,
+    549,
     798
    ],
    "news-feed-service": [
-    842,
+    816,
     258
    ]
   },
@@ -2089,27 +2089,27 @@
     78
    ],
    "cdn": [
-    188,
+    161,
     78
    ],
    "load-balancer": [
-    147,
+    126,
     78
    ],
    "web-servers": [
-    140,
+    126,
     78
    ],
    "authentication": [
-    140,
+    126,
     78
    ],
    "rate-limiting": [
-    147,
+    144,
     78
    ],
    "post-service": [
-    140,
+    126,
     78
    ],
    "post-cache": [
@@ -2117,7 +2117,7 @@
     78
    ],
    "post-db": [
-    154,
+    131,
     78
    ],
    "notification-service": [
@@ -2125,7 +2125,7 @@
     78
    ],
    "fanout-service": [
-    140,
+    129,
     78
    ],
    "graph-db": [
@@ -2141,11 +2141,11 @@
     78
    ],
    "user-db": [
-    154,
+    131,
     78
    ],
    "fanout-workers": [
-    134,
+    133,
     78
    ],
    "news-feed-cache": [
@@ -2209,15 +2209,15 @@
   ],
   "positions": {
    "service-1": [
-    200,
+    206,
     46
    ],
    "service-2": [
-    374,
+    366,
     46
    ],
    "service-n": [
-    548,
+    526,
     46
    ],
    "notification-servers": [
@@ -2229,105 +2229,105 @@
     242
    ],
    "rate-limit": [
-    444,
+    430,
     242
    ],
    "analytics-service": [
-    456,
+    436,
     1126
    ],
    "cache": [
-    146,
+    126,
     422
    ],
    "db": [
-    200,
+    203,
     586
    ],
    "ios-pn": [
-    786,
+    766,
     422
    ],
    "android-pn": [
-    306,
+    286,
     422
    ],
    "sms-queue": [
-    466,
+    446,
     422
    ],
    "email-queue": [
-    626,
+    606,
     422
    ],
    "ios-workers": [
-    722,
+    686,
     46
    ],
    "android-workers": [
-    388,
+    368,
     586
    ],
    "sms-workers": [
-    556,
+    528,
     586
    ],
    "email-workers": [
-    724,
+    688,
     586
    ],
    "apns": [
-    226,
+    150,
     782
    ],
    "fcm": [
-    386,
+    379,
     782
    ],
    "sms-service": [
-    546,
+    581,
     782
    ],
    "email-service": [
-    706,
+    741,
     782
    ],
    "ios": [
-    226,
+    206,
     962
    ],
    "android": [
-    386,
+    366,
     962
    ],
    "sms": [
-    546,
+    526,
     962
    ],
    "email": [
-    706,
+    686,
     962
    ],
    "notification-template": [
-    641,
+    624,
     210
    ],
    "notification-log": [
-    843,
+    826,
     210
    ]
   },
   "sizes": {
    "service-1": [
-    140,
+    126,
     78
    ],
    "service-2": [
-    140,
+    126,
     78
    ],
    "service-n": [
-    140,
+    126,
     78
    ],
    "notification-servers": [
@@ -2335,11 +2335,11 @@
     78
    ],
    "authentication": [
-    140,
+    126,
     78
    ],
    "rate-limit": [
-    147,
+    144,
     78
    ],
    "analytics-service": [
@@ -2351,7 +2351,7 @@
     78
    ],
    "db": [
-    154,
+    131,
     78
    ],
    "ios-pn": [
@@ -2371,27 +2371,27 @@
     78
    ],
    "ios-workers": [
-    134,
+    126,
     78
    ],
    "android-workers": [
-    134,
+    126,
     78
    ],
    "sms-workers": [
-    134,
+    126,
     78
    ],
    "email-workers": [
-    134,
+    126,
     78
    ],
    "apns": [
-    126,
+    195,
     78
    ],
    "fcm": [
-    126,
+    168,
     78
    ],
    "sms-service": [
@@ -2423,7 +2423,7 @@
     78
    ],
    "notification-log": [
-    154,
+    131,
     78
    ]
   }
@@ -2464,31 +2464,31 @@
   ],
   "positions": {
    "service-n": [
-    454,
+    480,
     46
    ],
    "notification-servers": [
-    236,
+    305,
     242
    ],
    "authentication": [
-    430,
+    499,
     242
    ],
    "rate-limit": [
-    604,
+    659,
     242
    ],
    "analytics-service": [
-    442,
+    468,
     586
    ],
    "ios-pn": [
-    706,
+    720,
     422
    ],
    "workers": [
-    628,
+    640,
     46
    ],
    "apns": [
@@ -2496,29 +2496,29 @@
     210
    ],
    "ios": [
-    386,
+    400,
     422
    ],
    "cache": [
-    546,
+    560,
     422
    ],
    "db": [
-    620,
+    646,
     586
    ],
    "notification-template": [
-    801,
+    853,
     210
    ],
    "notification-log": [
-    1003,
+    1055,
     210
    ]
   },
   "sizes": {
    "service-n": [
-    140,
+    126,
     78
    ],
    "notification-servers": [
@@ -2526,11 +2526,11 @@
     78
    ],
    "authentication": [
-    140,
+    126,
     78
    ],
    "rate-limit": [
-    147,
+    144,
     78
    ],
    "analytics-service": [
@@ -2542,11 +2542,11 @@
     78
    ],
    "workers": [
-    134,
+    126,
     78
    ],
    "apns": [
-    126,
+    195,
     78
    ],
    "ios": [
@@ -2558,7 +2558,7 @@
     78
    ],
    "db": [
-    154,
+    131,
     78
    ],
    "notification-template": [
@@ -2566,7 +2566,7 @@
     78
    ],
    "notification-log": [
-    154,
+    131,
     78
    ]
   }
@@ -2597,11 +2597,11 @@
   ],
   "positions": {
    "client": [
-    394,
+    383,
     46
    ],
    "rate-limiter-middleware": [
-    358,
+    352,
     210
    ],
    "cached-rules": [
@@ -2609,11 +2609,11 @@
     374
    ],
    "rules": [
-    198,
+    192,
     210
    ],
    "workers": [
-    226,
+    223,
     46
    ],
    "api-servers": [
@@ -2621,11 +2621,11 @@
     374
    ],
    "redis": [
-    394,
+    380,
     374
    ],
    "message-queue": [
-    554,
+    540,
     374
    ]
   },
@@ -2647,11 +2647,11 @@
     78
    ],
    "workers": [
-    134,
+    126,
     78
    ],
    "api-servers": [
-    140,
+    126,
     78
    ],
    "redis": [
@@ -2695,47 +2695,47 @@
   ],
   "positions": {
    "dns": [
-    528,
+    482,
     258
    ],
    "web-browser": [
-    860,
+    762,
     78
    ],
    "mobile-app": [
-    1020,
+    922,
     78
    ],
    "cdn": [
-    688,
+    642,
     258
    ],
    "load-balancer": [
-    346,
+    322,
     258
    ],
    "web-servers": [
-    541,
+    498,
     454
    ],
    "message-queue": [
-    370,
+    332,
     618
    ],
    "databases": [
-    538,
+    500,
     618
    ],
    "caches": [
-    726,
+    665,
     618
    ],
    "workers": [
-    544,
+    498,
     782
    ],
    "nosql": [
-    548,
+    499,
     962
    ],
    "logging": [
@@ -2743,15 +2743,15 @@
     78
    ],
    "metrics": [
-    264,
+    239,
     78
    ],
    "monitoring": [
-    452,
+    402,
     78
    ],
    "automation": [
-    640,
+    565,
     78
    ]
   },
@@ -2769,15 +2769,15 @@
     78
    ],
    "cdn": [
-    188,
+    161,
     78
    ],
    "load-balancer": [
-    147,
+    126,
     78
    ],
    "web-servers": [
-    140,
+    126,
     78
    ],
    "message-queue": [
@@ -2785,7 +2785,7 @@
     78
    ],
    "databases": [
-    154,
+    131,
     78
    ],
    "caches": [
@@ -2793,7 +2793,7 @@
     78
    ],
    "workers": [
-    134,
+    126,
     78
    ],
    "nosql": [
@@ -2801,19 +2801,19 @@
     78
    ],
    "logging": [
-    154,
+    129,
     78
    ],
    "metrics": [
-    154,
+    129,
     78
    ],
    "monitoring": [
-    154,
+    129,
     78
    ],
    "automation": [
-    154,
+    131,
     78
    ]
   }
@@ -2847,19 +2847,19 @@
     78
    ],
    "load-balancer": [
-    156,
+    158,
     258
    ],
    "api-servers": [
-    149,
+    151,
     422
    ],
    "trie-cache": [
-    166,
+    158,
     586
    ],
    "trie-db": [
-    250,
+    238,
     750
    ],
    "analytics-logs": [
@@ -2867,15 +2867,15 @@
     46
    ],
    "aggregators": [
-    336,
+    318,
     258
    ],
    "aggregated-data": [
-    323,
+    311,
     422
    ],
    "workers": [
-    326,
+    318,
     586
    ]
   },
@@ -2889,11 +2889,11 @@
     78
    ],
    "load-balancer": [
-    147,
+    126,
     78
    ],
    "api-servers": [
-    140,
+    126,
     78
    ],
    "trie-cache": [
@@ -2905,19 +2905,19 @@
     78
    ],
    "analytics-logs": [
-    154,
+    129,
     78
    ],
    "aggregators": [
-    134,
+    126,
     78
    ],
    "aggregated-data": [
-    154,
+    139,
     78
    ],
    "workers": [
-    134,
+    126,
     78
    ]
   }
@@ -2943,15 +2943,15 @@
   ],
   "positions": {
    "user": [
-    154,
+    142,
     46
    ],
    "load-balancer": [
-    144,
+    142,
     210
    ],
    "web-servers": [
-    147,
+    142,
     374
    ],
    "cache": [
@@ -2969,11 +2969,11 @@
     78
    ],
    "load-balancer": [
-    147,
+    126,
     78
    ],
    "web-servers": [
-    140,
+    126,
     78
    ],
    "cache": [
@@ -2981,7 +2981,7 @@
     78
    ],
    "database": [
-    154,
+    131,
     78
    ]
   }
@@ -3002,7 +3002,7 @@
   ],
   "positions": {
    "seed-urls": [
-    580,
+    560,
     46
    ],
    "url-frontier": [
@@ -3022,27 +3022,27 @@
     210
    ],
    "content-seen": [
-    741,
+    729,
     210
    ],
    "content-storage": [
-    915,
+    889,
     210
    ],
    "link-extractor": [
-    1085,
+    1059,
     210
    ],
    "url-filter": [
-    406,
+    400,
     374
    ],
    "url-seen": [
-    580,
+    560,
     374
    ],
    "url-storage": [
-    754,
+    720,
     374
    ]
   },
@@ -3064,11 +3064,11 @@
     78
    ],
    "content-parser": [
-    140,
+    128,
     78
    ],
    "content-seen": [
-    140,
+    126,
     78
    ],
    "content-storage": [
@@ -3076,15 +3076,15 @@
     78
    ],
    "link-extractor": [
-    140,
+    126,
     78
    ],
    "url-filter": [
-    140,
+    126,
     78
    ],
    "url-seen": [
-    140,
+    126,
     78
    ],
    "url-storage": [
@@ -3124,35 +3124,35 @@
   ],
   "positions": {
    "user": [
-    274,
+    267,
     46
    ],
    "load-balancer": [
-    180,
+    184,
     210
    ],
    "api-servers": [
-    161,
+    154,
     374
    ],
    "metadata-cache": [
-    262,
+    260,
     866
    ],
    "metadata-db": [
-    432,
+    430,
     866
    ],
    "original-storage": [
-    360,
+    344,
     210
    ],
    "transcoding-servers": [
-    335,
+    314,
     374
    ],
    "transcoded-storage": [
-    168,
+    159,
     538
    ],
    "cdn": [
@@ -3160,35 +3160,35 @@
     702
    ],
    "completion-queue": [
-    364,
+    354,
     538
    ],
    "completion-handler": [
-    282,
+    255,
     702
    ],
    "preprocessor": [
-    434,
+    427,
     46
    ],
    "dag-scheduler": [
-    528,
+    510,
     210
    ],
    "resource-manager": [
-    534,
+    514,
     374
    ],
    "task-workers": [
-    544,
+    535,
     538
    ],
    "temporary-storage": [
-    472,
+    445,
     702
    ],
    "encoded-video": [
-    661,
+    634,
     702
    ]
   },
@@ -3198,11 +3198,11 @@
     78
    ],
    "load-balancer": [
-    147,
+    126,
     78
    ],
    "api-servers": [
-    140,
+    126,
     78
    ],
    "metadata-cache": [
@@ -3210,7 +3210,7 @@
     78
    ],
    "metadata-db": [
-    154,
+    131,
     78
    ],
    "original-storage": [
@@ -3226,7 +3226,7 @@
     78
    ],
    "cdn": [
-    188,
+    161,
     78
    ],
    "completion-queue": [
@@ -3238,11 +3238,11 @@
     78
    ],
    "preprocessor": [
-    140,
+    126,
     78
    ],
    "dag-scheduler": [
-    140,
+    126,
     78
    ],
    "resource-manager": [
@@ -3250,7 +3250,7 @@
     78
    ],
    "task-workers": [
-    134,
+    126,
     78
    ],
    "temporary-storage": [
@@ -3274,11 +3274,11 @@
   ],
   "positions": {
    "user": [
-    270,
+    262,
     46
    ],
    "load-balancer": [
-    259,
+    262,
     210
    ],
    "chat-servers": [
@@ -3286,11 +3286,11 @@
     570
    ],
    "presence-servers": [
-    250,
+    236,
     570
    ],
    "notification-servers": [
-    445,
+    431,
     538
    ],
    "api-servers": [
@@ -3298,15 +3298,15 @@
     374
    ],
    "kv-store": [
-    110,
+    102,
     782
    ],
    "kv-store-2": [
-    270,
+    262,
     782
    ],
    "kv-store-3": [
-    430,
+    422,
     782
    ]
   },
@@ -3316,11 +3316,11 @@
     78
    ],
    "load-balancer": [
-    147,
+    126,
     78
    ],
    "chat-servers": [
-    140,
+    126,
     78
    ],
    "presence-servers": [
@@ -3332,7 +3332,7 @@
     78
    ],
    "api-servers": [
-    140,
+    126,
     78
    ],
    "kv-store": [
@@ -3369,15 +3369,15 @@
     46
    ],
    "azure-functions-6": [
-    416,
+    404,
     210
    ],
    "sdk-client-2": [
-    588,
+    576,
     210
    ],
    "azure-functions": [
-    496,
+    484,
     374
    ],
    "sdk-client": [
@@ -3435,7 +3435,7 @@
     78
    ],
    "azure-aks-edge-essentials": [
-    195,
+    171,
     78
    ]
   }

@@ -203,7 +203,7 @@ export async function main(argv, io = {}) {
       const text = fs.readFileSync(file, "utf8");
       const doc = normalize(parse(text).doc).doc;
       const format = flags.format ?? "svg";
-      if (format === "mermaid") writeOut(`${toMermaid(doc, flags.direction ?? "TD")}\n`);
+      if (format === "mermaid") writeOut(`${toMermaid(doc, flags.direction ?? "TD", cat)}\n`);
       else if (format === "svg")
         writeOut(
           toSvg(doc, cat, {

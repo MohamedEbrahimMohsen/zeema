@@ -46,6 +46,8 @@ A node is one instance of a component. Its id is unique within the design and is
 `label` is the display name as it appeared in the source — a picture, a draw.io file, a
 Terraform module — and importers keep it verbatim. Renderers read it. **Rules never do**, which
 is the point: a rule that read labels would be reasoning about English, not about architecture.
+A box shows the label over the component's name, or, with no label, the component's name over
+its kind's ("Network security group" over "Firewall"); the component id is hover text, never drawn.
 
 `props` set property values; `nfr` carries the three per-node numbers rules ask about: `rps`,
 `latencyP95Ms` and `consistency`.

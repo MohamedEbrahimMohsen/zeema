@@ -9,7 +9,7 @@
 // under it. The wheel scrolls (shift scrolls sideways); ctrl, meta, alt or a pinch zooms around the
 // pointer.
 
-import { displayName } from "@zeema/core/document";
+import { nodeLines } from "@zeema/core/document";
 import {
   bowAt,
   edgeGeometry,
@@ -174,6 +174,13 @@ export type Handlers = {
   onFrameWire?: (clientX: number, clientY: number) => void;
   /** The zoom changed (every applyView reports it; the page shows it as a percentage). */
   onView?: (k: number) => void;
+  /**
+   * The pointer is over a component's box or a group's label strip (null: over neither, or a
+   * gesture began). Sent again as it moves, so the page knows where the pointer is.
+   */
+  onHover?: (
+    at: { type: "node" | "group"; id: string; clientX: number; clientY: number } | null,
+  ) => void;
 };
 
 // The zoom range every path shares: the wheel, the zoom menu and fit's lower bound all stay in it.
@@ -1023,6 +1030,8 @@ export class Scene {
       for (const target of [hit, label, tag, icon]) {
         target?.addEventListener("pointerdown", (ev: any) => this.startGroupDrag(group.id, ev));
       }
+      for (const target of [label, tag, icon])
+        if (target) this.hoverable(target, "group", group.id);
       g.append(...(under ? [under] : []), rect, hit, ...(icon ? [icon] : []), label, tag);
       // The tag sits just past the name. Measured once here, because the name does not change
       // while the frame is being dragged — only where the frame is.
@@ -1124,6 +1133,31 @@ export class Scene {
     return own(this.model.catalogue.components, componentId)?.kind === "custom";
   }
 
+  /** Whether a gesture is under way, during which no hover card should show. */
+  busy() {
+    return !!(
+      this.drag ||
+      this.wire ||
+      this.marquee ||
+      this.pan ||
+      this.noteDrag ||
+      this.bowDrag ||
+      this.tip ||
+      this.editor
+    );
+  }
+
+  /** Report the pointer resting on (or leaving) a component's box or a group's label strip. */
+  hoverable(target: Element, type: "node" | "group", id: string) {
+    const report = (ev: PointerEvent) => {
+      if (ev.buttons || this.busy()) return this.h.onHover?.(null);
+      this.h.onHover?.({ type, id, clientX: ev.clientX, clientY: ev.clientY });
+    };
+    target.addEventListener("pointerenter", report as EventListener);
+    target.addEventListener("pointermove", report as EventListener);
+    target.addEventListener("pointerleave", () => this.h.onHover?.(null));
+  }
+
   renderNodes() {
     const g = this.layers.nodes;
     g.textContent = "";
@@ -1173,14 +1207,14 @@ export class Scene {
             style: `fill:${fill.color};fill-opacity:${fill.opacity}`,
           }),
         );
-      // The name and id fitted to the box exactly as the server render fits them (nodeText in
-      // @zeema/core/render): two lines at most, then an ellipsis, the whole text in a <title>.
-      const text = nodeText(displayName(this.model.catalogue, n), n.component, b[2]);
-      if (text.full) {
-        const title = el("title", {});
-        title.textContent = text.full;
-        box.prepend(title);
-      }
+      // The two lines fitted to the box exactly as the server render fits them (nodeText in
+      // @zeema/core/render). The whole text and the undrawn id are the box's accessible name;
+      // hover is the page's card (onHover), not a native <title>, which is slow and plain.
+      // An exported picture gets the <title> back (toSVG).
+      const lines = nodeLines(this.model.catalogue, n);
+      const text = nodeText(lines.name, lines.sub, b[2], lines.id);
+      box.setAttribute("aria-label", text.title);
+      this.hoverable(box, "node", n.id);
       if (this.symbolFor(n.component))
         box.append(
           el("use", {
@@ -1581,6 +1615,12 @@ export class Scene {
       const [wx, wy] = this.toWorld(ev.clientX, ev.clientY);
       this.h.onDrop?.(id, wx, wy);
     });
+
+    // Any press, wheel or lost pointer puts the hover card away; capture, because a press on a
+    // box stops its own propagation.
+    this.on(svg, "pointerdown", () => this.h.onHover?.(null), { capture: true });
+    this.on(svg, "wheel", () => this.h.onHover?.(null), { capture: true, passive: true });
+    this.on(svg, "pointerleave", () => this.h.onHover?.(null));
 
     this.on(svg, "pointerdown", (ev) => {
       if (ev.button === 1 || (ev.button === 0 && this.space)) {
@@ -2310,6 +2350,14 @@ export class Scene {
       ".port-dot, .end-handle, .edge-hit, .frame-hit, .marquee, .wire, .note-grip, .note-grip-hit, .note-text.empty, .frame-label:empty, .layer-note-markers",
     ))
       n.remove();
+    // A picture that leaves the page has no hover card: each box's name goes back into a
+    // <title>, as the server render writes it.
+    for (const box of clone.querySelectorAll(".node-box[aria-label]")) {
+      const title = el("title", {});
+      title.textContent = box.getAttribute("aria-label");
+      box.prepend(title);
+      box.removeAttribute("aria-label");
+    }
     for (const n of clone.querySelectorAll(".selected, .primary"))
       n.classList.remove("selected", "primary");
     // A hex tint leaves as plain colours, the way the server render writes it: a file that
@@ -2334,7 +2382,7 @@ export class Scene {
       ".edge.async{stroke-dasharray:6 4}",
       ".edge-label{font-size:12px;fill:var(--muted);paint-order:stroke;stroke:var(--bg);stroke-width:3px}",
       ".node-box text.name{font-size:14px;font-weight:500;fill:var(--ink)}",
-      ".node-box text.comp{font-size:11px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;fill:var(--muted)}",
+      ".node-box text.comp{font-size:11px;fill:var(--muted)}",
       ".glyph{color:var(--ink)}",
       ".badge-error{fill:var(--err)}.badge-warn{fill:var(--warn)}",
       `.note-text{font-size:${NOTE_FONT}px;fill:var(--ink)}`,
