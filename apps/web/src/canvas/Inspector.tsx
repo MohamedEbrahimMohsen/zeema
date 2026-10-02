@@ -24,7 +24,7 @@ import {
 import { own } from "@/lib/own";
 import { PALETTE, PALETTE_COLUMNS, pushRecent, readRecent } from "@/lib/tint-palette";
 import { parseQuery, type Row, score } from "./Palette";
-import type { Subject } from "./scene";
+import type { Picked, Subject } from "./scene";
 
 export type InspectorApi = {
   setField: (id: string, field: string, value: string) => void;
@@ -44,6 +44,12 @@ export type InspectorApi = {
   ) => void;
   /** A component tint and its strength, on every id given. Sidecar only; no tint clears it. */
   setNodeTint: (ids: string[], patch: { tint?: Tint | HexTint; strength?: Strength }) => void;
+  /** One tint or strength on every component and group given, as one step. Sidecar only. */
+  tintSelection: (
+    nodes: string[],
+    groups: string[],
+    patch: { tint?: Tint | HexTint; strength?: Strength },
+  ) => void;
   setDesignId: (id: string) => void;
   /** The owner's list badge choice, or null for automatic. Sidecar only. */
   setBadge: (ref: string | null) => void;
@@ -146,13 +152,16 @@ let refocusMoreColours = false;
 function StrengthField({
   value,
   onPick,
+  disabled,
 }: {
-  value: Strength | undefined;
+  /** null: the selection holds several strengths, so none is pressed. */
+  value: Strength | undefined | null;
   onPick: (s: Strength) => void;
+  disabled?: boolean;
 }) {
-  const current = value ?? "normal";
+  const current = value === null ? null : (value ?? "normal");
   return (
-    <fieldset className="strength-field" aria-label="Tint strength">
+    <fieldset className="strength-field" aria-label="Tint strength" disabled={disabled}>
       {STRENGTHS.map((s) => (
         <button
           key={s}
@@ -171,9 +180,12 @@ function StrengthField({
 function TintField({
   tint,
   onPick,
+  mixed = false,
 }: {
   tint: Tint | HexTint | undefined;
   onPick: (t: Tint | HexTint | undefined) => void;
+  /** A selection holding several colours: no swatch is pressed, "none" included. */
+  mixed?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null);
@@ -194,7 +206,7 @@ function TintField({
           type="button"
           className="swatch swatch-none"
           aria-label="none"
-          aria-pressed={!tint}
+          aria-pressed={!tint && !mixed}
           title="none"
           onClick={() => onPick(undefined)}
         />
@@ -485,7 +497,8 @@ export function Inspector({
   designExtra,
 }: {
   selection: Subject;
-  multi: Set<string>;
+  /** The whole selection: components, groups and edges. */
+  multi: Picked;
   doc: any;
   notes: Note[];
   /** Group tint and icon by group id, from the layout sidecar. */
@@ -522,13 +535,16 @@ export function Inspector({
         extra={designExtra}
       />
     );
-  const head =
-    multi.size > 1 ? (
-      <div className="mb-3 small muted">
-        <b>{multi.size} components selected.</b> Right click for group, duplicate and delete. The
-        fields below edit the last one you clicked.
-      </div>
-    ) : null;
+  const total = multi.nodes.size + multi.groups.size + multi.edges.size;
+  const many = total > 1;
+  const head = many ? (
+    <MultiPanel
+      multi={multi}
+      frameStyles={frameStyles ?? {}}
+      nodeTints={nodeTints ?? {}}
+      api={api}
+    />
+  ) : null;
   if (selection.type === "node") {
     const node = doc.nodes.find((n: any) => n.id === selection.ref);
     if (node)
@@ -542,7 +558,8 @@ export function Inspector({
             api={api}
             highlight={hl}
             tint={own(nodeTints ?? {}, node.id)}
-            selected={multi.size > 1 && multi.has(node.id) ? [...multi] : [node.id]}
+            selected={[node.id]}
+            tintRow={!many}
           />
         </>
       );
@@ -587,6 +604,7 @@ export function Inspector({
             catalogue={catalogue}
             icons={icons ?? {}}
             searchRows={searchRows ?? []}
+            tintRow={!many}
           />
         </>
       );
@@ -606,6 +624,94 @@ export function Inspector({
   );
 }
 
+const count = (n: number, one: string) => `${n} ${one}${n === 1 ? "" : "s"}`;
+
+/**
+ * More than one thing selected: how many of each, and one tint row for every component and
+ * group in it (edges take no tint). The strength changes only what already has a tint, so with
+ * nothing tinted it waits for a colour. The panel of the last one clicked follows below.
+ */
+function MultiPanel({
+  multi,
+  frameStyles,
+  nodeTints,
+  api,
+}: {
+  multi: Picked;
+  frameStyles: Record<string, FrameStyle>;
+  nodeTints: Record<string, NodeTint>;
+  api: InspectorApi;
+}) {
+  const nodes = [...multi.nodes];
+  const groups = [...multi.groups];
+  const total = nodes.length + groups.length + multi.edges.size;
+  const chips = [
+    nodes.length ? count(nodes.length, "component") : null,
+    groups.length ? count(groups.length, "group") : null,
+    multi.edges.size ? count(multi.edges.size, "edge") : null,
+  ].filter(Boolean) as string[];
+  const styles = [
+    ...nodes.map((id) => own(nodeTints, id) as NodeTint | undefined),
+    ...groups.map((id) => own(frameStyles, id) as FrameStyle | undefined),
+  ];
+  const tintable = styles.length;
+  const tinted = styles.filter((s) => s?.tint);
+  const tints = new Set(styles.map((s) => s?.tint ?? ""));
+  // A colour shows as chosen only when every one of them has it.
+  const shared = tints.size === 1 ? (styles[0]?.tint ?? undefined) : undefined;
+  const strengths = new Set(tinted.map((s) => s?.strength ?? "normal"));
+  const strength =
+    strengths.size === 1 ? ([...strengths][0] as Strength) : strengths.size ? null : undefined;
+  // Who the row paints: every component and group in the selection, never an edge.
+  const whom = [
+    nodes.length ? count(nodes.length, "component") : null,
+    groups.length ? count(groups.length, "group") : null,
+  ]
+    .filter(Boolean)
+    .join(" and ");
+  return (
+    <div className="multi-panel">
+      <h2>{total} selected</h2>
+      <div className="multi-chips">
+        {chips.map((c) => (
+          <span key={c} className="multi-chip">
+            {c}
+          </span>
+        ))}
+      </div>
+      {tintable ? (
+        <Field name="tint" note={`layout only · applies to ${whom}`} isSet={tinted.length > 0}>
+          <TintField
+            key={`multi-${shared ?? ""}`}
+            tint={shared}
+            mixed={tints.size > 1}
+            onPick={(tint) => api.tintSelection(nodes, groups, { tint })}
+          />
+          <StrengthField
+            value={tinted.length ? strength : undefined}
+            disabled={!tinted.length}
+            onPick={(s) => api.tintSelection(nodes, groups, { strength: s })}
+          />
+          {tinted.length ? (
+            <button
+              type="button"
+              className="btn btn-sm multi-clear"
+              onClick={() => api.tintSelection(nodes, groups, { tint: undefined })}
+            >
+              Clear tint
+            </button>
+          ) : (
+            <div className="resolved">choose a tint first</div>
+          )}
+        </Field>
+      ) : null}
+      <p className="small muted multi-hint">
+        Right click for duplicate and delete. The fields below edit the last one you clicked.
+      </p>
+    </div>
+  );
+}
+
 function NodePanel({
   node,
   doc,
@@ -614,6 +720,7 @@ function NodePanel({
   highlight,
   tint,
   selected,
+  tintRow = true,
 }: {
   node: any;
   doc: any;
@@ -622,8 +729,10 @@ function NodePanel({
   highlight: Highlight;
   /** This component's tint, from the layout sidecar. */
   tint?: NodeTint;
-  /** The ids a tint applies to: the whole multi-selection, or this node alone. */
+  /** The ids a tint applies to. */
   selected: string[];
+  /** False in a multi-selection: the tint row above, for all of it, takes over. */
+  tintRow?: boolean;
 }) {
   const c = own(catalogue.components, node.component);
   const defs: Record<string, any> = propDefs(catalogue, node.component);
@@ -659,27 +768,29 @@ function NodePanel({
         </select>
       </Field>
       {loc?.description ? <p className="muted my-2 small">{loc.description}</p> : null}
-      <Field
-        name="tint"
-        note={
-          selected.length > 1
-            ? `layout only · applies to all ${selected.length} selected`
-            : "layout only, not in the YAML"
-        }
-        isSet={Boolean(tint)}
-      >
-        <TintField
-          key={node.id}
-          tint={tint?.tint}
-          onPick={(t) => api.setNodeTint(selected, { tint: t })}
-        />
-        {tint ? (
-          <StrengthField
-            value={tint.strength}
-            onPick={(strength) => api.setNodeTint(selected, { strength })}
+      {tintRow ? (
+        <Field
+          name="tint"
+          note={
+            selected.length > 1
+              ? `layout only · applies to all ${selected.length} selected`
+              : "layout only, not in the YAML"
+          }
+          isSet={Boolean(tint)}
+        >
+          <TintField
+            key={node.id}
+            tint={tint?.tint}
+            onPick={(t) => api.setNodeTint(selected, { tint: t })}
           />
-        ) : null}
-      </Field>
+          {tint ? (
+            <StrengthField
+              value={tint.strength}
+              onPick={(strength) => api.setNodeTint(selected, { strength })}
+            />
+          ) : null}
+        </Field>
+      ) : null}
       {Object.keys(defs).length ? <h2>Properties</h2> : null}
       {Object.entries(defs).map(([name, def]) => {
         const value = node.props ? node.props[name] : undefined;
@@ -1077,6 +1188,7 @@ function GroupPanel({
   catalogue,
   icons,
   searchRows,
+  tintRow = true,
 }: {
   group: any;
   doc: any;
@@ -1085,6 +1197,8 @@ function GroupPanel({
   catalogue: any;
   icons: Record<string, string>;
   searchRows: Row[];
+  /** False in a multi-selection: the tint row above, for all of it, takes over. */
+  tintRow?: boolean;
 }) {
   const [picking, setPicking] = useState(false);
   const iconKey = frameIconKey(style.icon);
@@ -1128,19 +1242,21 @@ function GroupPanel({
             ))}
         </select>
       </Field>
-      <Field name="colour" note="layout only, not in the YAML" isSet={Boolean(style.tint)}>
-        <TintField
-          key={group.id}
-          tint={style.tint}
-          onPick={(tint) => api.setFrameStyle(group.id, { tint })}
-        />
-        {style.tint ? (
-          <StrengthField
-            value={style.strength}
-            onPick={(strength) => api.setFrameStyle(group.id, { strength })}
+      {tintRow ? (
+        <Field name="colour" note="layout only, not in the YAML" isSet={Boolean(style.tint)}>
+          <TintField
+            key={group.id}
+            tint={style.tint}
+            onPick={(tint) => api.setFrameStyle(group.id, { tint })}
           />
-        ) : null}
-      </Field>
+          {style.tint ? (
+            <StrengthField
+              value={style.strength}
+              onPick={(strength) => api.setFrameStyle(group.id, { strength })}
+            />
+          ) : null}
+        </Field>
+      ) : null}
       <Field name="icon" isSet={Boolean(style.icon)}>
         <div className="icon-field">
           {style.icon ? (

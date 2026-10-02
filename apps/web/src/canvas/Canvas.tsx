@@ -50,7 +50,7 @@ import { type Highlight, Inspector, type InspectorApi } from "./Inspector";
 import { Palette } from "./Palette";
 import { QuickActions } from "./QuickActions";
 import type { QuickAction, QuickTarget } from "./quick-actions";
-import { facingSide, Scene, type Subject, ZOOM_MAX, ZOOM_MIN } from "./scene";
+import { facingSide, type Picked, Scene, type Subject, ZOOM_MAX, ZOOM_MIN } from "./scene";
 import "./canvas.css";
 
 type Props = {
@@ -178,6 +178,46 @@ const readRecent = (): string[] => {
 };
 
 // The zoom menu's fixed steps, and the factor Zoom in and Zoom out move by.
+/** Group styles with a patch applied to each id given. Tint, strength and icon are layout only. */
+function styleFrames(
+  frames: Record<string, FrameStyle>,
+  ids: string[],
+  patch: { tint?: FrameStyle["tint"]; icon?: string; strength?: string },
+): Record<string, FrameStyle> {
+  const out = { ...frames };
+  for (const id of ids) {
+    const { strength, ...rest } = { ...(out[id] ?? {}), ...patch };
+    const next: FrameStyle = rest;
+    if (!next.tint) delete next.tint;
+    if (!next.icon) delete next.icon;
+    // A strength only says how a tint fills: normal is the default and never stored.
+    if (next.tint && (strength === "light" || strength === "bold")) next.strength = strength;
+    if (next.tint || next.icon) out[id] = next;
+    else delete out[id];
+  }
+  return out;
+}
+
+/** Component tints with a patch applied to each id given; no tint left clears the entry. */
+function tintNodes(
+  tints: Record<string, NodeTint>,
+  ids: string[],
+  patch: { tint?: NodeTint["tint"]; strength?: string },
+): Record<string, NodeTint> {
+  const out = { ...tints };
+  for (const id of ids) {
+    const merged = { ...(out[id] ?? {}), ...patch } as Partial<NodeTint> & { strength?: string };
+    if (!merged.tint) {
+      delete out[id];
+      continue;
+    }
+    const entry: NodeTint = { tint: merged.tint };
+    if (merged.strength === "light" || merged.strength === "bold") entry.strength = merged.strength;
+    out[id] = entry;
+  }
+  return out;
+}
+
 const ZOOM_STEP = 1.25;
 const plural = (n: number, one: string) => `${n} ${one}${n === 1 ? "" : "s"}`;
 
@@ -230,9 +270,12 @@ const helpSections = (mod: string): Array<[string, Array<[string[], string]>]> =
       [["V"], "The select tool: click to select, drag to move or sweep."],
       [["H"], "The hand tool: drag anywhere to pan, until V."],
       [["Click"], "Select what you click; empty space clears the selection."],
-      [["Shift", "Click"], "Add a component to the selection, or take it out."],
+      [
+        ["Shift", "Click"],
+        `Add a component, a group or an edge to the selection, or take it out. ${mod} Click too.`,
+      ],
       [["Drag"], "Sweep a box over empty space to select several; Shift keeps what you had."],
-      [[mod, "A"], "Select every component."],
+      [[mod, "A"], "Select everything: components, groups and edges."],
       [["Drag"], "Move the selection. A component dropped inside a group joins it."],
       [["Drag a group"], "Move a group with everything inside it; the grouping does not change."],
       [["←", "→", "↑", "↓"], "Nudge the selection by one."],
@@ -487,7 +530,12 @@ export function Canvas(props: Props) {
   // True for exactly as long as a finding click is choosing its subject, so the scene's own
   // selection callback does not read that selection as "the reader moved on".
   const picking = useRef(false);
-  const [multi, setMulti] = useState<Set<string>>(new Set());
+  // The whole selection: components, groups and edges (the scene's `picked()`).
+  const [multi, setMulti] = useState<Picked>(() => ({
+    nodes: new Set(),
+    groups: new Set(),
+    edges: new Set(),
+  }));
   const saving = useRef<{ inFlight: boolean; again: boolean }>({ inFlight: false, again: false });
   const autosaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const autosaveRef = useRef(autosave);
@@ -567,7 +615,7 @@ export function Canvas(props: Props) {
         findings: [...e.structural, ...e.rules],
       });
       setSelection({ ...scene.selection });
-      setMulti(new Set(scene.multi));
+      setMulti(scene.picked());
       setTick((t) => t + 1);
     } catch (err) {
       console.error(err);
@@ -774,17 +822,22 @@ export function Canvas(props: Props) {
     const scene = sceneRef.current!;
     const e = eng.current!;
     const s = scene.selection;
-    const sel = ids();
-    scene.selection = { type: null, ref: null };
-    scene.multi = new Set();
+    const picked = scene.picked();
+    const sel = [...picked.nodes];
+    scene.select(null, null);
     if (s.type === "note") {
       const id = s.ref as string;
       return commit(null, { apply: () => (e.notes = e.notes.filter((n) => n.id !== id)) });
     }
-    if (sel.length) return commit(D.deleteNodes(e.doc, sel, bundle!.catalogue));
-    if (s.type === "edge") return commit(D.deleteEdge(e.doc, s.ref as number));
-    if (s.type === "group") return commit(D.deleteGroup(e.doc, s.ref as string));
-    render();
+    if (!sel.length && !picked.groups.size && !picked.edges.size) return render();
+    // A mixed selection goes in one step, so one undo brings all of it back. Edges first, by
+    // index from the end, while the indexes still name them; then components; then groups,
+    // which keep their members (as Delete on a lone group does).
+    let doc = e.doc;
+    for (const i of [...picked.edges].sort((a, b) => b - a)) doc = D.deleteEdge(doc, i);
+    if (sel.length) doc = D.deleteNodes(doc, sel, bundle!.catalogue);
+    for (const g of picked.groups) doc = D.deleteGroup(doc, g);
+    commit(doc);
   }, [bundle, commit, render]);
 
   const groupSelection = useCallback(() => {
@@ -793,6 +846,8 @@ export function Canvas(props: Props) {
     if (!sel.length) return;
     const { doc, id } = D.addGroup(eng.current!.doc, sel, "system");
     scene.multi = new Set();
+    scene.multiGroups = new Set();
+    scene.multiEdges = new Set();
     scene.selection = { type: "group", ref: id };
     commit(doc);
   }, [commit]);
@@ -805,6 +860,8 @@ export function Canvas(props: Props) {
     const { doc, map } = D.duplicateNodes(e.doc, sel, bundle!.catalogue);
     const copies = Object.values(map) as string[];
     scene.multi = new Set(copies);
+    scene.multiGroups = new Set();
+    scene.multiEdges = new Set();
     scene.selection = { type: "node", ref: copies[copies.length - 1] };
     commit(doc, {
       apply: () => {
@@ -882,6 +939,8 @@ export function Canvas(props: Props) {
       const key = from && doc.edges.length ? edgeKeys(doc)[doc.edges.length - 1] : null;
       scene.selection = { type: "node", ref: id };
       scene.multi = new Set([id]);
+      scene.multiGroups = new Set();
+      scene.multiEdges = new Set();
       setRecent((prev) => {
         const next = [componentId, ...prev.filter((x) => x !== componentId)].slice(0, RECENT_MAX);
         try {
@@ -959,6 +1018,8 @@ export function Canvas(props: Props) {
       if (!showNotesRef.current) setNotesShown(true);
       scene.selection = { type: "note", ref: id };
       scene.multi = new Set();
+      scene.multiGroups = new Set();
+      scene.multiEdges = new Set();
       commit(null, { apply: () => e.notes.push({ ...note, id }) });
       scene.editLabel("note", id);
     },
@@ -1041,6 +1102,28 @@ export function Canvas(props: Props) {
       const scene = sceneRef.current!;
       const e = eng.current!;
       const count = scene.multi.size;
+      const picked = scene.picked();
+      const total = picked.nodes.size + picked.groups.size + picked.edges.size;
+      // A right click on a selection that holds more than components: what applies to all of it.
+      if (total > 1 && (picked.groups.size || picked.edges.size) && target.type !== "note") {
+        const n = picked.nodes.size;
+        return [
+          n
+            ? {
+                label: n > 1 ? `Duplicate the ${n} components` : "Duplicate the component",
+                hint: "Ctrl D",
+                run: duplicateSelection,
+              }
+            : null,
+          n ? "-" : null,
+          {
+            label: `Delete these ${total}`,
+            hint: "Del",
+            danger: true,
+            run: deleteSelection,
+          },
+        ];
+      }
       if (target.type === "node") {
         const grouped = e.doc.nodes.some((n: any) => scene.multi.has(n.id) && n.group);
         return [
@@ -1163,6 +1246,8 @@ export function Canvas(props: Props) {
             run: () => {
               scene.select(null, null);
               scene.multi = new Set();
+              scene.multiGroups = new Set();
+              scene.multiEdges = new Set();
               commit(D.deleteGroupDeep(e.doc, id));
             },
           },
@@ -1237,7 +1322,7 @@ export function Canvas(props: Props) {
     const scene = new Scene(svgRef.current, {
       onSelect: (sel, m) => {
         setSelection({ ...sel });
-        setMulti(new Set(m));
+        setMulti(m);
         if (!picking.current) {
           setFinding(null);
           setDesignPanel(false);
@@ -1449,7 +1534,12 @@ export function Canvas(props: Props) {
       }
       if (mod && k === "a") {
         ev.preventDefault();
-        scene.selectNodes(eng.current.doc.nodes.map((n: any) => n.id));
+        const d = eng.current.doc;
+        scene.selectMany({
+          nodes: d.nodes.map((n: any) => n.id),
+          groups: (d.groups ?? []).map((g: any) => g.id),
+          edges: d.edges.map((_: any, i: number) => i),
+        });
         return;
       }
       if (mod && k === "d") {
@@ -1694,42 +1784,21 @@ export function Canvas(props: Props) {
       // Tint and icon are layout, like a note: the sidecar changes, the YAML never does.
       setFrameStyle: (id, patch) => {
         const e = eng.current!;
-        commit(null, {
-          apply: () => {
-            const { strength, ...rest } = { ...(e.frames[id] ?? {}), ...patch };
-            const next: FrameStyle = rest;
-            if (!next.tint) delete next.tint;
-            if (!next.icon) delete next.icon;
-            // A strength only says how a tint fills: normal is the default and never stored.
-            if (next.tint && (strength === "light" || strength === "bold"))
-              next.strength = strength;
-            const frames = { ...e.frames };
-            if (next.tint || next.icon) frames[id] = next;
-            else delete frames[id];
-            e.frames = frames;
-          },
-        });
+        commit(null, { apply: () => (e.frames = styleFrames(e.frames, [id], patch)) });
       },
       // A component tint is layout too. Applied to every id given: the whole multi-selection.
       setNodeTint: (ids, patch) => {
         const e = eng.current!;
+        commit(null, { apply: () => (e.tints = tintNodes(e.tints, ids, patch)) });
+      },
+      // The multi-selection's tint row: every component and every group in it, one undo step.
+      // A strength alone changes only what already has a tint.
+      tintSelection: (nodes, groups, patch) => {
+        const e = eng.current!;
         commit(null, {
           apply: () => {
-            const tints = { ...e.tints };
-            for (const id of ids) {
-              const merged = { ...(tints[id] ?? {}), ...patch } as Partial<NodeTint> & {
-                strength?: string;
-              };
-              if (!merged.tint) {
-                delete tints[id];
-                continue;
-              }
-              const entry: NodeTint = { tint: merged.tint };
-              if (merged.strength === "light" || merged.strength === "bold")
-                entry.strength = merged.strength;
-              tints[id] = entry;
-            }
-            e.tints = tints;
+            e.tints = tintNodes(e.tints, nodes, patch);
+            e.frames = styleFrames(e.frames, groups, patch);
           },
         });
       },
@@ -1764,6 +1833,8 @@ export function Canvas(props: Props) {
         const scene = sceneRef.current!;
         scene.selection = { type: null, ref: null };
         scene.multi = new Set();
+        scene.multiGroups = new Set();
+        scene.multiEdges = new Set();
         const e = eng.current!;
         if (type === "note") return deleteNote(ref as string);
         if (type === "node") commit(D.deleteNodes(e.doc, [ref as string], bundle!.catalogue));
@@ -2008,7 +2079,9 @@ export function Canvas(props: Props) {
       .join(" · ") || "No findings";
   const signInHref = `/signin?next=/d/${props.owner}/${props.slug}/canvas`;
   const ready = panes.right && Boolean(bundle && e);
-  const selected = Boolean(selection.type || multi.size);
+  const selected = Boolean(
+    selection.type || multi.nodes.size || multi.groups.size || multi.edges.size,
+  );
   // Pinned, Design settings is a card of its own that stays whatever is selected; the selection
   // then gets the second card. Unpinned, the one card shows the selection, or the design when it
   // was asked for and nothing is selected.
@@ -2210,7 +2283,7 @@ export function Canvas(props: Props) {
         always: true,
         run: (q) => (q.trim() ? askPalette(q.trim()) : openPicker()),
       },
-      multi.size
+      multi.nodes.size
         ? {
             id: "add-group",
             group: "Add",
@@ -2660,7 +2733,7 @@ export function Canvas(props: Props) {
             { pressed: pickerShown, ref: plusBtn, className: "dock-add" },
           )}
           {dockButton("Group the selection", "G", G.group, groupSelection, {
-            disabled: multi.size === 0,
+            disabled: multi.nodes.size === 0,
           })}
           {dockButton("Add a note", "", G.note, () => addNote())}
           {dockButton("Arrange", "", G.arrange, arrange)}

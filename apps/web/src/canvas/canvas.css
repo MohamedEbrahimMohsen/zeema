@@ -13,6 +13,9 @@
   font-size: var(--fs);
 }
 .zeema-canvas .scene-wrap {
+  /* everything drawn reads --bg for the surface it sits on (the cut under a tinted group, the
+     label halos, the exported page): here that is the drawing surface, white in light */
+  --bg: var(--surface);
   position: absolute;
   inset: 0;
   overflow: hidden;
@@ -1894,4 +1897,36 @@
 .zeema-canvas .badge-pop .menu-item.is-current {
   background: var(--on-fill);
   font-weight: var(--fw-medium);
+}
+
+/* the multi-selection's head: how many of each, then one tint row for all of it */
+.zeema-canvas .multi-panel {
+  margin-bottom: var(--sp-2);
+  padding-bottom: var(--sp-1);
+  border-bottom: var(--border) solid var(--line);
+}
+.zeema-canvas .multi-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 2px 0 var(--sp-1);
+}
+.zeema-canvas .multi-chip {
+  padding: 1px 8px;
+  border: var(--border) solid var(--line);
+  border-radius: var(--r-round);
+  font-size: var(--fs-meta);
+  color: var(--muted);
+}
+.zeema-canvas .strength-field:disabled .strength-seg {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.zeema-canvas .multi-clear {
+  grid-column: 2;
+  justify-self: start;
+  margin-top: 6px;
+}
+.zeema-canvas .multi-hint {
+  margin: var(--sp-1) 0 0;
 }

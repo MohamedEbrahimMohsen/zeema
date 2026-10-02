@@ -95,6 +95,12 @@ export type Subject = {
   type: "node" | "edge" | "group" | "note" | null;
   ref: string | number | null;
 };
+/**
+ * Everything selected, as one selection: components, groups and edges together. A plain click
+ * replaces it; Ctrl/Cmd or Shift with a click toggles one item in or out, as in draw.io.
+ */
+export type Picked = { nodes: Set<string>; groups: Set<string>; edges: Set<number> };
+
 export type Model = {
   doc: any;
   catalogue: any;
@@ -125,7 +131,7 @@ export type EdgeEnd = "from" | "to";
 const PORT_REACH = 12;
 
 export type Handlers = {
-  onSelect?: (selection: Subject, multi: Set<string>) => void;
+  onSelect?: (selection: Subject, picked: Picked) => void;
   onMove?: (moves: Array<{ id: string; x: number; y: number; group: string | null }>) => void;
   /**
    * A wire was let go on another component, or on a group's frame (`to` is then the group id: an
@@ -291,7 +297,10 @@ export class Scene {
   edgeEls = new Map<number, any>();
   frameEls = new Map<string, any>();
   selection: Subject = { type: null, ref: null };
+  /** The selected components. Groups and edges selected beside them are the two sets below. */
   multi = new Set<string>();
+  multiGroups = new Set<string>();
+  multiEdges = new Set<number>();
   model!: Model;
   boxes: Record<string, Box> = {};
   frames: Record<string, Box> = {};
@@ -535,6 +544,10 @@ export class Scene {
       this.boxes[n.id] = [p[0], p[1], s[0], s[1]];
     }
     for (const id of [...this.multi]) if (!this.boxes[id]) this.multi.delete(id);
+    const groupIds = new Set((model.doc.groups ?? []).map((g: any) => g.id as string));
+    for (const id of [...this.multiGroups]) if (!groupIds.has(id)) this.multiGroups.delete(id);
+    for (const i of [...this.multiEdges])
+      if (i >= (model.doc.edges ?? []).length) this.multiEdges.delete(i);
     if (this.selection.type === "node" && !this.boxes[this.selection.ref as string])
       this.selection = { type: null, ref: null };
     this.frames = groupFrames(model.doc, this.boxes) as Record<string, Box>;
@@ -1041,6 +1054,7 @@ export class Scene {
       hit.addEventListener("pointerdown", (ev: any) => {
         if (ev.button !== 0 || this.space) return;
         ev.stopPropagation();
+        if (ev.shiftKey || ev.ctrlKey || ev.metaKey) return this.toggle("edge", e.i);
         this.select("edge", e.i);
         this.startBow(e, ev);
       });
@@ -1059,6 +1073,7 @@ export class Scene {
         t.addEventListener("pointerdown", (ev: any) => {
           if (ev.button !== 0 || this.space) return;
           ev.stopPropagation();
+          if (ev.shiftKey || ev.ctrlKey || ev.metaKey) return this.toggle("edge", e.i);
           this.select("edge", e.i);
         });
         g.append(t);
@@ -1248,7 +1263,10 @@ export class Scene {
    * under the box it sits on.
    */
   placeEndHandles() {
-    const sel = this.selection.type === "edge" ? (this.selection.ref as number) : null;
+    const sel =
+      this.selection.type === "edge" && this.pickedCount() === 1
+        ? (this.selection.ref as number)
+        : null;
     const e = sel === null ? null : (this.geom || []).find((g) => g.i === sel);
     if (sel === null || !e) {
       for (const h of this.endHandles) h.remove();
@@ -1291,16 +1309,9 @@ export class Scene {
       node.classList.toggle("selected", this.multi.has(id));
       node.classList.toggle("primary", this.selection.type === "node" && this.selection.ref === id);
     }
-    for (const [i, e] of this.edgeEls)
-      e.line.classList.toggle(
-        "selected",
-        this.selection.type === "edge" && this.selection.ref === i,
-      );
-    for (const [id, f] of this.frameEls)
-      f.rect.classList.toggle(
-        "selected",
-        this.selection.type === "group" && this.selection.ref === id,
-      );
+    const picked = this.picked();
+    for (const [i, e] of this.edgeEls) e.line.classList.toggle("selected", picked.edges.has(i));
+    for (const [id, f] of this.frameEls) f.rect.classList.toggle("selected", picked.groups.has(id));
     for (const [id, note] of this.noteEls)
       note.classList.toggle(
         "selected",
@@ -1316,7 +1327,10 @@ export class Scene {
    * own hit area is its outline, and a dot just outside it must not start a move of the group.
    */
   placeFrameDots() {
-    const gid = this.selection.type === "group" ? (this.selection.ref as string) : null;
+    const gid =
+      this.selection.type === "group" && this.pickedCount() === 1
+        ? (this.selection.ref as string)
+        : null;
     const f = gid ? this.frames[gid] : null;
     if (!gid || !f) {
       for (const d of this.frameDots) d.remove();
@@ -1354,34 +1368,103 @@ export class Scene {
   select(type: Subject["type"], ref: Subject["ref"]) {
     this.selection = { type, ref };
     this.multi = type === "node" ? new Set([ref as string]) : new Set();
+    this.multiGroups = type === "group" ? new Set([ref as string]) : new Set();
+    this.multiEdges = type === "edge" ? new Set([ref as number]) : new Set();
     this.emitSelection();
   }
 
   selectNodes(ids: string[], primary: string | null = null) {
-    this.multi = new Set(ids);
+    this.selectMany({ nodes: ids }, primary);
+  }
+
+  /** A whole selection at once (Ctrl+A, a marquee). The last component is the one the fields edit. */
+  selectMany(
+    {
+      nodes = [],
+      groups = [],
+      edges = [],
+    }: { nodes?: string[]; groups?: string[]; edges?: number[] },
+    primary: string | null = null,
+  ) {
+    this.multi = new Set(nodes);
+    this.multiGroups = new Set(groups);
+    this.multiEdges = new Set(edges);
     const head =
-      primary && this.multi.has(primary) ? primary : ids.length ? ids[ids.length - 1] : null;
-    this.selection = head ? { type: "node", ref: head } : { type: null, ref: null };
+      primary && this.multi.has(primary) ? primary : nodes.length ? nodes[nodes.length - 1] : null;
+    this.selection = head
+      ? { type: "node", ref: head }
+      : groups.length
+        ? { type: "group", ref: groups[groups.length - 1] }
+        : edges.length
+          ? { type: "edge", ref: edges[edges.length - 1] }
+          : { type: null, ref: null };
     this.emitSelection();
   }
 
-  toggleNode(id: string) {
-    if (this.multi.has(id)) {
-      this.multi.delete(id);
-      const next = [...this.multi];
-      this.selection = next.length
-        ? { type: "node", ref: next[next.length - 1] }
-        : { type: null, ref: null };
+  /**
+   * The selection as sets, with the primary subject folded in: some commands set `selection`
+   * alone (a new group, a rename), and that still counts as selected.
+   */
+  picked(): Picked {
+    const p: Picked = {
+      nodes: new Set(this.multi),
+      groups: new Set(this.multiGroups),
+      edges: new Set(this.multiEdges),
+    };
+    const { type, ref } = this.selection;
+    if (type === "node" && ref !== null) p.nodes.add(ref as string);
+    if (type === "group" && ref !== null) p.groups.add(ref as string);
+    if (type === "edge" && ref !== null) p.edges.add(ref as number);
+    return p;
+  }
+
+  pickedCount() {
+    const p = this.picked();
+    return p.nodes.size + p.groups.size + p.edges.size;
+  }
+
+  /** Ctrl/Cmd or Shift with a click: one component, group or edge in or out of the selection. */
+  toggle(type: Subject["type"], ref: Subject["ref"]) {
+    if (type !== "node" && type !== "group" && type !== "edge") return this.select(type, ref);
+    // A note is never part of a multi-selection: toggling anything else lets it go.
+    if (this.selection.type === "note") this.selection = { type: null, ref: null };
+    // A primary set on its own joins the sets first, so it toggles out like everything else.
+    const now = this.picked();
+    this.multi = now.nodes;
+    this.multiGroups = now.groups;
+    this.multiEdges = now.edges;
+    const set = (
+      type === "node" ? this.multi : type === "group" ? this.multiGroups : this.multiEdges
+    ) as Set<string | number>;
+    const key = ref as string | number;
+    if (set.has(key)) {
+      set.delete(key);
+      if (this.selection.type === type && this.selection.ref === ref) {
+        const nodes = [...this.multi];
+        const groups = [...this.multiGroups];
+        const edges = [...this.multiEdges];
+        this.selection = nodes.length
+          ? { type: "node", ref: nodes[nodes.length - 1] }
+          : groups.length
+            ? { type: "group", ref: groups[groups.length - 1] }
+            : edges.length
+              ? { type: "edge", ref: edges[edges.length - 1] }
+              : { type: null, ref: null };
+      }
     } else {
-      this.multi.add(id);
-      this.selection = { type: "node", ref: id };
+      set.add(key);
+      this.selection = { type, ref };
     }
     this.emitSelection();
   }
 
+  toggleNode(id: string) {
+    this.toggle("node", id);
+  }
+
   emitSelection() {
     this.renderSelection();
-    this.h.onSelect?.(this.selection, this.multi);
+    this.h.onSelect?.(this.selection, this.picked());
   }
 
   // ---------------------------------------------------------------- interaction
@@ -1471,7 +1554,16 @@ export class Scene {
     this.on(svg, "contextmenu", (ev) => {
       ev.preventDefault();
       const target = this.targetOf(ev);
-      if (target.type === "node" && !this.multi.has(target.ref as string))
+      const picked = this.picked();
+      // A right click on something already in a multi-selection keeps it: the menu is about all.
+      const inSelection =
+        this.pickedCount() > 1 &&
+        ((target.type === "node" && picked.nodes.has(target.ref as string)) ||
+          (target.type === "group" && picked.groups.has(target.ref as string)) ||
+          (target.type === "edge" && picked.edges.has(target.ref as number)));
+      if (inSelection) {
+        /* keep the selection */
+      } else if (target.type === "node" && !this.multi.has(target.ref as string))
         this.select("node", target.ref);
       else if (target.type === "edge" || target.type === "group" || target.type === "note")
         this.select(target.type, target.ref);
@@ -1668,7 +1760,13 @@ export class Scene {
     this.marquee = null;
     m.rect.remove();
     if (!m.moved) return;
-    this.selectNodes([...this.multi]);
+    // With Shift held the sweep adds to what was selected, groups and edges included.
+    if (m.add)
+      this.selectMany(
+        { nodes: [...this.multi], groups: [...this.multiGroups], edges: [...this.multiEdges] },
+        this.selection.type === "node" ? (this.selection.ref as string) : null,
+      );
+    else this.selectNodes([...this.multi]);
   }
 
   // ---------------------------------------------------------------- moving nodes
@@ -1691,16 +1789,35 @@ export class Scene {
       .map((n: any) => n.id as string);
   }
 
+  /**
+   * What a drag of the selection moves: the selected components, and every member of every
+   * selected group. `held` are those that came with a group: they keep the group they have.
+   */
+  dragSet(): { ids: string[]; held: Set<string> } {
+    const held = new Set<string>();
+    for (const g of this.picked().groups) for (const n of this.nodesInGroup(g)) held.add(n);
+    const ids = [...new Set([...this.multi, ...held])].filter((n) => this.boxes[n]);
+    return { ids, held };
+  }
+
   startGroupDrag(gid: string, ev: PointerEvent) {
     if (ev.button !== 0 || this.space) return;
     ev.stopPropagation();
-    this.select("group", gid);
-    const ids = this.nodesInGroup(gid);
+    if (ev.shiftKey || ev.ctrlKey || ev.metaKey) return this.toggle("group", gid);
+    const inMulti = this.pickedCount() > 1 && this.picked().groups.has(gid);
+    if (!inMulti) this.select("group", gid);
+    else if (this.selection.type !== "group" || this.selection.ref !== gid) {
+      this.selection = { type: "group", ref: gid };
+      this.emitSelection();
+    }
+    const own = this.nodesInGroup(gid);
+    const { ids, held } = inMulti ? this.dragSet() : { ids: own, held: new Set(own) };
     if (!ids.length) return;
     const [wx, wy] = this.toWorld(ev.clientX, ev.clientY);
     this.drag = {
       id: gid,
       ids,
+      held,
       kind: "group",
       moved: false,
       offsets: Object.fromEntries(
@@ -1714,19 +1831,20 @@ export class Scene {
     if (ev.button !== 0 || this.space) return;
     ev.stopPropagation();
     if (ev.shiftKey || ev.ctrlKey || ev.metaKey) {
-      this.toggleNode(id);
+      this.toggle("node", id);
       return;
     }
     if (!this.multi.has(id)) this.select("node", id);
-    else if (this.selection.ref !== id) {
+    else if (this.selection.type !== "node" || this.selection.ref !== id) {
       this.selection = { type: "node", ref: id };
       this.emitSelection();
     }
     const [wx, wy] = this.toWorld(ev.clientX, ev.clientY);
-    const ids = [...this.multi];
+    const { ids, held } = this.dragSet();
     this.drag = {
       id,
       ids,
+      held,
       moved: false,
       offsets: Object.fromEntries(
         ids.map((n) => [n, [wx - this.boxes[n][0], wy - this.boxes[n][1]]]),
@@ -1822,7 +1940,7 @@ export class Scene {
   }
 
   endDrag() {
-    const { ids, moved, kind, at, client } = this.drag;
+    const { ids, moved, kind, at, client, held: carried } = this.drag;
     this.drag = null;
     if (!moved) return;
     // Dragging a node drops it into whatever frame it lands in. Dragging a group carries its
@@ -1837,7 +1955,7 @@ export class Scene {
         x: b[0],
         y: b[1],
         group:
-          kind === "group"
+          kind === "group" || carried?.has(id)
             ? (held.get(id) ?? null)
             : innermostFrameAt(frames, b[0] + b[2] / 2, b[1] + b[3] / 2),
       };
