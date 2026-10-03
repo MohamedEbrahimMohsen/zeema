@@ -22,9 +22,17 @@
 // cuts through (an end's own box counts, frames never do); the cheapest wins, deterministically.
 //
 // Lanes. Inner runs of different edges on one line are spread ORTHO_LANE px apart, ordered so
-// that runs going the same way do not cross each other's legs. A bow (the sidecar's `edges`)
-// moves a Z's cross run by that many px; on any other shape it does nothing. Labels stay off
-// boxes, captions, earlier labels and whatever else they are told to avoid (the canvas's notes).
+// that runs going the same way do not cross each other's legs. A bow (the sidecar's `edges`, a
+// number) moves a Z's cross run by that many px; on any other shape it does nothing. Labels stay
+// off boxes, captions, earlier labels and whatever else they are told to avoid (the canvas's
+// notes).
+//
+// Waypoints. An entry `{ via: [[x, y], ...] }` in the sidecar's `edges` is a path someone shaped
+// by dragging its segments: absolute world points the edge passes through in order. The edge
+// still leaves and meets its boxes as above (sides, spread, ports, steps out), then runs from its
+// step out through every waypoint to the other step, each hop straight or an L whose corner keeps
+// the run it is on going when it can and stays off boxes. It takes no lane and no bow. A nested
+// edge (a member to its own group) ignores waypoints.
 //
 // Pure: no DOM, no fs. It imports text.js for the label measure; geometry.js hands it the rest.
 
@@ -318,8 +326,11 @@ export function routeOrthogonal(items, nodeBoxes, bows, isPort, extra = {}) {
       });
     }
 
-  // 3. Route.
-  const routes = ends.map((it) => route(it, obstacles, captions));
+  // 3. Route: through its waypoints when it has them, else the cheapest clean way.
+  const routes = ends.map((it) => {
+    const via = it.nest || it.a === it.b ? null : readVia(bows[it.key]);
+    return via ? viaRoute(it, via, obstacles, captions) : route(it, obstacles, captions);
+  });
 
   // 4. Lanes: inner runs of different edges that lie on one line are moved a lane apart. A run
   // going along +axis with its legs going the same way: the one whose legs sit further along goes
@@ -328,6 +339,8 @@ export function routeOrthogonal(items, nodeBoxes, bows, isPort, extra = {}) {
   const lines = new Map();
   for (const r of routes) {
     r.shift = new Map();
+    // A shaped path is where someone put it: it takes no lane.
+    if (r.via) continue;
     const pts = r.points;
     for (let k = 1; k < pts.length - 2; k++) {
       const p = pts[k],
@@ -368,7 +381,7 @@ export function routeOrthogonal(items, nodeBoxes, bows, isPort, extra = {}) {
   const taken = [];
   return routes.map((r) => {
     const { it } = r;
-    const bow = Number(bows[it.key]) || 0;
+    const bow = r.via ? 0 : Number(bows[it.key]) || 0;
     let points = r.points.map((p) => [p[0], p[1]]);
     for (const [k, d] of r.shift) {
       const v = Math.abs(points[k][1] - points[k + 1][1]) < 0.01 ? 1 : 0;
@@ -385,7 +398,7 @@ export function routeOrthogonal(items, nodeBoxes, bows, isPort, extra = {}) {
     const text = it.e.label || it.e.protocol || "";
     const place = labelOn(points, String(text), [...boxList, ...captions, ...labelAvoid, ...taken]);
     if (place.box) taken.push(place.box);
-    return {
+    const drawn = {
       i: it.i,
       key: it.key,
       points,
@@ -397,7 +410,200 @@ export function routeOrthogonal(items, nodeBoxes, bows, isPort, extra = {}) {
       labelAt: place.at,
       labelAnchor: place.anchor,
     };
+    // Only a shaped path says so, so every other drawn edge is what it always was.
+    if (r.via) drawn.via = r.via;
+    // A nested edge runs straight out to its group's border: there is nothing to shape.
+    if (it.nest) drawn.fixed = true;
+    return drawn;
   });
+}
+
+/** The most waypoints one edge keeps. */
+export const VIA_MAX = 32;
+const VIA_LIMIT = 1e6;
+
+/**
+ * The waypoints a sidecar `edges` entry names, or null when it names none: `{ via: [[x, y], ...] }`
+ * with finite coordinates, at most VIA_MAX of them, each rounded to a whole px. A number (a bow)
+ * or anything malformed is null.
+ */
+export function readVia(v) {
+  if (!v || typeof v !== "object" || Array.isArray(v) || !Array.isArray(v.via)) return null;
+  const out = [];
+  for (const p of v.via.slice(0, VIA_MAX)) {
+    if (!Array.isArray(p) || p.length < 2) return null;
+    const [x, y] = p;
+    if (typeof x !== "number" || typeof y !== "number") return null;
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+    if (Math.abs(x) > VIA_LIMIT || Math.abs(y) > VIA_LIMIT) return null;
+    out.push([Math.round(x), Math.round(y)]);
+  }
+  return out.length ? out : null;
+}
+
+// Drop repeated points, merge straight runs and fold away a run that doubles straight back on
+// the one before it. Unlike `simplify`, it never refuses: a waypoint someone placed is followed
+// even where it turns the path back on itself.
+function tidy(points) {
+  let out = [];
+  for (const p of points) {
+    const last = out[out.length - 1];
+    if (last && Math.abs(last[0] - p[0]) < 0.01 && Math.abs(last[1] - p[1]) < 0.01) continue;
+    out.push([p[0], p[1]]);
+  }
+  for (let changed = true; changed; ) {
+    changed = false;
+    for (let k = 1; k < out.length - 1; k++) {
+      const [ax, ay] = out[k - 1],
+        [bx, by] = out[k],
+        [qx, qy] = out[k + 1];
+      const d1 = [Math.sign(bx - ax), Math.sign(by - ay)];
+      const d2 = [Math.sign(qx - bx), Math.sign(qy - by)];
+      const same = d1[0] === d2[0] && d1[1] === d2[1];
+      const back = d1[0] === -d2[0] && d1[1] === -d2[1];
+      if (same || back) {
+        out.splice(k, 1);
+        changed = true;
+        break;
+      }
+    }
+    // Removing a fold can leave two equal points side by side.
+    out = out.filter(
+      (p, k) =>
+        k === 0 || Math.abs(p[0] - out[k - 1][0]) > 0.01 || Math.abs(p[1] - out[k - 1][1]) > 0.01,
+    );
+  }
+  return out;
+}
+
+// One edge through its waypoints: out of its box as `route` would leave it, through every
+// waypoint in order, into the other box square to its side.
+function viaRoute(it, via, obstacles, captions) {
+  const { a, b, sa, sb, ta, tb } = it;
+  const P = sidePoint(a, sa, ta ?? 0.5);
+  const Q = sidePoint(b, sb, tb ?? 0.5);
+  const nA = NORMAL[sa],
+    nB = NORMAL[sb];
+  const S = [P[0] + nA[0] * ORTHO_STUB, P[1] + nA[1] * ORTHO_STUB];
+  const T = [Q[0] + nB[0] * ORTHO_STUB, Q[1] + nB[1] * ORTHO_STUB];
+  const own = [it.e.from, it.e.to];
+  const blockers = [
+    ...obstacles.filter(([id]) => id !== own[0] && id !== own[1]).map(([, bx]) => bx),
+    ...captions,
+  ];
+  const mine = [it.fa ? null : a, it.fb ? null : b].filter(Boolean);
+
+  // Waypoints are whole px and the ends are not: a waypoint within a px of the point before it
+  // (or after it, at the far end) on one axis is lined up with it, so no hairline jog is drawn.
+  const L = [S, ...via.map((p) => [p[0], p[1]]), T];
+  for (let j = 1; j < L.length - 1; j++)
+    for (const ax of [0, 1]) if (Math.abs(L[j][ax] - L[j - 1][ax]) < 1) L[j][ax] = L[j - 1][ax];
+  for (let j = L.length - 2; j > 0; j--)
+    for (const ax of [0, 1]) if (Math.abs(L[j][ax] - L[j + 1][ax]) < 1) L[j][ax] = L[j + 1][ax];
+
+  const dirOf = (p, q) => [Math.sign(q[0] - p[0]), Math.sign(q[1] - p[1])];
+  const hitsOf = (p, q) => {
+    let n = 0;
+    for (const box of blockers) if (cuts(p, q, box, 0)) n++;
+    for (const box of mine) if (cuts(p, q, box, -1)) n++;
+    return n;
+  };
+  // What a leg costs against the run before it: a turn is a bend, a turn straight back is worse.
+  const turn = (d, prev) => {
+    if (!prev || (!prev[0] && !prev[1])) return 0;
+    if (d[0] === prev[0] && d[1] === prev[1]) return 0;
+    if (d[0] === -prev[0] && d[1] === -prev[1]) return 1000;
+    return BEND_COST;
+  };
+  const pts = [P, S];
+  let dir = [nA[0], nA[1]];
+  const into = [-nB[0], -nB[1]];
+  for (let j = 1; j < L.length; j++) {
+    const A = pts[pts.length - 1],
+      B = L[j];
+    if (Math.abs(A[0] - B[0]) < 0.01 || Math.abs(A[1] - B[1]) < 0.01) {
+      const d = dirOf(A, B);
+      pts.push(B);
+      if (d[0] || d[1]) dir = d;
+      continue;
+    }
+    const last = j === L.length - 1;
+    let best = null;
+    // Along x first, then along y first: the one that keeps the run going is tried first.
+    const corners = [
+      [B[0], A[1]],
+      [A[0], B[1]],
+    ];
+    if (dir[0] === 0) corners.reverse();
+    for (const c of corners) {
+      const d1 = dirOf(A, c),
+        d2 = dirOf(c, B);
+      let cost = HIT_COST * (hitsOf(A, c) + hitsOf(c, B)) + turn(d1, dir) + turn(d2, d1);
+      if (last) cost += turn(into, d2);
+      else {
+        // Look one hop on: a run that would have to fold straight back costs now.
+        const C = L[j + 1];
+        if (Math.abs(B[0] - C[0]) < 0.01 || Math.abs(B[1] - C[1]) < 0.01)
+          cost += turn(dirOf(B, C), d2);
+      }
+      if (!best || cost < best.cost) best = { cost, c, d2 };
+    }
+    pts.push(best.c, B);
+    dir = best.d2;
+  }
+  pts.push(Q);
+  const points = tidy(pts);
+  return { it, points: points.length >= 2 ? points : [P, Q], run: null, via };
+}
+
+/**
+ * Drag one run of an orthogonal edge (`points`, as `edgeGeometry` drew it) square to itself, so
+ * it lies through (x, y). The runs on either side stretch to meet it. A run that starts or ends
+ * at the edge's box cannot leave the box, so it keeps a short step out of it and jogs: a straight
+ * edge dragged by its middle becomes a U. Returns the new points.
+ */
+export function moveSegment(points, k, x, y) {
+  const n = points.length;
+  if (!Array.isArray(points) || k < 0 || k >= n - 1) return points;
+  const p = points[k],
+    q = points[k + 1];
+  const v = Math.abs(p[1] - q[1]) < 0.5 ? 1 : 0; // the coordinate the drag changes
+  const at = Math.round(v === 1 ? y : x);
+  const len = Math.abs(q[0] - p[0]) + Math.abs(q[1] - p[1]);
+  if (len < 0.5) return points;
+  const dir = [(q[0] - p[0]) / len, (q[1] - p[1]) / len];
+  const stub = Math.min(ORTHO_STUB, len / 3);
+  const set = (pt) => {
+    const out = [pt[0], pt[1]];
+    out[v] = at;
+    return out;
+  };
+  const copy = points.map((c) => [c[0], c[1]]);
+  let head, tail;
+  if (k === 0) {
+    const s = [p[0] + dir[0] * stub, p[1] + dir[1] * stub];
+    head = [copy[0], s, set(s)];
+  } else head = [...copy.slice(0, k), set(p)];
+  if (k + 1 === n - 1) {
+    const t = [q[0] - dir[0] * stub, q[1] - dir[1] * stub];
+    tail = [set(t), t, copy[n - 1]];
+  } else tail = [set(q), ...copy.slice(k + 2)];
+  return tidy([...head, ...tail]);
+}
+
+/** The waypoints that hold a drawn path in its shape: its corners, whole px. */
+export function viaOf(points) {
+  return points.slice(1, -1).map((p) => [Math.round(p[0]), Math.round(p[1])]);
+}
+
+/** The waypoints without the one nearest (x, y). */
+export function dropWaypoint(via, x, y) {
+  if (!Array.isArray(via) || !via.length) return [];
+  let best = 0;
+  via.forEach((p, k) => {
+    if (Math.hypot(p[0] - x, p[1] - y) < Math.hypot(via[best][0] - x, via[best][1] - y)) best = k;
+  });
+  return via.filter((_, k) => k !== best);
 }
 
 // One edge: its end points, its steps out, and the cheapest clean way between them.

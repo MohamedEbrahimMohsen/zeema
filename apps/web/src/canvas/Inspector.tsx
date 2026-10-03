@@ -4,11 +4,13 @@
 // product is hard coded. A control shows the value the design resolves to and writes only when
 // the user sets something. Text inputs commit on blur or Enter, never per keystroke.
 import { effective, propDefs } from "@zeema/core/document";
+import { edgeKeys } from "@zeema/core/geometry";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Icon } from "@/components/Icon";
 import { BOUNDARY_PREVIEW, boundaryRows } from "@/lib/boundary-icons";
 import {
   anchorTarget,
+  type EdgePath,
   type FrameStyle,
   frameIconKey,
   type HexTint,
@@ -55,6 +57,8 @@ export type InspectorApi = {
   setBadge: (ref: string | null) => void;
   /** How the design's edges are drawn. Sidecar only, owner only. */
   setRouting: (routing: "orthogonal" | "curved") => void;
+  /** Drop an edge's hand-made path (bow or waypoints): it is routed automatically again. */
+  resetPath: (index: number) => void;
   setRequirement: (path: string, value: unknown) => void;
   setNoteText: (id: string, text: string) => void;
   /** Point the palette at a query, the way the group hint does. */
@@ -530,6 +534,7 @@ export function Inspector({
   notes,
   frameStyles,
   nodeTints,
+  edgePaths,
   catalogue,
   icons,
   searchRows,
@@ -548,6 +553,8 @@ export function Inspector({
   frameStyles?: Record<string, FrameStyle>;
   /** Component tints by node id, from the layout sidecar. */
   nodeTints?: Record<string, NodeTint>;
+  /** Hand-made edge paths by edge key (bows and waypoints), from the layout sidecar. */
+  edgePaths?: Record<string, EdgePath>;
   catalogue: any;
   /** The catalogue icon map (icons.json): component ids, `kind:<id>` and `boundary:<id>`. */
   icons?: Record<string, string>;
@@ -619,6 +626,7 @@ export function Inspector({
             doc={doc}
             api={api}
             highlight={hl}
+            shaped={Object.hasOwn(edgePaths ?? {}, edgeKeys(doc)[selection.ref as number] ?? "")}
           />
         </>
       );
@@ -922,12 +930,15 @@ function EdgePanel({
   doc,
   api,
   highlight,
+  shaped,
 }: {
   edge: any;
   index: number;
   doc: any;
   api: InspectorApi;
   highlight: Highlight;
+  /** The edge's path was shaped by hand (a bow or waypoints), so it can be reset. */
+  shaped?: boolean;
 }) {
   const lit = (name: string) => highlight?.fields.includes(name);
   const ids = doc.nodes.map((n: any) => n.id as string);
@@ -1038,6 +1049,11 @@ function EdgePanel({
       {boolField("circuitBreaker")}
       {enumField("fallback", ["none", "static", "cached", "degraded"])}
       {boolField("batched")}
+      {shaped ? (
+        <button type="button" className="btn btn-sm mt-3" onClick={() => api.resetPath(index)}>
+          Reset path
+        </button>
+      ) : null}
       <button
         type="button"
         className="btn btn-sm btn-danger mt-3"

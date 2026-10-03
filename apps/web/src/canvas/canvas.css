@@ -887,8 +887,9 @@
   fill: none;
   cursor: pointer;
 }
-/* an edge lifts under the pointer: the hit path is drawn just before its line and its label */
-.zeema-canvas .edge-hit:hover + .edge {
+/* an edge lifts under the pointer: its hit paths (one per run of an orthogonal edge) are drawn in
+   one group just before its line and its label */
+.zeema-canvas .edge-hits:hover + .edge {
   stroke: var(--accent);
   stroke-width: 2;
   marker-end: url(#arrowhead-sel);
@@ -902,7 +903,7 @@
   stroke-width: 3px;
   cursor: pointer;
 }
-.zeema-canvas .edge-hit:hover + .edge + .edge-label,
+.zeema-canvas .edge-hits:hover + .edge + .edge-label,
 .zeema-canvas .edge-label:hover {
   fill: var(--ink);
 }

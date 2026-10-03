@@ -28,6 +28,7 @@ import {
   prunePorts,
   pruneSidecar,
   pruneTints,
+  readEdgePath,
   readPorts,
   readRoutingField,
   readSidecar,
@@ -565,5 +566,81 @@ describe("edge style", () => {
     ]);
     // a design nobody switched keeps the bytes it had
     expect(sidecarFile({ nodes: { a: [0, 0] } })).not.toContain("routing");
+  });
+});
+
+describe("edge paths: bows and waypoints", () => {
+  it("reads a number bow as it always did, and waypoints validated, rounded and capped", () => {
+    const many = Array.from({ length: 40 }, (_, k) => [k, k]);
+    const s = readSidecar({
+      edges: {
+        "a>b": 12,
+        "b>c": {
+          via: [
+            [10.4, 20.6],
+            [100, 20],
+          ],
+        },
+        "c>d": { via: [] },
+        "d>e": { via: [[1, Number.NaN]] },
+        "e>f": { via: "x" },
+        "f>g": { via: many },
+        __proto__: { via: [[1, 1]] },
+        "no-arrow": { via: [[1, 1]] },
+      },
+    });
+    expect(s.edges["a>b"]).toBe(12);
+    expect(s.edges["b>c"]).toEqual({
+      via: [
+        [10, 21],
+        [100, 20],
+      ],
+    });
+    expect(Object.keys(s.edges).sort()).toEqual(["a>b", "b>c", "f>g"]);
+    expect((s.edges["f>g"] as { via: unknown[] }).via).toHaveLength(32);
+    expect(readEdgePath(0)).toBeNull();
+    expect(readEdgePath({ via: [[1, 2]] })).toEqual({ via: [[1, 2]] });
+  });
+
+  it("writes waypoints only when there are some, and counts them as drawn", () => {
+    const s = writeSidecar({
+      nodes: {},
+      edges: { "a>b": { via: [[1, 2]] }, "b>c": { via: [] }, "c>d": -4 },
+      notes: [],
+    });
+    expect(s.edges).toEqual({ "a>b": { via: [[1, 2]] }, "c>d": -4 });
+    expect(isBlankSidecar({ edges: { "a>b": { via: [[1, 2]] } } })).toBe(false);
+    expect(isBlankSidecar({ edges: { "a>b": { via: [] } } })).toBe(true);
+  });
+
+  it("prunes waypoints with their edge and writes them in the file in a fixed order", () => {
+    const raw = {
+      nodes: {},
+      edges: {
+        "x>y": { via: [[5, 6]] },
+        "a>b": {
+          via: [
+            [1, 2],
+            [3, 2],
+          ],
+        },
+        "a>c": 7,
+      },
+      notes: [],
+    };
+    const pruned = pruneSidecar(readSidecar(raw), { nodes: [], groups: [], edges: ["a>b", "a>c"] });
+    expect(pruned.edges).toEqual({
+      "a>b": {
+        via: [
+          [1, 2],
+          [3, 2],
+        ],
+      },
+      "a>c": 7,
+    });
+    const file = sidecarFile(pruned);
+    expect(Object.keys(JSON.parse(file).edges)).toEqual(["a>b", "a>c"]);
+    expect(sidecarFile(JSON.parse(file))).toBe(file);
+    expect(readSidecar(JSON.parse(file)).edges).toEqual(pruned.edges);
   });
 });

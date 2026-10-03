@@ -20,7 +20,11 @@
 // from the boxes on every frame.
 
 import { groupCaption } from "./document.js";
-import { orthoPath, routeOrthogonal } from "./routing.js";
+import { orthoPath, readVia, routeOrthogonal } from "./routing.js";
+
+// A shaped orthogonal path (sidecar `edges` entries `{ via }`): see routing.js.
+export { dropWaypoint, moveSegment, readVia, VIA_MAX, viaOf } from "./routing.js";
+
 import { frameCaption } from "./text.js";
 
 // How edges are drawn: "orthogonal" (axis-aligned segments with rounded corners, routing.js) or
@@ -133,6 +137,13 @@ export function rekeyBows(before, after, bows, reversed = []) {
   const flip = new Set(reversed);
   const out = {};
   was.forEach((k, i) => {
+    // Waypoints are absolute, so they stay where they are; a reversed edge meets them in the
+    // other order.
+    const via = bows && Object.hasOwn(bows, k) ? readVia(bows[k]) : null;
+    if (via) {
+      out[now[i]] = { via: flip.has(i) ? via.reverse() : via };
+      return;
+    }
     const v = Number(bows[k]) || 0;
     if (v) out[now[i]] = flip.has(i) ? -v : v;
   });

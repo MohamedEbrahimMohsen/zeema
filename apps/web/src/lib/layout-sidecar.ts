@@ -7,7 +7,7 @@
 // the canvas reads through `readSidecar` (which drops anything malformed rather than throwing)
 // and writes through the same shape.
 
-import { DEFAULT_ROUTING, ROUTINGS } from "@zeema/core/geometry";
+import { DEFAULT_ROUTING, ROUTINGS, readVia } from "@zeema/core/geometry";
 
 export const SIDECAR_VERSION = 2;
 
@@ -149,10 +149,43 @@ export type Port = { side: PortSide; t: number };
 export type EdgePorts = { from?: Port; to?: Port };
 const PORT_SIDES: readonly PortSide[] = ["top", "right", "bottom", "left"];
 
+/**
+ * How one edge's path was adjusted by hand: a number is a bow (the curve's bend, or the cross run
+ * of an orthogonal Z), and `{ via }` is an orthogonal path shaped by dragging its segments, the
+ * absolute world points it passes through in order (`readVia` in @zeema/core/geometry).
+ */
+export type Waypoint = [number, number];
+export type EdgePath = number | { via: Waypoint[] };
+
+/** One stored edge path as the canvas may keep it, or null for nothing worth keeping. */
+export function readEdgePath(v: unknown): EdgePath | null {
+  if (typeof v === "number") return Number.isFinite(v) && v !== 0 ? v : null;
+  const via = readVia(v) as Waypoint[] | null;
+  return via ? { via } : null;
+}
+
+/** The edge paths worth keeping: a zero bow or an empty `via` is no entry at all. */
+function readEdgePaths(raw: unknown): Record<string, EdgePath> {
+  const out: Record<string, EdgePath> = {};
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return out;
+  for (const [key, v] of Object.entries(raw as Record<string, unknown>)) {
+    // A number keeps reading exactly as it always did (a zero bow included).
+    if (typeof v === "number") {
+      if (Number.isFinite(v)) out[key] = v;
+      continue;
+    }
+    if (!isEdgeKey(key)) continue;
+    const path = readEdgePath(v);
+    if (path) out[key] = path;
+  }
+  return out;
+}
+
 export type LayoutSidecar = {
   version: number;
   nodes: Record<string, [number, number]>;
-  edges: Record<string, number>;
+  /** Keyed by `edgeKeys` in @zeema/core/geometry: a bow, or waypoints (see `EdgePath`). */
+  edges: Record<string, EdgePath>;
   /** Keyed like `edges` (see `edgeKeys`). Absent when no edge has a port. */
   ports?: Record<string, EdgePorts>;
   notes: Note[];
@@ -236,10 +269,7 @@ export function readSidecar(raw: unknown, targets?: AnchorTargets): LayoutSideca
     for (const [id, p] of Object.entries(r.nodes as Record<string, unknown>))
       if (Array.isArray(p) && p.length >= 2 && typeof p[0] === "number" && typeof p[1] === "number")
         nodes[id] = [p[0], p[1]];
-  const edges: Record<string, number> = {};
-  if (r.edges && typeof r.edges === "object")
-    for (const [key, v] of Object.entries(r.edges as Record<string, unknown>))
-      if (typeof v === "number" && Number.isFinite(v)) edges[key] = v;
+  const edges = readEdgePaths(r.edges);
   // The count is capped the same way the text is: the first NOTE_MAX_NOTES readable notes are
   // kept and the rest are dropped, so a runaway or hostile sidecar cannot stall a render.
   const notes = Array.isArray(r.notes)
@@ -383,6 +413,17 @@ export function readFrames(
   return out;
 }
 
+/** The edge paths as stored: bows as they are, waypoints only when there are some. */
+function writeEdgePaths(edges: Record<string, EdgePath>) {
+  const out: Record<string, EdgePath> = {};
+  for (const [k, v] of Object.entries(edges ?? {})) {
+    if (typeof v === "number") out[k] = v;
+    else if (v && Array.isArray(v.via) && v.via.length)
+      out[k] = { via: v.via.map(([x, y]) => [x, y] as Waypoint) };
+  }
+  return out;
+}
+
 /** What the canvas sends back. Notes travel with the positions, in the same save request. */
 export function writeSidecar(
   s: Omit<LayoutSidecar, "version" | "frames"> & { frames?: Record<string, FrameStyle> },
@@ -390,7 +431,7 @@ export function writeSidecar(
   const out: LayoutSidecar = {
     version: SIDECAR_VERSION,
     nodes: s.nodes,
-    edges: s.edges,
+    edges: writeEdgePaths(s.edges),
     notes: s.notes,
     frames: s.frames ?? {},
   };
@@ -523,7 +564,12 @@ export function sidecarFile(raw: unknown): string {
   const file: Record<string, unknown> = {
     version: s.version,
     nodes: Object.fromEntries(sortedEntries(s.nodes)),
-    edges: Object.fromEntries(sortedEntries(s.edges)),
+    edges: Object.fromEntries(
+      sortedEntries(s.edges).map(([k, v]) => [
+        k,
+        typeof v === "number" ? v : { via: v.via.map(([x, y]) => [x, y]) },
+      ]),
+    ),
   };
   if (s.ports)
     file.ports = Object.fromEntries(

@@ -24,6 +24,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { UserMenu } from "@/components/UserMenu";
 import { badgeOf, brandOf } from "@/lib/badge";
 import {
+  type EdgePath,
   type EdgePorts,
   type FrameStyle,
   NOTE_ANCHOR_DX,
@@ -102,7 +103,8 @@ type Engine = {
   cst: any;
   positions: Record<string, [number, number]>;
   sizes: Record<string, [number, number]>;
-  bows: Record<string, number>;
+  /** Hand-adjusted edge paths by edge key (a bow, or waypoints): sidecar, never YAML. */
+  bows: Record<string, EdgePath>;
   /** Where each edge's ends meet their boxes, by edge key: sidecar, never YAML. */
   ports: Record<string, EdgePorts>;
   notes: Note[];
@@ -1270,9 +1272,16 @@ export function Canvas(props: Props) {
               commit(D.setEdgeField(e.doc, i, "mode", edge?.mode === "async" ? "sync" : "async")),
           },
           {
-            label: "Straighten",
-            disabled: !e.bows[key],
-            run: () => commit(null, { apply: () => delete e.bows[key] }),
+            // Back to the automatic path: a curve's bow or an orthogonal path's waypoints.
+            label: (e.routing ?? "orthogonal") === "orthogonal" ? "Reset path" : "Straighten",
+            disabled: !Object.hasOwn(e.bows, key),
+            run: () =>
+              commit(null, {
+                apply: () => {
+                  const { [key]: _gone, ...rest } = e.bows;
+                  e.bows = rest;
+                },
+              }),
           },
           {
             label: "Reset ends",
@@ -1462,8 +1471,13 @@ export function Canvas(props: Props) {
             : undefined,
         });
       },
-      onBowPreview: (key, value) => scene.repaintEdges({ ...eng.current!.bows, [key]: value }),
-      onBow: (key, value) =>
+      onPathPreview: (key, value) => {
+        const { [key]: _was, ...rest } = eng.current!.bows;
+        scene.repaintEdges(value ? { ...rest, [key]: value } : rest);
+      },
+      // A bow or waypoints from a drag, or null (back to the automatic path). Waypoints replace a
+      // bow the edge had: the first drag of an orthogonal Z turns its bow into its corners.
+      onPath: (key, value) =>
         commit(null, {
           coalesce: true,
           apply: () => {
@@ -1951,6 +1965,18 @@ export function Canvas(props: Props) {
           },
         });
       },
+      // An edge's hand-made path (bow or waypoints) goes, and the automatic one comes back.
+      resetPath: (index) => {
+        const e = eng.current!;
+        const key = edgeKeys(e.doc)[index];
+        if (!key || !Object.hasOwn(e.bows, key)) return;
+        commit(null, {
+          apply: () => {
+            const { [key]: _gone, ...rest } = e.bows;
+            e.bows = rest;
+          },
+        });
+      },
       // The edge style is layout too: the sidecar's `routing`, saved with the canvas's own save.
       setRouting: (v) => {
         const e = eng.current!;
@@ -2287,6 +2313,7 @@ export function Canvas(props: Props) {
           notes: e.notes,
           frameStyles: e.frames,
           nodeTints: e.tints,
+          edgePaths: e.bows,
           catalogue: bundle.catalogue,
           icons: bundle.icons,
           searchRows: bundle.search,

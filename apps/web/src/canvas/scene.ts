@@ -12,6 +12,7 @@
 import { groupCaption, groupTitle, nodeLines } from "@zeema/core/document";
 import {
   bowAt,
+  dropWaypoint,
   edgeGeometry,
   edgePath,
   frameCaptions,
@@ -19,8 +20,9 @@ import {
   framesUnderTint,
   groupFrames,
   innermostFrameAt,
-  orthoBowAt,
+  moveSegment,
   portAt,
+  viaOf,
 } from "@zeema/core/geometry";
 import {
   CAPTION_LINE,
@@ -34,6 +36,7 @@ import {
 import {
   anchorKey,
   anchorTarget,
+  type EdgePath,
   type EdgePorts,
   type FrameStyle,
   frameIconKey,
@@ -112,7 +115,8 @@ export type Model = {
   icons: Record<string, string>;
   positions: Record<string, [number, number]>;
   sizes: Record<string, [number, number]>;
-  bows: Record<string, number>;
+  /** Hand-adjusted edge paths by edge key, from the sidecar: a bow, or waypoints. */
+  bows: Record<string, EdgePath>;
   /** Where an edge's ends meet their boxes, by edge key, from the sidecar. */
   ports?: Record<string, EdgePorts>;
   notes: Note[];
@@ -155,8 +159,13 @@ export type Handlers = {
    * edge to the group as a unit). `ends` is set when it was drawn from a port dot.
    */
   onConnect?: (from: string, to: string, ends?: EdgePorts) => void;
-  onBowPreview?: (key: string, value: number) => void;
-  onBow?: (key: string, value: number) => void;
+  /**
+   * An edge's path is being dragged: draw it with this entry (null: the automatic path). A curve
+   * takes a bow; an orthogonal edge takes waypoints, the corners of the path being dragged.
+   */
+  onPathPreview?: (key: string, value: EdgePath | null) => void;
+  /** An edge's path was let go: keep this entry (null: drop it, back to the automatic path). */
+  onPath?: (key: string, value: EdgePath | null) => void;
   /** An end handle is being dragged along its own box: draw the edge with this port (null: none). */
   onPortPreview?: (key: string, end: EdgeEnd, port: Port | null) => void;
   /** An end handle was let go on its own box's border: attach that end there. */
@@ -1101,21 +1110,16 @@ export class Scene {
     );
     for (const e of this.geom) {
       const d = edgePath(e);
-      const hit = el("path", { class: "edge-hit", d });
+      // The hit paths sit in one group just before the line, so hovering any of them lifts it.
+      const hits = el("g", { class: "edge-hits" });
       const line = el("path", {
         class: `edge${e.dashed ? " async" : ""}`,
         d,
         "marker-end": "url(#arrowhead)",
       });
-      hit.addEventListener("pointerdown", (ev: any) => {
-        if (ev.button !== 0 || this.space) return;
-        ev.stopPropagation();
-        if (ev.shiftKey || ev.ctrlKey || ev.metaKey) return this.toggle("edge", e.i);
-        this.select("edge", e.i);
-        this.startBow(e, ev);
-      });
-      g.append(hit, line);
-      const els: any = { hit, line, key: e.key, from: e.from, to: e.to, label: null };
+      g.append(hits, line);
+      const els: any = { hits, hitEls: [], line, key: e.key, from: e.from, to: e.to, label: null };
+      this.setHits(els, e);
       if (e.label) {
         // Where geometry.js says: above a lone edge, on the outer side of a lane's own curve.
         const t = el("text", {
@@ -1318,7 +1322,59 @@ export class Scene {
     }
   }
 
-  repaintEdges(bows: Record<string, number>, ports = this.model.ports || {}) {
+  /**
+   * The hit paths of one drawn edge. A curve (or an orthogonal edge with nothing to shape) has one,
+   * along the whole line: dragging it bends the curve. An orthogonal edge has one per run, each
+   * with the cursor that says which way it moves: up and down for a horizontal run, sideways for
+   * a vertical one. Rebuilt whenever the edge is redrawn, because a drag can add runs.
+   */
+  setHits(els: any, e: any) {
+    const ortho = e.ortho && !e.fixed;
+    const shapes: Array<{ d: string; k: number | null; cursor: string }> = [];
+    if (ortho)
+      for (let k = 0; k < e.points.length - 1; k++) {
+        const [p, q] = [e.points[k], e.points[k + 1]];
+        const flat = Math.abs(p[1] - q[1]) < 0.5;
+        shapes.push({
+          d: `M${p[0]} ${p[1]} L${q[0]} ${q[1]}`,
+          k,
+          cursor: flat ? "ns-resize" : "ew-resize",
+        });
+      }
+    else shapes.push({ d: edgePath(e), k: null, cursor: "" });
+    // The same runs as last time: only the paths move, so a pointer over one keeps its hover.
+    const same =
+      els.hitEls.length === shapes.length &&
+      els.hitEls.every((h: SVGElement, k: number) => h.dataset.cursor === shapes[k].cursor);
+    if (same) {
+      shapes.forEach((sh, k) => {
+        els.hitEls[k].setAttribute("d", sh.d);
+      });
+      return;
+    }
+    els.hits.textContent = "";
+    els.hitEls = shapes.map((sh) => {
+      const hit = el("path", {
+        class: "edge-hit",
+        d: sh.d,
+        style: sh.cursor ? `cursor:${sh.cursor}` : null,
+      }) as SVGPathElement;
+      hit.dataset.cursor = sh.cursor;
+      hit.addEventListener("pointerdown", (ev: any) => {
+        if (ev.button !== 0 || this.space) return;
+        ev.stopPropagation();
+        if (ev.shiftKey || ev.ctrlKey || ev.metaKey) return this.toggle("edge", e.i);
+        this.select("edge", e.i);
+        // Whatever the edge is drawn as now, not when this path was made.
+        const drawn = (this.geom || []).find((g) => g.key === e.key) ?? e;
+        this.startBow(drawn, ev, sh.k);
+      });
+      els.hits.append(hit);
+      return hit;
+    });
+  }
+
+  repaintEdges(bows: Record<string, EdgePath>, ports = this.model.ports || {}) {
     this.model.bows = bows;
     const geom = edgeGeometry(
       this.model.doc,
@@ -1332,9 +1388,8 @@ export class Scene {
     for (const e of geom) {
       const els = this.edgeEls.get(e.i);
       if (!els) continue;
-      const d = edgePath(e);
-      els.line.setAttribute("d", d);
-      els.hit.setAttribute("d", d);
+      els.line.setAttribute("d", edgePath(e));
+      this.setHits(els, e);
       if (els.label) {
         els.label.setAttribute("x", e.labelAt[0]);
         els.label.setAttribute("y", e.labelAt[1]);
@@ -1644,6 +1699,7 @@ export class Scene {
       const target = this.targetOf(ev);
       if (!target.type) return;
       ev.preventDefault();
+      if (target.type === "edge" && this.dropCorner(ev, target.ref as number)) return;
       this.editLabel(target.type, target.ref as string | number);
     });
 
@@ -1803,7 +1859,7 @@ export class Scene {
     const sticky = node.closest(".note-box:not(.peek)") as HTMLElement | null;
     if (sticky) return { type: "note", ref: sticky.dataset.noteId ?? null };
     for (const [i, els] of this.edgeEls)
-      if (els.hit === node || els.line === node || els.label === node)
+      if (els.hitEls.includes(node) || els.line === node || els.label === node)
         return { type: "edge", ref: i };
     for (const [id, f] of this.frameEls)
       if (f.hit === node || f.label === node || f.rect === node || (f.icon && f.icon === node))
@@ -1822,7 +1878,7 @@ export class Scene {
       this.wire = null;
     }
     if (this.bowDrag) {
-      this.h.onBowPreview?.(this.bowDrag.key, this.bowDrag.original || 0);
+      this.h.onPathPreview?.(this.bowDrag.key, this.bowDrag.original ?? null);
       this.bowDrag = null;
     }
     if (this.tip) {
@@ -2096,9 +2152,8 @@ export class Scene {
       if (!toGroup && !moving.has(e.from) && !moving.has(e.to)) continue;
       const els = this.edgeEls.get(e.i);
       if (!els) continue;
-      const d = edgePath(e);
-      els.line.setAttribute("d", d);
-      els.hit.setAttribute("d", d);
+      els.line.setAttribute("d", edgePath(e));
+      this.setHits(els, e);
       if (els.label) {
         els.label.setAttribute("x", e.labelAt[0]);
         els.label.setAttribute("y", e.labelAt[1]);
@@ -2202,35 +2257,67 @@ export class Scene {
 
   // ---------------------------------------------------------------- edges
 
-  startBow(edge: any, ev: PointerEvent) {
+  /**
+   * A press on an edge's body. On a curve it bends the curve; on an orthogonal edge it takes run
+   * `seg` and moves it square to itself, the runs on either side stretching to meet it, and the
+   * path's corners become its waypoints (draw.io's segment drag). Nothing changes until the
+   * pointer has moved DRAG_THRESHOLD px, so a click only selects.
+   */
+  startBow(edge: any, ev: PointerEvent, seg: number | null = null) {
     this.bowDrag = {
       key: edge.key,
       from: edge.from,
       to: edge.to,
+      seg: edge.ortho && !edge.fixed ? seg : null,
+      ortho: Boolean(edge.ortho),
+      points: edge.points.map((p: number[]) => [p[0], p[1]]),
+      down: [ev.clientX, ev.clientY],
       moved: false,
-      original: this.model.bows?.[edge.key] || 0,
+      original: own(this.model.bows ?? {}, edge.key) ?? null,
     };
     this.capture(ev);
   }
 
   moveBow(ev: PointerEvent) {
+    const drag = this.bowDrag;
+    const [x0, y0] = drag.down;
+    if (!drag.moved && Math.hypot(ev.clientX - x0, ev.clientY - y0) < DRAG_THRESHOLD) return;
     const [wx, wy] = this.toWorld(ev.clientX, ev.clientY);
-    const ends = this.model.ports?.[this.bowDrag.key] ?? null;
-    // An orthogonal edge's bow moves its cross run to the pointer (routing.js); one with no cross
-    // run (straight, an L, a detour) has nothing a bow moves.
-    const drawn = (this.geom || []).find((g) => g.key === this.bowDrag.key);
-    const value = drawn?.ortho
-      ? orthoBowAt(drawn, wx, wy)
-      : bowAt(this.boxes, this.bowDrag.from, this.bowDrag.to, wx, wy, ends, this.frames);
-    this.bowDrag.moved = true;
-    this.bowDrag.value = value;
-    this.h.onBowPreview?.(this.bowDrag.key, value);
+    let value: EdgePath | null;
+    if (drag.ortho) {
+      // An orthogonal edge has nothing a bow moves: only a run can be dragged.
+      if (drag.seg === null) return;
+      const via = viaOf(moveSegment(drag.points, drag.seg, wx, wy)) as [number, number][];
+      value = via.length ? { via } : null;
+    } else {
+      const ends = this.model.ports?.[drag.key] ?? null;
+      value = bowAt(this.boxes, drag.from, drag.to, wx, wy, ends, this.frames) || null;
+    }
+    drag.moved = true;
+    drag.value = value;
+    this.h.onPathPreview?.(drag.key, value);
   }
 
   endBow() {
     const { key, moved, value } = this.bowDrag;
     this.bowDrag = null;
-    if (moved) this.h.onBow?.(key, value);
+    if (moved) this.h.onPath?.(key, value ?? null);
+  }
+
+  /**
+   * A double click on a corner of a shaped orthogonal path takes that waypoint out (the path
+   * re-routes through the rest). True when it did; anything else is the label's double click.
+   */
+  dropCorner(ev: MouseEvent, i: number) {
+    const e = (this.geom || []).find((g) => g.i === i);
+    if (!e?.ortho || !Array.isArray(e.via) || !e.via.length) return false;
+    const [wx, wy] = this.toWorld(ev.clientX, ev.clientY);
+    const reach = 10 / (this.view.k || 1);
+    const corners = e.points.slice(1, -1);
+    if (!corners.some((p: number[]) => Math.hypot(p[0] - wx, p[1] - wy) <= reach)) return false;
+    const via = dropWaypoint(viaOf(e.points), wx, wy) as [number, number][];
+    this.h.onPath?.(e.key, via.length ? { via } : null);
+    return true;
   }
 
   startTip(i: number, end: EdgeEnd, ev: PointerEvent) {
@@ -2533,7 +2620,7 @@ export class Scene {
       if (layer) layer.textContent = "";
     }
     for (const n of clone.querySelectorAll(
-      ".port-dot, .end-handle, .edge-hit, .frame-hit, .marquee, .wire, .note-grip, .note-grip-hit, .note-text.empty, .frame-label:empty, .layer-note-markers",
+      ".port-dot, .end-handle, .edge-hits, .edge-hit, .frame-hit, .marquee, .wire, .note-grip, .note-grip-hit, .note-text.empty, .frame-label:empty, .layer-note-markers",
     ))
       n.remove();
     // A picture that leaves the page has no hover card: each box's name goes back into a

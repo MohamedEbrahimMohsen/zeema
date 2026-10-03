@@ -9,13 +9,19 @@ import { describe, expect, it } from "vitest";
 import { drawnLayout } from "../src/drawn.js";
 import {
   DEFAULT_ROUTING,
+  dropWaypoint,
   edgeGeometry,
   edgePath,
   frameCaptions,
   groupFrames,
+  moveSegment,
   orthoBowAt,
   portPoint,
   readRouting,
+  readVia,
+  rekeyBows,
+  VIA_MAX,
+  viaOf,
 } from "../src/geometry.js";
 import { layout } from "../src/layout.js";
 import { toSvg } from "../src/render.js";
@@ -386,5 +392,192 @@ describe("orthogonal routing", () => {
     const inside = mx > note[0] && mx < note[0] + note[2] && my > note[1] && my < note[1] + note[3];
     expect(inside).toBe(false);
     expect(moved.points).toEqual(plain.points);
+  });
+});
+
+describe("shaped orthogonal paths (waypoints)", () => {
+  const pair = () => ({
+    nodes: [
+      { id: "a", component: "x" },
+      { id: "b", component: "x" },
+    ],
+    edges: [{ from: "a", to: "b", protocol: "https", mode: "sync" }],
+  });
+  const square = (pts) =>
+    segments(pts).every(([p, q]) => Math.abs(p[0] - q[0]) < 1e-6 || Math.abs(p[1] - q[1]) < 1e-6);
+  const onPath = (pts, [x, y]) =>
+    segments(pts).some(
+      ([p, q]) =>
+        x >= Math.min(p[0], q[0]) - 1e-6 &&
+        x <= Math.max(p[0], q[0]) + 1e-6 &&
+        y >= Math.min(p[1], q[1]) - 1e-6 &&
+        y <= Math.max(p[1], q[1]) + 1e-6,
+    );
+
+  it("reads waypoints: finite, whole px, capped, and nothing from a number or junk", () => {
+    expect(readVia({ via: [[1.4, 2.6]] })).toEqual([[1, 3]]);
+    expect(readVia(12)).toBeNull();
+    expect(readVia({ via: [] })).toBeNull();
+    expect(readVia({ via: [[1, Number.NaN]] })).toBeNull();
+    expect(readVia({ via: [["1", 2]] })).toBeNull();
+    expect(readVia({ via: "x" })).toBeNull();
+    const many = Array.from({ length: VIA_MAX + 5 }, (_, k) => [k, k]);
+    expect(readVia({ via: many })).toHaveLength(VIA_MAX);
+  });
+
+  it("passes through every waypoint in order, in square runs only", () => {
+    const boxes = { a: [0, 0, W, H], b: [20, 300, W, H] };
+    const via = [
+      [63, 60 + H],
+      [300, 60 + H],
+      [300, 240],
+      [83, 240],
+    ];
+    const [e] = edgeGeometry(pair(), boxes, { "a>b": { via } }, {}, {}, ORTHO);
+    expect(square(e.points)).toBe(true);
+    for (const p of via) expect(onPath(e.points, p)).toBe(true);
+    // In order: each waypoint is reached no earlier than the one before it.
+    const along = (pt) => {
+      let d = 0;
+      for (const [p, q] of segments(e.points)) {
+        if (onPath([p, q], pt)) return d + Math.abs(pt[0] - p[0]) + Math.abs(pt[1] - p[1]);
+        d += Math.abs(q[0] - p[0]) + Math.abs(q[1] - p[1]);
+      }
+      return -1;
+    };
+    const at = via.map(along);
+    expect([...at].sort((p, q) => p - q)).toEqual(at);
+    expect(e.via).toEqual(via);
+    expect(e.run).toBeNull();
+    expect(e.bow).toBe(0);
+    // It still leaves and meets its boxes square to their sides.
+    expect(e.points[0][1]).toBe(H);
+    expect(e.points[1][0]).toBe(e.points[0][0]);
+    expect(e.points.at(-1)[1]).toBe(300);
+    expect(e.points.at(-2)[0]).toBe(e.points.at(-1)[0]);
+  });
+
+  it("turns a waypoint off the line into a clean L", () => {
+    const boxes = { a: [0, 0, W, H], b: [400, 300, W, H] };
+    const [e] = edgeGeometry(pair(), boxes, { "a>b": { via: [[250, 150]] } }, {}, {}, ORTHO);
+    expect(square(e.points)).toBe(true);
+    expect(onPath(e.points, [250, 150])).toBe(true);
+  });
+
+  it("drags a straight edge's middle into a jog, and back through the router unchanged", () => {
+    const boxes = { a: [0, 0, W, H], b: [20, 300, W, H] };
+    const [plain] = edgeGeometry(pair(), boxes, {}, {}, {}, ORTHO);
+    expect(plain.points).toHaveLength(2);
+    const moved = moveSegment(plain.points, 0, plain.points[0][0] + 80, 190);
+    expect(moved.length).toBeGreaterThan(2);
+    expect(square(moved)).toBe(true);
+    expect(moved[0]).toEqual(plain.points[0]);
+    expect(moved.at(-1)).toEqual(plain.points[1]);
+    expect(Math.max(...moved.map((p) => p[0]))).toBe(plain.points[0][0] + 80);
+    const [shaped] = edgeGeometry(pair(), boxes, { "a>b": { via: viaOf(moved) } }, {}, {}, ORTHO);
+    expect(shaped.points).toEqual(moved);
+  });
+
+  it("slides an L's leg, and the run beside it stretches", () => {
+    const doc = pair();
+    const boxes = { a: [0, 0, W, H], b: [400, 300, W, H] };
+    const ports = { "a>b": { from: { side: "right", t: 0.5 }, to: { side: "top", t: 0.5 } } };
+    const [l] = edgeGeometry(doc, boxes, {}, ports, {}, ORTHO);
+    expect(l.points).toHaveLength(3);
+    // The vertical leg (the last run) moves sideways: it cannot leave the box, so it jogs.
+    const moved = moveSegment(l.points, 1, 300, 0);
+    expect(square(moved)).toBe(true);
+    expect(moved.some((p) => p[0] === 300)).toBe(true);
+    expect(moved.at(-1)).toEqual(l.points.at(-1));
+    const [shaped] = edgeGeometry(doc, boxes, { "a>b": { via: viaOf(moved) } }, ports, {}, ORTHO);
+    expect(shaped.points).toEqual(moved);
+  });
+
+  it("moves a Z's cross run as a segment drag, the way its bow did", () => {
+    const boxes = { a: [0, 0, W, H], b: [400, 300, W, H] };
+    const [plain] = edgeGeometry(pair(), boxes, {}, {}, {}, ORTHO);
+    expect(plain.points).toHaveLength(4);
+    const moved = moveSegment(plain.points, 1, 0, plain.points[1][1] + 30);
+    const [bowed] = edgeGeometry(pair(), boxes, { "a>b": 30 }, {}, {}, ORTHO);
+    expect(moved).toEqual(bowed.points);
+  });
+
+  it("keeps a number bow exactly as before", () => {
+    const boxes = { a: [0, 0, W, H], b: [400, 300, W, H] };
+    const [bowed] = edgeGeometry(pair(), boxes, { "a>b": 30 }, {}, {}, ORTHO);
+    expect(bowed.via).toBeUndefined();
+    expect(bowed.bow).toBe(30);
+    expect(bowed.run).not.toBeNull();
+  });
+
+  it("keeps its waypoints where they are when a box moves", () => {
+    const via = [
+      [63, 140],
+      [300, 140],
+    ];
+    const one = edgeGeometry(
+      pair(),
+      { a: [0, 0, W, H], b: [400, 300, W, H] },
+      { "a>b": { via } },
+      {},
+      {},
+      ORTHO,
+    )[0];
+    const two = edgeGeometry(
+      pair(),
+      { a: [40, 0, W, H], b: [380, 330, W, H] },
+      { "a>b": { via } },
+      {},
+      {},
+      ORTHO,
+    )[0];
+    for (const e of [one, two]) {
+      expect(square(e.points)).toBe(true);
+      for (const p of via) expect(onPath(e.points, p)).toBe(true);
+    }
+  });
+
+  it("is ignored by the curved style", () => {
+    const boxes = { a: [0, 0, W, H], b: [400, 300, W, H] };
+    const curved = { routing: "curved" };
+    const [plain] = edgeGeometry(pair(), boxes, {}, {}, {}, curved);
+    const [withVia] = edgeGeometry(pair(), boxes, { "a>b": { via: [[5, 5]] } }, {}, {}, curved);
+    expect(withVia).toEqual(plain);
+  });
+
+  it("drops the waypoint nearest a point", () => {
+    expect(
+      dropWaypoint(
+        [
+          [0, 0],
+          [100, 0],
+          [100, 100],
+        ],
+        98,
+        3,
+      ),
+    ).toEqual([
+      [0, 0],
+      [100, 100],
+    ]);
+    expect(dropWaypoint([], 0, 0)).toEqual([]);
+  });
+
+  it("carries waypoints through a re-key, in reverse order for a reversed edge", () => {
+    const before = pair();
+    const after = { ...before, edges: [{ ...before.edges[0], from: "b", to: "a" }] };
+    const via = [
+      [1, 2],
+      [3, 4],
+    ];
+    expect(rekeyBows(before, after, { "a>b": { via } }, [0])).toEqual({
+      "b>a": {
+        via: [
+          [3, 4],
+          [1, 2],
+        ],
+      },
+    });
+    expect(rekeyBows(before, before, { "a>b": { via } })).toEqual({ "a>b": { via } });
   });
 });
