@@ -550,6 +550,16 @@ class Parser {
         comment: "",
       };
       const dashCol = ind;
+      // Each further `- ` on this line opens one more compact nested sequence. Count them up
+      // front, reading no more than MAX_DEPTH of them, so a hostile chain is refused before
+      // every level rescans the whole line.
+      let extra = 0;
+      for (let j = dashCol + 1; extra + this.depth <= MAX_DEPTH; extra++) {
+        while (line[j] === " ") j++;
+        if (line[j] !== "-" || (line[j + 1] !== " " && j + 1 < line.length)) break;
+        j++;
+      }
+      if (this.depth + extra > MAX_DEPTH) refuse(next, `nesting deeper than ${MAX_DEPTH} levels`);
       const afterDash = line.slice(dashCol + 1);
       const contentCol = dashCol + 1 + (afterDash.length - afterDash.trimStart().length);
       const content = line.slice(contentCol);
