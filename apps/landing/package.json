@@ -6,6 +6,12 @@
   "description": "Zeema marketing landing page, served standalone on its own port",
   "scripts": {
     "dev": "node server.mjs",
-    "start": "node server.mjs"
+    "start": "node server.mjs",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@zeema/catalogue": "workspace:*",
+    "@zeema/core": "workspace:*",
+    "vitest": "5.0.0"
   }
 }

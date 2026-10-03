@@ -107,6 +107,7 @@ nav .wrap{display:flex;align-items:center;justify-content:space-between;height:6
 .dev{display:grid;grid-template-columns:1fr 1.1fr;gap:56px;align-items:center}
 @media (max-width:900px){.dev{grid-template-columns:1fr;gap:36px}}
 .dev .actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
+#snippet{max-height:440px;overflow:auto}
 .code{background:var(--code-bg);border-radius:14px;overflow:hidden;border:1px solid var(--border);box-shadow:var(--shadow)}
 .code-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #2c2c31;color:#a1a19c;font-size:.85rem}
 .dots{display:flex;gap:6px}.dots i{width:10px;height:10px;border-radius:50%;background:#55555c}
@@ -145,6 +146,8 @@ pre{padding:20px;overflow-x:auto;font-family:"JetBrains Mono",monospace;font-siz
 .panel.active .status{background:#98a6f2;box-shadow:0 0 0 0 rgba(152,166,242,.6);animation:ping 1.4s infinite}
 @keyframes ping{70%{box-shadow:0 0 0 8px rgba(152,166,242,0)}100%{box-shadow:0 0 0 0 rgba(152,166,242,0)}}
 .panel pre{flex:1;padding:18px;font-size:.84rem;white-space:pre}
+/* tall enough for the longer of the two designs, so switching direction does not jump */
+#archCode{min-height:calc(19 * 1.7em + 36px)}
 .term{flex:1;padding:18px;font-family:"JetBrains Mono",monospace;font-size:.82rem;line-height:1.85;color:#ececea}
 .term div{opacity:0;transform:translateY(6px);transition:opacity .35s,transform .35s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .term div.show{opacity:1;transform:none}
@@ -290,9 +293,10 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 
 /* 2 schema */
 .cm-schema{display:grid;grid-template-columns:1.25fr 1fr;height:100%}
-.cm-code{background:var(--code-bg);color:var(--code-text);padding:20px 22px;font-size:.86rem;line-height:1.85;white-space:pre;overflow:hidden}
-.cm-code .k{color:#98a6f2}.cm-code .s{color:#a6e3a1}.cm-code .c{color:#6f6f78}
-.cm-code span.cm-in{display:block}
+.cm-code{background:var(--code-bg);color:var(--code-text);padding:18px 22px;font-size:.8rem;line-height:1.6;white-space:pre;overflow:hidden}
+.cm-code .k{color:#98a6f2}.cm-code .s{color:#a6e3a1}.cm-code .c{color:#6f6f78}.cm-code .n{color:#e2bf78}
+/* one line per span; the newline between spans is the line break, so the text is the YAML */
+.cm-code span.cm-in{display:inline-block}
 .cm-side{padding:20px;display:flex;flex-direction:column;gap:12px}
 .cm-card{border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:.85rem;background:var(--surface)}
 .cm-card h5{font-size:.8rem;font-weight:600;color:var(--muted);margin-bottom:6px}
@@ -302,8 +306,8 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .cm-warn p{color:var(--muted);font-size:.82rem;line-height:1.5}
 
 /* 3 review */
-.cm-review{padding:18px 20px;display:flex;flex-direction:column;gap:12px;height:100%;overflow:hidden}
-.cm-diff{border:1px solid var(--border);border-radius:10px;overflow:hidden;font-size:.8rem;line-height:1.75}
+.cm-review{padding:16px 20px;display:flex;flex-direction:column;gap:10px;height:100%;overflow:hidden}
+.cm-diff{border:1px solid var(--border);border-radius:10px;overflow:hidden;font-size:.76rem;line-height:1.6;flex:none}
 .cm-diff div{padding:0 12px;white-space:pre}
 .cm-diff .add{background:color-mix(in srgb,#2f9e6a 12%,transparent)}
 .cm-diff .add::first-letter{color:#2f9e6a}
@@ -334,10 +338,12 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 
 @media (max-width:640px){
   .cm-tab .fi{width:42px;height:42px}.cm-tabs::before,.cm-tabs::after{top:20px}.cm-tab span{font-size:.78rem}
-  .cm-body{height:430px}
+  .cm-body{height:560px}
+  /* the schema panel stacks the whole design above its findings: let it grow to fit both */
+  #cmp1 .cm-body,#cmp2 .cm-body{height:auto;min-height:560px}
   .cm-node{padding:12px 6px}.cm-node svg{width:24px;height:24px}
   .cm-schema{grid-template-columns:1fr;grid-template-rows:auto 1fr}
-  .cm-code{font-size:.76rem;padding:14px 16px;line-height:1.7}
+  .cm-code{font-size:.72rem;padding:14px 16px;line-height:1.55}
   .cm-side{padding:12px;gap:8px}
   .cm-term{font-size:.74rem;padding:16px}
   .cm-inspect{left:16px;right:auto}.cm-hint{display:none}
@@ -354,16 +360,33 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 }
 
 /* ===== designs, faq, footer ===== */
-.dz{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:44px;text-align:left}
-@media (max-width:820px){.dz{grid-template-columns:1fr}}
-.dz-card{display:grid;gap:4px;padding:16px;border:1px solid var(--border);border-radius:14px;background:var(--surface);transition:border-color .2s,translate .2s}
-.dz-card:hover{border-color:var(--accent);translate:0 -2px}
+.dz{list-style:none;display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:44px;text-align:left}
+@media (max-width:900px){.dz{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:560px){.dz{grid-template-columns:1fr}}
+.dz-item{position:relative}
+.dz-card{display:grid;gap:3px;height:100%;padding:14px 14px 16px;border:1px solid var(--border);border-radius:14px;background:var(--surface);transition:border-color .2s,translate .2s}
+.dz-item:hover .dz-card{border-color:var(--accent);translate:0 -2px}
 .dz-card:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
-.dz-thumb{height:130px;border-radius:10px;margin-bottom:10px;display:grid;place-items:center;color:var(--accent-strong);background:var(--bg) radial-gradient(circle,var(--border) 1px,transparent 1.2px) 0 0/16px 16px}
-.dz-thumb svg{width:70%;max-height:82%;height:auto}
-.dz-new .dz-thumb{color:var(--muted)}
+/* the engine's own SVG of the design, as the browse list shows it */
+.dz-thumb{display:block;aspect-ratio:16/10;border-radius:10px;margin-bottom:10px;overflow:hidden;border:1px solid var(--border);background:var(--bg)}
+/* the top of the drawing at a readable scale; the whole drawing on hover, as browse does */
+.dz-thumb img{display:block;width:100%;height:100%;object-fit:cover;object-position:top center}
+.dz-item:hover .dz-thumb img,.dz-item:focus-within .dz-thumb img{object-fit:contain;object-position:center}
 .dz-card strong{font-size:1.05rem}
-.dz-card span{font-size:.82rem;color:var(--muted)}
+.dz-slug{font-size:.8rem;color:var(--muted)}
+.dz-meta{font-size:.82rem;color:var(--muted);min-height:1.4em}
+.dz-ok{color:#2f9e6a}.dz-warn{color:#b07a14}
+/* the one quick action, a sibling of the card's link (links do not nest), over the drawing */
+.dz-act{position:absolute;right:24px;top:24px;font-size:.78rem;font-weight:600;padding:4px 11px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--accent-strong);box-shadow:var(--shadow);opacity:0;transition:opacity .2s,translate .2s,border-color .2s}
+.dz-item:hover .dz-act,.dz-act:focus-visible{opacity:1;translate:0 -2px}
+.dz-act:hover,.dz-act:focus-visible{border-color:var(--accent)}
+@media (hover:none){.dz-act{opacity:1}}
+.dz-more{display:flex;gap:20px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:32px}
+.dz-more .more{margin-top:0}
+a.inline{color:var(--accent-strong);font-weight:600}
+a.inline:hover{text-decoration:underline}
+a.int{color:inherit}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .dz-ok{color:#6fc28f}:root:not([data-theme="light"]) .dz-warn{color:#e2bf78}}
 .faq{max-width:760px}
 .faq h2{margin-bottom:28px}
 .faq details{border-bottom:1px solid var(--border)}
@@ -381,12 +404,12 @@ code{white-space:nowrap;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
 .ft-links a:hover{color:var(--text)}
 </style>
 </head>
-<body __processed_50c76b34-e527-4ed6-8472-f28ac13875c2__="true">
+<body>
 <a class="skip" href="#main">Skip to main content</a>
 
 <nav>
   <div class="wrap">
-    <a class="logo" href="#">
+    <a class="logo" href="/">
       <span class="logo-mark"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="30" height="30"><rect width="24" height="24" rx="5" fill="#3f4fc4"></rect><g fill="none" stroke="#ffffff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M7.3 5C5.9 5 5.6 5.8 5.6 7.1V10.2C5.6 11.3 4.9 11.9 3.6 12C4.9 12.1 5.6 12.7 5.6 13.8V16.9C5.6 18.2 5.9 19 7.3 19"></path><path d="M16.7 5C18.1 5 18.4 5.8 18.4 7.1V10.2C18.4 11.3 19.1 11.9 20.4 12C19.1 12.1 18.4 12.7 18.4 13.8V16.9C18.4 18.2 18.1 19 16.7 19"></path><path d="M8.9 8.1H15.1L8.9 15.9H15.1"></path></g></svg></span>
       Zeema
     </a>
@@ -396,7 +419,8 @@ code{white-space:nowrap;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
       <a href="#agents">Agents</a>
       <a href="#developers">Schema</a>
       <a href="#faq">FAQ</a>
-      <a href="#">Docs</a>
+      <a href="__CANVAS_URL__/catalogue">Catalogue</a>
+      <a href="__CANVAS_URL__/docs">Docs</a>
     </div>
     <div class="nav-cta">
       <a class="btn btn-ghost nav-gh" href="https://github.com/MohamedEbrahimMohsen/zeema" target="_blank" rel="noopener noreferrer" aria-label="Star Zeema on GitHub"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg><span>Star</span></a>
@@ -426,6 +450,14 @@ code{white-space:nowrap;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
     </div>
   </header>
 
+  <section class="stats" aria-label="The catalogue">
+    <div class="wrap stats-grid">
+      <a class="stat" href="__CANVAS_URL__/catalogue"><b data-stat="components">2,156</b><span>components across <span data-stat="providers">12</span> providers</span></a>
+      <a class="stat" href="__CANVAS_URL__/catalogue"><b data-stat="kinds">72</b><span>kinds, from queue to CDN</span></a>
+      <a class="stat" href="__CANVAS_URL__/catalogue/rules"><b data-stat="rules">38</b><span>rules that read every design</span></a>
+    </div>
+  </section>
+
   <section id="commit" class="cm">
     <div class="wrap">
       <div class="cm-head">
@@ -436,39 +468,60 @@ code{white-space:nowrap;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
 
       <div class="cm-stage">
         <div class="cm-panel play" role="tabpanel" id="cmp0" aria-labelledby="cmt0">
-          <div class="cm-bar"><span class="dots"><i></i><i></i><i></i></span><b>arkore-public</b><em>canvas</em></div>
+          <div class="cm-bar"><span class="dots"><i></i><i></i><i></i></span><b>stripe-payments</b><em>canvas</em></div>
           <div class="cm-body cm-canvas">
-            <div class="cm-node cm-n1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2.5 5 13.5h6l-1 8 8-11h-6z"/></svg><strong>Azure Functions</strong><small class="mono">azure-functions</small></div>
-            <div class="cm-node cm-n2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5.5" rx="7.5" ry="2.8"/><path d="M4.5 5.5v13c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8v-13"/><path d="M4.5 12c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8"/></svg><strong>Azure Data Explorer</strong><small class="mono">azure-data-explorer</small></div>
+            <div class="cm-node cm-n1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4" width="17" height="6" rx="1.5"/><rect x="3.5" y="14" width="17" height="6" rx="1.5"/><path d="M7 7h.01M7 17h.01"/></svg><strong>Payment service</strong><small class="mono">container-service</small></div>
+            <div class="cm-node cm-n2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19M6.5 15h4"/></svg><strong>Card network</strong><small class="mono">card-network</small></div>
             <div class="cm-edge"></div>
-            <div class="cm-edge-lab mono cm-in" style="--d:2s">Sync</div>
+            <div class="cm-edge-lab mono cm-in" style="--d:2s">https · sync</div>
             <div class="cm-cursor"><svg viewBox="0 0 24 24" fill="currentColor" stroke="var(--surface)" stroke-width="1.5" stroke-linejoin="round"><path d="M4 3l15 7.5-6.5 1.7L9.5 19z"/></svg></div>
-            <div class="cm-inspect cm-in" style="--d:2.3s"><span>Edge</span><b class="mono">functions → explorer</b><span>Protocol</span><b class="mono">http</b><span>Mode</span><b class="mono">sync</b></div>
+            <div class="cm-inspect cm-in" style="--d:2.3s"><span>Edge</span><b class="mono">payment-service → card-network</b><span>Protocol</span><b class="mono">https</b><span>Mode</span><b class="mono">sync</b></div>
             <div class="cm-hint cm-in" style="--d:.2s">Drag from one node to another</div>
           </div>
         </div>
 
         <div class="cm-panel" role="tabpanel" id="cmp1" aria-labelledby="cmt1" hidden>
-          <div class="cm-bar"><span class="dots"><i></i><i></i><i></i></span><b>arkore-public.zeema.yaml</b><em>generated from canvas</em></div>
+          <div class="cm-bar"><span class="dots"><i></i><i></i><i></i></span><b>stripe-payments.zeema.yaml</b><em>written by the canvas</em></div>
           <div class="cm-body">
             <div class="cm-schema">
-<div class="cm-code mono"><span class="cm-in" style="--d:0s"><span class="c"># same edge, now as data</span></span><span class="cm-in" style="--d:0.25s"><span class="k">edges</span>:</span><span class="cm-in" style="--d:0.5s">  - <span class="k">from</span>: <span class="s">azure-functions</span></span><span class="cm-in" style="--d:0.75s">    <span class="k">to</span>: <span class="s">azure-data-explorer</span></span><span class="cm-in" style="--d:1s">    <span class="k">protocol</span>: <span class="s">http</span></span><span class="cm-in" style="--d:1.25s">    <span class="k">mode</span>: <span class="s">sync</span></span><span class="cm-in" style="--d:1.5s">    <span class="k">label</span>: <span class="s">Sync</span></span></div>
+<div class="cm-code mono" id="cmSchemaYaml" data-yaml data-rules="external-call-inline-without-durable-path money-mutation-without-idempotency-key"><span class="cm-in" style="--d:0.00s"><span class="k">schemaVersion</span>: <span class="s">"1"</span></span>
+<span class="cm-in" style="--d:0.12s"><span class="k">type</span>: <span class="s">"design"</span></span>
+<span class="cm-in" style="--d:0.24s"><span class="k">id</span>: <span class="s">"stripe-payments"</span></span>
+<span class="cm-in" style="--d:0.36s"><span class="k">requirements</span>:</span>
+<span class="cm-in" style="--d:0.48s">  <span class="k">correctness</span>: { <span class="k">exactlyOnceEffect</span>: <span class="n">true</span> }</span>
+<span class="cm-in" style="--d:0.60s"><span class="k">nodes</span>:</span>
+<span class="cm-in" style="--d:0.72s">  - <span class="k">id</span>: <span class="s">"payment-service"</span></span>
+<span class="cm-in" style="--d:0.84s">    <span class="k">component</span>: <span class="s">"container-service"</span></span>
+<span class="cm-in" style="--d:0.96s">  - <span class="k">id</span>: <span class="s">"card-network"</span></span>
+<span class="cm-in" style="--d:1.08s">    <span class="k">component</span>: <span class="s">"card-network"</span></span>
+<span class="cm-in" style="--d:1.20s"><span class="k">edges</span>:</span>
+<span class="cm-in" style="--d:1.32s">  - <span class="k">from</span>: <span class="s">"payment-service"</span></span>
+<span class="cm-in" style="--d:1.44s">    <span class="k">to</span>: <span class="s">"card-network"</span></span>
+<span class="cm-in" style="--d:1.56s">    <span class="k">protocol</span>: <span class="s">"https"</span></span>
+<span class="cm-in" style="--d:1.68s">    <span class="k">mode</span>: <span class="s">"sync"</span></span></div>
               <div class="cm-side">
-                <div class="cm-card cm-in" style="--d:1.9s"><h5>Schema check</h5><div class="cm-ok">✓ 2 components, 1 edge</div><div class="cm-ok">✓ Required fields set</div></div>
-                <div class="cm-card cm-warn cm-in" style="--d:2.6s"><h5>1 warning</h5><strong>Credentials without rotation</strong><p>This design holds data but declares no credential rotation period.</p></div>
+                <div class="cm-card cm-in" style="--d:2s"><h5>Structure</h5><div class="cm-ok">✓ 2 nodes, 1 edge</div><div class="cm-ok">✓ Valid against the schema</div></div>
+                <div class="cm-card cm-warn cm-in" style="--d:2.5s"><h5>Error · rule</h5><strong>Money mutation without idempotency key</strong><p>The edge moves money but is not idempotent, and the design requires exactly-once effect.</p></div>
+                <div class="cm-card cm-warn cm-in" style="--d:3s"><h5>Warning · rule</h5><strong>Inline external call without durable fallback</strong></div>
               </div>
             </div>
           </div>
         </div>
 
         <div class="cm-panel" role="tabpanel" id="cmp2" aria-labelledby="cmt2" hidden>
-          <div class="cm-bar"><span class="dots"><i></i><i></i><i></i></span><b>Review</b><em>feat/sync-edge</em></div>
+          <div class="cm-bar"><span class="dots"><i></i><i></i><i></i></span><b>Review</b><em>feat/card-authorisation</em></div>
           <div class="cm-body">
             <div class="cm-review">
-              <div class="cm-diff mono cm-in" style="--d:0s"><div class="add">+ - from: azure-functions</div><div class="add">+   to: azure-data-explorer</div><div class="add">+   mode: sync</div></div>
-              <div class="cm-cmt cm-in" style="--d:.9s"><span class="cm-av">OA</span><div class="cm-bubble"><b>Omar <small>architect</small></b><p>Why sync here? Ingestion could be async.</p></div></div>
-              <div class="cm-cmt cm-in" style="--d:2s"><span class="cm-av bot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="8" width="15" height="11" rx="3"/><path d="M12 8V4.5"/><circle cx="9.3" cy="13.2" r="1" fill="currentColor"/><circle cx="14.7" cy="13.2" r="1" fill="currentColor"/></svg></span><div class="cm-bubble"><b>Review agent <small>AI</small></b><p>This sync edge has no timeout or retry policy. Suggested change:</p><div class="cm-sugg mono">+   timeout_ms: 3000
-+   retry_policy: exponential</div></div></div>
+              <div class="cm-diff mono cm-in" style="--d:0s" data-yaml data-yaml-base="cmSchemaYaml">
+<div>edges:</div>
+<div class="add">+ - from: "payment-service"</div>
+<div class="add">+   to: "card-network"</div>
+<div class="add">+   protocol: "https"</div>
+<div class="add">+   mode: "sync"</div>
+</div>
+              <div class="cm-cmt cm-in" style="--d:.9s"><span class="cm-av">OA</span><div class="cm-bubble"><b>Omar <small>architect</small></b><p>Authorisation has to be sync. What happens when it is retried?</p></div></div>
+              <div class="cm-cmt cm-in" style="--d:2s"><span class="cm-av bot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="8" width="15" height="11" rx="3"/><path d="M12 8V4.5"/><circle cx="9.3" cy="13.2" r="1" fill="currentColor"/><circle cx="14.7" cy="13.2" r="1" fill="currentColor"/></svg></span><div class="cm-bubble"><b>Review agent <small>AI</small></b><p>A retry could charge twice: the edge moves money with no idempotency key. Suggested change:</p><div class="cm-sugg mono" data-yaml data-yaml-base="cmSchemaYaml" data-yaml-edge="payment-service&gt;card-network" data-rules="external-call-inline-without-durable-path">+   timeoutMs: 800
++   idempotent: true</div></div></div>
               <span class="cm-applied cm-in" style="--d:3.2s">✓ Suggestion applied</span>
             </div>
           </div>
@@ -478,10 +531,10 @@ code{white-space:nowrap;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
           <div class="cm-bar"><span class="dots"><i></i><i></i><i></i></span><b>terminal</b><em class="cm-rec" id="cmRec">REC 00:00</em></div>
           <div class="cm-body">
             <div class="cm-term mono">
-              <div class="cm-in" style="--d:0s"><span class="d">$</span> git commit -m "Add sync edge: functions → explorer"</div>
-              <div class="cm-in" style="--d:.8s"><span class="d">$</span> git push origin feat/sync-edge</div>
+              <div class="cm-in" style="--d:0s"><span class="d">$</span> git commit -m "Authorise cards through an idempotent edge"</div>
+              <div class="cm-in" style="--d:.8s"><span class="d">$</span> git push origin feat/card-authorisation</div>
               <div class="cm-in d" style="--d:1.6s">  pushing 1 file to origin…</div>
-              <div class="cm-in" style="--d:2.6s"><span class="ok">✓</span> zeema validate: 0 errors, <span class="w">1 warning</span></div>
+              <div class="cm-in" style="--d:2.6s"><span class="ok">✓</span> zeema lint: 1 file: 0 errors, <span class="w">1 warning</span>, 0 info</div>
               <div class="cm-in" style="--d:3.3s"><span class="ok">✓</span> Pull request #42 opened</div>
               <div class="cm-in" style="--d:4s"><span class="ok">✓</span> Approved by 1 human, 1 agent</div>
               <div class="cm-in" style="--d:4.7s"><span class="ok">✓</span> Merged into main</div>
@@ -500,9 +553,12 @@ code{white-space:nowrap;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
       <h2>Draw it once. Get data for free.</h2>
       <p class="lead">The canvas is only the input. What you keep is a typed design that tools, rules, and agents can all read.</p>
       <div class="grid3">
-        <div class="card"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/></svg></div><h3>A canvas that writes YAML</h3><p>Drag components, connect them, fill in the edge. Every change on the canvas is a change in the file.</p></div>
-        <div class="card"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4" width="7" height="7" rx="1.5"/><rect x="13.5" y="4" width="7" height="7" rx="1.5"/><rect x="3.5" y="14" width="7" height="7" rx="1.5"/><path d="M13.5 17.5h7M17 14v7"/></svg></div><h3>A typed catalog</h3><p>Components come with a kind, like <code>worker</code>, <code>object-store</code>, or <code>timeseries-database</code>, so a design means the same thing to everyone who reads it.</p></div>
-        <div class="card"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 20 7v5.5c0 4.3-3.3 7.4-8 8.5-4.7-1.1-8-4.2-8-8.5V7z"/><path d="M12 9v4M12 16h.01"/></svg></div><h3>Findings before production</h3><p>Rules read the design and flag risk early: credentials without rotation, sync calls with no timeout, edges with no retry policy.</p></div>
+        <div class="card"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/></svg></div><h3>A canvas that writes YAML</h3><p>Place, connect, set the contract; every change lands in the file.</p></div>
+        <div class="card"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4" width="7" height="7" rx="1.5"/><rect x="13.5" y="4" width="7" height="7" rx="1.5"/><rect x="3.5" y="14" width="7" height="7" rx="1.5"/><path d="M13.5 17.5h7M17 14v7"/></svg></div><h3>A typed catalogue</h3><p><a class="inline" href="__CANVAS_URL__/catalogue"><span data-stat="components">2,156</span> components</a> across AWS, Azure, GCP, Cloudflare, Kubernetes and more.</p></div>
+        <div class="card"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 20 7v5.5c0 4.3-3.3 7.4-8 8.5-4.7-1.1-8-4.2-8-8.5V7z"/><path d="M12 9v4M12 16h.01"/></svg></div><h3>Findings before production</h3><p><a class="inline" href="__CANVAS_URL__/catalogue/rules"><span data-stat="rules">38</span> rules</a> flag risk early; they advise, never block.</p></div>
+        <div class="card"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3.5" width="18" height="17" rx="2.5" stroke-dasharray="3 2.4"/><rect x="6.5" y="7.5" width="5" height="4" rx="1"/><path d="M11.5 9.5h3v6h2.5"/></svg></div><h3>Groups, notes, tidy edges</h3><p>Regions and zones with tints, pinned notes, right-angle routing.</p></div>
+        <div class="card"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg></div><h3>Clone, edit, publish</h3><p>Clone any public design; readers see the last release until you publish.</p></div>
+        <div class="card"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5h16M4 12h16M4 17.5h10"/></svg></div><h3>Real systems to start from</h3><p>Netflix, Stripe, Uber, YouTube, drawn and checked by the same engine.</p></div>
       </div>
     </div>
   </section>
@@ -513,12 +569,13 @@ code{white-space:nowrap;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
       <p class="lead">Plain files and an open schema, so it works with the tools you already use.</p>
       <div class="integrations">
         <div class="int"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="9" r="3"></circle><path d="M6 9v6M18 12c0 3-3 4-9 5"></path></svg></div><div><strong>Git</strong><span>Version &amp; review in PRs</span></div></div>
-        <div class="int"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 18 6-6-6-6M8 6l-6 6 6 6"></path></svg></div><div><strong>Your editor</strong><span>Autocomplete via JSON Schema</span></div></div>
-        <div class="int"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"></path><path d="M21 3v5h-5"></path></svg></div><div><strong>CI / CD</strong><span>Validate on every commit</span></div></div>
-        <div class="int"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V2H6.5A2.5 2.5 0 0 0 4 4.5z"></path></svg></div><div><strong>Docs</strong><span>Generate Markdown pages</span></div></div>
-        <div class="int"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="2"></circle><circle cx="19" cy="5" r="2"></circle><circle cx="19" cy="19" r="2"></circle><path d="M7 12h5l5-6M12 12l5 6"></path></svg></div><div><strong>Diagrams</strong><span>Render views from the data</span></div></div>
-        <div class="int"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17 10 11 4 5M12 19h8"></path></svg></div><div><strong>CLI</strong><span>Query &amp; lint locally</span></div></div>
+        <a class="int" href="__CANVAS_URL__/docs/cli"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 18 6-6-6-6M8 6l-6 6 6 6"></path></svg></div><div><strong>Your editor</strong><span>JSON Schema autocomplete, set up by <code>zeema init</code></span></div></a>
+        <a class="int" href="__CANVAS_URL__/docs/cli"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"></path><path d="M21 3v5h-5"></path></svg></div><div><strong>CI</strong><span><code>zeema lint</code> on every commit, with SARIF output</span></div></a>
+        <a class="int" href="__CANVAS_URL__/docs/cli"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="2"></circle><circle cx="19" cy="5" r="2"></circle><circle cx="19" cy="19" r="2"></circle><path d="M7 12h5l5-6M12 12l5 6"></path></svg></div><div><strong>Diagrams</strong><span>SVG or Mermaid from <code>zeema render</code></span></div></a>
+        <a class="int" href="__CANVAS_URL__/docs/notes-and-layout"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5"></path><path d="M4 17v2.5h16V17"></path></svg></div><div><strong>Import &amp; export</strong><span>A zip of the YAML and its layout, out and back in</span></div></a>
+        <a class="int" href="__CANVAS_URL__/docs/cli"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17 10 11 4 5M12 19h8"></path></svg></div><div><strong>CLI</strong><span>Search the catalogue with <code>zeema catalogue find</code></span></div></a>
       </div>
+      <a class="more" href="__CANVAS_URL__/docs/cli">Read the CLI reference →</a>
     </div>
   </section>
 
@@ -527,27 +584,28 @@ code{white-space:nowrap;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
       <div>
         <span class="eyebrow">For Developers</span>
         <h2>This is the whole design</h2>
-        <p class="lead">One YAML file, checked against the public Zeema schema. Components, the edges between them, and each edge&#39;s contract, all readable by people, CI, and agents.</p>
+        <p class="lead">One YAML file, checked against the Zeema JSON Schema. Each node names a catalogue component, which brings its kind; each edge carries its contract. People, CI and agents all read the same file.</p>
         <div class="actions">
-          <a class="btn btn-primary" href="#">Read the schema</a>
+          <a class="btn btn-primary" href="__CANVAS_URL__/docs/writing-a-design">Read the schema</a>
           <a class="btn btn-ghost" href="#designs">View examples</a>
         </div>
       </div>
       <div class="code">
-        <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span>designs/arkore-public.zeema.yaml</span><button class="copy" id="copyBtn">Copy</button></div>
-<pre id="snippet"><span class="c"># the canvas reads and writes this file</span>
-<span class="k">components</span>:
-  - <span class="k">id</span>: <span class="s">azure-functions</span>
-    <span class="k">kind</span>: <span class="s">worker</span>
-  - <span class="k">id</span>: <span class="s">azure-data-explorer</span>
-    <span class="k">kind</span>: <span class="s">timeseries-database</span>
+        <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span>architecture/uber-dispatch.zeema.yaml</span><button class="copy" id="copyBtn">Copy</button></div>
+<pre id="snippet" data-yaml data-rules=""><span class="k">schemaVersion</span>: <span class="s">"1"</span>
+<span class="k">type</span>: <span class="s">"design"</span>
+<span class="k">id</span>: <span class="s">"uber-dispatch"</span>
+<span class="k">nodes</span>:
+  - <span class="k">id</span>: <span class="s">"rtapi"</span>
+    <span class="k">component</span>: <span class="s">"websocket-gateway"</span>
+  - <span class="k">id</span>: <span class="s">"dispatch"</span>
+    <span class="k">component</span>: <span class="s">"container-service"</span>
 <span class="k">edges</span>:
-  - <span class="k">from</span>: <span class="s">azure-functions</span>
-    <span class="k">to</span>: <span class="s">azure-data-explorer</span>
-    <span class="k">protocol</span>: <span class="s">http</span>
-    <span class="k">mode</span>: <span class="s">sync</span>
-    <span class="k">timeout_ms</span>: <span class="n">3000</span>
-    <span class="k">retry_policy</span>: <span class="s">exponential</span></pre>
+  - <span class="k">from</span>: <span class="s">"rtapi"</span>
+    <span class="k">to</span>: <span class="s">"dispatch"</span>
+    <span class="k">protocol</span>: <span class="s">"tchannel"</span>
+    <span class="k">mode</span>: <span class="s">"sync"</span>
+    <span class="k">timeoutMs</span>: <span class="n">500</span></pre>
       </div>
     </div>
   </section>
@@ -569,17 +627,21 @@ code{white-space:nowrap;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
           <div class="panel-head">
             <span class="avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 3 21h18L12 3z"></path><path d="M7.5 14h9"></path></svg></span>
             Architect <span class="status"></span>
-            <small id="archFile">checkout.zeema.yaml</small>
+            <small id="archFile">uber-dispatch.zeema.yaml</small>
           </div>
-          <pre id="archCode"><span class="k">components</span>:
-  - <span class="k">id</span>: <span class="s">payment-service</span>
-    <span class="k">kind</span>: <span class="s">worker</span>
-  - <span class="k">id</span>: <span class="s">payments-db</span>
-    <span class="k">kind</span>: <span class="s">sql-database</span>
+          <pre id="archCode" data-yaml><span class="k">schemaVersion</span>: <span class="s">"1"</span>
+<span class="k">type</span>: <span class="s">"design"</span>
+<span class="k">id</span>: <span class="s">"uber-dispatch"</span>
+<span class="k">nodes</span>:
+  - <span class="k">id</span>: <span class="s">"dispatch"</span>
+    <span class="k">component</span>: <span class="s">"container-service"</span>
+  - <span class="k">id</span>: <span class="s">"geo-index"</span>
+    <span class="k">component</span>: <span class="s">"geo-cell-index"</span>
 <span class="k">edges</span>:
-  - <span class="k">from</span>: <span class="s">payment-service</span>
-    <span class="k">to</span>: <span class="s">payments-db</span>
-    <span class="k">mode</span>: <span class="s">sync</span></pre>
+  - <span class="k">from</span>: <span class="s">"dispatch"</span>
+    <span class="k">to</span>: <span class="s">"geo-index"</span>
+    <span class="k">protocol</span>: <span class="s">"tchannel"</span>
+    <span class="k">mode</span>: <span class="s">"sync"</span></pre>
           <div class="panel-foot" id="archFoot"><span class="chip show">Committed</span></div>
         </div>
 
@@ -594,12 +656,51 @@ code{white-space:nowrap;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
           <div class="panel-head">
             <span class="avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="3"></rect><path d="M12 4v4M9 14h.01M15 14h.01"></path></svg></span>
             AI Agent <span class="status"></span>
-            <small>zeema-mcp</small>
+            <small>any coding agent</small>
           </div>
-          <div class="term" id="term"><div class="dim">$ agent run "build payment-service"</div><div class="">▸ loading zeema schema…</div><div class="ok">✓ 14 components, 21 edges</div><div class="">▸ resolving payment-service contract</div><div class="add">+ src/PaymentService (dotnet)</div><div class="add">+ client: payments-db (sync)</div><div class="ok">✓ validated against architecture</div></div>
+          <div class="term" id="term"><div class="dim">$ agent run "implement dispatch"</div><div>▸ reading uber-dispatch.zeema.yaml</div><div class="ok">✓ 2 nodes, 1 edge, valid against the schema</div><div>▸ contract: dispatch → geo-index, tchannel, sync</div><div class="add">+ services/dispatch/geo-index-client.js</div><div class="add">+ test: dispatch calls geo-index synchronously</div><div class="ok">✓ code matches the design</div></div>
           <div class="panel-foot" id="agentFoot"></div>
         </div>
       </div>
+
+      <!-- What the architect panel types in each direction. A line starting "+ " is a proposed
+           addition: it is drawn highlighted, and the "+" stands in for two spaces of indent. -->
+<script type="text/yaml" id="yamlA2G" data-yaml>
+schemaVersion: "1"
+type: "design"
+id: "uber-dispatch"
+nodes:
+  - id: "dispatch"
+    component: "container-service"
+  - id: "geo-index"
+    component: "geo-cell-index"
+edges:
+  - from: "dispatch"
+    to: "geo-index"
+    protocol: "tchannel"
+    mode: "sync"
+</script>
+<script type="text/yaml" id="yamlG2A" data-yaml>
+schemaVersion: "1"
+type: "design"
+id: "uber-dispatch"
+nodes:
+  - id: "dispatch"
+    component: "container-service"
+  - id: "geo-index"
+    component: "geo-cell-index"
++ - id: "redis-cache"
++   component: "redis"
+edges:
+  - from: "dispatch"
+    to: "geo-index"
+    protocol: "tchannel"
+    mode: "sync"
++ - from: "dispatch"
++   to: "redis-cache"
++   protocol: "redis"
++   mode: "sync"
+</script>
 
       <div class="steps" id="steps">
         <div class="step"><b>1</b><h4 id="s1t">Design as data</h4><p id="s1p">You define the design once, in one YAML file.</p></div>
@@ -613,11 +714,19 @@ code{white-space:nowrap;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
   <section id="designs" class="alt">
     <div class="wrap center">
       <h2>Open a real design</h2>
-      <p class="lead">Public designs open read-only. Poke around, then sign in to clone one and make it yours.</p>
-      <div class="dz">
-        <a class="dz-card" href="__CANVAS_URL__/d/mohamedebrahimmohsen/arkore-public/canvas" target="_blank" rel="noopener noreferrer"><div class="dz-thumb"><svg viewBox="0 0 200 110" fill="none" stroke="currentColor" stroke-width="2"><rect x="12" y="40" width="46" height="30" rx="6"/><rect x="142" y="40" width="46" height="30" rx="6"/><path d="M58 55h80" /><path d="m132 50 6 5-6 5"/></svg></div><strong>Arkore</strong><span class="mono">mohamedebrahimmohsen/arkore-public</span></a>
-        <a class="dz-card" href="__CANVAS_URL__/d/zeema/youtube/canvas" target="_blank" rel="noopener noreferrer"><div class="dz-thumb"><svg viewBox="0 0 200 110" fill="none" stroke="currentColor" stroke-width="2"><rect x="10" y="12" width="40" height="24" rx="5"/><rect x="80" y="12" width="40" height="24" rx="5"/><rect x="150" y="12" width="40" height="24" rx="5"/><rect x="45" y="74" width="40" height="24" rx="5"/><rect x="115" y="74" width="40" height="24" rx="5"/><path d="M50 24h30M120 24h30M100 36l-35 38M100 36l35 38"/></svg></div><strong>YouTube</strong><span class="mono">zeema/youtube</span></a>
-        <a class="dz-card dz-new" href="__CANVAS_URL__" target="_blank" rel="noopener noreferrer"><div class="dz-thumb"><svg viewBox="0 0 200 110" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="5 5"><rect x="20" y="20" width="160" height="70" rx="10"/><path d="M100 42v26M87 55h26" stroke-dasharray="none"/></svg></div><strong>Start blank</strong><span>Empty canvas, full catalog</span></a>
+      <p class="lead">Public designs open read-only. Poke around, then sign in to clone one and make it yours. Every drawing below is the engine's own render of the design.</p>
+      <!-- Counts are filled in by server.mjs from the app's design list; without it they stay empty. -->
+      <ul class="dz">
+        <li class="dz-item"><a class="dz-card" href="__CANVAS_URL__/d/zeema/youtube" target="_blank" rel="noopener noreferrer"><span class="dz-thumb"><picture><source media="(prefers-color-scheme: dark)" srcset="__CANVAS_URL__/api/v1/designs/zeema/youtube/thumb?theme=dark"><img src="__CANVAS_URL__/api/v1/designs/zeema/youtube/thumb?theme=light" alt="The YouTube design" width="352" height="220" loading="lazy" decoding="async"></picture></span><strong>YouTube</strong><span class="dz-slug mono">zeema/youtube</span><span class="dz-meta" data-counts="youtube"></span></a><a class="dz-act" href="__CANVAS_URL__/d/zeema/youtube/canvas" target="_blank" rel="noopener noreferrer" aria-label="Open YouTube in canvas">Open in canvas</a></li>
+        <li class="dz-item"><a class="dz-card" href="__CANVAS_URL__/d/zeema/netflix-streaming" target="_blank" rel="noopener noreferrer"><span class="dz-thumb"><picture><source media="(prefers-color-scheme: dark)" srcset="__CANVAS_URL__/api/v1/designs/zeema/netflix-streaming/thumb?theme=dark"><img src="__CANVAS_URL__/api/v1/designs/zeema/netflix-streaming/thumb?theme=light" alt="The Netflix streaming design" width="352" height="220" loading="lazy" decoding="async"></picture></span><strong>Netflix streaming</strong><span class="dz-slug mono">zeema/netflix-streaming</span><span class="dz-meta" data-counts="netflix-streaming"></span></a><a class="dz-act" href="__CANVAS_URL__/d/zeema/netflix-streaming/canvas" target="_blank" rel="noopener noreferrer" aria-label="Open Netflix streaming in canvas">Open in canvas</a></li>
+        <li class="dz-item"><a class="dz-card" href="__CANVAS_URL__/d/zeema/uber-dispatch" target="_blank" rel="noopener noreferrer"><span class="dz-thumb"><picture><source media="(prefers-color-scheme: dark)" srcset="__CANVAS_URL__/api/v1/designs/zeema/uber-dispatch/thumb?theme=dark"><img src="__CANVAS_URL__/api/v1/designs/zeema/uber-dispatch/thumb?theme=light" alt="The Uber dispatch design" width="352" height="220" loading="lazy" decoding="async"></picture></span><strong>Uber dispatch</strong><span class="dz-slug mono">zeema/uber-dispatch</span><span class="dz-meta" data-counts="uber-dispatch"></span></a><a class="dz-act" href="__CANVAS_URL__/d/zeema/uber-dispatch/canvas" target="_blank" rel="noopener noreferrer" aria-label="Open Uber dispatch in canvas">Open in canvas</a></li>
+        <li class="dz-item"><a class="dz-card" href="__CANVAS_URL__/d/zeema/whatsapp-messaging" target="_blank" rel="noopener noreferrer"><span class="dz-thumb"><picture><source media="(prefers-color-scheme: dark)" srcset="__CANVAS_URL__/api/v1/designs/zeema/whatsapp-messaging/thumb?theme=dark"><img src="__CANVAS_URL__/api/v1/designs/zeema/whatsapp-messaging/thumb?theme=light" alt="The WhatsApp messaging design" width="352" height="220" loading="lazy" decoding="async"></picture></span><strong>WhatsApp messaging</strong><span class="dz-slug mono">zeema/whatsapp-messaging</span><span class="dz-meta" data-counts="whatsapp-messaging"></span></a><a class="dz-act" href="__CANVAS_URL__/d/zeema/whatsapp-messaging/canvas" target="_blank" rel="noopener noreferrer" aria-label="Open WhatsApp messaging in canvas">Open in canvas</a></li>
+        <li class="dz-item"><a class="dz-card" href="__CANVAS_URL__/d/zeema/stripe-payments" target="_blank" rel="noopener noreferrer"><span class="dz-thumb"><picture><source media="(prefers-color-scheme: dark)" srcset="__CANVAS_URL__/api/v1/designs/zeema/stripe-payments/thumb?theme=dark"><img src="__CANVAS_URL__/api/v1/designs/zeema/stripe-payments/thumb?theme=light" alt="The Stripe payments design" width="352" height="220" loading="lazy" decoding="async"></picture></span><strong>Stripe payments</strong><span class="dz-slug mono">zeema/stripe-payments</span><span class="dz-meta" data-counts="stripe-payments"></span></a><a class="dz-act" href="__CANVAS_URL__/d/zeema/stripe-payments/canvas" target="_blank" rel="noopener noreferrer" aria-label="Open Stripe payments in canvas">Open in canvas</a></li>
+        <li class="dz-item"><a class="dz-card" href="__CANVAS_URL__/d/zeema/spotify-playback" target="_blank" rel="noopener noreferrer"><span class="dz-thumb"><picture><source media="(prefers-color-scheme: dark)" srcset="__CANVAS_URL__/api/v1/designs/zeema/spotify-playback/thumb?theme=dark"><img src="__CANVAS_URL__/api/v1/designs/zeema/spotify-playback/thumb?theme=light" alt="The Spotify playback design" width="352" height="220" loading="lazy" decoding="async"></picture></span><strong>Spotify playback</strong><span class="dz-slug mono">zeema/spotify-playback</span><span class="dz-meta" data-counts="spotify-playback"></span></a><a class="dz-act" href="__CANVAS_URL__/d/zeema/spotify-playback/canvas" target="_blank" rel="noopener noreferrer" aria-label="Open Spotify playback in canvas">Open in canvas</a></li>
+      </ul>
+      <div class="dz-more">
+        <a class="btn btn-ghost" href="__CANVAS_URL__/new" target="_blank" rel="noopener noreferrer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg> Start blank</a>
+        <a class="more" href="__CANVAS_URL__/" target="_blank" rel="noopener noreferrer">Browse all designs →</a>
       </div>
     </div>
   </section>
@@ -625,12 +734,12 @@ code{white-space:nowrap;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
   <section id="faq">
     <div class="wrap faq">
       <h2 class="center">Questions developers ask</h2>
-      <details><summary>How is this different from Mermaid, PlantUML, or Structurizr?</summary><p>Diagram-as-code tools describe a picture: boxes, arrows, layout. Zeema describes the system itself. Components have a kind, edges carry a contract (protocol, mode, timeout, retry policy), and rules check the design. Diagrams become one view you render from the data.</p></details>
-      <details><summary>Is it free?</summary><p>Yes. The schema is open and the canvas is free to use.</p></details>
-      <details><summary>Do I need an account?</summary><p>Not to explore. Public designs open read-only. Sign in when you want to clone a design and keep your edits.</p></details>
-      <details><summary>Where does my design live?</summary><p>In your repo, as a YAML file next to your code. You review changes to it in pull requests, like any other file.</p></details>
-      <details><summary>Which AI agents can use it?</summary><p>Any agent that can read a file. The design is plain YAML with a public schema, so coding agents can load it as context, check their work against it, and propose changes as diffs.</p></details>
-      <details><summary>Is it only for Azure?</summary><p>No. Components are typed by kind, like <code>worker</code> or <code>object-store</code>, not by vendor. The catalog is where vendor services map to those kinds.</p></details>
+      <details><summary>How is this different from Mermaid, PlantUML, or Structurizr?</summary><p>Diagram-as-code tools describe a picture: boxes, arrows, layout. Zeema describes the system itself. Every node is a catalogue component with a kind, edges carry a contract (protocol, mode, timeout, retry policy, idempotency), and rules check the design. Diagrams are one view of the data: the canvas draws it, and <code>zeema render</code> exports SVG or Mermaid.</p></details>
+      <details><summary>Is it free?</summary><p>Yes. The schema, the engine and the CLI are open source, and the canvas is free to use.</p></details>
+      <details><summary>Do I need an account?</summary><p>Not to explore. Public designs open read-only. Sign in with GitHub when you want to create a design, or clone one and keep your edits.</p></details>
+      <details><summary>Where does my design live?</summary><p>On Zeema, public or private. A new design starts private; clone a public one to start from it, and publish a release when it is ready. It is also yours as files: export a zip with the YAML and its layout, commit it next to your code, run <code>zeema lint</code> in CI, and <a class="inline" href="__CANVAS_URL__/new/import">import</a> it back whenever you like.</p></details>
+      <details><summary>Which AI agents can use it?</summary><p>Any agent that can read a file. A design is plain YAML with a JSON Schema, and <a class="inline" href="__CANVAS_URL__/llms.txt">llms.txt</a> indexes every kind, component and rule as pages an agent can fetch. Coding agents load the design as context, check their work against it, and propose changes as diffs.</p></details>
+      <details><summary>Is it tied to one cloud?</summary><p>No. The <a class="inline" href="__CANVAS_URL__/catalogue">catalogue</a> covers AWS, Azure, Google Cloud, Cloudflare, Kubernetes, Oracle Cloud, IBM Cloud, Alibaba Cloud, DigitalOcean, OpenStack and Outscale, plus vendor-neutral products such as Kafka and Redis. Each component maps to a kind like <code>worker</code> or <code>object-store</code>, so a design means the same thing whichever vendor you pick.</p></details>
     </div>
   </section>
 
@@ -655,7 +764,8 @@ code{white-space:nowrap;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
       <a href="__CANVAS_URL__" target="_blank" rel="noopener noreferrer">Canvas</a>
       <a href="#designs">Public designs</a>
       <a href="#developers">Schema</a>
-      <a href="#">Docs</a>
+      <a href="__CANVAS_URL__/catalogue">Catalogue</a>
+      <a href="__CANVAS_URL__/docs">Docs</a>
       <a href="https://github.com/MohamedEbrahimMohsen/zeema" target="_blank" rel="noopener noreferrer">GitHub</a>
     </div>
     <span class="ft-copy">© 2026 Zeema</span>
@@ -672,26 +782,37 @@ document.getElementById('copyBtn').addEventListener('click', async e => {
 </script>
 <script>
 (() => {
-  const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
-  const hl = l => esc(l).replace(/^(\s*-?\s*)([A-Za-z_]+)(:)/,'$1<span class="k">$2</span>$3').replace(/:\s(.+)$/,m=>': <span class="s">'+m.slice(2)+'</span>').replace(/^(\s*#.*)$/,'<span class="c">$1</span>');
+  const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  // YAML line highlighting: key, then a quoted string, a number or boolean, or a flow map.
+  const val = v => /^".*"$/.test(v) ? `<span class="s">${v}</span>`
+    : /^(true|false|-?\d+)$/.test(v) ? `<span class="n">${v}</span>`
+    : v.startsWith('{') ? v.replace(/([{,]\s*)([A-Za-z]\w*):\s*("[^"]*"|[^,}\s]+)/g,(m,a,k,x)=>`${a}<span class="k">${k}</span>: ${val(x)}`)
+    : `<span class="s">${v}</span>`;
+  const hl = l => {
+    if (/^\s*#/.test(l)) return `<span class="c">${esc(l)}</span>`;
+    const m = /^(\s*(?:- )?)([A-Za-z]\w*):(?:\s+(.*))?$/.exec(l);
+    if (!m) return esc(l);
+    return m[1]+`<span class="k">${m[2]}</span>:`+(m[3]!==undefined?' '+val(esc(m[3])):'');
+  };
   const $ = id => document.getElementById(id);
+  const yamlOf = id => $(id).textContent.replace(/^\n+|\s+$/g,'').split('\n');
   const stage=$('stage'), code=$('archCode'), term=$('term'), aF=$('archFoot'), gF=$('agentFoot'), prog=$('prog');
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const DUR = 11000;
 
   const A2G = {
-    file:'checkout.zeema.yaml',
-    yaml:['components:','  - id: payment-service','    kind: worker','  - id: payments-db','    kind: sql-database','edges:','  - from: payment-service','    to: payments-db','    mode: sync'],
-    term:[['dim','$ agent run "build payment-service"'],['','▸ loading zeema schema…'],['ok','✓ 14 components, 21 edges'],['','▸ resolving payment-service contract'],['add','+ src/PaymentService (dotnet)'],['add','+ client: payments-db (sync)'],['ok','✓ validated against architecture']],
-    archChips:[['Committed','']], agentChips:[['PR #42 opened','go']],
-    steps:[['Design as data','You define the design once, in one YAML file.'],['Agent reads the contract','Any agent loads it: components, edges, contracts.'],['Code matches architecture','The agent builds exactly what was designed, and opens a PR.']]
+    file:'uber-dispatch.zeema.yaml',
+    yaml:yamlOf('yamlA2G'),
+    term:[['dim','$ agent run "implement dispatch"'],['','▸ reading uber-dispatch.zeema.yaml'],['ok','✓ 2 nodes, 1 edge, valid against the schema'],['','▸ contract: dispatch → geo-index, tchannel, sync'],['add','+ services/dispatch/geo-index-client.js'],['add','+ test: dispatch calls geo-index synchronously'],['ok','✓ code matches the design']],
+    archChips:[['Committed','']], agentChips:[['PR opened','go']],
+    steps:[['Design as data','You define the design once, in one YAML file.'],['Agent reads the contract','Any agent loads it: nodes, components, edges and their contracts.'],['Code matches architecture','The agent builds what was designed, and opens a PR.']]
   };
   const G2A = {
-    file:'checkout.zeema.yaml',
-    yaml:['edges:','  - from: order-service','    to: orders-db','    mode: sync','+ - from: order-service','+   to: redis-cache','+ - from: order-service','+   to: shipping-api'],
-    term:[['dim','$ agent scan ./repo'],['','▸ comparing code ↔ architecture'],['warn','! order-service → redis-cache (undeclared)'],['warn','! order-service → shipping-api (undeclared)'],['','▸ drafting architecture update'],['ok','✓ 2 changes proposed to architect']],
+    file:'uber-dispatch.zeema.yaml',
+    yaml:yamlOf('yamlG2A'),
+    term:[['dim','$ agent scan ./services'],['','▸ comparing the code with uber-dispatch.zeema.yaml'],['warn','! dispatch → redis-cache is not in the design'],['','▸ drafting the design change'],['ok','✓ 1 node, 1 edge proposed to the architect']],
     archChips:[['Review','' ],['Accept','go']], agentChips:[['Drift detected','']],
-    steps:[['Agent watches the code','Agents scan the repo and compare it to the declared architecture.'],['Drift becomes a diff','Undeclared dependencies turn into a proposed YAML change.'],['Architect stays in control','You review and accept, and the architecture stays true.']]
+    steps:[['Agent watches the code','Agents scan the repo and compare it to the declared architecture.'],['Drift becomes a diff','An undeclared dependency turns into a proposed YAML change.'],['Architect stays in control','You review and accept, and the architecture stays true.']]
   };
 
   let mode='a2g', timers=[], cycle;
@@ -699,12 +820,15 @@ document.getElementById('copyBtn').addEventListener('click', async e => {
   const chips=(el,list)=>{el.innerHTML=list.map(([t,c])=>`<span class="chip ${c}">${t}</span>`).join('');[...el.children].forEach((c,i)=>later(()=>c.classList.add('show'),i*180));};
   const stepOn=i=>[...$('steps').children].forEach((s,j)=>s.classList.toggle('on',j===i));
 
-  function typeYaml(lines,start,done){
+  // Types the lines out. With onlyAdds, the existing design shows at once and only the
+  // proposed "+ " lines are typed.
+  function typeYaml(lines,start,done,onlyAdds){
     let li=0,ci=0,out=[];
     const tick=()=>{
+      while(onlyAdds&&li<lines.length&&!lines[li].startsWith('+ ')){out.push(hl(lines[li]));li++;}
       if(li>=lines.length){code.innerHTML=out.join('\n');done&&done();return;}
       const raw=lines[li], isAdd=raw.startsWith('+ '), text=isAdd?'  '+raw.slice(2):raw;
-      ci++;
+      ci=Math.min(text.length,ci+2);
       const partial=text.slice(0,ci);
       const lineHtml=isAdd?`<span class="diff-add">${hl(partial)}</span>`:hl(partial);
       code.innerHTML=[...out,lineHtml].join('\n')+'<span class="caret"></span>';
@@ -744,7 +868,7 @@ document.getElementById('copyBtn').addEventListener('click', async e => {
       const t2=300+S.term.length*560;
       later(()=>{chips(gF,S.agentChips);stage.classList.add('run');stepOn(1);},t2-600);
       later(()=>{$('pAgent').classList.remove('active');$('pArch').classList.add('active');
-        typeYaml(S.yaml,0,()=>{stage.classList.remove('run');stepOn(2);chips(aF,S.archChips);});},t2);
+        typeYaml(S.yaml,0,()=>{stage.classList.remove('run');stepOn(2);chips(aF,S.archChips);},true);},t2);
     }
   }
 

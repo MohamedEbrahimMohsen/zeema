@@ -24,6 +24,19 @@ CANVAS_URL=https://canvas.zeema.io LANDING_PORT=4000 pnpm --filter @zeema/landin
 |---|---|---|
 | `LANDING_PORT` | `4000` | Port to listen on |
 | `LANDING_BIND` | `0.0.0.0` | Interface to bind |
-| `CANVAS_URL` | `http://localhost:3000` | Destination of the entry buttons |
+| `CANVAS_URL` | `http://localhost:3000` | Origin of every link into the app, and of the design thumbnails |
+| `CANVAS_API_URL` | `CANVAS_URL` | Where this server fetches live numbers from, when the app is reachable from here under another address |
 
 Under compose the service is `landing`; `CANVAS_URL` there defaults to `APP_ORIGIN`.
+
+## Live numbers
+
+At startup and every ten minutes the server reads the catalogue (`/api/v1/catalogue`) and the
+public design list (`/api/v1/designs`) and fills in the catalogue counts and each design card's
+component, edge and finding counts. The catalogue counts baked into the page are the fallback;
+a design card whose numbers could not be fetched shows none.
+
+## Test
+
+`pnpm --filter @zeema/landing test` checks every YAML fragment on the page (`data-yaml`)
+against the engine and the catalogue on disk, and the claims the page makes about them.

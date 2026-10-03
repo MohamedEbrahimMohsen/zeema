@@ -76,6 +76,9 @@ services:
       LANDING_PORT: 4000
       # Where "Open Canvas" sends visitors: the app's public origin. Falls back to APP_ORIGIN.
       CANVAS_URL: ${CANVAS_URL:-${APP_ORIGIN:-http://localhost:3000}}
+      # Where the landing server itself reads design and catalogue counts: the app over the
+      # compose network.
+      CANVAS_API_URL: http://web:3000
     ports:
       - "${LANDING_BIND:-0.0.0.0}:${LANDING_PORT:-4000}:4000"
     healthcheck:

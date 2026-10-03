@@ -90,6 +90,12 @@ services:
       LANDING_PORT: 4000
       # Where "Open Canvas" sends visitors: the app's public origin.
       CANVAS_URL: ${CANVAS_URL:-${APP_ORIGIN:-https://beta-canvas.zeema.dev}}
+      # Where the landing server itself reads design and catalogue counts: the app over the
+      # compose network, so it never depends on the public hostname resolving from inside.
+      CANVAS_API_URL: http://web:3000
+    depends_on:
+      web:
+        condition: service_healthy
     # Localhost only, for the same reason as web.
     ports:
       - "${LANDING_BIND:-127.0.0.1}:${LANDING_PORT:-4000}:4000"
