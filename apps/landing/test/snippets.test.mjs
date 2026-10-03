@@ -20,7 +20,7 @@ import { runRules } from "@zeema/core/rules";
 import { check } from "@zeema/core/structure";
 import { parse } from "@zeema/core/yaml";
 import { describe, expect, it } from "vitest";
-import { render } from "../server.mjs";
+import { badgeHtml, render } from "../server.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const html = readFileSync(join(here, "..", "public", "index.html"), "utf8");
@@ -217,5 +217,77 @@ describe("server render", () => {
     );
     expect(out).toContain('<b data-stat="components">3,000</b>');
     expect(out).toMatch(/<span class="dz-meta" data-counts="uber-dispatch"><\/span>/);
+  });
+
+  const mark = '<g fill="#000000"><path d="M0 0h24v24H0z"/></g>';
+
+  it("puts a card's brand badge over its drawing and names it in the alt", () => {
+    const out = render(html, {
+      catalogue: null,
+      designs: new Map([
+        [
+          "uber-dispatch",
+          { nodeCount: 9, edgeCount: 8, findingCount: 0, badge: { name: "Uber", markup: mark } },
+        ],
+        [
+          "youtube",
+          {
+            nodeCount: null,
+            edgeCount: 1,
+            findingCount: 0,
+            badge: { name: "Tube & Co", markup: mark },
+          },
+        ],
+      ]),
+    });
+    const thumb = (slug) =>
+      new RegExp(
+        `<span class="dz-thumb" data-badge="${slug}">([\\s\\S]*?)</picture>(.*?</span>)</span><strong>`,
+      ).exec(out);
+    const uber = thumb("uber-dispatch");
+    expect(uber[2]).toBe(
+      `<span class="dz-badge" title="Uber" aria-hidden="true"><svg viewBox="0 0 24 24">${mark}</svg></span>`,
+    );
+    expect(uber[1]).toContain('alt="The Uber dispatch design"');
+    // a name the alt lacks is added, escaped; a badge shows even when the counts are unsound
+    const yt = thumb("youtube");
+    expect(yt[1]).toContain('alt="The YouTube design, Tube &#38; Co"');
+    expect(yt[2]).toContain('title="Tube &#38; Co"');
+    expect(out).toMatch(/<span class="dz-meta" data-counts="youtube"><\/span>/);
+    // no badge, no chip and no placeholder
+    expect(out.match(/class="dz-badge"/g)).toHaveLength(2);
+  });
+
+  it("refuses badge markup that could run, and renders nothing for it", () => {
+    for (const markup of [
+      "<script>alert(1)</script>",
+      '<path onload="x()" d="M0 0"/>',
+      '<path ONCLICK = "x()"/>',
+      '<a href="javascript:x()"><path/></a>',
+      "<foreignObject><div/></foreignObject>",
+      "   ",
+    ])
+      expect(badgeHtml({ name: "X", markup }), markup).toBe("");
+    expect(badgeHtml(null)).toBe("");
+    expect(badgeHtml({ name: "X" })).toBe("");
+    expect(badgeHtml({ name: '"><img>', markup: mark })).toContain(
+      'title="&#34;&#62;&#60;img&#62;"',
+    );
+    const out = render(html, {
+      catalogue: null,
+      designs: new Map([
+        [
+          "uber-dispatch",
+          {
+            nodeCount: 1,
+            edgeCount: 0,
+            findingCount: 0,
+            badge: { name: "U", markup: "<script/>" },
+          },
+        ],
+      ]),
+    });
+    expect(out).not.toContain('dz-badge"');
+    expect(out).toContain('alt="The Uber dispatch design"');
   });
 });

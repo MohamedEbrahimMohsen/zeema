@@ -6,7 +6,8 @@
 //     development, https://zeema.dev in production — so CANVAS_URL replaces the
 //     __CANVAS_URL__ placeholder at startup.
 //   - the live numbers: the catalogue counts and, for each design card, its component, edge
-//     and finding counts. They are fetched from the app at startup and every ten minutes after.
+//     and finding counts and its corner brand badge. They are fetched from the app at startup
+//     and every ten minutes after.
 //     The catalogue counts in the page are a fallback; a design card whose numbers could not
 //     be fetched shows none, never made-up ones.
 //
@@ -38,6 +39,19 @@ const int = (v) => (Number.isInteger(v) && v >= 0 ? v : null);
 const fmt = (n) => n.toLocaleString("en-US");
 const plural = (n, word) => `${fmt(n)} ${word}${n === 1 ? "" : "s"}`;
 
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+
+// The badge markup comes from the app, which already strips scripts and handlers (brand.ts).
+// This is a second line, never the first: markup with anything that could run is refused whole.
+const UNSAFE = /<script|\bon[a-z]+\s*=|javascript:|<foreignObject/i;
+
+/** A card's corner brand badge, drawn as the browse row draws it, or "" when there is none. */
+export function badgeHtml(badge) {
+  if (!badge || typeof badge.name !== "string" || typeof badge.markup !== "string") return "";
+  if (!badge.markup.trim() || UNSAFE.test(badge.markup)) return "";
+  return `<span class="dz-badge" title="${esc(badge.name)}" aria-hidden="true"><svg viewBox="0 0 24 24">${badge.markup}</svg></span>`;
+}
+
 /** The page with whatever live numbers are known. Pure: template and data in, HTML out. */
 export function render(html, { catalogue, designs }) {
   let out = html;
@@ -48,9 +62,24 @@ export function render(html, { catalogue, designs }) {
         int(catalogue[key]) === null ? m : `${open}${fmt(catalogue[key])}${close}`,
     );
   }
+  // The badge sits over the drawing; the thumbnail's alt names it, as the browse row's does.
+  out = out.replace(
+    /(<span class="dz-thumb" data-badge="([a-z0-9-]+)">)([\s\S]*?)(<\/span>)/g,
+    (m, open, slug, inner, close) => {
+      const badge = designs.get(slug)?.badge;
+      const chip = badgeHtml(badge);
+      if (!chip) return m;
+      const named = inner.replace(/ alt="([^"]*)"/, (a, text) =>
+        text.toLowerCase().includes(badge.name.toLowerCase())
+          ? a
+          : ` alt="${text}, ${esc(badge.name)}"`,
+      );
+      return `${open}${named}${chip}${close}`;
+    },
+  );
   out = out.replace(/<span class="dz-meta" data-counts="([a-z0-9-]+)"><\/span>/g, (m, slug) => {
     const d = designs.get(slug);
-    if (!d) return m;
+    if (!d || [d.nodeCount, d.edgeCount, d.findingCount].some((n) => int(n) === null)) return m;
     const found =
       d.findingCount === 0
         ? `<span class="dz-ok">✓ 0 findings</span>`
@@ -95,8 +124,9 @@ async function fetchDesigns(slugs) {
         edgeCount: int(d.edgeCount),
         findingCount: int(d.findingCount),
       };
-      if (owner === "zeema" && slugs.has(d.slug) && !Object.values(counts).includes(null))
-        found.set(d.slug, counts);
+      // A card shows its numbers only when all three are sound (checked at render), and its
+      // badge whenever the app has one.
+      if (owner === "zeema" && slugs.has(d.slug)) found.set(d.slug, { ...counts, badge: d.badge });
     }
     if (!r.items?.length || page * (r.pageSize ?? 100) >= (r.total ?? 0)) break;
   }
