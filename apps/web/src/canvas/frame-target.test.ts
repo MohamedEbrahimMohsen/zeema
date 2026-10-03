@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { dropPort, FRAME_BAND, frameTargetAt, onFrameTarget } from "./frame-target";
+import {
+  dropPort,
+  FRAME_BAND,
+  FRAME_LABEL_STRIP,
+  frameTargetAt,
+  onFrameTarget,
+} from "./frame-target";
 
 type Box = [number, number, number, number];
 const frames: Record<string, Box> = { outer: [0, 0, 800, 600], inner: [100, 100, 300, 200] };
@@ -40,5 +46,14 @@ describe("dropPort", () => {
   it("attaches a drop anywhere on a component to its nearest side", () => {
     expect(dropPort(f, 120, 125)).toEqual({ side: "left", t: 0.125 });
     expect(dropPort(f, 160, 290)).toEqual({ side: "bottom", t: 0.2 });
+  });
+});
+
+describe("a two-line caption's label strip", () => {
+  it("aims at the group through the taller strip it was given, and only there", () => {
+    const y = 100 + FRAME_LABEL_STRIP + 10;
+    expect(frameTargetAt(frames, 250, y)).toBeNull();
+    expect(frameTargetAt(frames, 250, y, 1, null, { inner: FRAME_LABEL_STRIP + 15 })).toBe("inner");
+    expect(onFrameTarget(frames.inner, 250, y, 1, FRAME_LABEL_STRIP + 15)).toBe(true);
   });
 });

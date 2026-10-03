@@ -10,18 +10,25 @@ type Box = [number, number, number, number];
 
 /** How far either side of a frame's dashed line still counts as "on the border", in screen px. */
 export const FRAME_BAND = 14;
-/** The label strip: the top of a frame, above its first row of members (FRAME_PAD_TOP is 32). */
+/**
+ * The label strip of a frame with a one-line caption: the top of a frame, above its first row of
+ * members (FRAME_PAD_TOP is 32). A two-line caption's strip is taller: `frameCaptions` in
+ * @zeema/core/geometry gives each group's own `strip`.
+ */
 export const FRAME_LABEL_STRIP = 30;
 
-/** Is the world point on this frame's border band or its label strip? `k` is the zoom. */
-export function onFrameTarget(f: Box, x: number, y: number, k = 1) {
+/**
+ * Is the world point on this frame's border band or its label strip? `k` is the zoom, `strip`
+ * the height of this frame's label strip.
+ */
+export function onFrameTarget(f: Box, x: number, y: number, k = 1, strip = FRAME_LABEL_STRIP) {
   const band = FRAME_BAND / k;
   const [fx, fy, fw, fh] = f;
   const dx = Math.max(fx - x, 0, x - (fx + fw));
   const dy = Math.max(fy - y, 0, y - (fy + fh));
   if (dx || dy) return Math.hypot(dx, dy) <= band;
   const rim = Math.min(x - fx, fx + fw - x, y - fy, fy + fh - y);
-  return rim <= band || y - fy <= FRAME_LABEL_STRIP;
+  return rim <= band || y - fy <= strip;
 }
 
 /**
@@ -43,6 +50,7 @@ export function dropPort(box: Box, x: number, y: number, frame = false, k = 1): 
 /**
  * The group a point aims at: of the frames whose band or label strip holds it, the innermost
  * (the smallest). `except` is never returned. Null when the point is on no frame's target.
+ * `strips` holds each frame's label strip height where it is not FRAME_LABEL_STRIP.
  */
 export function frameTargetAt(
   frames: Record<string, Box>,
@@ -50,11 +58,13 @@ export function frameTargetAt(
   y: number,
   k = 1,
   except: string | null = null,
+  strips: Record<string, number> = {},
 ): string | null {
   let best: string | null = null;
   let area = Number.POSITIVE_INFINITY;
   for (const [id, f] of Object.entries(frames)) {
-    if (id === except || !onFrameTarget(f, x, y, k)) continue;
+    const strip = Object.hasOwn(strips, id) ? strips[id] : FRAME_LABEL_STRIP;
+    if (id === except || !onFrameTarget(f, x, y, k, strip)) continue;
     const a = f[2] * f[3];
     if (a < area) {
       best = id;

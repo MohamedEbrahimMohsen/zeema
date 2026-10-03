@@ -13,14 +13,17 @@ import { groupCaption, groupTitle, nodeLines } from "@zeema/core/document";
 import {
   bowAt,
   edgeGeometry,
+  edgePath,
+  frameCaptions,
   framesOuterFirst,
   framesUnderTint,
   groupFrames,
   innermostFrameAt,
-  pathOf,
+  orthoBowAt,
   portAt,
 } from "@zeema/core/geometry";
 import {
+  CAPTION_LINE,
   FRAME_ICON_SHIFT,
   nodeText,
   TINT,
@@ -45,6 +48,7 @@ import {
   normaliseTint,
   type Port,
   type PortSide,
+  type Routing,
 } from "@/lib/layout-sidecar";
 import { own } from "@/lib/own";
 import { dropPort, frameTargetAt } from "./frame-target";
@@ -116,6 +120,8 @@ export type Model = {
   frameStyles?: Record<string, FrameStyle>;
   /** Component tints by node id, from the sidecar. Absent means the neutral card. */
   nodeTints?: Record<string, NodeTint>;
+  /** How edges are drawn, from the sidecar. Absent means the engine's default. */
+  routing?: Routing;
   /** The Notes toggle. Hidden means not drawn, not hit-testable and not exported. */
   showNotes: boolean;
   /**
@@ -245,7 +251,17 @@ function distanceToSegment(ax: number, ay: number, bx: number, by: number, x: nu
   return Math.hypot(x - (ax + dx * t), y - (ay + dy * t));
 }
 
-function distanceToPath(points: number[][], x: number, y: number) {
+function distanceToPath(points: number[][], x: number, y: number, ortho = false) {
+  if (ortho) {
+    // An orthogonal edge: straight runs between its corners (the rounding is too small to matter).
+    let best = Number.POSITIVE_INFINITY;
+    for (let k = 1; k < points.length; k++)
+      best = Math.min(
+        best,
+        distanceToSegment(points[k - 1][0], points[k - 1][1], points[k][0], points[k][1], x, y),
+      );
+    return best;
+  }
   if (points.length === 2)
     return distanceToSegment(points[0][0], points[0][1], points[1][0], points[1][1], x, y);
   if (points.length === 7) {
@@ -312,6 +328,8 @@ export class Scene {
   model!: Model;
   boxes: Record<string, Box> = {};
   frames: Record<string, Box> = {};
+  /** Each group's caption as its frame is sized for it (lines, label strip), from the engine. */
+  captions: Record<string, { lines: string[]; width: number; extra: number; strip: number }> = {};
   geom: any[] = [];
   drag: any = null;
   noteDrag: any = null;
@@ -529,7 +547,23 @@ export class Scene {
   endAt(wx: number, wy: number, except: string | null = null) {
     const node = this.nodeAt(wx, wy, except);
     if (node) return node;
-    return frameTargetAt(this.frames, wx, wy, this.view.k, except);
+    return frameTargetAt(this.frames, wx, wy, this.view.k, except, this.strips());
+  }
+
+  /**
+   * How edges are routed: the design's style, the group captions to keep clear, and the notes
+   * on screen, which edge labels stay off.
+   */
+  routeOptions() {
+    const notes = this.notesVisible() ? Object.values(this.noteBoxes || {}) : [];
+    return { routing: this.model.routing, captions: this.captions, labelAvoid: notes };
+  }
+
+  /** Each group's label strip height, for the frame targets. */
+  strips() {
+    const out: Record<string, number> = {};
+    for (const [id, c] of Object.entries(this.captions)) out[id] = c.strip;
+    return out;
   }
 
   /** The box an edge end names: a component's box, else a group's frame. */
@@ -567,7 +601,8 @@ export class Scene {
       if (i >= (model.doc.edges ?? []).length) this.multiEdges.delete(i);
     if (this.selection.type === "node" && !this.boxes[this.selection.ref as string])
       this.selection = { type: null, ref: null };
-    this.frames = groupFrames(model.doc, this.boxes) as Record<string, Box>;
+    this.captions = frameCaptions(model.doc, model.catalogue, model.frameStyles ?? {});
+    this.frames = groupFrames(model.doc, this.boxes, this.captions) as Record<string, Box>;
     // An anchored note carries an offset, not a position, so every render works out afresh
     // where it lands. That is what makes it follow its target through a node drag, an Arrange,
     // or a group that grew because something inside it moved.
@@ -1032,7 +1067,18 @@ export class Scene {
         : null;
       const labelDx = 12 + (icon ? FRAME_ICON_SHIFT : 0);
       const label = el("text", { class: "frame-label", x: f[0] + labelDx, y: f[1] + 19 });
-      label.textContent = groupCaption(this.model.catalogue, group);
+      // A caption too long for the widest frame is set on two lines (frameCaption in core).
+      const lines = this.captions[group.id]?.lines ?? [groupCaption(this.model.catalogue, group)];
+      if (lines.length === 1) label.textContent = lines[0];
+      else
+        lines.forEach((line, k) => {
+          const span = el("tspan", {
+            x: f[0] + labelDx,
+            y: f[1] + 19 + k * CAPTION_LINE,
+          });
+          span.textContent = line;
+          label.append(span);
+        });
       for (const target of [hit, label, icon]) {
         target?.addEventListener("pointerdown", (ev: any) => this.startGroupDrag(group.id, ev));
       }
@@ -1051,9 +1097,10 @@ export class Scene {
       this.model.bows || {},
       this.model.ports || {},
       this.frames,
+      this.routeOptions(),
     );
     for (const e of this.geom) {
-      const d = pathOf(e.points);
+      const d = edgePath(e);
       const hit = el("path", { class: "edge-hit", d });
       const line = el("path", {
         class: `edge${e.dashed ? " async" : ""}`,
@@ -1273,12 +1320,19 @@ export class Scene {
 
   repaintEdges(bows: Record<string, number>, ports = this.model.ports || {}) {
     this.model.bows = bows;
-    const geom = edgeGeometry(this.model.doc, this.boxes, bows, ports, this.frames);
+    const geom = edgeGeometry(
+      this.model.doc,
+      this.boxes,
+      bows,
+      ports,
+      this.frames,
+      this.routeOptions(),
+    );
     this.geom = geom;
     for (const e of geom) {
       const els = this.edgeEls.get(e.i);
       if (!els) continue;
-      const d = pathOf(e.points);
+      const d = edgePath(e);
       els.line.setAttribute("d", d);
       els.hit.setAttribute("d", d);
       if (els.label) {
@@ -1641,7 +1695,8 @@ export class Scene {
       const over =
         ev.buttons || this.busy() || t.closest?.(".note-box, .edge-hit, .end-handle, .port-dot")
           ? null
-          : (this.frameOfLabel(t) ?? frameTargetAt(this.frames || {}, wx, wy, this.view.k));
+          : (this.frameOfLabel(t) ??
+            frameTargetAt(this.frames || {}, wx, wy, this.view.k, null, this.strips()));
       if (over)
         this.h.onHover?.({ type: "group", id: over, clientX: ev.clientX, clientY: ev.clientY });
       else if (this.frameHover) this.h.onHover?.(null);
@@ -1730,7 +1785,7 @@ export class Scene {
     let best: number | null = null;
     let bestDistance = 9;
     for (const e of this.geom || []) {
-      const d = distanceToPath(e.points, wx, wy);
+      const d = distanceToPath(e.points, wx, wy, e.ortho);
       if (d < bestDistance) {
         best = e.i;
         bestDistance = d;
@@ -2027,20 +2082,21 @@ export class Scene {
     }
     const moving = new Set(this.drag.ids);
     // Frames follow their members, so an edge to a group moves with any drag.
-    this.frames = groupFrames(this.model.doc, this.boxes) as Record<string, Box>;
+    this.frames = groupFrames(this.model.doc, this.boxes, this.captions) as Record<string, Box>;
     this.geom = edgeGeometry(
       this.model.doc,
       this.boxes,
       this.model.bows || {},
       this.model.ports || {},
       this.frames,
+      this.routeOptions(),
     );
     for (const e of this.geom) {
       const toGroup = !this.boxes[e.from] || !this.boxes[e.to];
       if (!toGroup && !moving.has(e.from) && !moving.has(e.to)) continue;
       const els = this.edgeEls.get(e.i);
       if (!els) continue;
-      const d = pathOf(e.points);
+      const d = edgePath(e);
       els.line.setAttribute("d", d);
       els.hit.setAttribute("d", d);
       if (els.label) {
@@ -2075,7 +2131,7 @@ export class Scene {
   }
 
   repaintFrames() {
-    const frames = groupFrames(this.model.doc, this.boxes) as Record<string, Box>;
+    const frames = groupFrames(this.model.doc, this.boxes, this.captions) as Record<string, Box>;
     // Kept, not just drawn: a note anchored to a group reads its frame back from here while
     // the drag is still running.
     this.frames = frames;
@@ -2095,6 +2151,10 @@ export class Scene {
       }
       els.label.setAttribute("x", f[0] + els.labelDx);
       els.label.setAttribute("y", f[1] + 19);
+      els.label.querySelectorAll("tspan").forEach((span: Element, k: number) => {
+        span.setAttribute("x", String(f[0] + els.labelDx));
+        span.setAttribute("y", String(f[1] + 19 + k * CAPTION_LINE));
+      });
     }
     this.placeFrameDots();
   }
@@ -2156,7 +2216,12 @@ export class Scene {
   moveBow(ev: PointerEvent) {
     const [wx, wy] = this.toWorld(ev.clientX, ev.clientY);
     const ends = this.model.ports?.[this.bowDrag.key] ?? null;
-    const value = bowAt(this.boxes, this.bowDrag.from, this.bowDrag.to, wx, wy, ends, this.frames);
+    // An orthogonal edge's bow moves its cross run to the pointer (routing.js); one with no cross
+    // run (straight, an L, a detour) has nothing a bow moves.
+    const drawn = (this.geom || []).find((g) => g.key === this.bowDrag.key);
+    const value = drawn?.ortho
+      ? orthoBowAt(drawn, wx, wy)
+      : bowAt(this.boxes, this.bowDrag.from, this.bowDrag.to, wx, wy, ends, this.frames);
     this.bowDrag.moved = true;
     this.bowDrag.value = value;
     this.h.onBowPreview?.(this.bowDrag.key, value);

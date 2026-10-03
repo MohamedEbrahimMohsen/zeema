@@ -8,6 +8,7 @@ import {
   frameIconKey,
   isAnyTint,
   isBadgeRef,
+  isBlankSidecar,
   isFrameIcon,
   isHexTint,
   isTint,
@@ -28,6 +29,7 @@ import {
   pruneSidecar,
   pruneTints,
   readPorts,
+  readRoutingField,
   readSidecar,
   readTints,
   retargetAnchors,
@@ -530,5 +532,38 @@ describe("component tints and tint strength", () => {
     expect(file.frames).toEqual({ g: { tint: "amber", strength: "bold" } });
     expect(Object.keys(file)).toEqual(["version", "nodes", "edges", "frames", "tints", "notes"]);
     expect(readSidecar(file).tints).toEqual(file.tints);
+  });
+});
+
+describe("edge style", () => {
+  it("keeps curved, and drops the default and anything unknown", () => {
+    expect(readRoutingField("curved")).toBe("curved");
+    expect(readRoutingField("orthogonal")).toBeUndefined();
+    expect(readRoutingField("zigzag")).toBeUndefined();
+    expect(readRoutingField(1)).toBeUndefined();
+    expect(readSidecar({ routing: "curved" }).routing).toBe("curved");
+    expect(readSidecar({ routing: "orthogonal" })).not.toHaveProperty("routing");
+    expect(readSidecar({ routing: { evil: true } })).not.toHaveProperty("routing");
+  });
+
+  it("is something drawn, survives the writer and pruning, and takes its place in the file", () => {
+    expect(isBlankSidecar({ routing: "curved" })).toBe(false);
+    expect(isBlankSidecar({ routing: "orthogonal" })).toBe(true);
+    const s = writeSidecar({ nodes: {}, edges: {}, notes: [], routing: "curved" });
+    expect(s.routing).toBe("curved");
+    expect(writeSidecar({ nodes: {}, edges: {}, notes: [] })).not.toHaveProperty("routing");
+    expect(pruneSidecar(s, { nodes: [], groups: [], edges: [] }).routing).toBe("curved");
+    const file = JSON.parse(sidecarFile({ ...s, tints: { a: { tint: "blue" } } }));
+    expect(Object.keys(file)).toEqual([
+      "version",
+      "nodes",
+      "edges",
+      "frames",
+      "tints",
+      "routing",
+      "notes",
+    ]);
+    // a design nobody switched keeps the bytes it had
+    expect(sidecarFile({ nodes: { a: [0, 0] } })).not.toContain("routing");
   });
 });

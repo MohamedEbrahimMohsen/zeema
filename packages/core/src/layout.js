@@ -39,7 +39,7 @@
 // document.js for the name a box shows; none of them imports anything.
 
 import { nodeLines } from "./document.js";
-import { edgeGeometry } from "./geometry.js";
+import { DEFAULT_ROUTING, edgeGeometry, frameAround, frameCaptions } from "./geometry.js";
 import { nodeWidth } from "./text.js";
 
 const BOX_H = 78,
@@ -48,9 +48,6 @@ const BOX_H = 78,
 const MAX_W = 1180; // a rank wider than this wraps onto further rows
 const CANVAS_PAD_X = 120,
   CANVAS_PAD_Y = 46;
-const FRAME_PAD_X = 16,
-  FRAME_PAD_TOP = 32,
-  FRAME_PAD_BOTTOM = 16;
 const SWEEPS = 6;
 const FLOW = [
   "client",
@@ -261,15 +258,19 @@ const present = (v) => v !== undefined && v !== null;
 
 /**
  * @param {object} doc      a Zeema design document
- * @param {object} [catalogue]  the bundle ({kinds, components}); read only to orient reciprocal
- *                              edge pairs by flow (see the header). Optional.
+ * @param {object} [catalogue]  the bundle ({kinds, components}); read to orient reciprocal
+ *                              edge pairs by flow (see the header) and for group captions. Optional.
+ * @param {object} [options]    { routing: "orthogonal" | "curved" (default DEFAULT_ROUTING),
+ *                                styles: the sidecar's group styles, for which captions carry an icon }
  * @returns {{positions: Object, sizes: Object, frames: Object,
  *            edges: Array, canvas: [number, number]}}
  */
-export function layout(doc, catalogue) {
+export function layout(doc, catalogue, options = {}) {
   const nodes = doc && Array.isArray(doc.nodes) ? doc.nodes : [];
   const edges = doc && Array.isArray(doc.edges) ? doc.edges : [];
   const groups = doc && Array.isArray(doc.groups) ? doc.groups : [];
+  // A frame is as wide as its caption needs, and its label strip as tall (geometry.js).
+  const captions = frameCaptions({ groups }, catalogue ?? null, options?.styles ?? null);
 
   const box = new Map(); // insertion order = node document order
   for (const n of nodes) {
@@ -370,9 +371,9 @@ export function layout(doc, catalogue) {
       if (p !== gid) continue;
       const inner = layLevel(g);
       if (!inner) continue; // an empty group gets no block and no frame
-      const w = inner.width + 2 * FRAME_PAD_X;
-      const h = inner.height + FRAME_PAD_TOP + FRAME_PAD_BOTTOM;
-      block.set(g, { w, h, items: inner.items });
+      // The block is the frame around the level's content, which sits at (0, 0) inside it.
+      const [fx, fy, w, h] = frameAround(0, 0, inner.width, inner.height, captions[g] ?? null);
+      block.set(g, { w, h, dx: -fx, dy: -fy, items: inner.items });
       items.push({ id: `g:${g}`, w, h });
       first.set(`g:${g}`, inner.first);
     }
@@ -409,7 +410,7 @@ export function layout(doc, catalogue) {
       } else {
         const g = block.get(k.slice(2));
         frame.set(k.slice(2), [ox + x, oy + y, g.w, g.h]);
-        place(g.items, ox + x + FRAME_PAD_X, oy + y + FRAME_PAD_TOP);
+        place(g.items, ox + x + g.dx, oy + y + g.dy);
       }
     }
   };
@@ -423,7 +424,10 @@ export function layout(doc, catalogue) {
   for (const [id, b] of box) boxes[id] = b; // node declaration order: the first obstacle wins
   const frameBoxes = {};
   for (const [gid, f] of frame) frameBoxes[gid] = f;
-  const outEdges = edgeGeometry({ edges }, boxes, {}, {}, frameBoxes);
+  const outEdges = edgeGeometry({ edges }, boxes, {}, {}, frameBoxes, {
+    routing: options?.routing ?? DEFAULT_ROUTING,
+    captions,
+  });
 
   const positions = {},
     sizes = {},

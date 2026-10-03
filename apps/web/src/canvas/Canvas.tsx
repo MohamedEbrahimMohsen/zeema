@@ -5,7 +5,13 @@
 // through `commit`, which snapshots first, so undo and redo are uniform.
 import { ruleReads } from "@zeema/core/describe";
 import * as D from "@zeema/core/document";
-import { edgeKeys, innermostFrameAt, rekeyBows, rekeyPorts } from "@zeema/core/geometry";
+import {
+  edgeKeys,
+  innermostFrameAt,
+  readRouting,
+  rekeyBows,
+  rekeyPorts,
+} from "@zeema/core/geometry";
 import { layout } from "@zeema/core/layout";
 import { runRules } from "@zeema/core/rules";
 import { check } from "@zeema/core/structure";
@@ -36,6 +42,8 @@ import {
   pruneFrames,
   prunePorts,
   pruneTints,
+  type Routing,
+  readRoutingField,
   readSidecar,
   retargetAnchors,
   retargetFrame,
@@ -48,7 +56,7 @@ import { exportScene } from "./exportScene";
 import { type CanvasFinding, FindingsPanel } from "./FindingsPanel";
 import { GroupPicker } from "./GroupPicker";
 import { type HoverAt, HoverCard } from "./HoverCard";
-import { type Highlight, Inspector, type InspectorApi } from "./Inspector";
+import { EdgeStyleField, type Highlight, Inspector, type InspectorApi } from "./Inspector";
 import { Palette } from "./Palette";
 import { QuickActions } from "./QuickActions";
 import type { QuickAction, QuickTarget } from "./quick-actions";
@@ -105,6 +113,8 @@ type Engine = {
   /** The list badge the owner chose (Design settings here, or the design page): sidecar, never
    *  YAML. It rides the canvas's own save, so a save never drops it. */
   badge?: string;
+  /** How edges are drawn (Design settings): sidecar, never YAML. Absent: the engine's default. */
+  routing?: Routing;
   undo: any[];
   redo: any[];
   dirty: boolean;
@@ -645,6 +655,7 @@ export function Canvas(props: Props) {
         notes: e.notes,
         frameStyles: e.frames,
         nodeTints: e.tints,
+        routing: e.routing,
         showNotes: showNotesRef.current,
         pinnedNotes: pinnedNotesRef.current,
         findings: [...e.structural, ...e.rules],
@@ -670,6 +681,7 @@ export function Canvas(props: Props) {
       frames: e.frames,
       tints: e.tints,
       badge: e.badge,
+      routing: e.routing,
     });
   }, []);
 
@@ -745,6 +757,7 @@ export function Canvas(props: Props) {
         frames: clone(e.frames),
         tints: clone(e.tints),
         badge: e.badge,
+        routing: e.routing,
       };
       const now = Date.now();
       const within = typeof opts.coalesce === "number" ? opts.coalesce : 400;
@@ -787,6 +800,7 @@ export function Canvas(props: Props) {
       frames: clone(e.frames),
       tints: clone(e.tints),
       badge: e.badge,
+      routing: e.routing,
     });
     Object.assign(e, prev);
     e.lastDragAt = 0;
@@ -810,6 +824,7 @@ export function Canvas(props: Props) {
       frames: clone(e.frames),
       tints: clone(e.tints),
       badge: e.badge,
+      routing: e.routing,
     });
     Object.assign(e, next);
     e.lastDragAt = 0;
@@ -1379,6 +1394,7 @@ export function Canvas(props: Props) {
       frames: sidecarIn.frames,
       tints: sidecarIn.tints ?? {},
       badge: sidecarIn.badge,
+      routing: sidecarIn.routing,
       undo: [],
       redo: [],
       dirty: false,
@@ -1935,6 +1951,17 @@ export function Canvas(props: Props) {
           },
         });
       },
+      // The edge style is layout too: the sidecar's `routing`, saved with the canvas's own save.
+      setRouting: (v) => {
+        const e = eng.current!;
+        const next = readRoutingField(v);
+        if (e.routing === next) return;
+        commit(null, {
+          apply: () => {
+            e.routing = next;
+          },
+        });
+      },
       setDesignId: (v) => {
         const d = clone(eng.current!.doc);
         d.id = D.toId(v) || d.id;
@@ -2242,9 +2269,15 @@ export function Canvas(props: Props) {
       <Glyph d={G.pin} size={16} />
     </button>
   );
-  const designExtra = badgeData ? (
-    <BadgeRow data={badgeData} onChoose={(ref) => api.setBadge(ref)} />
-  ) : null;
+  // The owner's edge style and list badge: both layout, both saved with the canvas's own save.
+  const routing = readRouting(e?.routing);
+  const designExtra =
+    props.canWrite && e ? (
+      <>
+        <EdgeStyleField value={routing} onPick={(r) => api.setRouting(r)} />
+        {badgeData ? <BadgeRow data={badgeData} onChoose={(ref) => api.setBadge(ref)} /> : null}
+      </>
+    ) : null;
   const inspectorProps =
     bundle && e
       ? {
@@ -2496,6 +2529,15 @@ export function Canvas(props: Props) {
           }
         : null,
       { id: "arrange", group: "Design", label: "Arrange", keywords: "layout tidy", run: arrange },
+      props.canWrite && e
+        ? {
+            id: "edge-style",
+            group: "Design",
+            label: `Edge style: ${routing === "orthogonal" ? "curved" : "orthogonal"}`,
+            keywords: "edges routing orthogonal curved lines connectors elbow",
+            run: () => api.setRouting(routing === "orthogonal" ? "curved" : "orthogonal"),
+          }
+        : null,
       e?.undo.length
         ? { id: "undo", group: "Design", label: "Undo", hint: `${k} Z`, run: undo }
         : null,

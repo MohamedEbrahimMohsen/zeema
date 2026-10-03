@@ -124,6 +124,7 @@ describe("edges to groups", () => {
   it("puts a port on a frame exactly as on a node", () => {
     const lay = drawnLayout(load(), catalogue, {
       ports: { "edge-lb>cluster": { to: { side: "left", t: 0.5 } } },
+      routing: "curved",
     });
     const f = lay.frames.cluster;
     const e = lay.edges[0];

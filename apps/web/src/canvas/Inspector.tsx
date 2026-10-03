@@ -53,6 +53,8 @@ export type InspectorApi = {
   setDesignId: (id: string) => void;
   /** The owner's list badge choice, or null for automatic. Sidecar only. */
   setBadge: (ref: string | null) => void;
+  /** How the design's edges are drawn. Sidecar only, owner only. */
+  setRouting: (routing: "orthogonal" | "curved") => void;
   setRequirement: (path: string, value: unknown) => void;
   setNoteText: (id: string, text: string) => void;
   /** Point the palette at a query, the way the group hint does. */
@@ -184,6 +186,37 @@ function StrengthField({
         </button>
       ))}
     </fieldset>
+  );
+}
+
+/**
+ * How the design's edges are drawn, as two segments: Curved or Orthogonal. Layout, like a group's
+ * tint: it sets the sidecar's `routing`, and the canvas's own save carries it.
+ */
+export function EdgeStyleField({
+  value,
+  onPick,
+}: {
+  value: "orthogonal" | "curved";
+  onPick: (routing: "orthogonal" | "curved") => void;
+}) {
+  return (
+    <div className="field set" data-field="routing">
+      <div className="field-name">Edges</div>
+      <fieldset className="strength-field" aria-label="Edge style">
+        {(["curved", "orthogonal"] as const).map((r) => (
+          <button
+            key={r}
+            type="button"
+            aria-pressed={value === r}
+            className={value === r ? "strength-seg on" : "strength-seg"}
+            onClick={() => onPick(r)}
+          >
+            {r === "curved" ? "Curved" : "Orthogonal"}
+          </button>
+        ))}
+      </fieldset>
+    </div>
   );
 }
 

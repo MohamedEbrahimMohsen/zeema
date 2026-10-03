@@ -8,7 +8,8 @@
 //   * box sizes always come from the engine — a size is derived from the text, never stored;
 //   * positions come from the sidecar;
 //   * group frames are computed from the members with `groupFrames`, never stored;
-//   * edges are recomputed with `edgeGeometry`, taking the sidecar's bows and ports.
+//   * edges are recomputed with `edgeGeometry`, taking the sidecar's bows and ports, and routed
+//     the way its `routing` says (orthogonal when it says nothing).
 //
 // A node the sidecar has never seen — added to the YAML after the last canvas save — is placed
 // here rather than left at the origin: beside a neighbour it is connected to when there is room,
@@ -16,7 +17,7 @@
 //
 // No DOM, no fs, no network.
 
-import { edgeGeometry, groupFrames } from "./geometry.js";
+import { edgeGeometry, frameCaptions, groupFrames, readRouting } from "./geometry.js";
 import { layout } from "./layout.js";
 
 // The gaps the automatic layout leaves between boxes; a newcomer keeps the same spacing.
@@ -95,7 +96,8 @@ function placeNewcomer(id, size, doc, boxes) {
  * @param {object} sidecar    { nodes: { id: [x, y] }, edges: { key: bow },
  *                            ports: { key: { from?: port, to?: port } },
  *                            frames: { groupId: { tint, icon, strength } },
- *                            tints: { nodeId: { tint, strength } } }; notes are not drawn
+ *                            tints: { nodeId: { tint, strength } },
+ *                            routing: "orthogonal" | "curved" }; notes are not drawn
  * @returns {{positions: Object, sizes: Object, frames: Object, edges: Array,
  *            canvas: [number, number], origin: [number, number], frameStyles: Object,
  *            nodeStyles: Object}}
@@ -120,15 +122,19 @@ export function drawnLayout(doc, catalogue, sidecar) {
     const [x, y] = placeNewcomer(n.id, s, doc, boxes);
     boxes[n.id] = [x, y, s[0], s[1]];
   }
-  const frames = groupFrames({ nodes, groups: doc.groups || [], edges: doc.edges || [] }, boxes);
+  // Group tint and icon ride along untouched: they change how a frame looks, never where (an
+  // icon only widens a frame whose caption needs the room).
+  const styles = sidecar && typeof sidecar === "object" ? sidecar.frames : null;
+  const frameStyles = styles && typeof styles === "object" && !Array.isArray(styles) ? styles : {};
+  const groups = doc.groups || [];
+  const captions = frameCaptions({ groups }, catalogue, frameStyles);
+  const frames = groupFrames({ nodes, groups, edges: doc.edges || [] }, boxes, captions);
   const bows = sidecar && typeof sidecar === "object" && sidecar.edges ? sidecar.edges : {};
   const rawPorts = sidecar && typeof sidecar === "object" ? sidecar.ports : null;
   const ports =
     rawPorts && typeof rawPorts === "object" && !Array.isArray(rawPorts) ? rawPorts : {};
-  const edges = edgeGeometry(doc, boxes, bows, ports, frames);
-  // Group tint and icon ride along untouched: they change how a frame looks, never where.
-  const styles = sidecar && typeof sidecar === "object" ? sidecar.frames : null;
-  const frameStyles = styles && typeof styles === "object" && !Array.isArray(styles) ? styles : {};
+  const routing = readRouting(sidecar && typeof sidecar === "object" ? sidecar.routing : null);
+  const edges = edgeGeometry(doc, boxes, bows, ports, frames, { routing, captions });
   const tints = sidecar && typeof sidecar === "object" ? sidecar.tints : null;
   const nodeStyles = tints && typeof tints === "object" && !Array.isArray(tints) ? tints : {};
 

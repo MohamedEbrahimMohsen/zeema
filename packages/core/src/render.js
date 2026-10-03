@@ -5,13 +5,19 @@
 
 import { groupCaption, groupTitle, nodeLines } from "./document.js";
 import { drawnLayout } from "./drawn.js";
-import { framesOuterFirst, framesUnderTint, pathOf } from "./geometry.js";
+import {
+  edgePath,
+  frameCaptions,
+  framesOuterFirst,
+  framesUnderTint,
+  readRouting,
+} from "./geometry.js";
 import { layout } from "./layout.js";
-import { nodeText } from "./text.js";
+import { CAPTION_LINE, FRAME_ICON_SHIFT, nodeText } from "./text.js";
 
 // The node-text measure lives in text.js, with the box sizing that uses it; re-exported here
 // because the canvas and older callers import it from the renderer.
-export { nodeText, nodeWidth, textWidth } from "./text.js";
+export { CAPTION_LINE, nodeText, nodeWidth, textWidth } from "./text.js";
 
 // A node card is one neutral surface in both themes: colour on a drawing comes only from the
 // component's icon, from a group tint the author chose, and from finding badges. These are the
@@ -106,8 +112,10 @@ const paintAttrs = (p) =>
 export const FRAME_ICON_RE =
   /^(kind:[a-z0-9-]+|boundary:[a-z0-9]+(?:-[a-z0-9]+)*|component:[a-z0-9-]+\/[a-z0-9-]+)$/;
 const FRAME_ICON = 16;
-// How far a group's words move right to make room for its icon: the icon and a 6px gap.
-export const FRAME_ICON_SHIFT = 22;
+
+// How far a group's words move right to make room for its icon (the icon and a 6px gap) lives in
+// text.js with the caption measure that uses it; re-exported here for the canvas.
+export { FRAME_ICON_SHIFT };
 
 /** The key an icon reference has in an icon map keyed like icons.json, or null. */
 export function frameIconKey(ref) {
@@ -163,7 +171,18 @@ export function toSvg(doc, catalogue, options = {}) {
     typeof options.layout === "object" &&
     options.layout.nodes &&
     Object.keys(options.layout.nodes).length > 0;
-  const lay = drawn ? drawnLayout(doc, catalogue, options.layout) : layout(doc, catalogue);
+  // How edges are routed: the option, else the sidecar's `routing`, which counts even when the
+  // sidecar places nothing.
+  const sidecarRouting =
+    options.layout && typeof options.layout === "object" ? options.layout.routing : undefined;
+  const routing = readRouting(options.routing ?? sidecarRouting);
+  const lay = drawn
+    ? drawnLayout(doc, catalogue, {
+        ...options.layout,
+        frames: options.frames ?? options.layout.frames,
+        routing,
+      })
+    : layout(doc, catalogue, { routing, styles: options.frames ?? options.layout?.frames ?? null });
   const [w, h] = lay.canvas;
   const [ox, oy] = lay.origin ?? [0, 0];
   // The drawing keeps its own coordinates: the viewBox moves to them instead of the boxes moving
@@ -247,6 +266,12 @@ export function toSvg(doc, catalogue, options = {}) {
   // Outer groups first, so a nested one paints over its parent. A tint fills only its own
   // group: every group inside a tinted one lays the page background down first. Without a
   // tint there is nothing to cut, and the picture is what it always was.
+  // Each caption as its frame was sized for it, with an icon only where one is drawn.
+  const captions = frameCaptions(
+    doc,
+    catalogue,
+    Object.fromEntries(drawnGroups.map((g) => [g.id, { icon: styleOf(g.id).body ? "y" : null }])),
+  );
   const cut = tintedFrames
     ? framesUnderTint(drawnGroups, (id) => styleOf(id).tint !== null)
     : new Set();
@@ -273,10 +298,19 @@ export function toSvg(doc, catalogue, options = {}) {
       out.push(
         `<svg class="gi" x="${f1(f[0] + 12)}" y="${f1(f[1] + 7)}" width="${FRAME_ICON}" height="${FRAME_ICON}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`,
       );
-    // The label, else the kind's name in the same style; the kind id is never drawn.
-    out.push(
-      `<text class="g" x="${f1(lx)}" y="${f1(f[1] + 19)}">${escapeXml(groupCaption(catalogue, g))}</text>`,
-    );
+    // The label, else the kind's name in the same style; the kind id is never drawn. A caption
+    // too long for the widest frame is set on two lines (frameCaption in text.js).
+    const lines = captions[g.id]?.lines ?? [groupCaption(catalogue, g)];
+    const words =
+      lines.length === 1
+        ? escapeXml(lines[0])
+        : lines
+            .map(
+              (line, k) =>
+                `<tspan x="${f1(lx)}" y="${f1(f[1] + 19 + k * CAPTION_LINE)}">${escapeXml(line)}</tspan>`,
+            )
+            .join("");
+    out.push(`<text class="g" x="${f1(lx)}" y="${f1(f[1] + 19)}">${words}</text>`);
     out.push("</g>");
   }
   // Edge shape and label placement come from geometry.js, as on the canvas: a reciprocal or
@@ -284,10 +318,15 @@ export function toSvg(doc, catalogue, options = {}) {
   // outer side of its own curve.
   for (const e of lay.edges) {
     const dash = e.dashed ? ' stroke-dasharray="6 4"' : "";
-    if (e.points.length === 7) {
+    if (e.ortho) {
+      // Orthogonal: straight runs with rounded corners, as geometry.js spells it.
+      out.push(
+        `<path d="${edgePath(e)}" fill="none" stroke="var(--edge)" stroke-width="1.4"${dash} marker-end="url(#a)"/>`,
+      );
+    } else if (e.points.length === 7) {
       // A ported end: two smooth cubics, as geometry.js spells it.
       out.push(
-        `<path d="${pathOf(e.points)}" fill="none" stroke="var(--edge)" stroke-width="1.4"${dash} marker-end="url(#a)"/>`,
+        `<path d="${edgePath(e)}" fill="none" stroke="var(--edge)" stroke-width="1.4"${dash} marker-end="url(#a)"/>`,
       );
     } else if (e.points.length === 3) {
       const [[x1, y1], [cx, cy], [x2, y2]] = e.points;

@@ -114,6 +114,38 @@ export function nodeWidth(name, sub) {
   return Math.max(MIN_BOX_W, Math.min(MAX_BOX_W, Math.ceil(need)));
 }
 
+// A group's caption: 12px, 12px in from the frame's left side, pushed FRAME_ICON_SHIFT further
+// right by an icon (the icon and a 6px gap). A frame is at least as wide as its caption plus
+// 12px either side, up to CAPTION_MAX; a caption that needs more is set on two lines, each
+// CAPTION_LINE apart, and the second is ellipsized if even two are not enough.
+export const CAPTION_FONT = 12;
+export const CAPTION_PAD = 24;
+export const CAPTION_MAX = 360;
+export const CAPTION_LINE = 15;
+export const FRAME_ICON_SHIFT = 22;
+
+/**
+ * A group caption laid out for its frame: the lines it is set on, the least frame width that
+ * holds them (a whole number), and how many px taller the label strip is than one line.
+ * @returns {{ lines: string[], width: number, extra: number }}
+ */
+export function frameCaption(text, icon = false) {
+  // The export sets a caption in 12px sans; the canvas in 11px mono (canvas.css .frame-label),
+  // about 0.62em a character. The frame is sized for whichever is wider.
+  const measure = (t) => Math.max(textWidth(t, CAPTION_FONT), [...String(t)].length * 11 * 0.62);
+  const room = CAPTION_PAD + (icon ? FRAME_ICON_SHIFT : 0);
+  const s = String(text ?? "");
+  const one = measure(s) + room;
+  if (one <= CAPTION_MAX) return { lines: [s], width: Math.ceil(one), extra: 0 };
+  const lines = wrap(s, CAPTION_MAX - room, 2, measure);
+  const widest = Math.max(...lines.map(measure));
+  return {
+    lines,
+    width: Math.min(CAPTION_MAX, Math.ceil(widest + room)),
+    extra: (lines.length - 1) * CAPTION_LINE,
+  };
+}
+
 /**
  * Where a node's icon and words go in a box `w` px wide (78 high): the name on one line, or on
  * two when it does not fit one, the second ellipsized if even two are not enough; the second

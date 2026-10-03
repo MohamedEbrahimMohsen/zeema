@@ -19,6 +19,21 @@
 // live in the layout sidecar under a key derived from the pair; everything else is recomputed
 // from the boxes on every frame.
 
+import { groupCaption } from "./document.js";
+import { orthoPath, routeOrthogonal } from "./routing.js";
+import { frameCaption } from "./text.js";
+
+// How edges are drawn: "orthogonal" (axis-aligned segments with rounded corners, routing.js) or
+// "curved" (the curves described above). A design says which in its layout sidecar's `routing`;
+// one that says nothing is drawn this way.
+export const ROUTINGS = ["orthogonal", "curved"];
+export const DEFAULT_ROUTING = "orthogonal";
+
+/** A stored routing as drawn: one of ROUTINGS, anything else the default. */
+export function readRouting(v) {
+  return ROUTINGS.includes(v) ? v : DEFAULT_ROUTING;
+}
+
 // Distance between neighbouring lanes at their midpoints, in px.
 export const LANE_STEP = 24;
 export const BEND_REACH = 46;
@@ -285,11 +300,50 @@ function labelPlacement(mid, points, shared) {
 // as before, whenever neither end is ported. With a port it is seven points,
 // [from, c1, d1, middle, d2, c2, to]: two cubics meeting smoothly at the curve's middle, with no
 // straight segment and no corner anywhere (see `smooth`).
-export function edgeGeometry(doc, boxes, bows = {}, ports = {}, frames = {}) {
+//
+// `options.captions` (`frameCaptions`) keeps orthogonal edges and their labels off the group
+// captions; `options.labelAvoid` is more boxes labels stay off (the canvas's notes).
+// `options.routing` picks the style (default DEFAULT_ROUTING). Orthogonal edges carry
+// `ortho: true`, and their `points` are the corners of a polyline from one end to the other,
+// drawn by `edgePath`; `run` is `{ axis, base }` when the edge has a cross run a bow moves (see
+// routing.js), else null. Everything said above about ports, frames and keys holds for both.
+export function edgeGeometry(doc, boxes, bows = {}, ports = {}, frames = {}, options = {}) {
   const isFrame = (id) => !boxes[id] && frames != null && Object.hasOwn(frames, id);
   const boxOf = (id) => (isFrame(id) ? frames[id] : boxes[id]);
   const keys = edgeKeys(doc);
   const edges = doc.edges || [];
+  if (readRouting(options?.routing) === "orthogonal") {
+    const items = [];
+    edges.forEach((e, i) => {
+      const a = boxOf(e.from),
+        b = boxOf(e.to);
+      if (!a || !b) return;
+      const own = ports && Object.hasOwn(ports, keys[i]) ? ports[keys[i]] : null;
+      items.push({ i, key: keys[i], e, a, b, fa: isFrame(e.from), fb: isFrame(e.to), own });
+    });
+    // Where each frame's caption is drawn (its words and icon), from `options.captions`
+    // (`frameCaptions`): the router keeps edges and labels off them.
+    const caps = options?.captions || {};
+    const captionBoxes = [];
+    for (const [gid, f] of Object.entries(frames || {})) {
+      const c = Object.hasOwn(caps, gid) ? caps[gid] : null;
+      if (c) captionBoxes.push([f[0] + 10, f[1] + 5, Math.max(0, c.width - 20), 16 + c.extra]);
+    }
+    return routeOrthogonal(items, boxes, bows || {}, isPort, {
+      captions: captionBoxes,
+      labelAvoid: options?.labelAvoid || [],
+    }).map((r) => {
+      const e = edges[r.i];
+      const label = e.label || e.protocol || null;
+      return {
+        ...r,
+        from: e.from,
+        to: e.to,
+        dashed: e.mode === "async",
+        label: label === null ? null : String(label),
+      };
+    });
+  }
   const buckets = new Map();
   edges.forEach((e, i) => {
     const key = [e.from, e.to].sort().join("\u0000");
@@ -499,6 +553,21 @@ export function midpointOf(points) {
   return [(x1 + x2) / 2, (y1 + y2) / 2];
 }
 
+/** The SVG path of a drawn edge, whichever way it is routed. */
+export function edgePath(edge) {
+  return edge.ortho ? orthoPath(edge.points) : pathOf(edge.points);
+}
+
+/**
+ * The bow a pointer at (x, y) asks of an orthogonal edge (one `edgeGeometry` drew): how far its
+ * cross run would move to sit under the pointer. Zero for an edge with no cross run.
+ */
+export function orthoBowAt(edge, x, y) {
+  if (!edge?.run) return 0;
+  const v = (edge.run.axis === "y" ? y : x) - edge.run.base;
+  return Math.max(-1200, Math.min(1200, Math.round(v)));
+}
+
 export function pathOf(points) {
   if (points.length === 7) {
     const f = ([x, y]) => `${x.toFixed(1)} ${y.toFixed(1)}`;
@@ -513,9 +582,57 @@ export function pathOf(points) {
   return `M${x1.toFixed(1)} ${y1.toFixed(1)} L${x2.toFixed(1)} ${y2.toFixed(1)}`;
 }
 
+// A frame's padding around what it holds: its members and child frames. The label strip is the
+// top padding, and grows by a line for a caption set on two (see `frameCaption`).
+export const FRAME_PAD_X = 16;
+export const FRAME_PAD_TOP = 32;
+export const FRAME_PAD_BOTTOM = 16;
+
+/**
+ * Every group's caption as its frame sets it: `{ [groupId]: { lines, width, extra, strip } }`.
+ * `strip` is the height of the label strip a pointer aims at the group through. A group style
+ * (`styles`, the sidecar's `frames`) with an icon pushes the words right, so it needs more room.
+ * @param {any} doc
+ * @param {any} [catalogue]
+ * @param {Record<string, any> | null} [styles]
+ * @returns {Record<string, { lines: string[], width: number, extra: number, strip: number }>}
+ */
+export function frameCaptions(doc, catalogue = null, styles = null) {
+  const out = {};
+  for (const g of doc?.groups || []) {
+    const st = styles && Object.hasOwn(styles, g.id) ? styles[g.id] : null;
+    const icon = Boolean(st && typeof st === "object" && typeof st.icon === "string" && st.icon);
+    const cap = frameCaption(groupCaption(catalogue, g), icon);
+    out[g.id] = { ...cap, strip: FRAME_PAD_TOP - 2 + cap.extra };
+  }
+  return out;
+}
+
+/**
+ * The frame around content spanning (x0, y0)–(x1, y1): padded, at least as wide as its caption
+ * (`cap`, one entry of `frameCaptions`), the extra width shared either side, and with its label
+ * strip as tall as the caption needs. The automatic layout sizes a group's block with this and
+ * `groupFrames` draws a frame with it, so the two can never disagree.
+ */
+export function frameAround(x0, y0, x1, y1, cap) {
+  const inner = x1 - x0 + 2 * FRAME_PAD_X;
+  const width = Math.max(inner, cap ? cap.width : 0);
+  const dx = Math.floor((width - inner) / 2);
+  const top = FRAME_PAD_TOP + (cap ? cap.extra : 0);
+  return [x0 - FRAME_PAD_X - dx, y0 - top, width, y1 - y0 + top + FRAME_PAD_BOTTOM];
+}
+
 // Group frames are the bounding box of members and child groups, exactly as the renderer draws
-// them, so a frame never has to be stored and can never drift from the membership.
-export function groupFrames(doc, boxes) {
+// them, so a frame never has to be stored and can never drift from the membership. `captions`
+// (from `frameCaptions`) widen a frame to its caption; without them the caption is the group's
+// label, else its kind, measured with no icon.
+/**
+ * @param {any} doc
+ * @param {Record<string, number[]>} boxes
+ * @param {Record<string, { width: number, extra: number }> | null} [captions]
+ * @returns {Record<string, number[]>}
+ */
+export function groupFrames(doc, boxes, captions = frameCaptions(doc)) {
   const groups = doc.groups || [];
   const frames = {};
   const members = {},
@@ -537,11 +654,12 @@ export function groupFrames(doc, boxes) {
     }
     for (const id of members[gid] || []) if (boxes[id]) rects.push(boxes[id]);
     if (!rects.length) return null;
-    const x0 = Math.min(...rects.map((r) => r[0])) - 16;
-    const y0 = Math.min(...rects.map((r) => r[1])) - 32;
-    const x1 = Math.max(...rects.map((r) => r[0] + r[2])) + 16;
-    const y1 = Math.max(...rects.map((r) => r[1] + r[3])) + 16;
-    frames[gid] = [x0, y0, x1 - x0, y1 - y0];
+    const x0 = Math.min(...rects.map((r) => r[0]));
+    const y0 = Math.min(...rects.map((r) => r[1]));
+    const x1 = Math.max(...rects.map((r) => r[0] + r[2]));
+    const y1 = Math.max(...rects.map((r) => r[1] + r[3]));
+    const cap = captions && Object.hasOwn(captions, gid) ? captions[gid] : null;
+    frames[gid] = frameAround(x0, y0, x1, y1, cap);
     return frames[gid];
   };
   for (const g of groups) frameOf(g.id);

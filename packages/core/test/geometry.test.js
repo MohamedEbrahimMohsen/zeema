@@ -7,8 +7,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import {
+  edgeGeometry as anyEdgeGeometry,
   bowAt,
-  edgeGeometry,
   edgeKeys,
   LANE_STEP,
   midpointOf,
@@ -20,8 +20,16 @@ import {
   rekeyPorts,
   STUB,
 } from "../src/geometry.js";
-import { layout } from "../src/layout.js";
-import { toMermaid, toSvg } from "../src/render.js";
+import { layout as anyLayout } from "../src/layout.js";
+import { toSvg as anySvg, toMermaid } from "../src/render.js";
+
+// Everything here is about the curved style. Orthogonal routing is the default and has its own
+// file (routing.test.js), so every drawing below asks for curves.
+const CURVED = { routing: "curved" };
+const edgeGeometry = (doc, boxes, bows = {}, ports = {}, frames = {}) =>
+  anyEdgeGeometry(doc, boxes, bows, ports, frames, CURVED);
+const layout = (doc, catalogue) => anyLayout(doc, catalogue, CURVED);
+const toSvg = (doc, catalogue, options = {}) => anySvg(doc, catalogue, { ...CURVED, ...options });
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const catalogue = JSON.parse(fs.readFileSync(path.join(here, "catalogue.json"), "utf8"));

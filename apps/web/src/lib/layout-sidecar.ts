@@ -7,7 +7,22 @@
 // the canvas reads through `readSidecar` (which drops anything malformed rather than throwing)
 // and writes through the same shape.
 
+import { DEFAULT_ROUTING, ROUTINGS } from "@zeema/core/geometry";
+
 export const SIDECAR_VERSION = 2;
+
+/**
+ * How a design's edges are drawn: orthogonal runs with rounded corners, or curves. The engine's
+ * default (DEFAULT_ROUTING) is never stored, so a design nobody switched keeps the bytes it had.
+ */
+export type Routing = "orthogonal" | "curved";
+
+/** A stored routing worth keeping: a known one that is not the default. Anything else: none. */
+export function readRoutingField(v: unknown): Routing | undefined {
+  return typeof v === "string" && (ROUTINGS as string[]).includes(v) && v !== DEFAULT_ROUTING
+    ? (v as Routing)
+    : undefined;
+}
 
 /**
  * What a note is pinned to. A note carries at most one anchor, and it names either a node or a
@@ -147,6 +162,8 @@ export type LayoutSidecar = {
   tints?: Record<string, NodeTint>;
   /** The list badge its owner chose (see `BADGE_RE`). Absent: chosen automatically. */
   badge?: string;
+  /** How edges are drawn, when not the engine's default (see `readRoutingField`). */
+  routing?: Routing;
 };
 
 export const NOTE_MIN_W = 80;
@@ -244,6 +261,8 @@ export function readSidecar(raw: unknown, targets?: AnchorTargets): LayoutSideca
   const tints = readTints(r.tints, present);
   if (Object.keys(tints).length) out.tints = tints;
   if (isBadgeRef(r.badge)) out.badge = r.badge;
+  const routing = readRoutingField(r.routing);
+  if (routing) out.routing = routing;
   return out;
 }
 
@@ -379,11 +398,14 @@ export function writeSidecar(
   if (s.ports && Object.keys(s.ports).length) out.ports = s.ports;
   if (s.tints && Object.keys(s.tints).length) out.tints = s.tints;
   if (isBadgeRef(s.badge)) out.badge = s.badge;
+  const routing = readRoutingField(s.routing);
+  if (routing) out.routing = routing;
   return out;
 }
 
 /**
- * Whether a sidecar holds nothing that is drawn: no position, bow, port, note or group style.
+ * Whether a sidecar holds nothing that is drawn: no position, bow, port, note, group style or
+ * edge style.
  * Such a sidecar draws exactly what no sidecar does (the engine lays the design out itself),
  * whatever its `badge` says.
  */
@@ -396,7 +418,8 @@ export function isBlankSidecar(raw: unknown) {
     !s.notes.length &&
     !Object.keys(s.frames).length &&
     !s.ports &&
-    !s.tints
+    !s.tints &&
+    !s.routing
   );
 }
 
@@ -482,6 +505,7 @@ export function pruneSidecar(s: LayoutSidecar, targets: SidecarTargets): LayoutS
   const tints = s.tints ? keep(s.tints, nodes) : {};
   if (Object.keys(tints).length) out.tints = tints;
   if (s.badge) out.badge = s.badge;
+  if (s.routing) out.routing = s.routing;
   return out;
 }
 
@@ -490,8 +514,8 @@ const sortedEntries = <T>(o: Record<string, T>) =>
 
 /**
  * A sidecar as the file `design.layout.json`: read through `readSidecar`, then written with a
- * fixed key order (version, nodes, edges, ports, frames, tints, notes, badge; map keys sorted; a note's
- * fields in declaration order), two-space indent and a trailing newline. The same sidecar always
+ * fixed key order (version, nodes, edges, ports, frames, tints, routing, notes, badge; map keys
+ * sorted; a note's fields in declaration order), two-space indent and a trailing newline. The same sidecar always
  * gives the same bytes, whatever order the database handed its keys back in.
  */
 export function sidecarFile(raw: unknown): string {
@@ -527,6 +551,7 @@ export function sidecarFile(raw: unknown): string {
         return [k, e];
       }),
     );
+  if (s.routing) file.routing = s.routing;
   file.notes = s.notes.map((n) => {
     const note: Note = { id: n.id, x: n.x, y: n.y, w: n.w, h: n.h, text: n.text };
     if (n.anchor)
