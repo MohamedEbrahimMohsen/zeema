@@ -140,6 +140,7 @@ export function loadCatalogue(rootArg) {
     rules: en.rules ?? {},
     boundaryIcons: en.boundaryIcons ?? {},
     providers: en.providers ?? {},
+    groupKinds: en.groupKinds ?? {},
   });
   const schema = sorted(
     JSON.parse(fs.readFileSync(path.join(root, "schema", "design.schema.json"), "utf8")),

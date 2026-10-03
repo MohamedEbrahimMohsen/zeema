@@ -3,6 +3,9 @@
 // connect"), never about the group. The group itself is aimed at explicitly: its dashed border,
 // within BAND screen pixels either side of the line, or its label strip along the top.
 
+import { portAt } from "@zeema/core/geometry";
+import type { Port } from "@/lib/layout-sidecar";
+
 type Box = [number, number, number, number];
 
 /** How far either side of a frame's dashed line still counts as "on the border", in screen px. */
@@ -19,6 +22,22 @@ export function onFrameTarget(f: Box, x: number, y: number, k = 1) {
   if (dx || dy) return Math.hypot(dx, dy) <= band;
   const rim = Math.min(x - fx, fx + fw - x, y - fy, fy + fh - y);
   return rim <= band || y - fy <= FRAME_LABEL_STRIP;
+}
+
+/**
+ * Where on a target's border an edge end let go at (x, y) attaches: the nearest border point, as
+ * a port. A frame aimed at through its label strip (not its border band) attaches on its top
+ * side, straight above the point. `frame` says the box is a group's frame; `k` is the zoom.
+ */
+export function dropPort(box: Box, x: number, y: number, frame = false, k = 1): Port {
+  const [fx, fy, fw, fh] = box;
+  const inside = x >= fx && x <= fx + fw && y >= fy && y <= fy + fh;
+  const rim = Math.min(x - fx, fx + fw - x, y - fy, fy + fh - y);
+  if (frame && inside && rim > FRAME_BAND / k) {
+    const t = fw ? Math.min(Math.max((x - fx) / fw, 0), 1) : 0.5;
+    return { side: "top", t: Math.round(t * 1000) / 1000 };
+  }
+  return portAt(box, x, y) as Port;
 }
 
 /**

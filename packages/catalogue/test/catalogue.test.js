@@ -58,6 +58,13 @@ describe("bundle", () => {
     expect(Object.keys(cat.locale.boundaryIcons).sort()).toEqual(onDisk);
   }, 120_000);
 
+  it("names every group kind the design schema allows, and nothing else", () => {
+    const cat = loadCatalogue();
+    const kinds = cat.schema.properties.groups.items.properties.kind.enum;
+    for (const id of kinds) expect(cat.locale.groupKinds[id]?.name, id).toBeTruthy();
+    expect(Object.keys(cat.locale.groupKinds).sort()).toEqual([...kinds].sort());
+  }, 120_000);
+
   it("indexes every design on disk with its tier and writability", () => {
     const index = designIndex(loadCatalogue().root);
     expect(index.length).toBeGreaterThan(20);

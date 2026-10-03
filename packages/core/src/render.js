@@ -3,7 +3,7 @@
 // component's icon on one neutral surface, groups are dashed containers,
 // edges are arrows, solid for sync and dashed for async.
 
-import { nodeLines } from "./document.js";
+import { groupCaption, groupTitle, nodeLines } from "./document.js";
 import { drawnLayout } from "./drawn.js";
 import { framesOuterFirst, framesUnderTint, pathOf } from "./geometry.js";
 import { layout } from "./layout.js";
@@ -217,7 +217,6 @@ export function toSvg(doc, catalogue, options = {}) {
     ".body{fill:var(--node-fill);stroke:var(--node-line)}" +
     ".n{font-size:14px;font-weight:500;fill:var(--ink)}.c{font-size:11px;fill:var(--muted)}" +
     ".g{font-size:12px;fill:var(--muted)}" +
-    ".gk{font-size:10px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;fill:var(--muted);opacity:0.75}" +
     ".e{font-size:12px;fill:var(--muted);paint-order:stroke;" +
     "stroke:var(--bg);stroke-width:3px}.ic{color:var(--ink)}";
   // Only a drawing that uses a tint or a group icon carries their styles, so every other
@@ -262,6 +261,9 @@ export function toSvg(doc, catalogue, options = {}) {
       out.push(
         `<rect x="${f1(f[0])}" y="${f1(f[1])}" width="${f1(f[2])}" height="${f1(f[3])}" rx="14" fill="var(--bg)"/>`,
       );
+    // The frame, its icon and its words in one group whose <title> names it whole: label,
+    // kind and id, since the frame itself shows one of them.
+    out.push(`<g><title>${escapeXml(groupTitle(catalogue, g))}</title>`);
     out.push(
       `<rect${dataTint} x="${f1(f[0])}" y="${f1(f[1])}" width="${f1(f[2])}" height="${f1(f[3])}" rx="14" fill="none" stroke="var(--frame)" stroke-width="1" stroke-dasharray="6 4"/>`,
     );
@@ -271,15 +273,11 @@ export function toSvg(doc, catalogue, options = {}) {
       out.push(
         `<svg class="gi" x="${f1(f[0] + 12)}" y="${f1(f[1] + 7)}" width="${FRAME_ICON}" height="${FRAME_ICON}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`,
       );
-    // The name, then the kind as a tag beside it — never "name (kind)". With no label the id
-    // stands in; when that caption would only repeat the kind, the tag alone carries it.
-    const caption = g.label ? String(g.label) : String(g.id);
-    const name = caption === g.kind ? "" : caption;
-    if (name)
-      out.push(`<text class="g" x="${f1(lx)}" y="${f1(f[1] + 19)}">${escapeXml(name)}</text>`);
+    // The label, else the kind's name in the same style; the kind id is never drawn.
     out.push(
-      `<text class="gk" x="${f1(lx + (name ? name.length * 6.4 + 8 : 0))}" y="${f1(f[1] + 19)}">${escapeXml(g.kind)}</text>`,
+      `<text class="g" x="${f1(lx)}" y="${f1(f[1] + 19)}">${escapeXml(groupCaption(catalogue, g))}</text>`,
     );
+    out.push("</g>");
   }
   // Edge shape and label placement come from geometry.js, as on the canvas: a reciprocal or
   // parallel pair is two curves in two lanes, each with its own arrowhead and its label on the
@@ -385,7 +383,7 @@ export function toMermaid(doc, direction = "TD", catalogue = null) {
   };
   const emitGroup = (g, depth) => {
     const ind = "  ".repeat(depth);
-    out.push(`${ind}subgraph ${mid(`g_${g.id}`)}["${mesc(g.label || g.id)} (${mesc(g.kind)})"]`);
+    out.push(`${ind}subgraph ${mid(`g_${g.id}`)}["${mesc(groupCaption(catalogue, g))}"]`);
     for (const n of members.get(g.id) ?? []) nodeLine(n, `${ind}  `);
     for (const c of children.get(g.id) ?? []) emitGroup(c, depth + 1);
     out.push(`${ind}end`);

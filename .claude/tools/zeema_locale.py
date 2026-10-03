@@ -45,7 +45,8 @@ def write(doc):
            "# text themselves. Every id in kinds/, components/ and rules/ must have an entry here, and",
            "# every icon in icons/boundaries/ an entry under boundaryIcons (the icons a group may show; the",
            "# user-facing word is group; boundary stays in the stored format), and every folder in",
-           "# components/ an entry under providers.",
+           "# components/ an entry under providers, and every group kind the design schema allows an entry",
+           "# under groupKinds (the name a group with no label is drawn with).",
            "# Regenerated from the catalogue; keep entries sorted by id.",
            block("categories", cats), "", block("kinds", doc.get("kinds", {})), "",
            block("components", doc.get("components", {})), "", block("rules", doc.get("rules", {})), ""]
@@ -55,6 +56,9 @@ def write(doc):
     # Provider names (the providers key, one per folder in components/) are kept as they are too.
     if doc.get("providers"):
         out += [block("providers", doc["providers"]), ""]
+    # Group kind names (the groupKinds key, one per group kind in the design schema) likewise.
+    if doc.get("groupKinds"):
+        out += [block("groupKinds", doc["groupKinds"]), ""]
     EN.write_text("\n".join(out), encoding="utf-8", newline="\n")
 
 def sections(snippet):

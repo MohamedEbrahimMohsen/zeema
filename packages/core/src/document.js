@@ -117,6 +117,20 @@ export function nodeLines(catalogue, node) {
   return { name: displayName(catalogue, node), sub, id: node.component ?? node.id };
 }
 
+// The words a group's frame shows: its label, else its kind's name ("VPC", "Point of presence"),
+// never the kind id beside a label. The kind and the id stay in hover text and the Inspector.
+export function groupCaption(catalogue, group) {
+  if (group.label) return String(group.label);
+  return own(catalogue?.locale?.groupKinds, group.kind)?.name || group.kind || group.id;
+}
+
+// The frame's hover text: label · kind's name · id, each once (a group with no label is already
+// called by its kind).
+export function groupTitle(catalogue, group) {
+  const kind = own(catalogue?.locale?.groupKinds, group.kind)?.name || group.kind;
+  return [...new Set([group.label, kind, group.id].filter(Boolean).map(String))].join(" · ");
+}
+
 // The catalogue carries one vendor-neutral component per kind, and the convention that names it
 // is that its id is the kind id: `queue` is the generic queue, `kafka` is a product. Readers that
 // want to put the generic first ask here rather than re-deriving the convention.

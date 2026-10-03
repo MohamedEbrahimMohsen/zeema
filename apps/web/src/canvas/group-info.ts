@@ -80,20 +80,38 @@ export function edgesText(c: { in: number; out: number }) {
 
 type Box = [number, number, number, number];
 
+/** The group's parent, its parent's parent and so on, innermost first. Stops on a cycle. */
+export function ancestorsOf(doc: any, groupId: string | null): string[] {
+  const groups = groupsOf(doc);
+  const out: string[] = [];
+  let walk = groupId;
+  while (walk && !out.includes(walk)) {
+    out.push(walk);
+    walk = groups.find((g) => g.id === walk)?.parent ?? null;
+  }
+  return out;
+}
+
 /**
- * The group a dragged item let go at (x, y) would move into: the innermost frame holding the
- * point, leaving out `skip` (what is being dragged and everything inside it). The item's current
- * group is not a new one, so landing back in it is an ordinary move (null). `frames` are the
- * frames as they were when the drag began, so a parent stretching after its member is not read
- * as the member still being in it.
+ * Where a dragged item let go at (x, y) goes: `{ group }` to move it (`group: null` is the top
+ * level), or null to leave its grouping alone. `ancestors` is the group it is in now, then that
+ * group's parent, and so on (empty at the top level). `skip` is what is being dragged and
+ * everything inside it. `frames` are the frames as they were when the drag began, so a parent
+ * stretching after its member is not read as the member still being in it.
+ *
+ * A plain drag never lets an ancestor capture the item: nudged past its own frame's edge it stays
+ * put and the frame stretches. Only a frame outside its chain (a sibling, a cousin, an unrelated
+ * group, a group inside its own) takes it. Shift is "take it out": the innermost frame under the
+ * point, whatever it is, or the top level over empty canvas.
  */
 export function regroupTarget(
   frames: Record<string, Box>,
   x: number,
   y: number,
   skip: Set<string>,
-  current: string | null,
-): string | null {
+  ancestors: string[],
+  shift = false,
+): { group: string | null } | null {
   let best: string | null = null;
   let area = Number.POSITIVE_INFINITY;
   for (const [id, f] of Object.entries(frames)) {
@@ -105,5 +123,8 @@ export function regroupTarget(
       area = a;
     }
   }
-  return best && best !== current ? best : null;
+  const current = ancestors[0] ?? null;
+  if (best === current) return null;
+  if (shift) return { group: best };
+  return best && !ancestors.includes(best) ? { group: best } : null;
 }

@@ -215,6 +215,13 @@ export function validateRepository(rootArg, options = {}) {
     if (!locale.providers?.[id]?.name) fail(`locale missing provider ${id}`);
   for (const id of Object.keys(locale.providers ?? {}))
     if (!providerIds.includes(id)) fail(`locale unknown provider ${id}`);
+  // Group kinds are an enum in the design schema; each is drawn by its name when a group has no
+  // label, so the locale is checked against the enum, both ways.
+  const groupKindIds = cat.schema?.properties?.groups?.items?.properties?.kind?.enum ?? [];
+  for (const id of groupKindIds)
+    if (!locale.groupKinds?.[id]?.name) fail(`locale missing group kind ${id}`);
+  for (const id of Object.keys(locale.groupKinds ?? {}))
+    if (!groupKindIds.includes(id)) fail(`locale unknown group kind ${id}`);
 
   const iconExists = (p) => fs.existsSync(path.join(root, p));
   for (const id of Object.keys(kinds))

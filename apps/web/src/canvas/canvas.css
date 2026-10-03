@@ -659,6 +659,25 @@
   stroke-dasharray: none;
   fill: color-mix(in srgb, var(--accent) 6%, transparent);
 }
+/* a Shift-drag that would take the selection out to the top level: the whole canvas is the target */
+.zeema-canvas svg.scene.drop-top {
+  outline: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  outline-offset: -2px;
+}
+.zeema-canvas .drop-hint {
+  position: absolute;
+  pointer-events: none;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+  color: var(--accent);
+  background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  white-space: nowrap;
+}
 .zeema-canvas .node-box.wire-source rect.body {
   stroke-dasharray: 4 3;
 }
@@ -838,14 +857,6 @@
   font-size: 11px;
   font-family: var(--mono);
   fill: var(--muted);
-  cursor: move;
-}
-/* the kind, as a tag beside the name — never in parentheses after it */
-.zeema-canvas .frame-kind {
-  font-size: 10px;
-  font-family: var(--mono);
-  fill: var(--muted);
-  opacity: 0.75;
   cursor: move;
 }
 

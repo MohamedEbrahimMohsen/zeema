@@ -32,6 +32,8 @@ export type Catalogue = {
     boundaryIcons?: Record<string, LocaleEntry>;
     /** Provider names, keyed by folder under components/. */
     providers?: Record<string, LocaleEntry>;
+    /** Group kind names ("VPC", "Point of presence"), keyed by the design schema's group kinds. */
+    groupKinds?: Record<string, LocaleEntry>;
   };
   schema: unknown;
 };

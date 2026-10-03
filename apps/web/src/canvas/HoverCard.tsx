@@ -63,7 +63,7 @@ export function HoverCard({ at, doc, catalogue }: { at: HoverAt; doc: any; catal
     body = (
       <>
         {row("Name", g.label || g.id, "hc-name")}
-        {row("Kind", own(catalogue.locale?.kinds, g.kind)?.name || g.kind)}
+        {row("Kind", own(catalogue.locale?.groupKinds, g.kind)?.name || g.kind)}
         {path.length ? row("Parent", path.join(" › ")) : null}
         {row("Members", membersText(memberCounts(doc, g.id)))}
         {edges ? row("Edges", edges) : null}

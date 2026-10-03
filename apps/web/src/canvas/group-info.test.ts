@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  ancestorsOf,
   edgeCrossings,
   edgesText,
   groupAndDescendants,
@@ -76,22 +77,44 @@ describe("regroupTarget", () => {
     spoke: [100, 100, 200, 200],
     hub: [350, 100, 200, 200],
   };
-  it("takes the innermost frame under the point", () => {
-    expect(regroupTarget(frames, 450, 200, new Set(), "spoke")).toBe("hub");
-    expect(regroupTarget(frames, 500, 450, new Set(), "spoke")).toBe("vnet");
+  const none = new Set<string>();
+  const inSpoke = ["spoke", "vnet", "platform"];
+  it("lists a group's ancestors, innermost first", () => {
+    expect(ancestorsOf(doc, "spoke")).toEqual(inSpoke);
+    expect(ancestorsOf(doc, null)).toEqual([]);
+  });
+  it("moves a plain drag into a sibling or a cousin", () => {
+    expect(regroupTarget(frames, 450, 200, none, inSpoke)).toEqual({ group: "hub" });
+    expect(regroupTarget(frames, 900, 700, none, ["other"])).toEqual({ group: "platform" });
+  });
+  it("never lets an ancestor capture a plain drag", () => {
+    expect(regroupTarget(frames, 500, 450, none, inSpoke)).toBeNull();
+    expect(regroupTarget(frames, 900, 700, none, inSpoke)).toBeNull();
+  });
+  it("moves a plain drag into a group inside its own", () => {
+    expect(regroupTarget(frames, 150, 150, none, ["vnet", "platform"])).toEqual({ group: "spoke" });
   });
   it("reads landing back in the current group as no move", () => {
-    expect(regroupTarget(frames, 150, 150, new Set(), "spoke")).toBeNull();
+    expect(regroupTarget(frames, 150, 150, none, inSpoke)).toBeNull();
+    expect(regroupTarget(frames, 150, 150, none, inSpoke, true)).toBeNull();
+  });
+  it("leaves the grouping alone on empty canvas without Shift", () => {
+    expect(regroupTarget(frames, 1500, 1500, none, inSpoke)).toBeNull();
+    expect(regroupTarget(frames, 1500, 1500, none, [])).toBeNull();
+  });
+  it("takes it out with Shift: into any frame, ancestors too, or to the top level", () => {
+    expect(regroupTarget(frames, 500, 450, none, inSpoke, true)).toEqual({ group: "vnet" });
+    expect(regroupTarget(frames, 900, 700, none, inSpoke, true)).toEqual({ group: "platform" });
+    expect(regroupTarget(frames, 1500, 1500, none, inSpoke, true)).toEqual({ group: null });
+    expect(regroupTarget(frames, 1500, 1500, none, [], true)).toBeNull();
   });
   it("never offers what is being dragged, or anything inside it", () => {
-    expect(regroupTarget(frames, 150, 150, new Set(["spoke"]), "vnet")).toBeNull();
+    expect(regroupTarget(frames, 150, 150, new Set(["spoke"]), ["vnet", "platform"])).toBeNull();
     expect(
-      regroupTarget(frames, 150, 150, new Set(["vnet", "spoke", "hub"]), "platform"),
+      regroupTarget(frames, 150, 150, new Set(["vnet", "spoke", "hub"]), ["platform"], true),
     ).toBeNull();
-    expect(regroupTarget(frames, 150, 150, new Set(["spoke"]), "platform")).toBe("vnet");
-  });
-  it("finds nothing on empty canvas", () => {
-    expect(regroupTarget(frames, 1500, 1500, new Set(), null)).toBeNull();
-    expect(regroupTarget(frames, 900, 700, new Set(), null)).toBe("platform");
+    expect(regroupTarget(frames, 150, 150, new Set(["spoke"]), ["platform"])).toEqual({
+      group: "vnet",
+    });
   });
 });

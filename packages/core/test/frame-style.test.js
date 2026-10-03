@@ -5,9 +5,17 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { groupCaption, groupTitle } from "../src/document.js";
 import { drawnLayout } from "../src/drawn.js";
 import { framesOuterFirst, framesUnderTint } from "../src/geometry.js";
-import { FRAME_ICON_SHIFT, frameIconKey, TINT, TINT_FILL_ALPHA, toSvg } from "../src/render.js";
+import {
+  FRAME_ICON_SHIFT,
+  frameIconKey,
+  TINT,
+  TINT_FILL_ALPHA,
+  toMermaid,
+  toSvg,
+} from "../src/render.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const catalogue = JSON.parse(fs.readFileSync(path.join(here, "catalogue.json"), "utf8"));
@@ -26,7 +34,6 @@ const GLYPH = '<path d="M4 4h16"/>';
 
 const frameOf = (lay) => lay.frames.vpc;
 const labelX = (svg) => Number(/<text class="g" x="([-\d.]+)"/.exec(svg)?.[1]);
-const tagX = (svg) => Number(/<text class="gk" x="([-\d.]+)"/.exec(svg)?.[1]);
 
 describe("boundary tint and icon", () => {
   it("draws a tinted, iconed boundary with the label moved past the icon", () => {
@@ -43,7 +50,7 @@ describe("boundary tint and icon", () => {
     expect(svg).toContain(`<svg class="gi" x="${(f[0] + 12).toFixed(1)}"`);
     expect(svg).toContain(GLYPH);
     expect(labelX(svg)).toBeCloseTo(f[0] + 12 + FRAME_ICON_SHIFT, 1);
-    expect(tagX(svg)).toBeGreaterThan(labelX(svg));
+    expect(svg).not.toContain('class="gk"');
   });
 
   it("carries both themes' tint tokens when the theme is automatic", () => {
@@ -262,5 +269,46 @@ describe("arrowheads", () => {
     expect(toSvg(doc, catalogue, { layout: { nodes, edges: {} }, theme: "dark" })).toContain(
       "--edge:#a0a0a8",
     );
+  });
+});
+
+// A frame shows one thing: the group's label, else its kind's name from the locale, in the same
+// style. The kind id is never drawn beside a label; the frame's <title> names it whole.
+describe("the words on a frame", () => {
+  const named = {
+    ...catalogue,
+    locale: { ...catalogue.locale, groupKinds: { vpc: { name: "VPC" } } },
+  };
+  const unlabelled = {
+    ...doc,
+    nodes: doc.nodes.map((n) => ({ ...n, group: "net-a" })),
+    groups: [{ id: "net-a", kind: "vpc" }],
+  };
+  const words = (svg) =>
+    [...svg.matchAll(/<text class="g[^"]*"[^>]*>([^<]*)<\/text>/g)].map((m) => m[1]);
+  const render = (d) => toSvg(d, named, { layout: { nodes, edges: {} }, theme: "light" });
+
+  it("draws only the label when the group has one", () => {
+    const svg = render(doc);
+    expect(words(svg)).toEqual(["Main"]);
+    expect(svg).not.toContain(">vpc</text>");
+    expect(svg).toContain("<g><title>Main · VPC · vpc</title>\n<rect");
+  });
+
+  it("draws the kind's name, not its id, when the group has no label", () => {
+    const svg = render(unlabelled);
+    expect(words(svg)).toEqual(["VPC"]);
+    expect(svg).toContain("<title>VPC · net-a</title>");
+  });
+
+  it("falls back to the kind id when the locale has no name for it", () => {
+    expect(groupCaption(catalogue, { id: "net-a", kind: "vpc" })).toBe("vpc");
+    expect(groupCaption(null, { id: "net-a", kind: "vpc", label: "Edge" })).toBe("Edge");
+    expect(groupTitle(named, { id: "vpc", kind: "vpc" })).toBe("VPC · vpc");
+  });
+
+  it("titles a Mermaid subgraph with the same words", () => {
+    expect(toMermaid(doc, "TD", named)).toContain('["Main"]');
+    expect(toMermaid(unlabelled, "TD", named)).toContain('["VPC"]');
   });
 });

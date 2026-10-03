@@ -9,7 +9,7 @@
 // under it. The wheel scrolls (shift scrolls sideways); ctrl, meta, alt or a pinch zooms around the
 // pointer.
 
-import { nodeLines } from "@zeema/core/document";
+import { groupCaption, groupTitle, nodeLines } from "@zeema/core/document";
 import {
   bowAt,
   edgeGeometry,
@@ -47,8 +47,8 @@ import {
   type PortSide,
 } from "@/lib/layout-sidecar";
 import { own } from "@/lib/own";
-import { frameTargetAt } from "./frame-target";
-import { groupAndDescendants, regroupTarget } from "./group-info";
+import { dropPort, frameTargetAt } from "./frame-target";
+import { ancestorsOf, groupAndDescendants, regroupTarget } from "./group-info";
 import { anchorOffset, coversTarget, noteDropTarget, sameAnchor } from "./note-anchor";
 
 const NS = "http://www.w3.org/2000/svg";
@@ -130,16 +130,19 @@ export type EdgeEnd = "from" | "to";
 // How close to its own box's border, in screen pixels, an end handle has to be let go to be read
 // as "attach here" rather than "somewhere else".
 const PORT_REACH = 12;
+// How far, in screen pixels, the pointer travels before a press on a component is a drag.
+const DRAG_THRESHOLD = 3;
 
 export type Handlers = {
   onSelect?: (selection: Subject, picked: Picked) => void;
   /**
-   * A drag of the selection ended. `into` is set when it was let go over another group's frame
-   * (Shift not held): the selected components and groups move into that group, in the same step.
+   * A drag of the selection ended. `into` is set when it was let go somewhere that regroups it
+   * (see `regroupTarget`): the selected components and groups move into `group` (null: the top
+   * level), in the same step.
    */
   onMove?: (
     moves: Array<{ id: string; x: number; y: number }>,
-    into: { group: string; nodes: string[]; groups: string[] } | null,
+    into: { group: string | null; nodes: string[]; groups: string[] } | null,
   ) => void;
   /**
    * A wire was let go on another component, or on a group's frame (`to` is then the group id: an
@@ -152,8 +155,11 @@ export type Handlers = {
   onPortPreview?: (key: string, end: EdgeEnd, port: Port | null) => void;
   /** An end handle was let go on its own box's border: attach that end there. */
   onPort?: (key: string, end: EdgeEnd, port: Port) => void;
-  /** An end handle was let go on another component or a group's frame: move that end there. */
-  onReconnect?: (index: number, end: EdgeEnd, nodeId: string) => void;
+  /**
+   * An end handle was let go on another component or a group's frame: move that end there,
+   * attached at `port`, the point on the new box's border nearest where it was let go.
+   */
+  onReconnect?: (index: number, end: EdgeEnd, nodeId: string, port: Port | null) => void;
   labelOf?: (kind: string, ref: string | number) => string | null;
   onLabel?: (kind: string, ref: string | number, value: string) => void;
   onContext?: (target: Subject, x: number, y: number) => void;
@@ -227,19 +233,6 @@ export function wrapNote(text: string, width: number) {
   }
   return out.length ? out : [""];
 }
-
-/**
- * How wide a piece of SVG text actually is. The browser knows; it only refuses when the node
- * is not being rendered (a hidden tab, a detached tree), and then an estimate from the character
- * count is close enough to keep a tag from landing on the word before it.
- */
-const textWidth = (node: Element, estimate: number) => {
-  try {
-    return (node as SVGTextContentElement).getComputedTextLength() || estimate;
-  } catch {
-    return estimate;
-  }
-};
 
 const overlaps = (b: Box, r: number[]) =>
   b[0] < r[2] && b[0] + b[2] > r[0] && b[1] < r[3] && b[1] + b[3] > r[1];
@@ -542,6 +535,13 @@ export class Scene {
   /** The box an edge end names: a component's box, else a group's frame. */
   boxOf(id: string): Box | undefined {
     return this.boxes[id] ?? (Object.hasOwn(this.frames, id) ? this.frames[id] : undefined);
+  }
+
+  /** The port on `id`'s box (component or frame) nearest the world point an end was let go at. */
+  dropPortOn(id: string, at: [number, number] | null): Port | null {
+    const b = this.boxOf(id);
+    if (!b || !at) return null;
+    return dropPort(b, at[0], at[1], !this.boxes[id], this.view.k);
   }
 
   /** The element a wire highlights for an end: a component's card, or a group's frame. */
@@ -998,6 +998,9 @@ export class Scene {
         width: f[2],
         height: f[3],
         rx: 14,
+        // The frame's whole name (label · kind · id) for an exported picture's <title>; on the
+        // canvas the hover card says it.
+        "aria-label": groupTitle(this.model.catalogue, group),
         "data-tint": hex ? "hex" : tint,
         "data-strength": fill?.strength ?? null,
         style:
@@ -1013,12 +1016,9 @@ export class Scene {
         height: f[3],
         rx: 14,
       });
-      // A group reads as a name with its kind beside it, never "name (kind)". The label is
-      // what the author typed; the kind is a tag. With no label the id stands in, so a hand
-      // -written design keeps reading as cell-a / cell-b. When that caption would only repeat
-      // the kind, the tag alone says it — a fresh group whose auto-id is its kind shows one word.
-      // The icon, when the group has one and the catalogue can draw it, comes first and
-      // pushes the words right. A reference to an icon that is not there draws nothing.
+      // A group reads as its label, else its kind's name ("VPC") in the same style; the kind id
+      // and the group id are the hover card's (render.js draws the same words). The icon, when
+      // the group has one and the catalogue can draw it, comes first and pushes the words right. A reference to an icon that is not there draws nothing.
       const symbol = this.frameSymbol(style?.icon);
       const icon = symbol
         ? el("use", {
@@ -1032,20 +1032,12 @@ export class Scene {
         : null;
       const labelDx = 12 + (icon ? FRAME_ICON_SHIFT : 0);
       const label = el("text", { class: "frame-label", x: f[0] + labelDx, y: f[1] + 19 });
-      const caption = group.label ? String(group.label) : String(group.id);
-      const name = caption === group.kind ? "" : caption;
-      label.textContent = name;
-      const tag = el("text", { class: "frame-kind", x: f[0] + labelDx, y: f[1] + 19 });
-      tag.textContent = group.kind;
-      for (const target of [hit, label, tag, icon]) {
+      label.textContent = groupCaption(this.model.catalogue, group);
+      for (const target of [hit, label, icon]) {
         target?.addEventListener("pointerdown", (ev: any) => this.startGroupDrag(group.id, ev));
       }
-      g.append(...(under ? [under] : []), rect, hit, ...(icon ? [icon] : []), label, tag);
-      // The tag sits just past the name. Measured once here, because the name does not change
-      // while the frame is being dragged — only where the frame is.
-      const tagDx = labelDx + (name ? textWidth(label, name.length * 6.2) + 8 : 0);
-      tag.setAttribute("x", String(f[0] + tagDx));
-      this.frameEls.set(group.id, { under, rect, hit, icon, label, tag, labelDx, tagDx });
+      g.append(...(under ? [under] : []), rect, hit, ...(icon ? [icon] : []), label);
+      this.frameEls.set(group.id, { under, rect, hit, icon, label, labelDx });
     }
   }
 
@@ -1543,7 +1535,7 @@ export class Scene {
       this.space = this.hand;
       svg.classList.toggle("hand", this.hand);
     });
-    // Shift pressed or let go mid-drag turns the move-into-group highlight off or back on at once.
+    // Shift pressed or let go mid-drag switches between the two regroup rules at once.
     const shift = (ev: KeyboardEvent) => {
       if (ev.key !== "Shift" || !this.drag?.moved) return;
       this.drag.shift = ev.shiftKey;
@@ -1671,8 +1663,7 @@ export class Scene {
         t.closest(".note-box") ||
         t.closest(".edge-hit") ||
         t.closest(".frame-hit") ||
-        t.closest(".frame-label") ||
-        t.closest(".frame-kind")
+        t.closest(".frame-label")
       )
         return;
       if (!ev.shiftKey) this.select(null, null);
@@ -1760,13 +1751,7 @@ export class Scene {
       if (els.hit === node || els.line === node || els.label === node)
         return { type: "edge", ref: i };
     for (const [id, f] of this.frameEls)
-      if (
-        f.hit === node ||
-        f.label === node ||
-        f.tag === node ||
-        f.rect === node ||
-        (f.icon && f.icon === node)
-      )
+      if (f.hit === node || f.label === node || f.rect === node || (f.icon && f.icon === node))
         return { type: "group", ref: id };
     return { type: null, ref: null };
   }
@@ -1799,6 +1784,7 @@ export class Scene {
       this.render(this.model);
     }
     if (this.drag) {
+      this.setRegroupTarget(null);
       this.drag = null;
       this.render(this.model);
     }
@@ -1877,16 +1863,26 @@ export class Scene {
   startGroupDrag(gid: string, ev: PointerEvent) {
     if (ev.button !== 0 || this.space) return;
     ev.stopPropagation();
-    if (ev.shiftKey || ev.ctrlKey || ev.metaKey) return this.toggle("group", gid);
+    // Shift/Ctrl/Cmd: a click toggles, a drag moves. Pressed on something outside the
+    // selection, it joins now (both gestures want that); pressed on something already in it, a
+    // click without moving takes it out on release.
+    const mod = ev.shiftKey || ev.ctrlKey || ev.metaKey;
+    const untoggle = mod && this.picked().groups.has(gid);
+    if (mod && !untoggle) this.toggle("group", gid);
     const inMulti = this.pickedCount() > 1 && this.picked().groups.has(gid);
-    if (!inMulti) this.select("group", gid);
-    else if (this.selection.type !== "group" || this.selection.ref !== gid) {
-      this.selection = { type: "group", ref: gid };
-      this.emitSelection();
+    if (!mod) {
+      if (!inMulti) this.select("group", gid);
+      else if (this.selection.type !== "group" || this.selection.ref !== gid) {
+        this.selection = { type: "group", ref: gid };
+        this.emitSelection();
+      }
     }
     const own = this.nodesInGroup(gid);
     const { ids, held } = inMulti ? this.dragSet() : { ids: own, held: new Set(own) };
-    if (!ids.length) return;
+    if (!ids.length) {
+      if (untoggle) this.toggle("group", gid);
+      return;
+    }
     const [wx, wy] = this.toWorld(ev.clientX, ev.clientY);
     this.drag = {
       id: gid,
@@ -1894,6 +1890,8 @@ export class Scene {
       held,
       kind: "group",
       moved: false,
+      down: [ev.clientX, ev.clientY],
+      untoggle: untoggle ? ["group", gid] : null,
       ...this.regroupScope(),
       offsets: Object.fromEntries(
         ids.map((n) => [n, [wx - this.boxes[n][0], wy - this.boxes[n][1]]]),
@@ -1905,14 +1903,16 @@ export class Scene {
   startDrag(id: string, ev: PointerEvent) {
     if (ev.button !== 0 || this.space) return;
     ev.stopPropagation();
-    if (ev.shiftKey || ev.ctrlKey || ev.metaKey) {
-      this.toggle("node", id);
-      return;
-    }
-    if (!this.multi.has(id)) this.select("node", id);
-    else if (this.selection.type !== "node" || this.selection.ref !== id) {
-      this.selection = { type: "node", ref: id };
-      this.emitSelection();
+    // As for a group: with a modifier a click toggles and a drag moves the selection.
+    const mod = ev.shiftKey || ev.ctrlKey || ev.metaKey;
+    const untoggle = mod && this.picked().nodes.has(id);
+    if (mod && !untoggle) this.toggle("node", id);
+    if (!mod) {
+      if (!this.multi.has(id)) this.select("node", id);
+      else if (this.selection.type !== "node" || this.selection.ref !== id) {
+        this.selection = { type: "node", ref: id };
+        this.emitSelection();
+      }
     }
     const [wx, wy] = this.toWorld(ev.clientX, ev.clientY);
     const { ids, held } = this.dragSet();
@@ -1921,6 +1921,8 @@ export class Scene {
       ids,
       held,
       moved: false,
+      down: [ev.clientX, ev.clientY],
+      untoggle: untoggle ? ["node", id] : null,
       ...this.regroupScope(),
       offsets: Object.fromEntries(
         ids.map((n) => [n, [wx - this.boxes[n][0], wy - this.boxes[n][1]]]),
@@ -1938,42 +1940,80 @@ export class Scene {
     const skip = new Set<string>();
     for (const g of this.picked().groups)
       for (const id of groupAndDescendants(this.model.doc, g)) skip.add(id);
-    return { frames0: this.frames || {}, skip, into: null as string | null };
+    return { frames0: this.frames || {}, skip, into: null as { group: string | null } | null };
   }
 
-  /** The group the dragged item's centre is over, if it would move there (Shift: never). */
-  regroupAt(shift: boolean): string | null {
+  /** Where the dragged item's centre would move it on release, by the rule Shift picks. */
+  regroupAt(shift: boolean): { group: string | null } | null {
     const d = this.drag;
-    if (!d || shift || !this.h.onMove) return null;
+    if (!d || !this.h.onMove) return null;
     const box = d.kind === "group" ? this.frames[d.id] : this.boxes[d.id];
     if (!box) return null;
     const current =
       d.kind === "group"
         ? ((this.model.doc.groups || []).find((g: any) => g.id === d.id)?.parent ?? null)
         : (this.model.doc.nodes.find((n: any) => n.id === d.id)?.group ?? null);
-    return regroupTarget(d.frames0, box[0] + box[2] / 2, box[1] + box[3] / 2, d.skip, current);
+    const ancestors = ancestorsOf(this.model.doc, current);
+    const [cx, cy] = [box[0] + box[2] / 2, box[1] + box[3] / 2];
+    return regroupTarget(d.frames0, cx, cy, d.skip, ancestors, shift);
   }
 
   /**
-   * The group whose name, kind tag or icon this is. Its own words win over the band test: a
+   * The group whose name or icon this is. Its own words win over the band test: a
    * child frame's band can reach up over its parent's label, and the label names the parent.
    */
   frameOfLabel(t: Element): string | null {
-    for (const [id, f] of this.frameEls)
-      if (f.label === t || f.tag === t || f.icon === t) return id;
+    for (const [id, f] of this.frameEls) if (f.label === t || f.icon === t) return id;
     return null;
   }
 
-  /** The drop highlight on the frame a drag would move its selection into. */
-  setRegroupTarget(target: string | null) {
+  /**
+   * The drop highlight on the frame a drag would move its selection into; for the top level, an
+   * edge round the whole canvas and a hint by the pointer.
+   */
+  setRegroupTarget(target: { group: string | null } | null) {
     const d = this.drag;
-    if (!d || d.into === target) return;
-    if (d.into) this.frameEls.get(d.into)?.rect.classList.remove("drop-target");
-    if (target) this.frameEls.get(target)?.rect.classList.add("drop-target");
+    if (!d) return;
+    const top = target?.group === null;
+    if (top) this.placeTopHint(d.client);
+    else this.dropHint?.remove();
+    this.svg.classList.toggle("drop-top", top);
+    const was = d.into?.group ?? null;
+    const now = target?.group ?? null;
+    if (was !== now) {
+      if (was) this.frameEls.get(was)?.rect.classList.remove("drop-target");
+      if (now) this.frameEls.get(now)?.rect.classList.add("drop-target");
+    }
     d.into = target;
   }
 
+  dropHint: HTMLDivElement | null = null;
+
+  /** "Drop: top level", just below and right of the pointer. */
+  placeTopHint(client?: [number, number]) {
+    const wrap = this.svg.parentElement;
+    if (!wrap || !client) return;
+    if (!this.dropHint) {
+      this.dropHint = document.createElement("div");
+      this.dropHint.className = "drop-hint";
+      this.dropHint.textContent = "Drop: top level";
+    }
+    if (!this.dropHint.isConnected) wrap.append(this.dropHint);
+    // Kept inside the canvas: near the right or bottom edge it goes to the pointer's other side.
+    const r = wrap.getBoundingClientRect();
+    const { offsetWidth: w, offsetHeight: h } = this.dropHint;
+    let x = client[0] - r.left + 14;
+    let y = client[1] - r.top + 18;
+    if (x + w > r.width - 8) x = client[0] - r.left - 14 - w;
+    if (y + h > r.height - 8) y = client[1] - r.top - 18 - h;
+    this.dropHint.style.left = `${x}px`;
+    this.dropHint.style.top = `${y}px`;
+  }
+
   moveDrag(ev: PointerEvent) {
+    // A few pixels of wobble is still a click (a Shift-click toggles on release).
+    const [x0, y0] = this.drag.down ?? [ev.clientX, ev.clientY];
+    if (!this.drag.moved && Math.hypot(ev.clientX - x0, ev.clientY - y0) < DRAG_THRESHOLD) return;
     const [wx, wy] = this.toWorld(ev.clientX, ev.clientY);
     this.drag.moved = true;
     this.drag.at = [wx, wy];
@@ -2055,8 +2095,6 @@ export class Scene {
       }
       els.label.setAttribute("x", f[0] + els.labelDx);
       els.label.setAttribute("y", f[1] + 19);
-      els.tag.setAttribute("x", f[0] + els.tagDx);
-      els.tag.setAttribute("y", f[1] + 19);
     }
     this.placeFrameDots();
   }
@@ -2065,19 +2103,22 @@ export class Scene {
     const shift = ev ? ev.shiftKey : Boolean(this.drag.shift);
     const into = this.drag.moved ? this.regroupAt(shift) : null;
     this.setRegroupTarget(null);
-    const { ids, moved, kind, at, client, held } = this.drag;
+    const { ids, moved, kind, at, client, held, untoggle } = this.drag;
     this.drag = null;
-    if (!moved) return;
-    // Let go over another group's frame: the selected components and groups move into it.
-    // Anywhere else the grouping stays as it was — a frame stretches after its members, so
-    // dragging a component out over empty canvas never takes it out of its group.
+    if (!moved) {
+      if (untoggle) this.toggle(untoggle[0], untoggle[1]);
+      return;
+    }
+    // Let go where `regroupTarget` says: the selected components and groups move there. A plain
+    // drag out of its group's frame (into an ancestor, or onto empty canvas) keeps the grouping —
+    // the frame stretches after its members. Shift takes them out.
     const picked = this.picked();
     const moves = ids.map((id: string) => ({ id, x: this.boxes[id][0], y: this.boxes[id][1] }));
     this.h.onMove?.(
       moves,
       into
         ? {
-            group: into,
+            group: into.group,
             nodes: [...picked.nodes].filter((n) => !held?.has(n)),
             groups: [...picked.groups],
           }
@@ -2199,7 +2240,8 @@ export class Scene {
     if (t.moved && t.port && !unchanged) this.h.onPort?.(t.key, t.end, t.port);
     else {
       if (t.moved) this.h.onPortPreview?.(t.key, t.end, t.original);
-      if (t.moved && t.target) this.h.onReconnect?.(t.i, t.end, t.target);
+      if (t.moved && t.target)
+        this.h.onReconnect?.(t.i, t.end, t.target, this.dropPortOn(t.target, t.at));
     }
     this.placeEndHandles();
   }
@@ -2254,12 +2296,9 @@ export class Scene {
       return;
     }
     if (!target || target === from) return;
-    // Drawn from a dot: that side on the source, and the target's side that faces the dot.
-    const tb = this.boxOf(target);
-    const ends: EdgePorts | undefined =
-      side && start && tb
-        ? { from: { side, t: 0.5 }, to: { side: facingSide(tb, start), t: 0.5 } }
-        : undefined;
+    // Drawn from a dot: that side on the source, and the target's border where it was let go.
+    const to = side && start ? this.dropPortOn(target, [wire.x, wire.y]) : null;
+    const ends: EdgePorts | undefined = side && to ? { from: { side, t: 0.5 }, to } : undefined;
     this.h.onConnect?.(from, target, ends);
   }
 
@@ -2440,6 +2479,12 @@ export class Scene {
       box.prepend(title);
       box.removeAttribute("aria-label");
     }
+    for (const frame of clone.querySelectorAll(".frame[aria-label]")) {
+      const title = el("title", {});
+      title.textContent = frame.getAttribute("aria-label");
+      frame.append(title);
+      frame.removeAttribute("aria-label");
+    }
     for (const n of clone.querySelectorAll(".selected, .primary"))
       n.classList.remove("selected", "primary");
     // A hex tint leaves as plain colours, the way the server render writes it: a file that
@@ -2453,7 +2498,6 @@ export class Scene {
     const style = `<style>${[
       ".frame{fill:none;stroke:var(--frame);stroke-width:1;stroke-dasharray:6 4}",
       ".frame-label{font-size:11px;font-family:var(--mono);fill:var(--muted)}",
-      ".frame-kind{font-size:10px;font-family:var(--mono);fill:var(--muted);opacity:0.75}",
       ".frame-icon{color:var(--muted)}",
       ".frame-under{fill:var(--bg);stroke:none}",
       // Named tints are tokens that resolve to this page's theme below; a hex tint is inline.

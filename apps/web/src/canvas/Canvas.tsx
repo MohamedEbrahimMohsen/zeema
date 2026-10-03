@@ -283,14 +283,14 @@ const helpSections = (mod: string): Array<[string, Array<[string[], string]>]> =
       [["Drag"], "Move the selection."],
       [
         ["Drag"],
-        "Drag a component into a group to move it there; hold Shift to move without regrouping.",
+        "Drag a component into another group to move it there. Shift-drag to take it out of its group: into any group, or to the top level.",
       ],
       [
         ["Drag a group"],
         "Move a group with everything inside it; let go over another group to nest it there.",
       ],
-      [["←", "→", "↑", "↓"], "Nudge the selection by one."],
-      [["Shift", "←"], "Nudge by ten."],
+      [["←", "→", "↑", "↓"], "Nudge the selection by a pixel; a group takes its members with it."],
+      [["Shift", "←"], "Nudge by ten pixels."],
       [["Esc"], "Clear the selection, or abandon what you are dragging."],
     ],
   ],
@@ -732,7 +732,9 @@ export function Canvas(props: Props) {
   }, [props.canWrite, save]);
 
   const commit = useCallback(
-    (next: any, opts: { coalesce?: boolean; apply?: () => void } = {}) => {
+    // `coalesce`: fold into the previous step when it too was coalescing and came within the
+    // window (true: 400ms, a number: that many ms).
+    (next: any, opts: { coalesce?: boolean | number; apply?: () => void } = {}) => {
       const e = eng.current!;
       const snapshot = {
         doc: clone(e.doc),
@@ -745,7 +747,8 @@ export function Canvas(props: Props) {
         badge: e.badge,
       };
       const now = Date.now();
-      const coalesce = Boolean(opts.coalesce) && now - e.lastDragAt < 400;
+      const within = typeof opts.coalesce === "number" ? opts.coalesce : 400;
+      const coalesce = Boolean(opts.coalesce) && now - e.lastDragAt < within;
       if (!coalesce) {
         e.undo.push(snapshot);
         if (e.undo.length > 200) e.undo.shift();
@@ -908,12 +911,14 @@ export function Canvas(props: Props) {
     });
   }, [bundle, commit]);
 
+  // The selected components and every member of a selected group, by (dx, dy). Presses within
+  // half a second of each other are one undo step. False when nothing movable is selected.
   const nudge = useCallback(
     (dx: number, dy: number) => {
-      const sel = ids();
-      if (!sel.length) return;
+      const sel = sceneRef.current?.dragSet().ids ?? [];
+      if (!sel.length) return false;
       commit(null, {
-        coalesce: true,
+        coalesce: 500,
         apply: () => {
           const e = eng.current!;
           for (const id of sel) {
@@ -922,6 +927,7 @@ export function Canvas(props: Props) {
           }
         },
       });
+      return true;
     },
     [commit],
   );
@@ -1401,18 +1407,19 @@ export function Canvas(props: Props) {
       },
       onMove: (moves, into) => {
         const e = eng.current!;
-        // Let go over another group: the selection moves into it, in the same undo step as the
-        // positions. A group is never put inside itself (setGroupParent refuses the cycle).
+        // Let go where it regroups: the selection moves into that group (null: the top level), in
+        // the same undo step as the positions. A group is never put inside itself
+        // (setGroupParent refuses the cycle).
         let next: any = null;
         if (into) {
           for (const id of into.nodes) {
             const node = (next || e.doc).nodes.find((n: any) => n.id === id);
-            if (node && node.group !== into.group)
+            if (node && (node.group ?? null) !== into.group)
               next = D.setNodeGroup(next || e.doc, id, into.group);
           }
           for (const id of into.groups) {
             const g = ((next || e.doc).groups || []).find((x: any) => x.id === id);
-            if (!g || id === into.group || g.parent === into.group) continue;
+            if (!g || id === into.group || (g.parent ?? null) === into.group) continue;
             const after = D.setGroupParent(next || e.doc, id, into.group);
             if (after !== (next || e.doc)) next = after;
           }
@@ -1457,7 +1464,7 @@ export function Canvas(props: Props) {
             e.ports = withPort(e.ports, key, end, port);
           },
         }),
-      onReconnect: (i, end, nodeId) => {
+      onReconnect: (i, end, nodeId, port) => {
         const e = eng.current!;
         const { doc: next, refused } = D.reconnectEdge(e.doc, i, end, nodeId);
         if (refused === "self-loop") return notify("an edge cannot connect a component to itself");
@@ -1466,9 +1473,10 @@ export function Canvas(props: Props) {
         commit(next, {
           apply: () => {
             // Every edge keeps its index, so bows and ports follow by index; the moved end's
-            // port named a point on the box it has left, so it goes.
+            // port named a point on the box it has left, so it is replaced by where it was let
+            // go on the new one.
             e.bows = rekeyBows(e.doc, next, e.bows);
-            e.ports = withPort(rekeyPorts(e.doc, next, e.ports), edgeKeys(next)[i], end, null);
+            e.ports = withPort(rekeyPorts(e.doc, next, e.ports), edgeKeys(next)[i], end, port);
           },
         });
       },
@@ -1717,12 +1725,15 @@ export function Canvas(props: Props) {
         return;
       }
       const step = ev.shiftKey ? 10 : 1;
-      if (ev.key === "ArrowLeft") nudge(-step, 0);
-      else if (ev.key === "ArrowRight") nudge(step, 0);
-      else if (ev.key === "ArrowUp") nudge(0, -step);
-      else if (ev.key === "ArrowDown") nudge(0, step);
-      else return;
-      ev.preventDefault();
+      const arrows: Record<string, [number, number]> = {
+        ArrowLeft: [-step, 0],
+        ArrowRight: [step, 0],
+        ArrowUp: [0, -step],
+        ArrowDown: [0, step],
+      };
+      const by = !mod && !ev.altKey ? arrows[ev.key] : undefined;
+      // Only when something moved: otherwise the arrows are the page's to scroll with.
+      if (by && nudge(by[0], by[1])) ev.preventDefault();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);

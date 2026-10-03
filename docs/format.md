@@ -187,6 +187,8 @@ like "how many `region` groups are in this node's ancestry".
 
 Groups carry no properties in v1 apart from an optional `label` (the group's name as
 drawn in the source). They exist for rules and for renderers, which draw them as nested boxes.
+A frame shows the label alone, or with no label its kind's name (`locales/en.yaml`
+`groupKinds`: "VPC", "Point of presence"); the kind and the id are hover text.
 
 ### nodes
 
