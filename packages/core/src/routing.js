@@ -395,7 +395,7 @@ export function routeOrthogonal(items, nodeBoxes, bows, isPort, extra = {}) {
       run = { axis: r.run.axis, base };
       if (bow) points = r.run.make(base + bow);
     }
-    const text = it.e.label || it.e.protocol || "";
+    const text = it.e.label || "";
     const place = labelOn(points, String(text), [...boxList, ...captions, ...labelAvoid, ...taken]);
     if (place.box) taken.push(place.box);
     const drawn = {

@@ -345,7 +345,7 @@ export function edgeGeometry(doc, boxes, bows = {}, ports = {}, frames = {}, opt
       labelAvoid: options?.labelAvoid || [],
     }).map((r) => {
       const e = edges[r.i];
-      const label = e.label || e.protocol || null;
+      const label = e.label || null;
       return {
         ...r,
         from: e.from,
@@ -477,7 +477,7 @@ export function edgeGeometry(doc, boxes, bows = {}, ports = {}, frames = {}, opt
               ];
       const mid = midpointOf(points);
       const place = labelPlacement(mid, points, n > 1);
-      const label = e.label || e.protocol || null;
+      const label = e.label || null;
       out.push({
         i,
         key: keys[i],

@@ -375,13 +375,29 @@ describe("orthogonal routing", () => {
     expect(segments(blind.points).some((s) => through(s, words))).toBe(true);
   });
 
-  it("keeps a label off the boxes it is told to avoid, such as a note", () => {
+  it("draws no label for an edge that has none, whatever its protocol", () => {
     const doc = {
       nodes: [
         { id: "a", component: "x" },
         { id: "b", component: "x" },
       ],
       edges: [{ from: "a", to: "b", protocol: "https", mode: "sync" }],
+    };
+    const boxes = { a: [0, 0, W, H], b: [400, 300, W, H] };
+    for (const opts of [{}, ORTHO]) {
+      const [e] = edgeGeometry(doc, boxes, {}, {}, {}, opts);
+      expect(e.label).toBeNull();
+      expect(e.labelAt).toHaveLength(2);
+    }
+  });
+
+  it("keeps a label off the boxes it is told to avoid, such as a note", () => {
+    const doc = {
+      nodes: [
+        { id: "a", component: "x" },
+        { id: "b", component: "x" },
+      ],
+      edges: [{ from: "a", to: "b", protocol: "https", mode: "sync", label: "token" }],
     };
     const boxes = { a: [0, 0, W, H], b: [400, 300, W, H] };
     const [plain] = edgeGeometry(doc, boxes, {}, {}, {}, ORTHO);
