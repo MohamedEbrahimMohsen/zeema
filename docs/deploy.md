@@ -209,11 +209,16 @@ Hostinger VPS. The `cloudflared` service dials out to Cloudflare, so no inbound 
 1. In Cloudflare Zero Trust, Networks → Tunnels, create a tunnel (connector type Docker) and copy
    its token. Paste it as `CLOUDFLARE_TUNNEL_TOKEN` in Hostinger's Docker Manager environment
    (or the `.env` beside the file).
-2. Under the tunnel's Public hostname tab, add two routes to the compose service names:
-   `beta.zeema.com` → `http://landing:4000` and `beta-canvas.zeema.com` → `http://web:3000`.
-3. The origins default to the tunnel: `APP_ORIGIN=https://beta-canvas.zeema.com` and
+2. One tunnel serves both hostnames. In the tunnel's dashboard open the **Published applications**
+   tab and add two routes, each with Type `HTTP`:
+   - `beta.zeema.dev` → URL `landing:4000`
+   - `beta-canvas.zeema.dev` → URL `web:3000`
+
+   The URL is the compose service name and port, never `localhost` or the server IP: cloudflared
+   runs in its own container on the compose network, where `localhost` is itself.
+3. The origins default to the tunnel: `APP_ORIGIN=https://beta-canvas.zeema.dev` and
    `CANVAS_URL` follows it. The GitHub OAuth callback is
-   `https://beta-canvas.zeema.com/api/auth/github/callback`.
+   `https://beta-canvas.zeema.dev/api/auth/github/callback`.
 4. `TRUSTED_PROXY=1` (the default in this file): cloudflared is the one proxy.
 5. `WEB_BIND` and `LANDING_BIND` default to `127.0.0.1`, so the ports answer only on the server
    itself; the tunnel reaches the containers over the compose network. Keep it that way, since

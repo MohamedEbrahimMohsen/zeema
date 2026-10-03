@@ -7,8 +7,8 @@
 # For the development stack that builds from source instead, use docker-compose.yml.
 #
 # As written, it serves two hostnames through a Cloudflare Tunnel (the `cloudflared` service):
-#   beta.zeema.com         -> the landing page
-#   beta-canvas.zeema.com  -> the app
+#   beta.zeema.dev         -> the landing page
+#   beta-canvas.zeema.dev  -> the app
 # No port needs to be open on the server: every published port binds to 127.0.0.1.
 #
 # Required environment (set these in the panel, or in a .env beside this file):
@@ -16,8 +16,8 @@
 #   CLOUDFLARE_TUNNEL_TOKEN
 # Worth setting:
 #   GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, ZEEMA_ADMINS
-#   (APP_ORIGIN and CANVAS_URL default to https://beta-canvas.zeema.com)
-# GitHub OAuth app callback URL: https://beta-canvas.zeema.com/api/auth/github/callback
+#   (APP_ORIGIN and CANVAS_URL default to https://beta-canvas.zeema.dev)
+# GitHub OAuth app callback URL: https://beta-canvas.zeema.dev/api/auth/github/callback
 #
 # Needs Docker Compose v2.23 or later: the `configs: content:` blocks at the end are inline.
 #
@@ -58,7 +58,7 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER:-zeema}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-zeema}
-      APP_ORIGIN: ${APP_ORIGIN:-https://beta-canvas.zeema.com}
+      APP_ORIGIN: ${APP_ORIGIN:-https://beta-canvas.zeema.dev}
       GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
       GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
       ZEEMA_ADMINS: ${ZEEMA_ADMINS:-}
@@ -89,7 +89,7 @@ services:
     environment:
       LANDING_PORT: 4000
       # Where "Open Canvas" sends visitors: the app's public origin.
-      CANVAS_URL: ${CANVAS_URL:-${APP_ORIGIN:-https://beta-canvas.zeema.com}}
+      CANVAS_URL: ${CANVAS_URL:-${APP_ORIGIN:-https://beta-canvas.zeema.dev}}
     # Localhost only, for the same reason as web.
     ports:
       - "${LANDING_BIND:-127.0.0.1}:${LANDING_PORT:-4000}:4000"
@@ -105,8 +105,8 @@ services:
     # port is opened. Its public hostnames are configured in the Cloudflare dashboard
     # (Zero Trust -> Networks -> Tunnels -> your tunnel -> Public hostname), pointing at the
     # service names on this compose network:
-    #   beta.zeema.com         -> http://landing:4000
-    #   beta-canvas.zeema.com  -> http://web:3000
+    #   beta.zeema.dev         -> http://landing:4000
+    #   beta-canvas.zeema.dev  -> http://web:3000
     # Not using a tunnel? Delete this service, front web and landing with your own TLS proxy
     # (docs/deploy.md, "Behind a reverse proxy") and set WEB_BIND/LANDING_BIND to suit it.
     image: cloudflare/cloudflared:2026.9.3
