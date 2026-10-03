@@ -201,6 +201,24 @@ ignored entirely and every anonymous caller shares one rate-limit bucket, which 
 setting whenever the app's port is reachable without the proxy. Never set it above `0` on a port
 the internet can reach directly: anyone could then choose their own address.
 
+#### Cloudflare Tunnel (Hostinger)
+
+`docker-compose.deploy.yml` ships ready for a Cloudflare Tunnel, which is how the beta runs on a
+Hostinger VPS. The `cloudflared` service dials out to Cloudflare, so no inbound port is opened.
+
+1. In Cloudflare Zero Trust, Networks → Tunnels, create a tunnel (connector type Docker) and copy
+   its token. Paste it as `CLOUDFLARE_TUNNEL_TOKEN` in Hostinger's Docker Manager environment
+   (or the `.env` beside the file).
+2. Under the tunnel's Public hostname tab, add two routes to the compose service names:
+   `beta.zeema.com` → `http://landing:4000` and `beta-canvas.zeema.com` → `http://web:3000`.
+3. The origins default to the tunnel: `APP_ORIGIN=https://beta-canvas.zeema.com` and
+   `CANVAS_URL` follows it. The GitHub OAuth callback is
+   `https://beta-canvas.zeema.com/api/auth/github/callback`.
+4. `TRUSTED_PROXY=1` (the default in this file): cloudflared is the one proxy.
+5. `WEB_BIND` and `LANDING_BIND` default to `127.0.0.1`, so the ports answer only on the server
+   itself; the tunnel reaches the containers over the compose network. Keep it that way, since
+   `TRUSTED_PROXY=1` must never face a port the internet can reach.
+
 ### Security headers
 
 The app sets these itself:

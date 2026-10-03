@@ -6,10 +6,20 @@
 #
 # For the development stack that builds from source instead, use docker-compose.yml.
 #
+# As written, it serves two hostnames through a Cloudflare Tunnel (the `cloudflared` service):
+#   beta.zeema.com         -> the landing page
+#   beta-canvas.zeema.com  -> the app
+# No port needs to be open on the server: every published port binds to 127.0.0.1.
+#
 # Required environment (set these in the panel, or in a .env beside this file):
-#   POSTGRES_PASSWORD, METRICS_TOKEN, GRAFANA_PASSWORD, GRAFANA_DB_PASSWORD, EVENT_SALT
+#   POSTGRES_PASSWORD, METRICS_TOKEN, GRAFANA_PASSWORD, GRAFANA_DB_PASSWORD, EVENT_SALT,
+#   CLOUDFLARE_TUNNEL_TOKEN
 # Worth setting:
-#   APP_ORIGIN, CANVAS_URL, GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, ZEEMA_ADMINS
+#   GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, ZEEMA_ADMINS
+#   (APP_ORIGIN and CANVAS_URL default to https://beta-canvas.zeema.com)
+# GitHub OAuth app callback URL: https://beta-canvas.zeema.com/api/auth/github/callback
+#
+# Needs Docker Compose v2.23 or later: the `configs: content:` blocks at the end are inline.
 #
 # Data lives in named volumes, never inside a container. `docker compose down` leaves them
 # untouched; only `down -v` or an explicit `docker volume rm` destroys them.
@@ -48,19 +58,23 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER:-zeema}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-zeema}
-      APP_ORIGIN: ${APP_ORIGIN:-http://localhost:3000}
+      APP_ORIGIN: ${APP_ORIGIN:-https://beta-canvas.zeema.com}
       GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
       GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
       ZEEMA_ADMINS: ${ZEEMA_ADMINS:-}
-      # Required: production refuses to start on a missing or placeholder salt.
+      # Required, with no default on purpose: the app refuses to start in production on a
+      # missing or placeholder salt (apps/web/src/lib/boot.ts, WEAK_SALTS), and any default
+      # written here would be public and therefore a placeholder. openssl rand -hex 24
       EVENT_SALT: ${EVENT_SALT:?set EVENT_SALT}
-      # This file is meant to run behind one TLS-terminating reverse proxy (docs/deploy.md), so
-      # the rightmost X-Forwarded-For entry is the client. Set 0 if the app is reached directly.
+      # cloudflared is the one proxy in front of the app (or your own TLS proxy, docs/deploy.md),
+      # so the rightmost X-Forwarded-For entry is the client. Set 0 if the app is reached directly.
       TRUSTED_PROXY: ${TRUSTED_PROXY:-1}
       METRICS_TOKEN: ${METRICS_TOKEN:?set METRICS_TOKEN}
       AUTO_SEED: ${AUTO_SEED:-1}
+    # Localhost only: the tunnel reaches web:3000 over the compose network, so the server's
+    # public address never needs this port. Set WEB_BIND=0.0.0.0 only for a proxy on another host.
     ports:
-      - "${WEB_BIND:-0.0.0.0}:${WEB_PORT:-3000}:3000"
+      - "${WEB_BIND:-127.0.0.1}:${WEB_PORT:-3000}:3000"
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
       interval: 15s
@@ -75,15 +89,36 @@ services:
     environment:
       LANDING_PORT: 4000
       # Where "Open Canvas" sends visitors: the app's public origin.
-      CANVAS_URL: ${CANVAS_URL:-${APP_ORIGIN:-http://localhost:3000}}
+      CANVAS_URL: ${CANVAS_URL:-${APP_ORIGIN:-https://beta-canvas.zeema.com}}
+    # Localhost only, for the same reason as web.
     ports:
-      - "${LANDING_BIND:-0.0.0.0}:${LANDING_PORT:-4000}:4000"
+      - "${LANDING_BIND:-127.0.0.1}:${LANDING_PORT:-4000}:4000"
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
       interval: 15s
       timeout: 5s
       retries: 5
       start_period: 10s
+
+  cloudflared:
+    # The Cloudflare Tunnel: an outbound connection from this server to Cloudflare, so no inbound
+    # port is opened. Its public hostnames are configured in the Cloudflare dashboard
+    # (Zero Trust -> Networks -> Tunnels -> your tunnel -> Public hostname), pointing at the
+    # service names on this compose network:
+    #   beta.zeema.com         -> http://landing:4000
+    #   beta-canvas.zeema.com  -> http://web:3000
+    # Not using a tunnel? Delete this service, front web and landing with your own TLS proxy
+    # (docs/deploy.md, "Behind a reverse proxy") and set WEB_BIND/LANDING_BIND to suit it.
+    image: cloudflare/cloudflared:2026.9.3
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:?set CLOUDFLARE_TUNNEL_TOKEN}
+    depends_on:
+      web:
+        condition: service_healthy
+      landing:
+        condition: service_healthy
 
   prometheus:
     image: prom/prometheus:v3.2.1
@@ -136,6 +171,7 @@ services:
     ports:
       - "${GRAFANA_BIND:-127.0.0.1}:${GRAFANA_PORT:-3001}:3000"
 
+# Inline `content:` needs Docker Compose v2.23 or later.
 configs:
   # Written from the environment at start, so the token lives in one place and Prometheus
   # reads the same value the app checks.
