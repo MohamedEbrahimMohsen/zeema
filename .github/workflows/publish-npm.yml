@@ -1,0 +1,74 @@
+# Publishes the `zeema` package (packages/zeema) to npm: the command line and its MCP server,
+# with the catalogue bundled in. It is the only package this repository publishes; the
+# @zeema/* workspace packages are private and are bundled into it.
+#
+# Release: set "version" in packages/zeema/package.json, commit, then push a tag `v<version>`
+# (for example `git tag v1.1.0 && git push origin v1.1.0`). The job refuses a tag that does not
+# match the package version. `workflow_dispatch` publishes the version on the chosen ref, and
+# still refuses when that ref is a tag that does not match.
+#
+# One-time setup by the owner: add a repository secret NPM_TOKEN holding an npm granular access
+# token with read and write access to the `zeema` package (an automation-style token, so it
+# works without a one-time password). --provenance links the published version to this
+# workflow run, which is what `id-token: write` is for.
+name: publish npm
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: publish-npm
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # No version here: the action reads packageManager from package.json.
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      - name: Refuse a tag that is not the package version
+        run: |
+          version=$(node -p "require('./packages/zeema/package.json').version")
+          if [ "$GITHUB_REF_TYPE" = "tag" ] && [ "$GITHUB_REF_NAME" != "v$version" ]; then
+            echo "::error::tag $GITHUB_REF_NAME does not match packages/zeema version $version"
+            exit 1
+          fi
+          echo "publishing zeema $version"
+
+      - run: pnpm install --frozen-lockfile
+
+      # The same gate as every pull request: catalogue, tests (which build and pack the
+      # package and drive its MCP server), lint.
+      - run: pnpm validate
+      - run: pnpm test
+        env:
+          TURBO_FORCE: "true"
+      - run: pnpm lint
+
+      # Built again outside Turbo so the bundled catalogue names this exact commit.
+      - run: node build.js
+        working-directory: packages/zeema
+
+      # The published manifest carries no workspace: references and no scripts that point at
+      # files outside the tarball. Users install `dependencies` only; this is tidiness.
+      - run: npm pkg delete devDependencies scripts
+        working-directory: packages/zeema
+
+      - run: npm publish --provenance --access public
+        working-directory: packages/zeema
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

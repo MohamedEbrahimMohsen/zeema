@@ -51,8 +51,9 @@ publishing are disabled. For a real deployment add `DATABASE_URL` (see `apps/web
 ## Lint a design in your own repository
 
 ```bash
-npx @zeema/cli init     # starter design, config, editor schema mapping, CI workflow
-npx @zeema/cli lint     # exit 1 on structural errors or rules of severity error
+npx zeema init     # starter design, config, editor schema mapping, CI workflow
+npx zeema lint     # exit 1 on structural errors or rules of severity error
+npx zeema mcp      # MCP server on stdio for coding agents (zeema.dev/docs/mcp)
 ```
 
 ## Documents

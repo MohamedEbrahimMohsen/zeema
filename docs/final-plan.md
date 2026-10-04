@@ -1317,3 +1317,6 @@ Named so nobody builds them by accident before the above is done:
 - Automatic architecture suggestions.
 
 These are candidates for a later phase once the community is producing designs worth hosting.
+
+Work that has been scoped and parked (API tokens, a remote MCP server, GitHub pull-request sync,
+VS Code extensions, a protocol vocabulary, the release process) is briefed in `docs/roadmap.md`.

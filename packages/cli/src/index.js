@@ -1,4 +1,4 @@
-// zeema: the command line.
+// zeema: the command line, wired to a catalogue repository's source files.
 //   zeema lint [paths...] [--format human|json|sarif] [--fail-on error|warning|info|never] [--out file]
 //   zeema validate [--root <repo>]
 //   zeema render <design> [--format svg|mermaid] [--out file] [--theme auto|light|dark]
@@ -6,97 +6,19 @@
 //   zeema catalogue find|component|kind|kinds|providers ...
 //   zeema init [dir]
 //   zeema version
-// Exit codes: 0 clean, 1 findings at or above the failing severity (or any structural problem),
-// 2 usage or input error.
+// The commands themselves live in main.js; the published `zeema` package wires the same commands
+// to its bundled catalogue instead (packages/zeema), without `validate`.
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { DEFAULT_ROOT, iconMap, loadCatalogue } from "@zeema/catalogue";
 import { validateRepository } from "@zeema/catalogue/validate";
-import { normalize } from "@zeema/core/document";
-import { toMermaid, toSvg } from "@zeema/core/render";
-import { parse } from "@zeema/core/yaml";
-import { catalogueCommand } from "./catalogue-cmd.js";
-import { initProject } from "./init.js";
-import {
-  collectDesigns,
-  formatHuman,
-  formatJson,
-  formatSarif,
-  lintFiles,
-  shouldFail,
-} from "./lint.js";
+import { createMain } from "./main.js";
+
+export { parseArgs, readLayout, resolveInside, resolveOut } from "./main.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const VERSION = JSON.parse(fs.readFileSync(path.join(here, "..", "package.json"), "utf8")).version;
-
-/**
- * Where `--out` may write. A relative path must stay inside the working directory once resolved
- * (no `..` escape) and once symbolic links are followed (no link inside cwd pointing out of it).
- * An absolute path is the caller's explicit choice of directory and is taken as given. In both
- * cases the target itself must not be a symbolic link, so a planted link cannot redirect the
- * write. Throws with a plain message; the command reports it and exits 2.
- */
-export function resolveOut(cwd, out) {
-  if (typeof out !== "string" || out === "") throw new Error("--out needs a file name");
-  const target = path.resolve(cwd, out);
-  if (!path.isAbsolute(out)) {
-    const base = fs.realpathSync(cwd);
-    const inside = (p) => p === base || p.startsWith(base + path.sep);
-    if (!inside(path.resolve(base, out)))
-      throw new Error(`--out ${out} is outside the working directory; give an absolute path`);
-    // Follow the deepest part of the path that exists: a link on the way must not lead out.
-    let probe = path.dirname(target);
-    while (!fs.existsSync(probe)) probe = path.dirname(probe);
-    if (!inside(fs.realpathSync(probe)))
-      throw new Error(`--out ${out} leads outside the working directory through a link`);
-  }
-  let st = null;
-  try {
-    st = fs.lstatSync(target);
-  } catch {}
-  if (st?.isSymbolicLink())
-    throw new Error(`--out ${out} is a symbolic link; refusing to follow it`);
-  if (st?.isDirectory()) throw new Error(`--out ${out} is a directory`);
-  return target;
-}
-
-/**
- * The layout sidecar a render draws with (docs/final-plan.md §D5, §D6): `--layout <file>`, or
- * `--layout none` for the engine's own arrangement, or else the file beside the design with the
- * same name and `.layout.json` in place of `.yaml` (design.yaml -> design.layout.json). A missing
- * sidecar is no sidecar; one that is not JSON is an input error, never silently ignored.
- */
-export function readLayout(designFile, flag, cwd = process.cwd()) {
-  if (flag === "none") return null;
-  const explicit = typeof flag === "string";
-  const p = explicit
-    ? path.resolve(cwd, flag)
-    : `${designFile.replace(/\.ya?ml$/i, "")}.layout.json`;
-  if (!explicit && !fs.existsSync(p)) return null;
-  const raw = fs.readFileSync(p, "utf8");
-  try {
-    return JSON.parse(raw);
-  } catch (e) {
-    throw new Error(`${path.relative(cwd, p) || p}: not JSON (${e.message})`);
-  }
-}
-
-export function parseArgs(argv) {
-  const positional = [];
-  const flags = {};
-  for (let i = 0; i < argv.length; i++) {
-    const a = argv[i];
-    if (a.startsWith("--")) {
-      const eq = a.indexOf("=");
-      if (eq > 0) flags[a.slice(2, eq)] = a.slice(eq + 1);
-      else if (i + 1 < argv.length && !argv[i + 1].startsWith("--")) flags[a.slice(2)] = argv[++i];
-      else flags[a.slice(2)] = true;
-    } else if (a === "-o") flags.out = argv[++i];
-    else positional.push(a);
-  }
-  return { positional, flags };
-}
 
 // The catalogue root: --root, ZEEMA_ROOT, the nearest ancestor of cwd holding kinds/ and
 // components/, or the repository this package lives in.
@@ -117,130 +39,29 @@ export function findRoot(flags, cwd = process.cwd()) {
 // One catalogue load per root per process: a command that runs many times in one process (the
 // tests, an editor integration) should not re-read 1,700 files each time.
 const catalogues = new Map();
-function catalogueFor(root) {
+export function catalogueAt(root) {
   if (!catalogues.has(root)) catalogues.set(root, loadCatalogue(root));
   return catalogues.get(root);
 }
-
-function readConfig(cwd) {
-  const p = path.join(cwd, "zeema.config.json");
-  if (!fs.existsSync(p)) return {};
-  try {
-    return JSON.parse(fs.readFileSync(p, "utf8"));
-  } catch (e) {
-    throw new Error(`zeema.config.json: ${e.message}`);
-  }
+const icons = new WeakMap();
+export function iconsOf(cat) {
+  if (!icons.has(cat)) icons.set(cat, iconMap(cat).icons);
+  return icons.get(cat);
 }
 
-const USAGE = `zeema <command>
-
-  lint [paths...]        structure and rules on design files (default: config "designs" or cwd)
-                         --format human|json|sarif  --fail-on error|warning|info|never  --out <file>
-  validate               the whole catalogue repository gate            --root <repo>
-  render <design>        --format svg|mermaid  --out <file>  --theme auto|light|dark
-                         --layout <file>|none (default: the .layout.json beside the design)
-  catalogue <sub>        find <words...> | component <id> | kind <id> | kinds | providers <kind>
-  init [dir]             starter design, config, editor schema mapping, CI workflow
-  version
-
-  --out <file>: a relative path must stay inside the current directory; give an absolute path
-  to write anywhere else. Symbolic links at or on the way to the target are refused.
-`;
-
-export async function main(argv, io = {}) {
-  const stdout = io.stdout ?? ((s) => process.stdout.write(s));
-  const stderr = io.stderr ?? ((s) => process.stderr.write(s));
-  const cwd = io.cwd ?? process.cwd();
-  const { positional, flags } = parseArgs(argv);
-  const [cmd, ...rest] = positional;
-  const writeOut = (text) => {
-    if (flags.out) {
-      const target = resolveOut(cwd, flags.out);
-      fs.mkdirSync(path.dirname(target), { recursive: true });
-      // Refuse to write through a link planted at the target itself, even in our own directory.
-      fs.writeFileSync(target, text, { encoding: "utf8", flag: "w" });
-    } else stdout(text);
-  };
-
-  try {
-    if (!cmd || cmd === "help" || flags.help) {
-      stdout(USAGE);
-      return cmd ? 0 : 2;
+export const main = createMain({
+  version: VERSION,
+  catalogue: (flags, cwd) => catalogueAt(findRoot(flags, cwd)),
+  icons: iconsOf,
+  validate({ flags, cwd, stdout }) {
+    const { ok, problems } = validateRepository(findRoot(flags, cwd), {
+      log: (l) => stdout(`${l}\n`),
+    });
+    if (!ok) {
+      stdout(`\nPROBLEMS (${problems.length}):\n${problems.map((p) => ` - ${p}`).join("\n")}\n`);
+      return 1;
     }
-    if (cmd === "version") {
-      stdout(`zeema ${VERSION}\n`);
-      return 0;
-    }
-    if (cmd === "init") {
-      const dir = path.resolve(cwd, rest[0] ?? ".");
-      const written = initProject(dir);
-      stdout(`${written.map((w) => `wrote ${w}`).join("\n")}\n`);
-      return 0;
-    }
-    if (cmd === "validate") {
-      const { ok, problems } = validateRepository(findRoot(flags, cwd), {
-        log: (l) => stdout(`${l}\n`),
-      });
-      if (!ok) {
-        stdout(`\nPROBLEMS (${problems.length}):\n${problems.map((p) => ` - ${p}`).join("\n")}\n`);
-        return 1;
-      }
-      stdout("all checks passed\n");
-      return 0;
-    }
-    const cat = catalogueFor(findRoot(flags, cwd));
-    if (cmd === "catalogue") {
-      const r = catalogueCommand(cat, rest[0], rest.slice(1));
-      (r.code === 2 ? stderr : stdout)(`${r.lines.join("\n")}\n`);
-      return r.code;
-    }
-    if (cmd === "render") {
-      if (!rest[0]) {
-        stderr("usage: zeema render <design> [--format svg|mermaid] [--out file]\n");
-        return 2;
-      }
-      const file = path.resolve(cwd, rest[0]);
-      const text = fs.readFileSync(file, "utf8");
-      const doc = normalize(parse(text).doc).doc;
-      const format = flags.format ?? "svg";
-      if (format === "mermaid") writeOut(`${toMermaid(doc, flags.direction ?? "TD", cat)}\n`);
-      else if (format === "svg")
-        writeOut(
-          toSvg(doc, cat, {
-            icons: iconMap(cat).icons,
-            theme: flags.theme ?? "auto",
-            layout: readLayout(file, flags.layout, cwd),
-          }),
-        );
-      else {
-        stderr(`unknown format ${format}\n`);
-        return 2;
-      }
-      return 0;
-    }
-    if (cmd === "lint") {
-      const config = readConfig(cwd);
-      const paths = rest.length ? rest : (config.designs ?? ["."]);
-      const files = collectDesigns(paths, cwd);
-      if (!files.length) {
-        stderr("no design files found\n");
-        return 2;
-      }
-      const result = lintFiles(files, cat, { cwd, disable: config.disable ?? {} });
-      const format = flags.format ?? "human";
-      if (format === "json") writeOut(formatJson(result));
-      else if (format === "sarif") writeOut(formatSarif(result, cat, VERSION));
-      else if (format === "human") writeOut(formatHuman(result));
-      else {
-        stderr(`unknown format ${format}\n`);
-        return 2;
-      }
-      return shouldFail(result, flags["fail-on"] ?? config.failOn ?? "error") ? 1 : 0;
-    }
-    stderr(`unknown command ${cmd}\n${USAGE}`);
-    return 2;
-  } catch (e) {
-    stderr(`error: ${e.message}\n`);
-    return 2;
-  }
-}
+    stdout("all checks passed\n");
+    return 0;
+  },
+});

@@ -1,0 +1,32 @@
+{
+  "name": "zeema",
+  "version": "1.1.0",
+  "description": "Architecture as data: lint, render and query Zeema designs from the command line, with a built-in MCP server for coding agents.",
+  "license": "MIT",
+  "type": "module",
+  "homepage": "https://zeema.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MohamedEbrahimMohsen/zeema.git",
+    "directory": "packages/zeema"
+  },
+  "keywords": ["architecture", "design", "lint", "diagram", "yaml", "mcp", "cli"],
+  "bin": { "zeema": "dist/bin.js" },
+  "files": ["dist", "README.md", "LICENSE"],
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "build": "node build.js",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.0",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@zeema/catalogue": "workspace:*",
+    "@zeema/cli": "workspace:*",
+    "@zeema/core": "workspace:*",
+    "esbuild": "0.28.2",
+    "vitest": "5.0.0"
+  }
+}

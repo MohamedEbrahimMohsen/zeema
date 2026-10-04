@@ -1,5 +1,6 @@
 {
   "name": "@zeema/core",
+  "private": true,
   "version": "0.1.0",
   "description": "The Zeema engine: parse, serialise, document operations, structure checks, rules, layout, geometry. No dependencies, no environment.",
   "license": "MIT",

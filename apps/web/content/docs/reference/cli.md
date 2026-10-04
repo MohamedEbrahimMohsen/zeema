@@ -5,22 +5,37 @@ order: 4
 ---
 
 `zeema` runs the same engine this site runs. It needs no account, no network and no database.
+It is one npm package, with the catalogue bundled in, and needs Node.js 20 or later.
 
 ```bash
-npx @zeema/cli <command>
+npm i -g zeema        # then: zeema <command>
+npx zeema lint        # or run it without installing
 ```
+
+The same package is a local [MCP server](/docs/mcp) for coding agents: `zeema mcp`.
 
 ```text
 zeema <command>
 
   lint [paths...]        structure and rules on design files (default: config "designs" or cwd)
                          --format human|json|sarif  --fail-on error|warning|info|never  --out <file>
-  validate               the whole catalogue repository gate            --root <repo>
   render <design>        --format svg|mermaid  --out <file>  --theme auto|light|dark
+                         --layout <file>|none (default: the .layout.json beside the design)
   catalogue <sub>        find <words...> | component <id> | kind <id> | kinds | providers <kind>
   init [dir]             starter design, config, editor schema mapping, CI workflow
+  mcp                    a Model Context Protocol server on stdio, for coding agents
   version
+  help
 ```
+
+## The catalogue it checks against
+
+The kinds, components, rules and icons are bundled into the package, so every command works
+offline and gives the same answer on every machine with the same version. `zeema version` names
+the commit the bundle was built from.
+
+To check against a checkout of the catalogue repository instead (when you are changing the
+vocabulary itself), pass `--root <repo>` or set `ZEEMA_ROOT`; the files are then read from source.
 
 ## Exit codes
 
@@ -108,24 +123,6 @@ A file with nothing to say prints `ok    <file>`.
 Static Analysis Results Interchange Format, for GitHub code scanning. `zeema init` writes a
 workflow that uploads it, so findings appear as annotations on the pull request.
 
-## zeema validate
-
-The whole-repository gate over a **catalogue**: every kind, component, rule, locale entry, icon
-and reference design. This is what you run when contributing to the vocabulary, not when
-describing a system.
-
-```bash
-zeema validate
-zeema validate --root ../zeema
-```
-
-The catalogue root is resolved in this order: `--root`, then `ZEEMA_ROOT`, then the nearest
-ancestor of the working directory holding both `kinds/` and `components/`, then the repository the
-package itself lives in.
-
-It prints its checks as it goes, then either `all checks passed` or a `PROBLEMS` list and exit
-code `1`.
-
 ## zeema render
 
 ```bash
@@ -138,10 +135,12 @@ zeema render architecture/checkout.zeema.yaml --format mermaid
 | `--format` | `svg`, `mermaid` | `svg` |
 | `--theme` | `auto`, `light`, `dark` | `auto` |
 | `--direction` | `TD`, `LR`, … (Mermaid only) | `TD` |
+| `--layout` | A layout file, or `none` (SVG only) | the `.layout.json` beside the design |
 | `--out` | A file path | standard output |
 
-No positions are read or written: the layout is computed from groups, nodes and edges by the same
-implementation the canvas uses, so the picture is never out of date with the document.
+An SVG draws with the layout file saved beside the design (`design.yaml` → `design.layout.json`)
+when there is one, so it matches the canvas. Without one, or with `--layout none`, the layout is
+computed from groups, nodes and edges by the same implementation the canvas uses.
 
 ## zeema catalogue
 
@@ -191,7 +190,20 @@ the `yaml.schemas` entry is merged in, and the rest is left alone.
 zeema version
 ```
 
-Prints `zeema <version>` and exits `0`.
+Prints `zeema <version>` and, on a second line, the catalogue it carries: the commit it was
+built from, that commit's date, and its kind, component and rule counts. Exits `0`.
+
+## zeema mcp
+
+Starts a Model Context Protocol server on standard input and output, for coding agents. See
+[MCP server](/docs/mcp) for the setup and the tools.
+
+## Repository gate
+
+The catalogue repository has one more command, `validate`: the whole-repository gate over every
+kind, component, rule, locale entry, icon and reference design. It is what you run when
+contributing to the vocabulary, as `pnpm validate` in that repository, and it is not part of the
+published package.
 
 ## In continuous integration
 
@@ -199,11 +211,11 @@ The workflow `init` writes runs the linter twice on purpose: once to produce SAR
 scanning tab, and once to actually fail the check.
 
 ```yaml fragment
-- run: npx --yes @zeema/cli lint --format sarif --out zeema.sarif || true
+- run: npx --yes zeema lint --format sarif --out zeema.sarif || true
 - uses: github/codeql-action/upload-sarif@v3
   with:
     sarif_file: zeema.sarif
-- run: npx --yes @zeema/cli lint
+- run: npx --yes zeema lint
 ```
 
 The `|| true` is on the SARIF run alone: a failing lint must still upload its findings before the

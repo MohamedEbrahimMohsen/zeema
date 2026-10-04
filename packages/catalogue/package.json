@@ -1,5 +1,6 @@
 {
   "name": "@zeema/catalogue",
+  "private": true,
   "version": "0.1.0",
   "description": "The Zeema catalogue: validation gate and bundle builder over kinds/, components/, rules/, locales/, icons/, schema/ and designs/.",
   "license": "MIT",

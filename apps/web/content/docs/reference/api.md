@@ -1,7 +1,7 @@
 ---
 title: API
 description: Every HTTP route, what it needs, the JSON it takes and the JSON it returns.
-order: 5
+order: 6
 ---
 
 The API is JSON over HTTP. Reading is open; writing needs a session cookie from GitHub sign-in.

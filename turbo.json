@@ -2,7 +2,21 @@
   "$schema": "https://turbo.build/schema.json",
   "tasks": {
     "build": { "dependsOn": ["^build"], "outputs": ["dist/**", ".next/**", "!.next/cache/**"] },
+    "zeema#build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/kinds/**",
+        "$TURBO_ROOT$/components/**",
+        "$TURBO_ROOT$/rules/**",
+        "$TURBO_ROOT$/locales/**",
+        "$TURBO_ROOT$/icons/**",
+        "$TURBO_ROOT$/schema/**"
+      ]
+    },
     "test": { "dependsOn": ["^build"] },
+    "zeema#test": { "dependsOn": ["^build", "build"] },
     "bundle": { "outputs": ["dist/**"] },
     "validate": {},
     "dev": { "cache": false, "persistent": true }

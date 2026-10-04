@@ -55,64 +55,58 @@ function lineOf(text, subject) {
 }
 
 /**
- * Lint a set of files. Returns { files: [{ file, findings }], counts }.
+ * Lint one design given as text. `file` is the name findings carry. Returns { file, findings }.
  * A finding: { file, line, id, severity, message, blocking, subject }.
  */
-export function lintFiles(files, catalogue, options = {}) {
+export function lintText(text, file, catalogue, options = {}) {
   const disabled = options.disable ?? {};
-  const results = [];
-  for (const abs of files) {
-    const file =
-      path
-        .relative(options.cwd ?? process.cwd(), abs)
-        .split(path.sep)
-        .join("/") || abs;
-    const text = fs.readFileSync(abs, "utf8");
-    const findings = [];
-    let doc;
-    try {
-      doc = normalize(parse(text).doc).doc;
-    } catch (e) {
-      const m = /line (\d+)/.exec(e.message);
-      findings.push({
-        file,
-        line: m ? Number(m[1]) : 1,
-        id: "yaml",
-        severity: "error",
-        message: e.message,
-        blocking: true,
-        subject: { type: "design", ref: null },
-      });
-      results.push({ file, findings });
-      continue;
-    }
-    for (const f of check(doc, catalogue, { file })) {
-      findings.push({
-        file,
-        line: lineOf(text, f.subject),
-        id: "structure",
-        severity: "error",
-        message: f.message.startsWith(`${file}: `) ? f.message.slice(file.length + 2) : f.message,
-        blocking: true,
-        subject: f.subject,
-      });
-    }
-    if (!findings.some((f) => f.blocking)) {
-      for (const h of runRules(doc, catalogue)) {
-        if (disabled[h.id] && !h.error) continue;
-        findings.push({
-          file,
-          line: lineOf(text, h.subject),
-          id: h.id,
-          severity: h.error ? "error" : h.severity,
-          message: h.message,
-          blocking: Boolean(h.error),
-          subject: h.subject,
-        });
-      }
-    }
-    results.push({ file, findings });
+  const findings = [];
+  let doc;
+  try {
+    doc = normalize(parse(text).doc).doc;
+  } catch (e) {
+    const m = /line (\d+)/.exec(e.message);
+    findings.push({
+      file,
+      line: m ? Number(m[1]) : 1,
+      id: "yaml",
+      severity: "error",
+      message: e.message,
+      blocking: true,
+      subject: { type: "design", ref: null },
+    });
+    return { file, findings };
   }
+  for (const f of check(doc, catalogue, { file })) {
+    findings.push({
+      file,
+      line: lineOf(text, f.subject),
+      id: "structure",
+      severity: "error",
+      message: f.message.startsWith(`${file}: `) ? f.message.slice(file.length + 2) : f.message,
+      blocking: true,
+      subject: f.subject,
+    });
+  }
+  if (!findings.some((f) => f.blocking)) {
+    for (const h of runRules(doc, catalogue)) {
+      if (disabled[h.id] && !h.error) continue;
+      findings.push({
+        file,
+        line: lineOf(text, h.subject),
+        id: h.id,
+        severity: h.error ? "error" : h.severity,
+        message: h.message,
+        blocking: Boolean(h.error),
+        subject: h.subject,
+      });
+    }
+  }
+  return { file, findings };
+}
+
+/** The result shape of a lint run over per-file results: { files, counts }. */
+export function lintResult(results) {
   const counts = { files: results.length, error: 0, warning: 0, info: 0, blocking: 0 };
   for (const r of results)
     for (const f of r.findings) {
@@ -120,6 +114,20 @@ export function lintFiles(files, catalogue, options = {}) {
       if (f.blocking) counts.blocking++;
     }
   return { files: results, counts };
+}
+
+/** Lint a set of files. Returns { files: [{ file, findings }], counts }. */
+export function lintFiles(files, catalogue, options = {}) {
+  return lintResult(
+    files.map((abs) => {
+      const file =
+        path
+          .relative(options.cwd ?? process.cwd(), abs)
+          .split(path.sep)
+          .join("/") || abs;
+      return lintText(fs.readFileSync(abs, "utf8"), file, catalogue, options);
+    }),
+  );
 }
 
 /** True when the run should fail: any blocking finding, or any finding at or above failOn. */

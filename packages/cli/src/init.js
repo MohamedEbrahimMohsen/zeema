@@ -38,11 +38,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npx --yes @zeema/cli lint --format sarif --out zeema.sarif || true
+      - run: npx --yes zeema lint --format sarif --out zeema.sarif || true
       - uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: zeema.sarif
-      - run: npx --yes @zeema/cli lint
+      - run: npx --yes zeema lint
 `;
 
 export function initProject(dir) {

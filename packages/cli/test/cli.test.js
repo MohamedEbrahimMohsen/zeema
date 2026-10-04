@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { main, resolveOut } from "../src/index.js";
+import { main, resolveInside, resolveOut } from "../src/index.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(here, "..", "..", "..");
@@ -230,5 +230,27 @@ describe("--out stays where it is told (resolveOut)", () => {
     expect(r.code).toBe(2);
     expect(r.err).toMatch(/outside the working directory/);
     expect(fs.existsSync(path.join(dir, "..", "nope.svg"))).toBe(false);
+  });
+});
+
+describe("reads stay inside the working directory (resolveInside)", () => {
+  it("accepts a file inside, relative or absolute", () => {
+    const dir = fs.mkdtempSync(path.join(tmp, "in-"));
+    fs.writeFileSync(path.join(dir, "d.yaml"), "x");
+    const real = fs.realpathSync(dir);
+    expect(resolveInside(dir, "d.yaml")).toBe(path.join(real, "d.yaml"));
+    expect(resolveInside(dir, path.join(real, "d.yaml"))).toBe(path.join(real, "d.yaml"));
+  });
+
+  it("refuses a climb, an absolute path elsewhere, and a link leading out", () => {
+    const dir = fs.mkdtempSync(path.join(tmp, "in-"));
+    const outside = fs.mkdtempSync(path.join(tmp, "outside-"));
+    fs.writeFileSync(path.join(outside, "secret.yaml"), "x");
+    expect(() => resolveInside(dir, "../secret.yaml")).toThrow(/outside the working directory/);
+    expect(() => resolveInside(dir, path.join(outside, "secret.yaml"))).toThrow(
+      /outside the working directory/,
+    );
+    fs.symlinkSync(outside, path.join(dir, "link"), "junction");
+    expect(() => resolveInside(dir, "link/secret.yaml")).toThrow(/through a link/);
   });
 });

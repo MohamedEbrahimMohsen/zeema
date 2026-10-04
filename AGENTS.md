@@ -11,7 +11,8 @@ kinds/ components/ rules/ locales/ icons/ schema/   the catalogue (data; governe
 designs/reference|imported|authored/<id>/           designs (data; tier decides writability)
 packages/core        the engine. Pure ES modules, zero dependencies, no DOM, no fs, no network
 packages/catalogue   load the catalogue, build the bundle, run the repository gate
-packages/cli         the `zeema` command
+packages/cli         the `zeema` command (source; private)
+packages/zeema       the published npm package `zeema`: cli + core + bundled catalogue + `zeema mcp`
 apps/web             Next.js app: pages, API under /api/v1, Drizzle schema, GitHub OAuth
 docs/                specification, plan, governance, intake cards, inventories
 ```

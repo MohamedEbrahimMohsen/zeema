@@ -62,8 +62,8 @@ First boot seeds the curated designs, which takes a minute or two. See
 The command line tool works on any repository. It needs no account and no network.
 
 ```bash
-npx @zeema/cli init      # starter design, config, editor schema mapping, CI workflow
-npx @zeema/cli lint      # exit 1 on a structural error or a rule of severity error
+npx zeema init      # starter design, config, editor schema mapping, CI workflow
+npx zeema lint      # exit 1 on a structural error or a rule of severity error
 ```
 
 `init` writes four things and never overwrites an existing file:
