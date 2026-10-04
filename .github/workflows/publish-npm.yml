@@ -7,10 +7,11 @@
 # match the package version. `workflow_dispatch` publishes the version on the chosen ref, and
 # still refuses when that ref is a tag that does not match.
 #
-# One-time setup by the owner: add a repository secret NPM_TOKEN holding an npm granular access
-# token with read and write access to the `zeema` package (an automation-style token, so it
-# works without a one-time password). --provenance links the published version to this
-# workflow run, which is what `id-token: write` is for.
+# Authentication is npm Trusted Publishing: no token is stored anywhere. One-time setup by the
+# owner on npmjs.com -> package `zeema` -> Settings -> Trusted Publisher -> GitHub Actions, with
+# repository MohamedEbrahimMohsen/zeema and workflow file publish-npm.yml (no environment). The
+# job then proves its identity to npm with the OIDC token `id-token: write` grants, and npm
+# attaches provenance to the version itself. Needs npm 11.5.1 or later, hence the upgrade step.
 name: publish npm
 
 on:
@@ -68,7 +69,8 @@ jobs:
       - run: npm pkg delete devDependencies scripts
         working-directory: packages/zeema
 
-      - run: npm publish --provenance --access public
+      # Trusted Publishing arrived in npm 11.5.1; Node 22 ships an older npm.
+      - run: npm install -g npm@latest
+
+      - run: npm publish --access public
         working-directory: packages/zeema
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
