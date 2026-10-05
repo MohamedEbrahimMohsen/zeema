@@ -242,8 +242,39 @@ export function providerFolderIds(rootArg) {
     .sort();
 }
 
+/** Provider ids whose mark has another file name under icons/providers. */
+export const PROVIDER_MARK_FILE = { gcp: "googlecloud", k8s: "kubernetes" };
+
 /**
- * Icon inner markup keyed by component id, `kind:<id>` and `boundary:<id>`; `missing` lists
+ * Each provider mark's drawing bounds inside its 24-unit box, [x, y, width, height], measured
+ * with getBBox. The neutral cloud marks fill only the upper middle of the box, so drawn as-is
+ * they look small and high; the picker crops every mark to its drawing so all sit level and
+ * read the same size. Re-measure when a file under icons/providers changes.
+ */
+export const PROVIDER_MARK_BOX = {
+  alibabacloud: [0, 4.52, 24, 14.97],
+  aws: [4.66, 4.8, 16.2, 10.6],
+  azure: [4.66, 4.8, 16.2, 10.6],
+  cloudflare: [0, 6.58, 24, 10.85],
+  digitalocean: [0, 0, 24, 24],
+  gcp: [0, 2.38, 24, 19.25],
+  ibm: [4.66, 4.8, 16.2, 10.6],
+  k8s: [0, 0.35, 24, 23.28],
+  oci: [0, 5, 24, 14],
+  openstack: [0, 0.26, 24, 23.48],
+  outscale: [4.66, 4.8, 16.2, 10.6],
+};
+
+// A viewBox cropped to a mark's drawing with 4% of its longer side as margin.
+const markViewBox = ([x, y, w, h]) => {
+  const pad = Math.max(w, h) * 0.04;
+  const r = (v) => Math.round(v * 100) / 100;
+  return [x - pad, y - pad, w + 2 * pad, h + 2 * pad].map(r).join(" ");
+};
+
+/**
+ * Icon inner markup keyed by component id, `kind:<id>`, `boundary:<id>` and `provider:<id>`
+ * (every provider folder but `default`); `missing` lists
  * absent files. Group icons are not tied to any catalogue entry, so the folder decides which
  * exist and none can be missing.
  */
@@ -271,6 +302,28 @@ export function iconMap(cat) {
   for (const id of boundaryIconIds(cat.root)) {
     const rel = `icons/boundaries/${id}.svg`;
     icons[`boundary:${id}`] = inner(fs.readFileSync(path.join(cat.root, rel), "utf8"), rel);
+  }
+  // The brand mark of every provider but `default`, which has none: the picker shows it on each
+  // row. The root fill moves onto a group so the mark keeps its colour inside another <svg>, the
+  // title goes, so a row's own tooltip is the only one, and the box is cropped to the drawing.
+  for (const id of providerFolderIds(cat.root)) {
+    if (id === "default") continue;
+    const rel = `icons/providers/${PROVIDER_MARK_FILE[id] ?? id}.svg`;
+    const abs = path.join(cat.root, rel);
+    if (!fs.existsSync(abs)) {
+      missing.push(rel);
+      continue;
+    }
+    const raw = fs.readFileSync(abs, "utf8");
+    const open = raw.indexOf("<svg");
+    const fill = /\sfill="(#[0-9a-fA-F]{3,8})"/.exec(raw.slice(open, raw.indexOf(">", open)))?.[1];
+    const body = inner(raw, rel).replace(/<title>[\s\S]*?<\/title>/g, "");
+    const mark = fill ? `<g fill="${fill}">${body}</g>` : body;
+    // Cropped by a nested <svg>, which centres the drawing in whatever box the page gives it.
+    const box = PROVIDER_MARK_BOX[id];
+    icons[`provider:${id}`] = box
+      ? `<svg viewBox="${markViewBox(box)}" width="24" height="24">${mark}</svg>`
+      : mark;
   }
   return { icons: sorted(icons), missing };
 }

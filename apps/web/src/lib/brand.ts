@@ -6,12 +6,13 @@
 // here, once per process per mark.
 import fs from "node:fs";
 import path from "node:path";
+import { PROVIDER_MARK_FILE } from "@zeema/catalogue";
 import type { Badge } from "./badge";
 import { type Catalogue, repoRoot } from "./catalogue";
 import { own } from "./own";
 
 /** Catalogue provider ids whose mark has another file name under icons/providers. */
-const PROVIDER_FILE: Record<string, string> = { gcp: "googlecloud", k8s: "kubernetes" };
+const PROVIDER_FILE: Record<string, string> = PROVIDER_MARK_FILE;
 
 type Mark = { markup: string; title: string | null };
 const cache = new Map<string, Mark | null>();

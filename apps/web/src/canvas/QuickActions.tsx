@@ -3,9 +3,8 @@
 // Quick actions (⌘K): one box that reaches every command on the canvas, every component in the
 // catalogue and every box already drawn. The arrows move, Enter runs, Escape closes and puts the
 // keyboard back where it was. Ranking lives in quick-actions.ts; this only draws and dispatches.
-import { isGeneric } from "@zeema/core/document";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-import type { Row } from "./Palette";
+import { ProviderMark, type Row, rowTip } from "./Palette";
 import {
   pushRecent,
   type QuickAction,
@@ -35,6 +34,8 @@ export function QuickActions({
   actions,
   rows,
   icons,
+  providerNames,
+  kindNames,
   targets,
   onComponent,
   onGoto,
@@ -43,6 +44,9 @@ export function QuickActions({
   actions: QuickAction[];
   rows: Row[];
   icons: Record<string, string>;
+  /** Provider and kind display names from the locale, for a component row's tooltip. */
+  providerNames?: Record<string, string>;
+  kindNames?: Record<string, string>;
   targets: QuickTarget[];
   /** A component was chosen: place it in the middle of the view. */
   onComponent: (id: string) => void;
@@ -132,7 +136,7 @@ export function QuickActions({
 
   const body = (entry: QuickEntry) => {
     if (entry.kind === "component") {
-      const [id, name, kind, , provider] = entry.row;
+      const [id, name, , , provider] = entry.row;
       return (
         <>
           <svg
@@ -142,9 +146,7 @@ export function QuickActions({
             dangerouslySetInnerHTML={{ __html: icons[id] ?? "" }}
           />
           <span className="qa-label">{name}</span>
-          <span className="qa-sub">
-            {isGeneric(id, kind) ? "generic" : `${kind} · ${provider}`}
-          </span>
+          <ProviderMark provider={provider} icons={icons} />
         </>
       );
     }
@@ -206,6 +208,10 @@ export function QuickActions({
               {section.entries.map((entry) => {
                 index++;
                 const i = index;
+                const tip =
+                  entry.kind === "component"
+                    ? rowTip(entry.row, providerNames, kindNames)
+                    : undefined;
                 return (
                   <div
                     key={`${section.title}:${entry.key}`}
@@ -215,6 +221,10 @@ export function QuickActions({
                     tabIndex={-1}
                     aria-selected={i === at}
                     className={`qa-row${i === at ? " is-active" : ""}`}
+                    title={tip}
+                    aria-label={
+                      tip && entry.kind === "component" ? `${entry.row[1]} · ${tip}` : undefined
+                    }
                     onPointerMove={() => i !== at && setActive(i)}
                     onPointerDown={(ev) => ev.preventDefault()}
                     onClick={() => run(entry)}

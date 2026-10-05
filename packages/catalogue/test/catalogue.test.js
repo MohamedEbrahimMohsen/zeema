@@ -5,7 +5,14 @@ import Ajv from "ajv";
 import addFormats from "ajv-formats";
 import { describe, expect, it } from "vitest";
 import { renderBundle } from "../src/build.js";
-import { boundaryIconIds, designIndex, loadCatalogue, searchRows } from "../src/index.js";
+import {
+  boundaryIconIds,
+  designIndex,
+  loadCatalogue,
+  PROVIDER_MARK_BOX,
+  providerFolderIds,
+  searchRows,
+} from "../src/index.js";
 import { aliasFindings, validateRepository } from "../src/validate.js";
 
 describe("repository gate", () => {
@@ -32,6 +39,29 @@ describe("bundle", () => {
     const icons = JSON.parse(a.texts["icons.json"]);
     for (const id of Object.keys(cat.components)) expect(icons[id], id).toBeTypeOf("string");
     for (const id of Object.keys(cat.kinds)) expect(icons[`kind:${id}`], id).toBeTypeOf("string");
+  }, 120_000);
+
+  it("carries a cropped brand mark under provider:<id> for every provider folder but default", () => {
+    const root = loadCatalogue().root;
+    expect(Object.keys(PROVIDER_MARK_BOX).sort()).toEqual(
+      providerFolderIds(root).filter((id) => id !== "default"),
+    );
+    const icons = JSON.parse(renderBundle().texts["icons.json"]);
+    const want = providerFolderIds(root)
+      .filter((id) => id !== "default")
+      .map((id) => `provider:${id}`);
+    expect(want.length).toBeGreaterThan(0);
+    expect(
+      Object.keys(icons)
+        .filter((k) => k.startsWith("provider:"))
+        .sort(),
+    ).toEqual(want);
+    for (const key of want) {
+      expect(icons[key], key).toMatch(
+        /^<svg viewBox="[-\d. ]+" width="24" height="24"><g fill="#[0-9a-fA-F]{3,8}">/,
+      );
+      expect(icons[key], key).not.toMatch(/<title>/);
+    }
   }, 120_000);
 
   it("carries every boundary icon on disk under boundary:<id>, named in the locale", () => {

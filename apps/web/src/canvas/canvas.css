@@ -1306,10 +1306,53 @@
   stroke-linecap: round;
   stroke-linejoin: round;
 }
+/* the group icon picker's meta column */
 .zeema-canvas .pal-row .kind {
   font-family: var(--mono);
   font-size: var(--fs-micro);
   color: var(--muted);
+}
+/* The provider's brand mark sits over the row's last column, in its own button: it filters the
+   picker to that provider. The slot keeps the name from running under it. */
+.zeema-canvas .pal-item {
+  position: relative;
+}
+.zeema-canvas .pal-mark-slot {
+  width: 16px;
+}
+.zeema-canvas .pal-mark {
+  position: absolute;
+  top: 50%;
+  right: var(--sp-1);
+  transform: translateY(-50%);
+  display: inline-flex;
+  padding: 2px;
+  margin: -2px;
+  border: 0;
+  background: none;
+  border-radius: var(--rc);
+  cursor: pointer;
+}
+.zeema-canvas .pal-mark:hover {
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.zeema-canvas .pal-mark:focus-visible {
+  outline: none;
+  box-shadow: var(--ring-focus);
+}
+/* Brand colour comes from the mark's own fill; nothing inherited strokes it. */
+.zeema-canvas .prov-mark {
+  display: block;
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+  stroke: none;
+}
+.zeema-canvas .prov-sprite {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
 }
 .zeema-canvas .pal-row .name {
   overflow: hidden;
@@ -1321,13 +1364,6 @@
   color: var(--muted);
   font-size: var(--fs-micro);
   line-height: 1.35;
-}
-/* The vendor-neutral component of a kind: first in its category, and marked as such. */
-.zeema-canvas .pal-row.is-generic .kind {
-  color: var(--accent);
-  border: var(--border) solid var(--line);
-  border-radius: var(--rc);
-  padding: 0 4px;
 }
 
 /* inspector — a field is label, control, resolved hint */

@@ -38,6 +38,58 @@ export function score(row: Row, words: string[]) {
   return s;
 }
 
+/**
+ * The provider brand marks, each defined once as `<symbol id="prov-<provider>">` for the picker
+ * and quick actions to `<use>`. Rendered once per canvas; `default` has no mark.
+ */
+export function ProviderSprite({ icons }: { icons: Record<string, string> }) {
+  const ids = Object.keys(icons)
+    .filter((k) => k.startsWith("provider:"))
+    .map((k) => k.slice("provider:".length));
+  return (
+    <svg className="prov-sprite" aria-hidden="true" focusable="false" width="0" height="0">
+      {ids.map((id) => (
+        <symbol
+          key={id}
+          id={`prov-${id}`}
+          viewBox="0 0 24 24"
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: provider mark from icons/providers, passed by the gate
+          dangerouslySetInnerHTML={{ __html: icons[`provider:${id}`] }}
+        />
+      ))}
+    </svg>
+  );
+}
+
+/** A provider's mark from the sprite, or nothing for `default` and any provider without one. */
+export function ProviderMark({
+  provider,
+  icons,
+}: {
+  provider: string;
+  icons: Record<string, string>;
+}) {
+  if (!icons[`provider:${provider}`]) return null;
+  return (
+    <svg className="prov-mark" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <use href={`#prov-${provider}`} />
+    </svg>
+  );
+}
+
+/** A row's tooltip: `Provider · Kind`, or the kind alone for `default`, from the locale. */
+export function rowTip(
+  row: Row,
+  providerNames?: Record<string, string>,
+  kindNames?: Record<string, string>,
+) {
+  const [, , kind, , provider] = row;
+  const k = kindNames?.[kind] ?? kind;
+  return provider && provider !== "default"
+    ? `${providerLabel(provider, providerNames)} · ${k}`
+    : k;
+}
+
 const COLLAPSED_KEY = "zeema.palette.collapsed";
 const readCollapsed = (): string[] => {
   try {
@@ -60,6 +112,7 @@ export function Palette({
   icons,
   providerNames,
   categoryNames,
+  kindNames,
   query,
   onQuery,
   focusSeq,
@@ -73,6 +126,8 @@ export function Palette({
   providerNames?: Record<string, string>;
   /** Category display names from the locale, keyed by category id. */
   categoryNames?: Record<string, string>;
+  /** Kind display names from the locale, keyed by kind id: the row tooltip names the kind. */
+  kindNames?: Record<string, string>;
   /** The search box is owned above, so the canvas can point the palette at a category. */
   query: string;
   onQuery: (q: string) => void;
@@ -197,30 +252,48 @@ export function Palette({
     return suggested.map((id) => byId.get(id)).filter((r): r is Row => Boolean(r));
   }, [q, suggested, rows]);
 
+  // A row is the component button and, beside it, the provider's mark as its own button: one
+  // press filters the picker to that provider, a second clears it. Siblings, not nested, since a
+  // button cannot hold a button. The kind, no longer printed, is in the tooltip and the label.
   const rowButton = (row: Row, keyPrefix = "") => {
-    const [id, name, kind] = row;
-    const generic = isGeneric(id, kind);
+    const [id, name, , , provider] = row;
+    const tip = rowTip(row, providerNames, kindNames);
+    const marked = Boolean(icons[`provider:${provider}`]);
+    const on = filters.provider === provider;
+    const pName = providerLabel(provider, providerNames);
     return (
-      <button
-        key={`${keyPrefix}${id}`}
-        type="button"
-        className={`pal-row${generic ? " is-generic" : ""}`}
-        draggable
-        title={
-          id === "custom"
-            ? "custom · a last resort: no rule can judge a custom node"
-            : generic
-              ? `${id} · ${kind} · vendor-neutral`
-              : `${id} · ${kind}`
-        }
-        onDragStart={(e) => e.dataTransfer.setData("text/zeema-component", id)}
-        onClick={() => onCreate(id)}
-      >
-        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: catalogue icon markup, sanitised at build */}
-        <svg viewBox="0 0 24 24" dangerouslySetInnerHTML={{ __html: icons[id] ?? "" }} />
-        <span className="name">{name}</span>
-        <span className="kind">{generic ? "generic" : kind}</span>
-      </button>
+      <div key={`${keyPrefix}${id}`} className="pal-item">
+        <button
+          type="button"
+          className="pal-row"
+          draggable
+          title={tip}
+          aria-label={`${name} · ${tip}`}
+          onDragStart={(e) => e.dataTransfer.setData("text/zeema-component", id)}
+          onClick={() => onCreate(id)}
+        >
+          {/* biome-ignore lint/security/noDangerouslySetInnerHtml: catalogue icon markup, sanitised at build */}
+          <svg viewBox="0 0 24 24" dangerouslySetInnerHTML={{ __html: icons[id] ?? "" }} />
+          <span className="name">{name}</span>
+          {marked ? <span className="pal-mark-slot" /> : null}
+        </button>
+        {marked ? (
+          <button
+            type="button"
+            className="pal-mark"
+            title={pName}
+            aria-label={pName}
+            aria-pressed={on}
+            draggable={false}
+            onClick={(e) => {
+              e.stopPropagation();
+              pick("provider", on ? "" : provider);
+            }}
+          >
+            <ProviderMark provider={provider} icons={icons} />
+          </button>
+        ) : null}
+      </div>
     );
   };
 
