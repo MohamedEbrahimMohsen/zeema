@@ -39,7 +39,8 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
-          registry-url: https://registry.npmjs.org
+          # No registry-url: that would write an .npmrc expecting NODE_AUTH_TOKEN, and an empty
+          # token takes precedence over the OIDC exchange, which the registry answers with 404.
 
       - name: Refuse a tag that is not the package version
         run: |
