@@ -1,6 +1,7 @@
 // The catalogue gate as a test, plus the bundle's two properties: deterministic and complete.
 import fs from "node:fs";
 import path from "node:path";
+import { COUNT_PROPS } from "@zeema/core/document";
 import Ajv from "ajv";
 import addFormats from "ajv-formats";
 import { describe, expect, it } from "vitest";
@@ -214,5 +215,23 @@ describe("group kinds", () => {
     expect(found.map(([k]) => k).sort()).toEqual(["crossesGroup", "inGroup"]);
     for (const [k, kinds] of found) expect(kinds, k).toEqual(design);
     expect(design).toContain("namespace");
+  });
+});
+
+describe("count properties", () => {
+  // instances, replicas and shards draw a node as a stack (nodeCount in core/document.js): each
+  // must be an integer with no default, or every node of the kind would be drawn as a stack.
+  it("are integers with no default wherever a kind defines one", () => {
+    const live = loadCatalogue();
+    let seen = 0;
+    for (const [id, kind] of Object.entries(live.kinds))
+      for (const prop of COUNT_PROPS) {
+        const def = kind.properties?.[prop];
+        if (!def) continue;
+        seen += 1;
+        expect(def.type, `${id}.${prop}`).toBe("integer");
+        expect(def.default, `${id}.${prop}`).toBeUndefined();
+      }
+    expect(seen).toBeGreaterThan(0);
   });
 });

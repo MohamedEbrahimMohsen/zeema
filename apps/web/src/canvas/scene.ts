@@ -9,7 +9,7 @@
 // under it. The wheel scrolls (shift scrolls sideways); ctrl, meta, alt or a pinch zooms around the
 // pointer.
 
-import { groupCaption, groupTitle, nodeLines } from "@zeema/core/document";
+import { groupCaption, groupTitle, nodeCount, nodeLines } from "@zeema/core/document";
 import {
   bowAt,
   dropWaypoint,
@@ -29,6 +29,7 @@ import {
   CAPTION_LINE,
   FRAME_ICON_SHIFT,
   nodeText,
+  stackDecor,
   TINT,
   TINT_FILL_ALPHA,
   tintFill,
@@ -1232,43 +1233,57 @@ export class Scene {
         "data-id": n.id,
         transform: `translate(${b[0]} ${b[1]})`,
       }) as SVGGElement;
-      box.append(
-        el("rect", {
-          class: "body",
-          x: 0,
-          y: 0,
-          width: b[2],
-          height: b[3],
-          rx: 12,
-          // One neutral surface for every node: colour comes from the icon, a group tint and
-          // the finding badges, never from the kind's category.
-          fill: "var(--node-fill)",
-          stroke: "var(--node-line)",
-          // Set on the element, not in a stylesheet, so the exported SVG carries it too.
-          "stroke-dasharray": untyped ? "6 4" : null,
-          "fill-opacity": untyped ? 0.45 : null,
-        }),
-      );
-      // A tinted component: the card stays opaque and a second rect over it carries the tint's
-      // border and faint fill, as the server render draws it. The border is an attribute, so a
-      // selection or wiring state (canvas.css) can take it over.
       const tinted = own(this.model.nodeTints ?? {}, n.id) as NodeTint | undefined;
       const fill = tinted ? tintFill(tinted.tint, tinted.strength) : null;
-      if (fill)
-        box.append(
+      // One card: the body and, when tinted, the tint over it. The front card is the box; a
+      // stack's cards behind it are the same card, drawn fainter and never hit.
+      const card = (into: Element, cls: string, x: number, y: number) => {
+        into.append(
           el("rect", {
-            class: "node-tint",
-            x: 0,
-            y: 0,
+            class: cls,
+            x,
+            y,
             width: b[2],
             height: b[3],
             rx: 12,
-            stroke: fill.color,
-            "stroke-width": 1,
+            // One neutral surface for every node: colour comes from the icon, a group tint and
+            // the finding badges, never from the kind's category.
+            fill: "var(--node-fill)",
+            stroke: "var(--node-line)",
+            // Set on the element, not in a stylesheet, so the exported SVG carries it too.
             "stroke-dasharray": untyped ? "6 4" : null,
-            style: `fill:${fill.color};fill-opacity:${fill.opacity}`,
+            "fill-opacity": untyped ? 0.45 : null,
           }),
         );
+        // A tinted component: the card stays opaque and a second rect over it carries the tint's
+        // border and faint fill, as the server render draws it. The border is an attribute, so a
+        // selection or wiring state (canvas.css) can take it over.
+        if (fill)
+          into.append(
+            el("rect", {
+              class: "node-tint",
+              x,
+              y,
+              width: b[2],
+              height: b[3],
+              rx: 12,
+              stroke: fill.color,
+              "stroke-width": 1,
+              "stroke-dasharray": untyped ? "6 4" : null,
+              style: `fill:${fill.color};fill-opacity:${fill.opacity}`,
+            }),
+          );
+      };
+      // N identical copies (nodeCount): the stack's cards behind the box, as the server render
+      // draws them (stackDecor). Decoration only: the box, its ports and its hit area are unchanged.
+      const stack = stackDecor(b[2], b[3], nodeCount(this.model.doc, n, this.model.catalogue));
+      if (stack)
+        for (const s of stack.cards) {
+          const layer = el("g", { class: "stack", opacity: s.opacity });
+          card(layer, "stack-card", s.x, s.y);
+          box.append(layer);
+        }
+      card(box, "body", 0, 0);
       // The two lines fitted to the box exactly as the server render fits them (nodeText in
       // @zeema/core/render). The whole text and the undrawn id are the box's accessible name;
       // hover is the page's card (onHover), not a native <title>, which is slow and plain.
@@ -1306,6 +1321,29 @@ export class Scene {
       });
       comp.textContent = text.comp.text;
       box.append(comp);
+      if (stack) {
+        const p = stack.chip;
+        box.append(
+          el("rect", {
+            class: "stack-chip",
+            x: p.x,
+            y: p.y,
+            width: p.w,
+            height: p.h,
+            rx: p.rx,
+            style: "fill:var(--panel);stroke:var(--node-line);stroke-width:1",
+          }),
+        );
+        const chip = el("text", {
+          class: "stack-chip-t",
+          x: p.tx,
+          y: p.ty,
+          "text-anchor": "middle",
+          style: `font-family:var(--mono);font-size:${p.size}px;fill:var(--muted)`,
+        });
+        chip.textContent = p.text;
+        box.append(chip);
+      }
       const bad = (this.model.findings || []).filter(
         (f) => f.subject && f.subject.type === "node" && f.subject.ref === n.id,
       );

@@ -42,6 +42,8 @@ properties:
   encryptionAtRest:
     type: "boolean"
     default: false
+  instances:
+    type: "integer"
   managed:
     type: "boolean"
     default: false

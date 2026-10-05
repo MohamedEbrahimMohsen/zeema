@@ -1,6 +1,7 @@
 # yaml-language-server: $schema=../schema/kind.schema.json
 # In-memory key-value store placed in front of a slower datastore.
 # evictionPolicy is deliberately optional with no default; cache-missing-eviction-policy reports its absence.
+# shards counts the identical shards of one cache; two or more draw the node as a stack.
 schemaVersion: "1"
 type: "kind"
 id: "cache"
@@ -46,6 +47,8 @@ properties:
     type: "enum"
     values: ["core", "edge"]
     default: "core"
+  shards:
+    type: "integer"
   managed:
     type: "boolean"
     default: false

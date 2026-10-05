@@ -3,7 +3,7 @@
 // The card the canvas shows beside the pointer when it rests on a component or a group's label or border:
 // the name, what it is, and the ids behind it. It replaces the native <title> tooltip, which is
 // slow to come and cannot be styled. It never takes the pointer: it is a remark, not a control.
-import { nodeLines } from "@zeema/core/document";
+import { nodeCountOf, nodeLines } from "@zeema/core/document";
 import { useLayoutEffect, useRef } from "react";
 import { edgeCrossings, edgesText, memberCounts, membersText, parentPath } from "./group-info";
 
@@ -43,6 +43,9 @@ export function HoverCard({ at, doc, catalogue }: { at: HoverAt; doc: any; catal
     const kindName = comp ? own(catalogue.locale?.kinds, comp.kind)?.name || comp.kind : "";
     const product = own(catalogue.locale?.components, n.component)?.name || n.component;
     const provider = comp?.provider && comp.provider !== "default" ? comp.provider : null;
+    // N identical copies, in the property's own word: "3 instances", "8 shards", "2 replicas".
+    // The catalogue has no display names for properties, and these three are already words.
+    const count = nodeCountOf(doc, n, catalogue);
     body = (
       <>
         {row("Name", lines.name, "hc-name")}
@@ -51,6 +54,7 @@ export function HoverCard({ at, doc, catalogue }: { at: HoverAt; doc: any; catal
         {provider
           ? row("Provider", own(catalogue.locale?.providers, provider)?.name || provider)
           : null}
+        {count ? row("Count", `${count.count} ${count.prop}`) : null}
         <span className="hc-rule" />
         {row("Id", `${n.id} · ${n.component}`, "hc-mono")}
       </>

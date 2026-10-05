@@ -3,7 +3,7 @@
 // component's icon on one neutral surface, groups are dashed containers,
 // edges are arrows, solid for sync and dashed for async.
 
-import { groupCaption, groupTitle, nodeLines } from "./document.js";
+import { groupCaption, groupTitle, nodeCount, nodeLines } from "./document.js";
 import { drawnLayout } from "./drawn.js";
 import {
   edgePath,
@@ -121,6 +121,54 @@ export { FRAME_ICON_SHIFT };
 export function frameIconKey(ref) {
   if (typeof ref !== "string" || ref.length > 120 || !FRAME_ICON_RE.test(ref)) return null;
   return ref.startsWith("component:") ? ref.slice(ref.indexOf("/") + 1) : ref;
+}
+
+// A node that stands for N identical copies (nodeCount in document.js) is drawn as a stack: two
+// cards behind its box, each STACK_STEP px further right and up, and a chip at the box's
+// top-right corner reading ×N. The stack is decoration only: the layout box, the edges' ends,
+// the frames and the canvas's hit areas are the front card alone. The server render and the
+// canvas both draw it from stackDecor, so the two cannot disagree.
+export const STACK_STEP = 6;
+// The cards' opacity, farthest first.
+export const STACK_OPACITY = [0.45, 0.7];
+const CHIP_FONT = 11;
+const CHIP_H = 16;
+// The monospace face's advance, about 0.62em a character (as frameCaption measures the canvas's).
+const MONO_EM = 0.62;
+export const MONO_FONT = "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
+
+/**
+ * The stack drawn behind a box `w` x `h` standing for `count` copies, in the box's own
+ * coordinates (its top-left corner is 0,0), or null when `count` is not an integer of 2 or more.
+ * `cards` is farthest first: draw them in order, then the box. `chip` is the ×N label's pill and
+ * where its text sits (centred on `tx`, baseline `ty`); it is as wide as its text, so ×1000 is
+ * written out rather than cut.
+ */
+export function stackDecor(w, h, count) {
+  if (!Number.isInteger(count) || count < 2) return null;
+  const cards = STACK_OPACITY.map((opacity, k) => {
+    const step = (STACK_OPACITY.length - k) * STACK_STEP;
+    return { x: step, y: -step, w, h, opacity };
+  });
+  const text = `×${count}`;
+  const cw = Math.ceil([...text].length * CHIP_FONT * MONO_EM) + 12;
+  // Above the box's top edge, clear of the findings dot (centred 10px in from the corner).
+  const x = w - cw - 8;
+  const y = -10;
+  return {
+    cards,
+    chip: {
+      x,
+      y,
+      w: cw,
+      h: CHIP_H,
+      rx: CHIP_H / 2,
+      text,
+      tx: x + cw / 2,
+      ty: y + 12,
+      size: CHIP_FONT,
+    },
+  };
 }
 
 const tintTokens = (i) =>
@@ -357,16 +405,25 @@ export function toSvg(doc, catalogue, options = {}) {
     const l = nodeLines(catalogue ?? {}, n);
     const t = nodeText(l.name, l.sub, bw, l.id);
     out.push(`<g><title>${escapeXml(t.title)}</title>`);
-    out.push(
-      `<rect class="body" x="${x}" y="${y}" width="${bw}" height="${bh}" rx="12" stroke-width="1"${hole}/>`,
-    );
     // A tinted component: the card stays opaque, and a second rect over it carries the tint's
     // border and faint fill, so the icon and the words above it are drawn exactly as before.
     const paint = nodePaint(n.id);
-    if (paint)
-      out.push(
-        `<rect${paintAttrs(paint)} x="${x}" y="${y}" width="${bw}" height="${bh}" rx="12" stroke-width="1"${c.kind === "custom" ? ' stroke-dasharray="6 4"' : ""}/>`,
-      );
+    const card = (cx0, cy0) => {
+      const r = [
+        `<rect class="body" x="${cx0}" y="${cy0}" width="${bw}" height="${bh}" rx="12" stroke-width="1"${hole}/>`,
+      ];
+      if (paint)
+        r.push(
+          `<rect${paintAttrs(paint)} x="${cx0}" y="${cy0}" width="${bw}" height="${bh}" rx="12" stroke-width="1"${c.kind === "custom" ? ' stroke-dasharray="6 4"' : ""}/>`,
+        );
+      return r;
+    };
+    // N identical copies: the stack's cards behind the box, painted like it, a little fainter.
+    const stack = stackDecor(bw, bh, nodeCount(doc, n, catalogue));
+    if (stack)
+      for (const s of stack.cards)
+        out.push(`<g class="stack" opacity="${s.opacity}">${card(x + s.x, y + s.y).join("")}</g>`);
+    out.push(...card(x, y));
     const body = own(icons, n.component);
     if (body) {
       const scale = t.icon.size === ICON ? "" : ` scale(${t.icon.size / ICON})`;
@@ -381,6 +438,13 @@ export function toSvg(doc, catalogue, options = {}) {
     out.push(
       `<text class="c" x="${f1(cx)}" y="${y + t.comp.y}" text-anchor="middle">${escapeXml(t.comp.text)}</text>`,
     );
+    if (stack) {
+      const p = stack.chip;
+      out.push(
+        `<rect class="chip" x="${f1(x + p.x)}" y="${y + p.y}" width="${p.w}" height="${p.h}" rx="${p.rx}" fill="var(--bg)" stroke="var(--node-line)" stroke-width="1"/>`,
+        `<text class="chip-t" x="${f1(x + p.tx)}" y="${y + p.ty}" text-anchor="middle" font-family="${MONO_FONT}" font-size="${p.size}" fill="var(--muted)">${escapeXml(p.text)}</text>`,
+      );
+    }
     out.push("</g>");
   }
   out.push("</svg>");
@@ -418,7 +482,10 @@ export function toMermaid(doc, direction = "TD", catalogue = null) {
       ? nodeLines(catalogue, n)
       : { name: n.label || n.id, sub: n.component ?? "" };
     const sub = l.sub ? `<br/><i>${mesc(l.sub)}</i>` : "";
-    out.push(`${ind}${mid(n.id)}["${mesc(l.name)}${sub}"]`);
+    // N identical copies read as the drawing's chip does: the name, then ×N.
+    const count = catalogue ? nodeCount(doc, n, catalogue) : null;
+    const name = count ? `${l.name} ×${count}` : l.name;
+    out.push(`${ind}${mid(n.id)}["${mesc(name)}${sub}"]`);
   };
   const emitGroup = (g, depth) => {
     const ind = "  ".repeat(depth);

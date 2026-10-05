@@ -35,6 +35,8 @@ properties:
     values: ["none", "fixed", "exponential", "exponential-jitter"]
   maxAttempts:
     type: "integer"
+  instances:
+    type: "integer"
   managed:
     type: "boolean"
     default: false

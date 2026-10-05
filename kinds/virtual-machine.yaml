@@ -19,6 +19,8 @@ properties:
     type: "boolean"
   diskEncryption:
     type: "boolean"
+  instances:
+    type: "integer"
   managed:
     type: "boolean"
     default: false

@@ -693,6 +693,13 @@
 .zeema-canvas .node-box .glyph {
   color: var(--ink);
 }
+/* a node standing for N copies: the cards behind it and its ×N chip are decoration. The box
+   alone takes the pointer, so hit areas, drags and wires are what they were. */
+.zeema-canvas .node-box .stack,
+.zeema-canvas .node-box .stack-chip,
+.zeema-canvas .node-box .stack-chip-t {
+  pointer-events: none;
+}
 
 /* notes — sticky annotations from the layout sidecar. No glyph, no ports, no edges. */
 .zeema-canvas .note-box {

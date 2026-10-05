@@ -192,6 +192,34 @@ export function effective(catalogue, node) {
   return out;
 }
 
+// The properties that say "this box is N identical copies", in the order one is read when a node
+// somehow carries several: the first one present decides, whatever its value.
+export const COUNT_PROPS = ["instances", "replicas", "shards"];
+
+/**
+ * How many identical copies a node stands for, when that is two or more: the resolved value of
+ * the first of COUNT_PROPS its kind or component defines and the node resolves (effective), else
+ * null. Only a real integer counts: a string "3" is not an integer property's value (the
+ * structure gate refuses it), so it is null here rather than guessed at. `doc` is unused today;
+ * it is in the signature so a later reading can look at the design without every caller changing.
+ * @returns {{ count: number, prop: string } | null}
+ */
+export function nodeCountOf(_doc, node, catalogue) {
+  if (!node || !catalogue) return null;
+  const props = effective(catalogue, node);
+  for (const name of COUNT_PROPS) {
+    if (props[name] === undefined) continue;
+    const v = props[name];
+    return Number.isInteger(v) && v >= 2 ? { count: v, prop: name } : null;
+  }
+  return null;
+}
+
+/** The count alone (nodeCountOf), or null. */
+export function nodeCount(doc, node, catalogue) {
+  return nodeCountOf(doc, node, catalogue)?.count ?? null;
+}
+
 // A component whose kind declares a required property that resolves to nothing cannot be placed
 // without writing something, or the design is invalid the moment it exists. Two components in
 // the catalogue are in that position, so the first enum value is written and flagged.
