@@ -389,33 +389,106 @@ export function deleteEdge(doc, index) {
 // copy owns, so it is left behind. The id map is returned because the caller has to move the
 // copy somewhere, and positions live outside the document.
 export function duplicateNodes(doc, ids, catalogue) {
+  return pasteFragment(doc, copyFragment(doc, ids, []), catalogue);
+}
+
+// The groups inside these, at any depth, with them.
+function withDescendants(doc, groupIds) {
+  const groups = doc.groups || [];
+  const out = new Set(groupIds.filter((id) => groups.some((g) => g.id === id)));
+  for (let grew = true; grew; ) {
+    grew = false;
+    for (const g of groups)
+      if (g.parent && out.has(g.parent) && !out.has(g.id)) {
+        out.add(g.id);
+        grew = true;
+      }
+  }
+  return out;
+}
+
+/**
+ * The part of a design a copy takes: the components and groups named, every group and component
+ * inside a named group at any depth, and the edges whose two ends are both in it (an end may be a
+ * group). `edgeIndexes` are the copied edges' indexes in `doc`, so the caller can carry what it
+ * keys by edge (paths, ports). Everything is a deep copy.
+ */
+export function copyFragment(doc, nodeIds, groupIds = []) {
+  const groups = withDescendants(doc, groupIds);
+  const nodes = new Set(nodeIds);
+  for (const n of doc.nodes) if (n.group && groups.has(n.group)) nodes.add(n.id);
+  const ends = new Set([...nodes, ...groups]);
+  const edgeIndexes = [];
+  (doc.edges || []).forEach((e, i) => {
+    if (ends.has(e.from) && ends.has(e.to)) edgeIndexes.push(i);
+  });
+  return {
+    nodes: clone(doc.nodes.filter((n) => nodes.has(n.id))),
+    groups: clone((doc.groups || []).filter((g) => groups.has(g.id))),
+    edges: clone(edgeIndexes.map((i) => doc.edges[i])),
+    edgeIndexes,
+  };
+}
+
+/**
+ * Put a copied fragment (`copyFragment`, possibly from another design) into `doc` with fresh ids:
+ * an id already taken gets the same counter Ctrl+D gives (api-2, api-3). References inside the
+ * fragment follow the copy. One pointing outside it is kept when `doc` has what it names — a
+ * copy lands in the same group as its original, a ref property keeps its target — and dropped
+ * when it does not (pasted into another design). Returns the document, the id map (old to new)
+ * and `edgeAt`, the index in the result of each fragment edge.
+ */
+export function pasteFragment(doc, fragment, catalogue) {
   const d = clone(doc);
-  const wanted = doc.nodes.filter((n) => ids.includes(n.id));
+  const groupsBefore = groupIds(doc);
+  const nodesBefore = nodeIds(doc);
   const taken = allIds(d);
   const map = {};
-  for (const n of wanted) {
+  const fresh = (id) => {
+    const copy = uniqueId(taken, String(id).replace(/-\d+$/, ""));
+    taken.add(copy);
+    map[id] = copy;
+  };
+  const groups = Array.isArray(fragment?.groups) ? fragment.groups : [];
+  const nodes = Array.isArray(fragment?.nodes) ? fragment.nodes : [];
+  const edges = Array.isArray(fragment?.edges) ? fragment.edges : [];
+  for (const g of groups) fresh(g.id);
+  for (const n of nodes) fresh(n.id);
+  if (groups.length) d.groups = d.groups || [];
+  for (const g of groups) {
+    const copy = clone(g);
+    copy.id = map[g.id];
+    if (g.parent && map[g.parent]) copy.parent = map[g.parent];
+    else if (!g.parent || !groupsBefore.has(g.parent)) delete copy.parent;
+    d.groups.push(copy);
+  }
+  for (const n of nodes) {
     const copy = clone(n);
-    copy.id = uniqueId(taken, n.id.replace(/-\d+$/, ""));
-    taken.add(copy.id);
-    map[n.id] = copy.id;
+    copy.id = map[n.id];
+    if (n.group && map[n.group]) copy.group = map[n.group];
+    else if (!n.group || !groupsBefore.has(n.group)) delete copy.group;
+    // A ref property pointing inside the copy follows the copy; one pointing outside is kept
+    // when this design has it.
+    if (copy.props) {
+      for (const [name, def] of Object.entries(propDefs(catalogue, copy.component))) {
+        if (def.type !== "ref" || copy.props[name] == null) continue;
+        if (map[copy.props[name]]) copy.props[name] = map[copy.props[name]];
+        else if (!nodesBefore.has(copy.props[name])) delete copy.props[name];
+      }
+      if (!Object.keys(copy.props).length) delete copy.props;
+    }
     d.nodes.push(copy);
   }
-  // A ref property pointing inside the copy follows the copy; one pointing outside is kept.
-  for (const original of wanted) {
-    const copy = d.nodes.find((x) => x.id === map[original.id]);
-    if (!copy?.props) continue;
-    for (const [name, def] of Object.entries(propDefs(catalogue, copy.component))) {
-      if (def.type === "ref" && map[copy.props[name]]) copy.props[name] = map[copy.props[name]];
-    }
-  }
-  for (const e of doc.edges) {
-    if (!map[e.from] || !map[e.to]) continue;
+  // Where each fragment edge landed in the result (null: an end was not in the fragment).
+  const edgeAt = edges.map((e) => {
+    if (!map[e.from] || !map[e.to]) return null;
     const copy = clone(e);
     copy.from = map[e.from];
     copy.to = map[e.to];
     d.edges.push(copy);
-  }
-  return { doc: d, map };
+    return d.edges.length - 1;
+  });
+  return { doc: d, map, edgeAt };
 }
 
 export function addGroup(doc, memberIds, kind = "system", label) {

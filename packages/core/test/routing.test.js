@@ -19,6 +19,7 @@ import {
   portPoint,
   readRouting,
   readVia,
+  refitEnds,
   rekeyBows,
   VIA_MAX,
   viaOf,
@@ -551,6 +552,103 @@ describe("shaped orthogonal paths (waypoints)", () => {
       expect(square(e.points)).toBe(true);
       for (const p of via) expect(onPath(e.points, p)).toBe(true);
     }
+  });
+
+  // The owner's case: an edge into b's left port, its feeding vertical run dragged right until it
+  // stands over b's top. The arrow then comes down into b's top at that x.
+  const intoLeft = () => {
+    const doc = pair();
+    const boxes = { a: [0, 0, W, H], b: [400, 300, W, H] };
+    const ports = { "a>b": { to: { side: "left", t: 0.5 } } };
+    const [e] = edgeGeometry(doc, boxes, {}, ports, {}, ORTHO);
+    // The vertical run that turns into the left port.
+    const k = e.points.length - 3;
+    expect(e.points[k][0]).toBe(e.points[k + 1][0]);
+    return { doc, boxes, ports, e, k };
+  };
+
+  it("re-pins an end to the side its dragged run now crosses", () => {
+    const { doc, boxes, ports, e, k } = intoLeft();
+    const moved = moveSegment(e.points, k, 460, 0);
+    const fit = refitEnds(moved, boxes.a, boxes.b, ports["a>b"]);
+    expect(fit.to).toEqual({ side: "top", t: Math.round((60 / W) * 1000) / 1000 });
+    expect(fit.from).toBeUndefined();
+    // The path is cut where it enters the box: nothing of it is inside b.
+    // (At the rounded t: within a px of the run.)
+    expect(fit.points.at(-1)[0]).toBeCloseTo(460, 0);
+    expect(fit.points.at(-1)[1]).toBe(300);
+    const next = { "a>b": { ...ports["a>b"], to: fit.to } };
+    const [shaped] = edgeGeometry(
+      doc,
+      boxes,
+      { "a>b": { via: viaOf(fit.points) } },
+      next,
+      {},
+      ORTHO,
+    );
+    expect(square(shaped.points)).toBe(true);
+    const [end, before] = [shaped.points.at(-1), shaped.points.at(-2)];
+    expect(end[0]).toBeCloseTo(460, 0);
+    expect(end[1]).toBe(300);
+    // Straight down into the top: the run before the end is the dragged one.
+    expect(before[0]).toBe(end[0]);
+    expect(before[1]).toBeLessThan(300);
+  });
+
+  it("leaves the port alone while the run still meets its side", () => {
+    const { boxes, ports, e, k } = intoLeft();
+    const moved = moveSegment(e.points, k, 380, 0);
+    const fit = refitEnds(moved, boxes.a, boxes.b, ports["a>b"]);
+    expect(fit.to).toBeUndefined();
+    expect(fit.points).toEqual(moved);
+  });
+
+  it("clamps a re-pinned end clear of the corner, and moves a run past the box to the far side", () => {
+    const { boxes, ports, e, k } = intoLeft();
+    const near = refitEnds(moveSegment(e.points, k, 401, 0), boxes.a, boxes.b, ports["a>b"]);
+    expect(near.to).toEqual({ side: "top", t: Math.round((ORTHO_RADIUS / W) * 1000) / 1000 });
+    const past = refitEnds(moveSegment(e.points, k, 600, 0), boxes.a, boxes.b, ports["a>b"]);
+    expect(past.to).toEqual({ side: "right", t: 0.5 });
+    expect(past.points.at(-1)).toEqual([400 + W, 300 + H / 2]);
+  });
+
+  it("brings an unported end in through the side facing its last waypoint", () => {
+    const doc = pair();
+    const boxes = { a: [0, 0, W, H], b: [400, 300, W, H] };
+    // Unported, these two boxes join a's bottom to b's top; a path shaped to come at b from the
+    // left meets b's left side.
+    const via = [
+      [63, 200],
+      [300, 200],
+      [300, 339],
+    ];
+    const [e] = edgeGeometry(doc, boxes, { "a>b": { via } }, {}, {}, ORTHO);
+    expect(square(e.points)).toBe(true);
+    expect(e.points.at(-1)[0]).toBe(400);
+    expect(e.points.at(-2)[1]).toBe(e.points.at(-1)[1]);
+    // And the unported twin of the owner's case: cut, then down into the top.
+    const [plain] = edgeGeometry(
+      doc,
+      boxes,
+      {
+        "a>b": {
+          via: [
+            [63, 200],
+            [300, 200],
+            [300, 339],
+          ],
+        },
+      },
+      {},
+      {},
+      ORTHO,
+    );
+    const k = plain.points.length - 3;
+    const fit = refitEnds(moveSegment(plain.points, k, 460, 0), boxes.a, boxes.b, {});
+    expect(fit.to).toBeUndefined();
+    const [shaped] = edgeGeometry(doc, boxes, { "a>b": { via: viaOf(fit.points) } }, {}, {}, ORTHO);
+    expect(shaped.points.at(-1)[1]).toBe(300);
+    expect(shaped.points.at(-2)[1]).toBeLessThan(300);
   });
 
   it("is ignored by the curved style", () => {

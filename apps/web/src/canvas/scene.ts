@@ -22,6 +22,7 @@ import {
   innermostFrameAt,
   moveSegment,
   portAt,
+  refitEnds,
   viaOf,
 } from "@zeema/core/geometry";
 import {
@@ -55,7 +56,13 @@ import {
 } from "@/lib/layout-sidecar";
 import { own } from "@/lib/own";
 import { dropPort, frameTargetAt } from "./frame-target";
-import { ancestorsOf, groupAndDescendants, regroupTarget } from "./group-info";
+import {
+  ancestorsOf,
+  groupAndDescendants,
+  regroupTarget,
+  SHIFT_GRACE,
+  shiftHeld,
+} from "./group-info";
 import { anchorOffset, coversTarget, noteDropTarget, sameAnchor } from "./note-anchor";
 
 const NS = "http://www.w3.org/2000/svg";
@@ -163,9 +170,13 @@ export type Handlers = {
    * An edge's path is being dragged: draw it with this entry (null: the automatic path). A curve
    * takes a bow; an orthogonal edge takes waypoints, the corners of the path being dragged.
    */
-  onPathPreview?: (key: string, value: EdgePath | null) => void;
-  /** An edge's path was let go: keep this entry (null: drop it, back to the automatic path). */
-  onPath?: (key: string, value: EdgePath | null) => void;
+  onPathPreview?: (key: string, value: EdgePath | null, ends?: EdgePorts) => void;
+  /**
+   * An edge's path was let go: keep this entry (null: drop it, back to the automatic path).
+   * `ends` holds each end the drag moved to another side of its box (`refitEnds`): its new port,
+   * written in the same step.
+   */
+  onPath?: (key: string, value: EdgePath | null, ends?: EdgePorts) => void;
   /** An end handle is being dragged along its own box: draw the edge with this port (null: none). */
   onPortPreview?: (key: string, end: EdgeEnd, port: Port | null) => void;
   /** An end handle was let go on its own box's border: attach that end there. */
@@ -1644,11 +1655,21 @@ export class Scene {
       this.space = this.hand;
       svg.classList.toggle("hand", this.hand);
     });
-    // Shift pressed or let go mid-drag switches between the two regroup rules at once.
+    // Shift pressed or let go mid-drag switches between the two regroup rules. A release counts
+    // only once SHIFT_GRACE has passed without the button coming up (see `shiftHeld`).
     const shift = (ev: KeyboardEvent) => {
-      if (ev.key !== "Shift" || !this.drag?.moved) return;
-      this.drag.shift = ev.shiftKey;
-      this.setRegroupTarget(this.regroupAt(ev.shiftKey));
+      const d = this.drag;
+      if (ev.key !== "Shift" || !d) return;
+      d.shiftUp = ev.type === "keyup" ? performance.now() : null;
+      if (!d.moved) return;
+      if (d.shiftUp !== null)
+        window.setTimeout(() => {
+          if (this.drag !== d || d.shiftUp === null) return;
+          d.shift = this.dragShift(false);
+          this.setRegroupTarget(this.regroupAt(d.shift));
+        }, SHIFT_GRACE + 10);
+      d.shift = this.dragShift(ev.shiftKey);
+      this.setRegroupTarget(this.regroupAt(d.shift));
     };
     this.on(window, "keydown", shift);
     this.on(window, "keyup", shift);
@@ -2163,8 +2184,14 @@ export class Scene {
     this.placeEndHandles();
     this.repaintFrames();
     this.repaintAnchored();
-    this.drag.shift = ev.shiftKey;
-    this.setRegroupTarget(this.regroupAt(ev.shiftKey));
+    if (ev.shiftKey) this.drag.shiftUp = null;
+    this.drag.shift = this.dragShift(ev.shiftKey);
+    this.setRegroupTarget(this.regroupAt(this.drag.shift));
+  }
+
+  /** Whether the running drag is a Shift drag, given whether the key is down now. */
+  dragShift(down: boolean): boolean {
+    return shiftHeld(down, this.drag?.shiftUp ?? null, performance.now());
   }
 
   /**
@@ -2215,7 +2242,7 @@ export class Scene {
   }
 
   endDrag(ev?: PointerEvent) {
-    const shift = ev ? ev.shiftKey : Boolean(this.drag.shift);
+    const shift = ev ? this.dragShift(ev.shiftKey) : Boolean(this.drag.shift);
     const into = this.drag.moved ? this.regroupAt(shift) : null;
     this.setRegroupTarget(null);
     const { ids, moved, kind, at, client, held, untoggle } = this.drag;
@@ -2287,21 +2314,32 @@ export class Scene {
     if (drag.ortho) {
       // An orthogonal edge has nothing a bow moves: only a run can be dragged.
       if (drag.seg === null) return;
-      const via = viaOf(moveSegment(drag.points, drag.seg, wx, wy)) as [number, number][];
+      // A run dragged onto another side of an end's box brings that end round to it.
+      const fit = refitEnds(
+        moveSegment(drag.points, drag.seg, wx, wy),
+        this.boxOf(drag.from),
+        this.boxOf(drag.to),
+        this.model.ports?.[drag.key] ?? {},
+      );
+      const via = viaOf(fit.points) as [number, number][];
       value = via.length ? { via } : null;
+      const ends: EdgePorts = {};
+      if (fit.from) ends.from = fit.from as Port;
+      if (fit.to) ends.to = fit.to as Port;
+      drag.ends = ends.from || ends.to ? ends : undefined;
     } else {
       const ends = this.model.ports?.[drag.key] ?? null;
       value = bowAt(this.boxes, drag.from, drag.to, wx, wy, ends, this.frames) || null;
     }
     drag.moved = true;
     drag.value = value;
-    this.h.onPathPreview?.(drag.key, value);
+    this.h.onPathPreview?.(drag.key, value, drag.ends);
   }
 
   endBow() {
-    const { key, moved, value } = this.bowDrag;
+    const { key, moved, value, ends } = this.bowDrag;
     this.bowDrag = null;
-    if (moved) this.h.onPath?.(key, value ?? null);
+    if (moved) this.h.onPath?.(key, value ?? null, ends);
   }
 
   /**

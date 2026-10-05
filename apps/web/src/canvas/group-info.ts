@@ -80,6 +80,19 @@ export function edgesText(c: { in: number; out: number }) {
 
 type Box = [number, number, number, number];
 
+/** How long after Shift is let go a drag still counts it as held, in ms. */
+export const SHIFT_GRACE = 250;
+
+/**
+ * Whether a drag is a Shift drag. Hands let go of Shift a beat before the mouse button, so a
+ * release `SHIFT_GRACE` ms ago or less still counts: reading the key at the button's release
+ * alone turned most Shift drags back into plain ones. `upAt` is when Shift was let go during
+ * this drag (null: it was not), `now` the time to judge at.
+ */
+export function shiftHeld(down: boolean, upAt: number | null, now: number): boolean {
+  return down || (upAt !== null && now - upAt <= SHIFT_GRACE);
+}
+
 /** The group's parent, its parent's parent and so on, innermost first. Stops on a cycle. */
 export function ancestorsOf(doc: any, groupId: string | null): string[] {
   const groups = groupsOf(doc);

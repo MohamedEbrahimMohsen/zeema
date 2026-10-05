@@ -8,6 +8,8 @@ import {
   membersText,
   parentPath,
   regroupTarget,
+  SHIFT_GRACE,
+  shiftHeld,
 } from "./group-info";
 
 const doc = {
@@ -107,6 +109,12 @@ describe("regroupTarget", () => {
     expect(regroupTarget(frames, 900, 700, none, inSpoke, true)).toEqual({ group: "platform" });
     expect(regroupTarget(frames, 1500, 1500, none, inSpoke, true)).toEqual({ group: null });
     expect(regroupTarget(frames, 1500, 1500, none, [], true)).toBeNull();
+  });
+  it("still counts Shift let go a beat before the button", () => {
+    expect(shiftHeld(true, null, 1000)).toBe(true);
+    expect(shiftHeld(false, null, 1000)).toBe(false);
+    expect(shiftHeld(false, 1000, 1000 + SHIFT_GRACE - 1)).toBe(true);
+    expect(shiftHeld(false, 1000, 1000 + SHIFT_GRACE + 1)).toBe(false);
   });
   it("never offers what is being dragged, or anything inside it", () => {
     expect(regroupTarget(frames, 150, 150, new Set(["spoke"]), ["vnet", "platform"])).toBeNull();

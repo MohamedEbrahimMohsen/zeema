@@ -31,8 +31,10 @@
 // by dragging its segments: absolute world points the edge passes through in order. The edge
 // still leaves and meets its boxes as above (sides, spread, ports, steps out), then runs from its
 // step out through every waypoint to the other step, each hop straight or an L whose corner keeps
-// the run it is on going when it can and stays off boxes. It takes no lane and no bow. A nested
-// edge (a member to its own group) ignores waypoints.
+// the run it is on going when it can and stays off boxes. An unported end leaves through the side
+// facing its nearest waypoint. It takes no lane and no bow. A nested edge (a member to its own
+// group) ignores waypoints. After a drag, `refitEnds` moves an end whose run was dragged onto
+// another side of its box to that side.
 //
 // Pure: no DOM, no fs. It imports text.js for the label measure; geometry.js hands it the rest.
 
@@ -100,6 +102,27 @@ function nearestSide(inner, outer) {
   let best = gaps[0];
   for (const g of gaps) if (g[1] < best[1]) best = g;
   return best[0];
+}
+
+// How far a point lies out past each side of a box (negative: on the inner side of it).
+function outside(box, p) {
+  return {
+    top: box[1] - p[1],
+    right: p[0] - (box[0] + box[2]),
+    bottom: p[1] - (box[1] + box[3]),
+    left: box[0] - p[0],
+  };
+}
+
+// The side an end leaves through toward point p: `side` while p lies out past it, else the side
+// p lies furthest out past. A point inside the box leaves `side` as it is.
+function facing(box, p, side) {
+  const gap = outside(box, p);
+  if (gap[side] > 0) return side;
+  let best = side;
+  for (const s of ["top", "right", "bottom", "left"])
+    if (gap[s] > 0 && gap[s] > gap[best]) best = s;
+  return gap[best] > 0 ? best : side;
 }
 
 // Does the axis-aligned segment cut the box grown by `pad` (negative: shrunk)?
@@ -206,8 +229,11 @@ export function routeOrthogonal(items, nodeBoxes, bows, isPort, extra = {}) {
       sa = sb;
     } else {
       const [da, db] = chooseSides(a, b);
-      sa = pf?.side ?? da;
-      sb = pt?.side ?? db;
+      // A shaped path: an unported end leaves through a side that faces its nearest waypoint,
+      // so a run dragged over a box's top comes in from the top, not round from the side.
+      const via = a === b ? null : readVia(bows[it.key]);
+      sa = pf?.side ?? (via ? facing(a, via[0], da) : da);
+      sb = pt?.side ?? (via ? facing(b, via[via.length - 1], db) : db);
     }
     return { ...it, pf, pt, nest, sa, sb, ta: pf ? pf.t : null, tb: pt ? pt.t : null };
   });
@@ -589,6 +615,104 @@ export function moveSegment(points, k, x, y) {
     tail = [set(t), t, copy[n - 1]];
   } else tail = [set(q), ...copy.slice(k + 2)];
   return tidy([...head, ...tail]);
+}
+
+const isSide = (p) =>
+  p != null && typeof p === "object" && Object.hasOwn(NORMAL, p.side) && Number.isFinite(p.t);
+
+// How close to a corner, in px, a re-pinned end may sit: the corner's own rounding.
+const PORT_INSET = ORTHO_RADIUS;
+
+// The end of `points` at `box` (the last point), fitted after a drag. Null while the last run
+// still comes in from outside the side it ends on. Otherwise the run before it has been dragged
+// onto or past the box: when that run crosses one of the box's two other sides, the path is cut
+// where it enters, and the end moves to that side at the run's coordinate; when it has gone past
+// the far side, a ported end moves to the far side at the t it had.
+function fitEnd(points, box, port) {
+  const n = points.length;
+  if (!box || n < 3) return null;
+  const [Q, R, F] = [points[n - 1], points[n - 2], points[n - 3]];
+  const gaps = outside(box, Q);
+  const side = isSide(port)
+    ? port.side
+    : Object.keys(gaps).reduce((s, k) => (Math.abs(gaps[k]) < Math.abs(gaps[s]) ? k : s));
+  const v = across(side) ? 1 : 0; // the axis the last run (and the side's normal) runs along
+  const u = 1 - v;
+  const sideAt = (s) =>
+    s === "top"
+      ? box[1]
+      : s === "bottom"
+        ? box[1] + box[3]
+        : s === "left"
+          ? box[0]
+          : box[0] + box[2];
+  if ((R[v] - sideAt(side)) * NORMAL[side][v] > 0.5) return null;
+  // The run before the last runs along u, at coordinate c on v.
+  if (Math.abs(F[v] - R[v]) > 0.5) return null;
+  const c = R[v];
+  const lo = box[v],
+    len = box[v + 2];
+  if (c > lo && c < lo + len) {
+    let best = null;
+    for (const s of PORT_SIDE_PAIRS[u]) {
+      const at = sideAt(s),
+        nu = NORMAL[s][u];
+      if ((F[u] - at) * nu <= 0 || (R[u] - at) * nu > 0) continue;
+      const d = Math.abs(F[u] - at);
+      if (!best || d < best.d) best = { s, at, d };
+    }
+    if (!best) return null;
+    const m = Math.min(PORT_INSET, len / 2);
+    const t =
+      Math.round(((Math.min(lo + len - m, Math.max(lo + m, c)) - lo) / (len || 1)) * 1000) / 1000;
+    const P = [0, 0];
+    P[v] = lo + len * t;
+    P[u] = best.at;
+    return {
+      points: [...points.slice(0, n - 2).map((p) => [p[0], p[1]]), P],
+      port: { side: best.s, t },
+    };
+  }
+  const far = OPPOSITE[side];
+  if (!isSide(port) || (c - sideAt(far)) * NORMAL[far][v] <= 0) return null;
+  const P = [0, 0];
+  P[v] = sideAt(far);
+  P[u] = Q[u];
+  return {
+    points: [...points.slice(0, n - 1).map((p) => [p[0], p[1]]), P],
+    port: { side: far, t: port.t },
+  };
+}
+const PORT_SIDE_PAIRS = [
+  ["left", "right"],
+  ["top", "bottom"],
+];
+const OPPOSITE = { top: "bottom", bottom: "top", left: "right", right: "left" };
+
+/**
+ * Fit a shaped path's two ends back onto their boxes after one of its runs was dragged
+ * (`points`, from `moveSegment`). A run dragged so far that it no longer meets the side its end
+ * is on, but crosses another side of that box, now ends there: the path is cut where it enters
+ * the box, and a ported end is re-pinned to that side at the run's coordinate (clamped clear of
+ * the corners, rounded to 3 places). A ported end whose run went past the far side moves to the
+ * far side. An end whose run still meets its side is left alone. `a` and `b` are the two boxes,
+ * `ports` the edge's ports as they stand. Returns the points, and `from` / `to` for each ported
+ * end that moved.
+ */
+export function refitEnds(points, a, b, ports = {}) {
+  /** @type {{ points: number[][], from?: { side: string, t: number }, to?: { side: string, t: number } }} */
+  const res = { points };
+  const to = fitEnd(points, b, ports?.to);
+  if (to) {
+    res.points = to.points;
+    if (isSide(ports?.to)) res.to = to.port;
+  }
+  const from = fitEnd([...res.points].reverse(), a, ports?.from);
+  if (from) {
+    res.points = from.points.reverse();
+    if (isSide(ports?.from)) res.from = from.port;
+  }
+  return res;
 }
 
 /** The waypoints that hold a drawn path in its shape: its corners, whole px. */

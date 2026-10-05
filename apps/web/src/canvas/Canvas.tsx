@@ -44,6 +44,8 @@ import {
   prunePorts,
   pruneTints,
   type Routing,
+  readEdgePath,
+  readPort,
   readRoutingField,
   readSidecar,
   retargetAnchors,
@@ -58,7 +60,7 @@ import { type CanvasFinding, FindingsPanel } from "./FindingsPanel";
 import { GroupPicker } from "./GroupPicker";
 import { type HoverAt, HoverCard } from "./HoverCard";
 import { EdgeStyleField, type Highlight, Inspector, type InspectorApi } from "./Inspector";
-import { Palette } from "./Palette";
+import { Palette, ProviderSprite } from "./Palette";
 import { QuickActions } from "./QuickActions";
 import type { QuickAction, QuickTarget } from "./quick-actions";
 import { facingSide, type Picked, Scene, type Subject, ZOOM_MAX, ZOOM_MIN } from "./scene";
@@ -132,6 +134,82 @@ const clone = (x: unknown) => JSON.parse(JSON.stringify(x));
 /** Where a component chosen in the picker lands, and the port dot it is wired from, if any. */
 type Wiring = { id: string; side: PortSide; start: [number, number] };
 type Place = { at: [number, number]; from?: Wiring };
+
+/**
+ * What Ctrl+C copies (core's `copyFragment`) with the layout it had: positions, group styles and
+ * component tints by id, each copied edge's ports and shaped path in edge order, and the notes
+ * pinned to anything copied. It goes on the system clipboard as JSON in this envelope.
+ */
+type Clip = {
+  zeema: "clipboard";
+  version: 1;
+  nodes: any[];
+  groups: any[];
+  edges: any[];
+  layout: {
+    positions: Record<string, [number, number]>;
+    frames: Record<string, FrameStyle>;
+    tints: Record<string, NodeTint>;
+    ports: Array<EdgePorts | null>;
+    paths: Array<EdgePath | null>;
+    notes: Note[];
+  };
+};
+
+const isRecord = (v: unknown): v is Record<string, any> =>
+  Boolean(v) && typeof v === "object" && !Array.isArray(v);
+
+/** A clip read back from clipboard text, or null when the text is not one. */
+function readClip(text: string): Clip | null {
+  let v: any;
+  try {
+    v = JSON.parse(text);
+  } catch {
+    return null;
+  }
+  if (!isRecord(v) || v.zeema !== "clipboard" || v.version !== 1) return null;
+  const list = (x: unknown) => (Array.isArray(x) ? x : []);
+  const nodes = list(v.nodes).filter((n) => isRecord(n) && typeof n.id === "string");
+  const groups = list(v.groups).filter((g) => isRecord(g) && typeof g.id === "string");
+  if (!nodes.length && !groups.length) return null;
+  const edges = list(v.edges).filter(
+    (e) => isRecord(e) && typeof e.from === "string" && typeof e.to === "string",
+  );
+  const L = isRecord(v.layout) ? v.layout : {};
+  // The layout is read the way a stored sidecar is, so a clip can carry nothing a save would not.
+  const side = readSidecar({
+    nodes: L.positions,
+    frames: L.frames,
+    tints: L.tints,
+    notes: list(L.notes).filter((n) => isRecord(n) && isRecord(n.anchor)),
+  });
+  // Edge-ordered lists only line up when nothing was dropped above.
+  const aligned = edges.length === list(v.edges).length;
+  const port = (x: any): EdgePorts | null => {
+    if (!isRecord(x)) return null;
+    const out: EdgePorts = {};
+    const from = readPort(x.from);
+    const to = readPort(x.to);
+    if (from) out.from = from;
+    if (to) out.to = to;
+    return from || to ? out : null;
+  };
+  return {
+    zeema: "clipboard",
+    version: 1,
+    nodes,
+    groups,
+    edges,
+    layout: {
+      positions: side.nodes,
+      frames: side.frames,
+      tints: side.tints ?? {},
+      ports: aligned ? list(L.ports).map(port) : [],
+      paths: aligned ? list(L.paths).map(readEdgePath) : [],
+      notes: side.notes.filter((n) => n.anchor),
+    },
+  };
+}
 
 /** The ports with one end of one edge set, or cleared with null. Copies; an empty entry goes. */
 const withPort = (
@@ -313,7 +391,10 @@ const helpSections = (mod: string): Array<[string, Array<[string[], string]>]> =
       [["Enter"], "Rename the selection."],
       [["G"], "Put the selection in a new group."],
       [[mod, "Shift", "G"], "Ungroup the selected group; its components stay."],
-      [[mod, "D"], "Duplicate the selection."],
+      [[mod, "D"], "Duplicate the selection; a group comes with everything inside it."],
+      [[mod, "C"], "Copy the selection, to paste here or in another design."],
+      [[mod, "X"], "Cut the selection."],
+      [[mod, "V"], "Paste what was copied."],
       [["Del", "Backspace"], "Delete the selection."],
       [["Drag an edge"], "Bow it away from the straight line."],
       [
@@ -895,6 +976,20 @@ export function Canvas(props: Props) {
     commit(doc);
   }, [bundle, commit, render]);
 
+  // Cut takes what the copy took, as one undo step: a group goes with everything inside it
+  // (Delete keeps a group's members, which a cut would leave behind and then paste twice).
+  const cutSelection = useCallback(() => {
+    const scene = sceneRef.current!;
+    const picked = scene.picked();
+    let doc = eng.current!.doc;
+    for (const i of [...picked.edges].sort((a, b) => b - a)) doc = D.deleteEdge(doc, i);
+    if (picked.nodes.size) doc = D.deleteNodes(doc, [...picked.nodes], bundle!.catalogue);
+    for (const g of picked.groups)
+      if ((doc.groups || []).some((x: any) => x.id === g)) doc = D.deleteGroupDeep(doc, g);
+    scene.select(null, null);
+    commit(doc);
+  }, [bundle, commit]);
+
   const groupSelection = useCallback(() => {
     const scene = sceneRef.current!;
     const sel = ids();
@@ -907,26 +1002,144 @@ export function Canvas(props: Props) {
     commit(doc);
   }, [commit]);
 
-  const duplicateSelection = useCallback(() => {
-    const scene = sceneRef.current!;
+  // The selection as a clip: its components and groups (a group with everything inside it), the
+  // edges inside that set, the notes pinned to any of it, and the layout all of that had. Null
+  // when nothing that can be copied is selected (an edge alone is not: it needs its ends).
+  const clipSelection = useCallback((): Clip | null => {
     const e = eng.current!;
-    const sel = ids();
-    if (!sel.length) return;
-    const { doc, map } = D.duplicateNodes(e.doc, sel, bundle!.catalogue);
-    const copies = Object.values(map) as string[];
-    scene.multi = new Set(copies);
-    scene.multiGroups = new Set();
-    scene.multiEdges = new Set();
-    scene.selection = { type: "node", ref: copies[copies.length - 1] };
-    commit(doc, {
-      apply: () => {
-        for (const [from, to] of Object.entries(map) as [string, string][]) {
-          const p = e.positions[from] || [40, 40];
-          e.positions[to] = [p[0] + 28, p[1] + 28];
-        }
+    const picked = sceneRef.current!.picked();
+    const frag = D.copyFragment(e.doc, [...picked.nodes], [...picked.groups]);
+    if (!frag.nodes.length && !frag.groups.length) return null;
+    const nodes = new Set<string>(frag.nodes.map((n: any) => n.id));
+    const groups = new Set<string>(frag.groups.map((g: any) => g.id));
+    const keys = edgeKeys(e.doc);
+    const pick = <T,>(from: Record<string, T>, ids: Set<string>) =>
+      Object.fromEntries(Object.entries(from).filter(([id]) => ids.has(id))) as Record<string, T>;
+    return clone({
+      zeema: "clipboard",
+      version: 1,
+      nodes: frag.nodes,
+      groups: frag.groups,
+      edges: frag.edges,
+      layout: {
+        positions: pick(e.positions, nodes),
+        frames: pick(e.frames, groups),
+        tints: pick(e.tints, nodes),
+        ports: frag.edgeIndexes.map((i: number) => e.ports[keys[i]] ?? null),
+        paths: frag.edgeIndexes.map((i: number) =>
+          Object.hasOwn(e.bows, keys[i]) ? e.bows[keys[i]] : null,
+        ),
+        notes: e.notes.filter(
+          (n) =>
+            n.anchor &&
+            ("node" in n.anchor ? nodes.has(n.anchor.node) : groups.has(n.anchor.group)),
+        ),
       },
     });
-  }, [bundle, commit]);
+  }, []);
+
+  // Put a clip into this design as one undo step, (d, d) px from where it was copied, with
+  // fresh ids, and select what came in: Ctrl+D, Ctrl+V and the menus all land here.
+  const pasteClip = useCallback(
+    (clip: Clip, d: number) => {
+      const scene = sceneRef.current!;
+      const e = eng.current!;
+      const { doc, map, edgeAt } = D.pasteFragment(e.doc, clip, bundle!.catalogue) as {
+        doc: any;
+        map: Record<string, string>;
+        edgeAt: Array<number | null>;
+      };
+      if (!Object.keys(map).length) return;
+      const inClip = new Set(clip.groups.map((g: any) => g.id));
+      const topGroups = clip.groups
+        .filter((g: any) => !(g.parent && inClip.has(g.parent)))
+        .map((g: any) => map[g.id] as string);
+      const topNodes = clip.nodes
+        .filter((n: any) => !(n.group && inClip.has(n.group)))
+        .map((n: any) => map[n.id] as string);
+      scene.multi = new Set(topNodes);
+      scene.multiGroups = new Set(topGroups);
+      scene.multiEdges = new Set();
+      scene.selection = topNodes.length
+        ? { type: "node", ref: topNodes[topNodes.length - 1] }
+        : { type: "group", ref: topGroups[topGroups.length - 1] };
+      const keys = edgeKeys(doc);
+      const { layout: L } = clip;
+      commit(doc, {
+        apply: () => {
+          for (const n of clip.nodes) {
+            const p = L.positions[n.id] || e.positions[n.id] || [40, 40];
+            e.positions[map[n.id]] = [p[0] + d, p[1] + d];
+          }
+          for (const g of clip.groups)
+            if (L.frames[g.id]) e.frames[map[g.id]] = clone(L.frames[g.id]);
+          for (const n of clip.nodes) if (L.tints[n.id]) e.tints[map[n.id]] = clone(L.tints[n.id]);
+          clip.edges.forEach((_: unknown, k: number) => {
+            const at = edgeAt[k];
+            if (at === null || at === undefined) return;
+            const key = keys[at];
+            const ports = L.ports[k];
+            if (ports) e.ports[key] = clone(ports);
+            const path = L.paths[k];
+            if (typeof path === "number") e.bows[key] = path;
+            else if (path && Array.isArray(path.via))
+              e.bows[key] = { via: path.via.map(([x, y]) => [x + d, y + d] as [number, number]) };
+          });
+          for (const n of L.notes) {
+            if (!n.anchor) continue;
+            const anchor: NoteAnchor =
+              "node" in n.anchor ? { node: map[n.anchor.node] } : { group: map[n.anchor.group] };
+            if (!Object.values(anchor)[0]) continue;
+            const id = nextNoteId(e.notes.map((x) => x.id));
+            e.notes.push({ ...clone(n), id, anchor });
+          }
+        },
+      });
+    },
+    [bundle, commit],
+  );
+
+  const duplicateSelection = useCallback(() => {
+    const clip = clipSelection();
+    if (clip) pasteClip(clip, 28);
+  }, [clipSelection, pasteClip]);
+
+  // The copy buffer. The system clipboard gets the same clip as JSON, so a paste in another
+  // design's tab finds it there; this one is the fallback when the page may not read that.
+  const clipRef = useRef<Clip | null>(null);
+  // How many times running the clip on the system clipboard (by its text) has been pasted, so
+  // each paste lands a step further on rather than on the one before.
+  const pasteRun = useRef<{ text: string; n: number }>({ text: "", n: 0 });
+  // Ctrl+V was pressed and its paste event has not arrived yet.
+  const pastePending = useRef(false);
+
+  const copySelection = useCallback(() => {
+    const clip = clipSelection();
+    if (!clip) return false;
+    clipRef.current = clip;
+    const text = JSON.stringify(clip);
+    pasteRun.current = { text, n: 0 };
+    try {
+      void navigator.clipboard?.writeText(text).catch(() => {});
+    } catch {
+      // No clipboard here (an insecure origin, an old browser): the in-page copy still pastes.
+    }
+    return true;
+  }, [clipSelection]);
+
+  // Paste from the system clipboard's text when it holds a Zeema clip, else the in-page copy.
+  const pasteText = useCallback(
+    (text: string | null) => {
+      const clip = (text && readClip(text)) || clipRef.current;
+      if (!clip) return;
+      const sig = text && readClip(text) ? text : JSON.stringify(clip);
+      const run = pasteRun.current;
+      run.n = run.text === sig ? run.n + 1 : 1;
+      run.text = sig;
+      pasteClip(clip, 28 * run.n);
+    },
+    [pasteClip],
+  );
 
   // The selected components and every member of a selected group, by (dx, dy). Presses within
   // half a second of each other are one undo step. False when nothing movable is selected.
@@ -1180,11 +1393,12 @@ export function Canvas(props: Props) {
       const total = picked.nodes.size + picked.groups.size + picked.edges.size;
       // A right click on a selection that holds more than components: what applies to all of it.
       if (total > 1 && (picked.groups.size || picked.edges.size) && target.type !== "note") {
-        const n = picked.nodes.size;
+        // Components and groups duplicate as one set; an edge comes along when both its ends do.
+        const n = picked.nodes.size + picked.groups.size;
         return [
           n
             ? {
-                label: n > 1 ? `Duplicate the ${n} components` : "Duplicate the component",
+                label: n > 1 ? `Duplicate these ${n}` : "Duplicate",
                 hint: "Ctrl D",
                 run: duplicateSelection,
               }
@@ -1329,6 +1543,14 @@ export function Canvas(props: Props) {
             disabled: !members,
             run: () => scene.selectNodes(D.groupMembers(e.doc, id)),
           },
+          {
+            label: "Duplicate",
+            hint: "Ctrl D",
+            run: () => {
+              scene.select("group", id);
+              duplicateSelection();
+            },
+          },
           { label: "Add note", hint: "pinned here", run: () => addNoteOn({ group: id }) },
           "-",
           {
@@ -1353,10 +1575,16 @@ export function Canvas(props: Props) {
           },
         ];
       }
-      // Empty canvas. The canvas keeps no copy buffer yet, so there is no Paste to offer.
+      // Empty canvas. Paste offers what this page copied; Ctrl+V also reads the system clipboard.
       return [
         { label: "Add component…", hint: "lands here", run: () => openPicker({ place: { at } }) },
         { label: "Add note here", hint: "annotation, not a node", run: () => addNote(at) },
+        {
+          label: "Paste",
+          hint: "Ctrl V",
+          disabled: !clipRef.current,
+          run: () => pasteText(null),
+        },
         "-",
         { label: "Fit", hint: "Ctrl 0", run: () => scene.fit() },
         { label: "Arrange", run: arrange },
@@ -1372,6 +1600,7 @@ export function Canvas(props: Props) {
       detachNote,
       deleteSelection,
       duplicateSelection,
+      pasteText,
       groupSelection,
       releaseFromGroup,
       openMoveTo,
@@ -1471,18 +1700,26 @@ export function Canvas(props: Props) {
             : undefined,
         });
       },
-      onPathPreview: (key, value) => {
-        const { [key]: _was, ...rest } = eng.current!.bows;
-        scene.repaintEdges(value ? { ...rest, [key]: value } : rest);
+      onPathPreview: (key, value, ends) => {
+        const e = eng.current!;
+        const { [key]: _was, ...rest } = e.bows;
+        let ports = e.ports;
+        if (ends?.from) ports = withPort(ports, key, "from", ends.from);
+        if (ends?.to) ports = withPort(ports, key, "to", ends.to);
+        scene.repaintEdges(value ? { ...rest, [key]: value } : rest, ports);
       },
       // A bow or waypoints from a drag, or null (back to the automatic path). Waypoints replace a
-      // bow the edge had: the first drag of an orthogonal Z turns its bow into its corners.
-      onPath: (key, value) =>
+      // bow the edge had: the first drag of an orthogonal Z turns its bow into its corners. An
+      // end the drag brought round to another side of its box is re-pinned in the same step.
+      onPath: (key, value, ends) =>
         commit(null, {
           coalesce: true,
           apply: () => {
-            if (value) eng.current!.bows[key] = value;
-            else delete eng.current!.bows[key];
+            const e = eng.current!;
+            if (value) e.bows[key] = value;
+            else delete e.bows[key];
+            if (ends?.from) e.ports = withPort(e.ports, key, "from", ends.from);
+            if (ends?.to) e.ports = withPort(e.ports, key, "to", ends.to);
           },
         }),
       onPortPreview: (key, end, port) =>
@@ -1696,6 +1933,26 @@ export function Canvas(props: Props) {
         duplicateSelection();
         return;
       }
+      // Copy and cut leave text someone has selected on the page to the browser.
+      const textPicked = () => Boolean(window.getSelection()?.toString());
+      if (mod && !ev.shiftKey && !ev.altKey && (k === "c" || k === "x") && !textPicked()) {
+        if (!copySelection()) return;
+        ev.preventDefault();
+        if (k === "x") cutSelection();
+        return;
+      }
+      if (mod && !ev.shiftKey && !ev.altKey && k === "v") {
+        // The browser follows this key with a paste event, which carries the system clipboard
+        // without asking for permission (onPaste below). Should none come, the in-page copy is
+        // pasted instead.
+        pastePending.current = true;
+        window.setTimeout(() => {
+          if (!pastePending.current) return;
+          pastePending.current = false;
+          pasteText(null);
+        }, 50);
+        return;
+      }
       if (!mod && ev.key === "/") {
         ev.preventDefault();
         openPicker();
@@ -1765,13 +2022,28 @@ export function Canvas(props: Props) {
       // Only when something moved: otherwise the arrows are the page's to scroll with.
       if (by && nudge(by[0], by[1])) ev.preventDefault();
     };
+    const onPaste = (ev: ClipboardEvent) => {
+      if (!sceneRef.current || !eng.current) return;
+      pastePending.current = false;
+      const t = ev.target as HTMLElement | null;
+      if (t && (/input|select|textarea/i.test(t.tagName) || t.isContentEditable)) return;
+      ev.preventDefault();
+      pasteText(ev.clipboardData?.getData("text/plain") ?? null);
+    };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener("paste", onPaste);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("paste", onPaste);
+    };
   }, [
     save,
     undo,
     redo,
     duplicateSelection,
+    copySelection,
+    cutSelection,
+    pasteText,
     groupSelection,
     deleteSelection,
     nudge,
@@ -2031,8 +2303,9 @@ export function Canvas(props: Props) {
     ],
   );
 
-  // The palette's Provider and Category selects name them the way the locale does.
-  const [providerNames, categoryNames] = useMemo(() => {
+  // The palette's Provider and Category selects, and its row tooltips, name them the way the
+  // locale does.
+  const [providerNames, categoryNames, kindNames] = useMemo(() => {
     const names = (section: Record<string, unknown> | undefined) => {
       const out: Record<string, string> = {};
       for (const [id, v] of Object.entries(section ?? {}))
@@ -2040,7 +2313,7 @@ export function Canvas(props: Props) {
       return out;
     };
     const locale = bundle?.catalogue?.locale;
-    return [names(locale?.providers), names(locale?.categories)];
+    return [names(locale?.providers), names(locale?.categories), names(locale?.kinds)];
   }, [bundle]);
 
   const rename = useCallback(
@@ -2714,6 +2987,7 @@ export function Canvas(props: Props) {
 
   return (
     <div className="zeema-canvas" ref={rootRef}>
+      {bundle ? <ProviderSprite icons={bundle.icons} /> : null}
       <div className="scene-wrap">
         <svg ref={svgRef} className="scene" role="img" aria-label="Design canvas">
           <defs />
@@ -2907,6 +3181,7 @@ export function Canvas(props: Props) {
               icons={bundle.icons}
               providerNames={providerNames}
               categoryNames={categoryNames}
+              kindNames={kindNames}
               query={paletteQuery}
               onQuery={setPaletteQuery}
               focusSeq={paletteFocus}
@@ -3079,6 +3354,8 @@ export function Canvas(props: Props) {
           actions={quickActions()}
           rows={bundle.search}
           icons={bundle.icons}
+          providerNames={providerNames}
+          kindNames={kindNames}
           targets={quickTargets()}
           onComponent={(id) => addComponent(id)}
           onGoto={(t) => centerOn({ type: t.type, ref: t.id })}

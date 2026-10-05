@@ -23,7 +23,7 @@ import { groupCaption } from "./document.js";
 import { orthoPath, readVia, routeOrthogonal } from "./routing.js";
 
 // A shaped orthogonal path (sidecar `edges` entries `{ via }`): see routing.js.
-export { dropWaypoint, moveSegment, readVia, VIA_MAX, viaOf } from "./routing.js";
+export { dropWaypoint, moveSegment, readVia, refitEnds, VIA_MAX, viaOf } from "./routing.js";
 
 import { frameCaption } from "./text.js";
 

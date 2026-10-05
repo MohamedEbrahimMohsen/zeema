@@ -193,3 +193,93 @@ describe("document operations", () => {
     expect(next.nodes).toEqual([{ id: "a", component: "c" }]);
   });
 });
+
+describe("copy and paste", () => {
+  const cat = {
+    kinds: {
+      k: { id: "k", category: "data", properties: { peer: { type: "ref", refKind: "k" } } },
+    },
+    components: { c: { id: "c", kind: "k", provider: "default", defaults: {}, properties: {} } },
+    rules: [],
+  };
+  // outer holds inner and z; inner holds x and y; w is outside every group.
+  const doc = {
+    groups: [
+      { id: "outer", kind: "system" },
+      { id: "inner", kind: "system", parent: "outer" },
+    ],
+    nodes: [
+      { id: "x", component: "c", group: "inner", props: { peer: "y" } },
+      { id: "y", component: "c", group: "inner", props: { peer: "w" } },
+      { id: "z", component: "c", group: "outer" },
+      { id: "w", component: "c" },
+    ],
+    edges: [
+      { from: "x", to: "y", protocol: "http", mode: "sync" },
+      { from: "y", to: "w", protocol: "http", mode: "sync" },
+      { from: "w", to: "inner", protocol: "http", mode: "sync" },
+      { from: "z", to: "inner", protocol: "http", mode: "sync" },
+    ],
+  };
+
+  it("copies a group with everything inside it and the edges within", () => {
+    const f = D.copyFragment(doc, [], ["outer"]);
+    expect(f.groups.map((g) => g.id)).toEqual(["outer", "inner"]);
+    expect(f.nodes.map((n) => n.id)).toEqual(["x", "y", "z"]);
+    expect(f.edgeIndexes).toEqual([0, 3]);
+    f.nodes[0].id = "changed";
+    expect(doc.nodes[0].id).toBe("x");
+  });
+
+  it("duplicates a group in its own parent with fresh ids, the way Ctrl+D numbers them", () => {
+    const {
+      doc: next,
+      map,
+      edgeAt,
+    } = D.pasteFragment(doc, D.copyFragment(doc, [], ["inner"]), cat);
+    expect(map).toEqual({ inner: "inner-2", x: "x-2", y: "y-2" });
+    expect(next.groups.at(-1)).toEqual({ id: "inner-2", kind: "system", parent: "outer" });
+    // Inside the copy the references follow it; outside, they are kept.
+    expect(next.nodes.find((n) => n.id === "x-2")).toMatchObject({
+      group: "inner-2",
+      props: { peer: "y-2" },
+    });
+    expect(next.nodes.find((n) => n.id === "y-2")).toMatchObject({
+      group: "inner-2",
+      props: { peer: "w" },
+    });
+    expect(next.edges.slice(doc.edges.length)).toEqual([
+      { from: "x-2", to: "y-2", protocol: "http", mode: "sync" },
+    ]);
+    expect(edgeAt).toEqual([doc.edges.length]);
+    expect(doc.edges).toHaveLength(4);
+  });
+
+  it("duplicates a mixed selection as one set", () => {
+    const { doc: next, map } = D.pasteFragment(doc, D.copyFragment(doc, ["w"], ["inner"]), cat);
+    expect(Object.keys(map).sort()).toEqual(["inner", "w", "x", "y"]);
+    const added = next.edges.slice(doc.edges.length);
+    expect(added).toContainEqual({ from: "y-2", to: "w-2", protocol: "http", mode: "sync" });
+    expect(added).toContainEqual({ from: "w-2", to: "inner-2", protocol: "http", mode: "sync" });
+  });
+
+  it("drops what the other design does not have when pasted there", () => {
+    const other = { nodes: [{ id: "x", component: "c" }], edges: [] };
+    const { doc: next, map } = D.pasteFragment(other, D.copyFragment(doc, ["y"], ["inner"]), cat);
+    expect(map.x).toBe("x-2");
+    const inner = next.groups.find((g) => g.id === map.inner);
+    expect(inner.parent).toBeUndefined();
+    const y = next.nodes.find((n) => n.id === map.y);
+    expect(y.props).toBeUndefined(); // its peer w is not in this design
+    expect(next.nodes.find((n) => n.id === map.x).props).toEqual({ peer: map.y });
+  });
+
+  it("keeps duplicateNodes as it was for components", () => {
+    const { doc: next, map } = D.duplicateNodes(doc, ["x", "y"], cat);
+    expect(map).toEqual({ x: "x-2", y: "y-2" });
+    expect(next.nodes.find((n) => n.id === "x-2").group).toBe("inner");
+    expect(next.edges.slice(doc.edges.length)).toEqual([
+      { from: "x-2", to: "y-2", protocol: "http", mode: "sync" },
+    ]);
+  });
+});
