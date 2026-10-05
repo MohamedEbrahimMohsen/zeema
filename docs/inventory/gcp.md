@@ -9,7 +9,7 @@ headings. One row per resource a designer places; composite services are split i
 placeable sub-resources.
 
 Status: `done` = component exists in `components/gcp/`. `todo` = to be written.
-`skip: <reason>` = cannot be a node in a design. Products that Google has retired or fully
+`skip: <reason>` = cannot be a node in a design. `covered by <id> (<setting>)` = placed as another component with one property set; no component of its own. Products that Google has retired or fully
 shut down, and non-node tooling (CLIs, IDE plugins, consoles, assessment utilities,
 marketplaces, billing), are `skip`. Products in deprecation or maintenance that are still
 usable stay `todo` with the date noted; the component header records the date.
@@ -27,10 +27,10 @@ documentation name with the former name in parentheses so an id stays stable acr
 | resource | id | kind | status | source |
 |---|---|---|---|---|
 | Compute Engine VM instance | google-compute-engine | virtual-machine | done | https://cloud.google.com/compute/docs/instances |
-| Compute Engine Spot VM | google-spot-vm | virtual-machine | done | https://cloud.google.com/compute/docs/instances/spot |
+| Compute Engine Spot VM | — | — | covered by google-compute-engine (`provisioningModel: spot`) | https://cloud.google.com/compute/docs/instances/spot |
 | Compute Engine managed instance group | google-managed-instance-group | virtual-machine | done | https://cloud.google.com/compute/docs/instance-groups |
 | Compute Engine sole-tenant node group | google-sole-tenant-node | virtual-machine | done | https://cloud.google.com/compute/docs/nodes/sole-tenant-nodes |
-| Confidential VM | google-confidential-vm | virtual-machine | done | https://cloud.google.com/confidential-computing/confidential-vm/docs/confidential-vm-overview |
+| Confidential VM | — | — | covered by google-compute-engine (`securityType: confidential`) | https://cloud.google.com/confidential-computing/confidential-vm/docs/confidential-vm-overview |
 | Cloud TPU node | google-cloud-tpu | virtual-machine | done | https://cloud.google.com/tpu/docs/intro-to-tpu |
 | Bare Metal Solution server | google-bare-metal-solution | virtual-machine | done | https://cloud.google.com/bare-metal/docs/bms-planning |
 | Google Cloud VMware Engine private cloud | google-vmware-engine | virtual-machine | done | https://cloud.google.com/vmware-engine/docs/concepts-private-cloud |
@@ -602,4 +602,4 @@ Recorded so the next pass does not look again.
 
 ## Counts
 
-total 435, todo 0, done 236, skip 199.
+total 435, todo 0, done 234, skip 199, covered 2.

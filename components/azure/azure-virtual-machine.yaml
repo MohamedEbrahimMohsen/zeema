@@ -2,17 +2,42 @@
 # Azure Virtual Machines: a leased machine you boot from an image and keep patching yourself
 # ("Overview of virtual machines in Azure"). Managed disks are encrypted at rest with
 # platform-managed keys by default ("Server-side encryption of Azure managed disks").
+#
+# Spot and confidential VMs are this component, not separate ones: both are priced and created as
+# Virtual Machines.
+#
+# capacity: "spot" is Azure Spot Virtual Machines, unused capacity that Azure reclaims with 30
+# seconds' notice and no SLA ("About Azure Spot Virtual Machines",
+# https://learn.microsoft.com/en-us/azure/virtual-machines/spot-vms). evictionPolicy, maxPriceUsd,
+# evictionNoticeSeconds and slaBacked mean something only when capacity is "spot", so none is
+# defaulted. Azure's own defaults for a Spot VM: eviction policy Deallocate, max price -1 (never
+# evicted for price), 30 seconds' notice, no SLA.
+#
+# securityType: "confidential" is an Azure confidential VM: memory encrypted in use by the hardware,
+# behind a hardware-enforced boundary between the guest and the virtualization stack ("About Azure
+# confidential VMs",
+# https://learn.microsoft.com/en-us/azure/confidential-computing/confidential-vm-overview). It boots
+# only after successful attestation and carries a dedicated vTPM; confidential OS disk encryption
+# is optional and cannot be changed after deployment, and Secure Boot is on only when that
+# encryption is selected. confidentialComputingTechnology, memoryEncryption, attestation and
+# confidentialOsDiskEncryption mean something only when securityType is "confidential"; virtualTpm
+# and secureBoot also apply to "trusted-launch". None is defaulted.
 schemaVersion: "1"
 type: "component"
 id: "azure-virtual-machine"
 kind: "virtual-machine"
 provider: "azure"
 docs: "https://learn.microsoft.com/en-us/azure/virtual-machines/overview"
+aliases: ["Spot VM", "Azure Spot Virtual Machines", "Confidential VM"]
 defaults:
   managed: false
   diskEncryption: true
   zoneRedundant: false
 properties:
+  capacity:
+    type: "enum"
+    values: ["on-demand", "spot"]
+    default: "on-demand"
   securityType:
     type: "enum"
     values: ["standard", "trusted-launch", "confidential"]
@@ -23,3 +48,25 @@ properties:
   managedDisks:
     type: "boolean"
     default: true
+  evictionPolicy:
+    type: "enum"
+    values: ["deallocate", "delete"]
+  maxPriceUsd:
+    type: "string"
+  evictionNoticeSeconds:
+    type: "integer"
+  slaBacked:
+    type: "boolean"
+  confidentialComputingTechnology:
+    type: "enum"
+    values: ["amd-sev-snp", "intel-tdx"]
+  memoryEncryption:
+    type: "boolean"
+  attestation:
+    type: "boolean"
+  virtualTpm:
+    type: "boolean"
+  confidentialOsDiskEncryption:
+    type: "boolean"
+  secureBoot:
+    type: "boolean"

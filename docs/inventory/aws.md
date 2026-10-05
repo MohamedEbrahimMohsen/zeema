@@ -13,7 +13,7 @@ AWS's own directory headings. One row per resource a designer places; composite 
 split into their placeable sub-resources.
 
 Status: `done` = component exists in `components/aws/`. `todo` = to be written.
-`skip: <reason>` = cannot be a node in a design. Services in maintenance mode or announced sunset stay `todo` until their end-of-support date has passed; the component header records the date.
+`skip: <reason>` = cannot be a node in a design. `covered by <id> (<setting>)` = placed as another component with one property set; no component of its own. Services in maintenance mode or announced sunset stay `todo` until their end-of-support date has passed; the component header records the date.
 
 ---
 
@@ -22,7 +22,7 @@ Status: `done` = component exists in `components/aws/`. `todo` = to be written.
 | resource | id | kind | status | source |
 |---|---|---|---|---|
 | Amazon EC2 instance | aws-ec2 | virtual-machine | done | https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/concepts.html |
-| Amazon EC2 Spot Instances | aws-ec2-spot | virtual-machine | done | https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-spot-instances.html |
+| Amazon EC2 Spot Instances | — | — | covered by aws-ec2 (`purchaseOption: spot`) | https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-spot-instances.html |
 | Amazon EC2 Dedicated Hosts | aws-ec2-dedicated-host | virtual-machine | done | https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/dedicated-hosts-overview.html |
 | Amazon EC2 Auto Scaling group | aws-ec2-auto-scaling | virtual-machine | done | https://docs.aws.amazon.com/autoscaling/ec2/userguide/what-is-amazon-ec2-auto-scaling.html |
 | AWS Nitro Enclaves | aws-nitro-enclave | virtual-machine | done | https://docs.aws.amazon.com/enclaves/latest/user/nitro-enclave.html |
@@ -827,5 +827,5 @@ for services younger than both directories.
 
 ## Counts
 
-total 643, todo 0, done 298, skip 345. Plus 9 mapping rows under
+total 643, todo 0, done 297, skip 345, covered 1. Plus 9 mapping rows under
 "Already covered under another name", which point at rows already counted above.

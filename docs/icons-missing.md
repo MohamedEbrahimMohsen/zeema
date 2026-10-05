@@ -159,12 +159,26 @@ correctly. If a vendor draws a dedicated icon later, change the source in the ma
 | `aws-sagemaker-hyperpod` | Amazon SageMaker HyperPod | `Arch_Amazon-SageMaker-AI_48.svg` | HyperPod is a SageMaker AI capability; parent service icon |
 | `aws-sagemaker-mlflow` | Managed MLflow on Amazon SageMaker AI | `Arch_Amazon-SageMaker-AI_48.svg` | managed MLflow is a SageMaker AI capability; parent service icon |
 | `aws-ses-mail-manager` | Mail Manager for Amazon SES | `Arch_Amazon-Simple-Email-Service_48.svg` | Mail Manager is an SES feature; parent service icon |
-| `azure-confidential-vm` | Azure confidential VM | `10021-icon-service-Virtual-Machine.svg` | no confidential VM icon; the Virtual Machine service icon |
+| `azure-aks-edge-essentials` | AKS Edge Essentials | `10023-icon-service-Kubernetes-Services.svg` | no AKS Edge Essentials icon; the Kubernetes Services (AKS) icon |
+| `azure-artifacts` | Azure Artifacts | `10261-icon-service-Azure-DevOps.svg` | no per-service Azure DevOps icon in the set; the Azure DevOps icon |
+| `azure-cloud-hsm` | Azure Cloud HSM | `02322-icon-service-Dedicated-HSM.svg` | no Cloud HSM icon; the Dedicated HSM icon of the HSM it succeeds |
+| `azure-content-understanding` | Azure Content Understanding | `035746832-icon-service-AI-Foundry.svg` | no Content Understanding icon; the AI Foundry icon |
 | `azure-device-registry` | Azure Device Registry | `03485-icon-service-Azure-IoT-Operations.svg` | Device Registry ships as part of Azure IoT Operations; that product's icon |
+| `azure-dsvm` | Azure Data Science Virtual Machine | `10021-icon-service-Virtual-Machine.svg` | a Data Science VM is a preconfigured Azure VM image; the Virtual Machine icon |
+| `azure-durable-functions` | Azure Durable Functions | `10029-icon-service-Function-Apps.svg` | Durable Functions is an extension of Azure Functions; the Function Apps icon |
+| `azure-event-grid-mqtt` | Azure Event Grid MQTT Broker | `10206-icon-service-Event-Grid-Topics.svg` | no MQTT broker icon; the Event Grid Topics icon |
 | `azure-file-sync` | Azure File Sync | `10093-icon-service-Storage-Sync-Services.svg` | Azure File Sync is deployed as a Storage Sync Service |
+| `azure-health-bot` | Healthcare agent service | `10165-icon-service-Bot-Services.svg` | no Healthcare agent service icon; the Bot Services icon |
+| `azure-managed-hsm` | Azure Key Vault Managed HSM | `10245-icon-service-Key-Vaults.svg` | Managed HSM is part of Azure Key Vault; the Key Vaults icon |
+| `azure-ml-endpoint` | Azure ML endpoint | `038470510-icon-service-Azure-Machine-Learning.svg` | an online endpoint is an Azure Machine Learning workspace resource; the Azure Machine Learning icon |
 | `azure-monitor-data-collection-endpoint` | Data collection endpoint | `00001-icon-service-Monitor.svg` | the pack ships Data Collection Rules but no Data Collection Endpoint icon; the Azure Monitor icon |
 | `azure-monitor-workspace` | Azure Monitor workspace | `00001-icon-service-Monitor.svg` | no Azure Monitor workspace icon; the Azure Monitor icon |
+| `azure-multicloud-interconnect` | Azure Multicloud Interconnect | `10079-icon-service-ExpressRoute-Circuits.svg` | no Multicloud Interconnect icon; the ExpressRoute Circuits icon |
+| `azure-pipelines` | Azure Pipelines | `10261-icon-service-Azure-DevOps.svg` | no per-service Azure DevOps icon in the set; the Azure DevOps icon |
+| `azure-playwright-testing` | Playwright Workspaces | `033805167-icon-service-Azure-App-Testing.svg` | Playwright Workspaces ships as part of Azure App Testing; that product's icon |
 | `azure-power-apps` | Microsoft Power Apps | `03335-icon-service-Power-Platform.svg` | no per-app Power Platform icon in the set; the Power Platform icon |
+| `azure-repos` | Azure Repos | `10261-icon-service-Azure-DevOps.svg` | no per-service Azure DevOps icon in the set; the Azure DevOps icon |
+| `azure-schema-registry` | Azure Schema Registry | `00039-icon-service-Event-Hubs.svg` | Schema Registry is a feature of an Event Hubs namespace; the Event Hubs icon |
 | `cloudflare-advanced-certificate-manager` | Advanced Certificate Manager | `ssl.svg` | an SSL/TLS edge-certificate feature (`/ssl/edge-certificates/`); the SSL/TLS icon |
 | `cloudflare-analytics-engine` | Workers Analytics Engine | `analytics.svg` | documented under Analytics (`/analytics/analytics-engine/`); the Analytics icon |
 | `cloudflare-cache-reserve` | Cache Reserve | `cache.svg` | a Cache feature (`/cache/advanced-configuration/cache-reserve/`); the Cache / CDN icon |

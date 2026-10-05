@@ -3,13 +3,32 @@
 # ("Compute Engine instances" — you specify the zone, operating system and machine type, so an
 # instance lives in one zone). Persistent disks are encrypted at rest with Google-owned and
 # Google-managed keys without any action ("Protect resources by using Cloud KMS keys").
+#
+# Spot and Confidential VMs are this component, not separate ones.
+#
+# provisioningModel: "spot" is a Spot VM, which Compute Engine may preempt at any time ("Spot VMs",
+# https://cloud.google.com/compute/docs/instances/spot). provisioningModel already carried "spot",
+# so it is the capacity switch here rather than a second property. terminationAction,
+# preemptionNoticeSeconds and coveredBySla mean something only when provisioningModel is "spot",
+# so none is defaulted. Google's own defaults for a Spot VM: stop on preemption, 0 seconds'
+# notice, excluded from the Compute Engine SLA. A Spot VM cannot live migrate; that is
+# onHostMaintenance: "terminate", so no separate live-migration flag is carried.
+#
+# securityType: "confidential" is a Confidential VM, memory encrypted in use by the hardware
+# ("Confidential VM overview",
+# https://cloud.google.com/confidential-computing/confidential-vm/docs/confidential-vm-overview).
+# The technology follows the machine type and CPU platform (AMD SEV, AMD SEV-SNP, Intel TDX).
+# confidentialComputingTechnology, memoryEncryption, attestation and confidentialAccelerator mean
+# something only when securityType is "confidential", so none is defaulted. "shielded" is Shielded
+# VM (Secure Boot, vTPM, integrity monitoring), which Compute Engine turns on for supported public
+# images ("Shielded VM", https://cloud.google.com/compute/shielded-vm/docs/shielded-vm).
 schemaVersion: "1"
 type: "component"
 id: "google-compute-engine"
 kind: "virtual-machine"
 provider: "gcp"
 docs: "https://cloud.google.com/compute/docs/instances"
-aliases: ["GCE"]
+aliases: ["GCE", "Spot VM", "Confidential VM"]
 defaults:
   managed: false
   diskEncryption: true
@@ -19,6 +38,10 @@ properties:
     type: "enum"
     values: ["standard", "spot"]
     default: "standard"
+  securityType:
+    type: "enum"
+    values: ["standard", "shielded", "confidential"]
+    default: "shielded"
   machineFamily:
     type: "enum"
     values: ["general-purpose", "compute-optimized", "memory-optimized", "storage-optimized", "accelerator-optimized"]
@@ -27,3 +50,19 @@ properties:
     type: "enum"
     values: ["migrate", "terminate"]
     default: "migrate"
+  terminationAction:
+    type: "enum"
+    values: ["stop", "delete"]
+  preemptionNoticeSeconds:
+    type: "integer"
+  coveredBySla:
+    type: "boolean"
+  confidentialComputingTechnology:
+    type: "enum"
+    values: ["amd-sev", "amd-sev-snp", "intel-tdx"]
+  memoryEncryption:
+    type: "boolean"
+  attestation:
+    type: "boolean"
+  confidentialAccelerator:
+    type: "boolean"

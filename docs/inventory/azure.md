@@ -6,7 +6,8 @@ Microsoft's own directory headings. One row per resource a designer places; comp
 services are split into their placeable sub-resources.
 
 Status: `done` = component exists in `components/azure/`. `todo` = to be written.
-`skip: <reason>` = cannot be a node in a design.
+`skip: <reason>` = cannot be a node in a design. `covered by <id> (<setting>)` = placed as another
+component with one property set; no component of its own.
 
 ---
 
@@ -16,7 +17,7 @@ Status: `done` = component exists in `components/azure/`. `todo` = to be written
 |---|---|---|---|---|
 | Virtual Machines | azure-virtual-machine | virtual-machine | done | https://learn.microsoft.com/en-us/azure/virtual-machines/overview |
 | Virtual Machine Scale Sets | azure-vm-scale-set | virtual-machine | done | https://learn.microsoft.com/en-us/azure/virtual-machine-scale-sets/overview |
-| Azure Spot Virtual Machines | azure-spot-vm | virtual-machine | done | https://learn.microsoft.com/en-us/azure/virtual-machines/spot-vms |
+| Azure Spot Virtual Machines | — | — | covered by azure-virtual-machine (`capacity: spot`) | https://learn.microsoft.com/en-us/azure/virtual-machines/spot-vms |
 | Azure Dedicated Host | azure-dedicated-host | virtual-machine | done | https://learn.microsoft.com/en-us/azure/virtual-machines/dedicated-hosts |
 | Azure Compute Fleet | azure-compute-fleet | virtual-machine | done | https://learn.microsoft.com/en-us/azure/azure-compute-fleet/overview |
 | SQL Server on Azure Virtual Machines | azure-sql-server-vm | sql-database | done | https://learn.microsoft.com/en-us/azure/azure-sql/virtual-machines/windows/sql-server-on-azure-vm-iaas-what-is-overview |
@@ -126,6 +127,7 @@ graph store; it is covered by a component property rather than a second componen
 | Azure Network Function Manager | — | — | skip: deployment tooling for partner network functions | https://learn.microsoft.com/en-us/azure/network-function-manager/overview |
 | Network interface | azure-network-interface | network-fabric | done | https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-network-interface |
 | Subnet | azure-subnet | network-fabric | done | https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-manage-subnet |
+| Bandwidth | — | — | skip: data-transfer billing line, not a resource | https://azure.microsoft.com/en-us/pricing/details/bandwidth/ |
 
 ## Networking B — delivery, security and monitoring
 
@@ -236,13 +238,13 @@ graph store; it is covered by a component property rather than a second componen
 | Microsoft Entra Domain Services | azure-entra-domain-services | identity-provider | done | https://learn.microsoft.com/en-us/entra/identity/domain-services/administration-concepts |
 | Microsoft Entra Verified ID | azure-entra-verified-id | identity-provider | done | https://learn.microsoft.com/en-us/entra/verified-id/decentralized-identifier-overview |
 | Managed identities for Azure resources | azure-managed-identity | identity-provider | done | https://learn.microsoft.com/en-us/entra/identity/managed-identities-azure-resources/overview |
-
-Azure AD B2C is folded into the Entra External ID row; it is the legacy name of the same
-customer-identity offering and is no longer sold to new tenants.
 | Conditional Access | azure-conditional-access | policy-engine | done | https://learn.microsoft.com/en-us/entra/identity/conditional-access/overview |
 | Microsoft Entra Connect Sync | azure-entra-connect-sync | worker | done | https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/whatis-azure-ad-connect |
 | Microsoft Entra Internet Access | azure-entra-internet-access | firewall | done | https://learn.microsoft.com/en-us/entra/global-secure-access/concept-internet-access |
 | Microsoft Entra Private Access | azure-entra-private-access | bastion-host | done | https://learn.microsoft.com/en-us/entra/global-secure-access/concept-private-access |
+
+Azure AD B2C is folded into the Entra External ID row; it is the legacy name of the same
+customer-identity offering and is no longer sold to new tenants.
 
 ## Security
 
@@ -257,6 +259,7 @@ customer-identity offering and is no longer sold to new tenants.
 | Microsoft Defender for Cloud | azure-defender-for-cloud | monitoring | done | https://learn.microsoft.com/en-us/azure/defender-for-cloud/defender-for-cloud-introduction |
 | Microsoft Sentinel | azure-sentinel | monitoring | done | https://learn.microsoft.com/en-us/azure/sentinel/overview |
 | Microsoft Defender for IoT | azure-defender-for-iot | monitoring | done | https://learn.microsoft.com/en-us/azure/defender-for-iot/organizations/overview |
+| Microsoft Defender ISOC | — | — | skip: security-operations solution offering, not a deployable resource | https://azure.microsoft.com/en-us/pricing/calculator/ |
 | Defender External Attack Surface Management | azure-defender-easm | monitoring | done | https://learn.microsoft.com/en-us/azure/external-attack-surface-management/what-is-discovery |
 | Azure Information Protection | — | — | skip: labeling and classification policy, applied to data not drawn as a node | https://learn.microsoft.com/en-us/azure/information-protection/what-is-information-protection |
 | Network security perimeter | azure-network-security-perimeter | firewall | done | https://learn.microsoft.com/en-us/azure/private-link/network-security-perimeter-concepts |
@@ -621,7 +624,6 @@ mingrammer row now points here.
 | VPN client for Windows | — | — | skip: client software, not a node | https://diagrams.mingrammer.com/docs/nodes/azure |
 | Workload orchestration | — | — | skip: Arc deployment and configuration tooling for edge workloads, not a runtime node | https://diagrams.mingrammer.com/docs/nodes/azure |
 | Microsoft Entra authentication methods | — | — | skip: authentication policy of Microsoft Entra ID, not a node | https://diagrams.mingrammer.com/docs/nodes/azure |
-| Microsoft Entra Privileged Identity Management | azure-privileged-identity-management | policy-engine | done | mapping: the full product name of the Privileged Identity Management row above |
 | Risky sign-ins | — | — | skip: report view in Microsoft Entra ID Protection, not a node | https://diagrams.mingrammer.com/docs/nodes/azure |
 | Risky users | — | — | skip: report view in Microsoft Entra ID Protection, not a node | https://diagrams.mingrammer.com/docs/nodes/azure |
 | Detonation | — | — | skip: generic concept icon for a malware sandbox, not a product | https://diagrams.mingrammer.com/docs/nodes/azure |
@@ -752,7 +754,6 @@ mingrammer row now points here.
 | Cost export | — | — | skip: Cost management and billing export, not a runtime node. | https://diagrams.mingrammer.com/docs/nodes/azure |
 | Custom IP prefix | — | — | skip: Bring-your-own IP address range, a configuration of Public IP addresses. | https://diagrams.mingrammer.com/docs/nodes/azure |
 | Dashboard hub | — | — | skip: Portal dashboard icon. | https://diagrams.mingrammer.com/docs/nodes/azure |
-| Data collection rules (see Management and governance) | azure-monitor-data-collection-rule | monitoring | done | mapping: the same resource as the Data collection rule row under Management and governance |
 | Database instance for SAP | — | — | skip: Sub-resource of an Azure Virtual Instance for SAP, a management representation of VMs. | https://diagrams.mingrammer.com/docs/nodes/azure |
 | CM local manager | — | — | skip: OT asset icon from the Defender for IoT device inventory, not an Azure service. | https://diagrams.mingrammer.com/docs/nodes/azure |
 | DCS controller | — | — | skip: OT asset icon from the Defender for IoT device inventory, not an Azure service. | https://diagrams.mingrammer.com/docs/nodes/azure |
@@ -850,17 +851,19 @@ already catalogued elsewhere.
 
 | resource | id | kind | status | source |
 |---|---|---|---|---|
-| Azure confidential VM | azure-confidential-vm | virtual-machine | done | https://learn.microsoft.com/en-us/azure/confidential-computing/confidential-vm-overview |
+| Azure confidential VM | — | — | covered by azure-virtual-machine (`securityType: confidential`) | https://learn.microsoft.com/en-us/azure/confidential-computing/confidential-vm-overview |
 | Microsoft Power Apps | azure-power-apps | app-server | done | https://learn.microsoft.com/en-us/power-apps/powerapps-overview |
 
 Microsoft Entra Privileged Identity Management was `skip` on two mingrammer rows and is now
 `azure-privileged-identity-management`, the twin of `google-privileged-access-manager` and
 `oci-managed-access`: an eligible assignment is a stored object with its own lifetime, not a report.
 
-`azure-confidential-vm` overlaps the `securityType: "confidential"` value on `azure-virtual-machine`,
-the same overlap `google-confidential-vm` has with `google-compute-engine`. It is a separate component
-for the same reason: its own size families, its own attestation and vTPM behaviour, its own optional
-confidential OS disk encryption, and its own set of unsupported features.
+Azure confidential VM and Azure Spot Virtual Machines were separate components and are now folded
+into `azure-virtual-machine` (`securityType: confidential`, `capacity: spot`): the pricing calculator
+prices both inside Virtual Machines, and both are created as an ordinary VM with one setting changed.
+Their own properties (attestation, vTPM, confidential OS disk encryption; eviction policy, max price)
+moved onto `azure-virtual-machine` without defaults. The same fold took `google-confidential-vm` and
+`google-spot-vm` into `google-compute-engine`, and `aws-ec2-spot` into `aws-ec2`.
 
 Microsoft Power Apps sits in `azure/` because the provider folder is the owning vendor, not the
 hosting cloud — the same call that put AppSheet in `gcp/`. The Power Platform brand row stays `skip`.
@@ -884,6 +887,8 @@ resource of its own. The same test keeps GCP's Access Transparency and Access Ap
 | Azure Load Testing | azure-load-testing, listed above as "Azure App Testing (Load Testing)" |
 | Managed MLflow tracking | azure-machine-learning, through the MLflow integration the workspace ships; there is no separate tracking-server resource to place, unlike aws-sagemaker-mlflow |
 | Azure Kubernetes Service Edge Essentials | azure-aks-edge-essentials |
+| Azure Kubernetes Service on Azure Local (pricing calculator `aks-hci`) | azure-aks, deployed on azure-local |
+| Azure Active Directory B2C | azure-entra-external-id (the legacy name of the same customer-identity offering; see the note under Identity) |
 
 ### Existing skips a user might reasonably expect to place
 
@@ -903,6 +908,8 @@ drawn as a box in Microsoft's own architecture diagrams.
 
 ## Counts
 
-total 692, todo 0, done 202, skip 490. Plus 2 mapping rows, which point at rows already counted
-above. (Recounted from the status column on 2026-09-21; the previous line counted a duplicate
-`azure-monitor-data-collection-rule` row as a second `done`.)
+total 694, todo 0, done 200, skip 492, covered 2. (Recounted from the status column on
+2026-10-05, after the pricing-calculator audit added the Bandwidth and Microsoft Defender ISOC
+skip rows, removed the two duplicate mapping rows for `azure-monitor-data-collection-rule` and
+`azure-privileged-identity-management`, and folded Azure Spot Virtual Machines and Azure
+confidential VM into `azure-virtual-machine`.)

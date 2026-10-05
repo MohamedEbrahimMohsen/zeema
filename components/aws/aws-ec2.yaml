@@ -2,13 +2,22 @@
 # Amazon EC2 instance: a virtual server you boot from an AMI and keep patching yourself
 # ("What is Amazon EC2?"). EBS encryption by default is a Region setting you must switch on
 # ("Enable Amazon EBS encryption by default"), and an instance lives in one Availability Zone.
+#
+# Spot Instances are this component with purchaseOption: "spot", not a separate one: spare EC2
+# capacity at a discount that AWS reclaims when it needs it back ("Spot Instances",
+# https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-spot-instances.html). purchaseOption
+# already carried "spot", so it is the capacity switch here rather than a second property.
+# interruptionBehavior, requestType, interruptionNoticeSeconds and maxPriceSet mean something only
+# when purchaseOption is "spot", so none is defaulted. AWS's own defaults for a Spot Instance:
+# terminate on interruption, a one-time request, a two-minute notice, and no maximum price set
+# ("Behavior of Spot Instance interruptions").
 schemaVersion: "1"
 type: "component"
 id: "aws-ec2"
 kind: "virtual-machine"
 provider: "aws"
 docs: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/concepts.html"
-aliases: ["EC2"]
+aliases: ["EC2", "EC2 Spot Instances", "Spot Instance"]
 defaults:
   managed: false
   diskEncryption: false
@@ -30,3 +39,13 @@ properties:
     type: "enum"
     values: ["v1-or-v2", "v2-only"]
     default: "v1-or-v2"
+  interruptionBehavior:
+    type: "enum"
+    values: ["terminate", "stop", "hibernate"]
+  requestType:
+    type: "enum"
+    values: ["one-time", "persistent"]
+  interruptionNoticeSeconds:
+    type: "integer"
+  maxPriceSet:
+    type: "boolean"

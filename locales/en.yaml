@@ -1018,9 +1018,6 @@ components:
   aws-ec2-instance-connect-endpoint:
     name: "EC2 Instance Connect Endpoint"
     description: "An in-VPC tunnel for SSH and RDP to instances that have no public IP address."
-  aws-ec2-spot:
-    name: "Amazon EC2 Spot Instances"
-    description: "Spare EC2 capacity at a discount, reclaimed with a two-minute interruption notice."
   aws-ecr:
     name: "Amazon Elastic Container Registry"
     description: "Private OCI image registry with IAM permissions, AES-256 encryption and vulnerability scanning."
@@ -1702,9 +1699,6 @@ components:
   azure-confidential-ledger:
     name: "Azure confidential ledger"
     description: "Append-only, tamper-evident record store running in hardware-backed secure enclaves."
-  azure-confidential-vm:
-    name: "Azure confidential VM"
-    description: "Virtual machine whose memory is encrypted in use by the hardware and that boots only after attestation."
   azure-connected-cache:
     name: "Microsoft Connected Cache"
     description: "Software-only cache for Microsoft content deployed on the customer's own servers and managed from the Azure portal."
@@ -1892,7 +1886,7 @@ components:
     name: "Azure HDInsight"
     description: "Managed clusters for open-source big-data frameworks such as Spark, Hadoop, HBase, Interactive Query and Kafka."
   azure-health-bot:
-    name: "Health Bot"
+    name: "Healthcare agent service"
     description: "Healthcare agent service instance with built-in triage, medical content and healthcare safeguards."
   azure-health-data-services:
     name: "Azure Health Data Services"
@@ -2110,9 +2104,6 @@ components:
   azure-sphere:
     name: "Azure Sphere"
     description: "Secured crossover MCU whose OS and applications are attested and automatically updated by the Azure Sphere Security Service."
-  azure-spot-vm:
-    name: "Azure Spot Virtual Machines"
-    description: "Discounted VMs on unused capacity that Azure evicts with 30 seconds' notice and no SLA."
   azure-spring-apps:
     name: "Azure Spring Apps"
     description: "Managed hosting for Spring Boot and Steeltoe applications; all plans are in retirement."
@@ -2163,7 +2154,7 @@ components:
     description: "Brokered pools of Windows session hosts delivering full desktops or individual apps."
   azure-virtual-machine:
     name: "Azure Virtual Machines"
-    description: "On-demand Linux or Windows machines you boot from an image and patch yourself."
+    description: "Linux or Windows machines you boot from an image and patch yourself, on demand or on Spot capacity, optionally confidential."
   azure-virtual-network:
     name: "Azure Virtual Network"
     description: "Private software-defined network spanning every availability zone in a region."
@@ -3559,9 +3550,6 @@ components:
   google-confidential-space:
     name: "Confidential Space"
     description: "Attested workload on a hardened image over a Confidential VM, hidden from its own operator."
-  google-confidential-vm:
-    name: "Confidential VM"
-    description: "Compute Engine VM whose memory is encrypted in use by the hardware."
   google-config-connector:
     name: "Config Connector"
     description: "Kubernetes add-on that reconciles Google Cloud resources from custom resources."
@@ -3913,9 +3901,6 @@ components:
   google-speech-to-text:
     name: "Speech-to-Text"
     description: "Metered speech recognition for synchronous, batch and streaming audio."
-  google-spot-vm:
-    name: "Compute Engine Spot VM"
-    description: "Discounted VM on the spot provisioning model that Compute Engine may preempt at any time."
   google-storage-transfer-service:
     name: "Storage Transfer Service"
     description: "Managed transfer job copying objects and files into Cloud Storage."
