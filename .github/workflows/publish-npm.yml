@@ -70,8 +70,21 @@ jobs:
       - run: npm pkg delete devDependencies scripts
         working-directory: packages/zeema
 
-      # Trusted Publishing arrived in npm 11.5.1; Node 22 ships an older npm.
-      - run: npm install -g npm@latest
+      # Trusted Publishing arrived in npm 11.5.1; Node 22 ships an older npm. Pinned rather than
+      # @latest: a fresh npm release has mis-reported a rejected OIDC exchange before
+      # (npm/cli#9088), and a rejected exchange shows up as 404 or ENEEDAUTH, never as itself.
+      - run: npm install -g npm@11.6.2
+
+      # What the registry will see. The OIDC token exists only with `id-token: write`, and the
+      # publisher registered on npmjs.com must match repository and workflow file exactly.
+      - name: Trusted Publishing preflight
+        run: |
+          echo "npm $(npm --version) on node $(node --version)"
+          echo "repository=$GITHUB_REPOSITORY workflow=$(basename "$GITHUB_WORKFLOW_REF" | cut -d@ -f1) ref=$GITHUB_REF"
+          test -n "$ACTIONS_ID_TOKEN_REQUEST_URL" || { echo "::error::no OIDC token request URL: id-token: write missing"; exit 1; }
+          test -z "$NODE_AUTH_TOKEN" || { echo "::error::NODE_AUTH_TOKEN is set; it would shadow OIDC"; exit 1; }
+          npm config get registry
+          npm whoami 2>/dev/null || echo "(no token session, as intended)"
 
       - run: npm publish --access public
         working-directory: packages/zeema
