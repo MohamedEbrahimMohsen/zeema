@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { Suspense } from "react";
+import { ConfirmProvider } from "@/components/ConfirmDialog";
 import { RouteSpinner } from "@/components/RouteSpinner";
 import "./globals.css";
 
@@ -30,7 +31,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <script nonce={nonce} dangerouslySetInnerHTML={{ __html: themeBoot }} />
       </head>
       <body className="min-h-screen" suppressHydrationWarning>
-        {children}
+        <ConfirmProvider>{children}</ConfirmProvider>
         <Suspense fallback={null}>
           <RouteSpinner />
         </Suspense>

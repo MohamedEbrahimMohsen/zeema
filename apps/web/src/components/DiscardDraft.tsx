@@ -9,6 +9,7 @@
 // those rows, so it says so rather than offering to go back somewhere it already is.
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useConfirm } from "@/components/ConfirmDialog";
 import { Undo } from "@/components/Glyphs";
 
 type Props = {
@@ -27,6 +28,7 @@ type Props = {
 
 export function DiscardDraft({ owner, slug, releasedAt, draftVersionCount, headMoved }: Props) {
   const router = useRouter();
+  const confirm = useConfirm();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,7 +40,7 @@ export function DiscardDraft({ owner, slug, releasedAt, draftVersionCount, headM
         `The ${versions} since then will be deleted. This cannot be undone.`
       : `Delete the ${versions} after the released version from ${releasedAt}? ` +
         "This cannot be undone.";
-    if (!confirm(question)) return;
+    if (!(await confirm({ title: question, confirmLabel: "Discard", danger: true }))) return;
     setBusy(true);
     setError(null);
     try {

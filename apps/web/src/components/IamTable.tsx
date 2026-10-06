@@ -3,6 +3,7 @@
 // The IAM page body: search users, see who holds the admin role, grant and revoke it.
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useConfirm } from "@/components/ConfirmDialog";
 import { ShieldMinus, ShieldPlus } from "@/components/Glyphs";
 import type { IamUser } from "@/lib/iam";
 
@@ -13,13 +14,19 @@ const when = (d: Date | string) =>
 
 export function IamTable({ users, q, onlyAdmins, me }: Props) {
   const router = useRouter();
+  const confirm = useConfirm();
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const change = async (username: string, grant: boolean) => {
     if (
       !grant &&
-      !confirm(`Revoke the admin role from @${username}? Their sessions drop to member at once.`)
+      !(await confirm({
+        title: `Revoke the admin role from @${username}?`,
+        body: "Their sessions drop to member at once.",
+        confirmLabel: "Revoke",
+        danger: true,
+      }))
     )
       return;
     setBusy(username);

@@ -32,6 +32,10 @@
   --ok: #2e7d4f;
   --warn: #b26a00;
   --err: #c2382f;
+  /* the filled destructive button: one red in both themes, like --accent-solid, since --err
+     lightens in dark for text and white on that lighter red would not read */
+  --err-solid: #c2382f;
+  --err-solid-ink: #ffffff;
 
   /* nodes — one neutral card surface; colour on a drawing comes from icons, group tints and
      finding badges only. Same values as NODE in packages/core/src/render.js. */
@@ -442,6 +446,16 @@ img.provider {
 .btn-danger {
   color: var(--err);
 }
+.btn-danger-solid {
+  background: var(--err-solid);
+  border-color: var(--err-solid);
+  color: var(--err-solid-ink);
+  font-weight: var(--fw-medium);
+}
+.btn-danger-solid:hover {
+  background: color-mix(in srgb, var(--err-solid) 88%, #000);
+  border-color: color-mix(in srgb, var(--err-solid) 88%, #000);
+}
 .btn-ghost {
   background: transparent;
   border-color: transparent;
@@ -469,6 +483,74 @@ img.provider {
 .btn-primary kbd {
   color: var(--accent-ink);
   opacity: 0.75;
+}
+
+/* ── confirmation dialog (components/ConfirmDialog.tsx) ───────────── */
+
+.confirm-dialog {
+  width: min(440px, calc(100vw - var(--sp-4)));
+  /* the reset zeroes every margin; a modal dialog centres itself with auto ones */
+  margin: auto;
+  padding: 0;
+  border: var(--border) solid var(--line);
+  border-radius: var(--r-card);
+  background: var(--panel);
+  color: var(--ink);
+  box-shadow: var(--shadow-dialog);
+}
+.confirm-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.35);
+}
+.confirm-dialog[open] {
+  animation: confirm-in var(--dur) var(--ease);
+}
+.confirm-dialog[open]::backdrop {
+  animation: confirm-fade var(--dur) var(--ease);
+}
+.confirm-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1-5);
+  padding: var(--sp-3);
+}
+.confirm-title {
+  margin: 0;
+  font-size: var(--fs-lead);
+  font-weight: var(--fw-semibold);
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+.confirm-body {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sp-1);
+  margin-top: var(--sp-1);
+}
+.confirm-actions .btn:focus-visible {
+  outline: none;
+  box-shadow: var(--ring-focus);
+}
+@keyframes confirm-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.98);
+  }
+}
+@keyframes confirm-fade {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .confirm-dialog[open],
+  .confirm-dialog[open]::backdrop {
+    animation: none;
+  }
 }
 
 .input {

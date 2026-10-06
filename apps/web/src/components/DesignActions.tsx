@@ -8,6 +8,7 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useRef, useState } from "react";
 import { type BadgeMenuData, BadgePicker } from "./BadgePicker";
+import { useConfirm } from "./ConfirmDialog";
 import { useMenuKeys } from "./menu-keys";
 
 export type DesignActionsProps = {
@@ -37,6 +38,7 @@ export function useDesignCommands({
   plannedSlug,
 }: Pick<DesignActionsProps, "owner" | "slug" | "visibility" | "plannedSlug">) {
   const router = useRouter();
+  const confirm = useConfirm();
   const [busy, setBusy] = useState<Command | null>(null);
   const [error, setError] = useState<string | null>(null);
   const base = `/api/v1/designs/${owner}/${slug}`;
@@ -70,7 +72,11 @@ export function useDesignCommands({
   // told which address that is before they agree to it rather than discovering it afterwards.
   const moving = plannedSlug !== slug;
   const publish = async () => {
-    if (moving && !confirm(`Publish this design at /d/${owner}/${plannedSlug}?`)) return;
+    if (
+      moving &&
+      !(await confirm({ title: `Publish at /d/${owner}/${plannedSlug}?`, confirmLabel: "Publish" }))
+    )
+      return;
     const res = await call("publish", () => fetch(`${base}/publish`, { method: "POST" }));
     if (!res) return;
     const body = await res.json().catch(() => null);
@@ -82,7 +88,11 @@ export function useDesignCommands({
     const next = visibility === "public" ? "private" : "public";
     if (
       next === "public" &&
-      !confirm("Make this design public? Anyone will be able to read, clone and export it.")
+      !(await confirm({
+        title: "Make this design public?",
+        body: "Anyone will be able to read, clone and export it.",
+        confirmLabel: "Make public",
+      }))
     )
       return;
     const res = await call("visibility", () =>
@@ -95,7 +105,15 @@ export function useDesignCommands({
     if (res) router.refresh();
   };
   const remove = async () => {
-    if (!confirm("Delete this design? It disappears from every listing immediately.")) return;
+    if (
+      !(await confirm({
+        title: "Delete this design?",
+        body: "It disappears from every listing immediately.",
+        confirmLabel: "Delete",
+        danger: true,
+      }))
+    )
+      return;
     const res = await call("delete", () => fetch(base, { method: "DELETE" }));
     if (res) router.push("/?owner=me");
   };
