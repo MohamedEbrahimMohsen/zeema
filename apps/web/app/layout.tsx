@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { Suspense } from "react";
 import { ConfirmProvider } from "@/components/ConfirmDialog";
 import { RouteSpinner } from "@/components/RouteSpinner";
+import { pageTheme } from "@/lib/theme";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -18,8 +19,13 @@ const themeBoot = `(function(){try{var k="zeema-theme",t=localStorage.getItem(k)
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   // proxy.ts puts a fresh nonce on every page request; the CSP lets only nonced scripts run.
   const nonce = (await headers()).get("x-nonce") ?? undefined;
+  // The server stamps the cookie's theme on <html> too, not only the boot script. A page that
+  // calls notFound() (or fails) is rendered by React on the client from scratch rather than
+  // hydrated: React then resets <html> to exactly these props and never runs the boot script,
+  // so without this attribute every 404 under /d, /docs, /u, /catalogue came up light.
+  const theme = await pageTheme();
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" data-theme={theme} suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

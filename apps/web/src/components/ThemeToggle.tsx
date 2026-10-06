@@ -64,7 +64,25 @@ const MOON = (
 export function ThemeToggle({ variant = "icon" }: { variant?: "icon" | "menu" }) {
   const [theme, setTheme] = useState<Theme>("light");
   useEffect(() => {
-    const t = document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
+    const root = document.documentElement;
+    let t: Theme = root.getAttribute("data-theme") === "dark" ? "dark" : "light";
+    // A page React rendered on the client from scratch (a 404 from notFound()) never ran the boot
+    // script. The server stamps the cookie's theme on <html>, but on a first visit there is no
+    // cookie yet: settle the theme here the way the boot script would have.
+    if (!document.cookie.split("; ").some((c) => c.startsWith(`${KEY}=`))) {
+      let stored: string | null = null;
+      try {
+        stored = localStorage.getItem(KEY);
+      } catch {}
+      t =
+        stored === "light" || stored === "dark"
+          ? stored
+          : matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light";
+      root.setAttribute("data-theme", t);
+      remember(t);
+    }
     setTheme(t);
     syncThumbs(t);
   }, []);
