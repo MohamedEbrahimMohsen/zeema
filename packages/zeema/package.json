@@ -1,6 +1,6 @@
 {
   "name": "zeema",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Architecture as data: lint, render and query Zeema designs from the command line, with a built-in MCP server for coding agents.",
   "license": "MIT",
   "type": "module",
