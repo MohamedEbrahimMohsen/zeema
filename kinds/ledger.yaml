@@ -17,13 +17,16 @@ properties:
   sealed:
     type: "boolean"
     default: false
+    advanced: true
   indexConsistency:
     type: "enum"
     values: ["strong", "eventual"]
     default: "strong"
+    advanced: true
   tiering:
     type: "boolean"
     default: false
+    advanced: true
   managed:
     type: "boolean"
     default: false

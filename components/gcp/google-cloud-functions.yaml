@@ -15,6 +15,11 @@ defaults:
   stateless: true
   autoscaling: true
 properties:
+  # What invokes the function: an HTTP request or an event trigger delivered through Eventarc
+  # ("Cloud Run functions triggers"). No default.
+  trigger:
+    type: "enum"
+    values: ["http", "pubsub", "storage", "firestore", "eventarc", "schedule"]
   memoryMb:
     type: "integer"
     default: 256

@@ -10,6 +10,7 @@ import {
   innermostFrameAt,
   readRouting,
   rekeyBows,
+  rekeyLabels,
   rekeyPorts,
 } from "@zeema/core/geometry";
 import { layout } from "@zeema/core/layout";
@@ -20,6 +21,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { BadgeMenuData } from "@/components/BadgePicker";
+import { useConfirm } from "@/components/ConfirmDialog";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { UserMenu } from "@/components/UserMenu";
 import { badgeOf, brandOf } from "@/lib/badge";
@@ -27,6 +29,7 @@ import {
   type EdgePath,
   type EdgePorts,
   type FrameStyle,
+  type LabelOffset,
   NOTE_ANCHOR_DX,
   NOTE_ANCHOR_DY,
   NOTE_ANCHOR_H,
@@ -45,6 +48,7 @@ import {
   pruneTints,
   type Routing,
   readEdgePath,
+  readLabelOffset,
   readPort,
   readRoutingField,
   readSidecar,
@@ -109,6 +113,8 @@ type Engine = {
   bows: Record<string, EdgePath>;
   /** Where each edge's ends meet their boxes, by edge key: sidecar, never YAML. */
   ports: Record<string, EdgePorts>;
+  /** Where each edge's label was dragged, as an offset from its automatic place: sidecar. */
+  labels: Record<string, LabelOffset>;
   notes: Note[];
   /** Group tint and icon by group id: sidecar, never YAML. */
   frames: Record<string, FrameStyle>;
@@ -152,6 +158,7 @@ type Clip = {
     tints: Record<string, NodeTint>;
     ports: Array<EdgePorts | null>;
     paths: Array<EdgePath | null>;
+    labels: Array<LabelOffset | null>;
     notes: Note[];
   };
 };
@@ -206,6 +213,7 @@ function readClip(text: string): Clip | null {
       tints: side.tints ?? {},
       ports: aligned ? list(L.ports).map(port) : [],
       paths: aligned ? list(L.paths).map(readEdgePath) : [],
+      labels: aligned ? list(L.labels).map(readLabelOffset) : [],
       notes: side.notes.filter((n) => n.anchor),
     },
   };
@@ -493,12 +501,14 @@ const G = {
 
 export function Canvas(props: Props) {
   const router = useRouter();
+  const confirm = useConfirm();
   const svgRef = useRef<SVGSVGElement>(null);
   const sceneRef = useRef<Scene | null>(null);
   const eng = useRef<Engine | null>(null);
   const [bundle, setBundle] = useState<Bundle | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [tick, setTick] = useState(0);
+  // Bumped by every draw, so the chrome re-renders on a change the scene made.
+  const [, setTick] = useState(0);
   const [status, setStatus] = useState<string>(props.canWrite ? "saved" : "read only");
   const [autosave, setAutosave] = useState(props.canWrite);
   // One menu at a time: a right-click menu, or a dropdown under a button of the chrome. A
@@ -698,6 +708,7 @@ export function Canvas(props: Props) {
     const keys = new Set(edgeKeys(e.doc));
     for (const k of Object.keys(e.bows)) if (!keys.has(k)) delete e.bows[k];
     e.ports = prunePorts(e.ports, keys as Set<string>);
+    for (const k of Object.keys(e.labels)) if (!keys.has(k)) delete e.labels[k];
   }, [bundle]);
 
   const derive = useCallback(() => {
@@ -735,6 +746,7 @@ export function Canvas(props: Props) {
         sizes: e.sizes,
         bows: e.bows,
         ports: e.ports,
+        labels: e.labels,
         notes: e.notes,
         frameStyles: e.frames,
         nodeTints: e.tints,
@@ -760,6 +772,7 @@ export function Canvas(props: Props) {
       nodes: e.positions,
       edges: e.bows,
       ports: e.ports,
+      labels: e.labels,
       notes: e.notes,
       frames: e.frames,
       tints: e.tints,
@@ -836,6 +849,7 @@ export function Canvas(props: Props) {
         positions: clone(e.positions),
         bows: clone(e.bows),
         ports: clone(e.ports),
+        labels: clone(e.labels),
         notes: clone(e.notes),
         frames: clone(e.frames),
         tints: clone(e.tints),
@@ -879,6 +893,7 @@ export function Canvas(props: Props) {
       positions: clone(e.positions),
       bows: clone(e.bows),
       ports: clone(e.ports),
+      labels: clone(e.labels),
       notes: clone(e.notes),
       frames: clone(e.frames),
       tints: clone(e.tints),
@@ -903,6 +918,7 @@ export function Canvas(props: Props) {
       positions: clone(e.positions),
       bows: clone(e.bows),
       ports: clone(e.ports),
+      labels: clone(e.labels),
       notes: clone(e.notes),
       frames: clone(e.frames),
       tints: clone(e.tints),
@@ -945,6 +961,7 @@ export function Canvas(props: Props) {
           // Edge keys name the ids at their ends: the bows and ports follow the rename.
           e.bows = rekeyBows(e.doc, doc, e.bows);
           e.ports = rekeyPorts(e.doc, doc, e.ports);
+          e.labels = rekeyLabels(e.doc, doc, e.labels);
         },
       });
     },
@@ -1029,6 +1046,9 @@ export function Canvas(props: Props) {
         paths: frag.edgeIndexes.map((i: number) =>
           Object.hasOwn(e.bows, keys[i]) ? e.bows[keys[i]] : null,
         ),
+        labels: frag.edgeIndexes.map((i: number) =>
+          Object.hasOwn(e.labels, keys[i]) ? e.labels[keys[i]] : null,
+        ),
         notes: e.notes.filter(
           (n) =>
             n.anchor &&
@@ -1080,6 +1100,8 @@ export function Canvas(props: Props) {
             const key = keys[at];
             const ports = L.ports[k];
             if (ports) e.ports[key] = clone(ports);
+            const offset = L.labels[k];
+            if (offset) e.labels[key] = [offset[0], offset[1]];
             const path = L.paths[k];
             if (typeof path === "number") e.bows[key] = path;
             else if (path && Array.isArray(path.via))
@@ -1476,6 +1498,7 @@ export function Canvas(props: Props) {
                 apply: () => {
                   e.bows = rekeyBows(e.doc, next, e.bows, [i]);
                   e.ports = rekeyPorts(e.doc, next, e.ports, [i]);
+                  e.labels = rekeyLabels(e.doc, next, e.labels);
                 },
               });
             },
@@ -1494,6 +1517,17 @@ export function Canvas(props: Props) {
                 apply: () => {
                   const { [key]: _gone, ...rest } = e.bows;
                   e.bows = rest;
+                },
+              }),
+          },
+          {
+            label: "Reset label position",
+            disabled: !Object.hasOwn(e.labels, key),
+            run: () =>
+              commit(null, {
+                apply: () => {
+                  const { [key]: _gone, ...rest } = e.labels;
+                  e.labels = rest;
                 },
               }),
           },
@@ -1628,6 +1662,7 @@ export function Canvas(props: Props) {
       sizes: {},
       bows: sidecarIn.edges,
       ports: sidecarIn.ports ?? {},
+      labels: sidecarIn.labels ?? {},
       notes: sidecarIn.notes,
       frames: sidecarIn.frames,
       tints: sidecarIn.tints ?? {},
@@ -1722,6 +1757,15 @@ export function Canvas(props: Props) {
             if (ends?.to) e.ports = withPort(e.ports, key, "to", ends.to);
           },
         }),
+      // A label dragged off its automatic place: keep the offset (null: back to automatic).
+      onLabelMove: (key, offset) =>
+        commit(null, {
+          apply: () => {
+            const e = eng.current!;
+            const { [key]: _was, ...rest } = e.labels;
+            e.labels = offset ? { ...rest, [key]: offset } : rest;
+          },
+        }),
       onPortPreview: (key, end, port) =>
         scene.repaintEdges(scene.model.bows, withPort(eng.current!.ports, key, end, port)),
       onPort: (key, end, port) =>
@@ -1744,6 +1788,7 @@ export function Canvas(props: Props) {
             // go on the new one.
             e.bows = rekeyBows(e.doc, next, e.bows);
             e.ports = withPort(rekeyPorts(e.doc, next, e.ports), edgeKeys(next)[i], end, port);
+            e.labels = rekeyLabels(e.doc, next, e.labels);
           },
         });
       },
@@ -2171,6 +2216,7 @@ export function Canvas(props: Props) {
             retargetTint(e.tints, oldId, newId);
             e.bows = rekeyBows(e.doc, renamed, e.bows);
             e.ports = rekeyPorts(e.doc, renamed, e.ports);
+            e.labels = rekeyLabels(e.doc, renamed, e.labels);
           },
         });
       },
@@ -2202,6 +2248,7 @@ export function Canvas(props: Props) {
             // an edge to the group is keyed by the group's id, like an edge to a node
             e.bows = rekeyBows(e.doc, renamed, e.bows);
             e.ports = rekeyPorts(e.doc, renamed, e.ports);
+            e.labels = rekeyLabels(e.doc, renamed, e.labels);
           },
         });
       },
@@ -2246,6 +2293,18 @@ export function Canvas(props: Props) {
           apply: () => {
             const { [key]: _gone, ...rest } = e.bows;
             e.bows = rest;
+          },
+        });
+      },
+      // An edge's dragged label goes back to its automatic place. The path is left alone.
+      resetLabel: (index) => {
+        const e = eng.current!;
+        const key = edgeKeys(e.doc)[index];
+        if (!key || !Object.hasOwn(e.labels, key)) return;
+        commit(null, {
+          apply: () => {
+            const { [key]: _gone, ...rest } = e.labels;
+            e.labels = rest;
           },
         });
       },
@@ -2382,7 +2441,15 @@ export function Canvas(props: Props) {
 
   // The same delete the design page offers, behind the same question.
   const doDelete = async () => {
-    if (!confirm("Delete this design? It disappears from every listing immediately.")) return;
+    if (
+      !(await confirm({
+        title: "Delete this design?",
+        body: "It disappears from every listing immediately.",
+        confirmLabel: "Delete",
+        danger: true,
+      }))
+    )
+      return;
     setStatus("deleting…");
     const res = await fetch(`/api/v1/designs/${props.owner}/${props.slug}`, { method: "DELETE" });
     if (!res.ok) {
@@ -2587,6 +2654,7 @@ export function Canvas(props: Props) {
           frameStyles: e.frames,
           nodeTints: e.tints,
           edgePaths: e.bows,
+          edgeLabels: e.labels,
           catalogue: bundle.catalogue,
           icons: bundle.icons,
           searchRows: bundle.search,
@@ -2596,19 +2664,19 @@ export function Canvas(props: Props) {
           designExtra,
         }
       : null;
+  // Each card is keyed by what it shows, never by the undo tick: an edit re-renders the card in
+  // place, so its scroll position and the focused field survive the change. A new selection is a
+  // new card, which starts at the top.
   const inspectorCard =
     inspectorShown && inspectorProps ? (
       <>
         {designShown ? (
-          <section className="card inspector" aria-label="Design settings" key={`design:${tick}`}>
+          <section className="card inspector" aria-label="Design settings" key="design">
             <Inspector {...inspectorProps} mode="design" />
           </section>
         ) : null}
         {selectionShown ? (
-          <div
-            className="card inspector"
-            key={`${selection.type}:${String(selection.ref)}:${tick}`}
-          >
+          <div className="card inspector" key={`${selection.type}:${String(selection.ref)}`}>
             <Inspector {...inspectorProps} />
           </div>
         ) : null}

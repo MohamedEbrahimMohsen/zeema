@@ -20,10 +20,19 @@
 // from the boxes on every frame.
 
 import { groupCaption } from "./document.js";
-import { orthoPath, readVia, routeOrthogonal } from "./routing.js";
+import { labelCentre, labelOffset, orthoPath, readVia, routeOrthogonal } from "./routing.js";
 
 // A shaped orthogonal path (sidecar `edges` entries `{ via }`): see routing.js.
-export { dropWaypoint, moveSegment, readVia, refitEnds, VIA_MAX, viaOf } from "./routing.js";
+export {
+  dropWaypoint,
+  LABEL_OFFSET_MAX,
+  labelOffset,
+  moveSegment,
+  readVia,
+  refitEnds,
+  VIA_MAX,
+  viaOf,
+} from "./routing.js";
 
 import { frameCaption } from "./text.js";
 
@@ -174,6 +183,23 @@ export function rekeyPorts(before, after, ports, reversed = []) {
   return out;
 }
 
+/**
+ * Carry the label offsets (sidecar `labels`) across the same kind of edit as `rekeyBows`: every
+ * edge keeps its index. An offset is in world px, not along the edge, so a reversed edge's label
+ * stays where it was.
+ */
+export function rekeyLabels(before, after, labels) {
+  const was = edgeKeys(before);
+  const now = edgeKeys(after);
+  if (was.length !== now.length) return { ...labels };
+  const out = {};
+  was.forEach((k, i) => {
+    const v = labelOffset(labels, k);
+    if (v) out[now[i]] = v;
+  });
+  return out;
+}
+
 // A port is where one end of an edge meets its box: a side, and how far along it (0 to 1, left
 // to right on top and bottom, top to bottom on left and right). It is relative to the box, so
 // it survives the box moving, and nothing about it is in the design document.
@@ -314,6 +340,10 @@ function labelPlacement(mid, points, shared) {
 //
 // `options.captions` (`frameCaptions`) keeps orthogonal edges and their labels off the group
 // captions; `options.labelAvoid` is more boxes labels stay off (the canvas's notes).
+// `options.labels` maps an edge key to `[dx, dy]`, where someone dragged its label: an offset in
+// world px from the label's automatic place taken as its centre (`labelBase`, on every labelled
+// edge). A dragged label is drawn centred at `labelBase + offset`, follows its edge as the
+// automatic place moves, and is never moved to dodge anything; automatic labels still dodge it.
 // `options.routing` picks the style (default DEFAULT_ROUTING). Orthogonal edges carry
 // `ortho: true`, and their `points` are the corners of a polyline from one end to the other,
 // drawn by `edgePath`; `run` is `{ axis, base }` when the edge has a cross run a bow moves (see
@@ -343,6 +373,7 @@ export function edgeGeometry(doc, boxes, bows = {}, ports = {}, frames = {}, opt
     return routeOrthogonal(items, boxes, bows || {}, isPort, {
       captions: captionBoxes,
       labelAvoid: options?.labelAvoid || [],
+      labels: options?.labels || {},
     }).map((r) => {
       const e = edges[r.i];
       const label = e.label || null;
@@ -476,9 +507,12 @@ export function edgeGeometry(doc, boxes, bows = {}, ports = {}, frames = {}, opt
                 [x2, y2],
               ];
       const mid = midpointOf(points);
-      const place = labelPlacement(mid, points, n > 1);
+      let place = labelPlacement(mid, points, n > 1);
       const label = e.label || null;
-      out.push({
+      const base = label === null ? null : labelCentre(place.at, place.anchor, String(label));
+      const offset = base ? labelOffset(options?.labels, keys[i]) : null;
+      if (offset) place = { at: [base[0] + offset[0], base[1] + offset[1]], anchor: "middle" };
+      const drawn = {
         i,
         key: keys[i],
         from: e.from,
@@ -491,7 +525,9 @@ export function edgeGeometry(doc, boxes, bows = {}, ports = {}, frames = {}, opt
         labelAnchor: place.anchor,
         dashed: e.mode === "async",
         label: label === null ? null : String(label),
-      });
+      };
+      if (base) drawn.labelBase = base;
+      out.push(drawn);
     });
   }
   return out.sort((p, q) => p.i - q.i);

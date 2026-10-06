@@ -1,6 +1,7 @@
 "use client";
 
 import { isGeneric } from "@zeema/core/document";
+import { scoreRow } from "@zeema/core/search";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { categoryLabel, providerLabel, setToken } from "./palette-query";
 
@@ -21,21 +22,9 @@ export function parseQuery(q: string) {
   return { filters, words };
 }
 
-export function score(row: Row, words: string[]) {
-  const [id, name, , , , hay, aliases] = row;
-  if (!words.length) return 1;
-  // An alias is a name the vendor uses, so it weighs what the name weighs: typing `dcr` should
-  // put the data collection rule first, not behind every description that mentions it.
-  const alias = (aliases ?? "").split(" ").filter(Boolean);
-  let s = 0;
-  for (const w of words) {
-    if (!hay.includes(w)) return 0;
-    if (id.startsWith(w) || name.toLowerCase().startsWith(w) || alias.some((a) => a.startsWith(w)))
-      s += 3;
-    else if (id.includes(w)) s += 2;
-    else s += 1;
-  }
-  return s;
+/** See `scoreRow` in @zeema/core/search: synonyms (`db` → database) and name-before-description. */
+export function score(row: Row, words: string[]): number {
+  return scoreRow(row, words);
 }
 
 /**
@@ -194,9 +183,14 @@ export function Palette({
       const s = score(row, words);
       if (s) out.push([s, row]);
     }
+    // With words typed, the category holding the best hit leads ("db" opens on Data, not on a
+    // compute row whose description mentions JDBC); with none, categories keep their own order.
+    const best: Record<string, number> = {};
+    if (words.length) for (const [s, row] of out) best[row[3]] = Math.max(best[row[3]] ?? 0, s);
     // Inside a category the vendor-neutral component comes before the products of its kind.
     out.sort(
       (a, b) =>
+        (best[b[1][3]] ?? 0) - (best[a[1][3]] ?? 0) ||
         catRank(a[1][3]).localeCompare(catRank(b[1][3])) ||
         b[0] - a[0] ||
         Number(isGeneric(b[1][0], b[1][2])) - Number(isGeneric(a[1][0], a[1][2])) ||

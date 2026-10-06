@@ -143,6 +143,8 @@ export function validateRepository(rootArg, options = {}) {
       if (d.type === "enum" && d.default !== undefined && !d.values.includes(d.default))
         fail(`kind ${k.id}: default ${p} not in enum`);
       if (d.type === "ref" && !kinds[d.refKind]) fail(`kind ${k.id}: refKind ${d.refKind} unknown`);
+      // A required property tucked under a collapsed section would hide what the design must say.
+      if (d.advanced && d.required) fail(`kind ${k.id}: ${p} is both required and advanced`);
     }
   for (const c of Object.values(components)) {
     const k = kinds[c.kind];

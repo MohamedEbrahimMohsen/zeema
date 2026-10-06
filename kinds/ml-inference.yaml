@@ -15,9 +15,11 @@ properties:
     default: "live"
   embeddingSyncMinutes:
     type: "integer"
+    advanced: true
   snapshotToObjectStore:
     type: "boolean"
     default: false
+    advanced: true
   accelerator:
     type: "enum"
     values: ["none", "gpu", "asic"]

@@ -25,7 +25,9 @@
 // that runs going the same way do not cross each other's legs. A bow (the sidecar's `edges`, a
 // number) moves a Z's cross run by that many px; on any other shape it does nothing. Labels stay
 // off boxes, captions, earlier labels and whatever else they are told to avoid (the canvas's
-// notes).
+// notes). A label someone dragged (`extra.labels`, an offset per edge key) sits at its automatic
+// place as if nothing were in the way, plus the offset, centred; it dodges nothing, and the
+// automatic labels placed after it stay off it.
 //
 // Waypoints. An entry `{ via: [[x, y], ...] }` in the sidecar's `edges` is a path someone shaped
 // by dragging its segments: absolute world points the edge passes through in order. The edge
@@ -212,6 +214,7 @@ export function routeOrthogonal(items, nodeBoxes, bows, isPort, extra = {}) {
   const obstacles = Object.entries(nodeBoxes);
   const captions = Array.isArray(extra.captions) ? extra.captions : [];
   const labelAvoid = Array.isArray(extra.labelAvoid) ? extra.labelAvoid : [];
+  const labels = extra.labels && typeof extra.labels === "object" ? extra.labels : {};
   // 1. Sides.
   const ends = items.map((it) => {
     const { a, b, fa, fb, own } = it;
@@ -421,9 +424,21 @@ export function routeOrthogonal(items, nodeBoxes, bows, isPort, extra = {}) {
       run = { axis: r.run.axis, base };
       if (bow) points = r.run.make(base + bow);
     }
-    const text = it.e.label || "";
-    const place = labelOn(points, String(text), [...boxList, ...captions, ...labelAvoid, ...taken]);
-    if (place.box) taken.push(place.box);
+    const text = String(it.e.label || "");
+    const offset = text ? labelOffset(labels, it.key) : null;
+    let place;
+    // Where the label would sit with nothing in the way, as its centre: what an offset is from.
+    const free = text ? labelOn(points, text, []) : null;
+    const base = free ? labelCentre(free.at, free.anchor, text) : null;
+    if (offset && free && base) {
+      const at = [base[0] + offset[0], base[1] + offset[1]];
+      const w = textWidth(text, LABEL_FONT);
+      place = { mid: free.mid, at, anchor: "middle" };
+      taken.push([at[0] - w / 2, at[1] - 10, w, 12]);
+    } else {
+      place = labelOn(points, text, [...boxList, ...captions, ...labelAvoid, ...taken]);
+      if (place.box) taken.push(place.box);
+    }
     const drawn = {
       i: it.i,
       key: it.key,
@@ -436,6 +451,7 @@ export function routeOrthogonal(items, nodeBoxes, bows, isPort, extra = {}) {
       labelAt: place.at,
       labelAnchor: place.anchor,
     };
+    if (base) drawn.labelBase = base;
     // Only a shaped path says so, so every other drawn edge is what it always was.
     if (r.via) drawn.via = r.via;
     // A nested edge runs straight out to its group's border: there is nothing to shape.
@@ -853,11 +869,39 @@ function route(it, obstacles, captions = []) {
   return { it, points: best.path, run };
 }
 
+/** The font size an edge label is drawn at (render.js `.e`, the canvas's `.edge-label`). */
+export const LABEL_FONT = 12;
+
+/** The most a dragged label may sit from its automatic place, on either axis. */
+export const LABEL_OFFSET_MAX = 2000;
+
+/**
+ * The offset an edge's label was dragged by, from a map keyed by edge key: two finite numbers,
+ * rounded and clamped to LABEL_OFFSET_MAX, or null for none (a zero offset is none).
+ */
+export function labelOffset(labels, key) {
+  if (!labels || typeof labels !== "object" || !Object.hasOwn(labels, key)) return null;
+  const v = labels[key];
+  if (!Array.isArray(v) || v.length !== 2) return null;
+  const c = (n) =>
+    Math.round(Math.max(-LABEL_OFFSET_MAX, Math.min(LABEL_OFFSET_MAX, Number(n)))) || 0;
+  if (!Number.isFinite(v[0]) || !Number.isFinite(v[1])) return null;
+  const o = [c(v[0]), c(v[1])];
+  return o[0] || o[1] ? o : null;
+}
+
+/** A label's baseline point as if it were centred (`text-anchor: middle`) where it is drawn. */
+export function labelCentre(at, anchor, text) {
+  const w = textWidth(text, LABEL_FONT);
+  const dx = anchor === "start" ? w / 2 : anchor === "end" ? -w / 2 : 0;
+  return [at[0] + dx, at[1]];
+}
+
 // A label sits on a run, centred: above a horizontal one, beside a vertical one. The longest run
 // it fits on clear of every box (and of the labels placed before it) wins; failing that, the
 // longest run. `box` is the rectangle the words cover.
 function labelOn(points, text, clear) {
-  const w = text ? textWidth(text, 12) : 0;
+  const w = text ? textWidth(text, LABEL_FONT) : 0;
   const runs = [];
   for (let j = 1; j < points.length; j++) {
     const [x1, y1] = points[j - 1],

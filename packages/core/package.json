@@ -14,7 +14,8 @@
     "./describe": "./src/describe.js",
     "./layout": "./src/layout.js",
     "./geometry": "./src/geometry.js",
-    "./render": "./src/render.js"
+    "./render": "./src/render.js",
+    "./search": "./src/search.js"
   },
   "files": ["src"],
   "scripts": { "test": "vitest run" },

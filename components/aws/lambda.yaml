@@ -11,6 +11,11 @@ defaults:
   stateless: true
   autoscaling: true
 properties:
+  # What invokes the function: a function URL (http), an event source mapping or a service
+  # integration ("Invoking Lambda with events from other AWS services"). No default.
+  trigger:
+    type: "enum"
+    values: ["http", "api-gateway", "schedule", "sqs", "sns", "eventbridge", "s3", "dynamodb-streams", "kinesis", "step-functions"]
   timeoutSeconds:
     type: "integer"
     default: 3

@@ -21,6 +21,7 @@ properties:
   clockRollbackGuard:
     type: "boolean"
     default: false
+    advanced: true
   batchSize:
     type: "integer"
   managed:

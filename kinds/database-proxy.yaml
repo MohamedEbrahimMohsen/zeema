@@ -11,6 +11,7 @@ properties:
   poolSharded:
     type: "boolean"
     default: false
+    advanced: true
   routing:
     type: "enum"
     values: ["none", "shard-key", "lookup"]
@@ -18,15 +19,19 @@ properties:
   scatterGather:
     type: "boolean"
     default: false
+    advanced: true
   hedging:
     type: "boolean"
     default: false
+    advanced: true
   loadShedding:
     type: "boolean"
     default: false
+    advanced: true
   requestCoalescing:
     type: "boolean"
     default: false
+    advanced: true
   managed:
     type: "boolean"
     default: false

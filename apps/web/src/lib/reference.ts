@@ -39,6 +39,8 @@ export type PropRow = {
   overridden: boolean;
   /** True when the property is defined by the component rather than inherited from the kind. */
   componentProperty: boolean;
+  /** The kind marks it advanced: there for the rules, folded away in the editor. */
+  advanced: boolean;
 };
 
 export type RuleRef = {
@@ -137,6 +139,7 @@ function propRows(
         override: name in overrides ? overrides[name] : undefined,
         overridden: name in overrides,
         componentProperty: name in componentProps,
+        advanced: Boolean(d.advanced),
       };
     });
 }

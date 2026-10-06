@@ -16,6 +16,7 @@ properties:
   connectionPreserving:
     type: "boolean"
     default: false
+    advanced: true
   healthChecks:
     type: "boolean"
     default: true

@@ -34,19 +34,24 @@ properties:
     default: false
   replicaFanout:
     type: "integer"
+    advanced: true
   idEncodesShard:
     type: "boolean"
     default: false
+    advanced: true
   concurrencyControl:
     type: "enum"
     values: ["pessimistic", "optimistic", "constraint"]
+    advanced: true
   commitProtocol:
     type: "enum"
     values: ["single", "two-phase"]
     default: "single"
+    advanced: true
   appendOnly:
     type: "boolean"
     default: false
+    advanced: true
   instances:
     type: "integer"
   managed:

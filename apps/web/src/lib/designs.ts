@@ -558,7 +558,8 @@ export function normaliseLayout(raw: unknown) {
   if (
     Object.keys(s.nodes).length > MAX_LAYOUT_NODES ||
     Object.keys(s.edges).length > MAX_LAYOUT_EDGES ||
-    Object.keys(s.ports ?? {}).length > MAX_LAYOUT_EDGES
+    Object.keys(s.ports ?? {}).length > MAX_LAYOUT_EDGES ||
+    Object.keys(s.labels ?? {}).length > MAX_LAYOUT_EDGES
   )
     throw new ServiceError(413, "layout too large");
   if (Buffer.byteLength(JSON.stringify(s), "utf8") > MAX_LAYOUT_BYTES)

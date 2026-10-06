@@ -185,7 +185,8 @@ export function toBundle(cat) {
 
 /**
  * One search row per component: [id, name, kind, category, provider, haystack].
- * The haystack carries the aliases too, so "dcr" finds the data collection rule.
+ * The haystack carries the kind name and the aliases too, so "dcr" finds the data collection rule.
+ * Match it with `scoreRow` from @zeema/core/search, which also knows the synonyms.
  */
 export function searchRows(cat) {
   return Object.keys(cat.components)
@@ -196,6 +197,9 @@ export function searchRows(cat) {
       const name = text.name ?? "";
       const description = text.description ?? "";
       const category = cat.kinds[c.kind] ? cat.kinds[c.kind].category : "";
+      // The kind name rides too, so "database" (and "db" through its synonym) finds every
+      // database whatever its description says.
+      const kindName = cat.locale.kinds?.[c.kind]?.name ?? "";
       // Aliases ride in the haystack (so they match) and again in their own field (so the
       // palette can score a "dcr" prefix as heavily as it scores a name).
       const aliases = (c.aliases ?? []).join(" ").toLowerCase();
@@ -205,7 +209,7 @@ export function searchRows(cat) {
         c.kind,
         category,
         c.provider,
-        `${id} ${name} ${description} ${aliases}`.trim().toLowerCase(),
+        `${id} ${name} ${description} ${kindName} ${aliases}`.trim().toLowerCase(),
         aliases,
       ];
     });

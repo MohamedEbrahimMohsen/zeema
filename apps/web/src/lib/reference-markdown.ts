@@ -70,7 +70,7 @@ export function renderMarkdown(doc: ReferenceDoc, origin: string): string {
       );
       for (const r of doc.properties.rows) {
         const cells = [
-          `\`${r.name}\``,
+          r.advanced ? `\`${r.name}\` (advanced)` : `\`${r.name}\``,
           r.type,
           r.values?.length ? r.values.map((v) => `\`${v}\``).join(", ") : "—",
           r.required ? "yes" : "no",

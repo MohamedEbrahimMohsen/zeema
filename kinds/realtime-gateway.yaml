@@ -20,22 +20,29 @@ properties:
     type: "enum"
     values: ["random", "hash", "sticky"]
     default: "random"
+    advanced: true
   drainOnScaleIn:
     type: "boolean"
     default: false
+    advanced: true
   stampedeGuard:
     type: "boolean"
     default: false
+    advanced: true
   sequenceNumbers:
     type: "boolean"
     default: false
+    advanced: true
   ackIntervalSeconds:
     type: "integer"
+    advanced: true
   subscriptionsPerUser:
     type: "integer"
+    advanced: true
   pushFallback:
     type: "boolean"
     default: false
+    advanced: true
   managed:
     type: "boolean"
     default: false

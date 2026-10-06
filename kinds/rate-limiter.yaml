@@ -27,6 +27,7 @@ properties:
   atomicOps:
     type: "boolean"
     default: true
+    advanced: true
   managed:
     type: "boolean"
     default: false

@@ -191,7 +191,7 @@ const f1 = (n) => Number(n).toFixed(1);
  * @param {object} catalogue    { kinds, components }
  * @param {object} [options]    { icons: { [componentId]: innerSvg }, positions, sizes, bows,
  *                                theme: "auto" | "light" | "dark",
- *                                layout: a saved layout sidecar — { nodes, edges, ports } — which makes
+ *                                layout: a saved layout sidecar — { nodes, edges, ports, labels } — which makes
  *                                the picture the one that was drawn rather than an arrangement
  *                                of it. Notes are canvas furniture and are never drawn here.
  *                                frames: { [groupId]: { tint?, icon? } } — how each group is

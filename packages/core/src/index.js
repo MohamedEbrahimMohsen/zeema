@@ -8,5 +8,6 @@ export * as geometry from "./geometry.js";
 export * as layout from "./layout.js";
 export * as render from "./render.js";
 export * as rules from "./rules.js";
+export * as search from "./search.js";
 export * as structure from "./structure.js";
 export * as yaml from "./yaml.js";

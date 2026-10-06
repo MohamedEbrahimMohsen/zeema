@@ -908,7 +908,15 @@
   paint-order: stroke;
   stroke: var(--bg);
   stroke-width: 3px;
-  cursor: pointer;
+  /* a label is dragged to move it; a click still selects its edge */
+  cursor: move;
+}
+/* While a label is dragged the pointer crosses nodes, edges and ports, each with its own cursor;
+   the drag's cursor must win over all of them. */
+.zeema-canvas svg.label-dragging,
+.zeema-canvas svg.label-dragging * {
+  /* biome-ignore lint/complexity/noImportantStyles: overrides every descendant cursor during the drag */
+  cursor: move !important;
 }
 .zeema-canvas .edge-hits:hover + .edge + .edge-label,
 .zeema-canvas .edge-label:hover {

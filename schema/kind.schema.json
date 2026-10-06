@@ -87,6 +87,11 @@
         },
         "refKind": {
           "$ref": "#/definitions/id"
+        },
+        "advanced": {
+          "description": "Presentation only: the editor files this property under a collapsed Advanced section. Rules read it like any other.",
+          "type": "boolean",
+          "default": false
         }
       },
       "allOf": [

@@ -15,6 +15,7 @@ properties:
   ttlJitter:
     type: "boolean"
     default: false
+    advanced: true
   persistence:
     type: "boolean"
     default: false
@@ -30,23 +31,29 @@ properties:
     type: "enum"
     values: ["none", "consistent"]
     default: "none"
+    advanced: true
   usedAsPrimaryStore:
     type: "boolean"
     default: false
+    advanced: true
   materialised:
     type: "boolean"
     default: false
+    advanced: true
   structure:
     type: "enum"
     values: ["key-value", "bloom-filter", "hash-set", "sorted-set"]
     default: "key-value"
+    advanced: true
   readBarrier:
     type: "boolean"
     default: false
+    advanced: true
   tier:
     type: "enum"
     values: ["core", "edge"]
     default: "core"
+    advanced: true
   shards:
     type: "integer"
   managed:

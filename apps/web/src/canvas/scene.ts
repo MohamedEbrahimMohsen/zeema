@@ -42,6 +42,8 @@ import {
   type EdgePorts,
   type FrameStyle,
   frameIconKey,
+  LABEL_MAX_OFFSET,
+  type LabelOffset,
   NOTE_ANCHOR_DX,
   NOTE_ANCHOR_DY,
   NOTE_MAX_TEXT,
@@ -127,6 +129,8 @@ export type Model = {
   bows: Record<string, EdgePath>;
   /** Where an edge's ends meet their boxes, by edge key, from the sidecar. */
   ports?: Record<string, EdgePorts>;
+  /** Where edge labels were dragged, by edge key: offsets from the automatic place. */
+  labels?: Record<string, LabelOffset>;
   notes: Note[];
   /** Group tint and icon by group id, from the sidecar. Absent means the default frame. */
   frameStyles?: Record<string, FrameStyle>;
@@ -178,6 +182,11 @@ export type Handlers = {
    * written in the same step.
    */
   onPath?: (key: string, value: EdgePath | null, ends?: EdgePorts) => void;
+  /**
+   * An edge's label was dragged and let go: keep it this far from its automatic place (world px,
+   * whole), or null to put it back there.
+   */
+  onLabelMove?: (key: string, offset: LabelOffset | null) => void;
   /** An end handle is being dragged along its own box: draw the edge with this port (null: none). */
   onPortPreview?: (key: string, end: EdgeEnd, port: Port | null) => void;
   /** An end handle was let go on its own box's border: attach that end there. */
@@ -359,6 +368,8 @@ export class Scene {
   private peekTimer: ReturnType<typeof setTimeout> | null = null;
   wire: any = null;
   bowDrag: any = null;
+  /** An edge label being dragged off its automatic place (see `startLabelDrag`). */
+  labelDrag: any = null;
   /** An edge's end handle being dragged: to a port on its own box, or onto another component. */
   tip: any = null;
   /** The selected edge's two end handles, [from, to], and which edge they belong to. */
@@ -577,7 +588,9 @@ export class Scene {
    */
   routeOptions() {
     const notes = this.notesVisible() ? Object.values(this.noteBoxes || {}) : [];
-    return { routing: this.model.routing, captions: this.captions, labelAvoid: notes };
+    // While a label is being dragged, the offset it would get is drawn, so the others dodge it.
+    const labels = this.labelDrag?.labels ?? this.model.labels ?? {};
+    return { routing: this.model.routing, captions: this.captions, labelAvoid: notes, labels };
   }
 
   /** Each group's label strip height, for the frame targets. */
@@ -1142,11 +1155,13 @@ export class Scene {
         });
         t.textContent = e.label;
         // A label picks its own edge: with two lanes, the label is the easiest thing to aim at.
+        // Dragged, it moves (see `startLabelDrag`); a click still only selects.
         t.addEventListener("pointerdown", (ev: any) => {
           if (ev.button !== 0 || this.space) return;
           ev.stopPropagation();
           if (ev.shiftKey || ev.ctrlKey || ev.metaKey) return this.toggle("edge", e.i);
           this.select("edge", e.i);
+          this.startLabelDrag(e.i, ev);
         });
         g.append(t);
         els.label = t;
@@ -1205,6 +1220,7 @@ export class Scene {
       this.pan ||
       this.noteDrag ||
       this.bowDrag ||
+      this.labelDrag ||
       this.tip ||
       this.editor
     );
@@ -1864,6 +1880,7 @@ export class Scene {
       if (this.drag) this.moveDrag(ev);
       if (this.wire) this.moveWire(ev);
       if (this.bowDrag) this.moveBow(ev);
+      if (this.labelDrag) this.moveLabel(ev);
       if (this.tip) this.moveTip(ev);
     });
 
@@ -1877,6 +1894,7 @@ export class Scene {
       if (this.drag) this.endDrag(ev);
       if (this.wire) this.endWire();
       if (this.bowDrag) this.endBow();
+      if (this.labelDrag) this.endLabel();
       if (this.tip) this.finishTip();
     };
     this.on(svg, "pointerup", end);
@@ -1939,6 +1957,12 @@ export class Scene {
     if (this.bowDrag) {
       this.h.onPathPreview?.(this.bowDrag.key, this.bowDrag.original ?? null);
       this.bowDrag = null;
+    }
+    if (this.labelDrag) {
+      const moved = this.labelDrag.moved;
+      this.labelDrag = null;
+      this.svg.classList.remove("label-dragging");
+      if (moved) this.repaintEdges(this.model.bows);
     }
     if (this.tip) {
       const t = this.tip;
@@ -2378,6 +2402,65 @@ export class Scene {
     const { key, moved, value, ends } = this.bowDrag;
     this.bowDrag = null;
     if (moved) this.h.onPath?.(key, value ?? null, ends);
+  }
+
+  /**
+   * A press on an edge's label. Once the pointer has moved DRAG_THRESHOLD px the label follows
+   * it, centred, and the other labels dodge it as they will once it is let go; until then
+   * nothing changes, so a click only selects and a double click still edits the words. What is
+   * kept is the offset from the label's automatic place (`labelBase`), so it follows its edge.
+   */
+  startLabelDrag(i: number, ev: PointerEvent) {
+    const e = (this.geom || []).find((g) => g.i === i);
+    const els = this.edgeEls.get(i);
+    if (!e?.labelBase || !els?.label) return;
+    // Where the label's centre is drawn now: a label hung off a vertical run is anchored at its
+    // start or end, so its centre is measured from what is on screen.
+    let cx = e.labelAt[0];
+    if (e.labelAnchor !== "middle") {
+      try {
+        const b = (els.label as SVGTextElement).getBBox();
+        cx = b.x + b.width / 2;
+      } catch {
+        /* not laid out: the anchor point will do */
+      }
+    }
+    this.labelDrag = {
+      i,
+      key: e.key,
+      base: [e.labelBase[0], e.labelBase[1]],
+      start: [cx, e.labelAt[1]],
+      down: [ev.clientX, ev.clientY],
+      moved: false,
+      offset: null as LabelOffset | null,
+      labels: null as Record<string, LabelOffset> | null,
+    };
+    this.capture(ev);
+  }
+
+  moveLabel(ev: PointerEvent) {
+    const drag = this.labelDrag;
+    const [x0, y0] = drag.down;
+    if (!drag.moved && Math.hypot(ev.clientX - x0, ev.clientY - y0) < DRAG_THRESHOLD) return;
+    const k = this.view.k || 1;
+    const lim = (v: number) => Math.max(-LABEL_MAX_OFFSET, Math.min(LABEL_MAX_OFFSET, v));
+    const offset: LabelOffset = [
+      Math.round(lim(drag.start[0] + (ev.clientX - x0) / k - drag.base[0])) || 0,
+      Math.round(lim(drag.start[1] + (ev.clientY - y0) / k - drag.base[1])) || 0,
+    ];
+    drag.moved = true;
+    drag.offset = offset;
+    drag.labels = { ...(this.model.labels ?? {}), [drag.key]: offset };
+    this.svg.classList.add("label-dragging");
+    this.repaintEdges(this.model.bows);
+  }
+
+  endLabel() {
+    const { key, moved, offset } = this.labelDrag;
+    this.labelDrag = null;
+    this.svg.classList.remove("label-dragging");
+    if (!moved) return;
+    this.h.onLabelMove?.(key, offset && (offset[0] || offset[1]) ? offset : null);
   }
 
   /**

@@ -17,12 +17,15 @@ properties:
   dedupKey:
     type: "boolean"
     default: false
+    advanced: true
   templateStore:
     type: "boolean"
     default: false
+    advanced: true
   queuePerChannel:
     type: "boolean"
     default: false
+    advanced: true
   managed:
     type: "boolean"
     default: false

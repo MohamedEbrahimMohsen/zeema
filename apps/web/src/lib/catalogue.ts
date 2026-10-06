@@ -43,6 +43,8 @@ export type PropertyDef = {
   default?: unknown;
   required?: boolean;
   refKind?: string;
+  /** Presentation only: the editor files it under a folded Advanced section. */
+  advanced?: boolean;
 };
 export type LocaleEntry = { name?: string; description?: string; rationale?: string };
 

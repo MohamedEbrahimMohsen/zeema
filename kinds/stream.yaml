@@ -31,9 +31,11 @@ properties:
   idempotentProducer:
     type: "boolean"
     default: false
+    advanced: true
   transactions:
     type: "boolean"
     default: false
+    advanced: true
   storage:
     type: "enum"
     values: ["ephemeral", "persistent"]

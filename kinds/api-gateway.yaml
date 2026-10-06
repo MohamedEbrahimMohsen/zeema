@@ -18,8 +18,10 @@ properties:
   idempotencyKeys:
     type: "boolean"
     default: false
+    advanced: true
   keyTtlHours:
     type: "integer"
+    advanced: true
   protocol:
     type: "enum"
     values: ["http", "grpc", "websocket", "fix", "ouch"]

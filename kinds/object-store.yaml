@@ -25,14 +25,17 @@ properties:
   strongReadAfterWrite:
     type: "boolean"
     default: false
+    advanced: true
   checksumOnWrite:
     type: "boolean"
     default: false
+    advanced: true
   encryptionAtRest:
     type: "boolean"
     default: false
   durabilityNines:
     type: "integer"
+    advanced: true
   managed:
     type: "boolean"
     default: false

@@ -29,6 +29,7 @@ import {
   pruneSidecar,
   pruneTints,
   readEdgePath,
+  readLabels,
   readPorts,
   readRoutingField,
   readSidecar,
@@ -381,6 +382,54 @@ describe("edge ports", () => {
     expect(prunePorts(ports, ["a>b"])).toEqual({ "a>b": { from: { side: "top", t: 0 } } });
     expect(Object.keys(ports)).toEqual(["a>b", "b>c"]);
     expect(readPorts(null)).toEqual({});
+  });
+});
+
+describe("edge label offsets", () => {
+  it("keeps finite pairs, rounded and clamped, and drops the rest", () => {
+    const s = readSidecar({
+      labels: {
+        "a>b": [12.4, -80.6],
+        "a>b#1": [5000, -9000],
+        "b>c": [0, 0],
+        "c>d": [1, Number.NaN],
+        "d>e": ["1", 2],
+        "e>f": [1, 2, 3],
+        nokey: [1, 1],
+      },
+    });
+    expect(s.labels).toEqual({ "a>b": [12, -81], "a>b#1": [2000, -2000] });
+    const hostile = readSidecar(JSON.parse('{"labels":{"__proto__":[1,2]}}'));
+    expect(hostile.labels).toBeUndefined();
+    expect(Object.getPrototypeOf(readLabels(JSON.parse('{"__proto__":[1,2]}')))).toBe(
+      Object.prototype,
+    );
+  });
+
+  it("is written only when it holds something, and counts as drawn", () => {
+    const base = { nodes: {}, edges: {}, notes: [] };
+    expect("labels" in writeSidecar(base)).toBe(false);
+    expect("labels" in writeSidecar({ ...base, labels: {} })).toBe(false);
+    const labels: Record<string, [number, number]> = { "a>b": [3, 4] };
+    expect(readSidecar(writeSidecar({ ...base, labels })).labels).toEqual(labels);
+    expect(isBlankSidecar({ labels: {} })).toBe(true);
+    expect(isBlankSidecar({ labels })).toBe(false);
+  });
+
+  it("is pruned with its edge and filed after the ports", () => {
+    const s = readSidecar({
+      nodes: { a: [0, 0], b: [1, 1] },
+      ports: { "a>b": { to: { side: "top", t: 0.5 } } },
+      labels: { "x>a": [1, 1], "a>b": [9, 8] },
+    });
+    expect(pruneSidecar(s, { nodes: ["a", "b"], groups: [], edges: ["a>b"] }).labels).toEqual({
+      "a>b": [9, 8],
+    });
+    expect(pruneSidecar(s, { nodes: ["a", "b"], groups: [], edges: [] }).labels).toBeUndefined();
+    const file = sidecarFile({ ...s, labels: { "b>a": [1, 2], "a>b": [3, 4] } });
+    const keys = Object.keys(JSON.parse(file));
+    expect(keys.indexOf("labels")).toBe(keys.indexOf("ports") + 1);
+    expect(Object.keys(JSON.parse(file).labels)).toEqual(["a>b", "b>a"]);
   });
 });
 

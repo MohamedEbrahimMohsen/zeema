@@ -16,6 +16,7 @@ properties:
   centralised:
     type: "boolean"
     default: true
+    advanced: true
   mfa:
     type: "boolean"
     default: false

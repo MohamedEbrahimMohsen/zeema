@@ -5,7 +5,7 @@
 // the user sets something. Text inputs commit on blur or Enter, never per keystroke.
 import { effective, propDefs } from "@zeema/core/document";
 import { edgeKeys } from "@zeema/core/geometry";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Icon } from "@/components/Icon";
 import { BOUNDARY_PREVIEW, boundaryRows } from "@/lib/boundary-icons";
 import {
@@ -59,6 +59,8 @@ export type InspectorApi = {
   setRouting: (routing: "orthogonal" | "curved") => void;
   /** Drop an edge's hand-made path (bow or waypoints): it is routed automatically again. */
   resetPath: (index: number) => void;
+  /** Drop an edge's dragged label offset: the label goes back to its automatic place. */
+  resetLabel: (index: number) => void;
   setRequirement: (path: string, value: unknown) => void;
   setNoteText: (id: string, text: string) => void;
   /** Point the palette at a query, the way the group hint does. */
@@ -119,6 +121,50 @@ function CatalogueLink({ href, name }: { href: string; name: string }) {
   );
 }
 
+/**
+ * The Inspector stays mounted across edits (the card is keyed by the selection, not by the undo
+ * tick), so its scroll and focus survive a change. A field that commits on blur is uncontrolled,
+ * so this puts the document's value back into it whenever the reader is not typing in it: after a
+ * commit, an undo, a refused rename or an id the canvas normalised.
+ */
+function useShowsDocument(
+  ref: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null>,
+  value: string,
+) {
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (el && el !== document.activeElement && el.value !== value) el.value = value;
+  });
+}
+
+/**
+ * A `<details>` the document opens (something in it is set, or a finding points into it) but
+ * only the reader closes. React's `open` prop would also shut it the moment its last value is
+ * cleared, folding away the field the reader just changed.
+ */
+function Fold({
+  open,
+  className,
+  summary,
+  children,
+}: {
+  open: boolean;
+  className?: string;
+  summary: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  const ref = useRef<HTMLDetailsElement>(null);
+  useLayoutEffect(() => {
+    if (open && ref.current) ref.current.open = true;
+  }, [open]);
+  return (
+    <details ref={ref} className={className}>
+      <summary>{summary}</summary>
+      {children}
+    </details>
+  );
+}
+
 function TextInput({
   value,
   onCommit,
@@ -128,8 +174,11 @@ function TextInput({
   onCommit: (v: string) => void;
   placeholder?: string;
 }) {
+  const ref = useRef<HTMLInputElement>(null);
+  useShowsDocument(ref, value);
   return (
     <input
+      ref={ref}
       type="text"
       defaultValue={value}
       placeholder={placeholder}
@@ -155,9 +204,10 @@ function TextInput({
  * is selected (the field is keyed by the group).
  */
 /**
- * Every commit remounts the Inspector (Canvas keys it by the undo tick), so a colour applied
- * from the popover takes the popover and its trigger with it. This asks the next "More colours"
- * trigger to take focus when it mounts, which is where focus would have returned.
+ * The multi-selection's tint field is keyed by the shared colour, so a colour applied there from
+ * the popover remounts the field and takes the popover and its trigger with it. This asks the
+ * next "More colours" trigger to take focus when it mounts, which is where focus would have
+ * returned.
  */
 let refocusMoreColours = false;
 
@@ -311,7 +361,7 @@ function TintPopover({
   /** The group's hex tint, or null when it has a named one or none. */
   value: HexTint | null;
   trigger: React.RefObject<HTMLButtonElement | null>;
-  /** Apply a colour; `done` closes the popover (a commit remounts the Inspector anyway). */
+  /** Apply a colour; `done` closes the popover, otherwise it stays open for another try. */
   onCommit: (v: HexTint, done: boolean) => void;
   onClose: (refocus: boolean) => void;
 }) {
@@ -467,6 +517,34 @@ function TintPopover({
   );
 }
 
+function IntegerInput({
+  value,
+  resolved,
+  onChange,
+}: {
+  value: unknown;
+  resolved: unknown;
+  onChange: (v: unknown) => void;
+}) {
+  const ref = useRef<HTMLInputElement>(null);
+  const shown = value === undefined ? "" : String(value);
+  useShowsDocument(ref, shown);
+  return (
+    <input
+      ref={ref}
+      type="number"
+      step="1"
+      defaultValue={shown}
+      placeholder={resolved === undefined ? "absent" : String(resolved)}
+      onBlur={(e) => {
+        const v = e.target.value === "" ? undefined : Number.parseInt(e.target.value, 10);
+        if (v !== value) onChange(v);
+      }}
+      onKeyDown={(e) => e.key === "Enter" && (e.target as HTMLInputElement).blur()}
+    />
+  );
+}
+
 function Control({
   def,
   value,
@@ -478,7 +556,7 @@ function Control({
   resolved: unknown;
   onChange: (v: unknown) => void;
 }) {
-  const unset = `unset (${resolved === undefined ? "absent" : String(resolved)})`;
+  const unset = resolved === undefined ? "unset" : `default (${String(resolved)})`;
   if (def.type === "boolean")
     return (
       <select
@@ -505,19 +583,7 @@ function Control({
       </select>
     );
   if (def.type === "integer")
-    return (
-      <input
-        type="number"
-        step="1"
-        defaultValue={value === undefined ? "" : String(value)}
-        placeholder={resolved === undefined ? "absent" : String(resolved)}
-        onBlur={(e) => {
-          const v = e.target.value === "" ? undefined : Number.parseInt(e.target.value, 10);
-          if (v !== value) onChange(v);
-        }}
-        onKeyDown={(e) => e.key === "Enter" && (e.target as HTMLInputElement).blur()}
-      />
-    );
+    return <IntegerInput value={value} resolved={resolved} onChange={onChange} />;
   return (
     <TextInput
       value={value === undefined ? "" : String(value)}
@@ -535,6 +601,7 @@ export function Inspector({
   frameStyles,
   nodeTints,
   edgePaths,
+  edgeLabels,
   catalogue,
   icons,
   searchRows,
@@ -555,6 +622,8 @@ export function Inspector({
   nodeTints?: Record<string, NodeTint>;
   /** Hand-made edge paths by edge key (bows and waypoints), from the layout sidecar. */
   edgePaths?: Record<string, EdgePath>;
+  /** Dragged edge label offsets by edge key, from the layout sidecar. */
+  edgeLabels?: Record<string, [number, number]>;
   catalogue: any;
   /** The catalogue icon map (icons.json): component ids, `kind:<id>` and `boundary:<id>`. */
   icons?: Record<string, string>;
@@ -627,6 +696,7 @@ export function Inspector({
             api={api}
             highlight={hl}
             shaped={Object.hasOwn(edgePaths ?? {}, edgeKeys(doc)[selection.ref as number] ?? "")}
+            placed={Object.hasOwn(edgeLabels ?? {}, edgeKeys(doc)[selection.ref as number] ?? "")}
           />
         </>
       );
@@ -788,6 +858,52 @@ function NodePanel({
   const c = own(catalogue.components, node.component);
   const defs: Record<string, any> = propDefs(catalogue, node.component);
   const resolved: Record<string, unknown> = effective(catalogue, node);
+  // What a property falls back to when the node leaves it unset: the component's default over
+  // the kind's, as `effective` resolves it.
+  const fallback = (name: string, def: any) => {
+    const pinned = c?.defaults?.[name];
+    return pinned !== undefined ? pinned : def.default;
+  };
+  // The component's own properties first: they are the more specific ones (a function's
+  // trigger, a plan), and `trigger` leads them: it says what makes the node run at all. Kind
+  // properties marked `advanced` (there for the rules, not for drawing a cloud service) go under
+  // a folded section.
+  const rank = (n: string) => (c?.properties?.[n] ? 0 : 2) - (n === "trigger" ? 1 : 0);
+  const ordered = Object.entries(defs).sort(([a], [b]) => rank(a) - rank(b));
+  const main = ordered.filter(([, def]) => !def.advanced);
+  const advanced = ordered.filter(([, def]) => def.advanced);
+  const differs = ([name, def]: [string, any]) => {
+    const v = node.props?.[name];
+    return v !== undefined && v !== fallback(name, def);
+  };
+  const advancedSet = advanced.filter(differs).length;
+  const advancedOpen = advancedSet > 0 || advanced.some(([n]) => highlight?.fields.includes(n));
+  const propField = ([name, def]: [string, any]) => {
+    const value = node.props ? node.props[name] : undefined;
+    const dflt = fallback(name, def);
+    return (
+      <Field
+        key={name}
+        name={name}
+        note={[
+          def.type,
+          def.required ? "required" : null,
+          dflt !== undefined ? `default ${String(dflt)}` : null,
+        ]
+          .filter(Boolean)
+          .join(" · ")}
+        isSet={value !== undefined}
+        hl={highlight?.fields.includes(name)}
+      >
+        <Control
+          def={def}
+          value={value}
+          resolved={resolved[name]}
+          onChange={(v) => api.setProp(node.id, name, v)}
+        />
+      </Field>
+    );
+  };
   const loc = own(catalogue.locale.components, node.component);
   const siblings = c
     ? Object.values(catalogue.components)
@@ -865,25 +981,22 @@ function NodePanel({
         </Field>
       ) : null}
       {Object.keys(defs).length ? <h2>Properties</h2> : null}
-      {Object.entries(defs).map(([name, def]) => {
-        const value = node.props ? node.props[name] : undefined;
-        return (
-          <Field
-            key={name}
-            name={name}
-            note={[def.type, def.required ? "required" : null].filter(Boolean).join(" · ")}
-            isSet={value !== undefined}
-            hl={highlight?.fields.includes(name)}
-          >
-            <Control
-              def={def}
-              value={value}
-              resolved={resolved[name]}
-              onChange={(v) => api.setProp(node.id, name, v)}
-            />
-          </Field>
-        );
-      })}
+      {main.map(propField)}
+      {advanced.length ? (
+        <Fold
+          key={`adv-${node.id}`}
+          className="adv-props"
+          open={advancedOpen}
+          summary={
+            <>
+              Advanced · {advanced.length}
+              {advancedSet ? ` · ${advancedSet} set` : ""}
+            </>
+          }
+        >
+          {advanced.map(propField)}
+        </Fold>
+      ) : null}
       <h2>Non functional</h2>
       {Object.entries({
         rps: { type: "integer" },
@@ -931,6 +1044,7 @@ function EdgePanel({
   api,
   highlight,
   shaped,
+  placed,
 }: {
   edge: any;
   index: number;
@@ -939,6 +1053,8 @@ function EdgePanel({
   highlight: Highlight;
   /** The edge's path was shaped by hand (a bow or waypoints), so it can be reset. */
   shaped?: boolean;
+  /** The edge's label was dragged off its automatic place, so it can be reset. */
+  placed?: boolean;
 }) {
   const lit = (name: string) => highlight?.fields.includes(name);
   const ids = doc.nodes.map((n: any) => n.id as string);
@@ -1049,10 +1165,19 @@ function EdgePanel({
       {boolField("circuitBreaker")}
       {enumField("fallback", ["none", "static", "cached", "degraded"])}
       {boolField("batched")}
-      {shaped ? (
-        <button type="button" className="btn btn-sm mt-3" onClick={() => api.resetPath(index)}>
-          Reset path
-        </button>
+      {shaped || placed ? (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {shaped ? (
+            <button type="button" className="btn btn-sm" onClick={() => api.resetPath(index)}>
+              Reset path
+            </button>
+          ) : null}
+          {placed ? (
+            <button type="button" className="btn btn-sm" onClick={() => api.resetLabel(index)}>
+              Reset label
+            </button>
+          ) : null}
+        </div>
       ) : null}
       <button
         type="button"
@@ -1068,6 +1193,8 @@ function EdgePanel({
 // A note is not part of the design: it lives in the layout sidecar, so there is nothing here
 // but its text and its box. No rule ever reads it and no edge can reach it.
 function NotePanel({ note, api }: { note: Note; api: InspectorApi }) {
+  const text = useRef<HTMLTextAreaElement>(null);
+  useShowsDocument(text, note.text);
   return (
     <>
       <h2>Note</h2>
@@ -1077,6 +1204,7 @@ function NotePanel({ note, api }: { note: Note; api: InspectorApi }) {
       </p>
       <Field name="text" isSet={Boolean(note.text)}>
         <textarea
+          ref={text}
           rows={5}
           placeholder="What should a reader know here?"
           defaultValue={note.text}
@@ -1445,11 +1573,16 @@ function DesignPanel({
         const set = Object.keys(current).length;
         const asked = wanted.filter(([g]) => g === groupName).map(([, name]) => name);
         return (
-          <details key={groupName} open={set > 0 || asked.length > 0}>
-            <summary>
-              {label(groupName)}
-              {set ? ` · ${set} set` : ""}
-            </summary>
+          <Fold
+            key={groupName}
+            open={set > 0 || asked.length > 0}
+            summary={
+              <>
+                {label(groupName)}
+                {set ? ` · ${set} set` : ""}
+              </>
+            }
+          >
             {Object.entries(groupSchema.properties ?? {}).map(([name, def]: [string, any]) => {
               const kind = def.enum
                 ? { type: "enum", values: def.enum }
@@ -1494,7 +1627,7 @@ function DesignPanel({
                 </button>
               </div>
             ) : null}
-          </details>
+          </Fold>
         );
       })}
     </>

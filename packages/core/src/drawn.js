@@ -17,8 +17,10 @@
 //
 // No DOM, no fs, no network.
 
-import { edgeGeometry, frameCaptions, groupFrames, readRouting } from "./geometry.js";
+import { edgeGeometry, frameCaptions, groupFrames, labelOffset, readRouting } from "./geometry.js";
 import { layout } from "./layout.js";
+import { LABEL_FONT } from "./routing.js";
+import { textWidth } from "./text.js";
 
 // The gaps the automatic layout leaves between boxes; a newcomer keeps the same spacing.
 const GAP_X = 34;
@@ -95,6 +97,7 @@ function placeNewcomer(id, size, doc, boxes) {
  * @param {object} catalogue  passed through to `layout()` for the box sizes
  * @param {object} sidecar    { nodes: { id: [x, y] }, edges: { key: bow },
  *                            ports: { key: { from?: port, to?: port } },
+ *                            labels: { key: [dx, dy] },
  *                            frames: { groupId: { tint, icon, strength } },
  *                            tints: { nodeId: { tint, strength } },
  *                            routing: "orthogonal" | "curved" }; notes are not drawn
@@ -134,7 +137,10 @@ export function drawnLayout(doc, catalogue, sidecar) {
   const ports =
     rawPorts && typeof rawPorts === "object" && !Array.isArray(rawPorts) ? rawPorts : {};
   const routing = readRouting(sidecar && typeof sidecar === "object" ? sidecar.routing : null);
-  const edges = edgeGeometry(doc, boxes, bows, ports, frames, { routing, captions });
+  const rawLabels = sidecar && typeof sidecar === "object" ? sidecar.labels : null;
+  const labels =
+    rawLabels && typeof rawLabels === "object" && !Array.isArray(rawLabels) ? rawLabels : {};
+  const edges = edgeGeometry(doc, boxes, bows, ports, frames, { routing, captions, labels });
   const tints = sidecar && typeof sidecar === "object" ? sidecar.tints : null;
   const nodeStyles = tints && typeof tints === "object" && !Array.isArray(tints) ? tints : {};
 
@@ -152,6 +158,13 @@ export function drawnLayout(doc, catalogue, sidecar) {
     for (const [px, py] of e.points) {
       xs.push(px);
       ys.push(py);
+    }
+  // A dragged label can sit well off its edge, so the picture grows to hold it.
+  for (const e of edges)
+    if (e.label && e.labelBase && labelOffset(labels, e.key)) {
+      const w = textWidth(e.label, LABEL_FONT);
+      xs.push(e.labelAt[0] - w / 2, e.labelAt[0] + w / 2);
+      ys.push(e.labelAt[1] - 12, e.labelAt[1] + 4);
     }
   const x0 = xs.length ? Math.floor(Math.min(...xs)) - PAD_X : 0;
   const y0 = ys.length ? Math.floor(Math.min(...ys)) - PAD_Y : 0;

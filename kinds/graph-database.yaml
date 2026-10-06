@@ -11,12 +11,15 @@ properties:
   masterPerShard:
     type: "boolean"
     default: false
+    advanced: true
   rebuildCadenceHours:
     type: "integer"
+    advanced: true
   crossRegionConsistency:
     type: "enum"
     values: ["none", "single-leader", "last-writer-wins-hlc"]
     default: "none"
+    advanced: true
   managed:
     type: "boolean"
     default: false

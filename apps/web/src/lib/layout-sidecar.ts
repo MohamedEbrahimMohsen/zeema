@@ -188,6 +188,11 @@ export type LayoutSidecar = {
   edges: Record<string, EdgePath>;
   /** Keyed like `edges` (see `edgeKeys`). Absent when no edge has a port. */
   ports?: Record<string, EdgePorts>;
+  /**
+   * Keyed like `edges`: where an edge's label was dragged to, as an offset in world px from the
+   * engine's automatic label position (see `readLabels`). Absent when no label was moved.
+   */
+  labels?: Record<string, LabelOffset>;
   notes: Note[];
   /** Keyed by group id. A group with no entry is drawn in the default frame colour. */
   frames: Record<string, FrameStyle>;
@@ -288,6 +293,8 @@ export function readSidecar(raw: unknown, targets?: AnchorTargets): LayoutSideca
   };
   const ports = readPorts(r.ports);
   if (Object.keys(ports).length) out.ports = ports;
+  const labels = readLabels(r.labels);
+  if (Object.keys(labels).length) out.labels = labels;
   const tints = readTints(r.tints, present);
   if (Object.keys(tints).length) out.tints = tints;
   if (isBadgeRef(r.badge)) out.badge = r.badge;
@@ -371,6 +378,34 @@ export function readPorts(raw: unknown): Record<string, EdgePorts> {
   return out;
 }
 
+/** How far an edge label was dragged from its automatic place, in whole world px. */
+export type LabelOffset = [number, number];
+/** The farthest a label may sit from its automatic place, on either axis. */
+export const LABEL_MAX_OFFSET = 2000;
+
+/** One stored label offset: two finite numbers, rounded and clamped; a zero offset is none. */
+export function readLabelOffset(v: unknown): LabelOffset | null {
+  if (!Array.isArray(v) || v.length !== 2) return null;
+  const [x, y] = v;
+  if (typeof x !== "number" || typeof y !== "number") return null;
+  if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+  const dx = Math.round(clamp(x, -LABEL_MAX_OFFSET, LABEL_MAX_OFFSET)) || 0;
+  const dy = Math.round(clamp(y, -LABEL_MAX_OFFSET, LABEL_MAX_OFFSET)) || 0;
+  return dx || dy ? [dx, dy] : null;
+}
+
+/** The label offsets a sidecar holds, keyed like `edges`. A malformed entry is dropped. */
+export function readLabels(raw: unknown): Record<string, LabelOffset> {
+  const out: Record<string, LabelOffset> = {};
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return out;
+  for (const [key, v] of Object.entries(raw as Record<string, unknown>)) {
+    if (!isEdgeKey(key)) continue;
+    const o = readLabelOffset(v);
+    if (o) out[key] = o;
+  }
+  return out;
+}
+
 /** The ports whose edge still exists. Like `pruneFrames`, it copies. */
 export function prunePorts(ports: Record<string, EdgePorts>, keys: Iterable<string>) {
   const keep = new Set(keys);
@@ -437,6 +472,7 @@ export function writeSidecar(
   };
   // Absent rather than empty, so a design nobody has ported stores the bytes it always did.
   if (s.ports && Object.keys(s.ports).length) out.ports = s.ports;
+  if (s.labels && Object.keys(s.labels).length) out.labels = s.labels;
   if (s.tints && Object.keys(s.tints).length) out.tints = s.tints;
   if (isBadgeRef(s.badge)) out.badge = s.badge;
   const routing = readRoutingField(s.routing);
@@ -445,7 +481,7 @@ export function writeSidecar(
 }
 
 /**
- * Whether a sidecar holds nothing that is drawn: no position, bow, port, note, group style or
+ * Whether a sidecar holds nothing that is drawn: no position, bow, port, label, note, group style or
  * edge style.
  * Such a sidecar draws exactly what no sidecar does (the engine lays the design out itself),
  * whatever its `badge` says.
@@ -459,6 +495,7 @@ export function isBlankSidecar(raw: unknown) {
     !s.notes.length &&
     !Object.keys(s.frames).length &&
     !s.ports &&
+    !s.labels &&
     !s.tints &&
     !s.routing
   );
@@ -517,7 +554,7 @@ export type SidecarTargets = {
 };
 
 /**
- * The sidecar cut down to what the design holds: positions, bows, ports and group styles whose
+ * The sidecar cut down to what the design holds: positions, bows, ports, label offsets and group styles whose
  * node, edge or group is gone are dropped, and a note whose anchor is gone is kept, unanchored,
  * the way the canvas opens it. The canvas prunes as it edits; this is for a sidecar that arrives
  * from outside with its design (an import) or leaves beside it (an export). It copies.
@@ -543,6 +580,8 @@ export function pruneSidecar(s: LayoutSidecar, targets: SidecarTargets): LayoutS
   };
   const ports = s.ports ? keep(s.ports, edges) : {};
   if (Object.keys(ports).length) out.ports = ports;
+  const labels = s.labels ? keep(s.labels, edges) : {};
+  if (Object.keys(labels).length) out.labels = labels;
   const tints = s.tints ? keep(s.tints, nodes) : {};
   if (Object.keys(tints).length) out.tints = tints;
   if (s.badge) out.badge = s.badge;
@@ -555,7 +594,7 @@ const sortedEntries = <T>(o: Record<string, T>) =>
 
 /**
  * A sidecar as the file `design.layout.json`: read through `readSidecar`, then written with a
- * fixed key order (version, nodes, edges, ports, frames, tints, routing, notes, badge; map keys
+ * fixed key order (version, nodes, edges, ports, labels, frames, tints, routing, notes, badge; map keys
  * sorted; a note's fields in declaration order), two-space indent and a trailing newline. The same sidecar always
  * gives the same bytes, whatever order the database handed its keys back in.
  */
@@ -580,6 +619,8 @@ export function sidecarFile(raw: unknown): string {
         return [k, e];
       }),
     );
+  if (s.labels)
+    file.labels = Object.fromEntries(sortedEntries(s.labels).map(([k, [x, y]]) => [k, [x, y]]));
   file.frames = Object.fromEntries(
     sortedEntries(s.frames).map(([k, f]) => {
       const st: FrameStyle = {};

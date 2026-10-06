@@ -15,6 +15,11 @@ defaults:
   ownsData: false
   runtime: "javascript"
 properties:
+  # Which handler the platform calls: fetch for HTTP, scheduled for Cron Triggers, queue for Queues
+  # consumers, email for Email Routing ("Workers handlers"). No default.
+  trigger:
+    type: "enum"
+    values: ["fetch", "cron", "queue", "email"]
   plan:
     type: "enum"
     values: ["free", "paid"]

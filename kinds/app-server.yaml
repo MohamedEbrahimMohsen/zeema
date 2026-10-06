@@ -20,19 +20,24 @@ properties:
     type: "enum"
     values: ["low", "medium", "high"]
     default: "medium"
+    advanced: true
   shardingStrategy:
     type: "enum"
     values: ["none", "consistent-hash", "range", "lookup"]
     default: "none"
+    advanced: true
   instancePerEntity:
     type: "boolean"
     default: false
+    advanced: true
   singleWriter:
     type: "boolean"
     default: false
+    advanced: true
   ownsData:
     type: "boolean"
     default: true
+    advanced: true
   managed:
     type: "boolean"
     default: false

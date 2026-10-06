@@ -1,6 +1,7 @@
 // zeema catalogue find|component|kind|kinds|providers
 // The queries return data (the MCP server hands it to agents as JSON); the command prints it.
 import { PROVIDERS } from "@zeema/catalogue";
+import { matchesWord } from "@zeema/core/search";
 
 const name = (cat, id) => cat.locale.components[id]?.name ?? id;
 const own = (o, k) => (o && typeof k === "string" && Object.hasOwn(o, k) ? o[k] : undefined);
@@ -17,14 +18,17 @@ export function listKinds(cat) {
   }));
 }
 
-/** Components whose id, name, description, kind or provider contain every word. */
+/**
+ * Components whose id, name, description, kind, kind name or provider contain every word or one
+ * of its synonyms (`db` finds databases; see @zeema/core/search).
+ */
 export function findComponents(cat, words) {
   const ws = words.map((w) => String(w).toLowerCase());
   return Object.values(cat.components)
     .filter((c) => {
       const hay =
-        `${c.id} ${name(cat, c.id)} ${cat.locale.components[c.id]?.description ?? ""} ${c.kind} ${c.provider}`.toLowerCase();
-      return ws.every((w) => hay.includes(w));
+        `${c.id} ${name(cat, c.id)} ${cat.locale.components[c.id]?.description ?? ""} ${c.kind} ${cat.locale.kinds?.[c.kind]?.name ?? ""} ${c.provider}`.toLowerCase();
+      return ws.every((w) => matchesWord(hay, w));
     })
     .map((c) => ({ id: c.id, provider: c.provider, kind: c.kind, name: name(cat, c.id) }));
 }

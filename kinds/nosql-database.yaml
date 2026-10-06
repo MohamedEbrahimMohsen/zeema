@@ -25,15 +25,19 @@ properties:
     values: ["none", "last-writer-wins", "vector-clock", "app-merge"]
   quorumReads:
     type: "integer"
+    advanced: true
   quorumWrites:
     type: "integer"
+    advanced: true
   partitionKey:
     type: "string"
   bucketing:
     type: "boolean"
     default: false
+    advanced: true
   tombstoneTtlDays:
     type: "integer"
+    advanced: true
   backupEnabled:
     type: "boolean"
     default: false

@@ -29,6 +29,7 @@ export function PropertyTable({ rows }: { rows: PropRow[] }) {
               <td>
                 {r.name}
                 {r.componentProperty ? <span className="meta"> · component property</span> : null}
+                {r.advanced ? <span className="meta"> · advanced</span> : null}
               </td>
               <td className="muted">{r.type}</td>
               <td className="muted">{r.values?.length ? r.values.join(" | ") : "—"}</td>

@@ -27,12 +27,15 @@ properties:
     type: "enum"
     values: ["none", "fixed", "aimd"]
     default: "none"
+    advanced: true
   fanoutStrategy:
     type: "enum"
     values: ["none", "push", "pull", "hybrid"]
     default: "none"
+    advanced: true
   fanoutThreshold:
     type: "integer"
+    advanced: true
   managed:
     type: "boolean"
     default: false

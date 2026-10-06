@@ -11,6 +11,11 @@ defaults:
   stateless: true
   autoscaling: true
 properties:
+  # What invokes the function: its trigger binding ("Azure Functions triggers and bindings"). No
+  # default: a function app has none until one is declared.
+  trigger:
+    type: "enum"
+    values: ["http", "timer", "queue-storage", "service-bus", "event-grid", "event-hubs", "blob", "cosmos-db", "durable"]
   timeoutSeconds:
     type: "integer"
     default: 300
