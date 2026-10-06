@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# TensorRT-LLM: NVIDIA's open-source library for optimised LLM inference on NVIDIA GPUs, served by `trtllm-serve` with an
+# OpenAI-compatible API. Per the trtllm-serve reference the PyTorch backend is the default and the TensorRT engine
+# backend is optional; tensor parallel size and batch size are set per deployment.
+schemaVersion: "1"
+type: "component"
+id: "tensorrt-llm"
+kind: "ml-inference"
+provider: "default"
+docs: "https://nvidia.github.io/TensorRT-LLM/commands/trtllm-serve/trtllm-serve.html"
+aliases: ["trtllm-serve"]
+defaults:
+  training: "batch"
+  inputs: "live"
+  accelerator: "gpu"
+  managed: false
+properties:
+  backend:
+    type: "enum"
+    values: ["pytorch", "tensorrt"]
+    default: "pytorch"
+  tensorParallelSize:
+    type: "integer"
+  maxBatchSize:
+    type: "integer"

@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Argilla: open-source collaboration server for building and curating AI datasets with human feedback. Hugging Face
+# acquired Argilla in June 2024. Per "Deploy with Docker", the server listens on port 6900 and depends on Elasticsearch,
+# a PostgreSQL or SQLite database and Redis; it can also run as a Hugging Face Space.
+schemaVersion: "1"
+type: "component"
+id: "argilla"
+kind: "ml-platform"
+provider: "default"
+docs: "https://docs.argilla.io/latest/getting_started/how-to-deploy-argilla-with-docker/"
+defaults:
+  managed: false
+  experimentTracking: false
+  modelRegistry: false
+properties:
+  port:
+    type: "integer"
+    default: 6900
+  database:
+    type: "enum"
+    values: ["sqlite", "postgresql"]
+    default: "sqlite"
+  deployment:
+    type: "enum"
+    values: ["docker", "hf-spaces", "kubernetes"]
+    default: "docker"

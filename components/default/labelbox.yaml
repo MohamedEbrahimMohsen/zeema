@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Labelbox: hosted data factory with Catalog (data curation over 25+ cloud sources), Annotate (10+ editors for
+# multimodal chat, LLM evaluation, computer vision and NLP), Model (evaluation) and Labeling Services staffed by the
+# Alignerr expert network ("Labelbox overview"). Data can stay in the customer's bucket and be read through delegated access.
+schemaVersion: "1"
+type: "component"
+id: "labelbox"
+kind: "ml-platform"
+provider: "default"
+docs: "https://docs.labelbox.com/docs/overview"
+aliases: ["Alignerr"]
+defaults:
+  managed: true
+  experimentTracking: false
+  modelRegistry: false
+properties:
+  product:
+    type: "enum"
+    values: ["catalog", "annotate", "model", "labeling-services"]
+    default: "annotate"
+  delegatedAccess:
+    type: "boolean"
+    default: false

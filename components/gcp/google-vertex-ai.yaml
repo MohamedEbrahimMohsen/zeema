@@ -2,6 +2,8 @@
 # Vertex AI, renamed Gemini Enterprise Agent Platform: Google's managed ML platform with serverless
 # training, Model Registry and Experiments/TensorBoard built in ("Introduction to Vertex AI").
 # Private Service Connect, VPC Service Controls and CMEK are opt-in configurations, so they default off.
+# imageGeneration and videoGeneration say the platform serves Imagen (images) and Veo (video) models, which
+# are models on its endpoints rather than boxes of their own; both off until stated.
 schemaVersion: "1"
 type: "component"
 id: "google-vertex-ai"
@@ -21,5 +23,11 @@ properties:
     type: "boolean"
     default: false
   customerManagedKeys:
+    type: "boolean"
+    default: false
+  imageGeneration:
+    type: "boolean"
+    default: false
+  videoGeneration:
     type: "boolean"
     default: false

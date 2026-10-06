@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Opik: Comet's Apache-2.0 LLM tracing, evaluation and prompt management platform, hosted by Comet or
+# self-hosted with Docker Compose or Helm. Per "Pricing", the free cloud plan keeps data 60 days with 25,000
+# spans a month; per "Self-host overview", self-hosted instances lack user management.
+schemaVersion: "1"
+type: "component"
+id: "opik"
+kind: "monitoring"
+provider: "default"
+docs: "https://www.comet.com/docs/opik/self-host/overview"
+defaults:
+  managed: true
+  signal: "traces"
+  collectorMode: "push"
+  independentOfMonitored: true
+  retentionDays: 60
+properties:
+  plan:
+    type: "enum"
+    values: ["free", "pro", "enterprise"]
+    default: "free"
+  selfHosted:
+    type: "boolean"
+    default: false
+  monthlySpanLimit:
+    type: "integer"
+    default: 25000

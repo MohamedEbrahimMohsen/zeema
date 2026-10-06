@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# C3 AI: the C3 Agentic AI Platform, a model-driven development and runtime environment for enterprise AI
+# applications built on the C3 AI Type System. Per the deployment overview, it runs C3 AI-managed in a dedicated cloud
+# subaccount, customer-managed in the customer's AWS, Azure or GCP account, or on-premise.
+schemaVersion: "1"
+type: "component"
+id: "c3-ai"
+kind: "ml-platform"
+provider: "default"
+docs: "https://docs.c3.ai/docs/platform/8.9/topic/admin-c3-deploy-overview"
+aliases: ["C3 Agentic AI Platform", "C3 AI Studio"]
+defaults:
+  managed: true
+  experimentTracking: true
+  modelRegistry: true
+properties:
+  deployment:
+    type: "enum"
+    values: ["c3-managed", "customer-managed", "on-premise"]
+    default: "c3-managed"
+  cloud:
+    type: "enum"
+    values: ["aws", "azure", "gcp"]
+    default: "aws"

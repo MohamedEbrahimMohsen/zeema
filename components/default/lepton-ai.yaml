@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Lepton AI: serverless model API and GPU platform for open models, API-key authenticated.
+# Retired June 2025: NVIDIA acquired Lepton AI in April 2025 and relaunched it as DGX Cloud Lepton, a GPU compute
+# marketplace; lepton.ai now redirects to "NVIDIA DGX Cloud Lepton", which sends hosted APIs to build.nvidia.com.
+schemaVersion: "1"
+type: "component"
+id: "lepton-ai"
+kind: "ai-service"
+provider: "default"
+docs: "https://www.nvidia.com/en-us/data-center/dgx-cloud-lepton/"
+aliases: ["DGX Cloud Lepton"]
+defaults:
+  auth: "api-key"
+  managed: true
+  modality: "multimodal"
+  publicEndpoint: true
+properties:
+  serving:
+    type: "enum"
+    values: ["serverless", "dedicated"]
+    default: "serverless"

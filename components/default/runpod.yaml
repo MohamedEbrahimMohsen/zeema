@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Runpod Pods: GPU and CPU containers rented by the second, in Secure Cloud (T3/T4 data centres) or Community Cloud
+# (vetted peer-to-peer hosts). Per "Pods", a pod has a container disk for temporary files, a volume disk that persists
+# for the pod's lease and optional network volumes that move between pods. Spot pods are cheaper and can be
+# interrupted; on-demand pods are not.
+schemaVersion: "1"
+type: "component"
+id: "runpod"
+kind: "virtual-machine"
+provider: "default"
+docs: "https://docs.runpod.io/pods/overview"
+aliases: ["Runpod Pods"]
+defaults:
+  managed: false
+  os: "linux"
+  zoneRedundant: false
+properties:
+  cloudType:
+    type: "enum"
+    values: ["secure", "community"]
+    default: "secure"
+  pricing:
+    type: "enum"
+    values: ["on-demand", "spot", "savings-plan"]
+    default: "on-demand"
+  gpuCount:
+    type: "integer"
+    default: 1
+  networkVolume:
+    type: "boolean"
+    default: false

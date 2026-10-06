@@ -10,6 +10,7 @@ provider: "gcp"
 docs: "https://docs.cloud.google.com/speech-to-text/quotas"
 aliases: ["STT"]
 defaults:
+  auth: "iam"
   modality: "speech"
   publicEndpoint: true
   quotaUnitsPerMinute: 900

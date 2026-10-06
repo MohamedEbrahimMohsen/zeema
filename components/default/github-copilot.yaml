@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# GitHub Copilot: AI coding assistant in the IDE, the CLI, GitHub.com and as a cloud coding agent that opens pull
+# requests, drawn as the client calling your repositories, MCP servers and APIs. Per "Plans for GitHub Copilot", the
+# plans are Free, Pro, Pro+, Business and Enterprise; the coding agent comes with Pro and above.
+schemaVersion: "1"
+type: "component"
+id: "github-copilot"
+kind: "client"
+provider: "default"
+docs: "https://docs.github.com/en/copilot/get-started/plans"
+defaults:
+  platform: "multi"
+  managed: true
+properties:
+  plan:
+    type: "enum"
+    values: ["free", "pro", "pro-plus", "business", "enterprise"]
+    default: "free"
+  codingAgent:
+    type: "boolean"
+    default: false

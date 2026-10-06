@@ -1,6 +1,7 @@
 # yaml-language-server: $schema=../../schema/component.schema.json
 # Azure AI Content Safety: text and image harm detection plus prompt shields, groundedness and protected material detection.
 # "What is Azure AI Content Safety?" gives the S0 rate limits (1,000 requests per 10 seconds for the moderation APIs, so 6,000 per minute) and the input limits of 10,000 characters for analyze text and 4 MB for analyze image; managed identity is enabled automatically on resource creation.
+# Prompt Shields ("Prompt Shields in Azure AI Content Safety") is its own text:shieldPrompt call that screens user prompts and documents for injection attacks, so promptShields starts off.
 schemaVersion: "1"
 type: "component"
 id: "azure-ai-content-safety"
@@ -8,6 +9,7 @@ kind: "ai-service"
 provider: "azure"
 docs: "https://learn.microsoft.com/en-us/azure/ai-services/content-safety/overview"
 defaults:
+  auth: "api-key"
   managed: true
   modality: "multimodal"
   contentFiltering: true
@@ -28,5 +30,8 @@ properties:
     type: "boolean"
     default: false
   customCategories:
+    type: "boolean"
+    default: false
+  promptShields:
     type: "boolean"
     default: false

@@ -1,6 +1,7 @@
 # yaml-language-server: $schema=../../schema/component.schema.json
 # Azure Cosmos DB: managed multi-model store with five consistency levels (session by default),
 # periodic backups on by default and last-writer-wins for multi-region writes.
+# vectorSearch: flat, quantizedFlat and DiskANN vector indexes in the NoSQL API, opt-in per account ("Integrated Vector Store").
 schemaVersion: "1"
 type: "component"
 id: "azure-cosmos-db"
@@ -21,5 +22,8 @@ properties:
     values: ["nosql", "mongodb", "cassandra", "gremlin", "table"]
     default: "nosql"
   multiRegionWrites:
+    type: "boolean"
+    default: false
+  vectorSearch:
     type: "boolean"
     default: false

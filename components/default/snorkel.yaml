@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Snorkel Flow: Snorkel AI's data development platform, where subject-matter experts write labelling functions that
+# label training data programmatically, then train and evaluate models on it. The platform runs Snorkel-hosted or in the
+# customer's own cloud or data centre.
+schemaVersion: "1"
+type: "component"
+id: "snorkel"
+kind: "ml-platform"
+provider: "default"
+docs: "https://snorkel.ai/ai-data-development/"
+aliases: ["Snorkel Flow", "Snorkel AI"]
+defaults:
+  managed: true
+  experimentTracking: true
+  modelRegistry: false
+properties:
+  deployment:
+    type: "enum"
+    values: ["snorkel-hosted", "customer-hosted"]
+    default: "snorkel-hosted"
+  programmaticLabeling:
+    type: "boolean"
+    default: true

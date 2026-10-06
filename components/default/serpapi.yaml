@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# SerpApi: scraped search-engine results (Google, Bing and others) as structured JSON.
+# Per "SerpApi: Plans and Pricing", the Free plan allows 250 searches a month with a throughput limit of 50 an hour; paid plans
+# start at Starter and add Ludicrous Speed options.
+schemaVersion: "1"
+type: "component"
+id: "serpapi"
+kind: "third-party-api"
+provider: "default"
+docs: "https://serpapi.com/pricing"
+defaults:
+  managed: true
+  hostedPage: false
+  handlesMoney: false
+  callbackStyle: "none"
+  idempotent: true
+properties:
+  plan:
+    type: "enum"
+    values: ["free", "starter", "developer", "production", "big-data"]
+    default: "free"
+  monthlySearches:
+    type: "integer"
+    default: 250
+  hourlyThroughputLimit:
+    type: "integer"
+    default: 50
+  engine:
+    type: "enum"
+    values: ["google", "bing", "baidu", "yahoo", "duckduckgo", "yandex"]
+    default: "google"

@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# JetBrains AI: AI Assistant and the Junie coding agent inside JetBrains IDEs, drawn as the client. Per the AI
+# Assistant help, JetBrains applies zero data retention to inputs and outputs passing the JetBrains AI platform, and
+# detailed data collection is opt-in.
+schemaVersion: "1"
+type: "component"
+id: "jetbrains-ai"
+kind: "client"
+provider: "default"
+docs: "https://www.jetbrains.com/help/ai-assistant/junie-agent.html"
+aliases: ["JetBrains AI Assistant", "Junie"]
+defaults:
+  platform: "desktop"
+  managed: true
+properties:
+  tool:
+    type: "enum"
+    values: ["ai-assistant", "junie"]
+    default: "ai-assistant"
+  detailedDataCollection:
+    type: "boolean"
+    default: false

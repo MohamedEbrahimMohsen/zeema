@@ -106,6 +106,10 @@ function describePredicate(p) {
     const bits = [];
     if (p.hasNode.kind) bits.push(`of kind ${join(list(p.hasNode.kind), "or")}`);
     if (p.hasNode.category) bits.push(`in category ${join(list(p.hasNode.category), "or")}`);
+    if (p.hasNode.count) {
+      const tail = bits.length ? ` ${bits.join(" ")}` : "";
+      return leaf(`the design contains ${comparison(p.hasNode.count)} nodes${tail}`);
+    }
     return leaf(`the design contains a node ${bits.join(" ")}`.trim());
   }
   if (p.inGroup) {

@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Deepchecks: LLM evaluation and monitoring platform that scores, compares and monitors prompts, models and agents.
+# Deepchecks runs as managed SaaS, in a VPC on GCP or Azure, on-premise, or as an Amazon SageMaker Partner AI App inside
+# the customer's AWS account. The open-source deepchecks testing package has had no release since December 2024.
+schemaVersion: "1"
+type: "component"
+id: "deepchecks"
+kind: "monitoring"
+provider: "default"
+docs: "https://llmdocs.deepchecks.com/docs/aws-sagemaker"
+defaults:
+  managed: true
+  signal: "traces"
+  collectorMode: "push"
+  independentOfMonitored: true
+properties:
+  deployment:
+    type: "enum"
+    values: ["saas", "vpc", "on-premise", "sagemaker-partner-app"]
+    default: "saas"

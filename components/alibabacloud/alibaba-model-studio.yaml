@@ -10,7 +10,9 @@ id: "alibaba-model-studio"
 kind: "ai-service"
 provider: "alibabacloud"
 docs: "https://www.alibabacloud.com/help/en/model-studio/what-is-model-studio"
+aliases: ["Qwen API", "DashScope", "Bailian"]
 defaults:
+  auth: "api-key"
   managed: true
   modality: "multimodal"
 properties:

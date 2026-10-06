@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Robust Intelligence: AI security platform that validated models before release and guarded them in
+# production against prompt injection, data poisoning and jailbreaks, mapped to OWASP and MITRE ATLAS.
+# Retired September 2024: Cisco completed the acquisition on 24 September 2024 and the technology became
+# Cisco AI Defense; robustintelligence.com no longer resolves, so docs point to Cisco's announcement.
+schemaVersion: "1"
+type: "component"
+id: "robust-intelligence"
+kind: "policy-engine"
+provider: "default"
+docs: "https://blogs.cisco.com/news/fortifying-the-future-of-security-for-ai-cisco-announces-intent-to-acquire-robust-intelligence"
+defaults:
+  managed: true
+properties:
+  modelValidation:
+    type: "boolean"
+  runtimeGuardrails:
+    type: "boolean"

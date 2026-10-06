@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Novita AI: serverless and dedicated inference for open LLM, image and audio models, plus serverless GPUs.
+# Per "Default Rate Limits by Tier (RPM / TPM)", limits are per model and scale across tiers T1-T5 set by spend over
+# the previous three calendar months; T1 covers under $50 a month, and 429 responses call for exponential backoff.
+schemaVersion: "1"
+type: "component"
+id: "novita-ai"
+kind: "ai-service"
+provider: "default"
+docs: "https://docs.novita.ai/guides/llm-rate-limits"
+defaults:
+  auth: "api-key"
+  managed: true
+  modality: "multimodal"
+  publicEndpoint: true
+properties:
+  tier:
+    type: "enum"
+    values: ["t1", "t2", "t3", "t4", "t5"]
+    default: "t1"
+  serving:
+    type: "enum"
+    values: ["serverless", "dedicated"]
+    default: "serverless"

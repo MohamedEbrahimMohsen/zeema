@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Zapier Agents: no-code AI agents that act across Zapier's app integrations, billed separately from Zap tasks.
+# Per the Zapier Agents help center, every action an agent takes (a knowledge search, a web visit, an app action) is one
+# activity, a single run can use many, and the plan caps monthly activities.
+schemaVersion: "1"
+type: "component"
+id: "zapier-agents"
+kind: "app-server"
+provider: "default"
+docs: "https://help.zapier.com/hc/en-us/articles/45697420326285-Zapier-Agents-unexpected-activity-usage"
+defaults:
+  managed: true
+  stateless: true
+  ownsData: false
+properties:
+  plan:
+    type: "enum"
+    values: ["free", "pro", "advanced"]
+    default: "free"
+  monthlyActivities:
+    type: "integer"
+    default: 400

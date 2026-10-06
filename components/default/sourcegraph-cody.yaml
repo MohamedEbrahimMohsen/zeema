@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Sourcegraph Cody: AI coding assistant that answers with context from a Sourcegraph code search instance, drawn as
+# the client. Per "Changes to Cody Free, Pro, and Enterprise Starter plans", Cody Free and Pro ended on 23 July 2025 and
+# Cody continues for Sourcegraph Enterprise customers only; Amp, its successor for individuals, spun out in December 2025.
+schemaVersion: "1"
+type: "component"
+id: "sourcegraph-cody"
+kind: "client"
+provider: "default"
+docs: "https://sourcegraph.com/blog/changes-to-cody-free-pro-and-enterprise-starter-plans"
+aliases: ["Cody", "Cody Enterprise"]
+defaults:
+  platform: "desktop"
+  managed: true
+properties:
+  sourcegraphDeployment:
+    type: "enum"
+    values: ["cloud", "self-hosted"]
+    default: "cloud"

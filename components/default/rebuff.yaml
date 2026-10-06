@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Rebuff: Protect AI's open-source (Apache-2.0) prompt-injection detector layering heuristics, an LLM
+# classifier, a vector store of past attacks and canary tokens. Retired May 2025: the repo was archived
+# read-only on 16 May 2025 and called itself a prototype. Per python-sdk sdk.py, detect_injection runs all
+# three checks by default with thresholds 0.75 heuristic, 0.90 vector and 0.90 model.
+schemaVersion: "1"
+type: "component"
+id: "rebuff"
+kind: "policy-engine"
+provider: "default"
+docs: "https://github.com/protectai/rebuff"
+defaults:
+  managed: false
+  scope: "resource"
+  effect: "audit"
+properties:
+  heuristicCheck:
+    type: "boolean"
+    default: true
+  vectorCheck:
+    type: "boolean"
+    default: true
+  llmCheck:
+    type: "boolean"
+    default: true
+  canaryTokens:
+    type: "boolean"
+    default: false

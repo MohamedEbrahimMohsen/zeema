@@ -11,6 +11,7 @@ provider: "gcp"
 docs: "https://docs.cloud.google.com/financial-services/anti-money-laundering/docs/concepts/overview"
 aliases: ["AML AI"]
 defaults:
+  auth: "iam"
   modality: "structured"
   publicEndpoint: true
   customerManagedKeys: false

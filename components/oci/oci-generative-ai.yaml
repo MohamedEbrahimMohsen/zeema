@@ -10,6 +10,7 @@ kind: "ai-service"
 provider: "oci"
 docs: "https://docs.oracle.com/en-us/iaas/Content/generative-ai/overview.htm"
 defaults:
+  auth: "iam"
   modality: "text"
   publicEndpoint: true
   managed: true

@@ -10,6 +10,7 @@ id: "digitalocean-paperspace"
 kind: "ml-platform"
 provider: "digitalocean"
 docs: "https://docs.digitalocean.com/products/paperspace/"
+aliases: ["Paperspace"]
 defaults:
   managed: true
   gpuEnabled: true

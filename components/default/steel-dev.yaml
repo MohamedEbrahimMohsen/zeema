@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Steel: headless browser API for AI agents, run as Steel Cloud sessions.
+# Per the Steel plans overview, Launch ($0 + usage) allows 10 concurrent sessions of at most 15 minutes, Scale 100 sessions
+# of up to 1 hour and Enterprise up to 24 hours.
+schemaVersion: "1"
+type: "component"
+id: "steel-dev"
+kind: "third-party-api"
+provider: "default"
+docs: "https://docs.steel.dev/overview/pricinglimits"
+aliases: ["Steel", "Steel Browser"]
+defaults:
+  managed: true
+  hostedPage: false
+  handlesMoney: false
+  callbackStyle: "none"
+properties:
+  plan:
+    type: "enum"
+    values: ["launch", "scale", "enterprise"]
+    default: "launch"
+  concurrentSessions:
+    type: "integer"
+    default: 10
+  maxSessionMinutes:
+    type: "integer"
+    default: 15

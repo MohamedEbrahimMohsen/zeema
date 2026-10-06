@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon SageMaker Unified Studio: one development environment over SageMaker AI, Bedrock, Athena, EMR, Redshift and
+# the SageMaker Catalog, organised in domains and projects. Per "Domains in Amazon SageMaker Unified Studio", a domain
+# authenticates users through IAM Identity Center or, with one IAM-based domain per account, through federated IAM roles.
+schemaVersion: "1"
+type: "component"
+id: "aws-sagemaker-unified-studio"
+kind: "ml-platform"
+provider: "aws"
+docs: "https://docs.aws.amazon.com/sagemaker-unified-studio/latest/adminguide/working-with-domains.html"
+aliases: ["SageMaker Unified Studio"]
+defaults:
+  managed: true
+  experimentTracking: true
+  modelRegistry: true
+properties:
+  domainType:
+    type: "enum"
+    values: ["identity-center", "iam"]
+    default: "identity-center"

@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Beam: serverless GPU platform (built on the open-source beta9 runtime) for endpoints, task queues and functions,
+# invoked with a bearer auth token. Per "Endpoints", a container spins down after 180 seconds of inactivity by default
+# (keep_warm_seconds) and an endpoint call must finish within 180 seconds; longer work goes to a task queue.
+schemaVersion: "1"
+type: "component"
+id: "beam-cloud"
+kind: "ml-inference"
+provider: "default"
+docs: "https://docs.beam.cloud/v2/endpoint/overview"
+aliases: ["Beam Cloud", "beta9"]
+defaults:
+  training: "batch"
+  inputs: "live"
+  managed: true
+properties:
+  workload:
+    type: "enum"
+    values: ["endpoint", "task-queue", "function"]
+    default: "endpoint"
+  keepWarmSeconds:
+    type: "integer"
+    default: 180

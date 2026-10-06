@@ -10,6 +10,7 @@ kind: "ai-service"
 provider: "gcp"
 docs: "https://docs.cloud.google.com/video-intelligence/quotas"
 defaults:
+  auth: "iam"
   modality: "vision"
   publicEndpoint: true
   quotaUnitsPerMinute: 60

@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Prodigy: Explosion's scriptable annotation tool, bought once on a lifetime licence and run locally. Per
+# "Installation", the web server starts on localhost port 8080 (prodigy.json or PRODIGY_HOST/PRODIGY_PORT change it) and
+# annotations go to SQLite by default, with MySQL or PostgreSQL as alternatives.
+schemaVersion: "1"
+type: "component"
+id: "prodigy"
+kind: "ml-platform"
+provider: "default"
+docs: "https://prodi.gy/docs/install"
+defaults:
+  managed: false
+  experimentTracking: false
+  modelRegistry: false
+  publicAccess: false
+properties:
+  port:
+    type: "integer"
+    default: 8080
+  database:
+    type: "enum"
+    values: ["sqlite", "mysql", "postgresql"]
+    default: "sqlite"

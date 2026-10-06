@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Modal: serverless platform that runs Python functions and model servers in containers on CPUs or GPUs, billed per
+# second. Per "Cold start performance", containers scale to zero (min_containers 0) and shut down after a 60-second
+# scaledown_window; per the App.function reference a call times out after 300 seconds. Modal Sandboxes (secure
+# containers for untrusted or agent-written code, 5-minute default lifetime) are this component with sandbox: true.
+schemaVersion: "1"
+type: "component"
+id: "modal"
+kind: "ml-inference"
+provider: "default"
+docs: "https://modal.com/docs/guide/cold-start"
+aliases: ["Modal Sandboxes"]
+defaults:
+  training: "batch"
+  inputs: "live"
+  managed: true
+properties:
+  minContainers:
+    type: "integer"
+    default: 0
+  scaledownWindowSeconds:
+    type: "integer"
+    default: 60
+  timeoutSeconds:
+    type: "integer"
+    default: 300
+  sandbox:
+    type: "boolean"
+    default: false

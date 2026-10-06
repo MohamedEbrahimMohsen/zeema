@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Firecrawl: web scrape, crawl, map and search API that returns LLM-ready markdown and JSON.
+# Per "Rate Limits", the Free plan allows 2 concurrent browsers and 10 requests per minute on /scrape, /map and /search
+# (2 on /crawl and /agent); excess jobs queue, a full queue returns 429 and exhausted credits return 402.
+schemaVersion: "1"
+type: "component"
+id: "firecrawl"
+kind: "third-party-api"
+provider: "default"
+docs: "https://docs.firecrawl.dev/rate-limits"
+defaults:
+  managed: true
+  hostedPage: false
+  handlesMoney: false
+  callbackStyle: "poll"
+properties:
+  plan:
+    type: "enum"
+    values: ["free", "hobby", "standard", "growth", "scale"]
+    default: "free"
+  scrapeRateLimitRpm:
+    type: "integer"
+    default: 10
+  crawlRateLimitRpm:
+    type: "integer"
+    default: 2
+  concurrentBrowsers:
+    type: "integer"
+    default: 2

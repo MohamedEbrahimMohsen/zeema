@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Guardrails AI: open-source Python framework that wraps LLM calls in input and output Guards built from
+# Guardrails Hub validators, and generates structured output. Per "Validator OnFail Actions", a failed
+# validator can reask, fix, filter, refrain, noop, raise or call a custom handler; the Validator base
+# class sets on_fail to EXCEPTION when none is given, so an unhandled failure blocks the call.
+schemaVersion: "1"
+type: "component"
+id: "guardrails-ai"
+kind: "policy-engine"
+provider: "default"
+docs: "https://www.guardrailsai.com/docs/concepts/validator_on_fail_actions"
+aliases: ["Guardrails"]
+defaults:
+  managed: false
+  scope: "resource"
+  effect: "deny"
+properties:
+  onFail:
+    type: "enum"
+    values: ["reask", "fix", "filter", "refrain", "noop", "exception", "fix_reask", "custom"]
+    default: "exception"
+  guardrailsServer:
+    type: "boolean"
+    default: false
+  hubValidators:
+    type: "integer"
+    default: 0

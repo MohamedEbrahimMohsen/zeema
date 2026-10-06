@@ -305,7 +305,7 @@ be written with them is a request to extend this list, not to add an expression 
 | `requirement: path, exists: bool` | any | Whether the requirement is set |
 | `requirement: path, gt / lt: n` | any | Integer comparison on a requirement |
 | `hasEdge: { direction, mode?, delivery?, peerKind?, peerCategory?, count? }` | node | At least one edge in that direction (`in`, `out`, `any`), optionally filtered; `count` compares the number of matching edges |
-| `hasNode: { kind?, category? }` | any | The design contains at least one node of that kind or category |
+| `hasNode: { kind?, category?, count? }` | any | The design contains at least one node of that kind or category; `count` compares the number of matching nodes |
 | `inGroup: { kind, count? }` | node | Number of groups of that kind in the node's ancestry. Without `count`, means at least one. |
 | `syncChainDepth: { gt / lt / eq }` | node | Longest path of consecutive `sync` edges starting at this node. Cycles are cut at first revisit. |
 | `from: <predicate>` / `to: <predicate>` | edge | Evaluates a node predicate on the edge's source or target node |

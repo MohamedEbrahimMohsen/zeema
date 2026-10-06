@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cerebras Inference: hosted open-weight text and vision models on wafer-scale chips over a public endpoint.
+# Per "Rate Limits", limits are per organization and model (RPM, TPM, TPH, TPD); the Free Trial allows 5 RPM
+# and 30K uncached TPM, and total TPM is 3x uncached so cached tokens only count toward the total bucket.
+schemaVersion: "1"
+type: "component"
+id: "cerebras-api"
+kind: "ai-service"
+provider: "default"
+docs: "https://inference-docs.cerebras.ai/support/rate-limits"
+aliases: ["Cerebras Cloud"]
+defaults:
+  auth: "api-key"
+  managed: true
+  modality: "multimodal"
+  publicEndpoint: true
+  rateLimitRpm: 5
+  rateLimitTpm: 30000
+properties:
+  tier:
+    type: "enum"
+    values: ["free-trial", "developer", "enterprise"]
+    default: "free-trial"
+  serving:
+    type: "enum"
+    values: ["shared", "dedicated"]
+    default: "shared"
+  cachedTokensCountToUncachedQuota:
+    type: "boolean"
+    default: false

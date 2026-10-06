@@ -9,6 +9,7 @@ kind: "ai-service"
 provider: "gcp"
 docs: "https://docs.cloud.google.com/natural-language/quotas"
 defaults:
+  auth: "iam"
   modality: "text"
   publicEndpoint: true
   quotaUnitsPerMinute: 600

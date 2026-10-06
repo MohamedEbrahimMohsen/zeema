@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Kong AI Gateway: Kong Gateway plugins (AI Proxy, AI Proxy Advanced, AI Semantic Cache, AI Prompt Guard)
+# that front LLM providers, with the data plane self-hosted or Konnect-managed. Per "AI Proxy Advanced
+# Plugin Configuration Reference", the balancer defaults to round-robin with 5 retries and fails over only
+# on error and timeout; per "AI Semantic Cache Plugin", caching is a separate Enterprise plugin you enable.
+schemaVersion: "1"
+type: "component"
+id: "kong-ai-gateway"
+kind: "api-gateway"
+provider: "default"
+docs: "https://developer.konghq.com/plugins/ai-proxy-advanced/reference/"
+defaults:
+  managed: false
+  protocol: "http"
+properties:
+  balancerAlgorithm:
+    type: "enum"
+    values: ["round-robin", "consistent-hashing", "least-connections", "lowest-latency", "lowest-usage", "priority", "semantic"]
+    default: "round-robin"
+  balancerRetries:
+    type: "integer"
+    default: 5
+  semanticCache:
+    type: "boolean"
+    default: false
+  promptGuard:
+    type: "boolean"
+    default: false

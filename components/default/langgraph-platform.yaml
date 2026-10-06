@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# LangSmith Deployment (formerly LangGraph Platform): durable runtime that serves LangGraph agents as Agent Servers.
+# Per "LangSmith Deployment", it runs as Cloud (Plus plan or above), Hybrid, self-hosted with a control plane (Enterprise) or a
+# standalone Agent Server; every option keeps state in PostgreSQL and coordinates through Redis.
+schemaVersion: "1"
+type: "component"
+id: "langgraph-platform"
+kind: "app-server"
+provider: "default"
+docs: "https://docs.langchain.com/langsmith/deployment"
+aliases: ["LangSmith Deployment", "Agent Server"]
+defaults:
+  managed: true
+  stateless: false
+  autoscaling: true
+  runtime: "python"
+properties:
+  deployment:
+    type: "enum"
+    values: ["cloud", "hybrid", "self-hosted", "standalone"]
+    default: "cloud"
+  plan:
+    type: "enum"
+    values: ["developer", "plus", "enterprise"]
+    default: "plus"
+  durableExecution:
+    type: "boolean"
+    default: true

@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# KDB.AI: KX vector database on kdb+ for contextual and time-series similarity search. KDB.AI Cloud closed to registration
+# and was sunset; per "KDB.AI Server Setup" the product now runs as the self-hosted kdbai-db container, and upgrading users
+# need a KDB-X licence while community licence holders use theirs directly.
+schemaVersion: "1"
+type: "component"
+id: "kdb-ai"
+kind: "vector-database"
+provider: "default"
+docs: "https://code.kx.com/kdbai/latest/gettingStarted/kdb-ai-server-setup.html"
+aliases: ["KDB.AI Server"]
+defaults:
+  managed: false
+  metadataFiltering: true
+properties:
+  licence:
+    type: "enum"
+    values: ["community", "kdb-x"]
+    default: "community"

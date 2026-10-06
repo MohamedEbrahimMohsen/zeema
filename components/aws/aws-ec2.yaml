@@ -11,13 +11,18 @@
 # when purchaseOption is "spot", so none is defaulted. AWS's own defaults for a Spot Instance:
 # terminate on interruption, a one-time request, a two-minute notice, and no maximum price set
 # ("Behavior of Spot Instance interruptions").
+#
+# AWS Trainium and AWS Inferentia instances are this component too, with accelerator: "trainium" (Trn1, Trn2) or
+# "inferentia" (Inf1, Inf2): AWS's own ML chips, sold only as accelerated-computing EC2 instance types and programmed
+# through the AWS Neuron SDK ("Accelerated computing instances",
+# https://docs.aws.amazon.com/ec2/latest/instancetypes/ac.html). "gpu" is the NVIDIA and AMD GPU families (P, G).
 schemaVersion: "1"
 type: "component"
 id: "aws-ec2"
 kind: "virtual-machine"
 provider: "aws"
 docs: "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/concepts.html"
-aliases: ["EC2", "EC2 Spot Instances", "Spot Instance"]
+aliases: ["EC2", "EC2 Spot Instances", "Spot Instance", "AWS Trainium", "AWS Inferentia"]
 defaults:
   managed: false
   diskEncryption: false
@@ -49,3 +54,7 @@ properties:
     type: "integer"
   maxPriceSet:
     type: "boolean"
+  accelerator:
+    type: "enum"
+    values: ["none", "gpu", "trainium", "inferentia"]
+    default: "none"

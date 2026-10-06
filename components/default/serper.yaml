@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Serper: low-cost Google SERP API returning search results as JSON.
+# Per "Serper - The World's Fastest and Cheapest Google Search API", new accounts get 2,500 free queries with no card,
+# across web, images, news, maps, places, videos, shopping, scholar, patents and autocomplete endpoints.
+schemaVersion: "1"
+type: "component"
+id: "serper"
+kind: "third-party-api"
+provider: "default"
+docs: "https://serper.dev"
+defaults:
+  managed: true
+  hostedPage: false
+  handlesMoney: false
+  callbackStyle: "none"
+  idempotent: true
+properties:
+  endpoint:
+    type: "enum"
+    values: ["search", "images", "news", "maps", "places", "videos", "shopping", "scholar", "patents", "autocomplete"]
+    default: "search"
+  freeQueries:
+    type: "integer"
+    default: 2500

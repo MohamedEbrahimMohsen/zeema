@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Daytona: composable cloud sandboxes for AI agents, containers by default with VM, GPU and macOS options.
+# Per "Limits", Tier 1 organizations get a 10 vCPU pool and 10,000 API requests a minute, rising with verified spend to Tier 4;
+# per "Sandboxes" a sandbox defaults to 1 vCPU, 1 GB of memory and 3 GiB of disk, with auto-stop and auto-archive intervals.
+schemaVersion: "1"
+type: "component"
+id: "daytona"
+kind: "worker"
+provider: "default"
+docs: "https://www.daytona.io/docs/en/limits/"
+defaults:
+  managed: true
+  trigger: "manual"
+  idempotent: false
+properties:
+  tier:
+    type: "enum"
+    values: ["tier-1", "tier-2", "tier-3", "tier-4"]
+    default: "tier-1"
+  isolation:
+    type: "enum"
+    values: ["container", "vm"]
+    default: "container"
+  vcpus:
+    type: "integer"
+    default: 1
+  memoryGb:
+    type: "integer"
+    default: 1

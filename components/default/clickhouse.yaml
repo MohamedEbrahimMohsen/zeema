@@ -1,6 +1,7 @@
 # yaml-language-server: $schema=../../schema/component.schema.json
 # ClickHouse: columnar OLAP database with real-time inserts; MergeTree by default, replicated
 # and replacing engines are opt-in.
+# vectorSearch: exact distance functions, with HNSW similarity indexes still experimental ("Exact and Approximate Vector Search").
 schemaVersion: "1"
 type: "component"
 id: "clickhouse"
@@ -18,5 +19,8 @@ properties:
     values: ["merge-tree", "replicated-merge-tree", "replacing-merge-tree"]
     default: "merge-tree"
   replicated:
+    type: "boolean"
+    default: false
+  vectorSearch:
     type: "boolean"
     default: false

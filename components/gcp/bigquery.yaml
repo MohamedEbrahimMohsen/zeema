@@ -1,5 +1,6 @@
 # yaml-language-server: $schema=../../schema/component.schema.json
-# Google BigQuery: serverless columnar warehouse; streaming inserts are opt-in.
+# Google BigQuery: serverless columnar warehouse; streaming inserts are opt-in. bigqueryMl says models are
+# trained and served with SQL inside BigQuery (BigQuery ML, "Introduction to AI and ML in BigQuery"); off until stated.
 schemaVersion: "1"
 type: "component"
 id: "bigquery"
@@ -17,5 +18,8 @@ properties:
     type: "boolean"
     default: false
   reservedSlots:
+    type: "boolean"
+    default: false
+  bigqueryMl:
     type: "boolean"
     default: false

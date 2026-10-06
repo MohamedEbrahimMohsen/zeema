@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Baseten: managed platform that deploys models (packaged with Truss) on dedicated autoscaling GPU replicas.
+# Per "Autoscaling", a deployment starts at 0 minimum and 1 maximum replica, averages load over a 60-second window,
+# targets 1 concurrent request per replica at 70% utilisation and waits 900 seconds before scaling down.
+schemaVersion: "1"
+type: "component"
+id: "baseten"
+kind: "ml-inference"
+provider: "default"
+docs: "https://docs.baseten.co/deployment/autoscaling"
+defaults:
+  training: "batch"
+  inputs: "live"
+  accelerator: "gpu"
+  managed: true
+properties:
+  minReplicas:
+    type: "integer"
+    default: 0
+  maxReplicas:
+    type: "integer"
+    default: 1
+  concurrencyTarget:
+    type: "integer"
+    default: 1
+  autoscalingWindowSeconds:
+    type: "integer"
+    default: 60
+  scaleDownDelaySeconds:
+    type: "integer"
+    default: 900

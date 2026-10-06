@@ -9,6 +9,7 @@ provider: "azure"
 docs: "https://learn.microsoft.com/en-us/azure/azure-video-indexer/video-indexer-overview"
 aliases: ["Video Analyzer for Media"]
 defaults:
+  auth: "iam"
   managed: true
   modality: "multimodal"
   contentFiltering: true

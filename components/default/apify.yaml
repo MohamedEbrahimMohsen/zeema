@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Apify: cloud platform that runs web scraping and automation programs (Actors), with schedules, storage and webhooks.
+# Per "Limits", the Free plan allows 25 concurrent Actor runs and 16,384 MB of combined memory across running jobs, and
+# up to 100 schedules and webhooks per account; runs are asynchronous and results land in datasets.
+schemaVersion: "1"
+type: "component"
+id: "apify"
+kind: "third-party-api"
+provider: "default"
+docs: "https://docs.apify.com/platform/limits"
+aliases: ["Apify Actors"]
+defaults:
+  managed: true
+  hostedPage: false
+  handlesMoney: false
+  callbackStyle: "webhook"
+properties:
+  plan:
+    type: "enum"
+    values: ["free", "starter", "scale", "business"]
+    default: "free"
+  maxConcurrentRuns:
+    type: "integer"
+    default: 25
+  maxMemoryMb:
+    type: "integer"
+    default: 16384

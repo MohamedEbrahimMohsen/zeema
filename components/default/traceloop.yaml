@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Traceloop: LLM monitoring and evaluation platform fed by the OpenTelemetry-based OpenLLMetry SDK or the
+# Traceloop Hub proxy. Per "Pricing", Free Forever keeps data 24 hours with up to 50K spans a month and 5
+# seats; on-premise is Enterprise only. Joining ServiceNow (announced March 2026).
+schemaVersion: "1"
+type: "component"
+id: "traceloop"
+kind: "monitoring"
+provider: "default"
+docs: "https://www.traceloop.com/docs/introduction"
+aliases: ["OpenLLMetry"]
+defaults:
+  managed: true
+  signal: "traces"
+  collectorMode: "push"
+  independentOfMonitored: true
+  retentionDays: 1
+properties:
+  plan:
+    type: "enum"
+    values: ["free", "enterprise"]
+    default: "free"
+  monthlySpanLimit:
+    type: "integer"
+    default: 50000
+  hubProxy:
+    type: "boolean"
+    default: false

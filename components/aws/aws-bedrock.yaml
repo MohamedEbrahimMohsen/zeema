@@ -3,14 +3,17 @@
 # modalities) reached over a public regional endpoint. Per "Data retention" the account and project
 # retention mode defaults to "inherit" (the model's own default); per "Monitor model invocation using
 # CloudWatch Logs and Amazon S3" model invocation logging is disabled by default, and guardrails are a
-# separate resource that must be named on each invocation.
+# separate resource that must be named on each invocation. Amazon Nova is Amazon's own model family served
+# through Bedrock and answers to this box as an alias.
 schemaVersion: "1"
 type: "component"
 id: "aws-bedrock"
 kind: "ai-service"
 provider: "aws"
 docs: "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
+aliases: ["Amazon Nova"]
 defaults:
+  auth: "iam"
   managed: true
   modality: "multimodal"
   publicEndpoint: true

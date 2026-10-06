@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Dify: open-source LLM app and agent workflow builder, offered as Dify Cloud or a self-hosted edition.
+# Per the Docker Compose deployment guide, the stack runs api, worker, web and plugin_daemon services over PostgreSQL, Redis,
+# Weaviate and a code-execution sandbox, needing 2 CPU cores and 4 GB of RAM.
+schemaVersion: "1"
+type: "component"
+id: "dify"
+kind: "app-server"
+provider: "default"
+docs: "https://docs.dify.ai/en/getting-started/install-self-hosted/docker-compose"
+aliases: ["Dify Cloud"]
+defaults:
+  managed: true
+  stateless: true
+properties:
+  edition:
+    type: "enum"
+    values: ["cloud", "community", "enterprise"]
+    default: "cloud"
+  plan:
+    type: "enum"
+    values: ["sandbox", "professional", "team"]
+    default: "sandbox"
+  codeSandbox:
+    type: "boolean"
+    default: true

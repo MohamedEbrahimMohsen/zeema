@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# DVC: open-source data version control for ML projects. Git keeps small .dvc pointer files while the data itself
+# goes to a DVC remote such as S3, Google Cloud Storage, Azure Blob, SSH, HTTP or a local directory; `dvc exp` tracks
+# experiments. lakeFS acquired the DVC project from Iterative on 18 November 2025 and keeps it open source.
+schemaVersion: "1"
+type: "component"
+id: "dvc"
+kind: "ml-platform"
+provider: "default"
+docs: "https://dvc.org/doc/user-guide/data-management/remote-storage"
+aliases: ["Data Version Control"]
+defaults:
+  managed: false
+  experimentTracking: true
+  modelRegistry: false
+properties:
+  remote:
+    type: "enum"
+    values: ["none", "local", "s3", "gcs", "azure-blob", "ssh", "http"]
+    default: "none"

@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# KNIME: open-source KNIME Analytics Platform (desktop) for visual data and ML workflows, with KNIME Business Hub as
+# the server that shares, schedules and deploys them. Per the Business Hub installation guide, the Hub runs on
+# Kubernetes, either an existing cluster or an embedded kURL cluster for single-node or small installs.
+schemaVersion: "1"
+type: "component"
+id: "knime"
+kind: "ml-platform"
+provider: "default"
+docs: "https://docs.knime.com/latest/business_hub_installation_guide/index.html"
+aliases: ["KNIME Business Hub", "KNIME Analytics Platform"]
+defaults:
+  managed: false
+  experimentTracking: false
+  modelRegistry: false
+properties:
+  edition:
+    type: "enum"
+    values: ["business-hub", "community-hub"]
+    default: "business-hub"
+  cluster:
+    type: "enum"
+    values: ["existing-kubernetes", "embedded"]
+    default: "existing-kubernetes"

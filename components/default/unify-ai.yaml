@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Unify router: hosted LLM router that picked a model and provider per prompt from live benchmarks.
+# Retired September 2026: Unify pivoted to AI assistants and then agent post-training, docs.unify.ai went
+# offline and its source was archived on GitHub ("unifyai/docs", "the documentation site ... 2024-2026").
+# No surviving page documents router defaults, so only the hosted shape is recorded.
+schemaVersion: "1"
+type: "component"
+id: "unify-ai"
+kind: "api-gateway"
+provider: "default"
+docs: "https://github.com/unifyai/docs"
+defaults:
+  managed: true
+  protocol: "http"
+properties:
+  selfHosted:
+    type: "boolean"
+    default: false

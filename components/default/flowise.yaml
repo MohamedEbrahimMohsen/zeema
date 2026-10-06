@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Flowise: open-source visual builder for LLM chatflows and agentflows. Workday acquired it in August 2025. Retired August 2026:
+# the FlowiseAI/Flowise repository was archived read-only on August 13, 2026 with the notice "Flowise has been archived".
+schemaVersion: "1"
+type: "component"
+id: "flowise"
+kind: "app-server"
+provider: "default"
+docs: "https://docs.flowiseai.com/"
+aliases: ["Flowise Cloud"]
+defaults:
+  managed: false
+  stateless: true
+  runtime: "nodejs"
+properties:
+  builder:
+    type: "enum"
+    values: ["assistant", "chatflow", "agentflow"]
+    default: "chatflow"
+  deployment:
+    type: "enum"
+    values: ["self-hosted", "flowise-cloud"]
+    default: "self-hosted"

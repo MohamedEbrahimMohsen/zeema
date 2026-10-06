@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Comet: experiment tracking, model registry and production monitoring for ML teams (Opik is its LLM sibling). Per
+# "Deploying Comet Self Hosted", Comet is used as the managed cloud or self-hosted on Linux VMs, Kubernetes or as an
+# Amazon SageMaker partner app inside an existing VPC.
+schemaVersion: "1"
+type: "component"
+id: "comet-ml"
+kind: "ml-platform"
+provider: "default"
+docs: "https://www.comet.com/docs/v2/"
+aliases: ["Comet"]
+defaults:
+  managed: true
+  experimentTracking: true
+  modelRegistry: true
+properties:
+  deployment:
+    type: "enum"
+    values: ["cloud", "self-hosted", "sagemaker-partner-app"]
+    default: "cloud"

@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# SuperAnnotate: hosted platform for annotating and evaluating multimodal and LLM training data. Per "Integrations",
+# items can come from AWS S3, GCP or Azure buckets, a Databricks database or custom storage, with read-only access to
+# the customer's storage.
+schemaVersion: "1"
+type: "component"
+id: "superannotate"
+kind: "ml-platform"
+provider: "default"
+docs: "https://doc.superannotate.com/docs/integrations"
+defaults:
+  managed: true
+  experimentTracking: false
+  modelRegistry: false
+properties:
+  storage:
+    type: "enum"
+    values: ["superannotate-hosted", "s3", "gcs", "azure-blob", "databricks", "custom"]
+    default: "superannotate-hosted"

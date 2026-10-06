@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Letta (formerly MemGPT): platform for stateful agents whose memory blocks and archival memory live on the server.
+# Per the self-hosting guide, the Docker server listens on port 8283 and keeps state in Postgres with pgvector (LETTA_PG_URI);
+# the guide marks self-hosting as a legacy surface beside Letta Cloud.
+schemaVersion: "1"
+type: "component"
+id: "letta"
+kind: "cache"
+provider: "default"
+docs: "https://docs.letta.com/guides/selfhosting"
+aliases: ["MemGPT", "Letta Cloud"]
+defaults:
+  managed: true
+  persistence: true
+  usedAsPrimaryStore: true
+properties:
+  deployment:
+    type: "enum"
+    values: ["letta-cloud", "self-hosted"]
+    default: "letta-cloud"
+  serverPort:
+    type: "integer"
+    default: 8283
+  passwordProtected:
+    type: "boolean"
+    default: false

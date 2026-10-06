@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# TruEra: SaaS AI observability for evaluating and monitoring LLM apps and ML models in production.
+# Retired May 2024: per "Snowflake acquires TruEra", Snowflake bought the platform to fold it into its AI
+# Data Cloud, and truera.com now redirects to Snowflake; the TruLens library continues as open source.
+schemaVersion: "1"
+type: "component"
+id: "truera"
+kind: "monitoring"
+provider: "default"
+docs: "https://www.snowflake.com/en/blog/snowflake-acquires-truera-to-bring-llm-ml-observability-to-data-cloud/"
+defaults:
+  managed: true
+  signal: "traces"
+  collectorMode: "push"
+  independentOfMonitored: true
+properties:
+  llmEvaluation:
+    type: "boolean"
+  mlMonitoring:
+    type: "boolean"

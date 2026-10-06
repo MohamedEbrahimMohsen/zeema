@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# LlamaParse: LlamaIndex's credit-billed document parsing service on LlamaCloud, run as asynchronous parse jobs.
+# Per "Rate Limits", parse job creation is capped at 500 requests per 10 seconds per organization on every plan, 429s carry
+# no Retry-After header and webhooks are preferred over polling; per "Billing and Usage" the Free plan allows 5 concurrent parse jobs.
+schemaVersion: "1"
+type: "component"
+id: "llamaparse"
+kind: "worker"
+provider: "default"
+docs: "https://developers.llamaindex.ai/python/cloud/general/rate_limits"
+defaults:
+  managed: true
+  trigger: "queue"
+  idempotent: false
+  concurrency: 5
+properties:
+  plan:
+    type: "enum"
+    values: ["free", "starter", "pro", "enterprise"]
+    default: "free"
+  parseTier:
+    type: "enum"
+    values: ["fast", "cost-effective", "agentic", "agentic-plus"]
+  webhooks:
+    type: "boolean"
+    default: false

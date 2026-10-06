@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Gemini Code Assist: Google's AI coding assistant in VS Code, JetBrains IDEs, the Gemini CLI and Google Cloud tools,
+# drawn as the client calling your code and Cloud projects. Per "Gemini Code Assist Standard and Enterprise overview",
+# it comes in free, Standard and Enterprise editions, and Enterprise adds customisation on private source repositories.
+schemaVersion: "1"
+type: "component"
+id: "google-gemini-code-assist"
+kind: "client"
+provider: "gcp"
+docs: "https://docs.cloud.google.com/gemini/docs/codeassist/overview"
+aliases: ["Duet AI for Developers"]
+defaults:
+  platform: "multi"
+  managed: true
+properties:
+  edition:
+    type: "enum"
+    values: ["free", "standard", "enterprise"]
+    default: "free"
+  codeCustomization:
+    type: "boolean"
+    default: false

@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# v0: Vercel's AI app builder that generates React and Next.js apps from chat and deploys them to Vercel, drawn as
+# the client.
+schemaVersion: "1"
+type: "component"
+id: "v0"
+kind: "client"
+provider: "default"
+docs: "https://v0.app/docs"
+aliases: ["v0.dev", "v0 by Vercel"]
+defaults:
+  platform: "web"
+  managed: true
+properties:
+  plan:
+    type: "enum"
+    values: ["free", "premium", "team", "enterprise"]
+    default: "free"

@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# NeMo Guardrails: NVIDIA's open-source Python toolkit for programmable guardrails around LLM apps, also
+# shipped as a guardrails microservice container for Kubernetes. Per "Overview", rails run at five stages
+# (input, retrieval, dialog, execution, output) and each one is switched on in YAML and Colang config;
+# nothing is screened until a rail is configured.
+schemaVersion: "1"
+type: "component"
+id: "nemo-guardrails"
+kind: "policy-engine"
+provider: "default"
+docs: "https://docs.nvidia.com/nemo/guardrails/latest/index.html"
+defaults:
+  managed: false
+  scope: "resource"
+properties:
+  inputRails:
+    type: "boolean"
+    default: false
+  outputRails:
+    type: "boolean"
+    default: false
+  dialogRails:
+    type: "boolean"
+    default: false
+  microservice:
+    type: "boolean"
+    default: false

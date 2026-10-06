@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Brave Search API: web search over Brave's independent index, sold as Data for Search and Data for AI plans.
+# Per the Brave Search API rate-limiting guide, limits are enforced in a one-second sliding window with X-RateLimit headers;
+# the Free plan allows 1 request per second, Base 20 and Pro 50, and only successful requests count.
+schemaVersion: "1"
+type: "component"
+id: "brave-search-api"
+kind: "third-party-api"
+provider: "default"
+docs: "https://api-dashboard.search.brave.com/documentation/guides/rate-limiting"
+defaults:
+  managed: true
+  hostedPage: false
+  handlesMoney: false
+  callbackStyle: "none"
+  idempotent: true
+  qpsQuota: 1
+properties:
+  plan:
+    type: "enum"
+    values: ["free", "base", "pro"]
+    default: "free"
+  productGroup:
+    type: "enum"
+    values: ["data-for-search", "data-for-ai"]
+    default: "data-for-search"

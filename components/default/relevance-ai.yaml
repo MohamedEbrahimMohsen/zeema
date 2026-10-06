@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Relevance AI: low/no-code platform to build AI agents and multi-agent teams (an "AI Workforce") with tools and knowledge.
+# Per "Introduction - Relevance AI Documentation", agents run on the hosted platform with a built-in chat, a no-code tool
+# builder, a knowledge (RAG) store and human approval steps.
+schemaVersion: "1"
+type: "component"
+id: "relevance-ai"
+kind: "app-server"
+provider: "default"
+docs: "https://relevanceai.com/docs/get-started/introduction"
+defaults:
+  managed: true
+  stateless: true
+properties:
+  workforce:
+    type: "boolean"
+    default: false
+  humanApproval:
+    type: "boolean"
+    default: false

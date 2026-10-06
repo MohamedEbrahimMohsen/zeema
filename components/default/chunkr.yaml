@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Chunkr: task-based document intelligence API from Lumina that turns PDFs, Office files and images into chunked, LLM-ready data.
+# Per "Welcome to Chunkr" it parses and extracts as tasks, holds SOC 2 and HIPAA and never trains on customer data;
+# an on-premises option and the open-source lumina-ai-inc/chunkr repository allow self-hosting.
+schemaVersion: "1"
+type: "component"
+id: "chunkr"
+kind: "worker"
+provider: "default"
+docs: "https://docs.chunkr.ai/pages/get-started/welcome"
+defaults:
+  managed: true
+  trigger: "queue"
+  idempotent: false
+properties:
+  deployment:
+    type: "enum"
+    values: ["cloud", "on-premises", "self-hosted"]
+    default: "cloud"

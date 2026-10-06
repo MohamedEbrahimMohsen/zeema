@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Ideogram API: hosted Ideogram image generation and editing (strong in-image text), plus upscale and video tools.
+# Per "API Overview", the default limit is 10 concurrent in-flight requests and returned image URLs expire,
+# so results must be downloaded; image endpoints are synchronous unless async or a webhook_url is set.
+schemaVersion: "1"
+type: "component"
+id: "ideogram-api"
+kind: "ai-service"
+provider: "default"
+docs: "https://developer.ideogram.ai/ideogram-api/api-overview"
+defaults:
+  auth: "api-key"
+  managed: true
+  modality: "image"
+  publicEndpoint: true
+properties:
+  maxConcurrentRequests:
+    type: "integer"
+    default: 10
+  apiVersion:
+    type: "enum"
+    values: ["v2", "v1"]
+    default: "v2"
+  asyncMode:
+    type: "boolean"
+    default: false

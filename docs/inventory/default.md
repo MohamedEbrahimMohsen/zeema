@@ -214,6 +214,13 @@ covered by a cloud provider folder.
 | Marqo | marqo | vector-database | done | https://docs.marqo.ai/latest/reference/api/indexes/create-structured-index/ |
 | turbopuffer | turbopuffer | vector-database | done | https://turbopuffer.com/docs/schema |
 | Faiss / hnswlib / Annoy | â€” | â€” | skip: ANN index libraries linked into an application | https://faiss.ai/ |
+| pgvectorscale | pgvectorscale | vector-database | done | https://github.com/timescale/pgvectorscale |
+| Deep Lake | deeplake | vector-database | done | https://docs.activeloop.ai/ |
+| Vespa Cloud | vespa-cloud | vector-database | done | https://docs.vespa.ai/en/cloud/getting-started.html |
+| MyScale | myscale | vector-database | skip: retired May 2025, MyScale ceased all services and clusters on 28 May 2025 | https://x.com/MyScaleDB/status/1917163010311037327 |
+| Epsilla | epsilla | vector-database | done | https://github.com/epsilla-cloud/vectordb |
+| KDB.AI Server | kdb-ai | vector-database | done | https://code.kx.com/kdbai/latest/gettingStarted/kdb-ai-server-setup.html |
+| USearch | — | — | skip: ANN index library linked into an application | https://github.com/unum-cloud/usearch |
 
 ## Analytics warehouses and query engines
 
@@ -348,6 +355,57 @@ covered by a cloud provider folder.
 | BentoML | bentoml | ml-inference | done | https://docs.bentoml.com/en/latest/get-started/hello-world.html |
 | Ray Serve | ray-serve | ml-inference | done | https://docs.ray.io/en/latest/serve/configure-serve-deployment.html |
 | ONNX Runtime | â€” | â€” | skip: inference library linked into a serving process | https://onnxruntime.ai/docs/ |
+| LMDeploy | lmdeploy | ml-inference | done | https://lmdeploy.readthedocs.io/en/latest/llm/api_server.html |
+| TensorRT-LLM (trtllm-serve) | tensorrt-llm | ml-inference | done | https://nvidia.github.io/TensorRT-LLM/commands/trtllm-serve/trtllm-serve.html |
+| NVIDIA NIM for LLMs (self-hosted) | nvidia-nim | ml-inference | done | https://docs.nvidia.com/nim/large-language-models/latest/getting-started.html |
+| MLC LLM | mlc-llm | ml-inference | done | https://llm.mlc.ai/docs/deploy/rest.html |
+| llama.cpp server | llama-cpp-server | ml-inference | done | https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md |
+| LM Studio | lm-studio | ml-inference | done | https://lmstudio.ai/docs/developer/core/server |
+| Jan | jan | ml-inference | done | https://www.jan.ai/docs/desktop/api-server |
+| Xinference | xinference | ml-inference | done | https://inference.readthedocs.io/en/latest/getting_started/using_xinference.html |
+| Infinity | infinity-embeddings | ml-inference | done | https://github.com/michaelfeil/infinity |
+| Text Embeddings Inference | text-embeddings-inference | ml-inference | done | https://huggingface.co/docs/text-embeddings-inference/en/cli_arguments |
+| Modal | modal | ml-inference | done | https://modal.com/docs/guide/cold-start |
+| Baseten | baseten | ml-inference | done | https://docs.baseten.co/deployment/autoscaling |
+| Anyscale Endpoints | anyscale-endpoints | ml-inference | skip: retired August 2024, the multi-tenant Endpoints API was removed and LLM serving moved to dedicated deployments on the Anyscale Platform | https://docs.anyscale.com/ |
+| Mystic AI | mystic-ai | ml-inference | skip: retired 2025, Mystic sunset its serverless and bring-your-own-cloud services | https://cerebrium.ai/docs/migrations/mystic |
+| Beam | beam-cloud | ml-inference | done | https://docs.beam.cloud/v2/endpoint/overview |
+| OctoAI | octoai | ml-inference | skip: retired October 2024, NVIDIA acquired OctoAI and all services were terminated on 31 Oct 2024 | https://github.com/octoml |
+| Banana | banana-dev | ml-inference | skip: retired March 2024, serverless GPU infrastructure shut down on 31 Mar 2024 | https://banana.dev/blog/sunset |
+| Open WebUI | open-webui | app-server | done | https://docs.openwebui.com/reference/env-configuration/ |
+
+## GPU clouds
+
+| resource | id | kind | status | source |
+|---|---|---|---|---|
+| Runpod Pods | runpod | virtual-machine | done | https://docs.runpod.io/pods/overview |
+| Lambda Cloud (Lambda Labs) | lambda-labs | virtual-machine | done | https://docs.lambda.ai/public-cloud/on-demand/ |
+| CoreWeave Kubernetes Service | coreweave | container-orchestrator | done | https://docs.coreweave.com/products/cks |
+| Nebius AI Cloud Compute | nebius | virtual-machine | done | https://docs.nebius.com/compute/virtual-machines/types |
+| Crusoe Cloud | crusoe | virtual-machine | done | https://docs.crusoecloud.com/compute/virtual-machines/overview/ |
+| Vast.ai | vast-ai | virtual-machine | done | https://docs.vast.ai/documentation/instances/rental-types |
+| NVIDIA DGX Cloud (Lepton) | nvidia-dgx-cloud | ml-platform | done | https://docs.nvidia.com/dgx-cloud/lepton/get-started/index.html |
+| Paperspace | — | — | skip: covered by digitalocean-paperspace in the digitalocean provider folder | https://docs.digitalocean.com/products/paperspace/ |
+| AWS Trainium / AWS Inferentia | — | — | skip: covered by aws-ec2 in the aws provider folder (`accelerator: trainium` / `inferentia`) | https://docs.aws.amazon.com/ec2/latest/instancetypes/ac.html |
+
+## Speech and voice agents
+
+| resource | id | kind | status | source |
+|---|---|---|---|---|
+| Cartesia API | cartesia | ai-service | done | https://docs.cartesia.ai/use-the-api/concurrency-limits-and-timeouts |
+| PlayHT API | playht | ai-service | skip: retired December 2025, Meta acquired PlayAI and shut the platform down on 31 Dec 2025 | https://docs.play.ht/reference/api-getting-started |
+| Rime TTS API | rime | ai-service | done | https://docs.rime.ai/api-reference/quickstart |
+| Speechmatics API | speechmatics | ai-service | done | https://docs.speechmatics.com/introduction/authentication |
+| Gladia API | gladia | ai-service | done | https://docs.gladia.io/chapters/limits-and-specifications/concurrency |
+| Rev AI API | rev-ai | ai-service | done | https://docs.rev.ai/api/security/ |
+| Hume AI API | hume-ai | ai-service | done | https://dev.hume.ai/docs/introduction/api-key |
+| Vapi | vapi | ai-service | done | https://docs.vapi.ai/quickstart/introduction |
+| Retell AI | retell-ai | ai-service | done | https://docs.retellai.com/general/introduction |
+| Bland AI | bland-ai | ai-service | done | https://docs.bland.ai/welcome-to-bland |
+| Synthflow | synthflow | ai-service | done | https://docs.synthflow.ai/ |
+| Pipecat | pipecat | app-server | done | https://docs.pipecat.ai/getting-started/introduction |
+| LiveKit Agents | livekit-agents | app-server | done | https://docs.livekit.io/agents/ |
+| Twilio ConversationRelay | — | — | skip: covered by twilio-flex (`conversationRelay: true`), a Programmable Voice feature, not a box | https://www.twilio.com/docs/voice/conversationrelay |
 
 ## AI APIs
 
@@ -371,6 +429,218 @@ covered by a cloud provider folder.
 | LangChain / LlamaIndex | â€” | â€” | skip: application frameworks linked into the app-server | https://python.langchain.com/docs/ |
 | Google Gemini API / Amazon Bedrock | â€” | â€” | skip: covered by the gcp and aws provider folders | https://ai.google.dev/gemini-api/docs |
 | Recombee | recombee | ai-service | done | https://docs.recombee.com/ |
+| AI21 API | ai21-api | ai-service | done | https://docs.ai21.com/docs/rate-limits |
+| Aleph Alpha API | aleph-alpha-api | ai-service | skip: retired November 2024, public hosted API discontinued; API now ships inside customer-run PhariaAI | https://docs.aleph-alpha.com/phariaai-dev-guide/latest/pharia-openapi/index.html |
+| BFL API | black-forest-labs-api | ai-service | done | https://docs.bfl.ai/api_integration/integration_guidelines |
+| Baidu Qianfan ERNIE API | baidu-ernie-api | ai-service | done | https://intl.cloud.baidu.com/en/doc/qianfan/s/7m95lyy43-intl-en |
+| Cerebras Inference API | cerebras-api | ai-service | done | https://inference-docs.cerebras.ai/support/rate-limits |
+| DeepInfra API | deepinfra | ai-service | done | https://docs.deepinfra.com/account/data-privacy |
+| DeepSeek API | deepseek-api | ai-service | done | https://api-docs.deepseek.com/quick_start/rate_limit |
+| Ideogram API | ideogram-api | ai-service | done | https://developer.ideogram.ai/ideogram-api/api-overview |
+| Jina AI API | jina-ai | ai-service | done | https://jina.ai/api-dashboard/rate-limit |
+| Kimi Open Platform API | moonshot-kimi-api | ai-service | done | https://platform.kimi.ai/docs/pricing/limits |
+| Lepton AI | lepton-ai | ai-service | skip: retired June 2025, acquired by NVIDIA and relaunched as DGX Cloud Lepton GPU marketplace | https://www.nvidia.com/en-us/data-center/dgx-cloud-lepton/ |
+| Luma API | luma-api | ai-service | done | https://docs.lumalabs.ai/docs/rate-limits |
+| MiniMax API | minimax-api | ai-service | done | https://platform.minimax.io/docs/guides/rate-limits |
+| NVIDIA API catalog (hosted NIM) | nvidia-nim-api | ai-service | done | https://docs.api.nvidia.com/nim/docs/product |
+| Nomic Embedding API | nomic-api | ai-service | done | https://docs.nomic.ai/api/getting-started/rate-limits |
+| Novita AI API | novita-ai | ai-service | done | https://docs.novita.ai/guides/llm-rate-limits |
+| Perplexity API | perplexity-api | ai-service | done | https://docs.perplexity.ai/docs/resources/privacy-security |
+| Reka API | reka-api | ai-service | done | https://docs.reka.ai/vision/rate-limits |
+| Runway API | runway-api | ai-service | done | https://docs.dev.runwayml.com/usage/tiers/ |
+| SambaNova Cloud API | sambanova-api | ai-service | done | https://docs.sambanova.ai/docs/en/models/rate-limits |
+| Stability AI API | stability-ai-api | ai-service | done | https://platform.stability.ai/docs/api-reference |
+| Voyage AI API | voyage-ai | ai-service | done | https://docs.voyageai.com/docs/rate-limits |
+| Writer API | writer-api | ai-service | done | https://dev.writer.com/api-reference/rate-limits |
+| Z.ai (Zhipu) GLM API | zhipu-glm-api | ai-service | done | https://docs.z.ai/guides/overview/quick-start |
+| fal Model APIs | fal-ai | ai-service | done | https://fal.ai/docs/model-apis/faq |
+| xAI API | xai-api | ai-service | done | https://docs.x.ai/developers/faq/security |
+| Midjourney | — | — | skip: no public API; images are made in the Midjourney app and Discord only | https://docs.midjourney.com/ |
+| Suno API | — | — | skip: no official public API; a partner developer API was only opened to an intake form in July 2026 | https://suno.com |
+| GitHub Models | github-models | ai-service | done | https://docs.github.com/en/github-models/use-github-models/prototyping-with-ai-models |
+
+## AI gateways and routers
+
+| resource | id | kind | status | source |
+|---|---|---|---|---|
+| Helicone AI Gateway | helicone-gateway | api-gateway | done | https://docs.helicone.ai/gateway/provider-routing |
+| Kong AI Gateway | kong-ai-gateway | api-gateway | done | https://developer.konghq.com/plugins/ai-proxy-advanced/reference/ |
+| Martian Gateway | martian | api-gateway | done | https://docs.withmartian.com/gateway |
+| Not Diamond router | not-diamond | api-gateway | done | https://docs.notdiamond.ai/docs/quickstart-routing |
+| Portkey AI Gateway | portkey | api-gateway | done | https://portkey.ai/docs/product/ai-gateway/cache-simple-and-semantic |
+| Requesty router | requesty | api-gateway | done | https://docs.requesty.ai/features/fallback-policies |
+| Unify router | unify-ai | api-gateway | skip: retired September 2026, Unify pivoted away from routing (AI assistants, then agent post-training) and archived docs.unify.ai | https://github.com/unifyai/docs |
+| Vercel AI Gateway | vercel-ai-gateway | api-gateway | done | https://vercel.com/docs/ai-gateway/security-and-compliance |
+
+## LLM observability, evaluation and prompt management
+
+| resource | id | kind | status | source |
+|---|---|---|---|---|
+| Arize AX space | arize-ax | monitoring | done | https://arize.com/docs/ax |
+| Arthur workspace | arthur-ai | monitoring | done | https://docs.arthur.ai/ |
+| Braintrust organization | braintrust | monitoring | done | https://www.braintrust.dev/docs/guides/self-hosting |
+| Confident AI project | confident-ai | monitoring | done | https://www.confident-ai.com/docs |
+| Evidently workspace | evidently-ai | monitoring | done | https://docs.evidentlyai.com/faq/oss_vs_cloud |
+| Fiddler project | fiddler-ai | monitoring | done | https://docs.fiddler.ai/ |
+| Galileo project | galileo | monitoring | done | https://docs.galileo.ai/what-is-galileo |
+| Giskard Hub project | giskard | monitoring | done | https://docs.giskard.ai/ |
+| Helicone organization | helicone | monitoring | done | https://docs.helicone.ai/getting-started/quick-start |
+| HoneyHive project | honeyhive | monitoring | done | https://docs.honeyhive.ai/v2/introduction/what-is-hhai |
+| Humanloop organization | humanloop | monitoring | skip: retired September 2025, platform and API sunset 8 Sept 2025 after the team joined Anthropic | https://humanloop.com/docs |
+| Langfuse project | langfuse | monitoring | done | https://langfuse.com/docs/data-retention |
+| Lunary project | lunary | monitoring | done | https://docs.lunary.ai/docs |
+| Opik workspace | opik | monitoring | done | https://www.comet.com/docs/opik/self-host/overview |
+| Phoenix server | arize-phoenix | monitoring | done | https://arize.com/docs/phoenix/self-hosting |
+| PromptLayer workspace | promptlayer | monitoring | done | https://docs.promptlayer.com/ |
+| Traceloop environment | traceloop | monitoring | done | https://www.traceloop.com/docs/introduction |
+| TruEra workspace | truera | monitoring | skip: retired May 2024, acquired by Snowflake and folded into its AI Data Cloud | https://www.snowflake.com/en/blog/snowflake-acquires-truera-to-bring-llm-ml-observability-to-data-cloud/ |
+| WhyLabs organization | whylabs | monitoring | skip: retired January 2025, WhyLabs Inc. discontinued operations and open-sourced the platform | https://github.com/whylabs/whylabs-oss |
+| DeepEval test workflow | deepeval | ci-pipeline | done | https://deepeval.com/docs/evaluation-unit-testing-in-ci-cd |
+| promptfoo workflow | promptfoo | ci-pipeline | done | https://www.promptfoo.dev/docs/integrations/ci-cd/ |
+| Ragas | — | — | skip: evaluation library imported into the app or the test suite | https://docs.ragas.io/ |
+
+## AI guardrails and security
+
+| resource | id | kind | status | source |
+|---|---|---|---|---|
+| CalypsoAI platform | calypsoai | policy-engine | skip: retired September 2025, F5 acquired CalypsoAI and relaunched it as F5 AI Guardrails and F5 AI Red Team | https://www.f5.com/company/blog/what-are-ai-guardrails |
+| Guardrails AI | guardrails-ai | policy-engine | done | https://www.guardrailsai.com/docs/concepts/validator_on_fail_actions |
+| HiddenLayer AI Security Platform | hiddenlayer | policy-engine | done | https://docs.hiddenlayer.ai/docs/products/runtime/overview |
+| LLM Guard | llm-guard | policy-engine | skip: retired 2026, Protect AI archived the LLM Guard repo and its models after the Palo Alto Networks acquisition | https://github.com/protectai/llm-guard |
+| Lakera Guard | lakera-guard | policy-engine | done | https://docs.lakera.ai/docs/api |
+| NeMo Guardrails | nemo-guardrails | policy-engine | done | https://docs.nvidia.com/nemo/guardrails/latest/index.html |
+| Prompt Security | prompt-security | policy-engine | done | https://www.sentinelone.com/platform/securing-ai-prompt/ |
+| Protect AI platform | protect-ai | policy-engine | skip: retired July 2025, Palo Alto Networks acquired Protect AI and folded Guardian, Layer, Recon and Radar into Prisma AIRS | https://www.paloaltonetworks.com/company/press/2025/palo-alto-networks-completes-acquisition-of-protect-ai |
+| Rebuff | rebuff | policy-engine | skip: retired May 2025, Protect AI archived the Rebuff repository (self-described prototype) | https://github.com/protectai/rebuff |
+| Robust Intelligence platform | robust-intelligence | policy-engine | skip: retired September 2024, Cisco acquired Robust Intelligence and rebuilt it as Cisco AI Defense | https://blogs.cisco.com/news/fortifying-the-future-of-security-for-ai-cisco-announces-intent-to-acquire-robust-intelligence |
+| Llama Guard | — | — | skip: a safety classifier model, served by an ml-inference or ai-service node | https://www.llama.com/docs/model-cards-and-prompt-formats/llama-guard-4/ |
+
+## Document parsing, web data and search APIs
+
+| resource | id | kind | status | source |
+|---|---|---|---|---|
+| Unstructured API | unstructured-io | worker | done | https://docs.unstructured.io/api-reference/overview |
+| LlamaParse | llamaparse | worker | done | https://developers.llamaindex.ai/python/cloud/general/rate_limits |
+| Reducto | reducto | worker | done | https://docs.reducto.ai/reference/rate-limits |
+| Chunkr | chunkr | worker | done | https://docs.chunkr.ai/pages/get-started/welcome |
+| Docling | — | — | skip: document conversion library run inside a worker or app-server | https://docling-project.github.io/docling/ |
+| Firecrawl | firecrawl | third-party-api | done | https://docs.firecrawl.dev/rate-limits |
+| Apify | apify | third-party-api | done | https://docs.apify.com/platform/limits |
+| ScrapingBee | scrapingbee | third-party-api | done | https://www.scrapingbee.com/documentation/ |
+| Browserbase | browserbase | third-party-api | done | https://docs.browserbase.com/guides/concurrency-rate-limits |
+| Steel | steel-dev | third-party-api | done | https://docs.steel.dev/overview/pricinglimits |
+| Hyperbrowser | hyperbrowser | third-party-api | done | https://hyperbrowser.ai/docs |
+| Tavily | tavily | third-party-api | done | https://docs.tavily.com/documentation/rate-limits |
+| Exa | exa-ai | third-party-api | done | https://exa.ai/docs/reference/rate-limits |
+| Serper | serper | third-party-api | done | https://serper.dev |
+| SerpApi | serpapi | third-party-api | done | https://serpapi.com/pricing |
+| Brave Search API | brave-search-api | third-party-api | done | https://api-dashboard.search.brave.com/documentation/guides/rate-limiting |
+| You.com APIs | you-com-api | third-party-api | done | https://you.com/docs/rate-limits |
+| Mixedbread | mixedbread-ai | ai-service | done | https://www.mixedbread.com/docs |
+
+## Agent memory and code sandboxes
+
+| resource | id | kind | status | source |
+|---|---|---|---|---|
+| Mem0 | mem0 | cache | done | https://docs.mem0.ai/platform/platform-vs-oss |
+| Zep Cloud | zep | cache | done | https://help.getzep.com/ |
+| Letta | letta | cache | done | https://docs.letta.com/guides/selfhosting |
+| cognee | cognee | cache | done | https://docs.cognee.ai/ |
+| Graphiti | graphiti | cache | done | https://github.com/getzep/graphiti |
+| E2B sandbox | e2b | worker | done | https://docs.e2b.dev/billing |
+| Daytona sandbox | daytona | worker | done | https://www.daytona.io/docs/en/limits/ |
+| Vercel Sandbox | vercel-sandbox | worker | done | https://vercel.com/docs/sandbox |
+| Runloop Devbox | runloop | worker | done | https://docs.runloop.ai/docs/overview/your-runloop-trial |
+| Northflank Sandboxes | northflank-sandbox | worker | done | https://northflank.com/docs/v1/application/sandboxes |
+
+## Agent runtimes and builders
+
+| resource | id | kind | status | source |
+|---|---|---|---|---|
+| LangSmith Deployment (LangGraph Platform) | langgraph-platform | app-server | done | https://docs.langchain.com/langsmith/deployment |
+| LlamaCloud | llamaindex-cloud | app-server | done | https://developers.llamaindex.ai/python/cloud/general/pricing/ |
+| CrewAI AMP (CrewAI Enterprise) | crewai-enterprise | app-server | done | https://docs-platform.crewai.com/platform/en/introduction |
+| AutoGen Studio | autogen-studio | app-server | done | https://microsoft.github.io/autogen/stable/user-guide/autogenstudio-user-guide/index.html |
+| Dify | dify | app-server | done | https://docs.dify.ai/en/getting-started/install-self-hosted/docker-compose |
+| Flowise | flowise | app-server | skip: retired August 2026, the Workday-owned project was archived read-only on 13 Aug 2026 | https://github.com/FlowiseAI/Flowise |
+| Langflow | langflow | app-server | done | https://docs.langflow.org/deployment-overview |
+| Botpress | botpress | app-server | done | https://botpress.com/docs/ |
+| Rasa | rasa | app-server | done | https://rasa.com/docs/ |
+| Voiceflow | voiceflow | app-server | done | https://www.voiceflow.com/docs/documentation/introduction |
+| Agentforce | salesforce-agentforce | app-server | done | https://www.salesforce.com/agentforce/pricing/ |
+| Zapier Agents | zapier-agents | app-server | done | https://help.zapier.com/hc/en-us/articles/45697420326285-Zapier-Agents-unexpected-activity-usage |
+| Relevance AI | relevance-ai | app-server | done | https://relevanceai.com/docs/get-started/introduction |
+| Lindy | lindy | app-server | done | https://docs.lindy.ai/ |
+| MCP server | mcp-server | app-server | done | https://modelcontextprotocol.io/specification/2025-06-18/basic/transports |
+| OpenAI Agents SDK | — | — | skip: agent framework library linked into the app-server | https://openai.github.io/openai-agents-python/ |
+| Semantic Kernel | — | — | skip: agent framework library linked into the app-server | https://learn.microsoft.com/en-us/semantic-kernel/overview/ |
+| Genkit | — | — | skip: AI framework library linked into the app-server | https://genkit.dev/docs/get-started/ |
+| AI SDK (Vercel) | — | — | skip: TypeScript AI library linked into the app-server | https://ai-sdk.dev/docs/introduction |
+
+## Data labelling and training data
+
+| resource | id | kind | status | source |
+|---|---|---|---|---|
+| Label Studio | label-studio | ml-platform | done | https://labelstud.io/guide/install |
+| Labelbox | labelbox | ml-platform | done | https://docs.labelbox.com/docs/overview |
+| Scale AI | scale-ai | ml-platform | done | https://api-reference.scale.com/docs/api-reference/authentication |
+| Snorkel Flow | snorkel | ml-platform | done | https://snorkel.ai/ai-data-development/ |
+| Roboflow | roboflow | ml-platform | done | https://docs.roboflow.com/ |
+| Encord | encord | ml-platform | done | https://docs.encord.com/platform-documentation/GettingStarted/gettingstarted-welcome |
+| V7 Darwin | v7 | ml-platform | done | https://docs.v7labs.com/docs/registering-items-from-external-storage |
+| SuperAnnotate | superannotate | ml-platform | done | https://doc.superannotate.com/docs/integrations |
+| Argilla | argilla | ml-platform | done | https://docs.argilla.io/latest/getting_started/how-to-deploy-argilla-with-docker/ |
+| CVAT | cvat | ml-platform | done | https://docs.cvat.ai/docs/administration/community/basics/installation/ |
+| Prodigy | prodigy | ml-platform | done | https://prodi.gy/docs/install |
+| Kili Technology | kili | ml-platform | done | https://docs.kili-technology.com/docs/hosting |
+| Datasaur | datasaur | ml-platform | done | https://docs.datasaur.ai/integrations/external-object-storage |
+| Toloka | toloka | ml-platform | done | https://toloka.ai/blog/toloka-platform-relaunch/ |
+| Surge AI | surge-ai | ml-platform | done | https://github.com/surge-ai/surge-python |
+| Hugging Face Hub | hugging-face-hub | artifact-repository | done | https://huggingface.co/docs/hub/repositories |
+| Civitai | civitai | artifact-repository | done | https://github.com/civitai/civitai/wiki/REST-API-Reference |
+
+## ML and data-science platforms
+
+| resource | id | kind | status | source |
+|---|---|---|---|---|
+| DataRobot AI Platform | datarobot | ml-platform | done | https://docs.datarobot.com/en/docs/get-started/day0/orientation.html |
+| Dataiku DSS | dataiku | ml-platform | done | https://doc.dataiku.com/dss/latest/installation/custom/advanced-customization.html |
+| C3 Agentic AI Platform | c3-ai | ml-platform | done | https://docs.c3.ai/docs/platform/8.9/topic/admin-c3-deploy-overview |
+| Domino Data Lab | domino-data-lab | ml-platform | done | https://docs.dominodatalab.com/en/6.2/user_guide/cece0f/deployment-offerings/ |
+| Alteryx One / Alteryx Server | alteryx | ml-platform | done | https://help.alteryx.com/aac/en/platform/alteryx-one-app/overview.html |
+| KNIME Business Hub | knime | ml-platform | done | https://docs.knime.com/latest/business_hub_installation_guide/index.html |
+| RapidMiner AI Hub (formerly Altair AI Hub) | rapidminer | ml-platform | done | https://docs.rapidminer.com/2026.0/hub/releases/changes-2026.0.2.html |
+| Abacus.AI | abacus-ai | ml-platform | done | https://abacus.ai/help/developer-platform/introduction |
+| Valohai | valohai | ml-platform | done | https://docs.valohai.com/installation-and-setup |
+| Union.ai | union-ai | ml-platform | done | https://www.union.ai/docs/v1/byoc/user-guide/introduction |
+| Deepchecks LLM Evaluation | deepchecks | monitoring | done | https://llmdocs.deepchecks.com/docs/aws-sagemaker |
+| DVC | dvc | ml-platform | done | https://dvc.org/doc/user-guide/data-management/remote-storage |
+| lakeFS | lakefs | object-store | done | https://docs.lakefs.io/reference/configuration/ |
+| Pachyderm | pachyderm | ml-platform | skip: retired January 2025, HPE retired HPE Machine Learning Data Management and the last release shipped 15 Jan 2025 | https://github.com/pachyderm/pachyderm |
+| ZenML | zenml | ml-platform | done | https://docs.zenml.io/deploying-zenml/deploying-zenml |
+| Flyte | flyte | ml-platform | done | https://docs.flyte.org/en/latest/deployment/deployment/index.html |
+| neptune.ai | neptune-ai | ml-platform | skip: retired March 2026, OpenAI acquired Neptune and the SaaS shut down on 6 Mar 2026 with all data deleted | https://support.neptune.ai/en/articles/13925165-service-shutdown-overview |
+| Comet | comet-ml | ml-platform | done | https://www.comet.com/docs/v2/ |
+| H2O AI Cloud | — | — | skip: covered by h2o (alias H2O AI Cloud) | https://docs.h2o.ai/ |
+| Databricks Mosaic AI | — | — | skip: covered by databricks (`mosaicAi: true`) | https://docs.databricks.com/aws/en/machine-learning/ |
+| Snowflake Cortex AI | — | — | skip: covered by snowflake (`cortex: true`) | https://docs.snowflake.com/en/guides-overview-ai-features |
+| Kedro | — | — | skip: Python pipeline library linked into a project, not a deployable node | https://docs.kedro.org/ |
+
+## AI coding assistants
+
+| resource | id | kind | status | source |
+|---|---|---|---|---|
+| GitHub Copilot | github-copilot | client | done | https://docs.github.com/en/copilot/get-started/plans |
+| Cursor | cursor | client | done | https://cursor.com/data-use |
+| Claude Code | claude-code | client | done | https://code.claude.com/docs/en/overview |
+| Windsurf (Devin Desktop) | windsurf | client | done | https://docs.devin.ai/desktop/getting-started |
+| Tabnine | tabnine | client | done | https://docs.tabnine.com/main/welcome/readme/architecture/deployment-options |
+| Sourcegraph Cody | sourcegraph-cody | client | done | https://sourcegraph.com/blog/changes-to-cody-free-pro-and-enterprise-starter-plans |
+| JetBrains AI Assistant / Junie | jetbrains-ai | client | done | https://www.jetbrains.com/help/ai-assistant/junie-agent.html |
+| Replit Agent | replit-agent | client | done | https://docs.replit.com/replitai/agent |
+| Lovable | lovable | client | done | https://docs.lovable.dev/integrations/supabase |
+| Bolt.new | bolt-new | client | done | https://support.bolt.new/cloud/bolt-cloud |
+| v0 | v0 | client | done | https://v0.app/docs |
 
 ## Object storage
 
@@ -1404,4 +1674,4 @@ commonly drawn in architecture diagrams.
 
 ## Counts
 
-total 1048, todo 4, done 860, skip 184.
+total 1263, todo 4, done 1038, skip 221.

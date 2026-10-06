@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Not Diamond: model router that recommends which LLM should answer each prompt; the client then calls
+# the provider itself, so prompts are not proxied. Per "Pre-trained router: Chat", the tradeoff defaults
+# to quality (cost or latency are opt-in) and auth is a Not Diamond API key; per "Rate limits", every
+# plan is capped at 50 requests per second.
+schemaVersion: "1"
+type: "component"
+id: "not-diamond"
+kind: "api-gateway"
+provider: "default"
+docs: "https://docs.notdiamond.ai/docs/quickstart-routing"
+defaults:
+  managed: true
+  auth: "api-key"
+  protocol: "http"
+  rateLimiting: true
+properties:
+  tradeoff:
+    type: "enum"
+    values: ["quality", "cost", "latency"]
+    default: "quality"
+  proxiesRequests:
+    type: "boolean"
+    default: false
+  requestsPerSecond:
+    type: "integer"
+    default: 50
+  customRouter:
+    type: "boolean"
+    default: false

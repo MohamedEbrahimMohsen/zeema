@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Lunary: LLM observability, prompt management and conversation analytics for chatbots and agents. Per
+# "Pricing", the Team plan includes 50,000 events a month and 1-year data history; self-hosted deployment,
+# SSO and PII masking are Enterprise features.
+schemaVersion: "1"
+type: "component"
+id: "lunary"
+kind: "monitoring"
+provider: "default"
+docs: "https://docs.lunary.ai/docs"
+defaults:
+  managed: true
+  signal: "traces"
+  collectorMode: "push"
+  independentOfMonitored: true
+  retentionDays: 365
+properties:
+  plan:
+    type: "enum"
+    values: ["team", "enterprise"]
+    default: "team"
+  selfHosted:
+    type: "boolean"
+    default: false
+  piiMasking:
+    type: "boolean"
+    default: false

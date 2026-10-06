@@ -9,6 +9,7 @@ id: "huggingface-inference"
 kind: "ml-inference"
 provider: "default"
 docs: "https://huggingface.co/docs/inference-endpoints/en/guides/autoscaling"
+aliases: ["Inference Providers"]
 defaults:
   managed: true
   inputs: "live"

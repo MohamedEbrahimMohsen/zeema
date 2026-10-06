@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# MCP server: a process exposing tools, resources and prompts to AI clients over the Model Context Protocol (JSON-RPC).
+# Per "Transports", the standard transports are stdio (the client launches the server as a subprocess) and Streamable HTTP, which
+# replaced the HTTP+SSE transport of 2024-11-05; HTTP servers must validate Origin and should authenticate (OAuth 2.1 in the spec).
+schemaVersion: "1"
+type: "component"
+id: "mcp-server"
+kind: "app-server"
+provider: "default"
+docs: "https://modelcontextprotocol.io/specification/2025-06-18/basic/transports"
+aliases: ["Model Context Protocol server", "MCP"]
+defaults:
+  managed: false
+  ownsData: false
+properties:
+  transport:
+    type: "enum"
+    values: ["stdio", "sse", "streamable-http"]
+    default: "streamable-http"
+  auth:
+    type: "enum"
+    values: ["none", "oauth", "api-key"]

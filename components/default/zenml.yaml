@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# ZenML: open-source MLOps framework whose server records pipelines, artifacts and models across stacks of
+# orchestrators and stores. Per "Deploying ZenML", a local server starts on 127.0.0.1:8237, the zenmldocker/zenml-server
+# image runs on Docker or a container platform, Helm deploys to Kubernetes, and ZenML Pro is the managed control plane.
+schemaVersion: "1"
+type: "component"
+id: "zenml"
+kind: "ml-platform"
+provider: "default"
+docs: "https://docs.zenml.io/deploying-zenml/deploying-zenml"
+aliases: ["ZenML Pro"]
+defaults:
+  managed: false
+  experimentTracking: false
+  modelRegistry: true
+properties:
+  deployment:
+    type: "enum"
+    values: ["local", "docker", "helm", "zenml-pro"]
+    default: "local"
+  port:
+    type: "integer"
+    default: 8237

@@ -10,6 +10,7 @@ kind: "ai-service"
 provider: "gcp"
 docs: "https://docs.cloud.google.com/document-ai/quotas"
 defaults:
+  auth: "iam"
   modality: "structured"
   publicEndpoint: true
   quotaUnitsPerMinute: 120

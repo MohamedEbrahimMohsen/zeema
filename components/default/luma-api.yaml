@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Luma Dream Machine API: hosted Ray video and Photon image generation, submitted asynchronously and polled.
+# Per "Rate Limits", the Build tier allows Ray 10 concurrent generations and 20 requests per minute, Photon
+# 40 and 80, with a $5,000 monthly cap; larger limits need the Scale plan.
+schemaVersion: "1"
+type: "component"
+id: "luma-api"
+kind: "ai-service"
+provider: "default"
+docs: "https://docs.lumalabs.ai/docs/rate-limits"
+aliases: ["Dream Machine API", "Luma API"]
+defaults:
+  auth: "api-key"
+  managed: true
+  modality: "video"
+  publicEndpoint: true
+  quotaUnitsPerMinute: 20
+properties:
+  plan:
+    type: "enum"
+    values: ["build", "scale"]
+    default: "build"
+  model:
+    type: "enum"
+    values: ["ray", "photon"]

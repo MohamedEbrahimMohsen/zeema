@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Lambda Cloud (Lambda, formerly Lambda Labs): on-demand GPU instances with 1, 2, 4 or 8 GPUs. Per "On-Demand Cloud",
+# an instance runs Ubuntu 22.04 LTS with Lambda Stack preinstalled, only port 22 (SSH) is open by default, and
+# filesystems are networked persistent storage you attach to an instance.
+schemaVersion: "1"
+type: "component"
+id: "lambda-labs"
+kind: "virtual-machine"
+provider: "default"
+docs: "https://docs.lambda.ai/public-cloud/on-demand/"
+aliases: ["Lambda Cloud", "Lambda On-Demand Cloud", "Lambda GPU Cloud"]
+defaults:
+  managed: false
+  os: "linux"
+  publicIp: true
+  zoneRedundant: false
+properties:
+  gpuCount:
+    type: "enum"
+    values: ["1", "2", "4", "8"]
+    default: "1"
+  image:
+    type: "enum"
+    values: ["lambda-stack", "gpu-base", "ubuntu-server"]
+    default: "lambda-stack"
+  persistentFilesystem:
+    type: "boolean"
+    default: false

@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AutoGen Studio: Microsoft's low-code UI to prototype AutoGen multi-agent teams. Per "AutoGen Studio" it is a research
+# prototype not meant for production; the AutoGen repository is in maintenance mode and names Microsoft Agent Framework as
+# its successor.
+schemaVersion: "1"
+type: "component"
+id: "autogen-studio"
+kind: "app-server"
+provider: "default"
+docs: "https://microsoft.github.io/autogen/stable/user-guide/autogenstudio-user-guide/index.html"
+defaults:
+  managed: false
+  stateless: false
+  runtime: "python"
+  criticality: "low"
+properties:
+  productionReady:
+    type: "boolean"
+    default: false

@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# xAI API: hosted Grok models for chat, reasoning, vision and image generation over a public endpoint.
+# Per "FAQ - API Security", inputs and outputs are kept 30 days for auditing and not used for training;
+# Zero Data Retention is off until a team admin enables it, and us.api.x.ai keeps processing in the US.
+# Per "Consumption and Rate Limits", new teams start on Tier 0 and tiers rise with cumulative spend.
+schemaVersion: "1"
+type: "component"
+id: "xai-api"
+kind: "ai-service"
+provider: "default"
+docs: "https://docs.x.ai/developers/faq/security"
+aliases: ["Grok API"]
+defaults:
+  auth: "api-key"
+  managed: true
+  modality: "multimodal"
+  publicEndpoint: true
+  dataRetentionDays: 30
+  dataResidency: "global"
+properties:
+  usageTier:
+    type: "enum"
+    values: ["tier-0", "tier-1", "tier-2", "tier-3", "tier-4", "enterprise"]
+    default: "tier-0"
+  zeroDataRetention:
+    type: "boolean"
+    default: false
+  regionalEndpoint:
+    type: "enum"
+    values: ["global", "us"]
+    default: "global"

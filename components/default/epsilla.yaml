@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Epsilla: open-source C++ vector database using parallel graph traversal, run in Docker, as a Python library or on Epsilla
+# Cloud. Per the vectordb README it filters on metadata and does hybrid search with built-in embeddings; the company now
+# sells an AI agent platform and the database's last release is v0.3.16 (March 2025).
+schemaVersion: "1"
+type: "component"
+id: "epsilla"
+kind: "vector-database"
+provider: "default"
+docs: "https://github.com/epsilla-cloud/vectordb"
+aliases: ["Epsilla Cloud"]
+defaults:
+  managed: false
+  metadataFiltering: true
+  hybridSearch: true
+properties:
+  deployment:
+    type: "enum"
+    values: ["docker", "python-library", "epsilla-cloud"]
+    default: "docker"

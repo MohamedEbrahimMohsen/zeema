@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Aleph Alpha API: Luminous and Pharia model endpoints from the German sovereign-AI vendor, token-authenticated.
+# Retired November 2024: the public hosted API was discontinued on 30 November 2024; the API now ships inside a
+# customer-operated PhariaAI installation ("Aleph Alpha API reference"). Cohere agreed to acquire Aleph Alpha in April 2026.
+schemaVersion: "1"
+type: "component"
+id: "aleph-alpha-api"
+kind: "ai-service"
+provider: "default"
+docs: "https://docs.aleph-alpha.com/phariaai-dev-guide/latest/pharia-openapi/index.html"
+aliases: ["PhariaAI", "PhariaInference API", "Luminous"]
+defaults:
+  auth: "api-key"
+  modality: "multimodal"
+properties:
+  deployment:
+    type: "enum"
+    values: ["public-api", "pharia-on-premise", "pharia-hosted"]
+    default: "pharia-on-premise"
+  selfHosted:
+    type: "boolean"
+    default: true

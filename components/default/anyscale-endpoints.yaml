@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Anyscale Endpoints: Anyscale's OpenAI-compatible API for open LLMs served on Ray Serve, with shared serverless
+# access or dedicated private endpoints. Retired August 2024: effective 1 August 2024 the multi-tenant Endpoints API
+# was removed, and LLM serving is available only as dedicated deployments on the hosted Anyscale Platform.
+schemaVersion: "1"
+type: "component"
+id: "anyscale-endpoints"
+kind: "ml-inference"
+provider: "default"
+docs: "https://docs.anyscale.com/"
+aliases: ["Anyscale Private Endpoints"]
+defaults:
+  training: "batch"
+  inputs: "live"
+  accelerator: "gpu"
+  managed: true
+properties:
+  access:
+    type: "enum"
+    values: ["serverless", "dedicated"]
+    default: "serverless"

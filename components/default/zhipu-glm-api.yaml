@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Z.ai open platform (Zhipu AI): hosted GLM models for chat, vision, image (GLM-Image) and video (CogVideoX).
+# Per "Quick Start", calls go to https://api.z.ai/api/paas/v4/ with an Authorization: Bearer API key; the
+# mainland-China platform is open.bigmodel.cn. Rate limits are per account and shown in the console, not the docs.
+schemaVersion: "1"
+type: "component"
+id: "zhipu-glm-api"
+kind: "ai-service"
+provider: "default"
+docs: "https://docs.z.ai/guides/overview/quick-start"
+aliases: ["Z.ai", "Zhipu AI", "BigModel", "GLM API"]
+defaults:
+  auth: "api-key"
+  managed: true
+  modality: "multimodal"
+  publicEndpoint: true
+properties:
+  platform:
+    type: "enum"
+    values: ["z-ai", "bigmodel-cn"]
+    default: "z-ai"

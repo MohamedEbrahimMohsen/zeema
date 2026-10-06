@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# DeepInfra: serverless inference for open models (text, embeddings, image, speech) over an OpenAI-compatible endpoint.
+# Per "Data Privacy", inputs and outputs are held only in memory and not used for training (Google and Anthropic
+# models excepted), while bulk inference may store data briefly on disk; per "Rate Limits", 200 concurrent requests per model.
+schemaVersion: "1"
+type: "component"
+id: "deepinfra"
+kind: "ai-service"
+provider: "default"
+docs: "https://docs.deepinfra.com/account/data-privacy"
+defaults:
+  auth: "api-key"
+  managed: true
+  modality: "multimodal"
+  publicEndpoint: true
+  dataRetentionDays: 0
+properties:
+  concurrentRequestsPerModel:
+    type: "integer"
+    default: 200
+  bulkInference:
+    type: "boolean"
+    default: false
+  thirdPartyModel:
+    type: "boolean"
+    default: false

@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# WhyLabs: SaaS AI observability built on whylogs statistical profiles, with LangKit for LLM signals.
+# Retired January 2025: per the WhyLabs site notice, "WhyLabs, Inc. is discontinuing operations" and the
+# complete platform was open sourced as whylabs-oss; whylogs and LangKit continue as open source.
+schemaVersion: "1"
+type: "component"
+id: "whylabs"
+kind: "monitoring"
+provider: "default"
+docs: "https://github.com/whylabs/whylabs-oss"
+defaults:
+  managed: true
+  signal: "metrics"
+  collectorMode: "push"
+  independentOfMonitored: true
+properties:
+  rawDataStored:
+    type: "boolean"
+    default: false
+  selfHosted:
+    type: "boolean"
+    default: false

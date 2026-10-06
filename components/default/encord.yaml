@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Encord: hosted data platform with Index (curation), Annotate (labelling) and Active (model evaluation and label
+# quality). Per the Encord docs, files can be registered from AWS S3, Google Cloud Storage or Azure so they stay in the
+# customer's bucket, and the SDK authenticates with access keys.
+schemaVersion: "1"
+type: "component"
+id: "encord"
+kind: "ml-platform"
+provider: "default"
+docs: "https://docs.encord.com/platform-documentation/GettingStarted/gettingstarted-welcome"
+defaults:
+  managed: true
+  experimentTracking: false
+  modelRegistry: false
+properties:
+  product:
+    type: "enum"
+    values: ["index", "annotate", "active"]
+    default: "annotate"
+  storage:
+    type: "enum"
+    values: ["encord-hosted", "s3", "gcs", "azure-blob"]
+    default: "encord-hosted"

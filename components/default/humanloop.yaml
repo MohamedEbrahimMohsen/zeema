@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Humanloop: SaaS LLM evals, prompt management and logging platform. Retired September 2025: per the
+# "Humanloop" docs notice, the platform and API were sunset on September 8th, 2025 after the team joined
+# Anthropic; data export is covered by the Migration Guide.
+schemaVersion: "1"
+type: "component"
+id: "humanloop"
+kind: "monitoring"
+provider: "default"
+docs: "https://humanloop.com/docs"
+defaults:
+  managed: true
+  signal: "traces"
+  collectorMode: "push"
+  independentOfMonitored: true
+properties:
+  evaluations:
+    type: "boolean"
+    default: false
+  promptManagement:
+    type: "boolean"
+    default: false

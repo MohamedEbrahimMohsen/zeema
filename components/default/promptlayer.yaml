@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# PromptLayer: SaaS prompt registry, LLM request logging and evals; requests arrive through its SDKs or REST
+# API. Per "Pricing", the Free plan allows 2,500 requests a month and 5 users, standard plans are cloud-hosted
+# in the US, and self-hosting on AWS, GCP or Azure is an Enterprise option.
+schemaVersion: "1"
+type: "component"
+id: "promptlayer"
+kind: "monitoring"
+provider: "default"
+docs: "https://docs.promptlayer.com/"
+defaults:
+  managed: true
+  signal: "traces"
+  collectorMode: "push"
+  independentOfMonitored: true
+properties:
+  plan:
+    type: "enum"
+    values: ["free", "pro", "team", "enterprise"]
+    default: "free"
+  monthlyRequestLimit:
+    type: "integer"
+    default: 2500
+  selfHosted:
+    type: "boolean"
+    default: false

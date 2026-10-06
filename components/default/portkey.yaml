@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Portkey AI Gateway: OpenAI-compatible gateway with fallbacks, retries, load balancing, caching and
+# guardrails; Palo Alto Networks closed its acquisition in May 2026 and it now backs Prisma AIRS. Per
+# "Cache (Simple & Semantic)", caching starts only once `cache` is added to a config and max_age then
+# defaults to 7 days; semantic cache is Enterprise-only. The gateway is open source (npx @portkey-ai/gateway).
+schemaVersion: "1"
+type: "component"
+id: "portkey"
+kind: "api-gateway"
+provider: "default"
+docs: "https://portkey.ai/docs/product/ai-gateway/cache-simple-and-semantic"
+defaults:
+  managed: true
+  auth: "api-key"
+  protocol: "http"
+  tls: true
+properties:
+  caching:
+    type: "enum"
+    values: ["off", "simple", "semantic"]
+    default: "off"
+  cacheTtlSeconds:
+    type: "integer"
+    default: 604800
+  fallbacks:
+    type: "boolean"
+    default: false
+  selfHosted:
+    type: "boolean"
+    default: false

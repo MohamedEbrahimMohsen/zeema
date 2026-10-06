@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Mem0: memory layer for AI agents that extracts facts from conversations and recalls them per user, agent or run.
+# Per "Platform vs Open Source", the hosted Platform needs no vector store, LLM or embedder and alone offers graph memory,
+# memory decay and webhooks; the open-source library and server bring their own stores.
+schemaVersion: "1"
+type: "component"
+id: "mem0"
+kind: "cache"
+provider: "default"
+docs: "https://docs.mem0.ai/platform/platform-vs-oss"
+aliases: ["Mem0 Platform", "Mem0 Open Source"]
+defaults:
+  managed: true
+  persistence: true
+  invalidation: "event"
+properties:
+  deployment:
+    type: "enum"
+    values: ["platform", "open-source"]
+    default: "platform"
+  plan:
+    type: "enum"
+    values: ["hobby", "starter", "pro", "enterprise"]
+    default: "hobby"
+  graphMemory:
+    type: "boolean"
+    default: false

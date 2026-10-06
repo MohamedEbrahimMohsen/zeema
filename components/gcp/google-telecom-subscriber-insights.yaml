@@ -11,6 +11,7 @@ kind: "ai-service"
 provider: "gcp"
 docs: "https://docs.cloud.google.com/telecom-subscriber-insights/docs"
 defaults:
+  auth: "iam"
   modality: "structured"
   publicEndpoint: false
   managed: false

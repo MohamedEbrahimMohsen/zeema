@@ -11,6 +11,7 @@ kind: "ai-service"
 provider: "digitalocean"
 docs: "https://docs.digitalocean.com/products/inference/"
 defaults:
+  auth: "api-key"
   managed: true
   modality: "multimodal"
   publicEndpoint: true

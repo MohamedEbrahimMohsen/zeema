@@ -258,6 +258,9 @@
             },
             "category": {
               "$ref": "#/definitions/idOrList"
+            },
+            "count": {
+              "$ref": "#/definitions/comparison"
             }
           }
         },

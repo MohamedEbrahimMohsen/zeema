@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Voyage AI: hosted text, multimodal and contextual embedding and rerank models; now part of MongoDB and also
+# served as the Atlas Embedding and Reranking API. Per "FAQ", data is kept for training unless an admin with a
+# payment method opts out; per "Rate Limits", Tier 1 needs a payment method and gives 2000 RPM and 8M TPM.
+schemaVersion: "1"
+type: "component"
+id: "voyage-ai"
+kind: "ai-service"
+provider: "default"
+docs: "https://docs.voyageai.com/docs/rate-limits"
+aliases: ["Voyage API", "Atlas Embedding API"]
+defaults:
+  auth: "api-key"
+  managed: true
+  modality: "embedding"
+  publicEndpoint: true
+properties:
+  trainingOptOut:
+    type: "boolean"
+    default: false
+  endpoint:
+    type: "enum"
+    values: ["embeddings", "multimodal-embeddings", "contextualized-embeddings", "rerank"]
+    default: "embeddings"
+  apiHost:
+    type: "enum"
+    values: ["voyageai", "mongodb-atlas"]
+    default: "voyageai"

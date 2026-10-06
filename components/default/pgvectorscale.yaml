@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# pgvectorscale: Postgres extension from Timescale (now Tiger Data) that adds a StreamingDiskANN index on top of pgvector.
+# Per the pgvectorscale README, the index compresses vectors with Statistical Binary Quantization, supports cosine, L2 and
+# inner product distance, and filters by labels inside the index.
+schemaVersion: "1"
+type: "component"
+id: "pgvectorscale"
+kind: "vector-database"
+provider: "default"
+docs: "https://github.com/timescale/pgvectorscale"
+defaults:
+  indexType: "disk-ann"
+  quantization: "binary"
+  metadataFiltering: true
+  managed: false
+properties:
+  storageLayout:
+    type: "enum"
+    values: ["memory-optimized", "plain"]
+    default: "memory-optimized"
+  labelFiltering:
+    type: "boolean"
+    default: false

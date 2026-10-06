@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../schema/rule.schema.json
+# An AI vendor reached with an API key, called from the team's own servers, workers or clients,
+# with the key not declared as held in a key-management component and no key-management node in
+# the design. The key then lives in configuration or code, unrotated, and one leak bills the account.
+# Tripped by: designs/reference/llm-gateway/design.broken.yaml and designs/reference/linear-sync/design.broken.yaml
+schemaVersion: "1"
+type: "rule"
+id: "ai-api-key-unmanaged"
+severity: "warning"
+select:
+  node:
+    kind: "ai-service"
+when:
+  all:
+    - prop: "auth"
+      equals: "api-key"
+    - prop: "keyStore"
+      equals: false
+    - hasEdge:
+        direction: "in"
+        peerKind: ["app-server", "worker", "client"]
+    - not:
+        hasNode:
+          kind: "key-management"
+message: "AI service '{{node.id}}' is called with an API key, the key is not held in a key-management component, and the design has none."

@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Lakera Guard: API that screens LLM inputs and outputs for prompt attacks, harmful content, PII and unknown
+# links; Check Point closed its acquisition of Lakera in October 2025 and now calls it AI Guardrails. Per
+# "API Overview", /v2/guard returns a flagged verdict and enforcement is left to the caller; per "Policies",
+# with no project the Default Policy runs every detector at the strictest sensitivity, L4 (Paranoid).
+schemaVersion: "1"
+type: "component"
+id: "lakera-guard"
+kind: "policy-engine"
+provider: "default"
+docs: "https://docs.lakera.ai/docs/api"
+aliases: ["Check Point AI Guardrails"]
+defaults:
+  managed: true
+  scope: "resource"
+  effect: "audit"
+properties:
+  flaggingSensitivity:
+    type: "enum"
+    values: ["l1", "l2", "l3", "l4"]
+    default: "l4"
+  region:
+    type: "enum"
+    values: ["global", "eu", "us", "asia"]
+    default: "global"
+  selfHosted:
+    type: "boolean"
+    default: false

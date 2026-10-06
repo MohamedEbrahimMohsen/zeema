@@ -244,6 +244,9 @@ kinds:
     description: "Durable orchestration of multi-step processes with retries and compensation."
 
 components:
+  abacus-ai:
+    name: "Abacus.AI"
+    description: "Hosted AI platform with a feature store, model training and API deployments."
   ably:
     name: "Ably"
     description: "Hosted realtime messaging with ordering guarantees and history."
@@ -268,6 +271,9 @@ components:
   ai-service:
     name: "Generic AI service"
     description: "Vendor-neutral AI service. Use when the real product is not in the catalogue; every rule for this kind still applies."
+  ai21-api:
+    name: "AI21 API"
+    description: "Hosted Jamba long-context language models for chat and tool use."
   airbyte:
     name: "Airbyte"
     description: "Connector-based EL platform running scheduled syncs from sources to destinations."
@@ -286,6 +292,9 @@ components:
   alb:
     name: "AWS Application Load Balancer"
     description: "Managed layer-7 HTTP load balancer with path and host routing."
+  aleph-alpha-api:
+    name: "Aleph Alpha API"
+    description: "Luminous and Pharia model API from Aleph Alpha, now shipped inside PhariaAI installations."
   alertmanager:
     name: "Prometheus Alertmanager"
     description: "Deduplicates, groups and routes alerts from Prometheus."
@@ -631,6 +640,9 @@ components:
   alibaba-yida:
     name: "YIDA"
     description: "Low-code platform that assembles and hosts form, approval process and report applications from prebuilt components and connectors."
+  alteryx:
+    name: "Alteryx"
+    description: "Analytics automation platform for data preparation, workflows and ML, as SaaS or Alteryx Server."
   amazon-pay:
     name: "Amazon Pay"
     description: "Checkout API that charges a buyer's existing Amazon account, with an idempotency key header on mutating calls and Instant Payment Notification callbacks."
@@ -649,6 +661,9 @@ components:
   antrea:
     name: "Antrea"
     description: "Open vSwitch based Kubernetes CNI with network policy and a Geneve overlay."
+  anyscale-endpoints:
+    name: "Anyscale Endpoints"
+    description: "OpenAI-compatible API for open LLMs on Ray Serve, retired as a shared API in August 2024."
   apache-helix:
     name: "Apache Helix"
     description: "Cluster partition placement and state-machine management."
@@ -661,6 +676,9 @@ components:
   apicurio:
     name: "Apicurio Registry"
     description: "Open-source schema and API registry with no compatibility rule by default."
+  apify:
+    name: "Apify"
+    description: "Cloud platform running web scraping and automation Actors with schedules, datasets and webhooks."
   apigee:
     name: "Apigee"
     description: "Google's managed API management platform with proxy policies and analytics."
@@ -685,18 +703,30 @@ components:
   arangodb:
     name: "ArangoDB"
     description: "Multi-model database serving documents, graphs and key-value data over RocksDB."
+  argilla:
+    name: "Argilla"
+    description: "Open-source server for curating AI datasets with human feedback, now part of Hugging Face."
   argo-cd:
     name: "Argo CD"
     description: "Declarative GitOps continuous delivery controller reconciling Kubernetes against Git."
   argo-workflows:
     name: "Argo Workflows"
     description: "Kubernetes-native engine that runs each workflow step as a pod."
+  arize-ax:
+    name: "Arize AX"
+    description: "SaaS tracing, evaluation and experiments for AI agents and LLM applications."
+  arize-phoenix:
+    name: "Arize Phoenix"
+    description: "Self-hosted open-source LLM tracing and evaluation server built on OpenTelemetry."
   armada:
     name: "Armada"
     description: "Multi-cluster batch scheduler queueing jobs centrally and dispatching to Kubernetes executors."
   arroyo:
     name: "Arroyo"
     description: "Rust stream processing engine running SQL pipelines with checkpointed state."
+  arthur-ai:
+    name: "Arthur"
+    description: "Observability, evaluation and guardrails for LLMs and agents, with a self-hosted open-source engine."
   artifact-repository:
     name: "Generic artifact repository"
     description: "Vendor-neutral artifact repository. Use when the real product is not in the catalogue; every rule for this kind still applies."
@@ -736,6 +766,9 @@ components:
   authentik:
     name: "authentik"
     description: "Self-hosted identity provider and SSO platform with OAuth2, SAML, LDAP and SCIM providers."
+  autogen-studio:
+    name: "AutoGen Studio"
+    description: "Low-code UI to prototype AutoGen multi-agent teams; a research prototype in maintenance mode."
   automation-pipeline:
     name: "Automation pipeline"
     description: "Build, test and deploy automation drawn as one box."
@@ -820,6 +853,9 @@ components:
   aws-bedrock-agentcore:
     name: "Amazon Bedrock AgentCore"
     description: "Serverless hosting for AI agents and MCP tools, each session isolated in its own microVM."
+  aws-bedrock-data-automation:
+    name: "Amazon Bedrock Data Automation"
+    description: "Generative-AI extraction of structured output from documents, images, audio and video."
   aws-bedrock-guardrails:
     name: "Amazon Bedrock Guardrails"
     description: "Configurable content and privacy safeguards applied to prompts and model responses."
@@ -922,6 +958,9 @@ components:
   aws-codepipeline:
     name: "AWS CodePipeline"
     description: "Managed release pipeline of stages, actions and transitions, running in SUPERSEDED execution mode by default."
+  aws-codewhisperer:
+    name: "Amazon CodeWhisperer"
+    description: "AI code completion in the IDE, folded into Amazon Q Developer in April 2024."
   aws-cognito:
     name: "Amazon Cognito"
     description: "AWS managed user pools and federated identities."
@@ -1249,6 +1288,12 @@ components:
   aws-lookout-for-equipment:
     name: "Amazon Lookout for Equipment"
     description: "Managed anomaly detection that spots abnormal behaviour in industrial sensor data."
+  aws-lookout-for-metrics:
+    name: "Amazon Lookout for Metrics"
+    description: "Anomaly detection over business metrics, shut down in October 2025."
+  aws-lookout-for-vision:
+    name: "Amazon Lookout for Vision"
+    description: "Visual anomaly detection for production-line defects, shut down in October 2025."
   aws-macie:
     name: "Amazon Macie"
     description: "Sensitive-data discovery and S3 bucket security posture monitoring."
@@ -1360,6 +1405,9 @@ components:
   aws-q-business:
     name: "Amazon Q Business"
     description: "Generative-AI assistant answering questions over enterprise data with permission-aware citations."
+  aws-q-developer:
+    name: "Amazon Q Developer"
+    description: "AWS AI coding assistant in the IDE, CLI and console; IDE plugins end support in April 2027."
   aws-quicksight:
     name: "Amazon Quick Sight"
     description: "Managed business intelligence with dashboards over SPICE datasets or direct queries."
@@ -1411,6 +1459,9 @@ components:
   aws-sagemaker:
     name: "Amazon SageMaker AI"
     description: "Managed machine learning workspace for building, training and deploying models."
+  aws-sagemaker-canvas:
+    name: "Amazon SageMaker Canvas"
+    description: "No-code workspace to prepare data, build models and use foundation models."
   aws-sagemaker-feature-store:
     name: "Amazon SageMaker Feature Store"
     description: "Managed feature groups with a low-latency online store and an append-only offline store in S3."
@@ -1426,6 +1477,9 @@ components:
   aws-sagemaker-training-job:
     name: "Amazon SageMaker AI Training Job"
     description: "Managed containerized training run on ML compute instances SageMaker provisions on demand."
+  aws-sagemaker-unified-studio:
+    name: "Amazon SageMaker Unified Studio"
+    description: "One studio over SageMaker AI, Bedrock and AWS analytics, organised in domains and projects."
   aws-secrets-manager:
     name: "AWS Secrets Manager"
     description: "AWS managed secret storage with optional rotation."
@@ -1666,6 +1720,9 @@ components:
   azure-batch:
     name: "Azure Batch"
     description: "Managed pools of compute nodes that run large parallel and HPC job workloads."
+  azure-bing-web-search:
+    name: "Bing Web Search API"
+    description: "Bing Search v7 web results API on Azure, retired on August 11, 2025."
   azure-blob-storage:
     name: "Azure Blob Storage"
     description: "Managed object store; locally redundant by default with opt-in zone and geo redundancy."
@@ -1717,6 +1774,9 @@ components:
   azure-content-understanding:
     name: "Azure Content Understanding"
     description: "Analyzers that extract a user-defined structured schema from documents, images, audio and video."
+  azure-copilot-studio:
+    name: "Microsoft Copilot Studio"
+    description: "Low-code SaaS studio for agents and workflows published to Teams, Copilot and the web."
   azure-cosmos-db:
     name: "Azure Cosmos DB"
     description: "Managed multi-model store with five consistency levels and opt-in multi-region writes."
@@ -2188,24 +2248,36 @@ components:
   bacula:
     name: "Bacula"
     description: "Network backup suite of a Director, storage and file daemons and a catalog database."
+  baidu-ernie-api:
+    name: "Baidu Qianfan"
+    description: "Baidu AI Cloud model platform serving ERNIE and third-party models over an OpenAI-compatible API."
   balena:
     name: "balena"
     description: "Managed fleet platform delivering container releases as delta updates to devices running balenaOS."
   bamboo:
     name: "Atlassian Bamboo"
     description: "Self-hosted build and deployment server with local, remote and elastic agents."
+  banana-dev:
+    name: "Banana"
+    description: "Serverless GPU inference platform, shut down in March 2024."
   bank-api:
     name: "Bank API"
     description: "External bank integration for transfers and settlement."
   bareos:
     name: "Bareos"
     description: "Open-source backup suite forked from Bacula, with Director, storage and file daemons."
+  baseten:
+    name: "Baseten"
+    description: "Managed model deployments on dedicated autoscaling GPU replicas."
   bastion-host:
     name: "Generic bastion host"
     description: "Vendor-neutral bastion host. Use when the real product is not in the catalogue; every rule for this kind still applies."
   beam:
     name: "Apache Beam"
     description: "Unified batch and streaming programming model executed by a pluggable runner."
+  beam-cloud:
+    name: "Beam"
+    description: "Serverless GPU endpoints, task queues and functions on the open-source beta9 runtime."
   beegfs:
     name: "BeeGFS"
     description: "Parallel file system with a kernel client, striping file contents across storage targets."
@@ -2242,6 +2314,12 @@ components:
   bitwarden:
     name: "Bitwarden"
     description: "End-to-end encrypted credential vault offered as a hosted service or self-hosted, with a separate Secrets Manager for machine accounts."
+  black-forest-labs-api:
+    name: "Black Forest Labs API"
+    description: "Hosted FLUX image generation and editing models."
+  bland-ai:
+    name: "Bland AI"
+    description: "Voice AI agents that place and answer phone calls, with SMS, web and email."
   blob-store:
     name: "Blob store"
     description: "Object storage drawn without naming a product."
@@ -2251,6 +2329,9 @@ components:
   block-volume:
     name: "Block volume"
     description: "Generic raw block device attached to one host and formatted by it."
+  bolt-new:
+    name: "Bolt.new"
+    description: "In-browser AI app builder from StackBlitz with built-in hosting and databases."
   bookkeeper:
     name: "Apache BookKeeper"
     description: "Replicated append-only ledger storage service for write-ahead logs and message journals."
@@ -2260,18 +2341,30 @@ components:
   bot-management:
     name: "Generic bot management"
     description: "Vendor-neutral bot management. Use when the real product is not in the catalogue; every rule for this kind still applies."
+  botpress:
+    name: "Botpress"
+    description: "Hosted platform to build, connect and deploy LLM chat agents across channels."
   boundary:
     name: "HashiCorp Boundary"
     description: "Identity-aware proxy brokering just-in-time sessions to targets without exposing the network."
   braintree:
     name: "Braintree"
     description: "PayPal-owned gateway with an embedded Drop-in UI and signed webhook notifications."
+  braintrust:
+    name: "Braintrust"
+    description: "SaaS evals, logging and tracing for LLM applications."
+  brave-search-api:
+    name: "Brave Search API"
+    description: "Web search over Brave's independent index, with plans for search and for AI grounding."
   braze:
     name: "Braze"
     description: "Customer engagement platform for push, email, SMS, WhatsApp and Content Cards."
   brooklin:
     name: "Brooklin"
     description: "LinkedIn streaming pipeline service for change capture and Kafka mirroring."
+  browserbase:
+    name: "Browserbase"
+    description: "Managed headless browsers for AI agents and web automation, metered by concurrent sessions."
   bugsnag:
     name: "SmartBear Insight Hub"
     description: "SaaS error monitoring with automatic error grouping."
@@ -2284,6 +2377,9 @@ components:
   bytewax:
     name: "Bytewax"
     description: "Python stream processing framework built on Timely Dataflow."
+  c3-ai:
+    name: "C3 AI Platform"
+    description: "Model-driven platform for building and running enterprise AI applications."
   cache:
     name: "Generic cache"
     description: "Vendor-neutral cache. Use when the real product is not in the catalogue; every rule for this kind still applies."
@@ -2296,6 +2392,9 @@ components:
   cadence:
     name: "Cadence"
     description: "Uber's durable workflow orchestration engine, predecessor of Temporal."
+  calypsoai:
+    name: "CalypsoAI"
+    description: "Runtime AI security for prompt-injection defence, data-leak detection and red teaming of models and agents."
   camunda:
     name: "Camunda 8"
     description: "BPMN process orchestration on the Zeebe engine, with compensation and user tasks."
@@ -2305,6 +2404,9 @@ components:
   card-network:
     name: "Card network"
     description: "Card scheme connection for authorisation and clearing."
+  cartesia:
+    name: "Cartesia"
+    description: "Hosted Sonic text to speech and Ink speech to text over HTTP and WebSockets."
   cassandra:
     name: "Apache Cassandra"
     description: "Leaderless wide-column store with tunable consistency and last-writer-wins resolution."
@@ -2329,6 +2431,9 @@ components:
   cerbos:
     name: "Cerbos"
     description: "Stateless self-hosted policy decision point for application authorization over gRPC and REST."
+  cerebras-api:
+    name: "Cerebras Inference"
+    description: "Low-latency inference for open-weight text and vision models on wafer-scale accelerators."
   cert-manager:
     name: "cert-manager"
     description: "Kubernetes controller that issues X.509 certificates and renews them before expiry."
@@ -2350,6 +2455,9 @@ components:
   chroma:
     name: "Chroma"
     description: "Embedded open-source vector database using HNSW with squared L2 distance on a single node."
+  chunkr:
+    name: "Chunkr"
+    description: "Task-based document parsing and extraction API that chunks files into LLM-ready data, also self-hostable."
   ci-pipeline:
     name: "Generic CI/CD pipeline"
     description: "Vendor-neutral CI/CD pipeline. Use when the real product is not in the catalogue; every rule for this kind still applies."
@@ -2371,6 +2479,12 @@ components:
   citus:
     name: "Citus"
     description: "PostgreSQL extension that shards tables across worker nodes."
+  civitai:
+    name: "Civitai"
+    description: "Community hub and API for downloading image and video generation models."
+  claude-code:
+    name: "Claude Code"
+    description: "Anthropic's agentic coding tool in the terminal, IDE, desktop and web."
   clearml:
     name: "ClearML"
     description: "AI development platform for experiment tracking, orchestration and model management."
@@ -2704,18 +2818,27 @@ components:
   cockroachdb-cloud:
     name: "CockroachDB Cloud"
     description: "Managed CockroachDB with hourly managed backups retained 30 days."
+  cognee:
+    name: "cognee"
+    description: "Open-source AI memory engine that turns documents into a knowledge graph agents can recall."
   cohere-api:
     name: "Cohere API"
     description: "Hosted text models for chat, embedding, rerank and classification."
   collibra:
     name: "Collibra"
     description: "SaaS data intelligence platform combining catalog, lineage, quality, privacy and access policies."
+  comet-ml:
+    name: "Comet"
+    description: "Experiment tracking, model registry and model monitoring, as cloud or self-hosted."
   concourse:
     name: "Concourse"
     description: "Self-hosted pipeline engine built on versioned resources polled on an interval."
   conductor:
     name: "Conductor"
     description: "Netflix JSON-defined workflow orchestrator executed by polling workers."
+  confident-ai:
+    name: "Confident AI"
+    description: "SaaS evaluation and observability for LLM applications, built on DeepEval."
   configcat:
     name: "ConfigCat"
     description: "Hosted feature flag service whose SDKs read a config JSON from a CDN."
@@ -2773,6 +2896,9 @@ components:
   coredns:
     name: "CoreDNS"
     description: "Self-managed plugin-based DNS server used as Kubernetes cluster DNS."
+  coreweave:
+    name: "CoreWeave"
+    description: "GPU cloud reached as managed Kubernetes clusters on bare-metal GPU nodes."
   cortex:
     name: "Cortex"
     description: "Horizontally scalable, multi-tenant Prometheus backend with blocks storage."
@@ -2791,6 +2917,9 @@ components:
   coveo:
     name: "Coveo"
     description: "Hosted enterprise search and relevance service fed by crawled or pushed sources."
+  crewai-enterprise:
+    name: "CrewAI AMP"
+    description: "Platform to deploy, monitor and scale CrewAI multi-agent crews, formerly CrewAI Enterprise."
   cron-job:
     name: "Cron job"
     description: "Fixed-schedule job run by cron or a Kubernetes CronJob."
@@ -2800,12 +2929,18 @@ components:
   crowdstrike-falcon:
     name: "CrowdStrike Falcon"
     description: "Cloud-delivered endpoint security where a lightweight sensor on each host streams telemetry to CrowdStrike for detection and response."
+  crusoe:
+    name: "Crusoe Cloud VM"
+    description: "NVIDIA or AMD GPU virtual machine on Crusoe Cloud with ephemeral local storage."
   cube:
     name: "Cube"
     description: "Open-source semantic layer serving one governed data model to BI tools, applications and agents."
   cubefs:
     name: "CubeFS"
     description: "CNCF distributed storage serving the same data over POSIX, S3 and HDFS interfaces."
+  cursor:
+    name: "Cursor"
+    description: "AI code editor with agents that call your code, MCP servers and APIs."
   curvine:
     name: "Curvine"
     description: "Distributed POSIX cache file system layered over cloud object storage."
@@ -2815,6 +2950,9 @@ components:
   customer-io:
     name: "Customer.io"
     description: "Messaging and journeys platform with email, in-app, push and SMS plus a subscription center."
+  cvat:
+    name: "CVAT"
+    description: "Open-source image and video annotation tool, self-hosted or as CVAT Online."
   dagster:
     name: "Dagster"
     description: "Asset-oriented orchestrator with persisted run history and event logs."
@@ -2848,15 +2986,27 @@ components:
   datahub:
     name: "DataHub"
     description: "Open-source metadata platform for discovery, column-level lineage and governance of the data estate."
+  dataiku:
+    name: "Dataiku"
+    description: "Data science and AI platform for visual and code pipelines, AutoML and deployment."
   dataproc-job:
     name: "Dataproc job"
     description: "Spark or Hadoop job on Google Cloud Dataproc clusters or serverless."
+  datarobot:
+    name: "DataRobot"
+    description: "Enterprise AI platform for AutoML, MLOps and generative AI applications."
+  datasaur:
+    name: "Datasaur"
+    description: "Hosted labelling platform for NLP and LLM data with external bucket storage."
   datastax-enterprise:
     name: "DataStax Enterprise"
     description: "Commercial Cassandra distribution with optional search, analytics and graph workloads."
   datomic:
     name: "Datomic"
     description: "Immutable transactional database whose single transactor appends facts to a log."
+  daytona:
+    name: "Daytona"
+    description: "Cloud sandboxes for AI agents, containers by default with VM and GPU options."
   db2:
     name: "IBM Db2"
     description: "Enterprise relational database with optional HADR standby replication."
@@ -2866,9 +3016,24 @@ components:
   debezium:
     name: "Debezium"
     description: "Open-source log-based change data capture connectors, usually deployed on Kafka Connect."
+  deepchecks:
+    name: "Deepchecks"
+    description: "LLM evaluation and monitoring platform as SaaS, in your VPC or as a SageMaker partner app."
+  deepeval:
+    name: "DeepEval"
+    description: "Open-source LLM evaluation framework run as unit tests in CI."
   deepgram:
     name: "Deepgram"
     description: "Speech-to-text and text-to-speech API with pre-recorded and streaming endpoints."
+  deepinfra:
+    name: "DeepInfra"
+    description: "Serverless inference for open models with no storage of inputs or outputs."
+  deeplake:
+    name: "Deep Lake"
+    description: "Activeloop multimodal data lake and vector store over local or object storage."
+  deepseek-api:
+    name: "DeepSeek API"
+    description: "Hosted DeepSeek chat and reasoning models behind OpenAI- and Anthropic-compatible endpoints."
   desktop-app:
     name: "Desktop app"
     description: "Installed desktop application client."
@@ -2881,6 +3046,9 @@ components:
   dgraph:
     name: "Dgraph"
     description: "Distributed graph database that shards by predicate into Raft groups."
+  dify:
+    name: "Dify"
+    description: "Open-source LLM app and agent workflow builder, as Dify Cloud or self-hosted."
   digdag:
     name: "Digdag"
     description: "Open source engine that runs, schedules and monitors task pipelines defined as directed acyclic graphs in .dig files."
@@ -2995,6 +3163,9 @@ components:
   dolphindb:
     name: "DolphinDB"
     description: "Distributed time-series database with a built-in scripting and analytics engine."
+  domino-data-lab:
+    name: "Domino Data Lab"
+    description: "Enterprise data science and MLOps platform as SaaS, in your VPC or on-premise."
   doppler:
     name: "Doppler"
     description: "Hosted SecretOps platform that stores secrets per config and syncs them to environments."
@@ -3028,12 +3199,18 @@ components:
   duckdb:
     name: "DuckDB"
     description: "In-process analytical database with a columnar-vectorized engine, in-memory unless given a file."
+  dvc:
+    name: "DVC"
+    description: "Open-source data version control: Git pointers with data kept in a remote store."
   dynamodb:
     name: "Amazon DynamoDB"
     description: "Managed key-value store with eventually consistent reads by default and opt-in global tables."
   dynatrace:
     name: "Dynatrace"
     description: "SaaS observability platform fed by OneAgent and stored in Grail."
+  e2b:
+    name: "E2B"
+    description: "Cloud sandboxes (isolated Linux VMs) for running AI-generated code, with pause and resume."
   easegress:
     name: "Easegress"
     description: "Traffic orchestration system running filter pipelines over a Raft cluster."
@@ -3079,6 +3256,9 @@ components:
   emqx:
     name: "EMQX"
     description: "Distributed MQTT 5.0 broker with native clustering and multi-protocol IoT gateways."
+  encord:
+    name: "Encord"
+    description: "Hosted data curation, annotation and label-quality platform for vision and multimodal data."
   entrust-nshield:
     name: "Entrust nShield HSM"
     description: "Hardware security modules sharing keys across modules through a Security World."
@@ -3094,6 +3274,9 @@ components:
   envoy-sidecar:
     name: "Envoy sidecar"
     description: "Hand-rolled mesh of Envoy sidecars with a custom control plane."
+  epsilla:
+    name: "Epsilla"
+    description: "Open-source C++ vector database with hybrid search, run in Docker or on Epsilla Cloud."
   erlang-node:
     name: "Erlang/BEAM node"
     description: "Stateful BEAM server with one lightweight process per entity, clustered with distributed Erlang."
@@ -3118,6 +3301,12 @@ components:
   evidence:
     name: "Evidence"
     description: "BI-as-code framework that builds markdown-and-SQL reports into a static site."
+  evidently-ai:
+    name: "Evidently"
+    description: "Open-source evaluation and monitoring for ML and LLM systems, self-hosted."
+  exa-ai:
+    name: "Exa"
+    description: "Neural web search and page-contents API for AI applications."
   exasol:
     name: "Exasol"
     description: "In-memory MPP analytics database with column-based storage and a masterless cluster."
@@ -3130,6 +3319,9 @@ components:
   facebook:
     name: "Facebook Graph API"
     description: "Meta HTTP API for reading and writing the social graph, throttled at 200 calls per hour per daily active user."
+  fal-ai:
+    name: "fal"
+    description: "Serverless inference API hosting many image, video, audio and language models."
   falco:
     name: "Falco"
     description: "Runtime security engine alerting on kernel and container events."
@@ -3154,6 +3346,9 @@ components:
   ffmpeg:
     name: "FFmpeg"
     description: "Command line transcoder and stream converter for audio and video."
+  fiddler-ai:
+    name: "Fiddler AI"
+    description: "Enterprise observability and guardrails for ML models, LLM applications and agents."
   file-storage:
     name: "Generic file share"
     description: "Vendor-neutral file share. Use when the real product is not in the catalogue; every rule for this kind still applies."
@@ -3175,6 +3370,9 @@ components:
   firecracker:
     name: "Firecracker"
     description: "KVM-based microVM monitor with a minimal virtio device model and one jailed process per microVM."
+  firecrawl:
+    name: "Firecrawl"
+    description: "Web scrape, crawl, map and search API returning LLM-ready markdown and JSON."
   firestore:
     name: "Google Cloud Firestore"
     description: "Managed strongly consistent document store for mobile and web backends."
@@ -3205,6 +3403,9 @@ components:
   flowable:
     name: "Flowable"
     description: "Java BPMN 2.0 engine persisting process state in a relational database."
+  flowise:
+    name: "Flowise"
+    description: "Open-source visual builder for LLM chatflows and agentflows, archived in August 2026."
   fluent-bit:
     name: "Fluent Bit"
     description: "Lightweight telemetry agent for logs, metrics, traces and profiles."
@@ -3217,6 +3418,9 @@ components:
   fly-io:
     name: "Fly.io"
     description: "Runs OCI images as Firecracker microVMs in many regions behind an anycast proxy."
+  flyte:
+    name: "Flyte"
+    description: "Kubernetes-native orchestrator for typed, versioned data and ML workflows."
   forgejo:
     name: "Forgejo"
     description: "Self-hosted software forge under GPL v3+, with Actions, package registries and experimental federation."
@@ -3241,6 +3445,9 @@ components:
   fuseki:
     name: "Apache Jena Fuseki"
     description: "SPARQL 1.1 server exposing a Jena in-memory or TDB2 dataset over HTTP."
+  galileo:
+    name: "Galileo"
+    description: "SaaS observability, evaluation and guardrails for GenAI and agent applications."
   garage:
     name: "Garage"
     description: "Self-hosted S3-compatible object store for geo-distributed, heterogeneous nodes."
@@ -3271,6 +3478,9 @@ components:
   geoserver:
     name: "GeoServer"
     description: "Self-hosted Java server publishing geospatial data over OGC web services."
+  giskard:
+    name: "Giskard"
+    description: "LLM and agent testing, evaluation and red teaming, as a hub platform or open-source library."
   gitea:
     name: "Gitea"
     description: "Self-hosted all-in-one Git service in a single Go binary, with Actions and a package registry."
@@ -3280,6 +3490,12 @@ components:
   github-actions:
     name: "GitHub Actions"
     description: "Event-driven workflows run on GitHub-hosted or self-hosted runners."
+  github-copilot:
+    name: "GitHub Copilot"
+    description: "AI coding assistant in the IDE, CLI and GitHub, plus a cloud coding agent."
+  github-models:
+    name: "GitHub Models"
+    description: "Hosted LLM catalogue behind an OpenAI-compatible endpoint, called with a GitHub token."
   github-packages:
     name: "GitHub Packages"
     description: "GitHub-hosted package registries whose permissions follow the repository that publishes them."
@@ -3292,6 +3508,9 @@ components:
   gitlab-registry:
     name: "GitLab Container Registry"
     description: "Per-project OCI registry built into GitLab, as visible as the project that owns it."
+  gladia:
+    name: "Gladia"
+    description: "Speech to text API for pre-recorded files and live streams."
   glassfish:
     name: "Eclipse GlassFish"
     description: "Open source Jakarta EE application server serving HTTP on 8080 with an administration domain on 4848."
@@ -3562,6 +3781,9 @@ components:
   google-cross-cloud-interconnect:
     name: "Cross-Cloud Interconnect"
     description: "Google-provisioned dedicated links between a VPC network and another cloud."
+  google-custom-search-api:
+    name: "Custom Search JSON API"
+    description: "Search over a Programmable Search Engine; closed to new customers and ending January 1, 2027."
   google-customer-experience-insights:
     name: "Conversational Insights"
     description: "Post-call analysis of contact centre conversations for sentiment, entities and topics."
@@ -3688,6 +3910,12 @@ components:
   google-gemini-api:
     name: "Gemini API"
     description: "Metered multimodal generative model endpoint on Vertex AI with built-in safety filtering."
+  google-gemini-code-assist:
+    name: "Gemini Code Assist"
+    description: "Google AI coding assistant in the IDE, CLI and Cloud console, free, Standard or Enterprise."
+  google-gemini-enterprise:
+    name: "Gemini Enterprise"
+    description: "Enterprise assistant that searches company data and runs agents, formerly Agentspace."
   google-geocoding-api:
     name: "Geocoding API"
     description: "Converts addresses to coordinates and coordinates back to addresses."
@@ -4000,6 +4228,9 @@ components:
   graphite:
     name: "Graphite"
     description: "Metrics stack of carbon ingestion and the fixed-size Whisper database."
+  graphiti:
+    name: "Graphiti"
+    description: "Open-source temporal knowledge graph engine for agent memory, served over REST or MCP."
   graylog:
     name: "Graylog"
     description: "Self-hosted log management with inputs, index sets and alerts."
@@ -4015,6 +4246,9 @@ components:
   guacamole:
     name: "Apache Guacamole"
     description: "Clientless HTML5 remote desktop gateway for RDP, VNC, SSH and Kubernetes sessions."
+  guardrails-ai:
+    name: "Guardrails AI"
+    description: "Open-source Python framework that validates LLM inputs and outputs with Hub validators and structures output."
   h2o:
     name: "H2O.ai"
     description: "In-memory distributed machine learning cluster with AutoML and the Flow web UI."
@@ -4054,12 +4288,21 @@ components:
   heartbeat:
     name: "Heartbeat"
     description: "Daemon that probes services over ICMP, TCP or HTTP on a schedule to report reachability."
+  helicone:
+    name: "Helicone"
+    description: "LLM request logging and cost tracking through an OpenAI-compatible AI gateway."
+  helicone-gateway:
+    name: "Helicone AI Gateway"
+    description: "Open-source OpenAI-compatible router to many providers with automatic failover, caching and observability."
   here:
     name: "HERE Location Services"
     description: "HERE geocoding, routing and map tile REST APIs."
   heroku:
     name: "Heroku"
     description: "Managed platform running application processes as ephemeral dynos."
+  hiddenlayer:
+    name: "HiddenLayer AI Security Platform"
+    description: "AI discovery, model scanning, attack simulation and runtime detection and blocking for LLM apps and agents."
   higress:
     name: "Higress"
     description: "Envoy-based API gateway merging ingress, microservice and AI gateway roles."
@@ -4072,6 +4315,9 @@ components:
   honeycomb:
     name: "Honeycomb"
     description: "SaaS event and trace analytics with 60-day retention."
+  honeyhive:
+    name: "HoneyHive"
+    description: "OpenTelemetry-native observability and evaluation for AI agents."
   hono:
     name: "Eclipse Hono"
     description: "Multi-tenant device connectivity layer with MQTT, HTTP, AMQP and CoAP protocol adapters."
@@ -4081,12 +4327,24 @@ components:
   hubspot:
     name: "HubSpot API"
     description: "REST interface to the HubSpot CRM objects and webhook subscriptions."
+  hugging-face-hub:
+    name: "Hugging Face Hub"
+    description: "Hosted Git-based repositories for models, datasets and Spaces."
   huggingface-inference:
     name: "Hugging Face Inference Endpoints"
     description: "Managed deployment of a Hub model on dedicated autoscaling CPU or GPU replicas."
+  humanloop:
+    name: "Humanloop"
+    description: "SaaS evals, prompt management and logging for LLM applications (retired)."
+  hume-ai:
+    name: "Hume AI"
+    description: "Empathic Voice Interface, Octave text to speech and expression measurement APIs."
   hyper-v:
     name: "Microsoft Hyper-V"
     description: "Windows Server type-1 hypervisor with generation 2 UEFI virtual machines and Secure Boot on by default."
+  hyperbrowser:
+    name: "Hyperbrowser"
+    description: "Cloud browsers and sandboxes for AI automation, large-scale scraping and agent code execution."
   hyperledger-fabric:
     name: "Hyperledger Fabric"
     description: "Permissioned distributed ledger with channels, chaincode and a Raft ordering service."
@@ -4357,6 +4615,9 @@ components:
   identity-provider:
     name: "Generic identity provider"
     description: "Vendor-neutral identity provider. Use when the real product is not in the catalogue; every rule for this kind still applies."
+  ideogram-api:
+    name: "Ideogram API"
+    description: "Hosted Ideogram image generation and editing with strong in-image text rendering."
   ignite:
     name: "Apache Ignite"
     description: "In-memory data grid with partitioned caches, rendezvous affinity and optional native persistence."
@@ -4381,6 +4642,9 @@ components:
   infinispan:
     name: "Infinispan"
     description: "Distributed in-memory key-value store with two owners per entry and optional cache stores."
+  infinity-embeddings:
+    name: "Infinity"
+    description: "REST server for embedding, rerank and classification models with dynamic batching."
   infisical:
     name: "Infisical"
     description: "Open-source platform for secrets, PKI, KMS and privileged access, cloud or self-hosted."
@@ -4426,6 +4690,9 @@ components:
   jaeger:
     name: "Jaeger"
     description: "Self-managed distributed tracing backend."
+  jan:
+    name: "Jan"
+    description: "Open-source desktop app with a local OpenAI-compatible API server on llama.cpp."
   janus:
     name: "Janus"
     description: "Self-managed general-purpose WebRTC server with plugins."
@@ -4441,9 +4708,15 @@ components:
   jenkins:
     name: "Jenkins"
     description: "Self-hosted automation server running declarative or scripted pipelines on its own agents."
+  jetbrains-ai:
+    name: "JetBrains AI"
+    description: "AI Assistant and the Junie coding agent inside JetBrains IDEs."
   jetty:
     name: "Eclipse Jetty"
     description: "Servlet container and HTTP server, run standalone or embedded in an application."
+  jina-ai:
+    name: "Jina AI"
+    description: "Hosted embedding, rerank and URL-to-markdown Reader APIs for search."
   jitsi:
     name: "Jitsi Videobridge"
     description: "WebRTC videobridge that routes conference streams between participants."
@@ -4546,6 +4819,9 @@ components:
   kdb:
     name: "kdb+"
     description: "Column-oriented time-series database with the q language, partitioned on disk by date."
+  kdb-ai:
+    name: "KDB.AI"
+    description: "KX vector database on kdb+ for contextual and time-series similarity search, now self-hosted."
   keepalived:
     name: "Keepalived"
     description: "VRRP failover and IPVS layer 4 load balancing with real-server health checking."
@@ -4567,6 +4843,9 @@ components:
   kibana:
     name: "Kibana"
     description: "Dashboards, Discover and visualisations over Elasticsearch indices."
+  kili:
+    name: "Kili"
+    description: "Data labelling and LLM evaluation platform as SaaS, managed application or on-premise."
   kinesis:
     name: "Amazon Kinesis Data Streams"
     description: "Managed shard-based streaming log replicated across three availability zones."
@@ -4576,6 +4855,9 @@ components:
   knative:
     name: "Knative"
     description: "Request-driven serverless runtime on Kubernetes that autoscales services and scales them to zero when idle."
+  knime:
+    name: "KNIME"
+    description: "Visual data and ML workflows, shared and deployed through KNIME Business Hub."
   knock:
     name: "Knock"
     description: "Notification infrastructure with workflows, in-app feed and per-recipient preferences."
@@ -4585,6 +4867,9 @@ components:
   kong:
     name: "Kong Gateway"
     description: "Plugin-based API gateway built on NGINX and OpenResty."
+  kong-ai-gateway:
+    name: "Kong AI Gateway"
+    description: "Kong Gateway AI plugins that proxy, load-balance, cache and guard traffic to LLM providers."
   kong-konnect:
     name: "Kong Konnect"
     description: "SaaS control plane for Kong gateways, with self-hosted or Kong-hosted data planes."
@@ -4627,12 +4912,36 @@ components:
   kyverno:
     name: "Kyverno"
     description: "Kubernetes-native policy engine with validate, mutate and generate rules, auditing by default."
+  label-studio:
+    name: "Label Studio"
+    description: "Open-source data labelling server for text, image, audio, video and time series."
+  labelbox:
+    name: "Labelbox"
+    description: "Hosted data curation, annotation and expert labelling services for training data."
+  lakefs:
+    name: "lakeFS"
+    description: "Git-like branches and commits over object storage behind an S3-compatible gateway."
+  lakera-guard:
+    name: "Lakera Guard"
+    description: "API that screens LLM inputs and outputs for prompt attacks, harmful content, PII and unknown links."
   lambda:
     name: "AWS Lambda"
     description: "Managed function-as-a-service that scales per request with a per-invocation timeout."
+  lambda-labs:
+    name: "Lambda Cloud instance"
+    description: "On-demand GPU instance with 1 to 8 GPUs and Lambda Stack preinstalled."
   lancedb:
     name: "LanceDB"
     description: "Embedded vector database over the columnar Lance format with manually built IVF_PQ indexes."
+  langflow:
+    name: "Langflow"
+    description: "Open-source visual builder for RAG and multi-agent flows, served as APIs and MCP servers."
+  langfuse:
+    name: "Langfuse"
+    description: "Open-source LLM tracing, evaluation and prompt management, hosted or self-hosted."
+  langgraph-platform:
+    name: "LangSmith Deployment"
+    description: "Durable runtime that serves LangGraph agents, formerly LangGraph Platform."
   langsmith:
     name: "LangSmith"
     description: "SaaS tracing, evaluation and monitoring for LLM applications."
@@ -4642,15 +4951,24 @@ components:
   ledger:
     name: "Generic ledger"
     description: "Vendor-neutral ledger. Use when the real product is not in the catalogue; every rule for this kind still applies."
+  lepton-ai:
+    name: "Lepton AI"
+    description: "Serverless model API and GPU platform, folded into NVIDIA DGX Cloud Lepton."
   lets-encrypt:
     name: "Let's Encrypt"
     description: "Free public ACME certificate authority for automated TLS certificates."
+  letta:
+    name: "Letta"
+    description: "Platform for stateful agents whose memory lives on a Letta server or in Letta Cloud."
   libvirt:
     name: "KVM with libvirt"
     description: "Linux KVM virtualization driven through the libvirt API, daemons and virsh command line."
   lightdash:
     name: "Lightdash"
     description: "BI layer over a dbt project, turning dbt metrics into charts, dashboards and scheduled deliveries."
+  lindy:
+    name: "Lindy"
+    description: "Hosted AI teammate running skills and routines over email, meetings and business apps."
   line:
     name: "LINE Messaging API"
     description: "API behind a LINE Official Account that pushes user events to a webhook URL and sends replies back through the LINE Platform."
@@ -4669,9 +4987,30 @@ components:
   livekit:
     name: "LiveKit"
     description: "Open source WebRTC SFU for realtime audio, video and agent sessions."
+  livekit-agents:
+    name: "LiveKit Agents"
+    description: "Open-source framework for voice, video and physical AI agents that join LiveKit rooms."
+  llama-cpp-server:
+    name: "llama.cpp server"
+    description: "llama-server: HTTP server for GGUF models on CPU or GPU with OpenAI-compatible routes."
+  llamaindex-cloud:
+    name: "LlamaCloud"
+    description: "LlamaIndex hosted platform for parsing, extraction, indexing and retrieval behind agents."
+  llamaparse:
+    name: "LlamaParse"
+    description: "LlamaIndex document parsing service that turns complex files into LLM-ready text as asynchronous parse jobs."
   llm-d:
     name: "llm-d"
     description: "Distributed LLM inference stack with cache-aware routing over vLLM model servers."
+  llm-guard:
+    name: "LLM Guard"
+    description: "Open-source toolkit of prompt and output scanners for injection, toxicity, secrets and sensitive data."
+  lm-studio:
+    name: "LM Studio"
+    description: "Desktop app and headless daemon that serves local models over OpenAI-compatible endpoints."
+  lmdeploy:
+    name: "LMDeploy"
+    description: "InternLM toolkit that compresses and serves LLMs behind an OpenAI-compatible API server."
   load-balancer:
     name: "Generic load balancer"
     description: "Vendor-neutral load balancer. Use when the real product is not in the catalogue; every rule for this kind still applies."
@@ -4693,12 +5032,21 @@ components:
   longhorn:
     name: "Longhorn"
     description: "Cloud-native distributed block storage for Kubernetes with synchronous replicas per volume."
+  lovable:
+    name: "Lovable"
+    description: "Chat-driven builder that generates and hosts full-stack web apps."
   loxilb:
     name: "loxilb"
     description: "eBPF layer 4 load balancer and service proxy for Kubernetes services."
   luigi:
     name: "Luigi"
     description: "Python batch pipeline framework with a central in-memory task scheduler."
+  luma-api:
+    name: "Luma Dream Machine API"
+    description: "Hosted Ray video and Photon image generation models."
+  lunary:
+    name: "Lunary"
+    description: "LLM observability, prompt management and conversation analytics for chatbots and agents."
   lustre:
     name: "Lustre"
     description: "Parallel POSIX file system for HPC clusters, striping files over object storage targets."
@@ -4732,6 +5080,9 @@ components:
   marqo:
     name: "Marqo"
     description: "Open-source tensor search engine that embeds documents on ingest and serves lexical, tensor and hybrid queries."
+  martian:
+    name: "Martian Gateway"
+    description: "OpenAI- and Anthropic-compatible API to many models with usage tracking, from the Martian AI lab."
   matching-engine:
     name: "Generic matching engine"
     description: "Vendor-neutral matching engine. Use when the real product is not in the catalogue; every rule for this kind still applies."
@@ -4750,6 +5101,9 @@ components:
   maxwell:
     name: "Maxwell"
     description: "Daemon that reads the MySQL binlog and emits row changes as JSON."
+  mcp-server:
+    name: "MCP server"
+    description: "Process exposing tools, resources and prompts to AI clients over the Model Context Protocol."
   media-router:
     name: "Generic media router"
     description: "Vendor-neutral media router. Use when the real product is not in the catalogue; every rule for this kind still applies."
@@ -4765,6 +5119,9 @@ components:
   meltano:
     name: "Meltano"
     description: "CLI-first open source ELT runner over Singer taps and targets."
+  mem0:
+    name: "Mem0"
+    description: "Memory layer for AI agents that extracts and recalls facts per user, agent or run."
   memcached:
     name: "Memcached"
     description: "Volatile in-memory LRU cache with client-side key distribution."
@@ -4807,12 +5164,18 @@ components:
   mimir:
     name: "Grafana Mimir"
     description: "Multi-tenant Prometheus-compatible metrics store on object storage."
+  minimax-api:
+    name: "MiniMax API"
+    description: "Hosted MiniMax models for text, speech, voice cloning, image, video and music generation."
   minio:
     name: "MinIO"
     description: "Self-hosted S3-compatible object store with erasure coding."
   mistral-api:
     name: "Mistral AI API"
     description: "La Plateforme endpoints for Mistral text, vision, OCR, audio and embedding models."
+  mixedbread-ai:
+    name: "Mixedbread"
+    description: "Multimodal search API with its own embedding and reranking models."
   mixpanel:
     name: "Mixpanel"
     description: "Hosted product analytics with boards, funnels and retention reports."
@@ -4822,12 +5185,18 @@ components:
   ml-platform:
     name: "Generic ML platform"
     description: "Vendor-neutral ML platform. Use when the real product is not in the catalogue; every rule for this kind still applies."
+  mlc-llm:
+    name: "MLC LLM"
+    description: "Compiler-based LLM engine for CUDA, ROCm, Metal and Vulkan with an OpenAI-compatible REST server."
   mlflow:
     name: "MLflow"
     description: "Self-hosted tracking server for ML experiments, metrics, artifacts and models."
   mobile-app:
     name: "Mobile app"
     description: "iOS and Android mobile application client."
+  modal:
+    name: "Modal"
+    description: "Serverless containers for Python functions, model servers and sandboxes on CPUs or GPUs."
   modsecurity:
     name: "ModSecurity"
     description: "SecLang web application firewall engine for nginx, Apache and IIS; the rule engine is off until configured."
@@ -4849,6 +5218,9 @@ components:
   monitoring:
     name: "Generic monitoring"
     description: "Vendor-neutral monitoring. Use when the real product is not in the catalogue; every rule for this kind still applies."
+  moonshot-kimi-api:
+    name: "Kimi Open Platform"
+    description: "Hosted Kimi models from Moonshot AI with recharge-based rate-limit tiers."
   moosefs:
     name: "MooseFS"
     description: "Fault-tolerant distributed file system with a FUSE mount and per-object copy goals."
@@ -4873,9 +5245,15 @@ components:
   mux:
     name: "Mux Video"
     description: "Hosted video encoding, storage and adaptive HLS delivery API."
+  myscale:
+    name: "MyScale"
+    description: "Managed SQL vector database on ClickHouse, shut down on May 28, 2025."
   mysql:
     name: "MySQL"
     description: "Open-source single-primary relational database with asynchronous replication."
+  mystic-ai:
+    name: "Mystic AI"
+    description: "Serverless and bring-your-own-cloud GPU inference for model pipelines, retired in 2025."
   n8n:
     name: "n8n"
     description: "Node-based automation platform storing workflows and executions in SQLite or PostgreSQL."
@@ -4897,9 +5275,15 @@ components:
   naxsi:
     name: "NAXSI"
     description: "nginx web application firewall using a small core rule set plus learned whitelists."
+  nebius:
+    name: "Nebius AI Cloud VM"
+    description: "GPU virtual machine on Nebius AI Cloud, regular or preemptible."
   nebulagraph:
     name: "NebulaGraph"
     description: "Distributed graph database hashing vertices into Raft-replicated partitions."
+  nemo-guardrails:
+    name: "NeMo Guardrails"
+    description: "Open-source toolkit that adds programmable input, dialog, retrieval, execution and output rails to LLM apps."
   neo4j:
     name: "Neo4j"
     description: "Native property-graph database with optional causal clustering."
@@ -4909,6 +5293,9 @@ components:
   neptune:
     name: "Amazon Neptune"
     description: "Managed graph database supporting Gremlin, openCypher and SPARQL."
+  neptune-ai:
+    name: "neptune.ai"
+    description: "Experiment tracker for model training, shut down in March 2026 after OpenAI acquired it."
   netbird:
     name: "NetBird"
     description: "WireGuard peer-to-peer overlay with management and signal servers and a relay fallback for blocked peers."
@@ -4960,24 +5347,36 @@ components:
   nomad:
     name: "HashiCorp Nomad"
     description: "Cluster scheduler for containers, binaries and VMs, federated across regions with an optional ACL system."
+  nomic-api:
+    name: "Nomic API"
+    description: "Hosted Nomic Embed text and image embedding inference."
   nominatim:
     name: "Nominatim"
     description: "Open-source geocoder and reverse geocoder over OpenStreetMap data."
   norikra:
     name: "Norikra"
     description: "Schemaless stream processor querying JSON events in memory with Esper EPL."
+  northflank-sandbox:
+    name: "Northflank Sandboxes"
+    description: "MicroVM or gVisor sandboxes on Northflank's cloud or your own, ephemeral or persistent."
   nosql-database:
     name: "Generic NoSQL database"
     description: "Vendor-neutral NoSQL database. Use when the real product is not in the catalogue; every rule for this kind still applies."
   nosql-store:
     name: "NoSQL store"
     description: "NoSQL store drawn without naming a product."
+  not-diamond:
+    name: "Not Diamond"
+    description: "Model router API that recommends the best LLM for each prompt; the client then calls that provider."
   notification-platform:
     name: "Notification platform"
     description: "Generic in-house service that fans events out to push, email and SMS with user preferences."
   notification-service:
     name: "Generic notification service"
     description: "Vendor-neutral notification service. Use when the real product is not in the catalogue; every rule for this kind still applies."
+  novita-ai:
+    name: "Novita AI"
+    description: "Serverless and dedicated inference for open LLM, image and audio models with spend-based tiers."
   novu:
     name: "Novu"
     description: "Open-source notification infrastructure with workflows across inbox, email, SMS, push and chat."
@@ -4990,6 +5389,15 @@ components:
   nutanix-ahv:
     name: "Nutanix AHV"
     description: "KVM-derived hypervisor bundled with Nutanix Cloud Infrastructure, with optional licensed data-at-rest encryption."
+  nvidia-dgx-cloud:
+    name: "NVIDIA DGX Cloud"
+    description: "NVIDIA managed AI platform (DGX Cloud Lepton) for dev pods, training jobs and inference endpoints."
+  nvidia-nim:
+    name: "NVIDIA NIM (self-hosted)"
+    description: "Prebuilt NVIDIA inference microservice containers run on your own GPUs with an OpenAI-compatible API."
+  nvidia-nim-api:
+    name: "NVIDIA API Catalog"
+    description: "NVIDIA-hosted NIM endpoints for open and partner models, free for prototyping."
   oauth2-proxy:
     name: "OAuth2 Proxy"
     description: "Reverse proxy that authenticates requests against an upstream provider and validates the account."
@@ -5527,6 +5935,9 @@ components:
   oci-zero-trust-packet-routing:
     name: "OCI Zero Trust Packet Routing"
     description: "Intent-based network policies over security attributes; unattributed traffic is denied."
+  octoai:
+    name: "OctoAI"
+    description: "Hosted inference for open text and image models, shut down in October 2024 after NVIDIA acquired it."
   odyssey:
     name: "Odyssey"
     description: "Multi-threaded PostgreSQL connection pooler and request router with per-route pooling rules."
@@ -5551,6 +5962,9 @@ components:
   opc-ua-server:
     name: "OPC UA server"
     description: "Industrial address-space server exposing tags over opc.tcp, HTTPS or WebSockets."
+  open-webui:
+    name: "Open WebUI"
+    description: "Self-hosted chat interface for Ollama and OpenAI-compatible model servers, with RAG and users."
   openai-api:
     name: "OpenAI API"
     description: "Hosted OpenAI model endpoints for text, vision, audio and embeddings."
@@ -5695,6 +6109,9 @@ components:
   openzfs:
     name: "OpenZFS"
     description: "Copy-on-write pooled storage providing zvols, datasets, snapshots and checksummed integrity."
+  opik:
+    name: "Opik"
+    description: "Open-source LLM tracing, evaluation and prompt management by Comet, hosted or self-hosted."
   opnsense:
     name: "OPNsense"
     description: "HardenedBSD pf firewall distribution that blocks inbound traffic by default and filters statefully."
@@ -5767,6 +6184,9 @@ components:
   ozone:
     name: "Apache Ozone"
     description: "Scalable object store for Hadoop with three-way Ratis replication or erasure-coded buckets."
+  pachyderm:
+    name: "Pachyderm"
+    description: "Versioned data pipelines on Kubernetes, retired after HPE ended Machine Learning Data Management."
   packetbeat:
     name: "Packetbeat"
     description: "Network analyser that sniffs traffic and correlates decoded protocol messages into transactions."
@@ -5797,6 +6217,9 @@ components:
   permit-io:
     name: "Permit.io"
     description: "Fine-grained authorization as a service with a SaaS control plane and a local policy decision point."
+  perplexity-api:
+    name: "Perplexity API"
+    description: "Hosted Sonar models that answer from live web search with citations."
   perses:
     name: "Perses"
     description: "Dashboards as code over Prometheus, Tempo, Loki and Pyroscope."
@@ -5815,6 +6238,9 @@ components:
   pgvector:
     name: "pgvector"
     description: "PostgreSQL extension storing vectors in tables, exact search by default with optional HNSW and IVFFlat indexes."
+  pgvectorscale:
+    name: "pgvectorscale"
+    description: "Postgres extension adding a StreamingDiskANN index and binary quantization on top of pgvector."
   phoenix-channels:
     name: "Phoenix Channels"
     description: "Elixir Phoenix real-time channels over WebSocket."
@@ -5833,6 +6259,9 @@ components:
   pinot:
     name: "Apache Pinot"
     description: "Real-time OLAP store ingesting directly from streams."
+  pipecat:
+    name: "Pipecat"
+    description: "Open-source Python framework for realtime voice and multimodal AI agents."
   pipecd:
     name: "PipeCD"
     description: "GitOps continuous delivery with a control plane driving in-cluster piped agents."
@@ -5845,6 +6274,9 @@ components:
   planetscale:
     name: "PlanetScale"
     description: "Managed MySQL and Postgres on Vitess with opt-in horizontal sharding."
+  playht:
+    name: "PlayHT"
+    description: "Text to speech and voice cloning API, shut down in December 2025 after Meta acquired PlayAI."
   plivo:
     name: "Plivo Messaging"
     description: "SMS and MMS API with per-account messages-per-second throughput and delivery callbacks."
@@ -5860,6 +6292,9 @@ components:
   pomerium:
     name: "Pomerium"
     description: "Identity-aware proxy that checks identity, device state and request context per request and tunnels SSH, RDP and database traffic over HTTP."
+  portkey:
+    name: "Portkey AI Gateway"
+    description: "OpenAI-compatible gateway adding fallbacks, retries, load balancing, caching and guardrails across model providers."
   portworx:
     name: "Portworx"
     description: "Software defined storage overlay giving Kubernetes volumes up to three synchronous replicas and read-only snapshots."
@@ -5893,12 +6328,27 @@ components:
   private-link:
     name: "Generic private endpoint"
     description: "Vendor-neutral private endpoint. Use when the real product is not in the catalogue; every rule for this kind still applies."
+  prodigy:
+    name: "Prodigy"
+    description: "Scriptable annotation tool from Explosion that runs locally on a lifetime licence."
   prometheus:
     name: "Prometheus"
     description: "Pull-based metrics store and alerting toolkit."
   prometheus-tsdb:
     name: "Prometheus TSDB"
     description: "Single-node Gorilla-compressed time series store with fifteen days of retention."
+  prompt-security:
+    name: "Prompt Security"
+    description: "SaaS platform that secures employee AI use, code assistants, homegrown AI apps and agents."
+  promptfoo:
+    name: "promptfoo"
+    description: "Open-source CLI for LLM evals and red teaming, run locally or in CI."
+  promptlayer:
+    name: "PromptLayer"
+    description: "SaaS prompt registry, request logging and evals for LLM applications."
+  protect-ai:
+    name: "Protect AI"
+    description: "AI security suite for model scanning, runtime prompt filtering, red teaming and AI bill of materials."
   proxmox:
     name: "Proxmox VE"
     description: "Open source virtualization platform combining KVM virtual machines and LXC containers with optional clustering and HA."
@@ -5962,6 +6412,12 @@ components:
   rancher:
     name: "Rancher"
     description: "Management plane that provisions and governs many Kubernetes clusters with central authentication and project-level RBAC."
+  rapidminer:
+    name: "RapidMiner AI Hub"
+    description: "Server for RapidMiner Studio teams: shared models, scheduled jobs and Web API deployments."
+  rasa:
+    name: "Rasa"
+    description: "Code-first conversational AI platform pairing LLM understanding with deterministic flows."
   rate-limiter:
     name: "Generic rate limiter"
     description: "Vendor-neutral rate limiter. Use when the real product is not in the catalogue; every rule for this kind still applies."
@@ -5983,6 +6439,9 @@ components:
   realtime-gateway:
     name: "Generic real-time gateway"
     description: "Vendor-neutral real-time gateway. Use when the real product is not in the catalogue; every rule for this kind still applies."
+  rebuff:
+    name: "Rebuff"
+    description: "Open-source prompt-injection detector combining heuristics, an LLM check, a vector store and canary tokens."
   recombee:
     name: "Recombee"
     description: "Hosted recommender service fed an item catalog and user interactions, queried with a public or private access token."
@@ -6016,15 +6475,30 @@ components:
   redshift:
     name: "Amazon Redshift"
     description: "Managed columnar data warehouse on provisioned or serverless compute."
+  reducto:
+    name: "Reducto"
+    description: "Document parse, extract, split and classify API, offered as SaaS, VPC or on-premises."
+  reka-api:
+    name: "Reka API"
+    description: "Hosted multimodal models for chat over text, image, video and audio, plus video search and clipping."
   relational-database:
     name: "Relational database"
     description: "Relational database drawn without naming an engine."
+  relevance-ai:
+    name: "Relevance AI"
+    description: "Low-code platform to build AI agents and multi-agent teams with tools and knowledge."
   render:
     name: "Render"
     description: "Managed platform running services, workers, cron jobs and static sites from a repository."
   replicate:
     name: "Replicate"
     description: "API that runs packaged open-source models by name, with predictions deleted after an hour."
+  replit-agent:
+    name: "Replit Agent"
+    description: "Browser-based agent that builds, tests and deploys full-stack apps on Replit."
+  requesty:
+    name: "Requesty"
+    description: "OpenAI-compatible router to many models with fallback policies, load balancing, caching and guardrails."
   resend:
     name: "Resend"
     description: "Developer-first transactional email API with idempotency keys on send."
@@ -6034,18 +6508,33 @@ components:
   restic:
     name: "restic"
     description: "Snapshot-based backup program with always-on encryption and content-defined deduplication."
+  retell-ai:
+    name: "Retell AI"
+    description: "Platform for voice and chat agents with built-in telephony and SIP trunking."
   rethinkdb:
     name: "RethinkDB"
     description: "JSON document store with one authoritative primary per shard and changefeeds."
   retool:
     name: "Retool"
     description: "Platform for internal applications and workflows over existing databases and APIs."
+  rev-ai:
+    name: "Rev AI"
+    description: "Asynchronous and streaming speech to text API from Rev."
   riak:
     name: "Riak KV"
     description: "Leaderless key-value store with n/r/w quorums and version-vector conflict tracking."
+  rime:
+    name: "Rime"
+    description: "Text to speech API built for conversational voice agents."
   risingwave:
     name: "RisingWave"
     description: "Postgres-compatible streaming database maintaining materialized views over streams."
+  roboflow:
+    name: "Roboflow"
+    description: "Computer-vision platform to annotate images, train models and deploy them hosted or on your hardware."
+  robust-intelligence:
+    name: "Robust Intelligence"
+    description: "AI security platform for model validation before release and guardrails in production."
   rocket-chat:
     name: "Rocket.Chat"
     description: "Node.js team messaging server backed by MongoDB, deployable on-premise, air-gapped or as Rocket.Chat Cloud."
@@ -6061,6 +6550,15 @@ components:
   rsyslog:
     name: "rsyslog"
     description: "Syslog engine receiving, filtering and forwarding messages through per-action queues."
+  runloop:
+    name: "Runloop"
+    description: "VM-isolated Devboxes for coding agents, with blueprints, snapshots and suspend and resume."
+  runpod:
+    name: "Runpod Pod"
+    description: "GPU or CPU container rented by the second in Runpod Secure Cloud or Community Cloud."
+  runway-api:
+    name: "Runway API"
+    description: "Hosted Gen video and image generation models run as asynchronous tasks."
   s3:
     name: "Amazon S3"
     description: "Managed multi-zone object store with eleven nines of durability and strong read-after-write."
@@ -6070,12 +6568,18 @@ components:
   salesforce:
     name: "Salesforce API"
     description: "REST, SOAP and Bulk interfaces of the Salesforce CRM."
+  salesforce-agentforce:
+    name: "Agentforce"
+    description: "Salesforce platform for AI agents that act on CRM and Data Cloud data."
   salt:
     name: "Salt Project"
     description: "Salt master driving minions over a ZeroMQ bus for remote execution and state enforcement."
   samba:
     name: "Samba"
     description: "SMB/CIFS file and print server for Windows and cross-platform clients."
+  sambanova-api:
+    name: "SambaNova Cloud"
+    description: "Fast inference for open-weight text models on SambaNova RDU accelerators."
   samza:
     name: "Apache Samza"
     description: "Stream processing framework from LinkedIn with local RocksDB state and changelog topics."
@@ -6085,9 +6589,15 @@ components:
   sap-hana:
     name: "SAP HANA"
     description: "In-memory relational database with a column store as its default storage."
+  scale-ai:
+    name: "Scale AI"
+    description: "Training-data platform with ML pre-labelling and human review, called through the Scale API."
   schema-registry:
     name: "Generic schema registry"
     description: "Vendor-neutral schema registry. Use when the real product is not in the catalogue; every rule for this kind still applies."
+  scrapingbee:
+    name: "ScrapingBee"
+    description: "Credit-based web scraping API with headless-browser rendering and proxy rotation."
   scylladb:
     name: "ScyllaDB"
     description: "Cassandra-compatible wide-column store with a shard-per-core architecture."
@@ -6118,6 +6628,12 @@ components:
   sentry:
     name: "Sentry"
     description: "Error tracking and performance monitoring pushed by application SDKs."
+  serpapi:
+    name: "SerpApi"
+    description: "Search-engine results from Google, Bing and others scraped into structured JSON."
+  serper:
+    name: "Serper"
+    description: "Low-cost Google search results API returning SERP data as JSON."
   service-mesh:
     name: "Generic service mesh"
     description: "Vendor-neutral service mesh. Use when the real product is not in the catalogue; every rule for this kind still applies."
@@ -6151,6 +6667,9 @@ components:
   smtp-relay:
     name: "SMTP relay"
     description: "External SMTP relay such as SES SMTP or a corporate mail relay."
+  snorkel:
+    name: "Snorkel Flow"
+    description: "Data development platform that labels training data programmatically with labelling functions."
   snort:
     name: "Snort"
     description: "Signature-based intrusion detection engine that runs in passive mode unless started inline with a DAQ."
@@ -6184,6 +6703,9 @@ components:
   sonic:
     name: "Sonic"
     description: "Schema-less identifier index on RocksDB, queried over the Sonic Channel protocol."
+  sourcegraph-cody:
+    name: "Sourcegraph Cody"
+    description: "Enterprise AI coding assistant grounded in Sourcegraph code search."
   spanner:
     name: "Google Cloud Spanner"
     description: "Globally distributed, synchronously replicated SQL database with external consistency."
@@ -6196,6 +6718,9 @@ components:
   spark-streaming:
     name: "Spark Structured Streaming"
     description: "Micro-batch stream processing on Apache Spark with checkpointed state."
+  speechmatics:
+    name: "Speechmatics"
+    description: "Batch and realtime speech to text as SaaS in EU, US and Australia or on premises."
   sphinx:
     name: "Sphinx"
     description: "Full-text search daemon serving indexes built offline by its indexer."
@@ -6250,6 +6775,9 @@ components:
   ssh-jump-host:
     name: "OpenSSH jump host"
     description: "An sshd relay reached with ProxyJump, with stock key and password authentication and no session recording."
+  stability-ai-api:
+    name: "Stability AI API"
+    description: "Hosted Stable Image and Stable Diffusion generation, editing and upscaling."
   stardog:
     name: "Stardog"
     description: "RDF and SPARQL knowledge graph platform with reasoning and virtual graphs."
@@ -6259,6 +6787,9 @@ components:
   statsig:
     name: "Statsig"
     description: "Hosted feature gates, experiments and product analytics with local rule evaluation."
+  steel-dev:
+    name: "Steel"
+    description: "Headless browser API for AI agents, run as time-limited cloud browser sessions."
   step-ca:
     name: "Smallstep step-ca"
     description: "Self-hosted online certificate authority for X.509 and SSH certificates."
@@ -6304,12 +6835,18 @@ components:
   supavisor:
     name: "Supavisor"
     description: "Cloud-native multi-tenant Postgres connection pooler that runs as a distributed cluster."
+  superannotate:
+    name: "SuperAnnotate"
+    description: "Hosted platform for annotating and evaluating multimodal and LLM training data."
   superset:
     name: "Apache Superset"
     description: "Open-source data exploration and dashboarding platform with SQL Lab and a chart library."
   supplier-api:
     name: "Supplier API"
     description: "Generic partner or supplier API with a contractual QPS quota."
+  surge-ai:
+    name: "Surge AI"
+    description: "Expert human labelling for training and evaluating frontier models, driven through the Surge API."
   suricata:
     name: "Suricata"
     description: "Network IDS/IPS engine that runs passively and alerts unless explicitly deployed inline."
@@ -6319,12 +6856,18 @@ components:
   swift:
     name: "OpenStack Swift"
     description: "Eventually consistent object store with ring-based replication and storage policies."
+  synthflow:
+    name: "Synthflow"
+    description: "No-code platform for inbound and outbound voice AI agents."
   syslog-ng:
     name: "syslog-ng"
     description: "Log collector routing messages from sources through filters and parsers to buffered destinations."
   tableau:
     name: "Tableau Server"
     description: "Self-hosted platform for publishing, scheduling and embedding Tableau workbooks and data sources."
+  tabnine:
+    name: "Tabnine"
+    description: "AI coding assistant for IDEs as SaaS, VPC, on-premise or air-gapped."
   tailscale:
     name: "Tailscale"
     description: "Hosted coordination plane over a WireGuard mesh; a new tailnet starts with an allow-all policy."
@@ -6337,6 +6880,9 @@ components:
   tape-library:
     name: "Tape library"
     description: "Robotic library of tape cartridges, slots and drives used for backup and archive."
+  tavily:
+    name: "Tavily"
+    description: "Search, extract and crawl API built to ground LLM agents in live web results."
   tdengine:
     name: "TDengine"
     description: "Time-series database for IoT with one table per device and tag-indexed supertables."
@@ -6364,9 +6910,15 @@ components:
   tensorflow-serving:
     name: "TensorFlow Serving"
     description: "Self-hosted gRPC/REST server for TensorFlow and other saved models."
+  tensorrt-llm:
+    name: "TensorRT-LLM"
+    description: "NVIDIA library and trtllm-serve server for optimised LLM inference on NVIDIA GPUs."
   teradata:
     name: "Teradata Vantage"
     description: "Shared-nothing MPP analytics platform distributing rows by primary index across AMPs."
+  text-embeddings-inference:
+    name: "Text Embeddings Inference"
+    description: "Hugging Face server for embedding, reranker and sequence-classification models."
   text-generation-inference:
     name: "Text Generation Inference"
     description: "Hugging Face LLM serving toolkit with continuous batching and quantization."
@@ -6415,12 +6967,18 @@ components:
   together-ai:
     name: "Together AI"
     description: "Serverless and dedicated inference for open models with dynamic rate limits."
+  toloka:
+    name: "Toloka"
+    description: "Human data platform for training and evaluating generative AI, self-service or managed."
   tomcat:
     name: "Apache Tomcat"
     description: "Open source Jakarta Servlet and Pages container for Java web applications."
   torchserve:
     name: "TorchServe"
     description: "PyTorch model server with inference, management and metrics APIs."
+  traceloop:
+    name: "Traceloop"
+    description: "LLM monitoring and evaluation fed by the OpenTelemetry-based OpenLLMetry SDK."
   traefik:
     name: "Traefik"
     description: "Self-managed cloud-native edge router with automatic service discovery."
@@ -6448,6 +7006,9 @@ components:
   triton:
     name: "NVIDIA Triton"
     description: "GPU inference server supporting multiple frameworks with dynamic batching."
+  truera:
+    name: "TruEra"
+    description: "SaaS observability for LLM apps and ML models (retired)."
   turbopuffer:
     name: "turbopuffer"
     description: "Managed vector and full-text search engine storing namespaces on object storage with an NVMe cache."
@@ -6475,12 +7036,21 @@ components:
   unbound:
     name: "Unbound"
     description: "Validating, recursive, caching DNS resolver."
+  unify-ai:
+    name: "Unify"
+    description: "Hosted LLM router that chose a model and provider per prompt from live quality, cost and speed benchmarks."
+  union-ai:
+    name: "Union.ai"
+    description: "Managed Flyte platform for AI workflows: serverless, bring your own cloud or self-managed."
   unity-catalog:
     name: "Unity Catalog"
     description: "Open catalog for tables, volumes, functions and models that vends location-scoped storage credentials."
   unleash:
     name: "Unleash"
     description: "Open-source feature toggle service."
+  unstructured-io:
+    name: "Unstructured API"
+    description: "Hosted document ETL that partitions PDFs, Office files and images into structured elements for RAG."
   upstash:
     name: "Upstash Redis"
     description: "Serverless managed Redis with durable storage, a REST API and eviction disabled by default."
@@ -6493,15 +7063,30 @@ components:
   uuid-generator:
     name: "UUID generator"
     description: "Library UUID generation on each node; random v4 by default."
+  v0:
+    name: "v0"
+    description: "Vercel's AI app builder that generates and deploys React and Next.js apps."
+  v7:
+    name: "V7 Darwin"
+    description: "Hosted annotation platform for images, video and documents with external bucket storage."
   vald:
     name: "Vald"
     description: "Kubernetes-native distributed ANN engine on the NGT algorithm with replicated indexes across agents."
   valkey:
     name: "Valkey"
     description: "Open-source Redis fork maintained under the Linux Foundation."
+  valohai:
+    name: "Valohai"
+    description: "MLOps platform that versions every run, with workers in your own cloud or on-premise."
+  vapi:
+    name: "Vapi"
+    description: "Developer platform for voice AI agents on phone numbers and the web."
   varnish:
     name: "Varnish Cache"
     description: "HTTP reverse proxy cache holding objects in memory for a default 120 second TTL."
+  vast-ai:
+    name: "Vast.ai instance"
+    description: "GPU instance from the Vast.ai marketplace, on-demand, reserved or interruptible."
   vector:
     name: "Vector"
     description: "Datadog's open source observability pipeline for logs, metrics and traces."
@@ -6517,6 +7102,12 @@ components:
   vercel:
     name: "Vercel"
     description: "Framework-aware managed edge network serving every deployment with built-in DDoS mitigation."
+  vercel-ai-gateway:
+    name: "Vercel AI Gateway"
+    description: "Managed endpoint routing model calls across providers with failover, budgets, BYOK and request logs."
+  vercel-sandbox:
+    name: "Vercel Sandbox"
+    description: "Firecracker microVM sandboxes for running untrusted or agent-generated code."
   verdaccio:
     name: "Verdaccio"
     description: "Lightweight private npm proxy registry that caches the public registry on demand."
@@ -6532,6 +7123,9 @@ components:
   vespa:
     name: "Vespa"
     description: "Serving engine combining text, vector and structured search with ranking inference."
+  vespa-cloud:
+    name: "Vespa Cloud"
+    description: "Managed Vespa service for vector, text and structured search and ranking."
   victoriametrics:
     name: "VictoriaMetrics"
     description: "Prometheus-compatible time series database with one month of default retention."
@@ -6553,12 +7147,18 @@ components:
   vm-service:
     name: "VM-hosted service"
     description: "Generic service running directly on virtual machines or bare metal."
+  voiceflow:
+    name: "Voiceflow"
+    description: "Hosted platform to build, deploy and monitor chat and voice agents."
   volcano:
     name: "Volcano"
     description: "Kubernetes-native batch scheduler for AI, big data and HPC jobs."
   vonage:
     name: "Vonage Messages API"
     description: "Multi-channel messaging API for SMS, MMS, RCS, WhatsApp, Viber and email."
+  voyage-ai:
+    name: "Voyage AI"
+    description: "Hosted embedding and rerank models for retrieval."
   vpn-gateway:
     name: "Generic VPN gateway"
     description: "Vendor-neutral VPN gateway. Use when the real product is not in the catalogue; every rule for this kind still applies."
@@ -6604,12 +7204,18 @@ components:
   weights-and-biases:
     name: "Weights & Biases"
     description: "Hosted experiment tracking, artifacts, sweeps and model registry for ML teams."
+  whylabs:
+    name: "WhyLabs"
+    description: "SaaS AI observability built on whylogs data profiles (retired)."
   wildfly:
     name: "WildFly"
     description: "Open source Jakarta EE application server, run standalone or in a managed domain."
   windmill:
     name: "Windmill"
     description: "Script and flow engine whose entire state and job queue live in PostgreSQL."
+  windsurf:
+    name: "Windsurf"
+    description: "AI code editor from Cognition, formerly Codeium, renamed Devin Desktop in June 2026."
   winlogbeat:
     name: "Winlogbeat"
     description: "Windows service that reads event log channels and ships them to Elasticsearch or Logstash."
@@ -6640,12 +7246,18 @@ components:
   wowza:
     name: "Wowza Streaming Engine"
     description: "Self-hosted streaming server for live and on-demand ingest and delivery."
+  writer-api:
+    name: "Writer API"
+    description: "Hosted Palmyra enterprise models with tool calling and Knowledge Graph retrieval."
   wso2-api-manager:
     name: "WSO2 API Manager"
     description: "Open source API management platform with gateway, key manager and developer portal."
   x-api:
     name: "X API"
     description: "Pay-per-usage API for reading and posting to X, with a filtered stream that accepts up to 1,000 rules."
+  xai-api:
+    name: "xAI API"
+    description: "Hosted Grok models for chat, reasoning, vision and image generation."
   xata:
     name: "Xata"
     description: "Managed Postgres platform with copy-on-write branches and anonymized clones."
@@ -6655,12 +7267,18 @@ components:
   xenserver:
     name: "XenServer"
     description: "Commercial Xen-based virtualization platform with resource pools managed from XenCenter."
+  xinference:
+    name: "Xinference"
+    description: "Open-source serving platform for LLM, embedding, image and audio models, local or clustered."
   xmatters:
     name: "xMatters"
     description: "Hosted alerting service that walks a recipient's push, email, SMS, voice and chat devices in a configured order."
   ydb:
     name: "YDB"
     description: "Distributed strictly consistent database built on tablets over shared storage."
+  you-com-api:
+    name: "You.com APIs"
+    description: "Web search, contents, answer and research APIs for AI agents."
   yugabytedb:
     name: "YugabyteDB"
     description: "Distributed SQL database with Raft-replicated tablets and RF 3 by default."
@@ -6670,12 +7288,24 @@ components:
   zapier:
     name: "Zapier"
     description: "Hosted integration service running a trigger and a chain of action steps across apps."
+  zapier-agents:
+    name: "Zapier Agents"
+    description: "No-code AI agents that act across Zapier app integrations, billed per activity."
   zendesk:
     name: "Zendesk API"
     description: "REST interface to Zendesk Support tickets, users and help centre."
+  zenml:
+    name: "ZenML"
+    description: "Open-source MLOps framework and server tracking pipelines, artifacts and models."
+  zep:
+    name: "Zep"
+    description: "Managed context layer that keeps agent memory as temporal knowledge graphs."
   zerotier:
     name: "ZeroTier"
     description: "Encrypted layer 2 virtual Ethernet overlay with device authorization and a hosted or self-hosted controller."
+  zhipu-glm-api:
+    name: "Z.ai Open Platform"
+    description: "Hosted GLM models from Zhipu AI for chat, vision, image and video generation."
   zilliz-cloud:
     name: "Zilliz Cloud"
     description: "Fully managed Milvus service with SaaS and bring-your-own-cloud plans."
@@ -6699,6 +7329,14 @@ components:
     description: "Project gating system that speculatively tests queued changes across dependent repositories."
 
 rules:
+  ai-api-key-unmanaged:
+    name: "AI API key not managed"
+    description: "An AI service is called with an API key from the team's own servers, workers or clients, the key is not held in a key-management component, and the design has none."
+    rationale: "This AI vendor is reached with an API key, and nothing in the design holds or rotates that key. It ends up in environment files or code, every caller shares it, and a single leak runs up the vendor bill until someone notices. Put the key in a key-management component, or say it is held there with keyStore."
+  ai-no-gateway:
+    name: "Several AI vendors and no gateway"
+    description: "The design calls three or more AI services and has no API gateway to route, retry and meter them."
+    rationale: "With three or more AI vendors and no gateway, every caller holds every key, writes its own retries and fallbacks, and spend is spread across vendor dashboards. An AI gateway such as LiteLLM, Portkey or Cloudflare AI Gateway gives one place for keys, fallbacks, rate limits and cost."
   business-updates-without-index-propagation:
     name: "Database updates not propagated to the search index"
     description: "Application servers write a database and the design keeps a search index, but no change data capture leaves the database; index writes rely on dual writes."

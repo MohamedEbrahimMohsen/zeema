@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Text Embeddings Inference (TEI): Hugging Face's server for embedding, reranker and sequence-classification models.
+# Per "CLI arguments", the router listens on 0.0.0.0:3000, allows 512 concurrent requests and 16384 batch tokens,
+# truncates over-long inputs by default, and answers every request until --api-key is set.
+schemaVersion: "1"
+type: "component"
+id: "text-embeddings-inference"
+kind: "ml-inference"
+provider: "default"
+docs: "https://huggingface.co/docs/text-embeddings-inference/en/cli_arguments"
+aliases: ["TEI"]
+defaults:
+  training: "batch"
+  inputs: "live"
+  accelerator: "gpu"
+  managed: false
+properties:
+  port:
+    type: "integer"
+    default: 3000
+  maxConcurrentRequests:
+    type: "integer"
+    default: 512
+  maxBatchTokens:
+    type: "integer"
+    default: 16384
+  apiKeyRequired:
+    type: "boolean"
+    default: false
+  autoTruncate:
+    type: "boolean"
+    default: true

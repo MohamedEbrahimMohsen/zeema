@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Roboflow: computer-vision platform to upload and annotate images, train models and deploy them. Per the Roboflow
+# docs a trained model runs on the hosted serverless API, a dedicated deployment, or the self-hosted Roboflow Inference
+# server on your own hardware; Workflows chain several vision steps.
+schemaVersion: "1"
+type: "component"
+id: "roboflow"
+kind: "ml-platform"
+provider: "default"
+docs: "https://docs.roboflow.com/"
+aliases: ["Roboflow Inference", "Roboflow Universe"]
+defaults:
+  managed: true
+  experimentTracking: false
+  modelRegistry: true
+  gpuEnabled: true
+properties:
+  deployment:
+    type: "enum"
+    values: ["serverless-api", "dedicated", "self-hosted-inference"]
+    default: "serverless-api"

@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# LMDeploy: InternLM's toolkit for compressing and serving LLMs, with an OpenAI-compatible api_server.
+# Per "OpenAI Compatible Server", `lmdeploy serve api_server` listens on port 23333, runs the TurboMind engine unless
+# the PyTorch engine is chosen, and uses tensor parallel size 1; no API key is set unless one is passed.
+schemaVersion: "1"
+type: "component"
+id: "lmdeploy"
+kind: "ml-inference"
+provider: "default"
+docs: "https://lmdeploy.readthedocs.io/en/latest/llm/api_server.html"
+defaults:
+  training: "batch"
+  inputs: "live"
+  accelerator: "gpu"
+  managed: false
+properties:
+  port:
+    type: "integer"
+    default: 23333
+  backend:
+    type: "enum"
+    values: ["turbomind", "pytorch"]
+    default: "turbomind"
+  tensorParallelSize:
+    type: "integer"
+    default: 1
+  apiKeyRequired:
+    type: "boolean"
+    default: false

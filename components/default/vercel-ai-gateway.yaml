@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Vercel AI Gateway: managed endpoint that routes across providers with failover, budgets, BYOK and request
+# logs, callable from any infrastructure with an API key or OIDC on Vercel. Per "AI Gateway Security and
+# Compliance", the gateway itself keeps zero data retention by default, while routing only to ZDR providers
+# and the provider allowlist are opt-in; per "AI Gateway Model Fallbacks", backup models need a models list.
+schemaVersion: "1"
+type: "component"
+id: "vercel-ai-gateway"
+kind: "api-gateway"
+provider: "default"
+docs: "https://vercel.com/docs/ai-gateway/security-and-compliance"
+defaults:
+  managed: true
+  auth: "api-key"
+  protocol: "http"
+  tls: true
+properties:
+  modelFallbacks:
+    type: "boolean"
+    default: false
+  zeroDataRetentionProviders:
+    type: "boolean"
+    default: false
+  providerAllowlist:
+    type: "boolean"
+    default: false
+  byok:
+    type: "boolean"
+    default: false

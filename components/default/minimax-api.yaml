@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# MiniMax API: hosted MiniMax models for text (M-series), speech, voice cloning, image, video (Hailuo) and music.
+# Per "Rate Limits", limits depend on model and interface: MiniMax-M3 allows 200 RPM and 10M TPM, M2.x 500 RPM
+# and 20M TPM, T2A speech 60 RPM, image-01 10 RPM; Speech to Text is for paid accounts only.
+schemaVersion: "1"
+type: "component"
+id: "minimax-api"
+kind: "ai-service"
+provider: "default"
+docs: "https://platform.minimax.io/docs/guides/rate-limits"
+aliases: ["MiniMax Open Platform", "Hailuo"]
+defaults:
+  auth: "api-key"
+  managed: true
+  modality: "multimodal"
+  publicEndpoint: true
+  rateLimitRpm: 200
+  rateLimitTpm: 10000000
+properties:
+  api:
+    type: "enum"
+    values: ["text", "speech", "image", "video", "music"]
+    default: "text"
+  paidAccount:
+    type: "boolean"
+    default: false
+  platform:
+    type: "enum"
+    values: ["minimax-io", "minimaxi-cn"]
+    default: "minimax-io"

@@ -1,0 +1,78 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture: a retrieval-augmented assistant that calls three AI vendors (chat,
+# fallback chat, embeddings and rerank), broken variant: the API and the ingest worker call each
+# vendor directly with a key from their own environment.
+#
+# This file MUST trip:
+#   - ai-api-key-unmanaged     (openai-chat, anthropic-chat and cohere-embed are api-key vendors called from assistant-api and ingest-worker; no key-management node)
+#   - ai-no-gateway            (three AI services and no api-gateway node)
+# and MUST NOT trip:
+#   - credentials-without-rotation (security.credentialRotationDays is set)
+#   - datastore-missing-backup     (docs-db keeps backups with a retention period)
+#   - datastore-single-region      (the design does not require multi-region)
+schemaVersion: "1"
+type: "design"
+id: "llm-gateway"
+
+requirements:
+  security:
+    credentialRotationDays: 90
+  availability:
+    multiRegion: false
+    sla: "99.9"
+
+groups:
+  - { id: "eu-west", kind: "region" }
+  - { id: "app-vpc", kind: "vpc", parent: "eu-west" }
+
+nodes:
+  - id: "browser"
+    component: "web-browser"
+    label: "Assistant UI"
+
+  - id: "assistant-api"
+    component: "container-service"
+    group: "app-vpc"
+    label: "Assistant API"
+    props: { orchestrator: "kubernetes", instances: 3 }
+
+  - id: "ingest-worker"
+    component: "container-worker"
+    group: "app-vpc"
+    label: "Document ingest"
+
+  - id: "docs-db"
+    component: "postgres"
+    group: "app-vpc"
+    label: "Documents and chats"
+    props: { backupEnabled: true, backupRetentionDays: 14, encryptionAtRest: true }
+
+  - id: "vectors"
+    component: "qdrant"
+    group: "app-vpc"
+    label: "Chunk vectors"
+
+  - id: "openai-chat"
+    component: "openai-api"
+    label: "OpenAI chat"
+    props: { modality: "text" }
+
+  - id: "anthropic-chat"
+    component: "anthropic-api"
+    label: "Anthropic fallback"
+    props: { modality: "text" }
+
+  - id: "cohere-embed"
+    component: "cohere-api"
+    label: "Cohere embed and rerank"
+    props: { modality: "embedding" }
+
+edges:
+  - { from: "browser", to: "assistant-api", protocol: "https", mode: "sync", label: "ask" }
+  - { from: "assistant-api", to: "docs-db", protocol: "postgres", mode: "sync", label: "chat history" }
+  - { from: "assistant-api", to: "vectors", protocol: "grpc", mode: "sync", label: "retrieve chunks" }
+  - { from: "assistant-api", to: "openai-chat", protocol: "https", mode: "sync", label: "chat" }
+  - { from: "assistant-api", to: "anthropic-chat", protocol: "https", mode: "sync", label: "fallback, hand-written" }
+  - { from: "assistant-api", to: "cohere-embed", protocol: "https", mode: "sync", label: "embed query, rerank" }
+  - { from: "ingest-worker", to: "cohere-embed", protocol: "https", mode: "sync", label: "embed chunks" }
+  - { from: "ingest-worker", to: "vectors", protocol: "grpc", mode: "sync", label: "upsert" }

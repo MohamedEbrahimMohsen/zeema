@@ -284,12 +284,14 @@ const evalPred = (p, ctx) => {
     }).length;
     return h.count ? cmp(h.count, n) : n > 0;
   }
-  if (p.hasNode)
-    return doc.nodes.some(
-      (n) =>
-        (!p.hasNode.kind || matchKind(p.hasNode.kind, n)) &&
-        (!p.hasNode.category || matchCat(p.hasNode.category, n)),
-    );
+  if (p.hasNode) {
+    const n = doc.nodes.filter(
+      (x) =>
+        (!p.hasNode.kind || matchKind(p.hasNode.kind, x)) &&
+        (!p.hasNode.category || matchCat(p.hasNode.category, x)),
+    ).length;
+    return p.hasNode.count ? cmp(p.hasNode.count, n) : n > 0;
+  }
   if (p.inGroup) {
     const n = ancestry(doc, node).filter((g) => g.kind === p.inGroup.kind).length;
     return p.inGroup.count ? cmp(p.inGroup.count, n) : n > 0;

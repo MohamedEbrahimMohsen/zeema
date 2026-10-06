@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Vespa Cloud: the managed Vespa service, running vector, text and structured ranking in one engine.
+# Per "Deploy an application", a free dev zone sits beside perf and prod zones, and dev instances keep running for 14
+# days after the last deployment by default.
+schemaVersion: "1"
+type: "component"
+id: "vespa-cloud"
+kind: "vector-database"
+provider: "default"
+docs: "https://docs.vespa.ai/en/cloud/getting-started.html"
+defaults:
+  managed: true
+  indexType: "hnsw"
+  hybridSearch: true
+  metadataFiltering: true
+properties:
+  environment:
+    type: "enum"
+    values: ["dev", "perf", "prod"]
+    default: "dev"
+  devExpiryDays:
+    type: "integer"
+    default: 14

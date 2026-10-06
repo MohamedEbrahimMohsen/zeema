@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Writer API: hosted Palmyra enterprise models (chat, tool calling, Knowledge Graph RAG, vision) over a public endpoint.
+# Per "Understand rate limits", endpoints enforce 400 requests and 25,000 tokens per minute unless Sales sets custom
+# limits; per "Encryption Key Management", customer-managed (BYOK) keys are an Enterprise-plan option.
+schemaVersion: "1"
+type: "component"
+id: "writer-api"
+kind: "ai-service"
+provider: "default"
+docs: "https://dev.writer.com/api-reference/rate-limits"
+aliases: ["Palmyra", "Writer AI Studio"]
+defaults:
+  auth: "api-key"
+  managed: true
+  modality: "multimodal"
+  publicEndpoint: true
+  rateLimitRpm: 400
+  rateLimitTpm: 25000
+  customerManagedKeys: false
+properties:
+  knowledgeGraph:
+    type: "boolean"
+    default: false
+  customRateLimits:
+    type: "boolean"
+    default: false

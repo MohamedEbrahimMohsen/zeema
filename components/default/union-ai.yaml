@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Union.ai: managed platform built on Flyte for orchestrating AI workflows. Per "Introduction", it comes as
+# Serverless (fully managed, no infrastructure), BYOC (data and code stay in the customer's cloud, Union.ai manages it)
+# or Self-managed (the customer runs the infrastructure).
+schemaVersion: "1"
+type: "component"
+id: "union-ai"
+kind: "ml-platform"
+provider: "default"
+docs: "https://www.union.ai/docs/v1/byoc/user-guide/introduction"
+aliases: ["Union"]
+defaults:
+  managed: true
+  experimentTracking: false
+  modelRegistry: false
+properties:
+  deployment:
+    type: "enum"
+    values: ["serverless", "byoc", "self-managed"]
+    default: "byoc"

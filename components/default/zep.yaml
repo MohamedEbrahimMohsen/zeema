@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Zep: managed context layer for agents that keeps conversations and business data as temporal context graphs, built on
+# Graphiti and stored in Zep's Konig graph service. The Zep docs describe Zep Cloud; the self-hosted Community Edition is
+# deprecated and receives no updates.
+schemaVersion: "1"
+type: "component"
+id: "zep"
+kind: "cache"
+provider: "default"
+docs: "https://help.getzep.com/"
+aliases: ["Zep Cloud"]
+defaults:
+  managed: true
+  persistence: true
+  invalidation: "event"
+properties:
+  plan:
+    type: "enum"
+    values: ["free", "flex", "flex-plus", "enterprise"]
+    default: "free"
+  byoc:
+    type: "boolean"
+    default: false

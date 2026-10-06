@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Xinference (Xorbits Inference): open-source serving platform for LLM, embedding, image and audio models with
+# OpenAI-compatible APIs. Per "Using Xinference", xinference-local listens on port 9997 and a cluster runs one
+# supervisor with workers; each model is launched on a chosen engine (vLLM, SGLang, llama.cpp, Transformers or MLX).
+schemaVersion: "1"
+type: "component"
+id: "xinference"
+kind: "ml-inference"
+provider: "default"
+docs: "https://inference.readthedocs.io/en/latest/getting_started/using_xinference.html"
+aliases: ["Xorbits Inference"]
+defaults:
+  training: "batch"
+  inputs: "live"
+  managed: false
+properties:
+  port:
+    type: "integer"
+    default: 9997
+  deployment:
+    type: "enum"
+    values: ["local", "cluster"]
+    default: "local"
+  engine:
+    type: "enum"
+    values: ["vllm", "sglang", "llama-cpp", "transformers", "mlx"]

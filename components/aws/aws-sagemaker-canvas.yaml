@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon SageMaker Canvas: no-code workspace to prepare data, build and evaluate models and use foundation models,
+# launched as an app in a SageMaker AI domain. Per "Configure your Amazon S3 storage", models, datasets and other app
+# data go to the system-managed bucket s3://sagemaker-{Region}-{account-id} unless a custom S3 location is set, with an
+# optional KMS key. Canvas replaces Amazon Forecast for time-series forecasting.
+schemaVersion: "1"
+type: "component"
+id: "aws-sagemaker-canvas"
+kind: "ml-platform"
+provider: "aws"
+docs: "https://docs.aws.amazon.com/sagemaker/latest/dg/canvas-storage-configuration.html"
+aliases: ["SageMaker Canvas"]
+defaults:
+  managed: true
+  experimentTracking: false
+  modelRegistry: true
+properties:
+  storage:
+    type: "enum"
+    values: ["system-managed", "custom-s3"]
+    default: "system-managed"
+  customerManagedKey:
+    type: "boolean"
+    default: false

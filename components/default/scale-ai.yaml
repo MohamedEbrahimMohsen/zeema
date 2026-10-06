@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Scale AI: training-data platform that combines ML pre-labelling with human review, reached over the Scale API.
+# Per "Authentication" calls use HTTP Basic auth with an API key, and per "Introduction to Scale API" the key decides
+# whether a request runs in live mode or sandbox mode. Meta took a 49% stake in Scale AI in June 2025.
+schemaVersion: "1"
+type: "component"
+id: "scale-ai"
+kind: "ml-platform"
+provider: "default"
+docs: "https://api-reference.scale.com/docs/api-reference/authentication"
+aliases: ["Scale Data Engine", "Scale GenAI Platform"]
+defaults:
+  managed: true
+  experimentTracking: false
+  modelRegistry: false
+properties:
+  apiMode:
+    type: "enum"
+    values: ["live", "sandbox"]
+    default: "live"
+  callbackUrl:
+    type: "boolean"
+    default: false

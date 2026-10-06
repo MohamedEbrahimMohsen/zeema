@@ -14,6 +14,8 @@
 #     task-runners synchronously on the mutation path
 #   - workspace-indexeddb declares an eviction policy, so browser storage pressure is not
 #     left to the vendor default
+#   - openai-embeddings declares its API key held in a key-management component (keyStore), as
+#     the broken variant does not; the store itself is not drawn
 # This file MUST trip no rule.
 schemaVersion: "1"
 type: "design"
@@ -150,7 +152,7 @@ nodes:
   - id: "openai-embeddings"
     component: "openai-api"
     label: "OpenAI embeddings"
-    props: { modality: "text", publicEndpoint: true, managed: true }
+    props: { modality: "text", publicEndpoint: true, managed: true, keyStore: true }
 
   - id: "customer-webhooks"
     component: "webhook-receiver"

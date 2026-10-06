@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# promptfoo: open-source CLI for LLM evals and red teaming that runs locally or in CI. Per "CI/CD Integration
+# for LLM Eval and Security", the GitHub Actions example runs `npx promptfoo@latest eval` on pull requests
+# touching prompts, while security scans use a daily schedule. Acquired by OpenAI (announced March 2026).
+schemaVersion: "1"
+type: "component"
+id: "promptfoo"
+kind: "ci-pipeline"
+provider: "default"
+docs: "https://www.promptfoo.dev/docs/integrations/ci-cd/"
+defaults:
+  managed: false
+  trigger: "pull-request"
+properties:
+  redTeam:
+    type: "boolean"
+    default: false
+  qualityGate:
+    type: "boolean"

@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# cognee: open-source AI memory engine that turns documents and conversations into a searchable knowledge graph.
+# Per the cognee docs, it runs self-hosted as a Python library, CLI, HTTP API or MCP server on embedded databases, or as the
+# managed Cognee Cloud with preconfigured storage and team permissions.
+schemaVersion: "1"
+type: "component"
+id: "cognee"
+kind: "cache"
+provider: "default"
+docs: "https://docs.cognee.ai/"
+aliases: ["Cognee Cloud"]
+defaults:
+  managed: false
+  persistence: true
+properties:
+  deployment:
+    type: "enum"
+    values: ["self-hosted", "cognee-cloud"]
+    default: "self-hosted"
+  interface:
+    type: "enum"
+    values: ["library", "http-api", "mcp-server"]
+    default: "library"

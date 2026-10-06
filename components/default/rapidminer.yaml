@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# RapidMiner AI Hub: server for RapidMiner Studio teams with shared repositories for processes and models, batch
+# jobs, scheduling, JupyterLab and Web API endpoints for deployed workflows. Altair acquired RapidMiner in 2022 and sold
+# it as Altair AI Hub; Siemens acquired Altair in March 2025 and the RapidMiner name is back (AI Hub 2026.0.2, January 2026).
+schemaVersion: "1"
+type: "component"
+id: "rapidminer"
+kind: "ml-platform"
+provider: "default"
+docs: "https://docs.rapidminer.com/2026.0/hub/releases/changes-2026.0.2.html"
+aliases: ["RapidMiner AI Hub", "Altair AI Hub", "Altair RapidMiner"]
+defaults:
+  managed: false
+  experimentTracking: false
+  modelRegistry: true
+properties:
+  jupyterLab:
+    type: "boolean"
+    default: true

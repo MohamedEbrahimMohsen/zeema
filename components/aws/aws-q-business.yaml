@@ -11,6 +11,7 @@ kind: "ai-service"
 provider: "aws"
 docs: "https://docs.aws.amazon.com/amazonq/latest/qbusiness-ug/what-is.html"
 defaults:
+  auth: "iam"
   managed: true
   modality: "text"
   contentFiltering: true

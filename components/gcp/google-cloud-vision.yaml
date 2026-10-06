@@ -9,6 +9,7 @@ kind: "ai-service"
 provider: "gcp"
 docs: "https://docs.cloud.google.com/vision/quotas"
 defaults:
+  auth: "iam"
   modality: "vision"
   publicEndpoint: true
   quotaUnitsPerMinute: 1800

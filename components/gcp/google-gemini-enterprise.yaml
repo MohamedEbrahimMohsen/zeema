@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Gemini Enterprise: Google Cloud's enterprise assistant that searches company data across Workspace and connected
+# business apps and runs agents that research, plan and act. Google renamed Agentspace to Gemini Enterprise on
+# 9 October 2025. Editions are Business, Standard, Plus and Frontline; users sign in with their Google or workforce identity.
+schemaVersion: "1"
+type: "component"
+id: "google-gemini-enterprise"
+kind: "ai-service"
+provider: "gcp"
+docs: "https://docs.cloud.google.com/gemini/enterprise/docs/agents-overview"
+aliases: ["Agentspace", "Google Agentspace"]
+defaults:
+  auth: "oauth"
+  managed: true
+  modality: "multimodal"
+  publicEndpoint: true
+properties:
+  edition:
+    type: "enum"
+    values: ["business", "standard", "plus", "frontline"]
+    default: "standard"
+  dataConnectors:
+    type: "boolean"
+    default: true

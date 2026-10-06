@@ -1,6 +1,7 @@
 # yaml-language-server: $schema=../../schema/component.schema.json
 # Snowflake: managed columnar warehouse with separated storage and compute; one day of time
-# travel by default.
+# travel by default. cortex says the account calls Snowflake Cortex AI (LLM functions, Cortex Search,
+# Cortex Analyst) inside the warehouse; off until stated.
 schemaVersion: "1"
 type: "component"
 id: "snowflake"
@@ -20,3 +21,6 @@ properties:
   timeTravelDays:
     type: "integer"
     default: 1
+  cortex:
+    type: "boolean"
+    default: false

@@ -2,12 +2,14 @@
 # Vertex AI Agent Engine (Agent Runtime): a fully managed runtime that deploys and autoscales agent
 # applications with no infrastructure to manage ("Agent Engine overview"). Conversation state lives in
 # Agent Engine Sessions and Memory Bank, which are attached separately, so the runtime owns no data.
+# Vertex AI Agent Builder is the product suite this runtime belongs to and answers to this box as an alias.
 schemaVersion: "1"
 type: "component"
 id: "google-vertex-ai-agent-engine"
 kind: "app-server"
 provider: "gcp"
 docs: "https://cloud.google.com/vertex-ai/generative-ai/docs/agent-engine/overview"
+aliases: ["Vertex AI Agent Builder"]
 defaults:
   managed: true
   stateless: true

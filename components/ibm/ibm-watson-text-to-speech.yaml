@@ -10,6 +10,7 @@ provider: "ibm"
 docs: "https://cloud.ibm.com/docs/text-to-speech"
 aliases: ["TTS"]
 defaults:
+  auth: "api-key"
   managed: true
   modality: "speech"
 properties:

@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Stability AI API: hosted Stable Image and Stable Diffusion generation, editing, upscaling, video and 3D, paid in credits.
+# Per "StabilityAI REST API (v2beta)", the limit is 150 requests every 10 seconds (429 and a 60-second
+# timeout above it), requests flagged by content moderation get 403, and async results are kept 24 hours.
+schemaVersion: "1"
+type: "component"
+id: "stability-ai-api"
+kind: "ai-service"
+provider: "default"
+docs: "https://platform.stability.ai/docs/api-reference"
+aliases: ["Stability AI Developer Platform", "Stable Image API"]
+defaults:
+  auth: "api-key"
+  managed: true
+  modality: "image"
+  publicEndpoint: true
+  contentFiltering: true
+properties:
+  apiVersion:
+    type: "enum"
+    values: ["v2beta", "v1"]
+    default: "v2beta"

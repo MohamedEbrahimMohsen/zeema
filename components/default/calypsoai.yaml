@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# CalypsoAI: runtime AI security platform with prompt-injection and jailbreak defence, data-leak detection
+# and large-scale red teaming. Retired September 2025: F5 completed the acquisition (announced 29 September
+# 2025) and relaunched it as F5 AI Guardrails and F5 AI Red Team; calypsoai.com now redirects to F5. Per
+# "F5 AI Guardrails", it deploys in public cloud, private cloud or on premises; no default mode is published.
+schemaVersion: "1"
+type: "component"
+id: "calypsoai"
+kind: "policy-engine"
+provider: "default"
+docs: "https://www.f5.com/company/blog/what-are-ai-guardrails"
+aliases: ["F5 AI Guardrails"]
+defaults:
+  scope: "resource"
+properties:
+  redTeaming:
+    type: "boolean"
+    default: false
+  deployment:
+    type: "enum"
+    values: ["public-cloud", "private-cloud", "on-premises"]

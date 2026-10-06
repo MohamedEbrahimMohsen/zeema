@@ -2,6 +2,7 @@
 # DataStax Enterprise (DSE): commercial Apache Cassandra distribution. Per the DSE 6.9
 # documentation a node starts as a plain transactional node; DSE Search, DSE Analytics and DSE
 # Graph are workloads enabled per node, and transparent data encryption is configured explicitly.
+# vectorSearch: SAI vector indexes on the JVector engine in DSE 6.9 ("Use vector search with Cassandra Query Language (CQL)").
 schemaVersion: "1"
 type: "component"
 id: "datastax-enterprise"
@@ -23,5 +24,8 @@ properties:
     type: "boolean"
     default: false
   graphWorkload:
+    type: "boolean"
+    default: false
+  vectorSearch:
     type: "boolean"
     default: false

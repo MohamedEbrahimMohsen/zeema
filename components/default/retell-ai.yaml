@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Retell AI: platform to build, test, deploy and monitor voice and chat agents with telephony built in. Per
+# "Introduction", an agent is a single prompt or a conversation flow of nodes, and calls come in on a Retell-managed US or
+# Canada number or over your own carrier through SIP trunking.
+schemaVersion: "1"
+type: "component"
+id: "retell-ai"
+kind: "ai-service"
+provider: "default"
+docs: "https://docs.retellai.com/general/introduction"
+aliases: ["Retell"]
+defaults:
+  auth: "api-key"
+  managed: true
+  modality: "speech"
+  publicEndpoint: true
+properties:
+  agentType:
+    type: "enum"
+    values: ["single-prompt", "conversation-flow"]
+    default: "single-prompt"
+  telephony:
+    type: "enum"
+    values: ["retell-number", "sip-trunk"]
+    default: "retell-number"

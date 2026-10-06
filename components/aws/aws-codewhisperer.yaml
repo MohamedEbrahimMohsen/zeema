@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon CodeWhisperer: AI code completion in the IDE. Retired April 2024: per "Amazon Q Developer rename - Summary
+# of changes", CodeWhisperer became part of Amazon Q Developer on 30 April 2024; use aws-q-developer.
+schemaVersion: "1"
+type: "component"
+id: "aws-codewhisperer"
+kind: "client"
+provider: "aws"
+docs: "https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/service-rename.html"
+aliases: ["CodeWhisperer"]
+defaults:
+  platform: "desktop"
+  managed: true
+properties:
+  tier:
+    type: "enum"
+    values: ["individual", "professional"]
+    default: "individual"

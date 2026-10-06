@@ -10,6 +10,7 @@ provider: "gcp"
 docs: "https://docs.cloud.google.com/text-to-speech/quotas"
 aliases: ["TTS"]
 defaults:
+  auth: "iam"
   modality: "speech"
   publicEndpoint: true
   quotaUnitsPerMinute: 1000

@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# MyScale: managed SQL vector database built on ClickHouse. Retired May 2025: per the MyScale Operations Team notice, all
+# services, including the website and clusters, ceased operations on May 28, 2025 and users were asked to export their data.
+schemaVersion: "1"
+type: "component"
+id: "myscale"
+kind: "vector-database"
+provider: "default"
+docs: "https://x.com/MyScaleDB/status/1917163010311037327"
+defaults:
+  managed: true
+  metadataFiltering: true
+properties:
+  sqlInterface:
+    type: "boolean"
+    default: true

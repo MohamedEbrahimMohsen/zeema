@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Langflow: open-source visual builder for RAG and multi-agent flows that serves each flow as an API and an MCP server.
+# Per the Langflow deployment overview it deploys as a Docker image, behind Caddy or Nginx, or on Kubernetes for high
+# availability; DataStax, now an IBM company, maintains it.
+schemaVersion: "1"
+type: "component"
+id: "langflow"
+kind: "app-server"
+provider: "default"
+docs: "https://docs.langflow.org/deployment-overview"
+aliases: ["Langflow Desktop"]
+defaults:
+  managed: false
+  stateless: true
+  runtime: "python"
+properties:
+  installMethod:
+    type: "enum"
+    values: ["desktop", "docker", "python-package", "source"]
+    default: "docker"
+  mcpServer:
+    type: "boolean"
+    default: true

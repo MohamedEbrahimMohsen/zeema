@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Pipecat: BSD-2 open-source Python framework from Daily for voice and multimodal AI agents, a pipeline of speech to
+# text, LLM and text to speech services behind a WebRTC, WebSocket or telephony transport. Per "Introduction", the
+# server runs the pipeline in real time and is self-hosted or deployed on Pipecat Cloud.
+schemaVersion: "1"
+type: "component"
+id: "pipecat"
+kind: "app-server"
+provider: "default"
+docs: "https://docs.pipecat.ai/getting-started/introduction"
+aliases: ["Pipecat Cloud"]
+defaults:
+  managed: false
+  stateless: false
+  runtime: "python"
+properties:
+  hosting:
+    type: "enum"
+    values: ["self-hosted", "pipecat-cloud"]
+    default: "self-hosted"
+  transport:
+    type: "enum"
+    values: ["webrtc", "websocket", "telephony"]

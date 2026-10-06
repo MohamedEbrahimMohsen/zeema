@@ -1,0 +1,89 @@
+# yaml-language-server: $schema=../../../schema/design.schema.json
+# Reference architecture: a retrieval-augmented assistant that calls three AI vendors (chat,
+# fallback chat, embeddings and rerank), clean variant.
+#
+# Fixes relative to llm-gateway.broken.yaml:
+#   - every model call passes llm-router (a LiteLLM proxy), which holds the vendor keys, retries,
+#     falls back from openai-chat to anthropic-chat, and meters spend in one place
+#   - the vendor keys live in secrets (HashiCorp Vault); the router reads them at start and each
+#     AI service declares keyStore and viaGateway
+# This file MUST trip no rule.
+schemaVersion: "1"
+type: "design"
+id: "llm-gateway"
+
+requirements:
+  security:
+    credentialRotationDays: 90
+  availability:
+    multiRegion: false
+    sla: "99.9"
+
+groups:
+  - { id: "eu-west", kind: "region" }
+  - { id: "app-vpc", kind: "vpc", parent: "eu-west" }
+
+nodes:
+  - id: "browser"
+    component: "web-browser"
+    label: "Assistant UI"
+
+  - id: "assistant-api"
+    component: "container-service"
+    group: "app-vpc"
+    label: "Assistant API"
+    props: { orchestrator: "kubernetes", instances: 3 }
+
+  - id: "ingest-worker"
+    component: "container-worker"
+    group: "app-vpc"
+    label: "Document ingest"
+
+  - id: "llm-router"
+    component: "litellm"
+    group: "app-vpc"
+    label: "LLM router"
+    props: { auth: "api-key", virtualKeys: true, fallbacks: true, requiresDatabase: true }
+
+  - id: "secrets"
+    component: "hashicorp-vault"
+    group: "app-vpc"
+    label: "Vendor keys"
+
+  - id: "docs-db"
+    component: "postgres"
+    group: "app-vpc"
+    label: "Documents and chats"
+    props: { backupEnabled: true, backupRetentionDays: 14, encryptionAtRest: true }
+
+  - id: "vectors"
+    component: "qdrant"
+    group: "app-vpc"
+    label: "Chunk vectors"
+
+  - id: "openai-chat"
+    component: "openai-api"
+    label: "OpenAI chat"
+    props: { modality: "text", keyStore: true, viaGateway: true }
+
+  - id: "anthropic-chat"
+    component: "anthropic-api"
+    label: "Anthropic fallback"
+    props: { modality: "text", keyStore: true, viaGateway: true }
+
+  - id: "cohere-embed"
+    component: "cohere-api"
+    label: "Cohere embed and rerank"
+    props: { modality: "embedding", keyStore: true, viaGateway: true }
+
+edges:
+  - { from: "browser", to: "assistant-api", protocol: "https", mode: "sync", label: "ask" }
+  - { from: "assistant-api", to: "docs-db", protocol: "postgres", mode: "sync", label: "chat history" }
+  - { from: "assistant-api", to: "vectors", protocol: "grpc", mode: "sync", label: "retrieve chunks" }
+  - { from: "assistant-api", to: "llm-router", protocol: "https", mode: "sync", label: "chat, embed, rerank" }
+  - { from: "ingest-worker", to: "llm-router", protocol: "https", mode: "sync", label: "embed chunks" }
+  - { from: "ingest-worker", to: "vectors", protocol: "grpc", mode: "sync", label: "upsert" }
+  - { from: "llm-router", to: "secrets", protocol: "https", mode: "sync", label: "vendor keys" }
+  - { from: "llm-router", to: "openai-chat", protocol: "https", mode: "sync" }
+  - { from: "llm-router", to: "anthropic-chat", protocol: "https", mode: "sync", label: "fallback" }
+  - { from: "llm-router", to: "cohere-embed", protocol: "https", mode: "sync" }

@@ -24,6 +24,10 @@ properties:
     type: "enum"
     values: ["none", "gpu", "asic"]
     default: "none"
+  acceleratorModel:
+    type: "enum"
+    values: ["nvidia-h100", "nvidia-h200", "nvidia-b200", "nvidia-l4", "nvidia-a100", "amd-mi300x", "aws-trainium", "aws-inferentia", "google-tpu", "intel-gaudi", "groq-lpu", "cerebras-wse"]
+    advanced: true
   instances:
     type: "integer"
   managed:

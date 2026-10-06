@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Valohai: MLOps platform that versions every training run and pipeline. Per "Installation & Setup", the Valohai
+# application is hosted by Valohai while workers run in the customer's own AWS, GCP, Azure or on-premise environment,
+# or both application and infrastructure run self-hosted inside the customer's network.
+schemaVersion: "1"
+type: "component"
+id: "valohai"
+kind: "ml-platform"
+provider: "default"
+docs: "https://docs.valohai.com/installation-and-setup"
+defaults:
+  managed: true
+  experimentTracking: true
+  modelRegistry: true
+properties:
+  deployment:
+    type: "enum"
+    values: ["hosted-app-own-workers", "self-hosted"]
+    default: "hosted-app-own-workers"

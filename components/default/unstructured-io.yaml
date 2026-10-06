@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Unstructured API: hosted document ETL that partitions PDFs, Office files and images into structured elements for RAG.
+# Per "Unstructured API developer guide", Let's Go and Pay-As-You-Go run on shared SaaS while Business adds a dedicated
+# instance or an in-VPC install; billing is per page, and the pricing page makes the first 10,000 pages free.
+schemaVersion: "1"
+type: "component"
+id: "unstructured-io"
+kind: "worker"
+provider: "default"
+docs: "https://docs.unstructured.io/api-reference/overview"
+aliases: ["Unstructured API", "Unstructured Platform"]
+defaults:
+  managed: true
+  trigger: "queue"
+  idempotent: false
+properties:
+  plan:
+    type: "enum"
+    values: ["lets-go", "pay-as-you-go", "business"]
+    default: "pay-as-you-go"
+  deployment:
+    type: "enum"
+    values: ["shared-saas", "dedicated", "in-vpc"]
+    default: "shared-saas"
+  workflowPipelines:
+    type: "boolean"
+    default: false

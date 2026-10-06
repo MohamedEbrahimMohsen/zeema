@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Windsurf: AI code editor, formerly Codeium, drawn as the client calling your code, MCP servers and APIs. Cognition
+# acquired Windsurf in July 2025 and renamed the editor Devin Desktop on 2 June 2026; docs.windsurf.com now redirects to
+# the Devin Desktop docs.
+schemaVersion: "1"
+type: "component"
+id: "windsurf"
+kind: "client"
+provider: "default"
+docs: "https://docs.devin.ai/desktop/getting-started"
+aliases: ["Devin Desktop", "Codeium"]
+defaults:
+  platform: "desktop"
+  managed: true
+properties:
+  plan:
+    type: "enum"
+    values: ["free", "pro", "teams", "enterprise"]
+    default: "free"

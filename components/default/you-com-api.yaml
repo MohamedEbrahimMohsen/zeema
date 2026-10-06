@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# You.com APIs: web search, contents, answer and research APIs for AI agents.
+# Per "Rate Limits", self-serve keys allow 10 requests per second on Search, Contents, Answer and Research and 5 on
+# Finance Research; enterprise limits are set by contract.
+schemaVersion: "1"
+type: "component"
+id: "you-com-api"
+kind: "third-party-api"
+provider: "default"
+docs: "https://you.com/docs/rate-limits"
+aliases: ["You.com Web Search API"]
+defaults:
+  managed: true
+  hostedPage: false
+  handlesMoney: false
+  callbackStyle: "none"
+  idempotent: true
+  qpsQuota: 10
+properties:
+  api:
+    type: "enum"
+    values: ["search", "contents", "answer", "research", "finance-research"]
+    default: "search"

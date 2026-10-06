@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Northflank Sandboxes: isolated Linux environments, each on its own kernel, for LLM-generated code, user submissions and agents.
+# Per the Northflank sandboxes docs, Northflank Cloud isolates CPU work in microVMs and GPU work in gVisor, sandboxes boot in
+# under a second, and the same sandboxes run in your own cloud (BYOC) with a configurable runtime.
+schemaVersion: "1"
+type: "component"
+id: "northflank-sandbox"
+kind: "worker"
+provider: "default"
+docs: "https://northflank.com/docs/v1/application/sandboxes"
+aliases: ["Northflank Sandboxes"]
+defaults:
+  managed: true
+  trigger: "manual"
+  idempotent: false
+properties:
+  deployment:
+    type: "enum"
+    values: ["northflank-cloud", "byoc"]
+    default: "northflank-cloud"
+  isolation:
+    type: "enum"
+    values: ["microvm", "gvisor"]
+    default: "microvm"
+  persistentVolume:
+    type: "boolean"
+    default: false

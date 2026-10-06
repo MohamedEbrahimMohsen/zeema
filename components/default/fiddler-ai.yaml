@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Fiddler: enterprise observability for ML models, LLM applications and agents, with guardrails. Per
+# "Pricing", the Free tier is real-time guardrails (under 80 ms), Developer is SaaS-only at $0.002 per trace,
+# and Enterprise adds SaaS, VPC or on-premise deployment.
+schemaVersion: "1"
+type: "component"
+id: "fiddler-ai"
+kind: "monitoring"
+provider: "default"
+docs: "https://docs.fiddler.ai/"
+aliases: ["Fiddler"]
+defaults:
+  managed: true
+  signal: "traces"
+  collectorMode: "push"
+  independentOfMonitored: true
+properties:
+  plan:
+    type: "enum"
+    values: ["free", "developer", "enterprise"]
+  deployment:
+    type: "enum"
+    values: ["saas", "vpc", "on-prem"]
+    default: "saas"
+  guardrails:
+    type: "boolean"

@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Claude Code: Anthropic's agentic coding tool in the terminal, IDEs, the desktop app and the web, drawn as the client
+# that reads code, runs commands and calls MCP servers and APIs. It reaches Claude through the Anthropic API or through
+# Amazon Bedrock, Google Vertex AI or Microsoft Foundry.
+schemaVersion: "1"
+type: "component"
+id: "claude-code"
+kind: "client"
+provider: "default"
+docs: "https://code.claude.com/docs/en/overview"
+defaults:
+  platform: "multi"
+  managed: false
+properties:
+  surface:
+    type: "enum"
+    values: ["terminal", "ide", "desktop", "web"]
+    default: "terminal"
+  modelProvider:
+    type: "enum"
+    values: ["anthropic", "amazon-bedrock", "google-vertex-ai", "microsoft-foundry"]
+    default: "anthropic"

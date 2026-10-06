@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# NVIDIA API catalog (build.nvidia.com): NVIDIA-hosted NIM endpoints for many open and partner models on DGX Cloud.
+# Per "General NIM FAQ", Developer Program members get free access to hosted NIM endpoints for prototyping only;
+# production use of NIM requires an NVIDIA AI Enterprise licence, and the same NIMs can be downloaded and self-hosted.
+schemaVersion: "1"
+type: "component"
+id: "nvidia-nim-api"
+kind: "ai-service"
+provider: "default"
+docs: "https://docs.api.nvidia.com/nim/docs/product"
+aliases: ["NVIDIA NIM", "NVIDIA Build"]
+defaults:
+  auth: "api-key"
+  managed: true
+  modality: "multimodal"
+  publicEndpoint: true
+properties:
+  license:
+    type: "enum"
+    values: ["developer-program", "ai-enterprise"]
+    default: "developer-program"
+  productionUse:
+    type: "boolean"
+    default: false
+  selfHosted:
+    type: "boolean"
+    default: false

@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Runway API: hosted Gen video and image generation models run as asynchronous tasks per developer project.
+# Per "Usage tiers", a project starts on Tier 1 (1 to 2 concurrent tasks, 50 to 200 daily generations, $100
+# monthly cap) with no requests-per-minute limit; per "Outputs", task output URLs expire within 24 to 48 hours.
+schemaVersion: "1"
+type: "component"
+id: "runway-api"
+kind: "ai-service"
+provider: "default"
+docs: "https://docs.dev.runwayml.com/usage/tiers/"
+defaults:
+  auth: "api-key"
+  managed: true
+  modality: "video"
+  publicEndpoint: true
+properties:
+  usageTier:
+    type: "enum"
+    values: ["tier-1", "tier-2", "tier-3", "tier-4", "tier-5"]
+    default: "tier-1"
+  monthlySpendCapUsd:
+    type: "integer"
+    default: 100

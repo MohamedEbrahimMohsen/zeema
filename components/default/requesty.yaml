@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Requesty: OpenAI-compatible router to 300+ models with fallback policies, load balancing, auto caching,
+# guardrails, BYOK and EU routing. Per "Fallback Policies", fallbacks are policies you set up in the
+# console; per "Auto Caching", caching needs the auto_cache flag except for some client origins (Cline,
+# Roo Code and others) that cache by default.
+schemaVersion: "1"
+type: "component"
+id: "requesty"
+kind: "api-gateway"
+provider: "default"
+docs: "https://docs.requesty.ai/features/fallback-policies"
+defaults:
+  managed: true
+  auth: "api-key"
+  protocol: "http"
+  tls: true
+properties:
+  fallbackPolicy:
+    type: "boolean"
+    default: false
+  autoCache:
+    type: "boolean"
+    default: false
+  guardrails:
+    type: "boolean"
+    default: false
+  euRouting:
+    type: "boolean"
+    default: false

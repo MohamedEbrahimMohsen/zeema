@@ -1,6 +1,6 @@
 # Components with no vendor icon
 
-The 85 components listed here carry the generated badge — the kind glyph with the provider mark
+The 249 components listed here carry the generated badge — the kind glyph with the provider mark
 in the corner — instead of the vendor's product icon. The rule they follow is the one in
 `icons/README.md`: a stand-in taken from a different product is worse than a badge, because it
 looks official and is not, so a component waits until the vendor publishes artwork of its own.
@@ -16,19 +16,28 @@ Pack versions and counts are as of 2026-09-22, and 2026-10-02 for Cloudflare.
 
 ## aws
 
-1 components. Look next at <https://aws.amazon.com/architecture/icons/>.
+8 components. Look next at <https://aws.amazon.com/architecture/icons/>.
 
 | Component id | Name | Reason |
 |---|---|---|
+| `aws-bedrock-data-automation` | Amazon Bedrock Data Automation | added after the 2026-09-22 icon pass; vendor pack not checked in this pass |
+| `aws-codewhisperer` | Amazon CodeWhisperer | retired April 2024 (renamed Amazon Q Developer); kept on the badge |
+| `aws-lookout-for-metrics` | Amazon Lookout for Metrics | retired October 2025; kept on the badge |
+| `aws-lookout-for-vision` | Amazon Lookout for Vision | retired October 2025; kept on the badge |
+| `aws-q-developer` | Amazon Q Developer | vendor pack not checked in this pass; IDE plugins reach end of support on 30 April 2027 |
+| `aws-sagemaker-canvas` | Amazon SageMaker Canvas | added after the 2026-09-22 icon pass; vendor pack not checked in this pass |
+| `aws-sagemaker-unified-studio` | Amazon SageMaker Unified Studio | added after the 2026-09-22 icon pass; vendor pack not checked in this pass |
 | `aws-swf` | Amazon Simple Workflow Service | not in vendor set (AWS Architecture Icons, `Icon-package_07312026`) |
 
 ## azure
 
-10 components. Look next at <https://learn.microsoft.com/azure/architecture/icons/>.
+12 components. Look next at <https://learn.microsoft.com/azure/architecture/icons/>.
 
 | Component id | Name | Reason |
 |---|---|---|
 | `azure-artifact-signing` | Artifact Signing | not in vendor set (Azure Public Service Icons V24) |
+| `azure-bing-web-search` | Bing Web Search API | retired August 2025; Bing Search never had an Azure service icon of its own, kept on the badge |
+| `azure-copilot-studio` | Microsoft Copilot Studio | a Power Platform product outside the Azure service icon set; vendor pack not checked in this pass |
 | `azure-cyclecloud` | Azure CycleCloud | not in vendor set (Azure Public Service Icons V24) |
 | `azure-energy-data-services` | Azure Data Manager for Energy | not in vendor set (Azure Public Service Icons V24) |
 | `azure-fluid-relay` | Azure Fluid Relay | not in vendor set (Azure Public Service Icons V24) |
@@ -54,7 +63,7 @@ entry it belongs to) and at `es/reactsvgs/` in the npm package `@cloudflare/comp
 
 ## gcp
 
-31 components. Look next at <https://cloud.google.com/icons>.
+34 components. Look next at <https://cloud.google.com/icons>.
 
 | Component id | Name | Reason |
 |---|---|---|
@@ -70,11 +79,14 @@ entry it belongs to) and at `es/reactsvgs/` in the npm package `@cloudflare/comp
 | `google-cloud-identity` | Cloud Identity | not in vendor set (Google Cloud icons, `google-cloud-legacy-icons.zip` + `core-products-icons.zip`) |
 | `google-cloud-source-repositories` | Cloud Source Repositories | not in vendor set (Google Cloud icons, `google-cloud-legacy-icons.zip` + `core-products-icons.zip`) |
 | `google-cloud-workstations` | Cloud Workstations | not in vendor set (Google Cloud icons, `google-cloud-legacy-icons.zip` + `core-products-icons.zip`) |
+| `google-custom-search-api` | Custom Search JSON API | closed to new customers; Google publishes no Programmable Search icon in the Cloud set, vendor pack not checked in this pass |
 | `google-dataform` | Dataform | not in vendor set (Google Cloud icons, `google-cloud-legacy-icons.zip` + `core-products-icons.zip`) |
 | `google-dual-run` | Dual Run | not in vendor set (Google Cloud icons, `google-cloud-legacy-icons.zip` + `core-products-icons.zip`) |
 | `google-enterprise-knowledge-graph` | Enterprise Knowledge Graph | not in vendor set (Google Cloud icons, `google-cloud-legacy-icons.zip` + `core-products-icons.zip`) |
 | `google-fraud-defense` | reCAPTCHA Fraud Prevention | raster only |
 | `google-gemini-api` | Gemini API | raster only |
+| `google-gemini-code-assist` | Gemini Code Assist | added after the 2026-09-22 icon pass; vendor pack not checked in this pass |
+| `google-gemini-enterprise` | Gemini Enterprise | added after the 2026-09-22 icon pass; vendor pack not checked in this pass |
 | `google-managed-lustre` | Google Cloud Managed Lustre | not in vendor set (Google Cloud icons, `google-cloud-legacy-icons.zip` + `core-products-icons.zip`) |
 | `google-manufacturing-connect` | Manufacturing Connect | not in vendor set (Google Cloud icons, `google-cloud-legacy-icons.zip` + `core-products-icons.zip`) |
 | `google-manufacturing-data-engine` | Manufacturing Data Engine | not in vendor set (Google Cloud icons, `google-cloud-legacy-icons.zip` + `core-products-icons.zip`) |
@@ -142,6 +154,169 @@ entry it belongs to) and at `es/reactsvgs/` in the npm package `@cloudflare/comp
 | `oci-weblogic-server` | Oracle WebLogic Server for OCI | not in vendor set (Oracle graphics for diagrams, SVG set v24.2) |
 | `oci-weblogic-server-oke` | Oracle WebLogic Server for OKE | not in vendor set (Oracle graphics for diagrams, SVG set v24.2) |
 | `oci-zero-trust-packet-routing` | OCI Zero Trust Packet Routing | not in vendor set (Oracle graphics for diagrams, SVG set v24.2) |
+
+
+## default
+
+152 components. These are `default` products, drawn as the bare kind glyph: the badge is the
+vendor's Simple Icons mark (`.claude/tools/badges-extra.json`), and none exists in the installed
+`simple-icons` 16.30.0 for these vendors. When Simple Icons adds one, add `"<id>": "<slug>"` to
+`badges-extra.json`, delete the icon and run `node .claude/tools/icons.mjs`, then delete the row here.
+
+| Component id | Name | Reason |
+|---|---|---|
+| `abacus-ai` | Abacus.AI | no mark in Simple Icons 16.30.0 |
+| `ai21-api` | AI21 API | no mark in Simple Icons 16.30.0 |
+| `aleph-alpha-api` | Aleph Alpha API | retired brand; no mark will be published |
+| `alteryx` | Alteryx | no mark in Simple Icons 16.30.0 |
+| `anyscale-endpoints` | Anyscale Endpoints | no mark in Simple Icons 16.30.0 |
+| `apify` | Apify | no mark in Simple Icons 16.30.0 |
+| `argilla` | Argilla | no mark in Simple Icons 16.30.0 |
+| `arize-ax` | Arize AX | no mark in Simple Icons 16.30.0 |
+| `arize-phoenix` | Arize Phoenix | no mark in Simple Icons 16.30.0 |
+| `arthur-ai` | Arthur | no mark in Simple Icons 16.30.0 |
+| `autogen-studio` | AutoGen Studio | Microsoft has no Simple Icons mark |
+| `banana-dev` | Banana | retired brand; no mark will be published |
+| `baseten` | Baseten | no mark in Simple Icons 16.30.0 |
+| `beam-cloud` | Beam | no mark in Simple Icons 16.30.0 |
+| `black-forest-labs-api` | Black Forest Labs API | no mark in Simple Icons 16.30.0 |
+| `bland-ai` | Bland AI | no mark in Simple Icons 16.30.0 |
+| `botpress` | Botpress | no mark in Simple Icons 16.30.0 |
+| `browserbase` | Browserbase | no mark in Simple Icons 16.30.0 |
+| `c3-ai` | C3 AI Platform | no mark in Simple Icons 16.30.0 |
+| `calypsoai` | CalypsoAI | retired brand; no mark will be published |
+| `cartesia` | Cartesia | no mark in Simple Icons 16.30.0 |
+| `cerebras-api` | Cerebras Inference | no mark in Simple Icons 16.30.0 |
+| `chunkr` | Chunkr | no mark in Simple Icons 16.30.0 |
+| `civitai` | Civitai | no mark in Simple Icons 16.30.0 |
+| `cognee` | cognee | no mark in Simple Icons 16.30.0 |
+| `comet-ml` | Comet | no mark in Simple Icons 16.30.0 |
+| `confident-ai` | Confident AI | no mark in Simple Icons 16.30.0 |
+| `coreweave` | CoreWeave | no mark in Simple Icons 16.30.0 |
+| `crusoe` | Crusoe Cloud VM | no mark in Simple Icons 16.30.0 |
+| `cvat` | CVAT | no mark in Simple Icons 16.30.0 |
+| `datarobot` | DataRobot | no mark in Simple Icons 16.30.0 |
+| `datasaur` | Datasaur | no mark in Simple Icons 16.30.0 |
+| `daytona` | Daytona | no mark in Simple Icons 16.30.0 |
+| `deepchecks` | Deepchecks | no mark in Simple Icons 16.30.0 |
+| `deepeval` | DeepEval | no mark in Simple Icons 16.30.0 |
+| `deepinfra` | DeepInfra | no mark in Simple Icons 16.30.0 |
+| `domino-data-lab` | Domino Data Lab | no mark in Simple Icons 16.30.0 |
+| `e2b` | E2B | no mark in Simple Icons 16.30.0 |
+| `encord` | Encord | no mark in Simple Icons 16.30.0 |
+| `epsilla` | Epsilla | no mark in Simple Icons 16.30.0 |
+| `evidently-ai` | Evidently | no mark in Simple Icons 16.30.0 |
+| `exa-ai` | Exa | no mark in Simple Icons 16.30.0 |
+| `fal-ai` | fal | no mark in Simple Icons 16.30.0 |
+| `fiddler-ai` | Fiddler AI | no mark in Simple Icons 16.30.0 |
+| `firecrawl` | Firecrawl | no mark in Simple Icons 16.30.0 |
+| `flowise` | Flowise | retired brand; no mark will be published |
+| `flyte` | Flyte | no mark in Simple Icons 16.30.0 |
+| `galileo` | Galileo | no mark in Simple Icons 16.30.0 |
+| `giskard` | Giskard | no mark in Simple Icons 16.30.0 |
+| `gladia` | Gladia | no mark in Simple Icons 16.30.0 |
+| `graphiti` | Graphiti | no mark in Simple Icons 16.30.0 |
+| `guardrails-ai` | Guardrails AI | no mark in Simple Icons 16.30.0 |
+| `helicone` | Helicone | no mark in Simple Icons 16.30.0 |
+| `helicone-gateway` | Helicone AI Gateway | no mark in Simple Icons 16.30.0 |
+| `hiddenlayer` | HiddenLayer AI Security Platform | no mark in Simple Icons 16.30.0 |
+| `honeyhive` | HoneyHive | no mark in Simple Icons 16.30.0 |
+| `humanloop` | Humanloop | retired brand; no mark will be published |
+| `hume-ai` | Hume AI | no mark in Simple Icons 16.30.0 |
+| `hyperbrowser` | Hyperbrowser | no mark in Simple Icons 16.30.0 |
+| `ideogram-api` | Ideogram API | no mark in Simple Icons 16.30.0 |
+| `infinity-embeddings` | Infinity | no mark in Simple Icons 16.30.0 |
+| `jan` | Jan | no mark in Simple Icons 16.30.0 |
+| `jina-ai` | Jina AI | only the parent's mark (`elastic`) is in Simple Icons |
+| `kili` | Kili | no mark in Simple Icons 16.30.0 |
+| `label-studio` | Label Studio | no mark in Simple Icons 16.30.0 |
+| `labelbox` | Labelbox | no mark in Simple Icons 16.30.0 |
+| `lakefs` | lakeFS | no mark in Simple Icons 16.30.0 |
+| `lakera-guard` | Lakera Guard | no mark in Simple Icons 16.30.0 |
+| `lambda-labs` | Lambda Cloud instance | no mark in Simple Icons 16.30.0 |
+| `langfuse` | Langfuse | no mark in Simple Icons 16.30.0 |
+| `lepton-ai` | Lepton AI | retired brand; no mark will be published |
+| `letta` | Letta | no mark in Simple Icons 16.30.0 |
+| `lindy` | Lindy | no mark in Simple Icons 16.30.0 |
+| `llama-cpp-server` | llama.cpp server | no mark for llama.cpp or ggml in Simple Icons 16.30.0 |
+| `llamaindex-cloud` | LlamaCloud | no mark in Simple Icons 16.30.0 |
+| `llamaparse` | LlamaParse | no mark in Simple Icons 16.30.0 |
+| `llm-guard` | LLM Guard | retired brand; no mark will be published |
+| `lmdeploy` | LMDeploy | no mark in Simple Icons 16.30.0 |
+| `lovable` | Lovable | no mark in Simple Icons 16.30.0 |
+| `luma-api` | Luma Dream Machine API | no mark in Simple Icons 16.30.0 |
+| `lunary` | Lunary | no mark in Simple Icons 16.30.0 |
+| `martian` | Martian Gateway | no mark in Simple Icons 16.30.0 |
+| `mem0` | Mem0 | no mark in Simple Icons 16.30.0 |
+| `mixedbread-ai` | Mixedbread | no mark in Simple Icons 16.30.0 |
+| `mlc-llm` | MLC LLM | no mark in Simple Icons 16.30.0 |
+| `myscale` | MyScale | retired brand; no mark will be published |
+| `mystic-ai` | Mystic AI | retired brand; no mark will be published |
+| `nebius` | Nebius AI Cloud VM | no mark in Simple Icons 16.30.0 |
+| `nomic-api` | Nomic API | no mark in Simple Icons 16.30.0 |
+| `northflank-sandbox` | Northflank Sandboxes | no mark in Simple Icons 16.30.0 |
+| `not-diamond` | Not Diamond | no mark in Simple Icons 16.30.0 |
+| `novita-ai` | Novita AI | no mark in Simple Icons 16.30.0 |
+| `octoai` | OctoAI | retired brand; no mark will be published |
+| `open-webui` | Open WebUI | no mark in Simple Icons 16.30.0 |
+| `opik` | Opik | Comet has no Simple Icons mark |
+| `pachyderm` | Pachyderm | retired brand; no mark will be published |
+| `playht` | PlayHT | retired brand; no mark will be published |
+| `portkey` | Portkey AI Gateway | no mark in Simple Icons 16.30.0 |
+| `prodigy` | Prodigy | no mark in Simple Icons 16.30.0 |
+| `prompt-security` | Prompt Security | no mark in Simple Icons 16.30.0 |
+| `promptfoo` | promptfoo | no mark in Simple Icons 16.30.0 |
+| `promptlayer` | PromptLayer | no mark in Simple Icons 16.30.0 |
+| `protect-ai` | Protect AI | retired brand; no mark will be published |
+| `rapidminer` | RapidMiner AI Hub | no mark in Simple Icons 16.30.0 |
+| `rebuff` | Rebuff | retired brand; no mark will be published |
+| `reducto` | Reducto | no mark in Simple Icons 16.30.0 |
+| `reka-api` | Reka API | no mark in Simple Icons 16.30.0 |
+| `relevance-ai` | Relevance AI | no mark in Simple Icons 16.30.0 |
+| `requesty` | Requesty | no mark in Simple Icons 16.30.0 |
+| `retell-ai` | Retell AI | no mark in Simple Icons 16.30.0 |
+| `rev-ai` | Rev AI | no mark in Simple Icons 16.30.0 |
+| `rime` | Rime | Simple Icons `rime` is the Rime input method, not Rime Labs |
+| `robust-intelligence` | Robust Intelligence | retired brand; no mark will be published |
+| `runloop` | Runloop | no mark in Simple Icons 16.30.0 |
+| `runpod` | Runpod Pod | no mark in Simple Icons 16.30.0 |
+| `runway-api` | Runway API | no mark in Simple Icons 16.30.0 |
+| `salesforce-agentforce` | Agentforce | Salesforce has no Simple Icons mark |
+| `sambanova-api` | SambaNova Cloud | no mark in Simple Icons 16.30.0 |
+| `scale-ai` | Scale AI | no mark in Simple Icons 16.30.0 |
+| `scrapingbee` | ScrapingBee | no mark in Simple Icons 16.30.0 |
+| `serpapi` | SerpApi | no mark in Simple Icons 16.30.0 |
+| `serper` | Serper | no mark in Simple Icons 16.30.0 |
+| `snorkel` | Snorkel Flow | no mark in Simple Icons 16.30.0 |
+| `sourcegraph-cody` | Sourcegraph Cody | no mark in Simple Icons 16.30.0 |
+| `speechmatics` | Speechmatics | no mark in Simple Icons 16.30.0 |
+| `stability-ai-api` | Stability AI API | no mark in Simple Icons 16.30.0 |
+| `steel-dev` | Steel | no mark in Simple Icons 16.30.0 |
+| `superannotate` | SuperAnnotate | no mark in Simple Icons 16.30.0 |
+| `surge-ai` | Surge AI | no mark in Simple Icons 16.30.0 |
+| `synthflow` | Synthflow | no mark in Simple Icons 16.30.0 |
+| `tabnine` | Tabnine | no mark in Simple Icons 16.30.0 |
+| `tavily` | Tavily | no mark in Simple Icons 16.30.0 |
+| `toloka` | Toloka | no mark in Simple Icons 16.30.0 |
+| `traceloop` | Traceloop | no mark in Simple Icons 16.30.0 |
+| `truera` | TruEra | retired brand; no mark will be published |
+| `unify-ai` | Unify | retired brand; no mark will be published |
+| `union-ai` | Union.ai | no mark in Simple Icons 16.30.0 |
+| `unstructured-io` | Unstructured API | no mark in Simple Icons 16.30.0 |
+| `v7` | V7 Darwin | no mark in Simple Icons 16.30.0 |
+| `valohai` | Valohai | no mark in Simple Icons 16.30.0 |
+| `vapi` | Vapi | no mark in Simple Icons 16.30.0 |
+| `vast-ai` | Vast.ai instance | no mark in Simple Icons 16.30.0 |
+| `voiceflow` | Voiceflow | no mark in Simple Icons 16.30.0 |
+| `voyage-ai` | Voyage AI | only the parent's mark (`mongodb`) is in Simple Icons |
+| `whylabs` | WhyLabs | retired brand; no mark will be published |
+| `writer-api` | Writer API | no mark in Simple Icons 16.30.0 |
+| `xai-api` | xAI API | Simple Icons `x` is the X (Twitter) mark, not xAI's |
+| `xinference` | Xinference | no mark in Simple Icons 16.30.0 |
+| `you-com-api` | You.com APIs | no mark in Simple Icons 16.30.0 |
+| `zenml` | ZenML | no mark in Simple Icons 16.30.0 |
+| `zep` | Zep | no mark in Simple Icons 16.30.0 |
+| `zhipu-glm-api` | Z.ai Open Platform | no mark in Simple Icons 16.30.0 |
 
 ## Substitutes used
 

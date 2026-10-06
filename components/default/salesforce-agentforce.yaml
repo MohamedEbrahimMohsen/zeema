@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Agentforce (formerly Einstein Copilot): Salesforce's platform for building and running AI agents over CRM and Data Cloud data.
+# Per the Agentforce pricing page, agent actions are billed in Flex Credits (20 credits an action), per conversation, or by
+# per-user add-ons, with a free Foundations tier.
+schemaVersion: "1"
+type: "component"
+id: "salesforce-agentforce"
+kind: "app-server"
+provider: "default"
+docs: "https://www.salesforce.com/agentforce/pricing/"
+aliases: ["Agentforce", "Einstein Copilot"]
+defaults:
+  managed: true
+  stateless: true
+  ownsData: false
+properties:
+  pricingModel:
+    type: "enum"
+    values: ["flex-credits", "per-conversation", "per-user"]
+    default: "flex-credits"
+  channel:
+    type: "enum"
+    values: ["messaging", "voice", "slack", "api"]
+    default: "messaging"

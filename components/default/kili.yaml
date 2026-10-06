@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Kili Technology: data labelling and LLM evaluation platform. Per "Hosting", Kili runs as SaaS on Kili's
+# infrastructure, as a SaaS managed application deployed in the customer's cloud, or fully on-premise; assets come from
+# uploads, lists of cloud links or a cloud storage integration.
+schemaVersion: "1"
+type: "component"
+id: "kili"
+kind: "ml-platform"
+provider: "default"
+docs: "https://docs.kili-technology.com/docs/hosting"
+aliases: ["Kili Technology"]
+defaults:
+  managed: true
+  experimentTracking: false
+  modelRegistry: false
+properties:
+  hosting:
+    type: "enum"
+    values: ["saas", "managed-application", "on-premise"]
+    default: "saas"

@@ -8,6 +8,7 @@ kind: "ai-service"
 provider: "aws"
 docs: "https://docs.aws.amazon.com/frauddetector/latest/ug/limits.html"
 defaults:
+  auth: "iam"
   modality: "structured"
   managed: true
   publicEndpoint: true

@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Prompt Security: SaaS platform that governs employee AI use, code assistants, homegrown AI apps and agents,
+# screening prompts for sensitive data, secrets and prompt injection. SentinelOne completed its acquisition
+# on 5 September 2025 and sells it under the same name. Per "Prompt Security | SentinelOne AI Security
+# Platform", each finding can be blocked, redacted or logged in real time; no default action is published.
+schemaVersion: "1"
+type: "component"
+id: "prompt-security"
+kind: "policy-engine"
+provider: "default"
+docs: "https://www.sentinelone.com/platform/securing-ai-prompt/"
+defaults:
+  managed: true
+  scope: "organization"
+properties:
+  action:
+    type: "enum"
+    values: ["block", "redact", "log"]
+  coverage:
+    type: "enum"
+    values: ["employees", "code-assistants", "homegrown-apps", "agents"]

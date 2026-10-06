@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Crusoe Cloud: GPU VMs (NVIDIA B300, GB200, B200, H200, H100, A100, L40S and AMD MI355X, MI300X) on on-demand or
+# reserved capacity. Per the virtual machines overview, all local storage on GPU instances is ephemeral, so durable
+# data belongs on attached persistent disks.
+schemaVersion: "1"
+type: "component"
+id: "crusoe"
+kind: "virtual-machine"
+provider: "default"
+docs: "https://docs.crusoecloud.com/compute/virtual-machines/overview/"
+aliases: ["Crusoe Cloud"]
+defaults:
+  managed: false
+  os: "linux"
+  zoneRedundant: false
+properties:
+  billing:
+    type: "enum"
+    values: ["on-demand", "reserved", "spot"]
+    default: "on-demand"
+  gpuCount:
+    type: "integer"
+  ephemeralLocalStorage:
+    type: "boolean"
+    default: true

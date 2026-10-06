@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Langfuse: open-source LLM tracing, evaluation and prompt management, offered as Langfuse Cloud or self-hosted.
+# Per "Data Retention", Cloud data access is 30 days on Hobby, 90 on Core and 3 years on Pro/Enterprise, and
+# a self-hosted instance keeps data indefinitely by default; per "Pricing", Hobby ingestion is 1,000 req/min.
+schemaVersion: "1"
+type: "component"
+id: "langfuse"
+kind: "monitoring"
+provider: "default"
+docs: "https://langfuse.com/docs/data-retention"
+aliases: ["Langfuse Cloud"]
+defaults:
+  managed: true
+  signal: "traces"
+  collectorMode: "push"
+  independentOfMonitored: true
+  retentionDays: 30
+properties:
+  plan:
+    type: "enum"
+    values: ["hobby", "core", "pro", "enterprise"]
+    default: "hobby"
+  selfHosted:
+    type: "boolean"
+    default: false
+  ingestionRateLimitRpm:
+    type: "integer"
+    default: 1000
+  retentionPolicy:
+    type: "boolean"
+    default: false

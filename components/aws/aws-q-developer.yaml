@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Q Developer: AWS's AI coding assistant in the IDE, the command line, the AWS console and chat apps, drawn
+# as the client that calls your code and AWS accounts. Per "Amazon Q Developer IDE plugins end of support", new sign-ups
+# closed on 15 May 2026 and the IDE plugins reach end of support on 30 April 2027 with Kiro as the successor; Q Developer
+# in the console, the docs site, the mobile app and Slack or Teams continues.
+schemaVersion: "1"
+type: "component"
+id: "aws-q-developer"
+kind: "client"
+provider: "aws"
+docs: "https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/q-developer-ide-end-of-support.html"
+aliases: ["Q Developer"]
+defaults:
+  platform: "multi"
+  managed: true
+properties:
+  tier:
+    type: "enum"
+    values: ["free", "pro"]
+    default: "free"

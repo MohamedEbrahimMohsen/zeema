@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Cursor: AI code editor (a VS Code fork) with agents, drawn as the client calling your repositories, MCP servers and
+# APIs. Per "Data Use & Privacy Overview", Privacy Mode keeps code from being stored by model providers or used for
+# training under zero-data-retention agreements; it is opt-in for individuals and on by default for teams.
+schemaVersion: "1"
+type: "component"
+id: "cursor"
+kind: "client"
+provider: "default"
+docs: "https://cursor.com/data-use"
+defaults:
+  platform: "desktop"
+  managed: true
+properties:
+  plan:
+    type: "enum"
+    values: ["hobby", "pro", "teams", "enterprise"]
+    default: "hobby"
+  privacyMode:
+    type: "boolean"
+    default: false

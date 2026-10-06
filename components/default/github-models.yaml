@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# GitHub Models: hosted catalogue of LLMs behind an OpenAI-compatible inference endpoint at models.github.ai,
+# authenticated with a GitHub personal access token that has the models:read permission. Per "Prototyping with AI
+# models", free use is rate-limited per model tier and Copilot plan, with tokens per request capped, and paid usage lifts
+# the limits for production.
+schemaVersion: "1"
+type: "component"
+id: "github-models"
+kind: "ai-service"
+provider: "default"
+docs: "https://docs.github.com/en/github-models/use-github-models/prototyping-with-ai-models"
+defaults:
+  auth: "api-key"
+  managed: true
+  modality: "text"
+  publicEndpoint: true
+properties:
+  billing:
+    type: "enum"
+    values: ["free", "paid"]
+    default: "free"

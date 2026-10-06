@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Rev AI: Rev's speech to text API for asynchronous jobs and streaming, authorised with an access token. Per
+# "Security and Privacy", jobs are kept for at most 30 days and then deleted irretrievably, and earlier deletion can be
+# set per account or per job.
+schemaVersion: "1"
+type: "component"
+id: "rev-ai"
+kind: "ai-service"
+provider: "default"
+docs: "https://docs.rev.ai/api/security/"
+defaults:
+  auth: "api-key"
+  managed: true
+  modality: "speech"
+  publicEndpoint: true
+  dataRetentionDays: 30
+properties:
+  mode:
+    type: "enum"
+    values: ["async", "streaming"]
+    default: "async"

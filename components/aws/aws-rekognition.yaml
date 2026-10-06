@@ -8,6 +8,7 @@ kind: "ai-service"
 provider: "aws"
 docs: "https://docs.aws.amazon.com/rekognition/latest/dg/limits.html"
 defaults:
+  auth: "iam"
   managed: true
   modality: "vision"
   publicEndpoint: true

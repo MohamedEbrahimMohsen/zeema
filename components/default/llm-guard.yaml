@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# LLM Guard: Protect AI's open-source (MIT) toolkit of 15 prompt scanners and 20 output scanners for
+# injection, toxicity, secrets and sensitive data, usable as a library or deployed as an API. Retired 2026:
+# the GitHub repo is archived ("THIS PROJECT HAS BEEN ARCHIVED", last push July 2026) and its Hugging Face
+# models are no longer maintained, after Palo Alto Networks absorbed Protect AI into Prisma AIRS.
+schemaVersion: "1"
+type: "component"
+id: "llm-guard"
+kind: "policy-engine"
+provider: "default"
+docs: "https://github.com/protectai/llm-guard"
+defaults:
+  managed: false
+  scope: "resource"
+properties:
+  apiServer:
+    type: "boolean"
+    default: false
+  inputScanners:
+    type: "boolean"
+    default: false
+  outputScanners:
+    type: "boolean"
+    default: false

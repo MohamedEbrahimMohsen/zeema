@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Lovable: chat-driven app builder that generates and hosts full-stack web apps, drawn as the client. Per the
+# Supabase integration docs, Lovable Cloud is the built-in backend and is on by default; a project can instead connect a
+# Supabase project the customer owns for database, auth, storage and Edge Functions.
+schemaVersion: "1"
+type: "component"
+id: "lovable"
+kind: "client"
+provider: "default"
+docs: "https://docs.lovable.dev/integrations/supabase"
+defaults:
+  platform: "web"
+  managed: true
+properties:
+  backend:
+    type: "enum"
+    values: ["lovable-cloud", "supabase"]
+    default: "lovable-cloud"

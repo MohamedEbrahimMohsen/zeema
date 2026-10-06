@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# CrewAI AMP (Agent Management Platform, formerly CrewAI Enterprise): deploys, monitors and scales CrewAI crews behind a REST API.
+# Per "CrewAI AMP", crews deploy from GitHub, Crew Studio or the CLI with traces, a tool repository and webhook streaming; the
+# pricing page lists a Free plan (50 executions a month on CrewAI cloud) and Custom plans in your own VPC or infrastructure.
+schemaVersion: "1"
+type: "component"
+id: "crewai-enterprise"
+kind: "app-server"
+provider: "default"
+docs: "https://docs-platform.crewai.com/platform/en/introduction"
+aliases: ["CrewAI AMP", "CrewAI Enterprise"]
+defaults:
+  managed: true
+  stateless: true
+  runtime: "python"
+properties:
+  plan:
+    type: "enum"
+    values: ["free", "custom"]
+    default: "free"
+  deployment:
+    type: "enum"
+    values: ["crewai-cloud", "own-vpc", "own-infrastructure"]
+    default: "crewai-cloud"
+  monthlyExecutions:
+    type: "integer"
+    default: 50

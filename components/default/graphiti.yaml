@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Graphiti: Zep's open-source temporal knowledge graph engine for agent memory.
+# Per the graphiti README it ships the graphiti-core library plus a FastAPI REST service and an MCP server, and stores the
+# graph in Neo4j 5.26+, FalkorDB or Amazon Neptune (Kuzu is deprecated).
+schemaVersion: "1"
+type: "component"
+id: "graphiti"
+kind: "cache"
+provider: "default"
+docs: "https://github.com/getzep/graphiti"
+defaults:
+  managed: false
+  persistence: true
+  invalidation: "event"
+properties:
+  interface:
+    type: "enum"
+    values: ["library", "rest-server", "mcp-server"]
+    default: "rest-server"
+  graphBackend:
+    type: "enum"
+    values: ["neo4j", "falkordb", "neptune", "kuzu"]
+    default: "neo4j"

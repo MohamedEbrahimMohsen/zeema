@@ -1,5 +1,6 @@
 # yaml-language-server: $schema=../../schema/component.schema.json
 # Oracle Database: single-primary relational database; Data Guard and RAC are opt-in.
+# vectorSearch: the VECTOR data type and vector indexes of 23ai, COMPATIBLE 23.4.0 or higher ("Overview of Oracle AI Vector Search").
 schemaVersion: "1"
 type: "component"
 id: "oracle-db"
@@ -13,5 +14,8 @@ properties:
   version:
     type: "string"
   rac:
+    type: "boolean"
+    default: false
+  vectorSearch:
     type: "boolean"
     default: false

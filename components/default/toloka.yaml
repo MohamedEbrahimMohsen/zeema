@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Toloka: human data platform for training and evaluating generative AI, with a self-service platform and a
+# managed expert-data service. Per "Toloka platform relaunch", the previous self-service platform was closed on
+# 16 December 2024 and relaunched with new tools for data production in 2025.
+schemaVersion: "1"
+type: "component"
+id: "toloka"
+kind: "ml-platform"
+provider: "default"
+docs: "https://toloka.ai/blog/toloka-platform-relaunch/"
+defaults:
+  managed: true
+  experimentTracking: false
+  modelRegistry: false
+properties:
+  serviceModel:
+    type: "enum"
+    values: ["self-service", "managed-service"]
+    default: "self-service"

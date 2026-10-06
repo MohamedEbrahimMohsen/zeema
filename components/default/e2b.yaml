@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# E2B: cloud sandboxes (isolated Linux VMs) for running AI-generated code, with pause and resume.
+# Per "Billing & limits", Hobby allows 20 concurrent sandboxes of up to 1 hour of continuous runtime and Pro 24 hours; per
+# "Sandbox lifecycle", pausing resets the runtime window and keeps the full state.
+schemaVersion: "1"
+type: "component"
+id: "e2b"
+kind: "worker"
+provider: "default"
+docs: "https://docs.e2b.dev/billing"
+defaults:
+  managed: true
+  trigger: "manual"
+  idempotent: false
+  concurrency: 20
+properties:
+  plan:
+    type: "enum"
+    values: ["hobby", "pro", "enterprise"]
+    default: "hobby"
+  maxSessionHours:
+    type: "integer"
+    default: 1
+  vcpus:
+    type: "integer"
+    default: 2
+  memoryMb:
+    type: "integer"
+    default: 512
+  autoPause:
+    type: "boolean"
+    default: false

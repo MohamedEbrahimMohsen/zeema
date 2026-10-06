@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Lookout for Vision: managed visual anomaly detection for defects on production lines. Retired October 2025:
+# per "AWS services that are no longer available", the service reached full shutdown on 31 October 2025.
+schemaVersion: "1"
+type: "component"
+id: "aws-lookout-for-vision"
+kind: "ai-service"
+provider: "aws"
+docs: "https://docs.aws.amazon.com/general/latest/gr/full_shutdown_services.html"
+defaults:
+  auth: "iam"
+  managed: true
+  modality: "vision"
+  publicEndpoint: true
+properties:
+  edgeDeployment:
+    type: "boolean"
+    default: false

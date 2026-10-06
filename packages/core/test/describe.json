@@ -1,4 +1,24 @@
 {
+  "ai-api-key-unmanaged": {
+    "select": "every node of kind ai-service",
+    "when": [
+      "- all of these hold:",
+      "  - the node's `auth` is \"api-key\"",
+      "  - the node's `keyStore` is false",
+      "  - the node has at least one incoming edge from an app-server, worker or client",
+      "  - this does not hold:",
+      "    - the design contains a node of kind key-management"
+    ]
+  },
+  "ai-no-gateway": {
+    "select": "every design",
+    "when": [
+      "- all of these hold:",
+      "  - the design contains more than 2 nodes of kind ai-service",
+      "  - this does not hold:",
+      "    - the design contains a node of kind api-gateway"
+    ]
+  },
   "business-updates-without-index-propagation": {
     "select": "every node of kind sql-database",
     "when": [

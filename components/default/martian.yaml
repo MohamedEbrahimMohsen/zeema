@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Martian Gateway: OpenAI- and Anthropic-compatible API to 200+ models with usage tracking; it replaced the
+# earlier Martian Model Router, whose docs now return 404. Per "Gateway - Martian Documentation" and the
+# API reference, calls go to https://api.withmartian.com/v1 with a Bearer API key and the model is named
+# explicitly in the request; no automatic per-prompt routing or fallback is documented any more.
+schemaVersion: "1"
+type: "component"
+id: "martian"
+kind: "api-gateway"
+provider: "default"
+docs: "https://docs.withmartian.com/gateway"
+aliases: ["Martian Model Router"]
+defaults:
+  managed: true
+  auth: "api-key"
+  protocol: "http"
+  tls: true
+properties:
+  autoRouting:
+    type: "boolean"
+    default: false
+  fallbacks:
+    type: "boolean"
+    default: false

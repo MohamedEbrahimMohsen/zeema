@@ -8,6 +8,7 @@ kind: "ai-service"
 provider: "aws"
 docs: "https://docs.aws.amazon.com/comprehend/latest/dg/guidelines-and-limits.html"
 defaults:
+  auth: "iam"
   managed: true
   modality: "text"
   publicEndpoint: true

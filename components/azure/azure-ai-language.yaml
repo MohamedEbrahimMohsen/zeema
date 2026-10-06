@@ -8,6 +8,7 @@ kind: "ai-service"
 provider: "azure"
 docs: "https://learn.microsoft.com/en-us/azure/ai-services/language-service/concepts/data-limits"
 defaults:
+  auth: "api-key"
   managed: true
   modality: "text"
   publicEndpoint: true

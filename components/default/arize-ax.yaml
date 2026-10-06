@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Arize AX: Arize's managed SaaS for tracing, evaluating and experimenting on AI agents and LLM apps. Per
+# "Arize AX" docs it is signed up for at app.arize.com; per "Pricing", AX Free keeps data 15 days with
+# 25k spans a month and AX Pro keeps 30 days with 50k spans.
+schemaVersion: "1"
+type: "component"
+id: "arize-ax"
+kind: "monitoring"
+provider: "default"
+docs: "https://arize.com/docs/ax"
+defaults:
+  managed: true
+  signal: "traces"
+  collectorMode: "push"
+  independentOfMonitored: true
+  retentionDays: 15
+properties:
+  plan:
+    type: "enum"
+    values: ["free", "pro", "enterprise"]
+    default: "free"
+  monthlySpanLimit:
+    type: "integer"
+    default: 25000

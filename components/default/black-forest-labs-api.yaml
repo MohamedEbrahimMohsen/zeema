@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Black Forest Labs API: hosted FLUX image generation and editing models, called with an x-key header and polled.
+# Per "Integration Guidelines", api.bfl.ai is global with failover while api.eu.bfl.ai and api.us.bfl.ai pin
+# routing; result URLs expire after 10 minutes, and accounts get 24 concurrent requests (6 on kontext-max).
+schemaVersion: "1"
+type: "component"
+id: "black-forest-labs-api"
+kind: "ai-service"
+provider: "default"
+docs: "https://docs.bfl.ai/api_integration/integration_guidelines"
+aliases: ["BFL API", "FLUX API"]
+defaults:
+  auth: "api-key"
+  managed: true
+  modality: "image"
+  publicEndpoint: true
+  dataResidency: "global"
+properties:
+  regionalEndpoint:
+    type: "enum"
+    values: ["global", "eu", "us"]
+    default: "global"
+  maxConcurrentRequests:
+    type: "integer"
+    default: 24

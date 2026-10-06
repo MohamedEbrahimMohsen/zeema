@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Vast.ai: marketplace of GPU instances from independent hosts and data centres, priced by GPU model, host reliability
+# and location. Per "Rental types", on-demand instances have fixed prices and guaranteed resources, reserved ones are
+# prepaid at a discount, and interruptible ones are the cheapest and may be paused.
+schemaVersion: "1"
+type: "component"
+id: "vast-ai"
+kind: "virtual-machine"
+provider: "default"
+docs: "https://docs.vast.ai/documentation/instances/rental-types"
+aliases: ["Vast"]
+defaults:
+  managed: false
+  os: "linux"
+  zoneRedundant: false
+properties:
+  rental:
+    type: "enum"
+    values: ["on-demand", "reserved", "interruptible"]
+    default: "on-demand"
+  secureCloud:
+    type: "boolean"
+    default: false
+  gpuCount:
+    type: "integer"
+    default: 1

@@ -2,6 +2,7 @@
 # MongoDB Atlas: MongoDB's managed service. Deployments are three-node replica sets spread over
 # availability zones of one region, and Atlas encrypts storage and snapshots with AES-256 and
 # requires TLS ("FAQ: Security", "MongoDB Atlas FAQ").
+# vectorSearch: Atlas Vector Search, ANN from 6.0.11 or 7.0.2 and exact search ("MongoDB Vector Search Overview").
 schemaVersion: "1"
 type: "component"
 id: "mongodb-atlas"
@@ -25,3 +26,6 @@ properties:
     default: false
   cloudBackup:
     type: "boolean"
+  vectorSearch:
+    type: "boolean"
+    default: false

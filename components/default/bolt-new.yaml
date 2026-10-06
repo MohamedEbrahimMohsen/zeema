@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Bolt.new: StackBlitz's in-browser AI app builder running on WebContainers, drawn as the client. Per "Bolt Cloud",
+# projects publish to a free .bolt.host domain with built-in hosting and databases, and custom domains need a Pro plan.
+schemaVersion: "1"
+type: "component"
+id: "bolt-new"
+kind: "client"
+provider: "default"
+docs: "https://support.bolt.new/cloud/bolt-cloud"
+aliases: ["Bolt"]
+defaults:
+  platform: "web"
+  managed: true
+properties:
+  hosting:
+    type: "enum"
+    values: ["bolt-cloud", "netlify"]
+    default: "bolt-cloud"

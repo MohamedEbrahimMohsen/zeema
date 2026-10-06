@@ -12,6 +12,7 @@ kind: "ai-service"
 provider: "default"
 docs: "https://docs.recombee.com/"
 defaults:
+  auth: "api-key"
   managed: true
   modality: "structured"
   publicEndpoint: true

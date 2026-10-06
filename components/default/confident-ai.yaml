@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Confident AI: SaaS evaluation and observability platform built on the DeepEval framework. Per "What is
+# Confident AI?", it ingests traces from instrumented applications, runs in US or EU regions and can be
+# self-hosted with Docker on AWS, Azure or GCP; per "Pricing", the Free tier allows 5 test runs a week.
+schemaVersion: "1"
+type: "component"
+id: "confident-ai"
+kind: "monitoring"
+provider: "default"
+docs: "https://www.confident-ai.com/docs"
+defaults:
+  managed: true
+  signal: "traces"
+  collectorMode: "push"
+  independentOfMonitored: true
+properties:
+  plan:
+    type: "enum"
+    values: ["free", "starter", "team", "enterprise"]
+    default: "free"
+  region:
+    type: "enum"
+    values: ["us", "eu"]
+  selfHosted:
+    type: "boolean"
+    default: false

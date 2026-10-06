@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Browserbase: managed headless browsers for AI agents and web automation.
+# Per "Concurrency management", the Free plan allows 3 concurrent browsers and 5 new sessions per minute, every session bills
+# a one-minute minimum, and concurrency is pooled per organization across projects; over the limit returns 429.
+schemaVersion: "1"
+type: "component"
+id: "browserbase"
+kind: "third-party-api"
+provider: "default"
+docs: "https://docs.browserbase.com/guides/concurrency-rate-limits"
+defaults:
+  managed: true
+  hostedPage: false
+  handlesMoney: false
+  callbackStyle: "none"
+properties:
+  plan:
+    type: "enum"
+    values: ["free", "developer", "startup", "scale"]
+    default: "free"
+  concurrentBrowsers:
+    type: "integer"
+    default: 3
+  sessionsPerMinute:
+    type: "integer"
+    default: 5

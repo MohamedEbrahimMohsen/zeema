@@ -1,6 +1,7 @@
 # yaml-language-server: $schema=../../schema/component.schema.json
 # Elasticsearch: inverted index sharded by routing hash; documents become searchable on the
 # one-second refresh, one replica per shard by default.
+# vectorSearch: approximate and exact kNN over dense_vector fields ("kNN search in Elasticsearch").
 schemaVersion: "1"
 type: "component"
 id: "elasticsearch"
@@ -20,3 +21,6 @@ properties:
   refreshIntervalSeconds:
     type: "integer"
     default: 1
+  vectorSearch:
+    type: "boolean"
+    default: false

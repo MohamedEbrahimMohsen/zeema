@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# neptune.ai: experiment tracker for foundation-model training runs. Retired March 2026: OpenAI acquired Neptune
+# in December 2025, and per "Service shutdown overview" the SaaS at neptune.ai stopped on 6 March 2026 at 12:00 UTC,
+# after which logins, runs, the UI and the API ended and all stored data was deleted.
+schemaVersion: "1"
+type: "component"
+id: "neptune-ai"
+kind: "ml-platform"
+provider: "default"
+docs: "https://support.neptune.ai/en/articles/13925165-service-shutdown-overview"
+aliases: ["neptune.ai"]
+defaults:
+  managed: true
+  experimentTracking: true
+  modelRegistry: false
+properties:
+  deployment:
+    type: "enum"
+    values: ["saas", "self-hosted"]
+    default: "saas"

@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Banana: serverless GPU inference platform billed per second with pass-through GPU pricing. Retired March 2024:
+# per "Sunsetting Serverless GPUs", the sunset was announced on 1 February 2024 and the infrastructure was shut down
+# on 31 March 2024.
+schemaVersion: "1"
+type: "component"
+id: "banana-dev"
+kind: "ml-inference"
+provider: "default"
+docs: "https://banana.dev/blog/sunset"
+aliases: ["Banana"]
+defaults:
+  training: "batch"
+  inputs: "live"
+  accelerator: "gpu"
+  managed: true
+properties:
+  minReplicas:
+    type: "integer"
+    default: 0

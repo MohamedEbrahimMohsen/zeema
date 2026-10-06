@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Giskard: LLM and agent testing, evaluation and red teaming. Per "Giskard" docs, Giskard Hub is the
+# enterprise platform for continuous red teaming with SSO, audit logs and RBAC, while Giskard Open Source
+# is an Apache-2.0 Python library with vulnerability_scan and quality_scan.
+schemaVersion: "1"
+type: "component"
+id: "giskard"
+kind: "monitoring"
+provider: "default"
+docs: "https://docs.giskard.ai/"
+aliases: ["Giskard Hub"]
+defaults:
+  managed: true
+  independentOfMonitored: true
+properties:
+  edition:
+    type: "enum"
+    values: ["hub", "open-source"]
+  continuousRedTeaming:
+    type: "boolean"

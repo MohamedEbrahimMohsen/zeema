@@ -12,6 +12,7 @@ provider: "ibm"
 docs: "https://cloud.ibm.com/docs/speech-to-text"
 aliases: ["STT"]
 defaults:
+  auth: "api-key"
   managed: true
   modality: "speech"
 properties:

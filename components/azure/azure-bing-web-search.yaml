@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Bing Web Search API: the Bing Search v7 Azure resource returning web results. Retired August 2025: per "Bing Search APIs
+# retiring on August 11, 2025", every instance was decommissioned and new sign-up ended; Microsoft points to Grounding with
+# Bing Search in Azure AI Agents instead.
+schemaVersion: "1"
+type: "component"
+id: "azure-bing-web-search"
+kind: "third-party-api"
+provider: "azure"
+docs: "https://learn.microsoft.com/en-us/lifecycle/announcements/bing-search-api-retirement"
+aliases: ["Bing Search v7", "Bing Search APIs"]
+defaults:
+  managed: true
+  hostedPage: false
+  handlesMoney: false
+  callbackStyle: "none"
+  idempotent: true
+properties:
+  pricingTier:
+    type: "enum"
+    values: ["f1", "s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s9"]

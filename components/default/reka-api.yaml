@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Reka API: hosted multimodal chat models (text, image, video, audio input) plus the Reka Vision video API.
+# Per "Reka API Documentation" requests authenticate with an X-Api-Key header; per "FAQs" credits are prepaid and
+# a zero balance returns P001; per "Rate Limits", Vision endpoints allow 10-100 requests per API key per 24 hours.
+schemaVersion: "1"
+type: "component"
+id: "reka-api"
+kind: "ai-service"
+provider: "default"
+docs: "https://docs.reka.ai/vision/rate-limits"
+aliases: ["Reka Chat", "Reka Vision", "Reka Clip"]
+defaults:
+  auth: "api-key"
+  managed: true
+  modality: "multimodal"
+  publicEndpoint: true
+properties:
+  api:
+    type: "enum"
+    values: ["chat", "vision"]
+    default: "chat"
+  prepaidCredits:
+    type: "boolean"
+    default: true
+  videoUploadsPerDay:
+    type: "integer"
+    default: 50

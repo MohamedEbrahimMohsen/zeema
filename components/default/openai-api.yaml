@@ -3,6 +3,8 @@
 # Per "Data controls in the OpenAI platform", API inputs and outputs are retained 30 days for abuse monitoring
 # and are not used to train models unless the organization opts in; Zero Data Retention needs prior approval.
 # Per "Rate limits", limits are per model in RPM/TPM and a new paying organization starts on Tier 1.
+# realtime (Realtime API over WebRTC or WebSocket), audio (speech to text and text to speech, Whisper) and
+# moderation (the separate moderation endpoint) are each a call the app has to make, so all start off.
 schemaVersion: "1"
 type: "component"
 id: "openai-api"
@@ -10,6 +12,7 @@ kind: "ai-service"
 provider: "default"
 docs: "https://developers.openai.com/api/docs/guides/your-data"
 defaults:
+  auth: "api-key"
   managed: true
   modality: "multimodal"
   publicEndpoint: true
@@ -27,5 +30,14 @@ properties:
     type: "boolean"
     default: false
   batchApi:
+    type: "boolean"
+    default: false
+  realtime:
+    type: "boolean"
+    default: false
+  audio:
+    type: "boolean"
+    default: false
+  moderation:
     type: "boolean"
     default: false

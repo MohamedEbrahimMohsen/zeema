@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Pachyderm: Kubernetes data pipelines with versioned data repositories and provenance. Retired January 2025:
+# HPE acquired Pachyderm in January 2023 and sold it as HPE Machine Learning Data Management, which HPE has since
+# retired; the last Pachyderm release, 2.12.2, shipped on 15 January 2025.
+schemaVersion: "1"
+type: "component"
+id: "pachyderm"
+kind: "ml-platform"
+provider: "default"
+docs: "https://github.com/pachyderm/pachyderm"
+aliases: ["HPE Machine Learning Data Management"]
+defaults:
+  managed: false
+  experimentTracking: false
+  modelRegistry: false
+properties:
+  dataVersioning:
+    type: "boolean"
+    default: true

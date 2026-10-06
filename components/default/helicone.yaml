@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Helicone: LLM observability that logs requests sent through its OpenAI-compatible AI Gateway. Per "Quick
+# Start", the client swaps its base URL to ai-gateway.helicone.ai with a Helicone API key; per "Pricing", logs
+# are kept 7 days on Hobby (10,000 requests/month). Acquired by Mintlify March 2026, now in maintenance mode.
+schemaVersion: "1"
+type: "component"
+id: "helicone"
+kind: "monitoring"
+provider: "default"
+docs: "https://docs.helicone.ai/getting-started/quick-start"
+defaults:
+  managed: true
+  signal: "traces"
+  collectorMode: "push"
+  independentOfMonitored: true
+  retentionDays: 7
+properties:
+  plan:
+    type: "enum"
+    values: ["hobby", "pro", "team", "enterprise"]
+    default: "hobby"
+  gatewayProxy:
+    type: "boolean"
+    default: true
+  selfHosted:
+    type: "boolean"
+    default: false

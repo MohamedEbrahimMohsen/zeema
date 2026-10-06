@@ -10,6 +10,7 @@ kind: "ai-service"
 provider: "default"
 docs: "https://elevenlabs.io/docs/models"
 defaults:
+  auth: "api-key"
   managed: true
   modality: "speech"
   publicEndpoint: true

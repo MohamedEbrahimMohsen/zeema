@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Hugging Face Hub: hosted Git-based repositories for models, datasets and Spaces, pulled by name from training and
+# serving code. A repository is created public unless it is marked private, and a model or dataset can be gated so users
+# must accept conditions before downloading.
+schemaVersion: "1"
+type: "component"
+id: "hugging-face-hub"
+kind: "artifact-repository"
+provider: "default"
+docs: "https://huggingface.co/docs/hub/repositories"
+aliases: ["HF Hub"]
+defaults:
+  artifactType: "generic"
+  managed: true
+  upstreamProxy: false
+  visibility: "public"
+properties:
+  repoType:
+    type: "enum"
+    values: ["model", "dataset", "space"]
+    default: "model"
+  gated:
+    type: "boolean"
+    default: false

@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# CVAT: open-source Computer Vision Annotation Tool, self-hosted with Docker Compose or used as the hosted CVAT
+# Online. Per the installation guide and the cvat/server image, the server exposes port 8080 and needs PostgreSQL and
+# Redis; semi-automatic annotation adds serverless Nuclio functions, off by default.
+schemaVersion: "1"
+type: "component"
+id: "cvat"
+kind: "ml-platform"
+provider: "default"
+docs: "https://docs.cvat.ai/docs/administration/community/basics/installation/"
+aliases: ["Computer Vision Annotation Tool", "CVAT Online"]
+defaults:
+  managed: false
+  experimentTracking: false
+  modelRegistry: false
+properties:
+  deployment:
+    type: "enum"
+    values: ["self-hosted", "cvat-online", "enterprise"]
+    default: "self-hosted"
+  port:
+    type: "integer"
+    default: 8080
+  autoAnnotation:
+    type: "boolean"
+    default: false

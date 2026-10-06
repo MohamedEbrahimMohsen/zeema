@@ -106,6 +106,22 @@ describe("describeRule", () => {
     });
   }
 
+  it("phrases a counted hasNode", () => {
+    const d = describeRule(
+      {
+        id: "x",
+        severity: "info",
+        select: { design: true },
+        when: { hasNode: { kind: "ai-service", count: { gt: 2 } } },
+        message: "m",
+      },
+      {},
+    );
+    expect(describeLines(d.when)).toEqual([
+      "- the design contains more than 2 nodes of kind ai-service",
+    ]);
+  });
+
   it("throws on a predicate it cannot phrase", () => {
     expect(() =>
       describeRule(

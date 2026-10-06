@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Civitai: community hub for image and video generation models (checkpoints, LoRAs). Per the "REST API Reference", the Site
+# API at civitai.com/api/v1 searches and downloads models, and an API key from account settings is needed for
+# authorised requests; a separate Orchestration API runs generation and training jobs.
+schemaVersion: "1"
+type: "component"
+id: "civitai"
+kind: "artifact-repository"
+provider: "default"
+docs: "https://github.com/civitai/civitai/wiki/REST-API-Reference"
+defaults:
+  artifactType: "generic"
+  managed: true
+  upstreamProxy: false
+  visibility: "public"
+properties:
+  apiKey:
+    type: "boolean"
+    default: false

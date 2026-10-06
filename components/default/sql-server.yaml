@@ -1,5 +1,6 @@
 # yaml-language-server: $schema=../../schema/component.schema.json
 # Microsoft SQL Server: single-primary relational database; Always On availability groups are opt-in.
+# vectorSearch: the vector type and VECTOR_DISTANCE in SQL Server 2025, DiskANN vector indexes in preview ("Vector Search & Vector Index").
 schemaVersion: "1"
 type: "component"
 id: "sql-server"
@@ -14,5 +15,8 @@ properties:
   version:
     type: "string"
   alwaysOn:
+    type: "boolean"
+    default: false
+  vectorSearch:
     type: "boolean"
     default: false

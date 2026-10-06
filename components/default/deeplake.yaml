@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Deep Lake: Activeloop's multimodal data lake and vector store, with an open-source Apache-2.0 format and TQL query engine.
+# Per the Activeloop docs, datasets live locally, in your own object storage or in Activeloop's managed storage on the
+# Basic, Scale and Enterprise plans; Activeloop-L0 is the reasoning layer built on it.
+schemaVersion: "1"
+type: "component"
+id: "deeplake"
+kind: "vector-database"
+provider: "default"
+docs: "https://docs.activeloop.ai/"
+aliases: ["Activeloop Deep Lake"]
+defaults:
+  managed: false
+  metadataFiltering: true
+properties:
+  storage:
+    type: "enum"
+    values: ["local", "s3", "gcs", "azure-blob", "activeloop-managed"]
+    default: "local"
+  plan:
+    type: "enum"
+    values: ["basic", "scale", "enterprise"]
+    default: "basic"

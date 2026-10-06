@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Lookout for Metrics: managed anomaly detection over business and operational metrics. Retired October 2025:
+# per "AWS services that are no longer available", the service reached full shutdown on 10 October 2025.
+schemaVersion: "1"
+type: "component"
+id: "aws-lookout-for-metrics"
+kind: "ai-service"
+provider: "aws"
+docs: "https://docs.aws.amazon.com/general/latest/gr/full_shutdown_services.html"
+defaults:
+  auth: "iam"
+  managed: true
+  modality: "structured"
+  publicEndpoint: true
+properties:
+  detectorFrequency:
+    type: "enum"
+    values: ["5-minutes", "10-minutes", "1-hour", "1-day"]
+    default: "1-hour"

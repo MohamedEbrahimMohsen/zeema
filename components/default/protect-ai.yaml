@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Protect AI: AI security platform with Guardian (model scanning), Layer (runtime prompt filtering), Recon
+# (red teaming) and Radar (AI-BOM). Retired July 2025: Palo Alto Networks completed the acquisition on
+# 22 July 2025 and folded the products into Prisma AIRS; protectai.com now redirects there and the product
+# pages return 404, so no defaults survive.
+schemaVersion: "1"
+type: "component"
+id: "protect-ai"
+kind: "policy-engine"
+provider: "default"
+docs: "https://www.paloaltonetworks.com/company/press/2025/palo-alto-networks-completes-acquisition-of-protect-ai"
+defaults:
+  managed: true
+properties:
+  product:
+    type: "enum"
+    values: ["guardian", "layer", "recon", "radar"]

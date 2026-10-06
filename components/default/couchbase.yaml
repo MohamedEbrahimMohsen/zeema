@@ -1,6 +1,7 @@
 # yaml-language-server: $schema=../../schema/component.schema.json
 # Couchbase: document store; in-cluster reads hit the active vBucket, cross-datacenter
 # replication (XDCR) is opt-in.
+# vectorSearch: Search Vector Indexes from Server 7.6 ("Vector Search Using Search Vector Indexes").
 schemaVersion: "1"
 type: "component"
 id: "couchbase"
@@ -15,5 +16,8 @@ properties:
   version:
     type: "string"
   xdcr:
+    type: "boolean"
+    default: false
+  vectorSearch:
     type: "boolean"
     default: false

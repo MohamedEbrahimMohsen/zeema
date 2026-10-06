@@ -1,6 +1,7 @@
 # yaml-language-server: $schema=../../schema/component.schema.json
 # evictionPolicy is deliberately not defaulted: Redis ships with noeviction, which is the
 # behaviour the cache-missing-eviction-policy rule exists to surface.
+# vectorSearch: FLAT, HNSW and SVS-VAMANA vector indexes in the Redis Query Engine ("Vector search concepts").
 schemaVersion: "1"
 type: "component"
 id: "redis"
@@ -11,5 +12,8 @@ defaults:
   persistence: false
 properties:
   cluster:
+    type: "boolean"
+    default: false
+  vectorSearch:
     type: "boolean"
     default: false

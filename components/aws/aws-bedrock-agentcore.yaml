@@ -10,6 +10,7 @@ kind: "ai-service"
 provider: "aws"
 docs: "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/agents-tools-runtime.html"
 defaults:
+  auth: "iam"
   managed: true
   modality: "multimodal"
 properties:

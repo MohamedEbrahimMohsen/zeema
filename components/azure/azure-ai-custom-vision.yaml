@@ -8,6 +8,7 @@ kind: "ai-service"
 provider: "azure"
 docs: "https://learn.microsoft.com/en-us/azure/ai-services/custom-vision-service/limits-and-quotas"
 defaults:
+  auth: "api-key"
   managed: true
   modality: "vision"
   publicEndpoint: true

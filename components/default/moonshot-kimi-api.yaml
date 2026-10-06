@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Kimi Open Platform (Moonshot AI): hosted Kimi model API with OpenAI-compatible chat over a public endpoint.
+# Per "Recharge and Rate Limiting", tiers follow cumulative recharge; Tier0 ($1 recharge) allows 1 concurrent
+# request, 3 RPM, 500,000 TPM and 1,500,000 tokens per day, rising with each tier up to Tier5.
+schemaVersion: "1"
+type: "component"
+id: "moonshot-kimi-api"
+kind: "ai-service"
+provider: "default"
+docs: "https://platform.kimi.ai/docs/pricing/limits"
+aliases: ["Kimi API", "Moonshot AI"]
+defaults:
+  auth: "api-key"
+  managed: true
+  modality: "multimodal"
+  publicEndpoint: true
+  rateLimitRpm: 3
+  rateLimitTpm: 500000
+properties:
+  tier:
+    type: "enum"
+    values: ["tier0", "tier1", "tier2", "tier3", "tier4", "tier5"]
+    default: "tier0"
+  maxConcurrency:
+    type: "integer"
+    default: 1
+  tokensPerDay:
+    type: "integer"
+    default: 1500000

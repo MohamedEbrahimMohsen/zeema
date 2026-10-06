@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Reducto: document parse, extract, split, classify and edit API, offered as SaaS, hybrid VPC, full VPC or on-premises.
+# Per "Rate Limits" each API key gets 1,000 requests per second and bursts should go through async jobs with webhooks;
+# synchronous calls time out after 900 s. Per the security policies, Zero Data Retention (deletion within 24 h) starts at Growth.
+schemaVersion: "1"
+type: "component"
+id: "reducto"
+kind: "worker"
+provider: "default"
+docs: "https://docs.reducto.ai/reference/rate-limits"
+defaults:
+  managed: true
+  trigger: "queue"
+  idempotent: false
+properties:
+  deployment:
+    type: "enum"
+    values: ["saas", "hybrid-vpc", "vpc", "on-premises"]
+    default: "saas"
+  mode:
+    type: "enum"
+    values: ["sync", "async"]
+    default: "sync"
+  zeroDataRetention:
+    type: "boolean"
+    default: false

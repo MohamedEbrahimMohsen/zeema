@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# DeepSeek API: hosted DeepSeek chat and reasoning models behind OpenAI- and Anthropic-compatible endpoints.
+# Per "Rate Limit & Isolation", limits are account-wide concurrent requests (not RPM) and excess gets 429;
+# per "Context Caching", caching on disk is on by default for all users; per the "DeepSeek Privacy Policy",
+# data is collected, processed and stored in the People's Republic of China.
+schemaVersion: "1"
+type: "component"
+id: "deepseek-api"
+kind: "ai-service"
+provider: "default"
+docs: "https://api-docs.deepseek.com/quick_start/rate_limit"
+defaults:
+  auth: "api-key"
+  managed: true
+  modality: "text"
+  publicEndpoint: true
+  dataResidency: "asia"
+properties:
+  contextCaching:
+    type: "boolean"
+    default: true
+  apiFormat:
+    type: "enum"
+    values: ["openai", "anthropic"]
+    default: "openai"

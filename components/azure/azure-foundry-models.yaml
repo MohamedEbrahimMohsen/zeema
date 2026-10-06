@@ -8,6 +8,7 @@ kind: "ai-service"
 provider: "azure"
 docs: "https://learn.microsoft.com/en-us/azure/ai-foundry/foundry-models/concepts/models-from-partners"
 defaults:
+  auth: "api-key"
   managed: true
   modality: "multimodal"
   contentFiltering: true

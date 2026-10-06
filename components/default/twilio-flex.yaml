@@ -4,6 +4,11 @@
 # that you can control from your code", with per-TaskChannel worker capacity ("Flex", "TaskRouter").
 # Call recording is off until it is turned on "on the Voice page in Flex Console", where dual-channel
 # recording is the preferred mode and is inbound only ("Core concepts: Voice").
+#
+# conversationRelay is Twilio ConversationRelay, a Programmable Voice feature: the TwiML <Connect><ConversationRelay>
+# noun turns a call's speech into text, streams it over a WebSocket to your application and speaks the replies with
+# a chosen TTS voice ("ConversationRelay", https://www.twilio.com/docs/voice/conversationrelay). No component in the
+# catalogue represents Twilio Voice alone, and Flex is the one that carries voice calls, so the flag sits here.
 schemaVersion: "1"
 type: "component"
 id: "twilio-flex"
@@ -30,3 +35,6 @@ properties:
     type: "enum"
     values: ["twilio-hosted", "self-hosted"]
     default: "twilio-hosted"
+  conversationRelay:
+    type: "boolean"
+    default: false

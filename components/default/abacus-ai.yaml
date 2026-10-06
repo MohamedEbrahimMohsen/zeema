@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Abacus.AI: hosted AI platform with a feature store over sources such as S3, Snowflake, Redshift and GCS, model
+# training and deployments served from API endpoints, synchronous or asynchronous. Per "Getting Started" with the
+# Python SDK, calls authenticate with an API key from the API Keys dashboard.
+schemaVersion: "1"
+type: "component"
+id: "abacus-ai"
+kind: "ml-platform"
+provider: "default"
+docs: "https://abacus.ai/help/developer-platform/introduction"
+aliases: ["Abacus.AI"]
+defaults:
+  managed: true
+  experimentTracking: true
+  modelRegistry: true
+properties:
+  featureStore:
+    type: "boolean"
+    default: false

@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Rasa: code-first conversational AI platform (Rasa Pro, Rasa Studio) that pairs LLM understanding with deterministic CALM flows.
+# Per the Rasa docs it is self-managed on your own infrastructure or Kubernetes; the free Developer Edition allows production
+# use within a monthly conversation cap, and Rasa Open Source remains the community framework.
+schemaVersion: "1"
+type: "component"
+id: "rasa"
+kind: "app-server"
+provider: "default"
+docs: "https://rasa.com/docs/"
+aliases: ["Rasa Pro", "Rasa Platform", "Rasa Open Source"]
+defaults:
+  managed: false
+  stateless: false
+  runtime: "python"
+properties:
+  edition:
+    type: "enum"
+    values: ["developer", "enterprise", "open-source"]
+    default: "developer"
+  dialogueEngine:
+    type: "enum"
+    values: ["calm", "nlu"]
+    default: "calm"

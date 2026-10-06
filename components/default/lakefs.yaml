@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# lakeFS: open-source data version control layer over object storage, exposing an S3-compatible gateway with Git-like
+# branches, commits and merges. Per "Configuration Reference", the server listens on 0.0.0.0:8000, keeps metadata in a
+# key-value store (local, PostgreSQL, DynamoDB or Cosmos DB) and data in a blockstore (local, S3, GCS or Azure Blob).
+# lakeFS Cloud and lakeFS Enterprise are the commercial editions; lakeFS acquired DVC in November 2025.
+schemaVersion: "1"
+type: "component"
+id: "lakefs"
+kind: "object-store"
+provider: "default"
+docs: "https://docs.lakefs.io/reference/configuration/"
+aliases: ["lakeFS Cloud", "lakeFS Enterprise"]
+defaults:
+  managed: false
+  versioning: true
+properties:
+  port:
+    type: "integer"
+    default: 8000
+  metadataStore:
+    type: "enum"
+    values: ["local", "postgres", "dynamodb", "cosmosdb"]
+    default: "local"
+  blockstore:
+    type: "enum"
+    values: ["local", "s3", "gcs", "azure-blob"]
+    default: "local"

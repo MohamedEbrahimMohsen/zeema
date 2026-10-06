@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# DeepEval: Apache-2.0 LLM evaluation framework whose tests run in CI through `deepeval test run`. Per "Unit
+# Testing in CI/CD", the GitHub Actions example triggers on push and pull_request to main, plain pytest is
+# discouraged, and a CONFIDENT_API_KEY optionally sends test reports to Confident AI.
+schemaVersion: "1"
+type: "component"
+id: "deepeval"
+kind: "ci-pipeline"
+provider: "default"
+docs: "https://deepeval.com/docs/evaluation-unit-testing-in-ci-cd"
+defaults:
+  managed: false
+  trigger: "pull-request"
+properties:
+  testRunner:
+    type: "enum"
+    values: ["deepeval-test-run", "pytest"]
+    default: "deepeval-test-run"
+  confidentReporting:
+    type: "boolean"
+    default: false

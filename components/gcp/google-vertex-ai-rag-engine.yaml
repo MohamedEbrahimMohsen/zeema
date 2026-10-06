@@ -9,6 +9,7 @@ kind: "ai-service"
 provider: "gcp"
 docs: "https://cloud.google.com/vertex-ai/generative-ai/docs/rag-overview"
 defaults:
+  auth: "iam"
   managed: true
   modality: "text"
   customerManagedKeys: false

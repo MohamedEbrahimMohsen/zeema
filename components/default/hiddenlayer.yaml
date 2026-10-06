@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# HiddenLayer AI Security Platform: AI discovery, supply-chain model scanning, attack simulation and AI
+# Runtime Security for LLM apps and agents. Per "AI Runtime Security Overview", the runtime monitors model
+# inputs and outputs and can detect, redact or block; it runs as containers in your own cloud or self-hosted
+# Kubernetes, and Agentic Runtime Security is the recommended version over the earlier AIDR.
+schemaVersion: "1"
+type: "component"
+id: "hiddenlayer"
+kind: "policy-engine"
+provider: "default"
+docs: "https://docs.hiddenlayer.ai/docs/products/runtime/overview"
+aliases: ["HiddenLayer AISec Platform", "AIDR"]
+defaults:
+  managed: false
+  scope: "resource"
+properties:
+  runtimeVersion:
+    type: "enum"
+    values: ["agentic-runtime-security", "aidr"]
+    default: "agentic-runtime-security"
+  action:
+    type: "enum"
+    values: ["detect", "redact", "block"]
+  modelScanning:
+    type: "boolean"
+    default: false

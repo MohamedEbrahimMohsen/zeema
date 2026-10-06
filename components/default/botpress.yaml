@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Botpress: hosted platform to build, connect and deploy LLM chat agents, with Botpress Studio, the ADK and Botpress Desk.
+# Per the Botpress docs, agents run on Botpress Cloud and reach users through webchat and channel integrations, with human
+# handoff in Botpress Desk; the pricing page lists Free, Plus, Team and Enterprise plans.
+schemaVersion: "1"
+type: "component"
+id: "botpress"
+kind: "app-server"
+provider: "default"
+docs: "https://botpress.com/docs/"
+aliases: ["Botpress Cloud", "Botpress Studio"]
+defaults:
+  managed: true
+  stateless: true
+properties:
+  plan:
+    type: "enum"
+    values: ["free", "plus", "team", "enterprise"]
+    default: "free"
+  channel:
+    type: "enum"
+    values: ["webchat", "whatsapp", "messenger", "telegram", "slack", "teams", "voice"]
+    default: "webchat"

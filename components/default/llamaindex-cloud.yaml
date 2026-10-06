@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# LlamaCloud: LlamaIndex's hosted platform for document parsing, extraction, indexing and retrieval behind agents.
+# Per the LlamaCloud pricing page, usage is billed in credits ($1.25 per 1,000) across Parse, Extract, Index, Classify and
+# Split, with Free, Starter, Pro and Enterprise plans.
+schemaVersion: "1"
+type: "component"
+id: "llamaindex-cloud"
+kind: "app-server"
+provider: "default"
+docs: "https://developers.llamaindex.ai/python/cloud/general/pricing/"
+aliases: ["LlamaCloud"]
+defaults:
+  managed: true
+  stateless: true
+properties:
+  plan:
+    type: "enum"
+    values: ["free", "starter", "pro", "enterprise"]
+    default: "free"
+  service:
+    type: "enum"
+    values: ["parse", "extract", "index", "classify", "split"]
+    default: "index"

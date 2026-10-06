@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# LM Studio: desktop app and headless daemon (llmster) that runs local models on llama.cpp or MLX and serves them over
+# OpenAI-compatible endpoints. The server listens on port 1234, accepts only local connections until "Serve on Local
+# Network" is switched on, and asks for no API token unless authentication is turned on in the server settings.
+schemaVersion: "1"
+type: "component"
+id: "lm-studio"
+kind: "ml-inference"
+provider: "default"
+docs: "https://lmstudio.ai/docs/developer/core/server"
+aliases: ["llmster"]
+defaults:
+  training: "batch"
+  inputs: "live"
+  managed: false
+properties:
+  port:
+    type: "integer"
+    default: 1234
+  serveOnLocalNetwork:
+    type: "boolean"
+    default: false
+  authRequired:
+    type: "boolean"
+    default: false
+  engine:
+    type: "enum"
+    values: ["llama-cpp", "mlx"]
+    default: "llama-cpp"

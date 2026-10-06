@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# SambaNova Cloud (SambaCloud): hosted open-weight models on RDU accelerators over an OpenAI-compatible endpoint.
+# Per "Rate Limits Policy", the Free Tier applies until a payment method is linked (20 RPM, 20 RPD, 200K TPD
+# per model); the Developer Tier allows 60-240 RPM per model and 20M tokens per day across all models.
+schemaVersion: "1"
+type: "component"
+id: "sambanova-api"
+kind: "ai-service"
+provider: "default"
+docs: "https://docs.sambanova.ai/docs/en/models/rate-limits"
+aliases: ["SambaCloud"]
+defaults:
+  auth: "api-key"
+  managed: true
+  modality: "text"
+  publicEndpoint: true
+  rateLimitRpm: 20
+properties:
+  tier:
+    type: "enum"
+    values: ["free", "developer", "enterprise"]
+    default: "free"
+  previewModel:
+    type: "boolean"
+    default: false
+  requestsPerDay:
+    type: "integer"
+    default: 20

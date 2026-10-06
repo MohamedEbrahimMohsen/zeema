@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=../schema/kind.schema.json
-# A metered vendor endpoint with quota, content filtering and data-handling settings, unlike ml-inference which is a model you deploy on replicas you size. contentFiltering, publicEndpoint and dataRetentionDays have no default so governance rules can catch what was never declared.
+# A metered vendor endpoint with quota, content filtering and data-handling settings, unlike ml-inference which is a model you deploy on replicas you size. contentFiltering, publicEndpoint, dataRetentionDays and auth have no default so governance rules can catch what was never declared; keyStore and viaGateway say whether the key sits in a key-management component and whether calls pass an AI gateway.
 schemaVersion: "1"
 type: "kind"
 id: "ai-service"
@@ -7,7 +7,7 @@ category: "compute"
 properties:
   modality:
     type: "enum"
-    values: ["text", "vision", "speech", "multimodal", "structured"]
+    values: ["text", "vision", "speech", "multimodal", "structured", "image", "video", "audio", "embedding", "rerank"]
   contentFiltering:
     type: "boolean"
   publicEndpoint:
@@ -18,6 +18,25 @@ properties:
     type: "boolean"
   quotaUnitsPerMinute:
     type: "integer"
+  auth:
+    type: "enum"
+    values: ["api-key", "oauth", "iam", "none"]
+  keyStore:
+    type: "boolean"
+    default: false
+  viaGateway:
+    type: "boolean"
+    default: false
+  rateLimitRpm:
+    type: "integer"
+    advanced: true
+  rateLimitTpm:
+    type: "integer"
+    advanced: true
+  dataResidency:
+    type: "enum"
+    values: ["us", "eu", "asia", "global"]
+    advanced: true
   managed:
     type: "boolean"
     default: false

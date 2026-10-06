@@ -10,6 +10,7 @@ kind: "ai-service"
 provider: "oci"
 docs: "https://docs.oracle.com/en-us/iaas/language/using/model-limitations.htm"
 defaults:
+  auth: "iam"
   modality: "text"
   publicEndpoint: true
   managed: true

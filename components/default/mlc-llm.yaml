@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# MLC LLM: machine-learning compiler and engine that runs LLMs on CUDA, ROCm, Metal, Vulkan and OpenCL devices, with an
+# OpenAI-compatible REST server. Per "REST API", `mlc_llm serve` listens on 127.0.0.1:8000 in "local" mode (low
+# concurrency, batch size 4); "interactive" serves one request at a time and "server" maximises concurrency.
+schemaVersion: "1"
+type: "component"
+id: "mlc-llm"
+kind: "ml-inference"
+provider: "default"
+docs: "https://llm.mlc.ai/docs/deploy/rest.html"
+defaults:
+  training: "batch"
+  inputs: "live"
+  accelerator: "gpu"
+  managed: false
+properties:
+  port:
+    type: "integer"
+    default: 8000
+  mode:
+    type: "enum"
+    values: ["local", "interactive", "server"]
+    default: "local"
+  device:
+    type: "enum"
+    values: ["auto", "cuda", "rocm", "metal", "vulkan", "opencl"]
+    default: "auto"

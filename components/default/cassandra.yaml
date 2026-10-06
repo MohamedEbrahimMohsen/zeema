@@ -1,6 +1,7 @@
 # yaml-language-server: $schema=../../schema/component.schema.json
 # Apache Cassandra: leaderless wide-column store with tunable consistency and last-writer-wins
 # cell resolution; gc_grace_seconds defaults to ten days.
+# vectorSearch: the vector CQL type with SAI ANN indexes, new in Cassandra 5.0 ("Vector Search").
 schemaVersion: "1"
 type: "component"
 id: "cassandra"
@@ -18,3 +19,6 @@ properties:
     type: "enum"
     values: ["size-tiered", "leveled", "time-window"]
     default: "size-tiered"
+  vectorSearch:
+    type: "boolean"
+    default: false

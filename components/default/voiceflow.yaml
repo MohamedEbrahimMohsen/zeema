@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Voiceflow: hosted platform to build, deploy and monitor chat and voice agents with playbooks, workflows and knowledge bases.
+# Per "Build AI agents with Voiceflow", agents launch as an embedded chat widget, on inbound or outbound phone numbers, over
+# SMS through Twilio, or behind the Conversations API.
+schemaVersion: "1"
+type: "component"
+id: "voiceflow"
+kind: "app-server"
+provider: "default"
+docs: "https://www.voiceflow.com/docs/documentation/introduction"
+defaults:
+  managed: true
+  stateless: true
+properties:
+  channel:
+    type: "enum"
+    values: ["web-chat", "telephony", "sms", "api"]
+    default: "web-chat"

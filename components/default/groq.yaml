@@ -10,6 +10,7 @@ kind: "ai-service"
 provider: "default"
 docs: "https://console.groq.com/docs/rate-limits"
 defaults:
+  auth: "api-key"
   managed: true
   modality: "multimodal"
   publicEndpoint: true

@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# NVIDIA DGX Cloud: NVIDIA's managed AI platform, now DGX Cloud Lepton, for developing, training and deploying models
+# on GPUs from NVIDIA's cloud partners or your own clusters. Per "Welcome to NVIDIA DGX Cloud Lepton", it offers dev
+# pods (SSH, Jupyter, VS Code), batch jobs for distributed training, inference endpoints (NIM or your own container) and
+# node groups. Typed ml-platform, not virtual-machine, because the unit you draw is the workspace.
+schemaVersion: "1"
+type: "component"
+id: "nvidia-dgx-cloud"
+kind: "ml-platform"
+provider: "default"
+docs: "https://docs.nvidia.com/dgx-cloud/lepton/get-started/index.html"
+aliases: ["DGX Cloud"]
+defaults:
+  managed: true
+  gpuEnabled: true
+properties:
+  workload:
+    type: "enum"
+    values: ["dev-pods", "batch-jobs", "endpoints"]
+  computeSource:
+    type: "enum"
+    values: ["nvidia-cloud-partner", "bring-your-own-compute"]
+    default: "nvidia-cloud-partner"

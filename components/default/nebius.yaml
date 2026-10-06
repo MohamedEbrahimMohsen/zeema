@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Nebius AI Cloud Compute: VMs with NVIDIA GPUs for ML workloads. Per "Types of virtual machines and GPUs", each
+# platform offers presets named by their resources (for example 1gpu-16vcpu-200gb), and a VM is regular or
+# preemptible; VMs without GPUs are regular only, and regular GPU VMs can draw on reservations.
+schemaVersion: "1"
+type: "component"
+id: "nebius"
+kind: "virtual-machine"
+provider: "default"
+docs: "https://docs.nebius.com/compute/virtual-machines/types"
+aliases: ["Nebius AI Cloud"]
+defaults:
+  managed: false
+  os: "linux"
+  zoneRedundant: false
+properties:
+  vmType:
+    type: "enum"
+    values: ["regular", "preemptible"]
+    default: "regular"
+  preset:
+    type: "string"
+  gpuCount:
+    type: "integer"
+  useReservation:
+    type: "boolean"
+    default: false

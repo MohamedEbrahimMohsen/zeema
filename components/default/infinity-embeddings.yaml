@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Infinity: MIT-licensed REST server for embedding, reranking, classification and CLIP models from Hugging Face, with an
+# API aligned to OpenAI's embeddings spec and dynamic batching. Per the README it listens on port 7997 and runs on
+# the PyTorch, Optimum (ONNX/TensorRT) or CTranslate2 backend.
+schemaVersion: "1"
+type: "component"
+id: "infinity-embeddings"
+kind: "ml-inference"
+provider: "default"
+docs: "https://github.com/michaelfeil/infinity"
+aliases: ["Infinity"]
+defaults:
+  training: "batch"
+  inputs: "live"
+  managed: false
+properties:
+  port:
+    type: "integer"
+    default: 7997
+  backend:
+    type: "enum"
+    values: ["torch", "optimum", "ctranslate2"]
+    default: "torch"
+  task:
+    type: "enum"
+    values: ["embed", "rerank", "classify", "clip"]
+    default: "embed"

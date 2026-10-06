@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# CoreWeave: GPU cloud whose compute is reached through CoreWeave Kubernetes Service (CKS). Per "Introduction to CKS",
+# CKS is a managed Kubernetes service that "runs Kubernetes directly on bare metal Nodes, without a hypervisor", with
+# DPU isolation and a VPC per cluster. Typed container-orchestrator, not virtual-machine, because the unit you rent
+# and draw is the cluster, not a VM.
+schemaVersion: "1"
+type: "component"
+id: "coreweave"
+kind: "container-orchestrator"
+provider: "default"
+docs: "https://docs.coreweave.com/products/cks"
+aliases: ["CoreWeave Kubernetes Service", "CKS"]
+defaults:
+  managed: true
+properties:
+  workloadScheduler:
+    type: "enum"
+    values: ["kubernetes", "slurm-on-kubernetes"]
+    default: "kubernetes"
+  gpusPerNode:
+    type: "integer"
+    default: 8

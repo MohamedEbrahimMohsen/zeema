@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Datasaur: hosted labelling platform for NLP and LLM data. Per "External Object Storage", a team can keep project
+# files in its own AWS S3, Google Cloud Storage or Azure bucket and create projects from their file keys.
+schemaVersion: "1"
+type: "component"
+id: "datasaur"
+kind: "ml-platform"
+provider: "default"
+docs: "https://docs.datasaur.ai/integrations/external-object-storage"
+defaults:
+  managed: true
+  experimentTracking: false
+  modelRegistry: false
+properties:
+  storage:
+    type: "enum"
+    values: ["datasaur-hosted", "s3", "gcs", "azure-blob"]
+    default: "datasaur-hosted"

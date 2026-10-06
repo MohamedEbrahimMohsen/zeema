@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Baidu Qianfan (ERNIE API): Baidu AI Cloud's hosted ERNIE and third-party model API, OpenAI-compatible at /v2.
+# Per "Model List - QianfanBaidu", each model has a default rate limit: ERNIE 5.x allows 60 RPM and 150,000 TPM,
+# ERNIE 4.5 Turbo 5,000 RPM and 400,000 TPM, and ERNIE 4.5 Turbo VL 1,000 RPM and 200,000 TPM.
+schemaVersion: "1"
+type: "component"
+id: "baidu-ernie-api"
+kind: "ai-service"
+provider: "default"
+docs: "https://intl.cloud.baidu.com/en/doc/qianfan/s/7m95lyy43-intl-en"
+aliases: ["Qianfan", "ERNIE API", "ERNIE Bot API"]
+defaults:
+  auth: "api-key"
+  managed: true
+  modality: "multimodal"
+  publicEndpoint: true
+  rateLimitRpm: 60
+  rateLimitTpm: 150000
+properties:
+  modelFamily:
+    type: "enum"
+    values: ["ernie-5", "ernie-4.5-turbo", "ernie-4.5-turbo-vl", "third-party"]
+    default: "ernie-5"
+  deepThinking:
+    type: "boolean"
+    default: false

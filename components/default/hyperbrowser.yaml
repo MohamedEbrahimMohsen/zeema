@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Hyperbrowser: cloud browsers and sandboxes for AI automation, large-scale scraping and agentic code execution.
+# Per the Hyperbrowser docs home it is driven through Playwright or Puppeteer and the Python and Node SDKs, with separate
+# stealth and proxy settings per session.
+schemaVersion: "1"
+type: "component"
+id: "hyperbrowser"
+kind: "third-party-api"
+provider: "default"
+docs: "https://hyperbrowser.ai/docs"
+defaults:
+  managed: true
+  hostedPage: false
+  handlesMoney: false
+  callbackStyle: "none"
+properties:
+  stealth:
+    type: "boolean"
+    default: false
+  useProxy:
+    type: "boolean"
+    default: false

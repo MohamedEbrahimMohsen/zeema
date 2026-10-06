@@ -10,6 +10,7 @@ kind: "ai-service"
 provider: "oci"
 docs: "https://docs.oracle.com/en-us/iaas/Content/speech/using/speech.htm"
 defaults:
+  auth: "iam"
   modality: "speech"
   publicEndpoint: true
   dataRetentionDays: 90

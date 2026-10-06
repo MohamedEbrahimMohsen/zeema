@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Domino Data Lab: enterprise data science and MLOps platform on Kubernetes. Per "Deployment offerings", Domino
+# Cloud is a single-tenant SaaS operated by Domino on AWS, Domino VPC is self-managed on EKS, AKS or GKE, Domino On-Prem
+# runs in the customer's data centre, and any of them can add Nexus data planes for hybrid workloads.
+schemaVersion: "1"
+type: "component"
+id: "domino-data-lab"
+kind: "ml-platform"
+provider: "default"
+docs: "https://docs.dominodatalab.com/en/6.2/user_guide/cece0f/deployment-offerings/"
+aliases: ["Domino", "Domino Nexus"]
+defaults:
+  managed: true
+  experimentTracking: true
+  modelRegistry: true
+properties:
+  deployment:
+    type: "enum"
+    values: ["domino-cloud", "vpc", "on-prem"]
+    default: "domino-cloud"
+  nexusDataPlanes:
+    type: "boolean"
+    default: false

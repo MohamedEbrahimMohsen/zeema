@@ -9,6 +9,7 @@ kind: "ai-service"
 provider: "ibm"
 docs: "https://cloud.ibm.com/docs/watsonx-code-assistant"
 defaults:
+  auth: "api-key"
   managed: true
   modality: "text"
 properties:

@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# OctoAI: OctoML's hosted inference platform for open text and image models, plus the self-hosted OctoStack.
+# Retired October 2024: NVIDIA acquired OctoAI in September 2024, and the company wound down its services and
+# terminated access to all of them on 31 October 2024.
+schemaVersion: "1"
+type: "component"
+id: "octoai"
+kind: "ml-inference"
+provider: "default"
+docs: "https://github.com/octoml"
+aliases: ["OctoML", "OctoStack"]
+defaults:
+  training: "batch"
+  inputs: "live"
+  accelerator: "gpu"
+  managed: true
+properties:
+  deployment:
+    type: "enum"
+    values: ["hosted", "octostack"]
+    default: "hosted"

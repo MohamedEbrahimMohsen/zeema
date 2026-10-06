@@ -10,6 +10,7 @@ kind: "ai-service"
 provider: "default"
 docs: "https://docs.mistral.ai/admin/user-management-finops/tier"
 defaults:
+  auth: "api-key"
   managed: true
   modality: "multimodal"
   publicEndpoint: true

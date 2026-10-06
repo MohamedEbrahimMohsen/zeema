@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Arize Phoenix: open-source (Elastic License 2.0) LLM tracing and evaluation server you run yourself. Per
+# "What is Arize Phoenix?", it accepts traces over OpenTelemetry (OTLP) and serves on localhost:6006; per
+# "Self-Hosting", it is free with no usage limits and authentication is an opt-in configuration.
+schemaVersion: "1"
+type: "component"
+id: "arize-phoenix"
+kind: "monitoring"
+provider: "default"
+docs: "https://arize.com/docs/phoenix/self-hosting"
+aliases: ["Phoenix"]
+defaults:
+  managed: false
+  signal: "traces"
+  collectorMode: "push"
+  independentOfMonitored: true
+properties:
+  authEnabled:
+    type: "boolean"
+    default: false
+  otlpIngest:
+    type: "boolean"
+    default: true

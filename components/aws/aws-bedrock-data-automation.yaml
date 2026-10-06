@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Amazon Bedrock Data Automation: generative-AI extraction from documents, images, audio and video. Per "Standard
+# output in Bedrock Data Automation", a file sent with no project or blueprint returns the default standard output for
+# its type; projects store standard and custom-blueprint configurations and InvokeDataAutomationAsync reads from and
+# writes to Amazon S3.
+schemaVersion: "1"
+type: "component"
+id: "aws-bedrock-data-automation"
+kind: "ai-service"
+provider: "aws"
+docs: "https://docs.aws.amazon.com/bedrock/latest/userguide/bda-standard-output.html"
+aliases: ["BDA"]
+defaults:
+  auth: "iam"
+  managed: true
+  modality: "multimodal"
+  publicEndpoint: true
+properties:
+  output:
+    type: "enum"
+    values: ["standard", "custom-blueprint"]
+    default: "standard"

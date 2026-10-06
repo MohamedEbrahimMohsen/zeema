@@ -1,5 +1,7 @@
 # yaml-language-server: $schema=../../schema/component.schema.json
 # Azure API Management: managed API gateway with policy pipeline. Rate limiting and auth are opt-in policies.
+# Per "AI gateway capabilities in Azure API Management", the GenAI gateway (token limits, semantic caching,
+# load balancing across model backends) is a set of policies you add, so genAiGateway starts off.
 schemaVersion: "1"
 type: "component"
 id: "azure-api-management"
@@ -16,3 +18,6 @@ properties:
     type: "enum"
     values: ["consumption", "developer", "basic", "standard", "premium"]
     default: "developer"
+  genAiGateway:
+    type: "boolean"
+    default: false

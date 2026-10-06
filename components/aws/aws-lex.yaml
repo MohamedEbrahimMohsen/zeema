@@ -8,6 +8,7 @@ kind: "ai-service"
 provider: "aws"
 docs: "https://docs.aws.amazon.com/lexv2/latest/dg/quotas.html"
 defaults:
+  auth: "iam"
   managed: true
   modality: "multimodal"
   publicEndpoint: true

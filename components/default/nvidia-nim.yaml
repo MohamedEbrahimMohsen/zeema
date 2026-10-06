@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# NVIDIA NIM for LLMs: prebuilt inference microservice containers pulled from NGC and run on your own NVIDIA GPUs, with an
+# OpenAI-compatible API. Per "Environment Variables", the server listens on NIM_SERVER_PORT 8000 and NGC_API_KEY is
+# required to download models. Production use needs an NVIDIA AI Enterprise licence; the NVIDIA-hosted endpoints of the
+# same NIMs are nvidia-nim-api.
+schemaVersion: "1"
+type: "component"
+id: "nvidia-nim"
+kind: "ml-inference"
+provider: "default"
+docs: "https://docs.nvidia.com/nim/large-language-models/latest/getting-started.html"
+aliases: ["NVIDIA NIM for LLMs"]
+defaults:
+  training: "batch"
+  inputs: "live"
+  accelerator: "gpu"
+  managed: false
+properties:
+  port:
+    type: "integer"
+    default: 8000
+  licence:
+    type: "enum"
+    values: ["developer-program", "ai-enterprise"]
+    default: "ai-enterprise"
+  tensorParallelSize:
+    type: "integer"

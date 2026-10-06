@@ -8,7 +8,9 @@ id: "google-gemini-api"
 kind: "ai-service"
 provider: "gcp"
 docs: "https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/configure-safety-filters"
+aliases: ["Google AI Studio"]
 defaults:
+  auth: "iam"
   managed: true
   modality: "multimodal"
   contentFiltering: true

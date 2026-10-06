@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Perplexity API: hosted Sonar models that answer with live web search and citations, plus Search and Embeddings.
+# Per "Privacy & Security", Chat Completions data is not retained or used for training; only billing metadata
+# is kept. Per "Rate Limits & Usage Tiers", new accounts start on Tier 0 and tiers rise with lifetime spend.
+schemaVersion: "1"
+type: "component"
+id: "perplexity-api"
+kind: "ai-service"
+provider: "default"
+docs: "https://docs.perplexity.ai/docs/resources/privacy-security"
+aliases: ["Sonar API"]
+defaults:
+  auth: "api-key"
+  managed: true
+  modality: "text"
+  publicEndpoint: true
+  dataRetentionDays: 0
+properties:
+  usageTier:
+    type: "enum"
+    values: ["tier-0", "tier-1", "tier-2", "tier-3", "tier-4", "tier-5"]
+    default: "tier-0"
+  endpoint:
+    type: "enum"
+    values: ["sonar", "agent", "search", "embeddings"]
+    default: "sonar"

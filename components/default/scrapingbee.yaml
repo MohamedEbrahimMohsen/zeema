@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# ScrapingBee: credit-based web scraping API with headless-browser rendering, proxy rotation and extraction rules.
+# Per "HTML API", render_js is on by default and costs 5 credits a request, premium_proxy is off by default, and failed
+# URLs are retried for up to 30 s; per "Pricing" the Freelance plan allows 50 concurrent requests.
+schemaVersion: "1"
+type: "component"
+id: "scrapingbee"
+kind: "third-party-api"
+provider: "default"
+docs: "https://www.scrapingbee.com/documentation/"
+defaults:
+  managed: true
+  hostedPage: false
+  handlesMoney: false
+  callbackStyle: "none"
+  idempotent: true
+properties:
+  plan:
+    type: "enum"
+    values: ["freelance", "startup", "business", "business-plus", "enterprise"]
+    default: "freelance"
+  renderJs:
+    type: "boolean"
+    default: true
+  premiumProxy:
+    type: "boolean"
+    default: false
+  concurrentRequests:
+    type: "integer"
+    default: 50

@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Lindy: hosted AI teammate that runs skills and routines over email, meetings, CRM and 1,000+ integrations.
+# Per the Lindy docs, routines run on schedules or on events and actions can require approval; the pricing page bills a shared
+# monthly credit pool (Plus 3,000 credits) with no permanent free plan.
+schemaVersion: "1"
+type: "component"
+id: "lindy"
+kind: "app-server"
+provider: "default"
+docs: "https://docs.lindy.ai/"
+defaults:
+  managed: true
+  stateless: true
+  ownsData: false
+properties:
+  plan:
+    type: "enum"
+    values: ["plus", "pro", "max", "enterprise"]
+    default: "plus"
+  monthlyCredits:
+    type: "integer"
+    default: 3000

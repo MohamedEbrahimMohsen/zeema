@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Microsoft Copilot Studio: low-code SaaS studio for agents, workflows and agent flows, published to Teams, Microsoft Copilot,
+# websites and other channels. Per "Overview - Microsoft Copilot Studio", each agent runs on a harness (GitHub Copilot,
+# standard or Copilot chat) that sets its reasoning and billing; usage is metered in Copilot Credits.
+schemaVersion: "1"
+type: "component"
+id: "azure-copilot-studio"
+kind: "app-server"
+provider: "azure"
+docs: "https://learn.microsoft.com/en-us/microsoft-copilot-studio/fundamentals-what-is-copilot-studio"
+aliases: ["Microsoft Copilot Studio", "Power Virtual Agents"]
+defaults:
+  managed: true
+  stateless: true
+  ownsData: false
+properties:
+  harness:
+    type: "enum"
+    values: ["github-copilot", "standard", "copilot-chat"]
+    default: "standard"
+  license:
+    type: "enum"
+    values: ["trial", "standalone", "teams"]
+    default: "standalone"

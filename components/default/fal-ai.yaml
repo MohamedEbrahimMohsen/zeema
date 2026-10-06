@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# fal: serverless inference platform hosting many image, video, audio and LLM models behind one queue API.
+# Per "FAQ", new accounts start at 2 concurrent requests (rising to 40 with credit purchases); outputs sit on
+# the fal CDN for at least 7 days by default and their URLs are public unless ACLs restrict them.
+schemaVersion: "1"
+type: "component"
+id: "fal-ai"
+kind: "ai-service"
+provider: "default"
+docs: "https://fal.ai/docs/model-apis/faq"
+aliases: ["fal.ai"]
+defaults:
+  auth: "api-key"
+  managed: true
+  modality: "multimodal"
+  publicEndpoint: true
+  dataRetentionDays: 7
+properties:
+  maxConcurrentRequests:
+    type: "integer"
+    default: 2
+  publicMediaUrls:
+    type: "boolean"
+    default: true

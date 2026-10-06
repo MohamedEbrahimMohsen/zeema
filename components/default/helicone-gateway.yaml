@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Helicone AI Gateway: OpenAI-compatible router to 100+ providers with observability, open source; in
+# maintenance mode since Mintlify acquired Helicone in March 2026. Per "Provider Routing", it routes to
+# the cheapest provider first and fails over automatically; per "LLM Caching", caching is off until the
+# Helicone-Cache-Enabled header is sent (max-age 604800); rate limits need the Helicone-RateLimit-Policy header.
+schemaVersion: "1"
+type: "component"
+id: "helicone-gateway"
+kind: "api-gateway"
+provider: "default"
+docs: "https://docs.helicone.ai/gateway/provider-routing"
+defaults:
+  managed: true
+  auth: "api-key"
+  protocol: "http"
+  tls: true
+  rateLimiting: false
+properties:
+  routingStrategy:
+    type: "enum"
+    values: ["cheapest-first", "provider-order"]
+    default: "cheapest-first"
+  fallbacks:
+    type: "boolean"
+    default: true
+  caching:
+    type: "boolean"
+    default: false
+  cacheTtlSeconds:
+    type: "integer"
+    default: 604800

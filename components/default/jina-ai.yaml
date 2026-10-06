@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Jina AI: search foundation APIs (embeddings, reranker, Reader URL-to-markdown, search); Elastic acquired Jina
+# in October 2025 and the APIs still run standalone. Per "Rate Limit", Reader allows 20 RPM without a key and
+# 500 with one; embeddings and reranker allow 100 RPM and 100K TPM on a free key, enforced per IP or key.
+schemaVersion: "1"
+type: "component"
+id: "jina-ai"
+kind: "ai-service"
+provider: "default"
+docs: "https://jina.ai/api-dashboard/rate-limit"
+aliases: ["Jina Reader", "Jina Embeddings", "Jina Reranker"]
+defaults:
+  auth: "api-key"
+  managed: true
+  modality: "embedding"
+  publicEndpoint: true
+  quotaUnitsPerMinute: 100
+  rateLimitTpm: 100000
+properties:
+  keyTier:
+    type: "enum"
+    values: ["none", "free", "paid", "premium"]
+    default: "free"
+  endpoint:
+    type: "enum"
+    values: ["embeddings", "rerank", "reader", "search"]
+    default: "embeddings"

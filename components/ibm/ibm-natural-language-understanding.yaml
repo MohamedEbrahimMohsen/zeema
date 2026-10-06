@@ -10,6 +10,7 @@ provider: "ibm"
 docs: "https://cloud.ibm.com/docs/natural-language-understanding"
 aliases: ["NLU"]
 defaults:
+  auth: "api-key"
   managed: true
   modality: "text"
 properties:

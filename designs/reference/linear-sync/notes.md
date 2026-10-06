@@ -21,6 +21,8 @@ Fixes relative to linear-sync.broken.yaml:
     task-runners synchronously on the mutation path
   - workspace-indexeddb declares an eviction policy, so browser storage pressure is not
     left to the vendor default
+  - openai-embeddings declares its API key held in a key-management component (keyStore), as
+    the broken variant does not; the store itself is not drawn
 This file MUST trip no rule.
 
 ## Broken variant (header of design.broken.yaml)
@@ -36,6 +38,7 @@ This file MUST trip:
   - stateful-websocket-scale-in-without-drain (public-sync-ws and private-sync-ws autoscale with drainOnScaleIn false)
   - fanout-inline-in-request-path            (public-graphql-api calls task-runners synchronously)
   - cache-missing-eviction-policy            (workspace-indexeddb declares evictionPolicy none)
+  - ai-api-key-unmanaged                     (task-runners call openai-embeddings with an API key; no key-management node, keyStore not declared)
 and MUST NOT trip:
   - datastore-missing-backup                 (Cloud SQL keeps backups on with seven days retention)
   - cache-as-primary-store-without-persistence (workspace-indexeddb persists and is not the primary store)

@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Replit Agent: browser-based agent that builds and deploys full-stack apps on Replit, drawn as the client. Per
+# "Replit Agent", Agent 3 builds autonomously, tests its own app and sets up the database schema; every Replit App gets a
+# SQL database with 20 GB free storage.
+schemaVersion: "1"
+type: "component"
+id: "replit-agent"
+kind: "client"
+provider: "default"
+docs: "https://docs.replit.com/replitai/agent"
+defaults:
+  platform: "web"
+  managed: true
+properties:
+  database:
+    type: "boolean"
+    default: true

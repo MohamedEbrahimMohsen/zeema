@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../schema/rule.schema.json
+# Three or more AI vendors in one design and no gateway anywhere: every caller holds every key,
+# retries and fallbacks are written per vendor, and spend is not seen in one place. Counted once
+# for the design. A gateway such as litellm, portkey or cloudflare-ai-gateway closes it.
+# Tripped by: designs/reference/llm-gateway/design.broken.yaml
+schemaVersion: "1"
+type: "rule"
+id: "ai-no-gateway"
+severity: "info"
+select:
+  design: true
+when:
+  all:
+    - hasNode:
+        kind: "ai-service"
+        count:
+          gt: 2
+    - not:
+        hasNode:
+          kind: "api-gateway"
+message: "Design '{{design.id}}' calls three or more AI services and has no API gateway to route, retry and meter them."

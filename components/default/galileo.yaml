@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Galileo: observability, evaluation and guardrail platform for GenAI and agentic applications. Per "What Is
+# Galileo?", it runs as SaaS at app.galileo.ai with VPC and on-premises deployments available, fed by Python
+# and TypeScript SDKs. Cisco announced its acquisition April 2026 to fold it into Splunk Observability.
+schemaVersion: "1"
+type: "component"
+id: "galileo"
+kind: "monitoring"
+provider: "default"
+docs: "https://docs.galileo.ai/what-is-galileo"
+defaults:
+  managed: true
+  signal: "traces"
+  collectorMode: "push"
+  independentOfMonitored: true
+properties:
+  deployment:
+    type: "enum"
+    values: ["saas", "vpc", "on-prem"]
+    default: "saas"
+  guardrails:
+    type: "boolean"

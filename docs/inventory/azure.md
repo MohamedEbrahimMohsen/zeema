@@ -199,6 +199,8 @@ graph store; it is covered by a component property rather than a second componen
 | Azure AI Video Indexer | azure-video-indexer | ai-service | done | https://learn.microsoft.com/en-us/azure/azure-video-indexer/video-indexer-overview |
 | Azure AI Bot Service | azure-bot-service | app-server | done | https://learn.microsoft.com/en-us/azure/bot-service/bot-overview?view=azure-bot-service-4.0 |
 | Health Bot | azure-health-bot | app-server | done | https://learn.microsoft.com/en-us/azure/health-bot/overview |
+| Microsoft Copilot Studio | azure-copilot-studio | app-server | done | https://learn.microsoft.com/en-us/microsoft-copilot-studio/fundamentals-what-is-copilot-studio |
+| Bing Web Search API (Bing Search v7) | azure-bing-web-search | third-party-api | skip: retired August 2025, every Bing Search API instance was decommissioned on 11 Aug 2025 | https://learn.microsoft.com/en-us/lifecycle/announcements/bing-search-api-retirement |
 | Microsoft Planetary Computer Pro | azure-planetary-computer | object-store | done | https://learn.microsoft.com/en-us/azure/planetary-computer/microsoft-planetary-computer-pro-overview |
 | Observability in Foundry Control Plane | — | — | skip: observability view over Foundry projects, use Azure Monitor | https://learn.microsoft.com/en-us/azure/ai-foundry/ |
 | Foundry Control Plane | — | — | skip: management plane over Foundry resources | https://learn.microsoft.com/en-us/azure/ai-foundry/ |
@@ -908,7 +910,7 @@ drawn as a box in Microsoft's own architecture diagrams.
 
 ## Counts
 
-total 694, todo 0, done 200, skip 492, covered 2. (Recounted from the status column on
+total 696, todo 0, done 201, skip 493, covered 2. (Recounted from the status column on
 2026-10-05, after the pricing-calculator audit added the Bandwidth and Microsoft Defender ISOC
 skip rows, removed the two duplicate mapping rows for `azure-monitor-data-collection-rule` and
 `azure-privileged-identity-management`, and folded Azure Spot Virtual Machines and Azure

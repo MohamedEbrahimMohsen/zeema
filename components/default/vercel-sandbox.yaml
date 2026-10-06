@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Vercel Sandbox: runs untrusted or agent-generated code in isolated Firecracker microVMs.
+# Per "Vercel Sandbox", persistence is the default (state saved on stop, resumed later) and CPU is billed only while active;
+# per "Vercel Sandbox pricing and quotas", the default timeout is 5 minutes and Hobby runs 10 concurrent sandboxes.
+schemaVersion: "1"
+type: "component"
+id: "vercel-sandbox"
+kind: "worker"
+provider: "default"
+docs: "https://vercel.com/docs/sandbox"
+defaults:
+  managed: true
+  trigger: "manual"
+  idempotent: false
+  concurrency: 10
+properties:
+  plan:
+    type: "enum"
+    values: ["hobby", "pro", "enterprise"]
+    default: "hobby"
+  timeoutMinutes:
+    type: "integer"
+    default: 5
+  vcpus:
+    type: "integer"
+    default: 2
+  persistent:
+    type: "boolean"
+    default: true

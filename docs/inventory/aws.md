@@ -23,6 +23,8 @@ Status: `done` = component exists in `components/aws/`. `todo` = to be written.
 |---|---|---|---|---|
 | Amazon EC2 instance | aws-ec2 | virtual-machine | done | https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/concepts.html |
 | Amazon EC2 Spot Instances | — | — | covered by aws-ec2 (`purchaseOption: spot`) | https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-spot-instances.html |
+| AWS Trainium instances | — | — | covered by aws-ec2 (`accelerator: trainium`) | https://docs.aws.amazon.com/ec2/latest/instancetypes/ac.html |
+| AWS Inferentia instances | — | — | covered by aws-ec2 (`accelerator: inferentia`) | https://docs.aws.amazon.com/ec2/latest/instancetypes/ac.html |
 | Amazon EC2 Dedicated Hosts | aws-ec2-dedicated-host | virtual-machine | done | https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/dedicated-hosts-overview.html |
 | Amazon EC2 Auto Scaling group | aws-ec2-auto-scaling | virtual-machine | done | https://docs.aws.amazon.com/autoscaling/ec2/userguide/what-is-amazon-ec2-auto-scaling.html |
 | AWS Nitro Enclaves | aws-nitro-enclave | virtual-machine | done | https://docs.aws.amazon.com/enclaves/latest/user/nitro-enclave.html |
@@ -310,11 +312,13 @@ Amazon Pinpoint is retained as a component although it is in sunset with end of 
 | Amazon Bedrock Knowledge Bases | aws-bedrock-knowledge-base | search-index | done | https://docs.aws.amazon.com/bedrock/latest/userguide/kb-chunking-parsing.html |
 | Amazon Bedrock Guardrails | aws-bedrock-guardrails | ai-service | done | https://docs.aws.amazon.com/bedrock/latest/APIReference/API_CreateGuardrail.html |
 | AWS HealthOmics | aws-healthomics | object-store | done | https://docs.aws.amazon.com/omics/latest/dev/create-sequence-store.html |
-| Amazon SageMaker Unified Studio | — | — | skip: unified console over SageMaker AI, DataZone, Athena and EMR | https://docs.aws.amazon.com/sagemaker-unified-studio/latest/userguide/what-is-sagemaker-unified-studio.html |
-| Amazon Nova / Titan models | — | — | skip: model families served through Amazon Bedrock | https://docs.aws.amazon.com/bedrock/latest/userguide/models-supported.html |
-| Amazon Q Developer | — | — | skip: coding assistant, not a node | https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/what-is.html |
+| Amazon SageMaker Unified Studio | aws-sagemaker-unified-studio | ml-platform | done | https://docs.aws.amazon.com/sagemaker-unified-studio/latest/adminguide/working-with-domains.html |
+| Amazon SageMaker Canvas | aws-sagemaker-canvas | ml-platform | done | https://docs.aws.amazon.com/sagemaker/latest/dg/canvas-storage-configuration.html |
+| Amazon Bedrock Data Automation | aws-bedrock-data-automation | ai-service | done | https://docs.aws.amazon.com/bedrock/latest/userguide/bda-standard-output.html |
+| Amazon Nova / Titan models | — | — | skip: model families served through Amazon Bedrock (aws-bedrock answers to the alias Amazon Nova) | https://docs.aws.amazon.com/bedrock/latest/userguide/models-supported.html |
+| Amazon Q Developer | aws-q-developer | client | done (IDE plugins end of support 30 April 2027, successor Kiro; console and chat integrations continue) | https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/q-developer-ide-end-of-support.html |
 | Amazon Q Business | aws-q-business | ai-service | done (maintenance since 30 June 2026; still placeable until end of support) | https://docs.aws.amazon.com/amazonq/latest/qbusiness-ug/what-is.html |
-| Amazon CodeWhisperer | — | — | skip: renamed Amazon Q Developer | https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/what-is.html |
+| Amazon CodeWhisperer | aws-codewhisperer | client | skip: retired April 2024, renamed Amazon Q Developer on 30 Apr 2024 | https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/service-rename.html |
 | Amazon Machine Learning (classic) | — | — | skip: retired predecessor of SageMaker | https://docs.aws.amazon.com/machine-learning/latest/dg/what-is-amazon-machine-learning.html |
 | Amazon Augmented AI (A2I) | aws-augmented-ai | workflow-engine | done (maintenance since 30 June 2026; still placeable until end of support) | https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_HumanLoopConfig.html |
 | Amazon SageMaker Ground Truth / Clarify / Debugger / Model Monitor | — | — | skip: maintenance since 30 June 2026, SageMaker features not nodes | https://docs.aws.amazon.com/general/latest/gr/maintenance_services.html |
@@ -343,8 +347,8 @@ Amazon Pinpoint is retained as a component although it is in sunset with end of 
 | Amazon Forecast | aws-forecast | ai-service | done (maintenance since 29 July 2024, use SageMaker Canvas; still placeable until end of support) | https://docs.aws.amazon.com/forecast/latest/dg/limits.html |
 | Amazon Fraud Detector | aws-fraud-detector | ai-service | done (sunset, end of support 7 October 2026; still placeable until end of support) | https://docs.aws.amazon.com/frauddetector/latest/ug/limits.html |
 | Amazon Lookout for Equipment | aws-lookout-for-equipment | ai-service | done (sunset, end of support 7 October 2026; still placeable until end of support) | https://docs.aws.amazon.com/lookout-for-equipment/latest/ug/what-is.html |
-| Amazon Lookout for Vision | — | — | skip: full shutdown 31 October 2025 | https://docs.aws.amazon.com/general/latest/gr/full_shutdown_services.html |
-| Amazon Lookout for Metrics | — | — | skip: full shutdown 10 October 2025 | https://docs.aws.amazon.com/general/latest/gr/full_shutdown_services.html |
+| Amazon Lookout for Vision | aws-lookout-for-vision | ai-service | skip: retired October 2025, full shutdown 31 October 2025 | https://docs.aws.amazon.com/general/latest/gr/full_shutdown_services.html |
+| Amazon Lookout for Metrics | aws-lookout-for-metrics | ai-service | skip: retired October 2025, full shutdown 10 October 2025 | https://docs.aws.amazon.com/general/latest/gr/full_shutdown_services.html |
 | AWS Panorama | — | — | skip: full shutdown 20 May 2026 | https://docs.aws.amazon.com/general/latest/gr/full_shutdown_services.html |
 | Amazon Monitron | aws-monitron | iot-hub | done (maintenance since 31 October 2024; still placeable until end of support) | https://docs.aws.amazon.com/Monitron/latest/user-guide/monitron-components.html |
 | Amazon Transcribe Medical / Call Analytics | — | — | skip: capabilities of Amazon Transcribe | https://docs.aws.amazon.com/transcribe/latest/dg/what-is.html |
@@ -827,5 +831,5 @@ for services younger than both directories.
 
 ## Counts
 
-total 643, todo 0, done 297, skip 345, covered 1. Plus 9 mapping rows under
+total 647, todo 0, done 301, skip 343, covered 3. Plus 9 mapping rows under
 "Already covered under another name", which point at rows already counted above.

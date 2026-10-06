@@ -9,6 +9,7 @@ provider: "azure"
 docs: "https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/service-limits"
 aliases: ["Form Recognizer"]
 defaults:
+  auth: "api-key"
   managed: true
   modality: "vision"
   publicEndpoint: true

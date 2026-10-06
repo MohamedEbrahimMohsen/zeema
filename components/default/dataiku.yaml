@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Dataiku: data science and AI platform (Dataiku DSS) for visual and code pipelines, AutoML and deployment. Per
+# "Customizing DSS installation", DSS listens on base port 11200 over HTTP and on IPv4 only by default. Dataiku Cloud
+# is the Dataiku-hosted alternative to a self-managed install.
+schemaVersion: "1"
+type: "component"
+id: "dataiku"
+kind: "ml-platform"
+provider: "default"
+docs: "https://doc.dataiku.com/dss/latest/installation/custom/advanced-customization.html"
+aliases: ["Dataiku DSS", "Dataiku Cloud"]
+defaults:
+  managed: false
+  experimentTracking: true
+  modelRegistry: true
+properties:
+  deployment:
+    type: "enum"
+    values: ["self-managed", "dataiku-cloud"]
+    default: "self-managed"
+  port:
+    type: "integer"
+    default: 11200

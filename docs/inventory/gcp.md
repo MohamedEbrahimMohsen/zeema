@@ -241,7 +241,7 @@ documentation name with the former name in parentheses so an id stays stable acr
 | Earth Engine | google-earth-engine | third-party-api | done | https://developers.google.com/earth-engine/guides/usage |
 | BigQuery BI Engine | — | — | skip: in-memory acceleration layer of BigQuery | https://cloud.google.com/bigquery/docs/bi-engine-intro |
 | BigQuery Omni | — | — | skip: cross-cloud query capability of BigQuery | https://cloud.google.com/bigquery/docs/omni-introduction |
-| BigQuery ML | — | — | skip: SQL model training inside BigQuery | https://cloud.google.com/bigquery/docs/bqml-introduction |
+| BigQuery ML | — | — | covered by bigquery (`bigqueryMl: true`) | https://cloud.google.com/bigquery/docs/bqml-introduction |
 | Data Catalog | — | — | skip: consolidated into Dataplex Universal Catalog, same resource | https://cloud.google.com/data-catalog/docs/concepts/overview |
 | Lakehouse / Data Agent Kit | — | — | skip: console and SDK surfaces over BigQuery | https://cloud.google.com/bigquery/docs/introduction |
 | Cortex Framework | — | — | skip: reference solution templates | https://cloud.google.com/cortex/docs/overview |
@@ -278,6 +278,8 @@ documentation name with the former name in parentheses so an id stays stable acr
 | Vertex AI Pipelines | google-vertex-ai-pipelines | ci-pipeline | done | https://cloud.google.com/vertex-ai/docs/pipelines/introduction |
 | Vertex AI Feature Store | google-vertex-ai-feature-store | ml-platform | done | https://cloud.google.com/vertex-ai/docs/featurestore/latest/overview |
 | Vertex AI Model Registry | google-vertex-ai-model-registry | artifact-repository | done | https://cloud.google.com/vertex-ai/docs/model-registry/introduction |
+| Gemini Enterprise (formerly Agentspace) | google-gemini-enterprise | ai-service | done | https://docs.cloud.google.com/gemini/enterprise/docs/agents-overview |
+| Vertex AI Agent Builder | — | — | covered by google-vertex-ai-agent-engine (alias Vertex AI Agent Builder) | https://cloud.google.com/vertex-ai/generative-ai/docs/agent-engine/overview |
 | Vertex AI Workbench instance | google-vertex-ai-workbench | ml-platform | done | https://cloud.google.com/vertex-ai/docs/workbench/instances/idle-shutdown |
 | Colab Enterprise runtime | google-colab-enterprise | ml-platform | done | https://cloud.google.com/colab/docs/create-runtime-template |
 | Vertex AI Vector Search index | google-vertex-ai-vector-search | vector-database | done | https://cloud.google.com/vertex-ai/docs/vector-search/overview |
@@ -564,6 +566,7 @@ the AWS/Azure/Google Cloud service comparison, all read on 21 September 2026.
 | Fleet Engine | google-fleet-engine | third-party-api | done | https://developers.google.com/maps/documentation/mobility/fleet-engine/essentials |
 | Places Aggregate API (Places Insights) | google-places-aggregate-api | third-party-api | done | https://developers.google.com/maps/documentation/places-aggregate/overview |
 | Maps Embed API | google-maps-embed-api | third-party-api | done | https://developers.google.com/maps/documentation/embed/usage-and-billing |
+| Custom Search JSON API | google-custom-search-api | third-party-api | done | https://developers.google.com/custom-search/v1/overview |
 | Agent Platform Vision (Vertex AI Vision) | — | — | skip: deprecated 15 June 2026, end of life 30 September 2026, use the Cloud Vision API or Agent Platform models | https://cloud.google.com/vision-ai/docs/overview |
 | Storage Intelligence | — | — | skip: management and insights configuration applied to a project, folder or organization | https://cloud.google.com/storage/docs/storage-intelligence/overview |
 | Storage batch operations job | — | — | skip: bulk job configuration inside Storage Intelligence | https://cloud.google.com/storage/docs/batch-operations/overview |
@@ -576,8 +579,8 @@ the AWS/Azure/Google Cloud service comparison, all read on 21 September 2026.
 | Public Certificate Authority | — | — | skip: public ACME issuance endpoint used by Certificate Manager | https://cloud.google.com/certificate-manager/docs/public-ca |
 | Runtime Configurator | — | — | skip: beta feature of Cloud Deployment Manager, which reached end of support 31 March 2026 | https://cloud.google.com/deployment-manager/runtime-configurator |
 | Apigee integrated developer portal / API monetization | — | — | skip: publishing features of an Apigee organization | https://cloud.google.com/apigee/docs/api-platform/publish/portal/build-integrated-portal |
-| Imagen / Veo / Lyria | — | — | skip: generative models served through the Gemini API and Agent Platform endpoints | https://cloud.google.com/vertex-ai/generative-ai/docs/image/overview |
-| Gemini Code Assist | — | — | skip: IDE and command line coding assistant | https://cloud.google.com/gemini/docs/codeassist/overview |
+| Imagen / Veo / Lyria | — | — | skip: generative models served through the Gemini API and Agent Platform endpoints; google-vertex-ai flags Imagen and Veo with `imageGeneration` / `videoGeneration` | https://cloud.google.com/vertex-ai/generative-ai/docs/image/overview |
+| Gemini Code Assist | google-gemini-code-assist | client | done | https://docs.cloud.google.com/gemini/docs/codeassist/overview |
 | Key Access Justifications | — | — | skip: request-reason policy feature of Cloud KMS and Cloud EKM | https://cloud.google.com/assured-workloads/key-access-justifications/docs/overview |
 | Security Posture | — | — | skip: posture definition feature of Security Command Center | https://cloud.google.com/security-command-center/docs/security-posture-overview |
 | Agent Identity | — | — | skip: IAM identity for agents, a principal not a placeable resource | https://cloud.google.com/iam/docs/agent-identity-overview |
@@ -602,4 +605,4 @@ Recorded so the next pass does not look again.
 
 ## Counts
 
-total 435, todo 0, done 234, skip 199, covered 2.
+total 438, todo 0, done 237, skip 197, covered 4.

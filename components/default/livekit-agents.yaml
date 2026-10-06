@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# LiveKit Agents: open-source Python and Node.js framework for realtime voice, video and physical AI agents that join
+# LiveKit rooms as participants. Per "Agents", the code registers with a LiveKit server as an agent server, which boots
+# a job subprocess per dispatch to join the room; it is self-hosted or deployed on LiveKit Cloud.
+schemaVersion: "1"
+type: "component"
+id: "livekit-agents"
+kind: "app-server"
+provider: "default"
+docs: "https://docs.livekit.io/agents/"
+defaults:
+  managed: false
+  stateless: false
+  runtime: "python"
+properties:
+  hosting:
+    type: "enum"
+    values: ["self-hosted", "livekit-cloud"]
+    default: "self-hosted"
+  turnDetection:
+    type: "boolean"
+    default: true

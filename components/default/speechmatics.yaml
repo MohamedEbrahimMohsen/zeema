@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Speechmatics: speech to text in batch and realtime, with voice-agent STT, as SaaS or on-premises containers. Per
+# "Authentication", every call carries an API key, client-side realtime sessions use short-lived temporary keys, and
+# the Batch and Realtime APIs run in EU, US and Australian regions for data residency.
+schemaVersion: "1"
+type: "component"
+id: "speechmatics"
+kind: "ai-service"
+provider: "default"
+docs: "https://docs.speechmatics.com/introduction/authentication"
+defaults:
+  auth: "api-key"
+  managed: true
+  modality: "speech"
+  publicEndpoint: true
+properties:
+  mode:
+    type: "enum"
+    values: ["batch", "realtime"]
+    default: "batch"
+  deployment:
+    type: "enum"
+    values: ["saas", "on-prem"]
+    default: "saas"
+  temporaryKeys:
+    type: "boolean"
+    default: false

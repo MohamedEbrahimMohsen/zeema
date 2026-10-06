@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Evidently: Apache-2.0 library and platform for evaluating and monitoring ML and LLM systems with 100+
+# built-in metrics. Per "Open-source vs. Cloud", Evidently Cloud is no longer available as a SaaS product,
+# so the platform is self-hosted (open source) or an Enterprise edition; alerts and RBAC are commercial only.
+schemaVersion: "1"
+type: "component"
+id: "evidently-ai"
+kind: "monitoring"
+provider: "default"
+docs: "https://docs.evidentlyai.com/faq/oss_vs_cloud"
+defaults:
+  managed: false
+  signal: "metrics"
+  collectorMode: "push"
+  independentOfMonitored: true
+properties:
+  edition:
+    type: "enum"
+    values: ["open-source", "enterprise"]
+    default: "open-source"
+  alerts:
+    type: "boolean"
+    default: false

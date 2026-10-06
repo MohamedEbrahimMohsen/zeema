@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Surge AI: human data company supplying expert labelled data for training and evaluating frontier models. Per the
+# surge-python SDK, projects and tasks are created through the Surge REST API with an API key from the user's profile.
+schemaVersion: "1"
+type: "component"
+id: "surge-ai"
+kind: "ml-platform"
+provider: "default"
+docs: "https://github.com/surge-ai/surge-python"
+aliases: ["Surge", "SurgeHQ"]
+defaults:
+  managed: true
+  experimentTracking: false
+  modelRegistry: false

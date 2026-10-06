@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Mystic AI: serverless GPU platform that deployed models packaged as pipelines, on Mystic's cloud or in your own cloud
+# account (Pipeline Core, bring-your-own-cloud). Retired 2025: Mystic sunset its services, and Cerebrium publishes the
+# "Migrating from Mystic" guide for its former users.
+schemaVersion: "1"
+type: "component"
+id: "mystic-ai"
+kind: "ml-inference"
+provider: "default"
+docs: "https://cerebrium.ai/docs/migrations/mystic"
+aliases: ["Pipeline Core"]
+defaults:
+  training: "batch"
+  inputs: "live"
+  accelerator: "gpu"
+  managed: true
+properties:
+  deployment:
+    type: "enum"
+    values: ["serverless", "byoc"]
+    default: "serverless"

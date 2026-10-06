@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Mixedbread: multimodal search API (Stores) with its own embedding and reranking models behind it.
+# Per "Overview - Mixedbread" it indexes files across 100+ languages without the caller managing embeddings or a vector store;
+# the pricing page sets the free Starter plan at 100 requests per minute.
+schemaVersion: "1"
+type: "component"
+id: "mixedbread-ai"
+kind: "ai-service"
+provider: "default"
+docs: "https://www.mixedbread.com/docs"
+aliases: ["Mixedbread"]
+defaults:
+  auth: "api-key"
+  managed: true
+  modality: "rerank"
+  publicEndpoint: true
+  rateLimitRpm: 100
+properties:
+  plan:
+    type: "enum"
+    values: ["starter", "scale", "enterprise"]
+    default: "starter"
+  endpoint:
+    type: "enum"
+    values: ["search", "rerank", "embeddings"]
+    default: "rerank"

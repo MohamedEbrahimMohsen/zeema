@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# DataRobot: enterprise AI platform for AutoML, MLOps and generative AI applications. DataRobot is delivered as
+# multi-tenant SaaS (the default managed AI platform), single-tenant SaaS in a chosen cloud and region, or self-managed
+# in a VPC or on-premise.
+schemaVersion: "1"
+type: "component"
+id: "datarobot"
+kind: "ml-platform"
+provider: "default"
+docs: "https://docs.datarobot.com/en/docs/get-started/day0/orientation.html"
+aliases: ["DataRobot AI Platform"]
+defaults:
+  managed: true
+  experimentTracking: true
+  modelRegistry: true
+properties:
+  deployment:
+    type: "enum"
+    values: ["multi-tenant-saas", "single-tenant-saas", "self-managed"]
+    default: "multi-tenant-saas"
+  autoMl:
+    type: "boolean"
+    default: true

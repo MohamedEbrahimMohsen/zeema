@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Tabnine: AI coding assistant for IDEs, drawn as the client. Per "Deployment options", Tabnine runs as secure SaaS
+# hosted by Tabnine, or for Enterprise customers in a VPC, on-premise on a Kubernetes cluster or fully air-gapped with no
+# inbound or outbound connections.
+schemaVersion: "1"
+type: "component"
+id: "tabnine"
+kind: "client"
+provider: "default"
+docs: "https://docs.tabnine.com/main/welcome/readme/architecture/deployment-options"
+defaults:
+  platform: "desktop"
+  managed: true
+properties:
+  deployment:
+    type: "enum"
+    values: ["saas", "vpc", "on-premise", "air-gapped"]
+    default: "saas"

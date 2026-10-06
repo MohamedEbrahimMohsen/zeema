@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Jan: open-source desktop app that runs local models on llama.cpp and exposes an OpenAI-compatible Local API Server.
+# Per "Local API Server", it listens on 127.0.0.1:1337 under the /v1 prefix with CORS on; an API key is expected, and
+# leaving it empty disables authentication.
+schemaVersion: "1"
+type: "component"
+id: "jan"
+kind: "ml-inference"
+provider: "default"
+docs: "https://www.jan.ai/docs/desktop/api-server"
+defaults:
+  training: "batch"
+  inputs: "live"
+  managed: false
+properties:
+  port:
+    type: "integer"
+    default: 1337
+  localhostOnly:
+    type: "boolean"
+    default: true
+  apiKeyRequired:
+    type: "boolean"
+    default: true
+  cors:
+    type: "boolean"
+    default: true

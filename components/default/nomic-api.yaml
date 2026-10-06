@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Nomic API: hosted Nomic Embed embedding inference at api-atlas.nomic.ai, part of the Nomic Atlas platform.
+# Per "Rate Limits", the Embedding Inference API allows 1200 requests per 5-minute rolling window per IP
+# (429 with Retry-After above it); embeddings generated inside Atlas datasets are not rate limited.
+schemaVersion: "1"
+type: "component"
+id: "nomic-api"
+kind: "ai-service"
+provider: "default"
+docs: "https://docs.nomic.ai/api/getting-started/rate-limits"
+aliases: ["Nomic Atlas", "Nomic Embed"]
+defaults:
+  auth: "api-key"
+  managed: true
+  modality: "embedding"
+  publicEndpoint: true
+properties:
+  taskType:
+    type: "enum"
+    values: ["search_query", "search_document", "classification", "clustering"]
+  atlasDataset:
+    type: "boolean"
+    default: false

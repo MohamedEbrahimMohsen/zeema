@@ -1,7 +1,8 @@
 # yaml-language-server: $schema=../../schema/component.schema.json
 # Databricks: managed lakehouse platform whose classic compute is a Spark cluster of driver and workers.
 # Defaults from "Compute" and "Configure compute": access mode Auto, multi-node, autoscaling and
-# spot instances off until enabled, Photon on from Databricks Runtime 9.1 LTS.
+# spot instances off until enabled, Photon on from Databricks Runtime 9.1 LTS. mosaicAi says the workspace
+# uses Mosaic AI (Model Serving, Agent Framework, Vector Search, AutoML), Databricks' AI layer; off until stated.
 schemaVersion: "1"
 type: "component"
 id: "databricks"
@@ -25,5 +26,8 @@ properties:
     type: "boolean"
     default: true
   singleNode:
+    type: "boolean"
+    default: false
+  mosaicAi:
     type: "boolean"
     default: false

@@ -10,6 +10,7 @@ kind: "ai-service"
 provider: "default"
 docs: "https://support.assemblyai.com/articles/2240096256-does-assemblyai-offer-zero-data-retention"
 defaults:
+  auth: "api-key"
   managed: true
   modality: "speech"
   publicEndpoint: true

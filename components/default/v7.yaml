@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# V7 Darwin: hosted annotation platform for images, video and documents. Per "Registering Items From External
+# Storage", items in a connected bucket are registered through the REST API with a team-scoped API key, so the files stay
+# in the customer's storage. V7 Go is the company's separate document-automation agent product.
+schemaVersion: "1"
+type: "component"
+id: "v7"
+kind: "ml-platform"
+provider: "default"
+docs: "https://docs.v7labs.com/docs/registering-items-from-external-storage"
+aliases: ["V7 Darwin", "V7 Labs"]
+defaults:
+  managed: true
+  experimentTracking: false
+  modelRegistry: false
+properties:
+  storage:
+    type: "enum"
+    values: ["v7-hosted", "s3", "gcs", "azure-blob"]
+    default: "v7-hosted"

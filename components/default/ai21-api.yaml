@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# AI21 API: hosted Jamba long-context language models (jamba-large, jamba-mini) called with a bearer API key.
+# Per "Rate Limits", both Jamba Large and Jamba Mini allow 10 requests per second and 200 per minute;
+# higher limits go through sales, and Bedrock or SageMaker deployments follow the cloud's own limits.
+schemaVersion: "1"
+type: "component"
+id: "ai21-api"
+kind: "ai-service"
+provider: "default"
+docs: "https://docs.ai21.com/docs/rate-limits"
+aliases: ["AI21 Studio", "Jamba API"]
+defaults:
+  auth: "api-key"
+  managed: true
+  modality: "text"
+  publicEndpoint: true
+  quotaUnitsPerMinute: 200
+properties:
+  model:
+    type: "enum"
+    values: ["jamba-large", "jamba-mini"]

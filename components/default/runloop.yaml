@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Runloop: VM-isolated Devboxes where coding agents run tools, with blueprints, snapshots and suspend and resume.
+# Per "Your Runloop Trial", a new account gets 3 concurrent devboxes with a 1-hour keep-alive, sizes up to Medium,
+# 5 blueprints and 10 snapshots.
+schemaVersion: "1"
+type: "component"
+id: "runloop"
+kind: "worker"
+provider: "default"
+docs: "https://docs.runloop.ai/docs/overview/your-runloop-trial"
+aliases: ["Runloop Devboxes"]
+defaults:
+  managed: true
+  trigger: "manual"
+  idempotent: false
+  concurrency: 3
+properties:
+  keepAliveSeconds:
+    type: "integer"
+    default: 3600
+  blueprint:
+    type: "boolean"
+    default: false
+  snapshots:
+    type: "boolean"
+    default: false
