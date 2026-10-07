@@ -61,6 +61,7 @@ import {
   type Routing,
 } from "@/lib/layout-sidecar";
 import { own } from "@/lib/own";
+import { type Rect, sweptEdges } from "./edge-set";
 import { adjacencyOf, flowFrom, nodesAt } from "./flow-lens";
 import { dropPort, frameTargetAt } from "./frame-target";
 import {
@@ -803,7 +804,7 @@ export class Scene {
   }
 
   /**
-   * Dim the edges, their labels and auth glyphs (canvas.css, `dim-edges` on the svg) when the
+   * Dim the edges and their labels (canvas.css, `dim-edges` on the svg; auth glyphs stay) when the
    * toggle says on, or says auto and the design has more than DIM_EDGES_OVER edges. While an edge
    * is selected, or one is being drawn or reconnected, every edge is at full ink.
    */
@@ -2075,6 +2076,7 @@ export class Scene {
         y1: wy,
         add: ev.shiftKey,
         base: new Set(this.multi),
+        baseEdges: new Set(this.picked().edges),
         moved: false,
         rect: el("rect", { class: "marquee", x: wx, y: wy, width: 0, height: 0 }),
       };
@@ -2225,6 +2227,10 @@ export class Scene {
       .filter(([, b]) => overlaps(b, r))
       .map(([id]) => id);
     this.multi = m.add ? new Set([...m.base, ...hit]) : new Set(hit);
+    // Edges too: every one drawn wholly inside the sweep, and every one between two components
+    // it picked. Read off this run's geometry, never measured off the page.
+    const edges = sweptEdges(this.geom || [], r as Rect, new Set(hit));
+    this.multiEdges = m.add ? new Set([...m.baseEdges, ...edges]) : new Set(edges);
     this.renderSelection();
   }
 
@@ -2232,17 +2238,17 @@ export class Scene {
     const m = this.marquee;
     this.marquee = null;
     m.rect.remove();
-    if (!m.moved) {
-      this.unpin(); // a click on empty canvas
-      return;
-    }
+    // A click on empty canvas drops a pinned highlight; so does a sweep, which is a new selection
+    // the old pin would only fade.
+    this.unpin();
+    if (!m.moved) return;
     // With Shift held the sweep adds to what was selected, groups and edges included.
     if (m.add)
       this.selectMany(
         { nodes: [...this.multi], groups: [...this.multiGroups], edges: [...this.multiEdges] },
         this.selection.type === "node" ? (this.selection.ref as string) : null,
       );
-    else this.selectNodes([...this.multi]);
+    else this.selectMany({ nodes: [...this.multi], edges: [...this.multiEdges] });
   }
 
   // ---------------------------------------------------------------- moving nodes

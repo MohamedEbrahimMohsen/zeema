@@ -36,29 +36,39 @@ const ICON = 24;
 // identities a cloud issues carry that cloud's own mark, the catalogue icon of its identity
 // component: Azure managed identity, AWS IAM, Google Cloud IAM. Otherwise a shield for an
 // identity the platform issues (workload identity), a key for a secret the caller holds, a lock
-// for a handshake (certificates, tokens). `none` and no auth draw nothing. An outline is 10px
-// centred on the origin, stroked in the edge's own colour over a disc of the page colour, so the
-// line breaks under it and the glyph reads on any edge; a mark sits 2px inside a disc ringed in
-// the edge's colour, and falls back to the shield where the icon map does not have it.
+// for a handshake (certificates, tokens). `none` and no auth draw nothing. Every glyph is a disc
+// of the page colour ringed in the edge's colour, so the line breaks under it; inside sits a 10px
+// mark: the icon, or a filled shape centred on the origin in its own colour (amber key, slate lock,
+// teal shield), one colour for both themes, at least 3:1 on either page colour. A cloud identity
+// falls back to the shield where the icon map does not have its icon.
 const SHIELD = "M0 -5L4.3 -3.4V0C4.3 2.6 2.5 4.2 0 5.2C-2.5 4.2 -4.3 2.6 -4.3 0V-3.4Z";
-const KEY = "M-1 0A2.2 2.2 0 1 1 -5.4 0A2.2 2.2 0 1 1 -1 0ZM-1 0H5M3.6 0V2M1.8 0V1.6";
-const LOCK = "M-3.6 -0.6H3.6V4.6H-3.6ZM-2.1 -0.6V-2.4A2.1 2.1 0 0 1 2.1 -2.4V-0.6";
+// Filled: a ring head (the hole wound the other way), the shaft and two teeth.
+const KEY =
+  "M-5 0A2.6 2.6 0 1 1 0.2 0A2.6 2.6 0 1 1 -5 0ZM-1.4 0A1 1 0 1 0 -3.4 0A1 1 0 1 0 -1.4 0Z" +
+  "M0 -0.8H5V0.8H0ZM3.4 0.8H4.6V2.8H3.4ZM1.6 0.8H2.6V2.2H1.6Z";
+// Filled: the body with a keyhole (wound the other way) and a solid shackle.
+const LOCK =
+  "M-3.8 -0.8H3.8V4.6H-3.8ZM-0.6 1V3H0.6V1Z" +
+  "M-3 -0.8V-2A3 3 0 0 1 3 -2V-0.8H1.6V-2A1.6 1.6 0 0 0 -1.6 -2V-0.8Z";
+const AMBER = "#c7861a";
+const SLATE = "#5b7db1";
+const TEAL = "#1a9488";
 const AUTH_GLYPHS = {
-  "managed-identity": { path: SHIELD, icon: "azure-managed-identity" },
-  "iam-role": { path: SHIELD, icon: "aws-iam" },
-  "service-account": { path: SHIELD, icon: "google-cloud-iam" },
-  "workload-identity": { path: SHIELD },
-  "api-key": { path: KEY },
-  basic: { path: KEY },
-  mtls: { path: LOCK },
-  oauth: { path: LOCK },
+  "managed-identity": { path: SHIELD, color: TEAL, icon: "azure-managed-identity" },
+  "iam-role": { path: SHIELD, color: TEAL, icon: "aws-iam" },
+  "service-account": { path: SHIELD, color: TEAL, icon: "google-cloud-iam" },
+  "workload-identity": { path: SHIELD, color: TEAL },
+  "api-key": { path: KEY, color: AMBER },
+  basic: { path: KEY, color: AMBER },
+  mtls: { path: LOCK, color: SLATE },
+  oauth: { path: LOCK, color: SLATE },
 };
 // A mark's size in px: the disc less a 2px inset on each side.
 const AUTH_MARK = 10;
 
 /**
- * How an edge's `auth` is drawn — `{ path, icon? }`: the outline path, and the component id whose
- * catalogue icon replaces it where the icon map has one — or null where nothing is drawn (`none`,
+ * How an edge's `auth` is drawn — `{ path, color, icon? }`: the filled mark and its colour, and the
+ * component id whose catalogue icon replaces it where the icon map has one — or null where nothing is drawn (`none`,
  * unset, unknown).
  */
 export function authGlyph(auth) {
@@ -68,14 +78,14 @@ export function authGlyph(auth) {
 /**
  * The inside of an auth glyph's group, centred on the origin, for the server render and the
  * canvas alike. `mark` is the markup of the glyph's icon in its 24-unit box (the icon body
- * itself, or a `<use>` of a symbol holding it), or null to draw the outline.
+ * itself, or a `<use>` of a symbol holding it), or null to draw the glyph's own filled mark.
  */
 export function authGlyphMarkup(glyph, mark) {
-  if (!mark)
-    return `<circle r="${AUTH_GLYPH_R}" fill="var(--bg)"/><path d="${glyph.path}" fill="none" stroke="var(--edge)" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round"/>`;
+  const disc = `<circle r="${AUTH_GLYPH_R - 0.5}" fill="var(--bg)" stroke="var(--edge)" stroke-width="1"/>`;
+  if (!mark) return `${disc}<path d="${glyph.path}" fill="${glyph.color}"/>`;
   const h = AUTH_MARK / 2;
   return (
-    `<circle r="${AUTH_GLYPH_R - 0.5}" fill="var(--bg)" stroke="var(--edge)" stroke-width="1"/>` +
+    disc +
     `<g transform="translate(-${h} -${h}) scale(${+(AUTH_MARK / ICON).toFixed(4)})" color="var(--ink)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${mark}</g>`
   );
 }

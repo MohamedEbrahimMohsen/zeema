@@ -26,6 +26,7 @@ import {
 } from "@/lib/layout-sidecar";
 import { own } from "@/lib/own";
 import { PALETTE, PALETTE_COLUMNS, pushRecent, readRecent } from "@/lib/tint-palette";
+import { mixedValue } from "./edge-set";
 import { parseQuery, type Row, score } from "./Palette";
 import type { Picked, Subject } from "./scene";
 
@@ -36,7 +37,8 @@ export type InspectorApi = {
   setGroup: (id: string, group: string | null) => void;
   rename: (oldId: string, typed: string) => void;
   swap: (id: string, componentId: string) => void;
-  setEdge: (index: number, field: string, value: unknown) => void;
+  /** One edge's field, or the same field on every edge given, as one undo step. */
+  setEdge: (index: number | number[], field: string, value: unknown) => void;
   setGroupField: (id: string, field: string, value: unknown) => void;
   renameGroup: (oldId: string, newId: string) => void;
   setParent: (id: string, parent: string | null) => void;
@@ -59,15 +61,16 @@ export type InspectorApi = {
   /** How the design's edges are drawn. Sidecar only, owner only. */
   setRouting: (routing: Routing) => void;
   /** Drop an edge's hand-made path (bow or waypoints): it is routed automatically again. */
-  resetPath: (index: number) => void;
+  resetPath: (index: number | number[]) => void;
   /** Drop an edge's dragged label offset: the label goes back to its automatic place. */
-  resetLabel: (index: number) => void;
+  resetLabel: (index: number | number[]) => void;
   setRequirement: (path: string, value: unknown) => void;
   setNoteText: (id: string, text: string) => void;
   /** Point the palette at a query, the way the group hint does. */
   findInPalette: (query: string) => void;
   detachNote: (id: string) => void;
-  remove: (type: "node" | "edge" | "group" | "note", ref: string | number) => void;
+  /** For edges, `ref` may be several indexes: they go as one undo step. */
+  remove: (type: "node" | "edge" | "group" | "note", ref: string | number | number[]) => void;
 };
 
 /**
@@ -533,10 +536,12 @@ function IntegerInput({
   value,
   resolved,
   onChange,
+  mixed,
 }: {
   value: unknown;
   resolved: unknown;
   onChange: (v: unknown) => void;
+  mixed?: boolean;
 }) {
   const ref = useRef<HTMLInputElement>(null);
   const shown = value === undefined ? "" : String(value);
@@ -547,7 +552,7 @@ function IntegerInput({
       type="number"
       step="1"
       defaultValue={shown}
-      placeholder={resolved === undefined ? "absent" : String(resolved)}
+      placeholder={mixed ? MIXED : resolved === undefined ? "absent" : String(resolved)}
       onBlur={(e) => {
         const v = e.target.value === "" ? undefined : Number.parseInt(e.target.value, 10);
         if (v !== value) onChange(v);
@@ -557,24 +562,42 @@ function IntegerInput({
   );
 }
 
+/** The value a field shows when the edges of a set disagree on it. */
+const MIXED = "mixed";
+// The dropdown's own option for that: chosen, never choosable. No real value can be this.
+const MIXED_OPTION = " mixed";
+const mixedOption = (
+  <option value={MIXED_OPTION} disabled>
+    {MIXED}
+  </option>
+);
+
+/**
+ * One field's control. `mixed`: the set it edits disagrees on it, so a dropdown shows a disabled
+ * "mixed" option and a text field a "mixed" placeholder until something is set for all of them.
+ */
 function Control({
   def,
   value,
   resolved,
   onChange,
+  mixed,
 }: {
   def: { type: string; values?: string[] };
   value: unknown;
   resolved: unknown;
   onChange: (v: unknown) => void;
+  mixed?: boolean;
 }) {
   const unset = resolved === undefined ? "unset" : `default (${String(resolved)})`;
+  const shown = mixed ? MIXED_OPTION : value === undefined ? "" : String(value);
   if (def.type === "boolean")
     return (
       <select
-        value={value === undefined ? "" : String(value)}
+        value={shown}
         onChange={(e) => onChange(e.target.value === "" ? undefined : e.target.value === "true")}
       >
+        {mixed ? mixedOption : null}
         <option value="">{unset}</option>
         <option value="true">true</option>
         <option value="false">false</option>
@@ -583,9 +606,10 @@ function Control({
   if (def.type === "enum")
     return (
       <select
-        value={value === undefined ? "" : String(value)}
+        value={shown}
         onChange={(e) => onChange(e.target.value === "" ? undefined : e.target.value)}
       >
+        {mixed ? mixedOption : null}
         <option value="">{unset}</option>
         {(def.values ?? []).map((v) => (
           <option key={v} value={v}>
@@ -595,11 +619,11 @@ function Control({
       </select>
     );
   if (def.type === "integer")
-    return <IntegerInput value={value} resolved={resolved} onChange={onChange} />;
+    return <IntegerInput value={value} resolved={resolved} onChange={onChange} mixed={mixed} />;
   return (
     <TextInput
       value={value === undefined ? "" : String(value)}
-      placeholder={resolved === undefined ? "absent" : String(resolved)}
+      placeholder={mixed ? MIXED : resolved === undefined ? "absent" : String(resolved)}
       onCommit={(v) => onChange(v === "" ? undefined : v)}
     />
   );
@@ -668,13 +692,30 @@ export function Inspector({
     );
   const total = multi.nodes.size + multi.groups.size + multi.edges.size;
   const many = total > 1;
+  // Two or more edges selected: one card edits them all. With an edge as the primary subject it is
+  // that card; otherwise it sits under the counts, above the panel of the last one clicked.
+  const edgeSet = multi.edges.size > 1 ? [...multi.edges].sort((a, b) => a - b) : null;
   const head = many ? (
-    <MultiPanel
-      multi={multi}
-      frameStyles={frameStyles ?? {}}
-      nodeTints={nodeTints ?? {}}
-      api={api}
-    />
+    <>
+      <MultiPanel
+        multi={multi}
+        frameStyles={frameStyles ?? {}}
+        nodeTints={nodeTints ?? {}}
+        api={api}
+      />
+      {edgeSet && selection.type !== "edge" ? (
+        <div className="edge-set">
+          <EdgePanel
+            indexes={edgeSet}
+            doc={doc}
+            api={api}
+            highlight={hl}
+            edgePaths={edgePaths}
+            edgeLabels={edgeLabels}
+          />
+        </div>
+      ) : null}
+    </>
   ) : null;
   if (selection.type === "node") {
     const node = doc.nodes.find((n: any) => n.id === selection.ref);
@@ -702,13 +743,12 @@ export function Inspector({
         <>
           {head}
           <EdgePanel
-            edge={edge}
-            index={selection.ref as number}
+            indexes={edgeSet ?? [selection.ref as number]}
             doc={doc}
             api={api}
             highlight={hl}
-            shaped={Object.hasOwn(edgePaths ?? {}, edgeKeys(doc)[selection.ref as number] ?? "")}
-            placed={Object.hasOwn(edgeLabels ?? {}, edgeKeys(doc)[selection.ref as number] ?? "")}
+            edgePaths={edgePaths}
+            edgeLabels={edgeLabels}
           />
         </>
       );
@@ -839,7 +879,10 @@ function MultiPanel({
         </Field>
       ) : null}
       <p className="small muted multi-hint">
-        Right click for duplicate and delete. The fields below edit the last one you clicked.
+        Right click for duplicate and delete.{" "}
+        {multi.edges.size > 1
+          ? "The edge fields below set every selected edge; the rest edit the last one you clicked."
+          : "The fields below edit the last one you clicked."}
       </p>
     </div>
   );
@@ -1050,24 +1093,34 @@ function NodePanel({
 }
 
 function EdgePanel({
-  edge,
-  index,
+  indexes,
   doc,
   api,
   highlight,
-  shaped,
-  placed,
+  edgePaths,
+  edgeLabels,
 }: {
-  edge: any;
-  index: number;
+  /** The edges this card edits: one, or every edge in the selection (two or more). */
+  indexes: number[];
   doc: any;
   api: InspectorApi;
   highlight: Highlight;
-  /** The edge's path was shaped by hand (a bow or waypoints), so it can be reset. */
-  shaped?: boolean;
-  /** The edge's label was dragged off its automatic place, so it can be reset. */
-  placed?: boolean;
+  /** Hand-made edge paths by edge key: a shaped one can be reset. */
+  edgePaths?: Record<string, EdgePath>;
+  /** Dragged label offsets by edge key: a moved one can be reset. */
+  edgeLabels?: Record<string, [number, number]>;
 }) {
+  const edges = indexes.map((i) => doc.edges[i]).filter(Boolean);
+  const one = indexes.length === 1;
+  const edge = edges[0];
+  if (!edge) return null;
+  // One edge, or the set: a field shows the value they share, or "mixed" when they differ, and
+  // whatever is set goes to every one of them as a single undo step.
+  const at = one ? indexes[0] : indexes;
+  const field = (name: string) => mixedValue(edges.map((e: any) => e[name]));
+  const keys = edgeKeys(doc);
+  const shaped = indexes.some((i) => Object.hasOwn(edgePaths ?? {}, keys[i] ?? ""));
+  const placed = indexes.some((i) => Object.hasOwn(edgeLabels ?? {}, keys[i] ?? ""));
   const lit = (name: string) => highlight?.fields.includes(name);
   const ids = doc.nodes.map((n: any) => n.id as string);
   // An end may name a group: the edge then runs to the group as a unit.
@@ -1078,7 +1131,7 @@ function EdgePanel({
     const group = groupOf(edge[name]);
     return (
       <>
-        <select value={edge[name]} onChange={(e) => api.setEdge(index, name, e.target.value)}>
+        <select value={edge[name]} onChange={(e) => api.setEdge(at, name, e.target.value)}>
           <optgroup label="Components">
             {ids.map((id: string) => (
               <option key={id} value={id}>
@@ -1116,43 +1169,57 @@ function EdgePanel({
       </>
     );
   };
-  const enumField = (name: string, values: string[], note?: string) => (
-    <Field name={name} note={note} isSet={edge[name] !== undefined} hl={lit(name)}>
-      <Control
-        def={{ type: "enum", values }}
-        value={edge[name]}
-        resolved={undefined}
-        onChange={(v) => api.setEdge(index, name, v)}
-      />
-    </Field>
-  );
-  const boolField = (name: string) => (
-    <Field name={name} isSet={edge[name] !== undefined} hl={lit(name)}>
-      <Control
-        def={{ type: "boolean" }}
-        value={edge[name]}
-        resolved={undefined}
-        onChange={(v) => api.setEdge(index, name, v)}
-      />
-    </Field>
-  );
+  const control = (name: string, def: { type: string; values?: string[] }, note?: string) => {
+    const f = field(name);
+    return (
+      <Field
+        name={name}
+        note={note}
+        isSet={edges.some((e: any) => e[name] !== undefined)}
+        hl={lit(name)}
+      >
+        <Control
+          def={def}
+          value={f.value}
+          mixed={f.mixed}
+          resolved={undefined}
+          onChange={(v) => api.setEdge(at, name, v)}
+        />
+      </Field>
+    );
+  };
+  const enumField = (name: string, values: string[], note?: string) =>
+    control(name, { type: "enum", values }, note);
+  const boolField = (name: string) => control(name, { type: "boolean" });
+  const protocol = field("protocol");
+  const mode = field("mode");
+  const text = field("label");
   return (
     <>
-      <h2>Edge</h2>
-      <Field name="from" isSet>
-        {pick("from")}
-      </Field>
-      <Field name="to" isSet>
-        {pick("to")}
-      </Field>
+      <h2>{one ? "Edge" : `${edges.length} edges`}</h2>
+      {one ? (
+        <>
+          <Field name="from" isSet>
+            {pick("from")}
+          </Field>
+          <Field name="to" isSet>
+            {pick("to")}
+          </Field>
+        </>
+      ) : null}
       <Field name="protocol" note="required" isSet hl={lit("protocol")}>
         <TextInput
-          value={edge.protocol ?? ""}
-          onCommit={(v) => api.setEdge(index, "protocol", v)}
+          value={protocol.mixed ? "" : String(protocol.value ?? "")}
+          placeholder={protocol.mixed ? MIXED : undefined}
+          onCommit={(v) => api.setEdge(at, "protocol", v)}
         />
       </Field>
       <Field name="mode" note="required" isSet hl={lit("mode")}>
-        <select value={edge.mode} onChange={(e) => api.setEdge(index, "mode", e.target.value)}>
+        <select
+          value={mode.mixed ? MIXED_OPTION : String(mode.value ?? "")}
+          onChange={(e) => api.setEdge(at, "mode", e.target.value)}
+        >
+          {mode.mixed ? mixedOption : null}
           <option value="sync">sync</option>
           <option value="async">async</option>
         </select>
@@ -1169,20 +1236,14 @@ function EdgePanel({
         "basic",
         "none",
       ])}
-      <Field name="label" isSet={Boolean(edge.label)}>
+      <Field name="label" isSet={edges.some((e: any) => Boolean(e.label))}>
         <TextInput
-          value={edge.label ?? ""}
-          onCommit={(v) => api.setEdge(index, "label", v || undefined)}
+          value={text.mixed ? "" : String(text.value ?? "")}
+          placeholder={text.mixed ? MIXED : undefined}
+          onCommit={(v) => api.setEdge(at, "label", v || undefined)}
         />
       </Field>
-      <Field name="timeoutMs" isSet={edge.timeoutMs !== undefined} hl={lit("timeoutMs")}>
-        <Control
-          def={{ type: "integer" }}
-          value={edge.timeoutMs}
-          resolved={undefined}
-          onChange={(v) => api.setEdge(index, "timeoutMs", v)}
-        />
-      </Field>
+      {control("timeoutMs", { type: "integer" })}
       {enumField("retryPolicy", ["none", "fixed", "exponential", "exponential-jitter"])}
       {boolField("idempotent")}
       {boolField("circuitBreaker")}
@@ -1191,13 +1252,13 @@ function EdgePanel({
       {shaped || placed ? (
         <div className="mt-3 flex flex-wrap gap-2">
           {shaped ? (
-            <button type="button" className="btn btn-sm" onClick={() => api.resetPath(index)}>
-              Reset path
+            <button type="button" className="btn btn-sm" onClick={() => api.resetPath(at)}>
+              {one ? "Reset path" : "Reset paths"}
             </button>
           ) : null}
           {placed ? (
-            <button type="button" className="btn btn-sm" onClick={() => api.resetLabel(index)}>
-              Reset label
+            <button type="button" className="btn btn-sm" onClick={() => api.resetLabel(at)}>
+              {one ? "Reset label" : "Reset labels"}
             </button>
           ) : null}
         </div>
@@ -1205,9 +1266,9 @@ function EdgePanel({
       <button
         type="button"
         className="btn btn-sm btn-danger mt-3"
-        onClick={() => api.remove("edge", index)}
+        onClick={() => api.remove("edge", at)}
       >
-        Delete edge
+        {one ? "Delete edge" : `Delete ${edges.length} edges`}
       </button>
     </>
   );

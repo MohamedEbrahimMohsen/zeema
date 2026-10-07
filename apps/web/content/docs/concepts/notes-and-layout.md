@@ -51,7 +51,16 @@ and its two ends. An edge to a group counts for every component inside it. A cli
 highlight, so it stays when the pointer moves away, until Esc, a click on empty canvas, or a click
 on something else (which pins that instead). Esc drops a pin before it clears the selection.
 Panning and zooming keep the highlight; a drag that moves something (a component, a group, an
-edge's run or label, a sweep) puts it away until you let go, and a pin comes back after.
+edge's run or label) puts it away until you let go, and a pin comes back after. A sweep is a new
+selection, so it drops a pin. Whatever is selected stays at full ink under a highlight.
+
+A selection may hold any mix of components, groups and edges. Shift-click (or Ctrl-click) adds
+one or takes it out, edges included. A sweep over empty space selects every component it touches,
+every edge drawn wholly inside it (all of its runs, from one end to the other), and every edge
+whose both ends it selected; with Shift it adds to what you had. With two or more edges selected,
+the Inspector shows one card for all of them: a field they disagree on reads *mixed*, and setting
+it, or resetting their paths or labels, changes every one of them as one undo step. Delete takes
+the whole selection in one step too. A copy or a duplicate takes an edge only with both its ends.
 
 **Alt-click** a component (or select it and press **T**, or choose **Trace flow** from its menu)
 for the flow lens: everything upstream of it lights up, walking incoming edges back as far as they

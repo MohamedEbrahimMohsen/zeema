@@ -398,7 +398,10 @@ const helpSections = (mod: string): Array<[string, Array<[string[], string]>]> =
         ["Shift", "Click"],
         `Add a component, a group or an edge to the selection, or take it out. ${mod} Click too.`,
       ],
-      [["Drag"], "Sweep a box over empty space to select several; Shift keeps what you had."],
+      [
+        ["Drag"],
+        "Sweep a box over empty space: the components it touches, the edges wholly inside it and the edges between what it picks. Shift keeps what you had.",
+      ],
       [[mod, "A"], "Select everything: components, groups and edges."],
       [["Drag"], "Move the selection."],
       [
@@ -2306,7 +2309,12 @@ export function Canvas(props: Props) {
         if (dropped.length) notify(`dropped on swap: ${dropped.join(", ")}`);
         commit(doc);
       },
-      setEdge: (i, f, v) => commit(D.setEdgeField(eng.current!.doc, i, f, v)),
+      // One edge, or the Inspector's card for several: every one of them in one undo step.
+      setEdge: (i, f, v) => {
+        let doc = eng.current!.doc;
+        for (const at of Array.isArray(i) ? i : [i]) doc = D.setEdgeField(doc, at, f, v);
+        commit(doc);
+      },
       setGroupField: (id, f, v) => commit(D.setGroupField(eng.current!.doc, id, f, v)),
       renameGroup: (oldId, newId) => {
         const e = eng.current!;
@@ -2363,24 +2371,30 @@ export function Canvas(props: Props) {
       // An edge's hand-made path (bow or waypoints) goes, and the automatic one comes back.
       resetPath: (index) => {
         const e = eng.current!;
-        const key = edgeKeys(e.doc)[index];
-        if (!key || !Object.hasOwn(e.bows, key)) return;
+        const all = edgeKeys(e.doc);
+        const keys = (Array.isArray(index) ? index : [index])
+          .map((i) => all[i])
+          .filter((k) => k && Object.hasOwn(e.bows, k));
+        if (!keys.length) return;
         commit(null, {
           apply: () => {
-            const { [key]: _gone, ...rest } = e.bows;
-            e.bows = rest;
+            e.bows = Object.fromEntries(Object.entries(e.bows).filter(([k]) => !keys.includes(k)));
           },
         });
       },
       // An edge's dragged label goes back to its automatic place. The path is left alone.
       resetLabel: (index) => {
         const e = eng.current!;
-        const key = edgeKeys(e.doc)[index];
-        if (!key || !Object.hasOwn(e.labels, key)) return;
+        const all = edgeKeys(e.doc);
+        const keys = (Array.isArray(index) ? index : [index])
+          .map((i) => all[i])
+          .filter((k) => k && Object.hasOwn(e.labels, k));
+        if (!keys.length) return;
         commit(null, {
           apply: () => {
-            const { [key]: _gone, ...rest } = e.labels;
-            e.labels = rest;
+            e.labels = Object.fromEntries(
+              Object.entries(e.labels).filter(([k]) => !keys.includes(k)),
+            );
           },
         });
       },
@@ -2421,7 +2435,13 @@ export function Canvas(props: Props) {
         const e = eng.current!;
         if (type === "note") return deleteNote(ref as string);
         if (type === "node") commit(D.deleteNodes(e.doc, [ref as string], bundle!.catalogue));
-        if (type === "edge") commit(D.deleteEdge(e.doc, ref as number));
+        if (type === "edge") {
+          // Several go from the highest index down, while the indexes still name them.
+          let doc = e.doc;
+          const at = Array.isArray(ref) ? [...ref].sort((a, b) => b - a) : [ref as number];
+          for (const i of at) doc = D.deleteEdge(doc, i);
+          commit(doc);
+        }
         if (type === "group") commit(D.deleteGroup(e.doc, ref as string));
       },
     }),

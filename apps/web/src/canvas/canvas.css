@@ -926,19 +926,19 @@
 .zeema-canvas .edge-label:hover {
   fill: var(--ink);
 }
-/* how an edge authenticates: a glyph on the line by its source end; never takes the pointer */
+/* how an edge authenticates: a glyph on the line by its source end; never takes the pointer.
+   Always full ink: the lighting and dim-edges fades below leave it out, only its line fades. */
 .zeema-canvas .edge-auth {
   pointer-events: none;
-  transition: opacity 140ms var(--ease);
 }
 
 /* the neighbourhood highlight: hovering (or a click pinning) a component or an edge lights it, its
    edges and the components at their other ends (scene.ts marks those `lit`), and fades the rest.
-   Group frames never fade. */
-.zeema-canvas svg.scene.lighting .node-box:not(.lit),
-.zeema-canvas svg.scene.lighting .edge:not(.lit),
+   Group frames never fade, and neither does what is selected: a highlight never hides the
+   selection it sits on. */
+.zeema-canvas svg.scene.lighting .node-box:not(.lit):not(.selected),
+.zeema-canvas svg.scene.lighting .edge:not(.lit):not(.selected),
 .zeema-canvas svg.scene.lighting .edge-label:not(.lit),
-.zeema-canvas svg.scene.lighting .edge-auth:not(.lit),
 .zeema-canvas svg.scene.lighting .note-box {
   opacity: 0.35;
 }
@@ -946,12 +946,11 @@
 .zeema-canvas svg.scene.tracing .edge.lit {
   stroke: var(--accent);
 }
-/* a dense canvas (scene.ts DIM_EDGES_OVER, or the toolbar's Dim edges): every edge, label and auth
-   glyph at a quarter ink until a hover or a pin lights some; the components stay as they are.
+/* a dense canvas (scene.ts DIM_EDGES_OVER, or the toolbar's Dim edges): every edge and label at a
+   quarter ink until a hover or a pin lights some; auth glyphs and the components stay as they are.
    Off while an edge is selected or a wire is being drawn (the svg loses `dim-edges`). */
 .zeema-canvas svg.scene.dim-edges .edge:not(.lit),
-.zeema-canvas svg.scene.dim-edges .edge-label:not(.lit),
-.zeema-canvas svg.scene.dim-edges .edge-auth:not(.lit) {
+.zeema-canvas svg.scene.dim-edges .edge-label:not(.lit) {
   opacity: 0.25;
 }
 /* port dots: one at the middle of each side, just outside the card, shown on hover and on the
@@ -2034,6 +2033,13 @@
 .zeema-canvas .multi-panel {
   margin-bottom: var(--sp-2);
   padding-bottom: var(--sp-1);
+  border-bottom: var(--border) solid var(--line);
+}
+/* two or more edges in a mixed selection: their one card, between the counts and the panel of the
+   last one clicked */
+.zeema-canvas .edge-set {
+  margin-bottom: var(--sp-2);
+  padding-bottom: var(--sp-2);
   border-bottom: var(--border) solid var(--line);
 }
 .zeema-canvas .multi-chips {

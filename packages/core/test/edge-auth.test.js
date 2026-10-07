@@ -6,7 +6,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import YAML from "yaml";
-import { authAt, edgeGeometry } from "../src/geometry.js";
+import { drawnLayout } from "../src/drawn.js";
+import { AUTH_GLYPH_R, authAt, edgeGeometry } from "../src/geometry.js";
 import { authGlyph, toMermaid, toSvg } from "../src/render.js";
 import { runRules } from "../src/rules.js";
 import { check } from "../src/structure.js";
@@ -130,6 +131,11 @@ describe("edge auth", () => {
     expect(svg).toContain('<path id="mi-mark"');
     expect(svg).not.toContain('<path id="iam-mark"');
     expect(svg).toContain(`d="${authGlyph("api-key").path}"`);
+    // Every glyph sits in the same ringed disc; a generic mark is filled in its own colour.
+    expect(svg.match(/<circle r="6.5" fill="var\(--bg\)" stroke="var\(--edge\)"/g)).toHaveLength(2);
+    expect(svg).toContain(`d="${authGlyph("api-key").path}" fill="${authGlyph("api-key").color}"`);
+    for (const a of AUTH.filter((v) => v !== "none"))
+      expect(authGlyph(a).color).toMatch(/^#[0-9a-f]{6}$/);
     expect(authGlyph("iam-role").icon).toBe("aws-iam");
     expect(authGlyph("service-account").icon).toBe("google-cloud-iam");
     // Each mark is a component the catalogue has, with an icon on disk.
@@ -145,6 +151,35 @@ describe("edge auth", () => {
     }
     // Without the icon, the identity falls back to the shield.
     expect(toSvg(doc, fixture)).toContain(`d="${authGlyph("managed-identity").path}"`);
+  });
+
+  // How far a point is from a box: zero inside it.
+  const gap = ([x, y], b) =>
+    Math.hypot(Math.max(b[0] - x, 0, x - b[0] - b[2]), Math.max(b[1] - y, 0, y - b[1] - b[3]));
+
+  it("keeps the whole disc off every node box, the ends' own and any it passes", () => {
+    // A box just under the line by the source end: the step would put the disc on it.
+    const boxes = { a: [0, 0, 100, 60], b: [400, 0, 100, 60], c: [110, 36, 60, 40] };
+    const doc = { nodes: [], edges: [{ from: "a", to: "b", auth: "api-key" }] };
+    for (const routing of ["orthogonal", "bundled", "curved"]) {
+      const [e] = edgeGeometry(doc, boxes, {}, {}, {}, { routing });
+      const g = authAt(e);
+      for (const b of Object.values(boxes))
+        expect(gap(g, b)).toBeGreaterThanOrEqual(AUTH_GLYPH_R + 2);
+      expect(Math.hypot(g[0] - e.points[0][0], g[1] - e.points[0][1])).toBeGreaterThanOrEqual(14);
+    }
+    // On a real design with a glyph on every edge, no disc touches a box.
+    const dir = path.join(ROOT, "designs", "imported", "talmaza");
+    const real = YAML.parse(fs.readFileSync(path.join(dir, "design.yaml"), "utf8"));
+    const side = JSON.parse(fs.readFileSync(path.join(dir, "design.layout.json"), "utf8"));
+    real.edges = real.edges.map((x) => ({ ...x, auth: "api-key" }));
+    const lay = drawnLayout(real, fixture, side);
+    expect(lay.edges.length).toBe(real.edges.length);
+    for (const e of lay.edges) {
+      const g = authAt(e);
+      for (const [id, [x, y]] of Object.entries(lay.positions))
+        expect(gap(g, [x, y, ...lay.sizes[id]])).toBeGreaterThanOrEqual(AUTH_GLYPH_R + 2);
+    }
   });
 
   it("puts the glyph a short step from the source, off the corners and the arrowhead", () => {

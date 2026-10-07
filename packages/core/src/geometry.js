@@ -395,7 +395,7 @@ export function edgeGeometry(doc, boxes, bows = {}, ports = {}, frames = {}, opt
         label: label === null ? null : String(label),
       };
     });
-    return keepAuthOff(routed, edges);
+    return keepAuthOff(routed, edges, boxes);
   }
   const buckets = new Map();
   edges.forEach((e, i) => {
@@ -544,6 +544,7 @@ export function edgeGeometry(doc, boxes, bows = {}, ports = {}, frames = {}, opt
   return keepAuthOff(
     out.sort((p, q) => p.i - q.i),
     edges,
+    boxes,
   );
 }
 
@@ -621,10 +622,11 @@ export function edgePath(edge) {
 
 // Where an edge's `auth` glyph sits (`authAt`). It starts AUTH_GLYPH_STEP along the line from the
 // source end, which has no arrowhead and is far from the label at the middle. The glyph's centre
-// keeps AUTH_CLEAR from the source end and from every corner of the edge's own path (so the disc,
-// AUTH_GLYPH_R, never sits on a bend, nor on the junction a short stub makes with a run beside
-// it), AUTH_ARROW_CLEAR from the target end (the arrowhead), and off the stretches `keepAuthOff`
-// marks: another edge's line (a bundle's shared stub and trunk, a run it meets) and every label.
+// keeps AUTH_SOURCE_CLEAR from the source end (its port), AUTH_CLEAR from every corner of the
+// edge's own path (so the disc, AUTH_GLYPH_R, never sits on a bend, nor on the junction a short
+// stub makes with a run beside it), AUTH_ARROW_CLEAR from the target end (the arrowhead), and off
+// the stretches `keepAuthOff` marks: another edge's line (a bundle's shared stub and trunk, a run
+// it meets), every label, and every node box, so no box ever covers any of the disc.
 // On each run in turn, from the source: the step if it fits there, else the earliest of the run's
 // middle (on a run at least AUTH_ROOM long) and the places just past a marked stretch that fits;
 // failing every run, the middle of the whole line. A curve is one run with no corners.
@@ -632,9 +634,10 @@ export const AUTH_GLYPH_STEP = 20;
 /** The disc under an auth glyph, in px. */
 export const AUTH_GLYPH_R = 7;
 export const AUTH_CLEAR = 10;
+const AUTH_SOURCE_CLEAR = 14;
 const AUTH_ARROW_CLEAR = 20;
 const AUTH_ROOM = 34;
-// How far off a marked line or label box the glyph's centre stays: the disc and 2px.
+// How far off a marked line, label box or node box the glyph's centre stays: the disc and 2px.
 const AUTH_OFF = 9;
 
 const authed = (e) => typeof e?.auth === "string" && e.auth !== "none";
@@ -677,17 +680,20 @@ const grow = (r, m) => [r[0] - m, r[1] - m, r[2] + 2 * m, r[3] + 2 * m];
 /**
  * Marks, on every drawn edge that has an `auth`, the stretches of its own line its glyph keeps
  * off, as `authKeep`: [[from, to], ...] in px along the line from the source end (`polylineOf`).
- * They are where the line passes within AUTH_OFF of a label (any edge's, its own too), where its
- * glyph would overlap one placed before it (edges in order), or, for an orthogonal edge, within
- * AUTH_OFF of another orthogonal edge's line: a run it meets or crosses; a run it shares with
- * another edge even in part (a bundle's stub and trunk, stubs off one point) is kept off whole. An edge with nothing to keep off, or no auth, carries no `authKeep`, so the
- * geometry of a design without auth is what it always was.
+ * They are where the line passes within AUTH_OFF of a label (any edge's, its own too) or of a
+ * node box (`nodeBoxes`, its own ends' too; a group frame is drawn under the edges, so it is not
+ * one), where its glyph would overlap one placed before it (edges in order), or, for an
+ * orthogonal edge, within AUTH_OFF of another orthogonal edge's line: a run it meets or crosses;
+ * a run it shares with another edge even in part (a bundle's stub and trunk, stubs off one point)
+ * is kept off whole. An edge with no auth carries no `authKeep`, so the geometry of a design
+ * without auth is what it always was.
  */
-function keepAuthOff(drawn, docEdges) {
+function keepAuthOff(drawn, docEdges, nodeBoxes) {
   if (!drawn.some((d) => authed(docEdges[d.i]))) return drawn;
   const labels = drawn
     .filter((d) => d.label && d.labelAt)
     .map((d) => grow(labelBoxOf(d), AUTH_OFF));
+  for (const b of Object.values(nodeBoxes || {})) labels.push(grow(b, AUTH_OFF));
   const runs = [];
   for (const d of drawn) {
     if (!d.ortho) continue;
@@ -805,7 +811,7 @@ export function authAt(edge) {
   const corners = edge.ortho ? line.slice(1, -1) : [];
   const far = (p, q, d) => Math.hypot(p[0] - q[0], p[1] - q[1]) >= d - 1e-6;
   const fits = (s, p) =>
-    far(p, src, AUTH_CLEAR) &&
+    far(p, src, AUTH_SOURCE_CLEAR) &&
     far(p, dst, AUTH_ARROW_CLEAR) &&
     corners.every((c) => far(p, c, AUTH_CLEAR)) &&
     !keep.some(([lo, hi]) => s > lo + 1e-6 && s < hi - 1e-6);
