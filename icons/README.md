@@ -7,7 +7,7 @@ icon, so the set can grow or be replaced without touching the model.
 | Folder | Files | Contents |
 |---|---|---|
 | `kinds/` | 72 | One generic line glyph per kind. A queue, a cache, a cylinder, a gear. |
-| `providers/` | 292 | Brand marks, used as the badge in the corner of a component icon. |
+| `providers/` | 408 | Brand marks, used as the badge in the corner of a component icon. |
 | `boundaries/` | 58 | Icons a group can show before its label (the user-facing word is group; boundary stays in the stored format, so the folder keeps its name), kept apart from everything else here: platform and brand marks (`aws`, `gcp`, `kubernetes`, `github`) and concept glyphs (`on-premises`, `internet`, `users`, `environment-prod`). Referenced as `boundary:<id>` from a layout sidecar, never from a document. |
 | `components/<provider>/` | 2156 | One per component, in the same provider subfolder as the component file. For `aws`, `azure`, `gcp`, `oci`, `k8s` and `cloudflare` this is the vendor's own product icon wherever the vendor publishes one (see *Two styles* below); everywhere else it is the kind glyph, plus a provider badge where the component is a cloud service or a branded product. |
 
@@ -118,7 +118,12 @@ When you add a component:
 3. If it is a branded product on any other provider, ship
    `icons/components/<provider>/<id>.svg`: the kind glyph, plus the provider badge in the
    bottom-right corner. Reuse an existing `icons/providers/*.svg` mark, or add one from
-   Simple Icons if the product is not there yet.
+   Simple Icons if the product is not there yet. Where Simple Icons has no mark, take the
+   vendor's own SVG from its site or repository (never a raster, never a redrawing), reduce it to
+   one filled path in the 24 unit box with the brand colour on the `<g>`, exactly as a Simple
+   Icons file looks, and save it as `icons/providers/<key>.svg` without the generator marker;
+   then name `<key>` in `.claude/tools/badges-extra.json`. A mark drawn with strokes, layered
+   colours that do not survive one colour, or a path over the budget does not qualify.
 4. If you add a group icon, add its id to `.claude/tools/boundaries.mjs` (a provider key or
    Simple Icons slug in `BOUNDARY_BRANDS`, or a line glyph in `BOUNDARY_GLYPHS`), run
    `node .claude/tools/icons.mjs`, and add its name under `boundaryIcons` in `locales/en.yaml`.
@@ -151,7 +156,11 @@ The trademark note at the end of this section applies to every brand mark among 
 The provider marks in `icons/providers/`, and therefore the badges composed from them,
 come from [Simple Icons](https://github.com/simple-icons/simple-icons), which is released
 under CC0 1.0 Universal. Path precision has been reduced so each file fits the 4 KB
-budget; the artwork is otherwise unchanged.
+budget; the artwork is otherwise unchanged. The exception is a mark whose file name is
+not a Simple Icons slug and that `.claude/tools/badges-extra.json` names (`anyscale`, `tavily`,
+`runpod` and the rest added for AI products in October 2026): those are the vendors' own logos,
+taken from each vendor's website or source repository, merged into one path, fitted to the box
+and painted in one brand colour. They are not CC0; each vendor's trademark terms govern its mark.
 
 `aws.svg`, `azure.svg`, `oci.svg`, `ibm.svg` and `outscale.svg` are **not** brand marks. Simple Icons
 carries no Amazon Web Services, Microsoft Azure, Oracle Cloud, IBM or Outscale logo, so these five

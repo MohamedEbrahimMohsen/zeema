@@ -138,6 +138,20 @@ for (const [key, p] of Object.entries(providerInfo)) {
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" role="img" fill="#${p.hex}"><title>${p.title.replace(/&/g, "&amp;").replace(/</g, "&lt;")}</title><g fill="#${p.hex}"><path${p.source === "original" ? ' fill-rule="evenodd"' : ""} d="${p.path}"/></g></svg>\n`,
   );
 }
+// A vendor that Simple Icons does not carry can still have its own mark: a file under
+// icons/providers/<key>.svg taken from the vendor's site or repository and fitted by hand to the
+// same contract (one path, one brand colour, 24 unit box). It has no marker, so this script never
+// rewrites it; it is only read here so badges-extra.json can name it like a Simple Icons slug.
+for (const key of new Set(Object.values(EXTRA))) {
+  if (providerInfo[key]) continue;
+  const f = path.join(ICONS, "providers", `${key}.svg`);
+  if (!fs.existsSync(f)) continue;
+  const raw = fs.readFileSync(f, "utf8");
+  const hex = /<g fill="#([0-9A-Fa-f]{6})"/.exec(raw)?.[1];
+  const paths = [...raw.matchAll(/<path( fill-rule="evenodd")? d="([^"]+)"\/>/g)];
+  if (hex && paths.length === 1 && pathIsValid(paths[0][2]))
+    providerInfo[key] = { hex, path: paths[0][2], evenodd: Boolean(paths[0][1]), source: "vendor" };
+}
 // Group icons (icons/boundaries/<id>.svg): a mark or a concept glyph a group can show
 // before its label. A brand mark is copied from icons/providers/<key>.svg when there is one and
 // fitted from Simple Icons otherwise. Unlike a provider file it carries no <title> (the name is in
@@ -206,7 +220,7 @@ const markColour = (hex) => {
   return 0.2126 * c(0) + 0.7152 * c(2) + 0.0722 * c(4) > 0.45 ? "#111" : "#fff";
 };
 const badge = (p) =>
-  `<g stroke="none"><circle cx="${CX}" cy="${CY}" r="${HALO}" fill="var(--zeema-icon-bg, #fff)"/><circle cx="${CX}" cy="${CY}" r="${R}" fill="#${p.hex}"/><path transform="translate(${TX} ${TY}) scale(${S})" fill="${markColour(p.hex)}"${p.source === "original" ? ' fill-rule="evenodd"' : ""} d="${p.path}"/></g>`;
+  `<g stroke="none"><circle cx="${CX}" cy="${CY}" r="${HALO}" fill="var(--zeema-icon-bg, #fff)"/><circle cx="${CX}" cy="${CY}" r="${R}" fill="#${p.hex}"/><path transform="translate(${TX} ${TY}) scale(${S})" fill="${markColour(p.hex)}"${p.source === "original" || p.evenodd ? ' fill-rule="evenodd"' : ""} d="${p.path}"/></g>`;
 const DEFAULT_BADGE = {
   aws: "aws",
   azure: "azure",
