@@ -57,6 +57,8 @@ import {
   retargetTint,
   writeSidecar,
 } from "@/lib/layout-sidecar";
+import { confirmThenPublish } from "@/lib/publish";
+import { publishSlugFor } from "@/lib/slug";
 import { BadgeRow } from "./BadgeRow";
 import { ContextMenu, type MenuItem } from "./ContextMenu";
 import { exportScene } from "./exportScene";
@@ -92,6 +94,8 @@ type Props = {
   signedIn: boolean;
   /** The head is ahead of the release. */
   unpublished: boolean;
+  /** Said in the publish question: a public release reaches readers, a private one does not. */
+  visibility: "public" | "private";
   /** The owner may delete it: an authored design they can write. */
   canDelete?: boolean;
   /** Who is looking, for the avatar menu in the top-right pill; null when signed out. */
@@ -2493,7 +2497,8 @@ export function Canvas(props: Props) {
   );
 
   // ---------------------------------------------------------------- toolbar actions
-  // Release what is on screen: unsaved edits are saved first, then the head becomes the release.
+  // Release what is on screen, after the same question the design page asks (lib/publish.ts):
+  // unsaved edits are saved first, then the head becomes the release.
   const doPublish = async () => {
     const e = eng.current;
     if (!e) return;
@@ -2501,14 +2506,21 @@ export function Canvas(props: Props) {
       setStatus("fix structural errors before publishing");
       return;
     }
-    if (e.dirty || saving.current.inFlight) {
-      await save();
-      if (eng.current?.dirty) return; // the save reported its own failure
-    }
-    setStatus("publishing…");
-    const res = await fetch(`/api/v1/designs/${props.owner}/${props.slug}/publish`, {
-      method: "POST",
+    const ctx = {
+      owner: props.owner,
+      slug: props.slug,
+      plannedSlug: publishSlugFor({ slug: props.slug, title }),
+      visibility: props.visibility,
+    };
+    const res = await confirmThenPublish(confirm, ctx, async () => {
+      if (e.dirty || saving.current.inFlight) {
+        await save();
+        if (eng.current?.dirty) return null; // the save reported its own failure
+      }
+      setStatus("publishing…");
+      return fetch(`/api/v1/designs/${props.owner}/${props.slug}/publish`, { method: "POST" });
     });
+    if (!res) return;
     if (!res.ok) {
       const body = await res.json().catch(() => ({}));
       setStatus(`publish failed: ${body?.error?.message ?? res.status}`);

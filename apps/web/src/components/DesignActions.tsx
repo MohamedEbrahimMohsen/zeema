@@ -7,6 +7,7 @@
 // same commands, defined once here.
 import { useRouter } from "next/navigation";
 import { useCallback, useRef, useState } from "react";
+import { confirmThenPublish } from "@/lib/publish";
 import { type BadgeMenuData, BadgePicker } from "./BadgePicker";
 import { useConfirm } from "./ConfirmDialog";
 import { useMenuKeys } from "./menu-keys";
@@ -68,16 +69,13 @@ export function useDesignCommands({
       router.push(body.design.address);
     }
   };
-  // Publishing an unnamed draft also moves it to an address made from its title, so the owner is
-  // told which address that is before they agree to it rather than discovering it afterwards.
+  // Publishing is asked first (lib/publish.ts). An unnamed draft also moves to an address made
+  // from its title, so the question names that address before the owner agrees to it.
   const moving = plannedSlug !== slug;
   const publish = async () => {
-    if (
-      moving &&
-      !(await confirm({ title: `Publish at /d/${owner}/${plannedSlug}?`, confirmLabel: "Publish" }))
-    )
-      return;
-    const res = await call("publish", () => fetch(`${base}/publish`, { method: "POST" }));
+    const res = await confirmThenPublish(confirm, { owner, slug, plannedSlug, visibility }, () =>
+      call("publish", () => fetch(`${base}/publish`, { method: "POST" })),
+    );
     if (!res) return;
     const body = await res.json().catch(() => null);
     const next = body?.design?.slug;

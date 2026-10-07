@@ -47,6 +47,7 @@ export default async function CanvasPage({
       contentHash={view.version?.contentHash ?? ""}
       canWrite={view.can.write}
       unpublished={view.unpublished}
+      visibility={view.design.visibility}
       canClone={view.can.clone}
       signedIn={Boolean(viewer)}
       canDelete={view.can.write && view.design.origin === "authored"}
