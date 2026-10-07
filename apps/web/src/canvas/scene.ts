@@ -66,6 +66,7 @@ import {
   SHIFT_GRACE,
   shiftHeld,
 } from "./group-info";
+import { findGuides, type GuideLine } from "./guides";
 import { anchorOffset, coversTarget, noteDropTarget, sameAnchor } from "./note-anchor";
 
 const NS = "http://www.w3.org/2000/svg";
@@ -154,6 +155,9 @@ export type EdgeEnd = "from" | "to";
 const PORT_REACH = 12;
 // How far, in screen pixels, the pointer travels before a press on a component is a drag.
 const DRAG_THRESHOLD = 3;
+// How close, in screen pixels, a dragged selection has to come to lining up with another box
+// before it snaps into line and the guide shows (draw.io's). Alt held turns it off.
+const GUIDE_SNAP = 6;
 
 export type Handlers = {
   onSelect?: (selection: Subject, picked: Picked) => void;
@@ -375,6 +379,8 @@ export class Scene {
   /** The selected edge's two end handles, [from, to], and which edge they belong to. */
   endHandles: SVGCircleElement[] = [];
   endHandlesFor: number | null = null;
+  /** The alignment guides a drag shows: a vertical and a horizontal line, in the overlay. */
+  guideEls: { g: SVGGElement; x: SVGLineElement; y: SVGLineElement } | null = null;
   /** The selected group's four port dots, and which group they belong to. */
   frameDots: SVGCircleElement[] = [];
   frameDotsFor: string | null = null;
@@ -1979,6 +1985,7 @@ export class Scene {
     }
     if (this.drag) {
       this.setRegroupTarget(null);
+      this.drawGuides(null);
       this.drag = null;
       this.render(this.model);
     }
@@ -2087,6 +2094,7 @@ export class Scene {
       down: [ev.clientX, ev.clientY],
       untoggle: untoggle ? ["group", gid] : null,
       ...this.regroupScope(),
+      ...this.guideScope(ids),
       offsets: Object.fromEntries(
         ids.map((n) => [n, [wx - this.boxes[n][0], wy - this.boxes[n][1]]]),
       ),
@@ -2118,6 +2126,7 @@ export class Scene {
       down: [ev.clientX, ev.clientY],
       untoggle: untoggle ? ["node", id] : null,
       ...this.regroupScope(),
+      ...this.guideScope(ids),
       offsets: Object.fromEntries(
         ids.map((n) => [n, [wx - this.boxes[n][0], wy - this.boxes[n][1]]]),
       ),
@@ -2135,6 +2144,75 @@ export class Scene {
     for (const g of this.picked().groups)
       for (const id of groupAndDescendants(this.model.doc, g)) skip.add(id);
     return { frames0: this.frames || {}, skip, into: null as { group: string | null } | null };
+  }
+
+  /**
+   * What a drag of `ids` lines up against: every other component's box, and every group frame
+   * the drag does not stretch (a frame holding a dragged component follows it, so it cannot be a
+   * guide). Fixed for the drag. `guideInset` grows the dragged components' bounding box to what
+   * is seen moving: the frames of the selected groups, which keep their shape while they move.
+   */
+  guideScope(ids: string[]) {
+    const doc = this.model.doc;
+    const moving = new Set(ids);
+    const stretched = new Set<string>();
+    for (const n of doc.nodes)
+      if (moving.has(n.id) && n.group) for (const g of ancestorsOf(doc, n.group)) stretched.add(g);
+    const others: Box[] = [];
+    for (const [id, b] of Object.entries(this.boxes)) if (!moving.has(id)) others.push(b);
+    for (const [id, f] of Object.entries(this.frames || {})) if (!stretched.has(id)) others.push(f);
+    let [x0, y0, x1, y1] = [Infinity, Infinity, -Infinity, -Infinity];
+    for (const id of ids) {
+      const b = this.boxes[id];
+      x0 = Math.min(x0, b[0]);
+      y0 = Math.min(y0, b[1]);
+      x1 = Math.max(x1, b[0] + b[2]);
+      y1 = Math.max(y1, b[1] + b[3]);
+    }
+    let [ox0, oy0, ox1, oy1] = [x0, y0, x1, y1];
+    for (const g of this.picked().groups) {
+      const f = this.frames?.[g];
+      if (!f) continue;
+      ox0 = Math.min(ox0, f[0]);
+      oy0 = Math.min(oy0, f[1]);
+      ox1 = Math.max(ox1, f[0] + f[2]);
+      oy1 = Math.max(oy1, f[1] + f[3]);
+    }
+    return {
+      guideOthers: others,
+      guideInset: [x0 - ox0, y0 - oy0, ox1 - x1, oy1 - y1] as Box,
+      // Reused on every move, so the pointer path allocates nothing for it.
+      guideBox: [0, 0, 0, 0] as Box,
+    };
+  }
+
+  /** Shows the guides a drag lines up on, or hides them (`null`). Two lines, made once, reused. */
+  drawGuides(lines: GuideLine[] | null) {
+    if (!lines?.length) {
+      if (this.guideEls) this.guideEls.g.style.display = "none";
+      return;
+    }
+    if (!this.guideEls) {
+      const g = el("g", { class: "guides" }) as SVGGElement;
+      const x = el("line", { class: "guide" }) as SVGLineElement;
+      const y = el("line", { class: "guide" }) as SVGLineElement;
+      g.append(x, y);
+      this.guideEls = { g, x, y };
+    }
+    const { g, x, y } = this.guideEls;
+    if (!g.isConnected) this.layers.overlay.append(g);
+    g.style.display = "";
+    x.style.display = "none";
+    y.style.display = "none";
+    for (const l of lines) {
+      const line = l.axis === "x" ? x : y;
+      line.style.display = "";
+      const [a, b] = l.axis === "x" ? ["x", "y"] : ["y", "x"];
+      line.setAttribute(`${a}1`, String(l.at));
+      line.setAttribute(`${a}2`, String(l.at));
+      line.setAttribute(`${b}1`, String(l.from));
+      line.setAttribute(`${b}2`, String(l.to));
+    }
   }
 
   /** Where the dragged item's centre would move it on release, by the rule Shift picks. */
@@ -2212,11 +2290,41 @@ export class Scene {
     this.drag.moved = true;
     this.drag.at = [wx, wy];
     this.drag.client = [ev.clientX, ev.clientY];
-    for (const id of this.drag.ids) {
+    const d = this.drag;
+    let gx0 = Infinity;
+    let gy0 = Infinity;
+    let gx1 = -Infinity;
+    let gy1 = -Infinity;
+    for (const id of d.ids) {
       const b = this.boxes[id];
-      const off = this.drag.offsets[id];
+      const off = d.offsets[id];
       b[0] = Math.round(wx - off[0]);
       b[1] = Math.round(wy - off[1]);
+      if (b[0] < gx0) gx0 = b[0];
+      if (b[1] < gy0) gy0 = b[1];
+      if (b[0] + b[2] > gx1) gx1 = b[0] + b[2];
+      if (b[1] + b[3] > gy1) gy1 = b[1] + b[3];
+    }
+    // Lined up on the nearest other box within GUIDE_SNAP screen pixels, unless Alt is held: the
+    // selection (with the frames of the groups it carries) is the box that snaps, as one.
+    let sx = 0;
+    let sy = 0;
+    if (!ev.altKey && d.guideOthers?.length) {
+      const inset = d.guideInset;
+      const box = d.guideBox;
+      box[0] = gx0 - inset[0];
+      box[1] = gy0 - inset[1];
+      box[2] = gx1 - gx0 + inset[0] + inset[2];
+      box[3] = gy1 - gy0 + inset[1] + inset[3];
+      const guides = findGuides(box, d.guideOthers, GUIDE_SNAP / this.view.k);
+      sx = Math.round(guides.dx);
+      sy = Math.round(guides.dy);
+      this.drawGuides(guides.lines);
+    } else this.drawGuides(null);
+    for (const id of d.ids) {
+      const b = this.boxes[id];
+      b[0] += sx;
+      b[1] += sy;
       this.nodeEls.get(id)?.setAttribute("transform", `translate(${b[0]} ${b[1]})`);
     }
     const moving = new Set(this.drag.ids);
@@ -2309,6 +2417,7 @@ export class Scene {
     this.setRegroupTarget(null);
     const { ids, moved, kind, at, client, held, untoggle } = this.drag;
     this.drag = null;
+    this.drawGuides(null);
     if (!moved) {
       if (untoggle) this.toggle(untoggle[0], untoggle[1]);
       return;

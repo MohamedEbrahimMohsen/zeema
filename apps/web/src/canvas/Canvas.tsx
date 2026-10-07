@@ -380,6 +380,10 @@ const helpSections = (mod: string): Array<[string, Array<[string[], string]>]> =
       [[mod, "A"], "Select everything: components, groups and edges."],
       [["Drag"], "Move the selection."],
       [
+        ["Alt", "Drag"],
+        "Move without snapping. A plain drag lines edges and centres up with nearby boxes and shows the guide.",
+      ],
+      [
         ["Drag"],
         "Drag a component into another group to move it there. Shift-drag to take it out of its group: into any group, or to the top level.",
       ],

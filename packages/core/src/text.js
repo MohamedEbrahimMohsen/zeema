@@ -17,8 +17,12 @@ const TEXT_PAD = 12;
 export const MIN_BOX_W = 126;
 export const MAX_BOX_W = 256;
 // A name that fits one line in a box up to this wide stays on one line; a longer one is set on
-// two, which keeps boxes compact and rows short.
-const ONE_LINE_BOX_W = 200;
+// two. Wide enough that a three-word title ("Android Notifications Worker") stays on one line.
+const ONE_LINE_BOX_W = 240;
+// The widths a box can be: the least that holds its words, rounded up to the next step, so a
+// column of similar names comes out one width rather than ragged. Calibrated on the reference
+// designs: nearly every box lands on one of the first three steps; the last is MAX_BOX_W.
+export const BOX_W_STEPS = [MIN_BOX_W, 176, 240, MAX_BOX_W];
 const ELLIPSIS = "…";
 const NARROW = new Set([..."iIljl.,:;|!'`"]);
 const SLIM = new Set([..."ftr()[]{}-/ "]);
@@ -102,8 +106,9 @@ function bestSplit(text, measure) {
 /**
  * How wide a node's box is, from the two lines it shows (nodeLines in document.js): wide enough
  * for the second line on one line and the name on one line when that makes a box no wider than
- * 200px, else on the two lines that need the least width; never narrower than 126px nor wider
- * than 256px, and a whole number. The layout sizes every box with this and nothing else.
+ * 240px, else on the two lines that need the least width; then rounded up to the next of
+ * BOX_W_STEPS (126, 176, 240, 256px), so it is never narrower than 126px nor wider than 256px.
+ * The layout sizes every box with this and nothing else.
  */
 export function nodeWidth(name, sub) {
   const pad = 2 * TEXT_PAD;
@@ -111,7 +116,7 @@ export function nodeWidth(name, sub) {
   const split = bestSplit(name, nameWidth);
   const needName = one <= ONE_LINE_BOX_W || !split ? one : Math.min(one, split.widest + pad);
   const need = Math.max(needName, subWidth(String(sub ?? "")) + pad);
-  return Math.max(MIN_BOX_W, Math.min(MAX_BOX_W, Math.ceil(need)));
+  return BOX_W_STEPS.find((step) => step >= need) ?? MAX_BOX_W;
 }
 
 // A group's caption: 12px, 12px in from the frame's left side, pushed FRAME_ICON_SHIFT further

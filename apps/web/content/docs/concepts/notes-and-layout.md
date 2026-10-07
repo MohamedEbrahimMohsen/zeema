@@ -38,6 +38,12 @@ The sidecar is a small JSON document stored with each version of a design.
 
 An edge key is `from>to`, or `from>to#n` for the n-th parallel edge between the same pair.
 
+A box's size is never stored: the engine sizes it from the words it shows. Its width is one of
+four steps (126, 176, 240 or 256 px), the least that holds its name and the line under it, so a
+column of similar names comes out one width. A name stays on one line up to the 240 px box and
+wraps onto two past that. On the canvas, dragging a selection lines its edges and centres up with
+nearby boxes and group frames and shows a dashed guide; hold Alt to move it freely.
+
 A **port** pins one end of an arrow to a point on its box's border instead of the point the
 line from centre to centre would cross. It is `{ "side": "top" | "right" | "bottom" | "left",
 "t": 0..1 }`, where `t` runs left to right along the top and bottom and top to bottom along the

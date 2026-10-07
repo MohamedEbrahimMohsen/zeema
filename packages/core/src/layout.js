@@ -45,7 +45,10 @@ import { nodeWidth } from "./text.js";
 const BOX_H = 78,
   GAP_X = 34,
   GAP_Y = 86;
-const MAX_W = 1180; // a rank wider than this wraps onto further rows
+// A rank wider than this wraps onto further rows. Sized for the stepped box widths (text.js
+// BOX_W_STEPS): five 240px boxes fit one row, and no reference design wraps into more rows than
+// it did when boxes were sized to their exact text under 1180.
+const MAX_W = 1490;
 const CANVAS_PAD_X = 120,
   CANVAS_PAD_Y = 46;
 const SWEEPS = 6;

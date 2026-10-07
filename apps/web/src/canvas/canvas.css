@@ -2154,3 +2154,18 @@
   color: inherit;
   opacity: 0.8;
 }
+
+/* Alignment guides while dragging (guides.ts): thin dashed lines in the accent, never hit. */
+.zeema-canvas .scene-wrap {
+  --guide: var(--accent);
+}
+.zeema-canvas .guides {
+  pointer-events: none;
+}
+.zeema-canvas .guide {
+  stroke: var(--guide);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+  vector-effect: non-scaling-stroke;
+  fill: none;
+}
