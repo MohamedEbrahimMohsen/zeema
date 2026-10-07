@@ -393,7 +393,18 @@ const helpSections = (mod: string): Array<[string, Array<[string[], string]>]> =
       ],
       [["←", "→", "↑", "↓"], "Nudge the selection by a pixel; a group takes its members with it."],
       [["Shift", "←"], "Nudge by ten pixels."],
-      [["Esc"], "Clear the selection, or abandon what you are dragging."],
+      [
+        ["Hover"],
+        "Light a component, its edges and its neighbours, and fade the rest; on an edge, the edge and its two ends.",
+      ],
+      [
+        ["Click"],
+        "Pin that highlight: it stays until Esc, a click on empty space or another click.",
+      ],
+      [
+        ["Esc"],
+        "Drop a pinned highlight, then clear the selection, or abandon what you are dragging.",
+      ],
     ],
   ],
   [
@@ -1922,6 +1933,8 @@ export function Canvas(props: Props) {
         setFinding(null);
         setFindingsOpen(false);
         if (pickerOpen.current && (!pinnedRef.current || pickAnchorRef.current)) closePicker();
+        // A pinned highlight goes first; the selection stays for the next Esc.
+        if (!scene.busy() && scene.unpin()) return;
         scene.cancel();
         scene.closeEditor();
         if (!typing(ev)) scene.select(null, null);

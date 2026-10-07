@@ -10,6 +10,7 @@
 #   - billing-db replicates across regions and keeps backups, so the three-region promise holds
 #   - eureka is replicated, so the phonebook every service depends on is not a single instance
 #   - every Hystrix-wrapped retrying hop declares a circuit breaker
+#   - subscriber-service reaches billing-db through an IAM role, not a stored password
 # This file MUST trip no rule.
 schemaVersion: "1"
 type: "design"
@@ -153,7 +154,7 @@ edges:
   - { from: "playback-service", to: "atlas", protocol: "http", mode: "async", delivery: "at-most-once", label: "metrics push" }
   - { from: "subscriber-service", to: "cassandra", protocol: "cql", mode: "sync", label: "profiles and history, local quorum" }
   - { from: "subscriber-service", to: "evcache", protocol: "memcached", mode: "sync", fallback: "degraded", label: "read-through, degraded on cache loss" }
-  - { from: "subscriber-service", to: "billing-db", protocol: "mysql", mode: "sync", label: "transactional customer data" }
+  - { from: "subscriber-service", to: "billing-db", protocol: "mysql", mode: "sync", label: "transactional customer data", auth: "iam-role" }
   - { from: "subscriber-service", to: "eureka", protocol: "http", mode: "sync", label: "discovery lookup" }
   - { from: "subscriber-service", to: "atlas", protocol: "http", mode: "async", delivery: "at-most-once", label: "metrics push" }
   - { from: "device", to: "edge-oca", protocol: "https", mode: "sync", label: "adaptive bitrate segments" }

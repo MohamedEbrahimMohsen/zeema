@@ -54,6 +54,9 @@ const SAMPLES = {
   nfr: [{ nfr: { rps: { gt: 5000 } } }, {}],
   inGroup: [{ inGroup: { kind: "availability-zone" } }, {}],
   syncChainDepth: [{ syncChainDepth: { gt: 3 } }, {}],
+  // The node's component, not a field: the inspector already names it.
+  kind: [{ kind: "sql-database" }, {}],
+  provider: [{ provider: "azure" }, {}],
   from: [{ from: { prop: "handlesMoney", equals: true } }, { props: ["handlesMoney"] }],
   to: [{ to: { prop: "handlesMoney", equals: true } }, { props: ["handlesMoney"] }],
   crossesGroup: [{ crossesGroup: { kind: "cell" } }, { edge: { crossesGroupKinds: ["cell"] } }],

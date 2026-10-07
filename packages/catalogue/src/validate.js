@@ -224,6 +224,12 @@ export function validateRepository(rootArg, options = {}) {
     if (!locale.groupKinds?.[id]?.name) fail(`locale missing group kind ${id}`);
   for (const id of Object.keys(locale.groupKinds ?? {}))
     if (!groupKindIds.includes(id)) fail(`locale unknown group kind ${id}`);
+  // An edge's `auth` is an enum in the design schema too, named by the hover card: both ways.
+  const authIds = cat.schema?.properties?.edges?.items?.properties?.auth?.enum ?? [];
+  for (const id of authIds)
+    if (!locale.edgeAuth?.[id]?.name) fail(`locale missing edge auth ${id}`);
+  for (const id of Object.keys(locale.edgeAuth ?? {}))
+    if (!authIds.includes(id)) fail(`locale unknown edge auth ${id}`);
 
   const iconExists = (p) => fs.existsSync(path.join(root, p));
   for (const id of Object.keys(kinds))
@@ -276,9 +282,14 @@ export function validateRepository(rootArg, options = {}) {
       if (!kinds[k]) fail(`rule ${r.id}: unknown kind ${k}`);
     const w = (p) => {
       if (!p || typeof p !== "object") return;
-      for (const k of [].concat(p.hasEdge?.peerKind ?? [], p.hasNode?.kind ?? []))
+      // `kind` here is the `kind` predicate (or hasNode's kind, which the line above also reads);
+      // inGroup and crossesGroup name group kinds, so the walk does not descend into them.
+      for (const k of [].concat(p.hasEdge?.peerKind ?? [], p.hasNode?.kind ?? [], p.kind ?? []))
         if (!kinds[k]) fail(`rule ${r.id}: unknown kind ${k}`);
-      for (const v of Object.values(p)) Array.isArray(v) ? v.forEach(w) : w(v);
+      for (const id of [].concat(p.provider ?? []))
+        if (!providerIds.includes(id)) fail(`rule ${r.id}: unknown provider ${id}`);
+      for (const [key, v] of Object.entries(p))
+        if (key !== "inGroup" && key !== "crossesGroup") Array.isArray(v) ? v.forEach(w) : w(v);
     };
     w(r.when);
   }

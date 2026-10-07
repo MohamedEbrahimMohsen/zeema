@@ -104,6 +104,21 @@ describe("edits over committed designs", () => {
       });
     }
 
+    if (base.edges.length) {
+      it(`${rel}: setting an edge's auth touches one line, and clearing it restores the bytes`, () => {
+        const was = base.edges[0].auth;
+        const value = was === "mtls" ? "managed-identity" : "mtls";
+        const { out, diff } = roundTrip(text, (doc) => D.setEdgeField(doc, 0, "auth", value));
+        expect(diff.removed).toBeLessThanOrEqual(1);
+        expect(diff.added).toBe(1);
+        expect(YAML.parse(out).edges[0].auth).toBe(value);
+        if (was === undefined) {
+          const { cst, doc } = parse(out);
+          expect(serialize(cst, D.setEdgeField(doc, 0, "auth", undefined))).toBe(text);
+        }
+      });
+    }
+
     const moveTo = base.edges.length
       ? base.nodes.find(
           (n) =>

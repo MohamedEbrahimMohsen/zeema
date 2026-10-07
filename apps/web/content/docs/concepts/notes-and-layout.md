@@ -44,6 +44,12 @@ column of similar names comes out one width. A name stays on one line up to the 
 wraps onto two past that. On the canvas, dragging a selection lines its edges and centres up with
 nearby boxes and group frames and shows a dashed guide; hold Alt to move it freely.
 
+Resting the pointer on a component lights it, its edges in both directions and the components at
+their other ends, and fades everything else but the group frames; on an edge, it lights the edge
+and its two ends. A click pins that highlight, so it stays when the pointer moves away, until Esc,
+a click on empty canvas, or a click on something else (which pins that instead). Esc drops a pin
+before it clears the selection. Nothing is highlighted while you drag.
+
 A **port** pins one end of an arrow to a point on its box's border instead of the point the
 line from centre to centre would cross. It is `{ "side": "top" | "right" | "bottom" | "left",
 "t": 0..1 }`, where `t` runs left to right along the top and bottom and top to bottom along the

@@ -230,6 +230,9 @@
             "credentialRotationDays": {
               "type": "integer",
               "minimum": 0
+            },
+            "edgeAuthDeclared": {
+              "type": "boolean"
             }
           }
         },
@@ -406,6 +409,19 @@
           },
           "batched": {
             "type": "boolean"
+          },
+          "auth": {
+            "enum": [
+              "managed-identity",
+              "iam-role",
+              "service-account",
+              "workload-identity",
+              "api-key",
+              "oauth",
+              "mtls",
+              "basic",
+              "none"
+            ]
           }
         }
       }

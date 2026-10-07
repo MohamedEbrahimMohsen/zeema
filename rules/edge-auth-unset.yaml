@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../schema/rule.schema.json
+# The design promises that every hop into stored data, secrets, queues and AI vendors says how it
+# authenticates, and this one does not. Whether the caller holds a password, a key in its
+# environment, or a cloud identity is the difference between a leak that bills and one that cannot
+# happen; the edge's `auth` is where the design says which.
+# Opt-in through security.edgeAuthDeclared, so a design that never talks about authentication is
+# not told about every hop it draws.
+# Tripped by: designs/reference/llm-gateway/design.broken.yaml
+schemaVersion: "1"
+type: "rule"
+id: "edge-auth-unset"
+severity: "info"
+select:
+  edge: {}
+when:
+  all:
+    - requirement: "security.edgeAuthDeclared"
+      equals: true
+    - field: "auth"
+      exists: false
+    - to:
+        kind:
+          - "sql-database"
+          - "nosql-database"
+          - "cache"
+          - "object-store"
+          - "queue"
+          - "stream"
+          - "key-management"
+          - "ai-service"
+          - "search-index"
+message: "Edge '{{edge.from}}' -> '{{edge.to}}' reaches data, secrets or an AI service and does not say how it authenticates. Set auth on the edge."

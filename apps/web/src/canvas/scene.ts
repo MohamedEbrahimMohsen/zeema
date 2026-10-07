@@ -11,6 +11,7 @@
 
 import { groupCaption, groupTitle, nodeCount, nodeLines } from "@zeema/core/document";
 import {
+  authAt,
   bowAt,
   dropWaypoint,
   edgeGeometry,
@@ -26,6 +27,8 @@ import {
   viaOf,
 } from "@zeema/core/geometry";
 import {
+  AUTH_GLYPH_R,
+  authGlyph,
   CAPTION_LINE,
   FRAME_ICON_SHIFT,
   nodeText,
@@ -233,7 +236,7 @@ export type Handlers = {
    * none of them, or a gesture began). Sent again as it moves, so the page knows where it is.
    */
   onHover?: (
-    at: { type: "node" | "group"; id: string; clientX: number; clientY: number } | null,
+    at: { type: "node" | "group" | "edge"; id: string; clientX: number; clientY: number } | null,
   ) => void;
 };
 
@@ -393,6 +396,16 @@ export class Scene {
   spaceHeld = false;
   /** The group whose card the pointer is on, from its label strip or border band. */
   frameHover: string | null = null;
+  /**
+   * The neighbourhood highlight. `adjacency` (node id -> the indices of its edges, both ways) is
+   * rebuilt with the edges, so lighting a node costs its degree. `lightHover` is what the pointer
+   * is on, from the same events as the hover card; `lightPin` is what a click pinned, which holds
+   * until Esc, a click on empty canvas, or a click on something else.
+   */
+  adjacency = new Map<string, number[]>();
+  lightHover: Subject | null = null;
+  lightPin: Subject | null = null;
+  private litEls: Element[] = [];
   /** The hand tool (H): a pan mode that stays until the select tool (V) takes over again. */
   hand = false;
   disposed = false;
@@ -661,6 +674,75 @@ export class Scene {
     this.renderEdges();
     this.renderNodes();
     this.renderSelection();
+    // The highlight survives a rebuild, unless what it is about went away with it.
+    const gone = (sub: Subject | null) =>
+      !sub ||
+      (sub.type === "node" && !this.boxes[sub.ref as string]) ||
+      (sub.type === "edge" && !this.edgeEls.has(sub.ref as number));
+    if (gone(this.lightHover)) this.lightHover = null;
+    if (gone(this.lightPin)) this.lightPin = null;
+    this.applyLight();
+  }
+
+  // ---------------------------------------------------------------- neighbourhood highlight
+  // Hovering a component lights it, its edges both ways (line, label, auth glyph, arrowhead) and
+  // the components at their other ends; hovering an edge lights it and its two ends. The svg
+  // carries `lighting` and canvas.css fades every node, edge and note that is not `lit`, so only
+  // the lit few are touched here. Group frames are never faded. Nothing lights during a gesture.
+
+  /** The pointer came onto (or left, with null) a component or an edge. */
+  hoverLight(sub: Subject | null) {
+    const same = sub?.type === this.lightHover?.type && sub?.ref === this.lightHover?.ref;
+    this.lightHover = sub;
+    if (!same && !this.lightPin) this.applyLight();
+  }
+
+  /** Pin the highlight on a component or an edge: it stays when the pointer leaves. */
+  pin(sub: Subject) {
+    this.lightPin = sub;
+    this.applyLight();
+  }
+
+  /** Drop a pinned highlight. True when there was one, so Esc can stop there. */
+  unpin() {
+    if (!this.lightPin) return false;
+    this.lightPin = null;
+    this.applyLight();
+    return true;
+  }
+
+  applyLight() {
+    for (const n of this.litEls) n.classList.remove("lit");
+    this.litEls = [];
+    const sub = this.busy() ? null : (this.lightPin ?? this.lightHover);
+    const on = Boolean(sub?.type);
+    this.svg.classList.toggle("lighting", on);
+    this.svg.classList.toggle("pinned", on && Boolean(this.lightPin));
+    if (!sub || !on) return;
+    const edges = this.model?.doc?.edges ?? [];
+    const nodes = new Set<string>();
+    const lines = new Set<number>();
+    if (sub.type === "node") {
+      nodes.add(sub.ref as string);
+      for (const i of this.adjacency.get(sub.ref as string) ?? []) lines.add(i);
+    } else if (sub.type === "edge") lines.add(sub.ref as number);
+    for (const i of lines) {
+      const e = edges[i];
+      if (e) nodes.add(e.from).add(e.to);
+    }
+    const lit = (n: Element | null | undefined) => {
+      if (!n) return;
+      n.classList.add("lit");
+      this.litEls.push(n);
+    };
+    for (const id of nodes) lit(this.nodeEls.get(id));
+    for (const i of lines) {
+      const els = this.edgeEls.get(i);
+      if (!els) continue;
+      lit(els.line);
+      lit(els.label);
+      lit(els.auth);
+    }
   }
 
   // ---------------------------------------------------------------- notes
@@ -1131,6 +1213,14 @@ export class Scene {
     const g = this.layers.edges;
     g.textContent = "";
     this.edgeEls.clear();
+    this.adjacency.clear();
+    (this.model.doc.edges ?? []).forEach((e: any, i: number) => {
+      for (const end of e.from === e.to ? [e.from] : [e.from, e.to]) {
+        const list = this.adjacency.get(end);
+        if (list) list.push(i);
+        else this.adjacency.set(end, [i]);
+      }
+    });
     this.geom = edgeGeometry(
       this.model.doc,
       this.boxes,
@@ -1139,6 +1229,7 @@ export class Scene {
       this.frames,
       this.routeOptions(),
     );
+    const glyphs: Element[] = [];
     for (const e of this.geom) {
       const d = edgePath(e);
       // The hit paths sit in one group just before the line, so hovering any of them lifts it.
@@ -1149,8 +1240,18 @@ export class Scene {
         "marker-end": "url(#arrowhead)",
       });
       g.append(hits, line);
-      const els: any = { hits, hitEls: [], line, key: e.key, from: e.from, to: e.to, label: null };
+      const els: any = {
+        hits,
+        hitEls: [],
+        line,
+        key: e.key,
+        from: e.from,
+        to: e.to,
+        label: null,
+        auth: null,
+      };
       this.setHits(els, e);
+      this.hoverable(hits, "edge", String(e.i));
       if (e.label) {
         // Where geometry.js says: above a lone edge, on the outer side of a lane's own curve.
         const t = el("text", {
@@ -1171,9 +1272,32 @@ export class Scene {
         });
         g.append(t);
         els.label = t;
+        this.hoverable(t, "edge", String(e.i));
+      }
+      // How the hop authenticates, as a glyph on the line beside the source end (the same
+      // glyph and place as the server render). Appended after every edge (below), so a
+      // neighbour's label, which can run past this end, never paints over it.
+      const glyph = authGlyph(this.model.doc.edges?.[e.i]?.auth);
+      if (glyph) {
+        const [ax, ay] = authAt(e);
+        const a = el("g", { class: "edge-auth", transform: `translate(${ax} ${ay})` });
+        a.append(
+          el("circle", { r: AUTH_GLYPH_R, fill: "var(--bg)" }),
+          el("path", {
+            d: glyph,
+            fill: "none",
+            stroke: "var(--edge)",
+            "stroke-width": 1.2,
+            "stroke-linejoin": "round",
+            "stroke-linecap": "round",
+          }),
+        );
+        glyphs.push(a);
+        els.auth = a;
       }
       this.edgeEls.set(e.i, els);
     }
+    g.append(...glyphs);
   }
 
   symbolFor(componentId: string) {
@@ -1232,15 +1356,31 @@ export class Scene {
     );
   }
 
-  /** Report the pointer resting on (or leaving) a component's box or a group's label strip. */
-  hoverable(target: Element, type: "node" | "group", id: string) {
+  /**
+   * Report the pointer resting on (or leaving) a component's box, an edge or a group's label
+   * strip: to the page, for the hover card, and to the neighbourhood highlight, so the two agree.
+   */
+  hoverable(target: Element, type: "node" | "group" | "edge", id: string) {
+    const subject = (): Subject | null =>
+      type === "node"
+        ? { type: "node", ref: id }
+        : type === "edge"
+          ? { type: "edge", ref: Number(id) }
+          : null;
     const report = (ev: PointerEvent) => {
-      if (ev.buttons || this.busy()) return this.h.onHover?.(null);
+      if (ev.buttons || this.busy()) {
+        this.hoverLight(null);
+        return this.h.onHover?.(null);
+      }
+      this.hoverLight(subject());
       this.h.onHover?.({ type, id, clientX: ev.clientX, clientY: ev.clientY });
     };
     target.addEventListener("pointerenter", report as EventListener);
     target.addEventListener("pointermove", report as EventListener);
-    target.addEventListener("pointerleave", () => this.h.onHover?.(null));
+    target.addEventListener("pointerleave", () => {
+      this.hoverLight(null);
+      this.h.onHover?.(null);
+    });
   }
 
   renderNodes() {
@@ -1465,6 +1605,10 @@ export class Scene {
         els.label.setAttribute("x", e.labelAt[0]);
         els.label.setAttribute("y", e.labelAt[1]);
         els.label.setAttribute("text-anchor", e.labelAnchor);
+      }
+      if (els.auth) {
+        const [ax, ay] = authAt(e);
+        els.auth.setAttribute("transform", `translate(${ax} ${ay})`);
       }
     }
     this.placeEndHandles();
@@ -1819,7 +1963,10 @@ export class Scene {
     // box stops its own propagation.
     this.on(svg, "pointerdown", () => this.h.onHover?.(null), { capture: true });
     this.on(svg, "wheel", () => this.h.onHover?.(null), { capture: true, passive: true });
-    this.on(svg, "pointerleave", () => this.h.onHover?.(null));
+    this.on(svg, "pointerleave", () => {
+      this.hoverLight(null);
+      this.h.onHover?.(null);
+    });
     // A group's card comes from its label strip or its border band (frame-target.ts), the
     // same places a wire aims at the group. Its open interior belongs to its members: no card.
     this.on(svg, "pointermove", (ev) => {
@@ -1875,6 +2022,8 @@ export class Scene {
     });
 
     this.on(svg, "pointermove", (ev) => {
+      // A gesture under way puts the highlight away, a pinned one included, until it ends.
+      if (this.litEls.length && this.busy()) this.applyLight();
       if (this.pan) {
         this.view.x = this.pan.vx + (ev.clientX - this.pan.x);
         this.view.y = this.pan.vy + (ev.clientY - this.pan.y);
@@ -1902,6 +2051,7 @@ export class Scene {
       if (this.bowDrag) this.endBow();
       if (this.labelDrag) this.endLabel();
       if (this.tip) this.finishTip();
+      this.applyLight();
     };
     this.on(svg, "pointerup", end);
     this.on(svg, "pointercancel", end);
@@ -2020,7 +2170,10 @@ export class Scene {
     const m = this.marquee;
     this.marquee = null;
     m.rect.remove();
-    if (!m.moved) return;
+    if (!m.moved) {
+      this.unpin(); // a click on empty canvas
+      return;
+    }
     // With Shift held the sweep adds to what was selected, groups and edges included.
     if (m.add)
       this.selectMany(
@@ -2122,6 +2275,7 @@ export class Scene {
       id,
       ids,
       held,
+      plain: !mod,
       moved: false,
       down: [ev.clientX, ev.clientY],
       untoggle: untoggle ? ["node", id] : null,
@@ -2350,6 +2504,10 @@ export class Scene {
         els.label.setAttribute("y", e.labelAt[1]);
         els.label.setAttribute("text-anchor", e.labelAnchor);
       }
+      if (els.auth) {
+        const [ax, ay] = authAt(e);
+        els.auth.setAttribute("transform", `translate(${ax} ${ay})`);
+      }
     }
     this.placeEndHandles();
     this.repaintFrames();
@@ -2415,11 +2573,13 @@ export class Scene {
     const shift = ev ? this.dragShift(ev.shiftKey) : Boolean(this.drag.shift);
     const into = this.drag.moved ? this.regroupAt(shift) : null;
     this.setRegroupTarget(null);
-    const { ids, moved, kind, at, client, held, untoggle } = this.drag;
+    const { id, ids, moved, kind, at, client, held, untoggle, plain } = this.drag;
     this.drag = null;
     this.drawGuides(null);
     if (!moved) {
       if (untoggle) this.toggle(untoggle[0], untoggle[1]);
+      // A plain click on a component pins its highlight (or moves the pin to it).
+      if (!kind && plain) this.pin({ type: "node", ref: id });
       return;
     }
     // Let go where `regroupTarget` says: the selected components and groups move there. A plain
@@ -2463,6 +2623,7 @@ export class Scene {
    */
   startBow(edge: any, ev: PointerEvent, seg: number | null = null) {
     this.bowDrag = {
+      i: edge.i,
       key: edge.key,
       from: edge.from,
       to: edge.to,
@@ -2508,9 +2669,10 @@ export class Scene {
   }
 
   endBow() {
-    const { key, moved, value, ends } = this.bowDrag;
+    const { i, key, moved, value, ends } = this.bowDrag;
     this.bowDrag = null;
     if (moved) this.h.onPath?.(key, value ?? null, ends);
+    else this.pin({ type: "edge", ref: i }); // a click on an edge pins its highlight
   }
 
   /**
@@ -2905,8 +3067,8 @@ export class Scene {
       frame.append(title);
       frame.removeAttribute("aria-label");
     }
-    for (const n of clone.querySelectorAll(".selected, .primary"))
-      n.classList.remove("selected", "primary");
+    for (const n of clone.querySelectorAll(".selected, .primary, .lit"))
+      n.classList.remove("selected", "primary", "lit");
     // A hex tint leaves as plain colours, the way the server render writes it: a file that
     // leaves the page must not depend on a custom property only the canvas sets.
     for (const n of clone.querySelectorAll<SVGElement>('.frame[data-tint="hex"]')) {

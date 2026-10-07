@@ -120,6 +120,9 @@ function describePredicate(p) {
     return leaf(
       `the longest chain of synchronous calls starting at the node is ${comparison(p.syncChainDepth)} hops long`,
     );
+  if (p.kind)
+    return leaf(`the node is ${join([an(list(p.kind)[0]), ...list(p.kind).slice(1)], "or")}`);
+  if (p.provider) return leaf(`the node's component comes from ${join(list(p.provider), "or")}`);
   if (p.from)
     return { op: "from", text: "the edge's source node", children: [describePredicate(p.from)] };
   if (p.to)
@@ -268,6 +271,7 @@ export function ruleReads(rule) {
     }
     if (p.inGroup) return; // a group, which the inspector offers as the node's group
     if (p.syncChainDepth) return; // a property of the graph, not of any one field
+    if (p.kind || p.provider) return; // the node's component, which the inspector shows as its own
     if (p.from) return void walk(p.from);
     if (p.to) return void walk(p.to);
     if (p.crossesGroup) return void add(onEdge().crossesGroupKinds, p.crossesGroup.kind);

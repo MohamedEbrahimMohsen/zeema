@@ -89,6 +89,7 @@ requirements:
 | `freshness.maxSeconds` | integer | Oldest acceptable derived data |
 | `security.certificateRotationAutomated` | boolean | Internal certificates rotate without humans |
 | `security.credentialRotationDays` | integer | Datastore credentials rotate at least this often |
+| `security.edgeAuthDeclared` | boolean | Every edge into data, secrets, queues, streams or an AI service states its `auth` |
 | `observability.alertingIndependent` | boolean | Alerting must not depend on the systems it watches |
 
 > [!NOTE]
@@ -199,9 +200,23 @@ edges:
 | `circuitBreaker` | no | The caller stops calling after repeated failures |
 | `fallback` | no | `none`, `static`, `cached`, `degraded` |
 | `batched` | no | Calls are coalesced |
+| `auth` | no | `managed-identity`, `iam-role`, `service-account`, `workload-identity`, `api-key`, `oauth`, `mtls`, `basic`, `none` |
 
-Those six optional fields are the only edge properties in v1, and each exists because a real rule
+Those seven optional fields are the only edge properties in v1, and each exists because a real rule
 reads it. Anything else about an edge goes in `label`.
+
+`auth` says how the caller authenticates on that hop. A managed identity, an IAM role or a service
+account is not a box between every caller and callee; it is how the edge authenticates:
+
+```yaml
+edges:
+  - { from: "orders-api", to: "orders-db", protocol: "tds", mode: "sync", auth: "managed-identity" }
+```
+
+The canvas and the SVG export draw it as a small glyph on the line by the source end: a shield for
+an identity (`managed-identity`, `iam-role`, `service-account`, `workload-identity`), a key for
+`api-key` and `basic`, a lock for `mtls` and `oauth`, nothing for `none`. Any other value is a
+structural error.
 
 ## What makes a document structurally valid
 

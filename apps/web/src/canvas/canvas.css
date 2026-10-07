@@ -625,6 +625,7 @@
 /* nodes — one neutral fill, border is selection, corner dot is findings */
 .zeema-canvas .node-box {
   cursor: grab;
+  transition: opacity 140ms var(--ease);
 }
 .zeema-canvas .node-box rect.body {
   stroke-width: 1;
@@ -704,6 +705,7 @@
 /* notes — sticky annotations from the layout sidecar. No glyph, no ports, no edges. */
 .zeema-canvas .note-box {
   cursor: grab;
+  transition: opacity 140ms var(--ease);
 }
 /* while it moves the note is lifted over the components, and see-through: the ring on
    what it would be pinned to on release shows under it */
@@ -874,7 +876,8 @@
   fill: none;
   transition:
     stroke 120ms var(--ease),
-    stroke-width 120ms var(--ease);
+    stroke-width 120ms var(--ease),
+    opacity 140ms var(--ease);
   /* The hit path under it takes the pointer. Drawn on top of its own hit, the visible stroke
      would otherwise swallow a click aimed squarely at the line, and the canvas would deselect. */
   pointer-events: none;
@@ -910,6 +913,7 @@
   stroke-width: 3px;
   /* a label is dragged to move it; a click still selects its edge */
   cursor: move;
+  transition: opacity 140ms var(--ease);
 }
 /* While a label is dragged the pointer crosses nodes, edges and ports, each with its own cursor;
    the drag's cursor must win over all of them. */
@@ -921,6 +925,22 @@
 .zeema-canvas .edge-hits:hover + .edge + .edge-label,
 .zeema-canvas .edge-label:hover {
   fill: var(--ink);
+}
+/* how an edge authenticates: a glyph on the line by its source end; never takes the pointer */
+.zeema-canvas .edge-auth {
+  pointer-events: none;
+  transition: opacity 140ms var(--ease);
+}
+
+/* the neighbourhood highlight: hovering (or a click pinning) a component or an edge lights it, its
+   edges and the components at their other ends (scene.ts marks those `lit`), and fades the rest.
+   Group frames never fade. */
+.zeema-canvas svg.scene.lighting .node-box:not(.lit),
+.zeema-canvas svg.scene.lighting .edge:not(.lit),
+.zeema-canvas svg.scene.lighting .edge-label:not(.lit),
+.zeema-canvas svg.scene.lighting .edge-auth:not(.lit),
+.zeema-canvas svg.scene.lighting .note-box {
+  opacity: 0.35;
 }
 /* port dots: one at the middle of each side, just outside the card, shown on hover and on the
    selected node. Dragging one draws a wire from that side. */

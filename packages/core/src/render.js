@@ -6,6 +6,7 @@
 import { groupCaption, groupTitle, nodeCount, nodeLines } from "./document.js";
 import { drawnLayout } from "./drawn.js";
 import {
+  authAt,
   edgePath,
   frameCaptions,
   framesOuterFirst,
@@ -26,6 +27,32 @@ export { CAPTION_LINE, nodeText, nodeWidth, textWidth } from "./text.js";
 const NODE = ["#ffffff", "#d4d4d0", "#1f1f23", "#3a3a40"];
 
 const ICON = 24;
+
+// An edge's `auth` as a glyph on its line, beside the source end (geometry.js `authAt`): a shield
+// for an identity the platform issues, a key for a secret the caller holds, a lock for a
+// handshake (certificates, tokens). `none` and no auth draw nothing. Each is a 10px outline
+// centred on the origin, stroked in the edge's own colour over a disc of the page colour, so the
+// line breaks under it and the glyph reads on any edge.
+const SHIELD = "M0 -5L4.3 -3.4V0C4.3 2.6 2.5 4.2 0 5.2C-2.5 4.2 -4.3 2.6 -4.3 0V-3.4Z";
+const KEY = "M-1 0A2.2 2.2 0 1 1 -5.4 0A2.2 2.2 0 1 1 -1 0ZM-1 0H5M3.6 0V2M1.8 0V1.6";
+const LOCK = "M-3.6 -0.6H3.6V4.6H-3.6ZM-2.1 -0.6V-2.4A2.1 2.1 0 0 1 2.1 -2.4V-0.6";
+const AUTH_GLYPHS = {
+  "managed-identity": SHIELD,
+  "iam-role": SHIELD,
+  "service-account": SHIELD,
+  "workload-identity": SHIELD,
+  "api-key": KEY,
+  basic: KEY,
+  mtls: LOCK,
+  oauth: LOCK,
+};
+/** The disc under an auth glyph, in px. */
+export const AUTH_GLYPH_R = 7;
+
+/** The outline path for an edge's `auth`, or null where nothing is drawn (`none`, unset, unknown). */
+export function authGlyph(auth) {
+  return typeof auth === "string" && Object.hasOwn(AUTH_GLYPHS, auth) ? AUTH_GLYPHS[auth] : null;
+}
 
 // Group tints: a named set, each one stroke colour per theme, or a free `#rrggbb` colour that
 // is used as it is in both themes (the trade-off of a free colour). Either way the fill is the
@@ -392,6 +419,17 @@ export function toSvg(doc, catalogue, options = {}) {
         `<text class="e" x="${f1(e.labelAt[0])}" y="${f1(e.labelAt[1])}" text-anchor="${e.labelAnchor}">${escapeXml(e.label)}</text>`,
       );
   }
+  // Auth glyphs after every edge and label: edges leaving one box run side by side, and a
+  // neighbour's label must not paint over the glyph by the source end.
+  for (const e of lay.edges) {
+    const auth = doc.edges?.[e.i]?.auth;
+    const glyph = authGlyph(auth);
+    if (!glyph) continue;
+    const [gx, gy] = authAt(e);
+    out.push(
+      `<g transform="translate(${f1(gx)} ${f1(gy)})"><title>auth: ${escapeXml(auth)}</title><circle r="${AUTH_GLYPH_R}" fill="var(--bg)"/><path d="${glyph}" fill="none" stroke="var(--edge)" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round"/></g>`,
+    );
+  }
   for (const n of doc.nodes ?? []) {
     const [x, y] = lay.positions[n.id];
     const [bw, bh] = lay.sizes[n.id];
@@ -502,7 +540,8 @@ export function toMermaid(doc, direction = "TD", catalogue = null) {
   const end = (id) => mid(!nodeIds.has(id) && groupIds.has(id) ? `g_${id}` : id);
   for (const e of doc.edges ?? []) {
     const meta = e.protocol + (e.delivery ? `, ${e.delivery}` : "");
-    const lab = mesc(e.label ? `${e.label} [${meta}]` : meta);
+    const text = e.label ? `${e.label} [${meta}]` : meta;
+    const lab = mesc(e.auth ? `${text} [${e.auth}]` : text);
     const arrow = e.mode === "sync" ? "-->" : "-.->";
     out.push(`  ${end(e.from)} ${arrow}|"${lab}"| ${end(e.to)}`);
   }

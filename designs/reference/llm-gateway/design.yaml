@@ -7,6 +7,9 @@
 #     falls back from openai-chat to anthropic-chat, and meters spend in one place
 #   - the vendor keys live in secrets (HashiCorp Vault); the router reads them at start and each
 #     AI service declares keyStore and viaGateway
+#   - every hop into data, secrets and the vendors says how it authenticates (auth), as
+#     security.edgeAuthDeclared promises: the API and the router reach Vault and Postgres through
+#     their Kubernetes workload identity, and only the vendor hops carry a key
 # This file MUST trip no rule.
 schemaVersion: "1"
 type: "design"
@@ -15,6 +18,7 @@ id: "llm-gateway"
 requirements:
   security:
     credentialRotationDays: 90
+    edgeAuthDeclared: true
   availability:
     multiRegion: false
     sla: "99.9"
@@ -78,12 +82,12 @@ nodes:
 
 edges:
   - { from: "browser", to: "assistant-api", protocol: "https", mode: "sync", label: "ask" }
-  - { from: "assistant-api", to: "docs-db", protocol: "postgres", mode: "sync", label: "chat history" }
-  - { from: "assistant-api", to: "vectors", protocol: "grpc", mode: "sync", label: "retrieve chunks" }
-  - { from: "assistant-api", to: "llm-router", protocol: "https", mode: "sync", label: "chat, embed, rerank" }
-  - { from: "ingest-worker", to: "llm-router", protocol: "https", mode: "sync", label: "embed chunks" }
-  - { from: "ingest-worker", to: "vectors", protocol: "grpc", mode: "sync", label: "upsert" }
-  - { from: "llm-router", to: "secrets", protocol: "https", mode: "sync", label: "vendor keys" }
-  - { from: "llm-router", to: "openai-chat", protocol: "https", mode: "sync" }
-  - { from: "llm-router", to: "anthropic-chat", protocol: "https", mode: "sync", label: "fallback" }
-  - { from: "llm-router", to: "cohere-embed", protocol: "https", mode: "sync" }
+  - { from: "assistant-api", to: "docs-db", protocol: "postgres", mode: "sync", label: "chat history", auth: "workload-identity" }
+  - { from: "assistant-api", to: "vectors", protocol: "grpc", mode: "sync", label: "retrieve chunks", auth: "api-key" }
+  - { from: "assistant-api", to: "llm-router", protocol: "https", mode: "sync", label: "chat, embed, rerank", auth: "api-key" }
+  - { from: "ingest-worker", to: "llm-router", protocol: "https", mode: "sync", label: "embed chunks", auth: "api-key" }
+  - { from: "ingest-worker", to: "vectors", protocol: "grpc", mode: "sync", label: "upsert", auth: "api-key" }
+  - { from: "llm-router", to: "secrets", protocol: "https", mode: "sync", label: "vendor keys", auth: "workload-identity" }
+  - { from: "llm-router", to: "openai-chat", protocol: "https", mode: "sync", auth: "api-key" }
+  - { from: "llm-router", to: "anthropic-chat", protocol: "https", mode: "sync", label: "fallback", auth: "api-key" }
+  - { from: "llm-router", to: "cohere-embed", protocol: "https", mode: "sync", auth: "api-key" }

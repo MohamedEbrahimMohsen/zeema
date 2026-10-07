@@ -71,6 +71,8 @@ const SAMPLES = {
     ["- the node's declared requests per second is more than 5000"],
   ],
   hasNode: [{ hasNode: { kind: "ledger" } }, ["- the design contains a node of kind ledger"]],
+  kind: [{ kind: ["sql-database", "cache"] }, ["- the node is a sql-database or cache"]],
+  provider: [{ provider: ["azure", "aws"] }, ["- the node's component comes from azure or aws"]],
   from: [
     { from: { prop: "handlesMoney", equals: true } },
     ["- the edge's source node:", "  - the node's `handlesMoney` is true"],

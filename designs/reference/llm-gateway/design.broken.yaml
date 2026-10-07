@@ -6,6 +6,9 @@
 # This file MUST trip:
 #   - ai-api-key-unmanaged     (openai-chat, anthropic-chat and cohere-embed are api-key vendors called from assistant-api and ingest-worker; no key-management node)
 #   - ai-no-gateway            (three AI services and no api-gateway node)
+#   - edge-auth-unset          (assistant-api -> docs-db says nothing about how it authenticates, while
+#                               security.edgeAuthDeclared is set; the vendor hops do say api-key, so
+#                               this rule and ai-api-key-unmanaged never report the same hop)
 # and MUST NOT trip:
 #   - credentials-without-rotation (security.credentialRotationDays is set)
 #   - datastore-missing-backup     (docs-db keeps backups with a retention period)
@@ -17,6 +20,7 @@ id: "llm-gateway"
 requirements:
   security:
     credentialRotationDays: 90
+    edgeAuthDeclared: true
   availability:
     multiRegion: false
     sla: "99.9"
@@ -71,8 +75,8 @@ edges:
   - { from: "browser", to: "assistant-api", protocol: "https", mode: "sync", label: "ask" }
   - { from: "assistant-api", to: "docs-db", protocol: "postgres", mode: "sync", label: "chat history" }
   - { from: "assistant-api", to: "vectors", protocol: "grpc", mode: "sync", label: "retrieve chunks" }
-  - { from: "assistant-api", to: "openai-chat", protocol: "https", mode: "sync", label: "chat" }
-  - { from: "assistant-api", to: "anthropic-chat", protocol: "https", mode: "sync", label: "fallback, hand-written" }
-  - { from: "assistant-api", to: "cohere-embed", protocol: "https", mode: "sync", label: "embed query, rerank" }
-  - { from: "ingest-worker", to: "cohere-embed", protocol: "https", mode: "sync", label: "embed chunks" }
+  - { from: "assistant-api", to: "openai-chat", protocol: "https", mode: "sync", label: "chat", auth: "api-key" }
+  - { from: "assistant-api", to: "anthropic-chat", protocol: "https", mode: "sync", label: "fallback, hand-written", auth: "api-key" }
+  - { from: "assistant-api", to: "cohere-embed", protocol: "https", mode: "sync", label: "embed query, rerank", auth: "api-key" }
+  - { from: "ingest-worker", to: "cohere-embed", protocol: "https", mode: "sync", label: "embed chunks", auth: "api-key" }
   - { from: "ingest-worker", to: "vectors", protocol: "grpc", mode: "sync", label: "upsert" }

@@ -264,6 +264,12 @@
             }
           }
         },
+        "kind": {
+          "$ref": "#/definitions/idOrList"
+        },
+        "provider": {
+          "$ref": "#/definitions/idOrList"
+        },
         "from": {
           "$ref": "#/definitions/predicate"
         },

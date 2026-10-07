@@ -1,13 +1,13 @@
 "use client";
 
-// The card the canvas shows beside the pointer when it rests on a component or a group's label or border:
+// The card the canvas shows beside the pointer when it rests on a component, an edge, or a group's label or border:
 // the name, what it is, and the ids behind it. It replaces the native <title> tooltip, which is
 // slow to come and cannot be styled. It never takes the pointer: it is a remark, not a control.
 import { nodeCountOf, nodeLines } from "@zeema/core/document";
 import { useLayoutEffect, useRef } from "react";
 import { edgeCrossings, edgesText, memberCounts, membersText, parentPath } from "./group-info";
 
-export type HoverAt = { type: "node" | "group"; id: string; x: number; y: number };
+export type HoverAt = { type: "node" | "group" | "edge"; id: string; x: number; y: number };
 
 const own = (o: any, k: unknown) =>
   o != null && typeof k === "string" && Object.hasOwn(o, k) ? o[k] : undefined;
@@ -57,6 +57,25 @@ export function HoverCard({ at, doc, catalogue }: { at: HoverAt; doc: any; catal
         {count ? row("Count", `${count.count} ${count.prop}`) : null}
         <span className="hc-rule" />
         {row("Id", `${n.id} · ${n.component}`, "hc-mono")}
+      </>
+    );
+  } else if (at.type === "edge") {
+    // An edge: its words, its ends, how it is called and how it authenticates.
+    const e = (doc.edges || [])[Number(at.id)];
+    if (!e) return null;
+    const end = (id: string) => {
+      const n = doc.nodes.find((x: any) => x.id === id);
+      return n ? nodeLines(catalogue, n).name : id;
+    };
+    const auth = e.auth ? own(catalogue.locale?.edgeAuth, e.auth)?.name || e.auth : null;
+    body = (
+      <>
+        {row("Name", e.label || `${end(e.from)} → ${end(e.to)}`, "hc-name")}
+        {e.label ? row("Ends", `${end(e.from)} → ${end(e.to)}`) : null}
+        {row("Protocol", `${e.protocol} · ${e.mode}${e.delivery ? ` · ${e.delivery}` : ""}`)}
+        {auth ? row("Auth", auth) : null}
+        <span className="hc-rule" />
+        {row("Id", `${e.from} → ${e.to}`, "hc-mono")}
       </>
     );
   } else {

@@ -1146,6 +1146,17 @@ function EdgePanel({
         </select>
       </Field>
       {enumField("delivery", ["at-most-once", "at-least-once", "exactly-once"], "async edges")}
+      {enumField("auth", [
+        "managed-identity",
+        "iam-role",
+        "service-account",
+        "workload-identity",
+        "api-key",
+        "oauth",
+        "mtls",
+        "basic",
+        "none",
+      ])}
       <Field name="label" isSet={Boolean(edge.label)}>
         <TextInput
           value={edge.label ?? ""}

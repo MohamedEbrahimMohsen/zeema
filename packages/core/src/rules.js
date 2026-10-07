@@ -361,6 +361,13 @@ function evalPred(p, ctx) {
     return p.inGroup.count ? cmp(p.inGroup.count, n) : n > 0;
   }
   if (p.syncChainDepth) return cmp(p.syncChainDepth, pass.depth(node.id));
+  // The node's own kind or its component's provider: "an edge into a database", "an Azure
+  // service". An unknown component matches neither, as everywhere else in this file.
+  if (p.kind) return matchKind(p.kind, node, cat);
+  if (p.provider) {
+    const c = componentOf(node, cat);
+    return c !== null && [].concat(p.provider).includes(c.provider);
+  }
   if (p.from) {
     const n = nodeById(doc, edge.from);
     if (!known(n, cat)) return false;

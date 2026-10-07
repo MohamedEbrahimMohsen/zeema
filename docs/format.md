@@ -167,6 +167,7 @@ optional; an absent requirement never equals anything.
 | `freshness.maxSeconds` | integer | Oldest acceptable derived data |
 | `security.certificateRotationAutomated` | boolean | Internal certificates rotate without humans |
 | `security.credentialRotationDays` | integer | Datastore credentials rotate at least this often |
+| `security.edgeAuthDeclared` | boolean | Every edge into data, secrets, queues, streams or an AI service states its `auth` |
 | `observability.alertingIndependent` | boolean | Alerting must not depend on the systems it watches |
 
 New requirement paths are added through governance, not ad hoc. Each path above is
@@ -226,10 +227,21 @@ edge's own fields apply as usual; a rule that needs the component at an end (`fr
 | `circuitBreaker` | no | Caller stops calling after repeated failures |
 | `fallback` | no | `none`, `static`, `cached`, `degraded`: what the caller does when the callee fails |
 | `batched` | no | Calls are coalesced |
+| `auth` | no | How the caller authenticates on this hop: `managed-identity`, `iam-role`, `service-account`, `workload-identity`, `api-key`, `oauth`, `mtls`, `basic`, `none`. Any other value is a structural error. Drawn as a small glyph on the line by its source end (a shield for an identity, a key for `api-key` and `basic`, a lock for `mtls` and `oauth`, nothing for `none`). |
 
-These six optional fields are the only edge properties in v1. They exist because the
+These seven optional fields are the only edge properties in v1. They exist because the
 intake cards showed rules that read them (retries without shedding, money calls without
-idempotency, fan-out without timeouts). Anything else on an edge goes in `label`.
+idempotency, fan-out without timeouts, a key where the cloud offers an identity). Anything else
+on an edge goes in `label`.
+
+`auth` is how the edge authenticates, not a hop. An Azure managed identity, an AWS IAM role or a
+Google Cloud service account is not a box between every caller and callee:
+
+```yaml
+edges:
+  - { from: "orders-api", to: "orders-db", protocol: "tds", mode: "sync", auth: "managed-identity" }
+  - { from: "orders-api", to: "openai", protocol: "https", mode: "sync", auth: "api-key" }
+```
 
 Layout, coordinates and colours are **not** part of the design. A renderer derives a
 diagram from groups, nodes and edges alone. What a person arranged by hand goes in the layout
@@ -299,7 +311,7 @@ be written with them is a request to extend this list, not to add an expression 
 | `prop: p, in: [v1, v2]` | node | Effective value is one of the list |
 | `prop: p, exists: bool` | node | Whether `p` resolves to any value |
 | `prop: p, gt: n` / `lt: n` | node | Integer comparison on the effective value; absent is never greater or less |
-| `field: f, equals / in / exists` | edge | Reads an edge field (`mode`, `delivery`, `protocol`, `timeoutMs`, `retryPolicy`, `idempotent`, `circuitBreaker`, `fallback`, `batched`) |
+| `field: f, equals / in / exists` | edge | Reads an edge field (`mode`, `delivery`, `protocol`, `timeoutMs`, `retryPolicy`, `idempotent`, `circuitBreaker`, `fallback`, `batched`, `auth`) |
 | `nfr: { rps: {gt/lt/eq} }` | node | Compares a node `nfr` value; `latencyP95Ms` also allowed |
 | `requirement: path, equals: v` | any | The design requirement at `path` equals `v`. Absent requirements never equal anything. |
 | `requirement: path, exists: bool` | any | Whether the requirement is set |
@@ -308,6 +320,8 @@ be written with them is a request to extend this list, not to add an expression 
 | `hasNode: { kind?, category?, count? }` | any | The design contains at least one node of that kind or category; `count` compares the number of matching nodes |
 | `inGroup: { kind, count? }` | node | Number of groups of that kind in the node's ancestry. Without `count`, means at least one. |
 | `syncChainDepth: { gt / lt / eq }` | node | Longest path of consecutive `sync` edges starting at this node. Cycles are cut at first revisit. |
+| `kind: k` | node | The node's component is of kind `k`. May be a list. Mostly used under `to` or `from`. |
+| `provider: p` | node | The node's component comes from provider `p` (`azure`, `aws`, `gcp`, …). May be a list. |
 | `from: <predicate>` / `to: <predicate>` | edge | Evaluates a node predicate on the edge's source or target node |
 | `crossesGroup: { kind }` | edge | Source and target are in different groups of that kind, or one of them is in none |
 

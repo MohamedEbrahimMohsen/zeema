@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=../schema/rule.schema.json
+# A hop into an Azure, AWS or Google Cloud service authenticates with a key or a password, where
+# the platform offers an identity the caller never holds: a managed identity, an IAM role, a
+# service account. A key has to be stored, rotated and kept out of logs; an identity does not.
+# Tripped by: designs/reference/netflix-streaming/design.broken.yaml
+schemaVersion: "1"
+type: "rule"
+id: "edge-auth-key-where-identity"
+severity: "info"
+select:
+  edge: {}
+when:
+  all:
+    - field: "auth"
+      in: ["api-key", "basic"]
+    - to:
+        provider: ["azure", "aws", "gcp"]
+message: "Edge '{{edge.from}}' -> '{{edge.to}}' authenticates with a key or a password to a cloud service that accepts an identity. Use managed-identity (Azure), iam-role (AWS) or service-account (Google Cloud)."

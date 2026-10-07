@@ -113,7 +113,24 @@ when:
 ```
 
 `field` reads one of `mode`, `delivery`, `protocol`, `timeoutMs`, `retryPolicy`, `idempotent`,
-`circuitBreaker`, `fallback`, `batched`, and takes the same comparisons as `prop`.
+`circuitBreaker`, `fallback`, `batched`, `auth`, and takes the same comparisons as `prop`.
+
+### Kind and provider
+
+```yaml
+select:
+  edge: {}
+when:
+  all:
+    - field: "auth"
+      in: ["api-key", "basic"]
+    - to:
+        provider: ["azure", "aws", "gcp"]
+```
+
+`kind` is true when the node's component is of that kind, `provider` when it comes from that
+provider; either may be a list. They read the node a rule is about, so on an edge they go under
+`from` or `to`. An unknown component matches neither.
 
 ### Node NFRs
 

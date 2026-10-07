@@ -57,9 +57,14 @@ its kind's ("Network security group" over "Firewall"); the component id is hover
 An edge is a directed call from one node to another. `protocol` and `mode` are required;
 `mode` is `sync` (the caller waits) or `async` (the caller continues).
 
-The six optional fields — `timeoutMs`, `retryPolicy`, `idempotent`, `circuitBreaker`, `fallback`,
-`batched` — exist because real rules read them: retries without shedding, money calls without
-idempotency, fan-out without timeouts. Anything else about an edge goes in `label`.
+The seven optional fields — `timeoutMs`, `retryPolicy`, `idempotent`, `circuitBreaker`, `fallback`,
+`batched`, `auth` — exist because real rules read them: retries without shedding, money calls
+without idempotency, fan-out without timeouts, a key where the cloud offers an identity. Anything
+else about an edge goes in `label`.
+
+`auth` is how a hop authenticates (`managed-identity`, `iam-role`, `service-account`,
+`workload-identity`, `api-key`, `oauth`, `mtls`, `basic`, `none`). A managed identity is not a node
+between every caller and callee; set it on the edges it authenticates.
 
 > [!NOTE]
 > A cross-region call is not a field. It is an edge between two nodes whose region ancestry

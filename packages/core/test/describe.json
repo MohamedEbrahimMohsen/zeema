@@ -99,6 +99,25 @@
       "  - the node has at least one asynchronous incoming edge from a stream, change-data-capture or worker"
     ]
   },
+  "edge-auth-key-where-identity": {
+    "select": "every edge",
+    "when": [
+      "- all of these hold:",
+      "  - the edge's `auth` is one of \"api-key\" or \"basic\"",
+      "  - the edge's target node:",
+      "    - the node's component comes from azure, aws or gcp"
+    ]
+  },
+  "edge-auth-unset": {
+    "select": "every edge",
+    "when": [
+      "- all of these hold:",
+      "  - the design requirement `security.edgeAuthDeclared` is true",
+      "  - the edge's `auth` has no value",
+      "  - the edge's target node:",
+      "    - the node is a sql-database, nosql-database, cache, object-store, queue, stream, key-management, ai-service or search-index"
+    ]
+  },
   "exactly-once-with-external-side-effects": {
     "select": "every edge declaring exactly-once delivery",
     "when": [

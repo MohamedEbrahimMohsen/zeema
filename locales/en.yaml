@@ -7374,6 +7374,14 @@ rules:
     name: "Search index without an asynchronous feed"
     description: "A search index has no asynchronous in-edge from a stream, change data capture or worker, so it cannot be rebuilt or kept in sync off the write path."
     rationale: "A search index is derived data and needs an asynchronous feed from a stream, change data capture or an indexing worker. Without one it is written inline on the request path, and it can never be rebuilt after it drifts."
+  edge-auth-key-where-identity:
+    name: "Key where an identity would do"
+    description: "An edge into an Azure, AWS or Google Cloud service authenticates with an API key or a password."
+    rationale: "The cloud behind this hop can authenticate the caller by an identity it never holds: a managed identity on Azure, an IAM role on AWS, a service account on Google Cloud. A key or a password has to be stored, rotated and kept out of logs, and a leaked one works from anywhere. Switch the edge's auth to the platform's identity."
+  edge-auth-unset:
+    name: "Edge authentication not stated"
+    description: "The design requires every hop into data, secrets, queues and AI to say how it authenticates, and an edge into one of them has no auth."
+    rationale: "How a caller proves who it is decides what a leak costs: a password or a key in configuration can be copied and used from anywhere, a managed identity or an IAM role cannot. With security.edgeAuthDeclared set, the design has promised to say which on every such hop. Set auth on this edge: managed-identity, iam-role, service-account, workload-identity, api-key, oauth, mtls, basic or none."
   exactly-once-with-external-side-effects:
     name: "Exactly-once delivery in front of an external side effect"
     description: "An edge claims exactly-once delivery to a node that then calls a third party synchronously, which exactly-once cannot cover."
@@ -7703,3 +7711,24 @@ groupKinds:
     name: "Trust zone"
   vpc:
     name: "VPC"
+
+# How an edge authenticates (the edge's `auth`), as the canvas hover card names it.
+edgeAuth:
+  api-key:
+    name: "API key"
+  basic:
+    name: "Username and password"
+  iam-role:
+    name: "IAM role"
+  managed-identity:
+    name: "Managed identity"
+  mtls:
+    name: "Mutual TLS"
+  none:
+    name: "None"
+  oauth:
+    name: "OAuth"
+  service-account:
+    name: "Service account"
+  workload-identity:
+    name: "Workload identity"

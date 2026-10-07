@@ -605,6 +605,67 @@ export function edgePath(edge) {
   return edge.ortho ? orthoPath(edge.points) : pathOf(edge.points);
 }
 
+// How far along its line, from the source end, an edge's `auth` glyph sits. The source end has
+// no arrowhead, and the label sits at the middle, so a fixed step off the source clears both; on
+// a short edge the step shrinks to a third of the line, which still keeps it off the middle.
+export const AUTH_GLYPH_STEP = 20;
+
+/** The drawn edge as a polyline: its corners when orthogonal, else its curves sampled. */
+function polylineOf(edge) {
+  const p = edge.points;
+  if (edge.ortho || p.length === 2) return p;
+  const N = 16;
+  const out = [p[0]];
+  const quad = (a, c, b, t) => {
+    const u = 1 - t;
+    return [
+      u * u * a[0] + 2 * u * t * c[0] + t * t * b[0],
+      u * u * a[1] + 2 * u * t * c[1] + t * t * b[1],
+    ];
+  };
+  const cubic = (a, c1, c2, b, t) => {
+    const u = 1 - t;
+    const k = [u * u * u, 3 * u * u * t, 3 * u * t * t, t * t * t];
+    return [
+      k[0] * a[0] + k[1] * c1[0] + k[2] * c2[0] + k[3] * b[0],
+      k[0] * a[1] + k[1] * c1[1] + k[2] * c2[1] + k[3] * b[1],
+    ];
+  };
+  if (p.length === 3) for (let i = 1; i <= N; i++) out.push(quad(p[0], p[1], p[2], i / N));
+  else {
+    for (let i = 1; i <= N; i++) out.push(cubic(p[0], p[1], p[2], p[3], i / N));
+    for (let i = 1; i <= N; i++) out.push(cubic(p[3], p[4], p[5], p[6], i / N));
+  }
+  return out;
+}
+
+/**
+ * Where a drawn edge's `auth` glyph is centred: AUTH_GLYPH_STEP along the line from the source
+ * end (a third of the line on a short edge), on the line itself, whichever way it is routed.
+ * @param {any} edge a drawn edge from `edgeGeometry`
+ * @returns {[number, number]}
+ */
+export function authAt(edge) {
+  const line = polylineOf(edge);
+  let total = 0;
+  for (let i = 1; i < line.length; i++)
+    total += Math.hypot(line[i][0] - line[i - 1][0], line[i][1] - line[i - 1][1]);
+  let left = Math.min(AUTH_GLYPH_STEP, total / 3);
+  for (let i = 1; i < line.length; i++) {
+    const [a, b] = [line[i - 1], line[i]];
+    const l = Math.hypot(b[0] - a[0], b[1] - a[1]);
+    if (l >= left && l > 0) {
+      const t = left / l;
+      return [
+        Math.round((a[0] + (b[0] - a[0]) * t) * 10) / 10,
+        Math.round((a[1] + (b[1] - a[1]) * t) * 10) / 10,
+      ];
+    }
+    left -= l;
+  }
+  return [line[0][0], line[0][1]];
+}
+
 /**
  * The bow a pointer at (x, y) asks of an orthogonal edge (one `edgeGeometry` drew): how far its
  * cross run would move to sit under the pointer. Zero for an edge with no cross run.

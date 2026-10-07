@@ -13,6 +13,7 @@
 #   - datastore-missing-backup                   (billing-db: backupEnabled false)
 #   - shared-dependency-without-redundancy       (eureka: replicated false, discoveryRedundant required)
 #   - retry-without-adaptive-shedding            (zuul -> api-gateway-service and api-gateway-service -> subscriber-service retry with no circuit breaker)
+#   - edge-auth-key-where-identity               (subscriber-service -> billing-db logs in to RDS with a password, where an IAM role would do)
 # and MUST NOT trip:
 #   - cache-missing-eviction-policy              (evcache declares lru)
 #   - materialised-cache-without-rebuild-path    (evcache is not materialised)
@@ -167,7 +168,7 @@ edges:
   - { from: "playback-service", to: "atlas", protocol: "http", mode: "async", delivery: "at-most-once", label: "metrics push" }
   - { from: "subscriber-service", to: "cassandra", protocol: "cql", mode: "sync", label: "profiles and history, local quorum" }
   - { from: "subscriber-service", to: "evcache", protocol: "memcached", mode: "sync", fallback: "none", label: "only copy of subscriber data" }
-  - { from: "subscriber-service", to: "billing-db", protocol: "mysql", mode: "sync", label: "transactional customer data" }
+  - { from: "subscriber-service", to: "billing-db", protocol: "mysql", mode: "sync", label: "transactional customer data", auth: "basic" }
   - { from: "subscriber-service", to: "eureka", protocol: "http", mode: "sync", label: "discovery lookup" }
   - { from: "subscriber-service", to: "atlas", protocol: "http", mode: "async", delivery: "at-most-once", label: "metrics push" }
   - { from: "device", to: "edge-oca", protocol: "https", mode: "sync", label: "adaptive bitrate segments" }
