@@ -209,11 +209,19 @@ A design may have no nodes yet (`nodes: []`): a new design starts that way on th
 Directed. `from` and `to` are node ids in this design.
 
 An end may instead name a group: the edge then runs to the group as a unit ("the API talks to
-the whole cluster"), drawn to the group's dashed frame, not fanned out to its members. A node may
-connect to its own group, and a group to another group, nested or not. An id that names both a
-node and a group means the node; the editor never makes such a pair. Rules that read only the
-edge's own fields apply as usual; a rule that needs the component at an end (`from`, `to`,
-`crossesGroup`) skips an edge whose end is a group.
+the whole cluster"), drawn once, to the group's dashed frame, not fanned out to its members. A node
+may connect to its own group, and a group to another group, nested or not. An id that names both a
+node and a group means the node; the editor never makes such a pair.
+
+Rules read a group end as **every node inside the group**, nested groups included: the edge reaches
+each member, exactly as if it had been drawn to each. Before rules run, a group edge is expanded
+into one node edge per (source member, target member) pair, a node never paired with itself. So a
+member of a group the gateway calls has an incoming edge from the gateway for `hasEdge` (and
+`count` counts one per pair), `syncChainDepth` walks through it, and an edge rule (`from`, `to`,
+`crossesGroup`, the auth rules) is evaluated on each pair. An edge rule reports at most one finding
+per drawn edge, about the edge as drawn, so its message names the group. A group that holds no
+node expands to nothing: its edges are read as drawn, and a rule that needs the component at an
+end skips them.
 
 | Field | Required | Meaning |
 |---|---|---|
@@ -245,7 +253,9 @@ edges:
 
 Layout, coordinates and colours are **not** part of the design. A renderer derives a
 diagram from groups, nodes and edges alone. What a person arranged by hand goes in the layout
-sidecar beside the design: node positions, an edge's bow (`edges`), where each end of an edge
+sidecar beside the design: how edges are routed (`routing`: `orthogonal`, the default and never
+stored; `bundled`, orthogonal with shared trunks, below; or `curved`), node positions, an edge's
+bow (`edges`), where each end of an edge
 meets its box (`ports`: per edge key, `{ from?, to? }`, each `{ side, t }` with `side` one of
 `top`, `right`, `bottom`, `left` and `t` in [0, 1] along it), group colours and icons
 (`frames`), component tints (`tints`: per node id, `{ tint, strength? }`, the same tint values
@@ -253,6 +263,14 @@ as a group's), how strongly a tint fills (`strength`, on a frame or a component 
 `normal` or `bold`; absent is normal), notes, and the list badge its owner chose (`badge`: `provider:<id>` or
 `boundary:<id>`, absent for the automatic one). Moving an edge's end to another component is not
 layout: it changes `from` or `to` in the design.
+
+`routing: "bundled"` draws edges orthogonally, and edges that fan out of one side of one box (or a
+group's frame) toward boxes facing that side share one trunk: they leave from one point, run
+together along one line square to the side, and split off to their targets one by one. Edges from
+several boxes into one side of one box merge onto one trunk the same way and meet the box at one
+point. A member overlaps its siblings exactly, and one whose own runs would cut a box is routed on
+its own. Edges with a bow or waypoints never bundle; a ported end bundles only with ends ported to
+the same point. Like every routing value it is layout only: rules and the design never see it.
 
 ### Export and import
 

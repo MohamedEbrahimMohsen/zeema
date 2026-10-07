@@ -12,10 +12,11 @@ import { DEFAULT_ROUTING, ROUTINGS, readVia } from "@zeema/core/geometry";
 export const SIDECAR_VERSION = 2;
 
 /**
- * How a design's edges are drawn: orthogonal runs with rounded corners, or curves. The engine's
- * default (DEFAULT_ROUTING) is never stored, so a design nobody switched keeps the bytes it had.
+ * How a design's edges are drawn: orthogonal runs with rounded corners, the same with shared
+ * trunks (bundled), or curves. The engine's default (DEFAULT_ROUTING) is never stored, so a
+ * design nobody switched keeps the bytes it had.
  */
-export type Routing = "orthogonal" | "curved";
+export type Routing = "orthogonal" | "bundled" | "curved";
 
 /** A stored routing worth keeping: a known one that is not the default. Anything else: none. */
 export function readRoutingField(v: unknown): Routing | undefined {

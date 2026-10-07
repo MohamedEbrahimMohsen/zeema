@@ -1,6 +1,6 @@
 // Orthogonal edge routing: every edge is a run of horizontal and vertical segments with rounded
 // corners, the way draw.io's orthogonal connector draws. geometry.js calls this for
-// `routing: "orthogonal"` and keeps its curves for "curved"; nothing else imports it.
+// `routing: "orthogonal"` and "bundled" and keeps its curves for "curved"; nothing else imports it.
 //
 // Sides. An end with a port (the layout sidecar's `ports`) leaves from its port's side, at its
 // t. Otherwise the two boxes decide: one mostly above the other joins bottom to top, one mostly
@@ -28,6 +28,18 @@
 // notes). A label someone dragged (`extra.labels`, an offset per edge key) sits at its automatic
 // place as if nothing were in the way, plus the offset, centred; it dodges nothing, and the
 // automatic labels placed after it stay off it.
+//
+// Trunks (`extra.bundle`, the sidecar's `routing: "bundled"`). Edges that leave one side of one
+// box toward boxes facing it share one trunk: they leave from one point, step out to a run square
+// to that side, run along it together, and split off to their targets one by one. The same holds
+// the other way round: edges from boxes facing one side of one box merge onto one trunk and meet
+// it at one point. Fan-out bundles are formed first; the edges left over may form fan-in bundles.
+// An edge with a bow or waypoints never bundles; a ported end bundles only with ends ported to the
+// same point. An edge bundles only when its target lies beyond its source by more than two steps
+// out, through a side the two face each other across. The trunk sits in a free channel between the two, at its
+// middle when it can; a member whose own runs would cut a box routes on its own instead. The
+// trunk takes one lane among the other runs on its line and every member moves with it, so the
+// members overlap exactly: one line, not several a pixel apart.
 //
 // Waypoints. An entry `{ via: [[x, y], ...] }` in the sidecar's `edges` is a path someone shaped
 // by dragging its segments: absolute world points the edge passes through in order. The edge
@@ -241,7 +253,11 @@ export function routeOrthogonal(items, nodeBoxes, bows, isPort, extra = {}) {
     return { ...it, pf, pt, nest, sa, sb, ta: pf ? pf.t : null, tb: pt ? pt.t : null };
   });
 
-  // 2. Spread the unported ends along each side, ordered by the other end.
+  // 1b. Trunks: which edges share one end and a run (see "Trunks" above).
+  const bundles = extra.bundle ? findBundles(ends, bows) : [];
+
+  // 2. Spread the unported ends along each side, ordered by the other end. A bundle's shared end
+  // is one end on its side, ordered by where its members' other ends are on average.
   const sides = new Map();
   const join = (id, box, side, item, end, other) => {
     const k = `${id}\u0000${side}`;
@@ -250,9 +266,32 @@ export function routeOrthogonal(items, nodeBoxes, bows, isPort, extra = {}) {
   };
   for (const it of ends) {
     // The outer end of a nested edge is wherever the inner end projects to; it is not spread.
-    if (it.ta === null && it.nest !== "from") join(it.e.from, it.a, it.sa, it, "a", it.b);
-    if (it.tb === null && it.nest !== "to") join(it.e.to, it.b, it.sb, it, "b", it.a);
+    const shared = it.bundle?.end;
+    if (it.ta === null && it.nest !== "from" && shared !== "a")
+      join(it.e.from, it.a, it.sa, it, "a", it.b);
+    if (it.tb === null && it.nest !== "to" && shared !== "b")
+      join(it.e.to, it.b, it.sb, it, "b", it.a);
   }
+  for (const B of bundles) {
+    const lead = B.members[0];
+    // A shared end pinned to a port is where the port says: it is not spread.
+    if ((B.end === "a" ? B.proxy.ta : B.proxy.tb) !== null) continue;
+    const others = B.members.map((m) => (B.end === "a" ? m.b : m.a));
+    const avg = [
+      others.reduce((t, o) => t + cx(o), 0) / others.length,
+      others.reduce((t, o) => t + cy(o), 0) / others.length,
+      0,
+      0,
+    ];
+    if (B.end === "a") join(lead.e.from, lead.a, lead.sa, B.proxy, "a", avg);
+    else join(lead.e.to, lead.b, lead.sb, B.proxy, "b", avg);
+  }
+  const share = () => {
+    for (const B of bundles)
+      for (const m of B.members)
+        if (B.end === "a") m.ta = B.proxy.ta;
+        else m.tb = B.proxy.tb;
+  };
   for (const { list } of sides.values()) {
     list.sort((p, q) => p.at - q.at || p.item.i - q.item.i || (p.end < q.end ? -1 : 1));
     const n = list.length;
@@ -262,8 +301,10 @@ export function routeOrthogonal(items, nodeBoxes, bows, isPort, extra = {}) {
       else s.item.tb = t;
     });
   }
+  share();
   // An end alone on its side, on an edge whose other end faces it, lines up with that end when
   // the other end's point lies over this side's spread range: a lone edge is then straight.
+  // A bundle's shared end never moves for one member.
   const alone = new Set();
   for (const { list } of sides.values())
     if (list.length === 1) alone.add(`${list[0].item.i}:${list[0].end}`);
@@ -271,8 +312,8 @@ export function routeOrthogonal(items, nodeBoxes, bows, isPort, extra = {}) {
     if (it.nest || it.a === it.b) continue;
     const facing = NORMAL[it.sa][0] === -NORMAL[it.sb][0] && NORMAL[it.sa][1] === -NORMAL[it.sb][1];
     if (!facing) continue;
-    const loneA = alone.has(`${it.i}:a`),
-      loneB = alone.has(`${it.i}:b`);
+    const loneA = alone.has(`${it.i}:a`) && it.bundle?.end !== "a",
+      loneB = alone.has(`${it.i}:b`) && it.bundle?.end !== "b";
     if (!loneA && !loneB) continue;
     const range = (box, side) =>
       across(side)
@@ -355,8 +396,16 @@ export function routeOrthogonal(items, nodeBoxes, bows, isPort, extra = {}) {
       });
     }
 
-  // 3. Route: through its waypoints when it has them, else the cheapest clean way.
+  share();
+
+  // 3. Route: a bundle member along its trunk, else through its waypoints when it has them,
+  // else the cheapest clean way.
+  const trunked = new Map();
+  for (const B of bundles)
+    for (const [it, r] of trunkRoutes(B, obstacles, captions)) trunked.set(it, r);
   const routes = ends.map((it) => {
+    const t = trunked.get(it);
+    if (t) return t;
     const via = it.nest || it.a === it.b ? null : readVia(bows[it.key]);
     return via ? viaRoute(it, via, obstacles, captions) : route(it, obstacles, captions);
   });
@@ -366,10 +415,48 @@ export function routeOrthogonal(items, nodeBoxes, bows, isPort, extra = {}) {
   // nearer the start of the channel, so neither crosses the other's legs.
   const boxList = obstacles.map(([, bx]) => bx);
   const lines = new Map();
+  const addSeg = (seg, axis) => {
+    const id = `${axis}:${seg.at}`;
+    if (!lines.has(id)) lines.set(id, { axis, at: seg.at, list: [] });
+    lines.get(id).list.push(seg);
+  };
+  // A bundle's trunk is one run on its line, spanning every member's piece of it; whatever lane
+  // it gets, each member's piece moves by it.
+  const trunks = new Map();
   for (const r of routes) {
     r.shift = new Map();
-    // A shaped path is where someone put it: it takes no lane.
-    if (r.via) continue;
+    if (r.trunk === undefined) continue;
+    let T = trunks.get(r.bundle);
+    if (!T) {
+      T = { r: { shift: new Map(), it: r.it }, members: [], lo: Infinity, hi: -Infinity, len: -1 };
+      trunks.set(r.bundle, T);
+    }
+    T.members.push(r);
+    if (r.trunk === null) continue;
+    const pts = r.points,
+      k = r.trunk;
+    const p = pts[k],
+      q = pts[k + 1];
+    const axis = Math.abs(p[1] - q[1]) < 0.01 ? "y" : "x";
+    const [u, v] = axis === "y" ? [0, 1] : [1, 0];
+    T.axis = axis;
+    T.u = u;
+    T.at = Math.round(p[v]);
+    T.lo = Math.min(T.lo, p[u], q[u]);
+    T.hi = Math.max(T.hi, p[u], q[u]);
+    if (Math.abs(q[u] - p[u]) > T.len) {
+      const h = Math.sign(q[u] - p[u]) || 1;
+      const w = Math.sign(pts[k + 2][v] - q[v]) || Math.sign(p[v] - pts[k - 1][v]) || 1;
+      T.key = [-h * w * p[u], -h * w * q[u]];
+      T.len = Math.abs(q[u] - p[u]);
+    }
+  }
+  for (const T of trunks.values())
+    if (T.key)
+      addSeg({ r: T.r, k: "trunk", at: T.at, u: T.u, lo: T.lo, hi: T.hi, key: T.key }, T.axis);
+  for (const r of routes) {
+    // A shaped path is where someone put it: it takes no lane. A trunk's lane is its bundle's.
+    if (r.via || r.trunk !== undefined) continue;
     const pts = r.points;
     for (let k = 1; k < pts.length - 2; k++) {
       const p = pts[k],
@@ -381,9 +468,7 @@ export function routeOrthogonal(items, nodeBoxes, bows, isPort, extra = {}) {
       const w = Math.sign(pts[k + 2][v] - q[v]) || Math.sign(p[v] - pts[k - 1][v]) || 1;
       const seg = { r, k, at, u, lo: Math.min(p[u], q[u]), hi: Math.max(p[u], q[u]) };
       seg.key = [-h * w * p[u], -h * w * q[u]];
-      const id = `${axis}:${at}`;
-      if (!lines.has(id)) lines.set(id, { axis, at, list: [] });
-      lines.get(id).list.push(seg);
+      addSeg(seg, axis);
     }
   }
   for (const { axis, at, list } of lines.values()) {
@@ -404,6 +489,10 @@ export function routeOrthogonal(items, nodeBoxes, bows, isPort, extra = {}) {
     list.forEach((g, k) => {
       g.r.shift.set(g.k, Math.round((k - (n - 1) / 2) * step * 10) / 10);
     });
+  }
+  for (const T of trunks.values()) {
+    const d = T.r.shift.get("trunk");
+    if (d) for (const r of T.members) if (r.trunk !== null) r.shift.set(r.trunk, d);
   }
 
   // 5. Points, bows, labels.
@@ -458,6 +547,143 @@ export function routeOrthogonal(items, nodeBoxes, bows, isPort, extra = {}) {
     if (it.nest) drawn.fixed = true;
     return drawn;
   });
+}
+
+// The bundles among the routed ends: fan-outs (one source box and side, `end: "a"`) first, then
+// fan-ins (one target box and side, `end: "b"`) among the edges left over. An edge may join
+// through any side of its box that faces the other box across a channel (a gap of more than two
+// steps out); of those, it takes the side most of its siblings share, so a fan-out whose targets
+// lie up, level and down still leaves through one side. A ported end keeps its side, and shares
+// its point only with ends ported to the same place (a wire drawn from a port dot pins its end at
+// the dot, so siblings drawn from one dot bundle); a ported far end must face the shared side.
+// Each member gets `bundle` (and its sides set); each bundle a `proxy` that stands for its shared
+// end while the unported ends are spread.
+function findBundles(ends, bows) {
+  const MIN = 2 * ORTHO_STUB + 4;
+  // The sides an edge may leave its source through: they face the target across a channel, and
+  // agree with the ports it has.
+  const sidesOf = (it) => {
+    const { a, b, pf, pt } = it;
+    const out = [];
+    if (b[0] - (a[0] + a[2]) > MIN) out.push("right");
+    if (a[0] - (b[0] + b[2]) > MIN) out.push("left");
+    if (b[1] - (a[1] + a[3]) > MIN) out.push("bottom");
+    if (a[1] - (b[1] + b[3]) > MIN) out.push("top");
+    return out.filter((sd) => (!pf || pf.side === sd) && (!pt || pt.side === OPPOSITE[sd]));
+  };
+  const options = new Map();
+  for (const it of ends) {
+    if (it.nest || it.a === it.b) continue;
+    if (bows && Object.hasOwn(bows, it.key) && bows[it.key]) continue;
+    const sides = sidesOf(it);
+    if (sides.length) options.set(it, sides);
+  }
+  const out = [];
+  const gather = (end) => {
+    const byBox = new Map();
+    for (const it of options.keys()) {
+      if (it.bundle) continue;
+      const id = end === "a" ? it.e.from : it.e.to;
+      if (!byBox.has(id)) byBox.set(id, []);
+      byBox.get(id).push(it);
+    }
+    for (const list of byBox.values()) {
+      if (list.length < 2) continue;
+      const count = new Map();
+      for (const it of list)
+        for (const sd of options.get(it)) count.set(sd, (count.get(sd) ?? 0) + 1);
+      const groups = new Map();
+      for (const it of list) {
+        let best = null;
+        for (const sd of options.get(it)) {
+          const c = count.get(sd);
+          const b = best === null ? -1 : count.get(best);
+          if (c > b || (c === b && sd === it.sa)) best = sd;
+        }
+        if (count.get(best) < 2) continue;
+        // Ends pinned to a port share a point only with ends pinned to the same one.
+        const port = end === "a" ? it.pf : it.pt;
+        const k = port ? `${best}@${port.t}` : best;
+        if (!groups.has(k)) groups.set(k, { side: best, port, members: [] });
+        groups.get(k).members.push(it);
+      }
+      for (const { side, port, members } of groups.values()) {
+        if (members.length < 2) continue;
+        const proxy = {
+          i: members[0].i,
+          ta: end === "a" && port ? port.t : null,
+          tb: end === "b" && port ? port.t : null,
+        };
+        const B = { end, members, proxy };
+        for (const m of members) {
+          m.bundle = B;
+          m.sa = side;
+          m.sb = OPPOSITE[side];
+        }
+        out.push(B);
+      }
+    }
+  };
+  gather("a");
+  gather("b");
+  return out;
+}
+
+// One bundle's members along a shared trunk, as [item, route] pairs. A member whose runs would
+// cut a box is left out and routes on its own; so does a bundle left with one member. A route
+// carries `bundle` and `trunk`: the index of its run along the trunk, or null when it has none
+// (a member level with the shared end is one straight run).
+function trunkRoutes(B, obstacles, captions) {
+  const side = B.members[0].sa;
+  const u = across(side) ? 1 : 0; // the axis a step out runs along; the trunk is square to it
+  const v = 1 - u;
+  const n = NORMAL[side][u];
+  const ends = B.members.map((it) => ({
+    it,
+    P: sidePoint(it.a, it.sa, it.ta ?? 0.5),
+    Q: sidePoint(it.b, it.sb, it.tb ?? 0.5),
+  }));
+  // The channel the trunk may sit in, along u: past every source's step out, short of every
+  // target's step in.
+  const s0 = Math.max(...ends.map((x) => n * x.P[u])) + ORTHO_STUB;
+  const s1 = Math.min(...ends.map((x) => n * x.Q[u])) - ORTHO_STUB;
+  if (s1 <= s0) return [];
+  const lo = Math.min(n * s0, n * s1),
+    hi = Math.max(n * s0, n * s1);
+  const olo = Math.min(...ends.flatMap((x) => [x.P[v], x.Q[v]]));
+  const ohi = Math.max(...ends.flatMap((x) => [x.P[v], x.Q[v]]));
+  const boxes = [...obstacles.map(([, bx]) => bx), ...captions];
+  const bands = freeBands(boxes, u === 0 ? "x" : "y", lo, hi, olo, ohi);
+  if (!bands.length) return [];
+  const mid = (lo + hi) / 2;
+  const holds = (b) => b.lo <= mid && mid <= b.hi;
+  const band =
+    bands.find(holds) ??
+    bands.reduce((p, q) => (Math.abs(q.at - mid) < Math.abs(p.at - mid) ? q : p));
+  const m = holds(band) ? Math.round(mid) : band.at;
+  const at = (a, b) => (u === 0 ? [a, b] : [b, a]);
+  const out = [];
+  for (const { it, P, Q } of ends) {
+    const path = simplify([P, at(m, P[v]), at(m, Q[v]), Q]);
+    if (!path) continue;
+    const own = [it.e.from, it.e.to];
+    const blockers = [
+      ...obstacles.filter(([id]) => id !== own[0] && id !== own[1]).map(([, bx]) => bx),
+      ...captions,
+    ];
+    const mine = [it.fa ? null : it.a, it.fb ? null : it.b].filter(Boolean);
+    let clean = true;
+    for (let k = 1; k < path.length && clean; k++)
+      for (const box of blockers) if (cuts(path[k - 1], path[k], box, 0)) clean = false;
+    for (let k = 1; k < path.length && clean; k++)
+      for (const box of mine) if (cuts(path[k - 1], path[k], box, -1)) clean = false;
+    if (!clean) continue;
+    let trunk = null;
+    for (let k = 1; k < path.length - 2; k++)
+      if (Math.abs(path[k][u] - m) < 0.01 && Math.abs(path[k + 1][u] - m) < 0.01) trunk = k;
+    out.push([it, { it, points: path, run: null, bundle: B, trunk }]);
+  }
+  return out.length >= 2 ? out : [];
 }
 
 /** The most waypoints one edge keeps. */

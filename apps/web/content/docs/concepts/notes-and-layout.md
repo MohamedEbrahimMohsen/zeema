@@ -35,6 +35,7 @@ The sidecar is a small JSON document stored with each version of a design.
 | `frames` | A group id to its colour and icon (see below) |
 | `tints` | A component's node id to its colour, `{ "tint": "teal", "strength": "bold" }`: the same tint values as a group's, drawn as the card's border and a faint fill (optional) |
 | `badge` | The mark the design wears in the browse list, when its owner chose one (optional; see below) |
+| `routing` | How edges are drawn: `bundled` or `curved`; absent is `orthogonal` (optional; see below) |
 
 An edge key is `from>to`, or `from>to#n` for the n-th parallel edge between the same pair.
 
@@ -46,9 +47,31 @@ nearby boxes and group frames and shows a dashed guide; hold Alt to move it free
 
 Resting the pointer on a component lights it, its edges in both directions and the components at
 their other ends, and fades everything else but the group frames; on an edge, it lights the edge
-and its two ends. A click pins that highlight, so it stays when the pointer moves away, until Esc,
-a click on empty canvas, or a click on something else (which pins that instead). Esc drops a pin
-before it clears the selection. Nothing is highlighted while you drag.
+and its two ends. An edge to a group counts for every component inside it. A click pins that
+highlight, so it stays when the pointer moves away, until Esc, a click on empty canvas, or a click
+on something else (which pins that instead). Esc drops a pin before it clears the selection.
+Panning and zooming keep the highlight; a drag that moves something (a component, a group, an
+edge's run or label, a sweep) puts it away until you let go, and a pin comes back after.
+
+**Alt-click** a component (or select it and press **T**, or choose **Trace flow** from its menu)
+for the flow lens: everything upstream of it lights up, walking incoming edges back as far as they
+go, and the rest fades. A component nothing points at, such as a client that only sends, traces
+downstream instead. The lens is a pin: Esc or a click on empty canvas clears it.
+
+A design with more than 15 edges draws its edges, their labels and auth glyphs at a quarter ink,
+components at full; hovering or pinning lights the ones you ask about, and selecting an edge or
+drawing a new one brings every edge back to full ink. The zoom menu's **Dim edges** switches it
+between auto, on and off; the choice is kept in this browser only, not in the sidecar, and exported
+pictures are never dimmed.
+
+## Edge style
+
+`routing` says how the edges are drawn. Without it they are orthogonal: horizontal and vertical
+runs with rounded corners. `curved` draws curves. `bundled` is orthogonal with shared trunks: the
+edges that leave one side of a box (or of a group's frame) toward boxes facing that side leave from
+one point and run along one trunk before they split off, and the edges from several boxes into
+one side of a box merge onto one trunk before they meet it. A bowed or shaped edge, or one whose
+own runs would cut a box, is routed on its own. Pick it in Design settings under **Edges**.
 
 A **port** pins one end of an arrow to a point on its box's border instead of the point the
 line from centre to centre would cross. It is `{ "side": "top" | "right" | "bottom" | "left",

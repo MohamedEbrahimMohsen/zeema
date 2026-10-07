@@ -61,6 +61,7 @@ import {
   type Routing,
 } from "@/lib/layout-sidecar";
 import { own } from "@/lib/own";
+import { adjacencyOf, flowFrom, nodesAt } from "./flow-lens";
 import { dropPort, frameTargetAt } from "./frame-target";
 import {
   ancestorsOf,
@@ -71,6 +72,14 @@ import {
 } from "./group-info";
 import { findGuides, type GuideLine } from "./guides";
 import { anchorOffset, coversTarget, noteDropTarget, sameAnchor } from "./note-anchor";
+
+/**
+ * A design with more edges than this draws them at reduced ink by default (`DimEdges` "auto"):
+ * the picture stays calm until a hover, a pin or a selected edge asks for one of them.
+ */
+export const DIM_EDGES_OVER = 15;
+/** Dim the edges: by the count above, always, or never. A per-browser habit, never stored. */
+export type DimEdges = "auto" | "on" | "off";
 
 const NS = "http://www.w3.org/2000/svg";
 const el = (name: string, attrs: Record<string, unknown> = {}) => {
@@ -405,6 +414,10 @@ export class Scene {
   adjacency = new Map<string, number[]>();
   lightHover: Subject | null = null;
   lightPin: Subject | null = null;
+  /** The pin is the flow lens (`trace`): the pinned component's whole path, not its neighbours. */
+  lightTrace = false;
+  /** Whether the edges draw at reduced ink (see DIM_EDGES_OVER), as the page last said. */
+  dimEdges: DimEdges = "auto";
   private litEls: Element[] = [];
   /** The hand tool (H): a pan mode that stays until the select tool (V) takes over again. */
   hand = false;
@@ -686,9 +699,14 @@ export class Scene {
 
   // ---------------------------------------------------------------- neighbourhood highlight
   // Hovering a component lights it, its edges both ways (line, label, auth glyph, arrowhead) and
-  // the components at their other ends; hovering an edge lights it and its two ends. The svg
-  // carries `lighting` and canvas.css fades every node, edge and note that is not `lit`, so only
-  // the lit few are touched here. Group frames are never faded. Nothing lights during a gesture.
+  // the components at their other ends; hovering an edge lights it and its two ends. An edge to a
+  // group counts for every component inside it, and lights them all as its end. The svg carries
+  // `lighting` and canvas.css fades every node, edge and note that is not `lit`, so only the lit
+  // few are touched here. Group frames are never faded. A gesture that moves something (a drag, a
+  // wire, a sweep) puts the highlight away until it ends; panning and zooming leave it be.
+  //
+  // The flow lens (`trace`) is a pin that lights a component's whole path instead: everything
+  // upstream of it, or for a component nothing points at, everything downstream (flow-lens.ts).
 
   /** The pointer came onto (or left, with null) a component or an edge. */
   hoverLight(sub: Subject | null) {
@@ -700,6 +718,15 @@ export class Scene {
   /** Pin the highlight on a component or an edge: it stays when the pointer leaves. */
   pin(sub: Subject) {
     this.lightPin = sub;
+    this.lightTrace = false;
+    this.applyLight();
+  }
+
+  /** Pin the flow lens on a component: its whole path lit, the rest faded. */
+  trace(id: string) {
+    if (!this.boxes[id]) return;
+    this.lightPin = { type: "node", ref: id };
+    this.lightTrace = true;
     this.applyLight();
   }
 
@@ -707,28 +734,52 @@ export class Scene {
   unpin() {
     if (!this.lightPin) return false;
     this.lightPin = null;
+    this.lightTrace = false;
     this.applyLight();
     return true;
+  }
+
+  /** A gesture that moves or makes something: the highlight steps aside while it runs. */
+  moving() {
+    return !!(
+      this.drag ||
+      this.wire ||
+      this.marquee ||
+      this.noteDrag ||
+      this.bowDrag ||
+      this.labelDrag ||
+      this.tip ||
+      this.editor
+    );
   }
 
   applyLight() {
     for (const n of this.litEls) n.classList.remove("lit");
     this.litEls = [];
-    const sub = this.busy() ? null : (this.lightPin ?? this.lightHover);
+    const sub = this.moving() ? null : (this.lightPin ?? this.lightHover);
     const on = Boolean(sub?.type);
     this.svg.classList.toggle("lighting", on);
     this.svg.classList.toggle("pinned", on && Boolean(this.lightPin));
+    this.svg.classList.toggle("tracing", on && sub === this.lightPin && this.lightTrace);
+    this.applyDim();
     if (!sub || !on) return;
-    const edges = this.model?.doc?.edges ?? [];
-    const nodes = new Set<string>();
-    const lines = new Set<number>();
-    if (sub.type === "node") {
-      nodes.add(sub.ref as string);
-      for (const i of this.adjacency.get(sub.ref as string) ?? []) lines.add(i);
-    } else if (sub.type === "edge") lines.add(sub.ref as number);
-    for (const i of lines) {
-      const e = edges[i];
-      if (e) nodes.add(e.from).add(e.to);
+    const doc = this.model?.doc;
+    const edges = doc?.edges ?? [];
+    let nodes = new Set<string>();
+    let lines = new Set<number>();
+    if (sub.type === "node" && sub === this.lightPin && this.lightTrace) {
+      ({ nodes, edges: lines } = flowFrom(doc, sub.ref as string));
+    } else {
+      if (sub.type === "node") {
+        nodes.add(sub.ref as string);
+        for (const i of this.adjacency.get(sub.ref as string) ?? []) lines.add(i);
+      } else if (sub.type === "edge") lines.add(sub.ref as number);
+      for (const i of lines) {
+        const e = edges[i];
+        if (!e) continue;
+        for (const id of nodesAt(doc, e.from)) nodes.add(id);
+        for (const id of nodesAt(doc, e.to)) nodes.add(id);
+      }
     }
     const lit = (n: Element | null | undefined) => {
       if (!n) return;
@@ -743,6 +794,25 @@ export class Scene {
       lit(els.label);
       lit(els.auth);
     }
+  }
+
+  /** How the page wants the edges dimmed (the toolbar's toggle). */
+  setDimEdges(mode: DimEdges) {
+    this.dimEdges = mode;
+    this.applyDim();
+  }
+
+  /**
+   * Dim the edges, their labels and auth glyphs (canvas.css, `dim-edges` on the svg) when the
+   * toggle says on, or says auto and the design has more than DIM_EDGES_OVER edges. While an edge
+   * is selected, or one is being drawn or reconnected, every edge is at full ink.
+   */
+  applyDim() {
+    const count = this.model?.doc?.edges?.length ?? 0;
+    const want = this.dimEdges === "on" || (this.dimEdges === "auto" && count > DIM_EDGES_OVER);
+    const working =
+      Boolean(this.wire || this.tip) || this.selection.type === "edge" || this.multiEdges.size > 0;
+    this.svg.classList.toggle("dim-edges", want && !working);
   }
 
   // ---------------------------------------------------------------- notes
@@ -1213,14 +1283,7 @@ export class Scene {
     const g = this.layers.edges;
     g.textContent = "";
     this.edgeEls.clear();
-    this.adjacency.clear();
-    (this.model.doc.edges ?? []).forEach((e: any, i: number) => {
-      for (const end of e.from === e.to ? [e.from] : [e.from, e.to]) {
-        const list = this.adjacency.get(end);
-        if (list) list.push(i);
-        else this.adjacency.set(end, [i]);
-      }
-    });
+    this.adjacency = adjacencyOf(this.model.doc);
     this.geom = edgeGeometry(
       this.model.doc,
       this.boxes,
@@ -1663,6 +1726,8 @@ export class Scene {
   }
 
   renderSelection() {
+    // A selected edge puts every edge back at full ink.
+    this.applyDim();
     for (const [id, node] of this.nodeEls) {
       node.classList.toggle("selected", this.multi.has(id));
       node.classList.toggle("primary", this.selection.type === "node" && this.selection.ref === id);
@@ -2022,8 +2087,9 @@ export class Scene {
     });
 
     this.on(svg, "pointermove", (ev) => {
-      // A gesture under way puts the highlight away, a pinned one included, until it ends.
-      if (this.litEls.length && this.busy()) this.applyLight();
+      // A gesture that moves something puts the highlight away, a pinned one included, until it
+      // ends. Panning moves nothing, so the highlight stays through it.
+      if (this.litEls.length && this.moving()) this.applyLight();
       if (this.pan) {
         this.view.x = this.pan.vx + (ev.clientX - this.pan.x);
         this.view.y = this.pan.vy + (ev.clientY - this.pan.y);
@@ -2276,6 +2342,7 @@ export class Scene {
       ids,
       held,
       plain: !mod,
+      alt: ev.altKey,
       moved: false,
       down: [ev.clientX, ev.clientY],
       untoggle: untoggle ? ["node", id] : null,
@@ -2573,13 +2640,17 @@ export class Scene {
     const shift = ev ? this.dragShift(ev.shiftKey) : Boolean(this.drag.shift);
     const into = this.drag.moved ? this.regroupAt(shift) : null;
     this.setRegroupTarget(null);
-    const { id, ids, moved, kind, at, client, held, untoggle, plain } = this.drag;
+    const { id, ids, moved, kind, at, client, held, untoggle, plain, alt } = this.drag;
     this.drag = null;
     this.drawGuides(null);
     if (!moved) {
       if (untoggle) this.toggle(untoggle[0], untoggle[1]);
-      // A plain click on a component pins its highlight (or moves the pin to it).
-      if (!kind && plain) this.pin({ type: "node", ref: id });
+      // A plain click on a component pins its highlight (or moves the pin to it); Alt with the
+      // click pins the flow lens on it instead.
+      if (!kind && plain) {
+        if (alt) this.trace(id);
+        else this.pin({ type: "node", ref: id });
+      }
       return;
     }
     // Let go where `regroupTarget` says: the selected components and groups move there. A plain
@@ -2839,6 +2910,8 @@ export class Scene {
     this.wire = { from, line, x: wx, y: wy, target: null, side, start };
     this.endEl(from)?.classList.add("wire-source");
     this.capture(ev);
+    // A wire being drawn wants to see every edge it might join.
+    this.applyDim();
   }
 
   moveWire(ev: PointerEvent) {

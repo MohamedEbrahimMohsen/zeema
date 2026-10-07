@@ -19,11 +19,15 @@
 //   3. syncChainDepth keeps the validator's longest-simple-path answer but memoises the
 //      nodes whose sync-reachable subgraph is provably acyclic, and bounds the exponential
 //      enumeration used for the rest. See syncPass below.
-//   4. An edge end may name a group (the validator knows only node ends). An edge rule whose
-//      `when` reads an end's node (`from`, `to`, `crossesGroup`) skips an edge whose end that
-//      is a group: it neither fires nor guesses a component for the group. Rules that read only
-//      the edge's own fields still apply. A node rule's hasEdge counts such an edge, but a
-//      group peer never matches peerKind or peerCategory, as an unknown peer does not.
+//   4. An edge end may name a group (the validator knows only node ends). Rules read a group end
+//      as every node inside the group, nested groups included: the edge reaches each member, as
+//      if it had been drawn to each. Before the pass a group edge is expanded into one node edge
+//      per (source member, target member) pair, a member never paired with itself. Node rules
+//      (hasEdge, syncChainDepth) see those node edges, so a member of a group the gateway calls
+//      has an incoming edge from the gateway. An edge rule runs on each pair and reports at most
+//      one finding per drawn edge, its subject the drawn edge and its message the drawn ends.
+//      A group with no member node expands to nothing: such an edge is read as before, a rule
+//      that reads an end's node (`from`, `to`, `crossesGroup`) skipping it.
 //
 // DOM free, no imports.
 
@@ -411,6 +415,68 @@ function endsRead(p, out = new Set()) {
   return out;
 }
 
+/* ------------------------------------------------------------------------- group edges */
+
+/**
+ * Every node inside each group, nested groups included: group id -> node ids, in node order.
+ * A parent cycle is cut where `ancestry` cuts it.
+ */
+export function membersByGroup(doc) {
+  const out = new Map();
+  for (const n of doc?.nodes ?? []) {
+    if (!n || typeof n.id !== "string") continue;
+    for (const g of ancestry(doc, n)) {
+      let list = out.get(g.id);
+      if (!list) {
+        list = [];
+        out.set(g.id, list);
+      }
+      list.push(n.id);
+    }
+  }
+  return out;
+}
+
+/**
+ * The document as rules read it: each edge with a group end (an id in `groupEnd`) replaced by
+ * one node edge per (source member, target member) pair, a node never paired with itself.
+ * `from[k]` is the index in doc.edges that flat edge k came from; `raw[k]` is true for an edge
+ * with a group end kept as drawn because the group holds no node.
+ */
+export function expandGroupEdges(doc, groupEnd) {
+  const members = membersByGroup(doc);
+  const edges = [];
+  const from = [];
+  const raw = [];
+  (doc?.edges ?? []).forEach((e, i) => {
+    const gf = groupEnd.has(e?.from),
+      gt = groupEnd.has(e?.to);
+    if (!gf && !gt) {
+      edges.push(e);
+      from.push(i);
+      raw.push(false);
+      return;
+    }
+    const as = gf ? (members.get(e.from) ?? []) : [e.from];
+    const bs = gt ? (members.get(e.to) ?? []) : [e.to];
+    let n = 0;
+    for (const a of as)
+      for (const b of bs) {
+        if (a === b) continue;
+        edges.push({ ...e, from: a, to: b });
+        from.push(i);
+        raw.push(false);
+        n++;
+      }
+    if (!n) {
+      edges.push(e);
+      from.push(i);
+      raw.push(true);
+    }
+  });
+  return { flat: { ...doc, edges }, from, raw };
+}
+
 /* ------------------------------------------------------------------------- rule selection */
 
 /**
@@ -447,11 +513,12 @@ export function runRules(doc, catalogue) {
   const rules = catalogue?.rules ?? [];
   const nodes = doc.nodes ?? [];
   const edges = doc.edges ?? [];
-  const pass = syncPass(doc);
   const cat = catalogue;
-  // ids that name a group and no node: an edge end there is the group as a unit
+  // ids that name a group and no node: an edge end there is every node inside the group
   const nodeIdSet = new Set(nodes.map((n) => n?.id));
   const groupEnd = new Set((doc.groups ?? []).map((g) => g?.id).filter((id) => !nodeIdSet.has(id)));
+  const { flat, from: source, raw } = expandGroupEdges(doc, groupEnd);
+  const pass = syncPass(flat);
   for (const r of rules) {
     try {
       if (r.select?.node) {
@@ -459,7 +526,7 @@ export function runRules(doc, catalogue) {
           if (!known(node, cat)) continue;
           if (r.select.node.kind && !matchKind(r.select.node.kind, node, cat)) continue;
           if (r.select.node.category && !matchCat(r.select.node.category, node, cat)) continue;
-          if (evalPred(r.when, { doc, node, cat, pass }))
+          if (evalPred(r.when, { doc: flat, node, cat, pass }))
             hits.push({
               id: r.id,
               severity: r.severity,
@@ -469,21 +536,26 @@ export function runRules(doc, catalogue) {
         }
       } else if (r.select?.edge) {
         const reads = endsRead(r.when);
-        for (let i = 0; i < edges.length; i++) {
-          const edge = edges[i];
-          if ([...reads].some((end) => groupEnd.has(edge[end]))) continue;
+        const done = new Set();
+        for (let k = 0; k < flat.edges.length; k++) {
+          const edge = flat.edges[k];
+          const i = source[k];
+          if (done.has(i)) continue;
+          if (raw[k] && [...reads].some((end) => groupEnd.has(edge[end]))) continue;
           if (r.select.edge.mode && edge.mode !== r.select.edge.mode) continue;
           if (r.select.edge.delivery && edge.delivery !== r.select.edge.delivery) continue;
-          if (evalPred(r.when, { doc, edge, cat, pass }))
+          if (evalPred(r.when, { doc: flat, edge, cat, pass })) {
+            done.add(i);
             hits.push({
               id: r.id,
               severity: r.severity,
-              message: render(r.message, { edge, design: doc }),
+              message: render(r.message, { edge: edges[i], design: doc }),
               subject: { type: "edge", ref: i },
             });
+          }
         }
       } else if (r.select?.design) {
-        if (evalPred(r.when, { doc, cat, pass }))
+        if (evalPred(r.when, { doc: flat, cat, pass }))
           hits.push({
             id: r.id,
             severity: r.severity,

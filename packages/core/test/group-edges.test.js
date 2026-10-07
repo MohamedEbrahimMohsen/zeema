@@ -1,6 +1,6 @@
 // An edge end may name a group: the edge runs to the group as a unit, drawn to its frame. The
-// structure check accepts it, refuses an id that is both a node and a group, rules that need the
-// component at a group end skip the edge, and layout and geometry draw it to the frame border.
+// structure check accepts it, refuses an id that is both a node and a group, rules read a group
+// end as every node inside it, and layout and geometry draw it to the frame border.
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -55,15 +55,17 @@ describe("edges to groups", () => {
     expect(toMermaid(doc)).toContain('n_api_2 -->|"http"| n_db');
   });
 
-  it("skips a rule that reads the component at a group end, and still runs it elsewhere", () => {
+  it("reads a group end as every member: a rule on a member trips the group edge", () => {
     const hits = runRules(load(), catalogue).filter(
       (h) => h.id === "retry-without-adaptive-shedding",
     );
-    // edge 4 (to a node) trips it; edge 0 (to the cluster) has the same fields and is skipped
-    expect(hits.map((h) => h.subject.ref)).toEqual([4]);
+    // edge 0 (to the cluster) reaches api-1 and api-2 and trips once; edge 4 (to a node) as ever
+    expect(hits.map((h) => h.subject.ref)).toEqual([0, 4]);
+    // the message names the edge as drawn, its group end included
+    expect(hits[0].message).toContain("'cluster'");
   });
 
-  it("still runs a rule that reads only the edge", () => {
+  it("still runs a rule that reads only the edge, once per drawn edge", () => {
     const rule = {
       id: "t-http",
       severity: "warning",
@@ -73,9 +75,10 @@ describe("edges to groups", () => {
     };
     const hits = runRules(load(), { ...catalogue, rules: [rule] });
     expect(hits.map((h) => h.subject.ref)).toEqual([0, 3, 4]);
+    expect(hits[0].message).toBe("edge-lb -> cluster");
   });
 
-  it("skips crossesGroup, even negated, at a group end", () => {
+  it("reads crossesGroup on each member pair", () => {
     const rule = {
       id: "t-cross",
       severity: "warning",
@@ -83,13 +86,67 @@ describe("edges to groups", () => {
       when: { not: { crossesGroup: { kind: "system" } } },
       message: "x",
     };
+    const hits = runRules(load(), { ...catalogue, rules: [rule] });
+    // platform -> cluster pairs api-1 with api-2, both in the cluster: never crosses.
+    // api-1 -> its own cluster pairs it with api-2 alone. The rest cross a system boundary.
+    expect(hits.map((h) => h.subject.ref)).toEqual([2, 3]);
+  });
+
+  it("counts a group edge at every member for hasEdge, the same as drawn edges", () => {
+    const rule = (direction, extra = {}) => ({
+      id: `t-${direction}`,
+      severity: "info",
+      select: { node: {} },
+      when: { hasEdge: { direction, ...extra } },
+      message: "{{node.id}}",
+    });
+    const ids = (r, doc = load()) =>
+      runRules(doc, { ...catalogue, rules: [r] }).map((h) => h.subject.ref);
+    // into api-1: edge-lb -> cluster, platform -> cluster (from api-2 and db); into db: cluster -> data
+    expect(ids(rule("in"))).toEqual(["api-1", "api-2", "db"]);
+    // the drawn edge gives edge-lb a peer of a known kind at last
+    const tomcat = catalogue.components.tomcat.kind;
+    expect(ids(rule("out", { peerKind: tomcat }))).toEqual(["edge-lb", "api-1", "api-2", "db"]);
+    // a count sees one edge per member pair: edge-lb reaches api-1, api-2 (edge 0) and api-2
+    // (edge 4); api-1 reaches db (edge 1) and api-2 (edges 2 and 3)
+    expect(ids(rule("out", { count: { eq: 3 } }))).toEqual(["edge-lb", "api-1"]);
+  });
+
+  it("follows a group edge in syncChainDepth", () => {
+    const rule = {
+      id: "t-depth",
+      severity: "info",
+      select: { node: {} },
+      when: { syncChainDepth: { gt: 1 } },
+      message: "{{node.id}}",
+    };
+    // edge-lb -> cluster (sync) -> data (sync): two hops through the groups' members
+    const hits = runRules(load(), { ...catalogue, rules: [rule] }).map((h) => h.subject.ref);
+    expect(hits).toContain("edge-lb");
+  });
+
+  it("reads an edge to a group with no member as drawn, skipping rules that read its end", () => {
     const doc = load();
-    const hits = runRules(doc, { ...catalogue, rules: [rule] });
-    const groups = groupIds(doc);
-    for (const h of hits) {
-      const e = doc.edges[h.subject.ref];
-      expect(groups.has(e.from) || groups.has(e.to)).toBe(false);
-    }
+    doc.groups.push({ id: "empty", kind: "system" });
+    doc.edges.push({
+      from: "edge-lb",
+      to: "empty",
+      protocol: "http",
+      mode: "sync",
+      retryPolicy: "fixed",
+    });
+    const i = doc.edges.length - 1;
+    const refs = (rules) => runRules(doc, { ...catalogue, rules }).map((h) => h.subject.ref);
+    const field = {
+      id: "f",
+      severity: "info",
+      select: { edge: {} },
+      when: { field: "protocol", equals: "http" },
+      message: "x",
+    };
+    expect(refs([field])).toContain(i);
+    const shed = catalogue.rules.find((r) => r.id === "retry-without-adaptive-shedding");
+    expect(refs([shed])).not.toContain(i);
   });
 
   it("lays out with frames nested and draws every group edge to a frame border", () => {

@@ -942,6 +942,18 @@
 .zeema-canvas svg.scene.lighting .note-box {
   opacity: 0.35;
 }
+/* the flow lens (Alt-click, T): the lit path is drawn in the accent, so it reads as one route */
+.zeema-canvas svg.scene.tracing .edge.lit {
+  stroke: var(--accent);
+}
+/* a dense canvas (scene.ts DIM_EDGES_OVER, or the toolbar's Dim edges): every edge, label and auth
+   glyph at a quarter ink until a hover or a pin lights some; the components stay as they are.
+   Off while an edge is selected or a wire is being drawn (the svg loses `dim-edges`). */
+.zeema-canvas svg.scene.dim-edges .edge:not(.lit),
+.zeema-canvas svg.scene.dim-edges .edge-label:not(.lit),
+.zeema-canvas svg.scene.dim-edges .edge-auth:not(.lit) {
+  opacity: 0.25;
+}
 /* port dots: one at the middle of each side, just outside the card, shown on hover and on the
    selected node. Dragging one draws a wire from that side. */
 .zeema-canvas .port-dot {

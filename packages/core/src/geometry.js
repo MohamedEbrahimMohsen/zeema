@@ -36,10 +36,11 @@ export {
 
 import { frameCaption } from "./text.js";
 
-// How edges are drawn: "orthogonal" (axis-aligned segments with rounded corners, routing.js) or
-// "curved" (the curves described above). A design says which in its layout sidecar's `routing`;
-// one that says nothing is drawn this way.
-export const ROUTINGS = ["orthogonal", "curved"];
+// How edges are drawn: "orthogonal" (axis-aligned segments with rounded corners, routing.js),
+// "bundled" (orthogonal, with the edges that fan out of one side of a box, or into one, sharing a
+// trunk: see "Trunks" in routing.js) or "curved" (the curves described above). A design says
+// which in its layout sidecar's `routing`; one that says nothing is drawn the default way.
+export const ROUTINGS = ["orthogonal", "bundled", "curved"];
 export const DEFAULT_ROUTING = "orthogonal";
 
 /** A stored routing as drawn: one of ROUTINGS, anything else the default. */
@@ -353,7 +354,8 @@ export function edgeGeometry(doc, boxes, bows = {}, ports = {}, frames = {}, opt
   const boxOf = (id) => (isFrame(id) ? frames[id] : boxes[id]);
   const keys = edgeKeys(doc);
   const edges = doc.edges || [];
-  if (readRouting(options?.routing) === "orthogonal") {
+  const routing = readRouting(options?.routing);
+  if (routing !== "curved") {
     const items = [];
     edges.forEach((e, i) => {
       const a = boxOf(e.from),
@@ -374,6 +376,7 @@ export function edgeGeometry(doc, boxes, bows = {}, ports = {}, frames = {}, opt
       captions: captionBoxes,
       labelAvoid: options?.labelAvoid || [],
       labels: options?.labels || {},
+      bundle: routing === "bundled",
     }).map((r) => {
       const e = edges[r.i];
       const label = e.label || null;

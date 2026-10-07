@@ -67,7 +67,16 @@ import { EdgeStyleField, type Highlight, Inspector, type InspectorApi } from "./
 import { Palette, ProviderSprite } from "./Palette";
 import { QuickActions } from "./QuickActions";
 import type { QuickAction, QuickTarget } from "./quick-actions";
-import { facingSide, type Picked, Scene, type Subject, ZOOM_MAX, ZOOM_MIN } from "./scene";
+import {
+  DIM_EDGES_OVER,
+  type DimEdges,
+  facingSide,
+  type Picked,
+  Scene,
+  type Subject,
+  ZOOM_MAX,
+  ZOOM_MIN,
+} from "./scene";
 import "./canvas.css";
 
 type Props = {
@@ -263,6 +272,19 @@ const readPanes = (): Panes => {
   }
 };
 
+// Dim edges on a dense canvas: the same kind of habit. "auto" dims past scene.ts DIM_EDGES_OVER
+// edges, "on" always, "off" never. The picture that leaves the page is never dimmed.
+const DIM_KEY = "zeema.canvas.dimEdges";
+const DIM_MODES: DimEdges[] = ["auto", "on", "off"];
+const readDim = (): DimEdges => {
+  try {
+    const v = window.localStorage.getItem(DIM_KEY);
+    return DIM_MODES.includes(v as DimEdges) ? (v as DimEdges) : "auto";
+  } catch {
+    return "auto";
+  }
+};
+
 // "Most used" in the picker: the last components this browser placed, newest first.
 const RECENT_KEY = "zeema.palette.recent";
 const RECENT_MAX = 8;
@@ -399,7 +421,11 @@ const helpSections = (mod: string): Array<[string, Array<[string[], string]>]> =
       ],
       [
         ["Click"],
-        "Pin that highlight: it stays until Esc, a click on empty space or another click.",
+        "Pin that highlight: it stays until Esc, a click on empty space or another click. Panning and zooming keep it.",
+      ],
+      [
+        ["Alt", "Click"],
+        "Trace a component's flow: light everything upstream of it, or downstream for a source nothing points at. T does it for the selected component.",
       ],
       [
         ["Esc"],
@@ -459,6 +485,10 @@ const helpSections = (mod: string): Array<[string, Array<[string[], string]>]> =
       [["Shift", "Wheel"], "Pan sideways."],
       [[mod, "Wheel"], "Zoom around the pointer; so does a pinch."],
       [["Middle-drag", "Space", "Drag"], "Pan the canvas."],
+      [
+        ["Zoom menu"],
+        `Dim edges: auto (past ${DIM_EDGES_OVER} edges), on or off. Dimmed edges light up on hover, on a pin and while an edge is selected.`,
+      ],
       [[mod, "0"], "Fit the whole design on screen."],
       [[mod, "1"], "Back to actual size."],
       [[mod, "Shift", "K"], "Pin the component picker as a side panel, or unpin it."],
@@ -668,6 +698,7 @@ export function Canvas(props: Props) {
   // Default shown; the stored preference is read after mount so the server and the first
   // client render agree.
   const [showNotes, setShowNotes] = useState(true);
+  const [dimEdges, setDimEdgesState] = useState<DimEdges>("auto");
   const showNotesRef = useRef(true);
   showNotesRef.current = showNotes;
   // Targets whose notes are held open although the toggle is off. A look, not a setting: it
@@ -1319,6 +1350,23 @@ export function Canvas(props: Props) {
   }, []);
 
   useEffect(() => setShowNotes(readNotesPref()), []);
+  useEffect(() => setDimEdgesState(readDim()), []);
+  useEffect(() => {
+    sceneRef.current?.setDimEdges(dimEdges);
+  }, [dimEdges]);
+  const setDimEdges = useCallback((next: DimEdges) => {
+    setDimEdgesState(next);
+    try {
+      window.localStorage.setItem(DIM_KEY, next);
+    } catch {
+      /* a browser that will not remember is still a browser that works */
+    }
+  }, []);
+  // The flow lens on the one selected component (T, the menu, quick actions).
+  const traceSelected = useCallback(() => {
+    const scene = sceneRef.current;
+    if (scene?.selection.type === "node") scene.trace(scene.selection.ref as string);
+  }, []);
   // The toggle changes what the scene draws, nothing it stores, so a plain redraw is the whole
   // of it. Notes are never touched, so nothing here makes the design dirty.
   useEffect(() => {
@@ -1476,6 +1524,11 @@ export function Canvas(props: Props) {
             run: () => addNoteOn({ node: target.ref as string }),
           },
           {
+            label: "Trace flow",
+            hint: "Alt click or T",
+            run: () => scene.trace(target.ref as string),
+          },
+          {
             label: "Open in catalogue",
             hint: "new tab",
             run: () => {
@@ -1525,7 +1578,7 @@ export function Canvas(props: Props) {
           },
           {
             // Back to the automatic path: a curve's bow or an orthogonal path's waypoints.
-            label: (e.routing ?? "orthogonal") === "orthogonal" ? "Reset path" : "Straighten",
+            label: (e.routing ?? "orthogonal") !== "curved" ? "Reset path" : "Straighten",
             disabled: !Object.hasOwn(e.bows, key),
             run: () =>
               commit(null, {
@@ -1895,6 +1948,7 @@ export function Canvas(props: Props) {
       onView: (k) => setZoomPct(Math.round(k * 100)),
     });
     sceneRef.current = scene;
+    scene.setDimEdges(readDim());
     render();
     scene.fit();
     return () => {
@@ -2067,6 +2121,11 @@ export function Canvas(props: Props) {
       if (!mod && k === "n") {
         ev.preventDefault();
         setNotesShown(!showNotesRef.current);
+        return;
+      }
+      if (!mod && !ev.altKey && k === "t" && scene.selection.type === "node") {
+        ev.preventDefault();
+        traceSelected();
         return;
       }
       if (ev.key === "?") {
@@ -2809,6 +2868,12 @@ export function Canvas(props: Props) {
     { label: "200%", run: () => zoomTo(2) },
     "-",
     { label: "Fit", hint: `${mod.long} 0`, run: fitView },
+    "-",
+    ...DIM_MODES.map((m) => ({
+      label: `Dim edges: ${m}`,
+      hint: dimEdges === m ? "✓" : m === "auto" ? `past ${DIM_EDGES_OVER} edges` : undefined,
+      run: () => setDimEdges(m),
+    })),
   ];
 
   // Quick actions (⌘K): the same commands as the menus, the dock and the keys, by name. What
@@ -2873,6 +2938,23 @@ export function Canvas(props: Props) {
         run: () => setNotesShown(!showNotesRef.current),
       },
       {
+        id: "dim-edges",
+        group: "View",
+        label: `Dim edges: ${DIM_MODES[(DIM_MODES.indexOf(dimEdges) + 1) % DIM_MODES.length]}`,
+        keywords: "dense fade quiet edges lines ink",
+        run: () => setDimEdges(DIM_MODES[(DIM_MODES.indexOf(dimEdges) + 1) % DIM_MODES.length]),
+      },
+      selection.type === "node"
+        ? {
+            id: "trace-flow",
+            group: "View",
+            label: "Trace flow",
+            hint: "T",
+            keywords: "lens path upstream downstream highlight reach",
+            run: traceSelected,
+          }
+        : null,
+      {
         id: "toggle-inspector",
         group: "View",
         label: "Toggle inspector",
@@ -2914,15 +2996,19 @@ export function Canvas(props: Props) {
           }
         : null,
       { id: "arrange", group: "Design", label: "Arrange", keywords: "layout tidy", run: arrange },
-      props.canWrite && e
-        ? {
-            id: "edge-style",
-            group: "Design",
-            label: `Edge style: ${routing === "orthogonal" ? "curved" : "orthogonal"}`,
-            keywords: "edges routing orthogonal curved lines connectors elbow",
-            run: () => api.setRouting(routing === "orthogonal" ? "curved" : "orthogonal"),
-          }
-        : null,
+      ...(props.canWrite && e
+        ? (["orthogonal", "bundled", "curved"] as const)
+            .filter((r) => r !== routing)
+            .map(
+              (r): QuickAction => ({
+                id: `edge-style-${r}`,
+                group: "Design",
+                label: `Edge style: ${r}`,
+                keywords: "edges routing orthogonal bundled trunk curved lines connectors elbow",
+                run: () => api.setRouting(r),
+              }),
+            )
+        : []),
       e?.undo.length
         ? { id: "undo", group: "Design", label: "Undo", hint: `${k} Z`, run: undo }
         : null,

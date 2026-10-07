@@ -100,7 +100,7 @@ function placeNewcomer(id, size, doc, boxes) {
  *                            labels: { key: [dx, dy] },
  *                            frames: { groupId: { tint, icon, strength } },
  *                            tints: { nodeId: { tint, strength } },
- *                            routing: "orthogonal" | "curved" }; notes are not drawn
+ *                            routing: "orthogonal" | "bundled" | "curved" }; notes are not drawn
  * @returns {{positions: Object, sizes: Object, frames: Object, edges: Array,
  *            canvas: [number, number], origin: [number, number], frameStyles: Object,
  *            nodeStyles: Object}}

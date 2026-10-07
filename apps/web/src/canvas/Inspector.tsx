@@ -18,6 +18,7 @@ import {
   type NodeTint,
   type Note,
   normaliseTint,
+  type Routing,
   STRENGTHS,
   type Strength,
   TINTS,
@@ -56,7 +57,7 @@ export type InspectorApi = {
   /** The owner's list badge choice, or null for automatic. Sidecar only. */
   setBadge: (ref: string | null) => void;
   /** How the design's edges are drawn. Sidecar only, owner only. */
-  setRouting: (routing: "orthogonal" | "curved") => void;
+  setRouting: (routing: Routing) => void;
   /** Drop an edge's hand-made path (bow or waypoints): it is routed automatically again. */
   resetPath: (index: number) => void;
   /** Drop an edge's dragged label offset: the label goes back to its automatic place. */
@@ -243,30 +244,41 @@ function StrengthField({
   );
 }
 
+const EDGE_STYLES: Array<[Routing, string, string]> = [
+  ["curved", "Curved", "Curves between the boxes"],
+  ["orthogonal", "Orthogonal", "Straight runs with rounded corners"],
+  [
+    "bundled",
+    "Bundled",
+    "Orthogonal, and edges that fan out of one side of a box (or into one) share a trunk",
+  ],
+];
+
 /**
- * How the design's edges are drawn, as two segments: Curved or Orthogonal. Layout, like a group's
- * tint: it sets the sidecar's `routing`, and the canvas's own save carries it.
+ * How the design's edges are drawn, as three segments: Curved, Orthogonal or Bundled. Layout,
+ * like a group's tint: it sets the sidecar's `routing`, and the canvas's own save carries it.
  */
 export function EdgeStyleField({
   value,
   onPick,
 }: {
-  value: "orthogonal" | "curved";
-  onPick: (routing: "orthogonal" | "curved") => void;
+  value: Routing;
+  onPick: (routing: Routing) => void;
 }) {
   return (
     <div className="field set" data-field="routing">
       <div className="field-name">Edges</div>
       <fieldset className="strength-field" aria-label="Edge style">
-        {(["curved", "orthogonal"] as const).map((r) => (
+        {EDGE_STYLES.map(([r, name, tip]) => (
           <button
             key={r}
             type="button"
+            title={tip}
             aria-pressed={value === r}
             className={value === r ? "strength-seg on" : "strength-seg"}
             onClick={() => onPick(r)}
           >
-            {r === "curved" ? "Curved" : "Orthogonal"}
+            {name}
           </button>
         ))}
       </fieldset>

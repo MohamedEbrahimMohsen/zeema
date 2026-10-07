@@ -89,6 +89,27 @@ describe("edge auth", () => {
     ]);
   });
 
+  it("reads an edge to a group as reaching every member, for both auth rules", () => {
+    const doc = {
+      ...design([edge("stores", "api-key"), edge("plain", "basic"), edge("stores")], {
+        security: { edgeAuthDeclared: true },
+      }),
+      groups: [
+        { id: "stores", kind: "system" },
+        { id: "plain", kind: "system" },
+      ],
+    };
+    doc.nodes = doc.nodes.map((n) =>
+      n.id === "rds" || n.id === "db" ? { ...n, group: n.id === "rds" ? "stores" : "plain" } : n,
+    );
+    // stores holds the AWS database: a key into it fires; plain holds the default one: it does not.
+    // The unset edge into the group of data stores fires edge-auth-unset, once.
+    expect(fired(doc)).toEqual([
+      ["edge-auth-unset", 2],
+      ["edge-auth-key-where-identity", 0],
+    ]);
+  });
+
   it("draws a glyph for every value but none, on the line near the source end", () => {
     for (const a of AUTH) expect(Boolean(authGlyph(a))).toBe(a !== "none");
     expect(authGlyph(undefined)).toBeNull();

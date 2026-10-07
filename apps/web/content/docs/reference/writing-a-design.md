@@ -171,7 +171,9 @@ Anything else is a structural error, not a warning.
 ## edges
 
 Directed. `from` and `to` are node ids in this design, or a group id for an edge to the group as
-a unit, drawn to its frame; a rule that needs the component at an end skips such an edge.
+a unit, drawn once to its frame. Rules read a group end as every node inside the group, nested
+groups included, as if the edge had been drawn to each: `hasEdge` on a member counts it, and an
+edge rule fires on the group edge (once) when any member pair would trip it.
 
 ```yaml
 edges:

@@ -263,7 +263,7 @@ const present = (v) => v !== undefined && v !== null;
  * @param {object} doc      a Zeema design document
  * @param {object} [catalogue]  the bundle ({kinds, components}); read to orient reciprocal
  *                              edge pairs by flow (see the header) and for group captions. Optional.
- * @param {object} [options]    { routing: "orthogonal" | "curved" (default DEFAULT_ROUTING),
+ * @param {object} [options]    { routing: "orthogonal" | "bundled" | "curved" (default DEFAULT_ROUTING),
  *                                styles: the sidecar's group styles, for which captions carry an icon }
  * @returns {{positions: Object, sizes: Object, frames: Object,
  *            edges: Array, canvas: [number, number]}}

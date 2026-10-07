@@ -586,7 +586,9 @@ describe("component tints and tint strength", () => {
 });
 
 describe("edge style", () => {
-  it("keeps curved, and drops the default and anything unknown", () => {
+  it("keeps curved and bundled, and drops the default and anything unknown", () => {
+    expect(readRoutingField("bundled")).toBe("bundled");
+    expect(readSidecar({ routing: "bundled" }).routing).toBe("bundled");
     expect(readRoutingField("curved")).toBe("curved");
     expect(readRoutingField("orthogonal")).toBeUndefined();
     expect(readRoutingField("zigzag")).toBeUndefined();
