@@ -10,6 +10,8 @@ export type ConfirmOptions = {
   cancelLabel?: string;
   /** Destructive: the action button is red and Cancel takes the initial focus. */
   danger?: boolean;
+  /** A notice, not a question: only the action button is shown (it still answers true). */
+  alert?: boolean;
 };
 
 export function createConfirmer(show: (opts: ConfirmOptions | null) => void) {

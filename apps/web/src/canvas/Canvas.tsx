@@ -26,6 +26,14 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { UserMenu } from "@/components/UserMenu";
 import { badgeOf, brandOf } from "@/lib/badge";
 import {
+  type ImportMode,
+  importNotice,
+  LayoutImportError,
+  mergeImportedLayout,
+  pendingLayoutKey,
+  readLayoutText,
+} from "@/lib/layout-import";
+import {
   type EdgePath,
   type EdgePorts,
   type FrameStyle,
@@ -1966,6 +1974,23 @@ export function Canvas(props: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bundle]);
 
+  // A layout file checked on the design page ("Import layout") waits in this tab's session
+  // storage; it is applied once the canvas is up, as the same one undo step as from the menu.
+  useEffect(() => {
+    if (!bundle || !eng.current) return;
+    const key = pendingLayoutKey(props.owner, props.slug);
+    let text: string | null = null;
+    try {
+      text = sessionStorage.getItem(key);
+      sessionStorage.removeItem(key);
+    } catch {
+      return;
+    }
+    if (text) void applyLayoutText(text);
+    // Once per mount; applyLayoutText reads the engine through its ref.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bundle]);
+
   // ---------------------------------------------------------------- keyboard
   useEffect(() => {
     const onKey = (ev: KeyboardEvent) => {
@@ -2616,6 +2641,54 @@ export function Canvas(props: Props) {
     a.remove();
   };
 
+  // A layout file (design.layout.json) back onto this design, as one undo step. It merges by
+  // default: whatever the file names wins, and anything it leaves out keeps its place
+  // (`mergeImportedLayout`). A file that cannot be read is refused in the app's dialog, whole.
+  // A read-only canvas takes it like any other local edit.
+  const applyLayoutText = async (text: string, mode: ImportMode = "merge") => {
+    const e = eng.current;
+    if (!e) return;
+    let result: ReturnType<typeof mergeImportedLayout>;
+    try {
+      result = mergeImportedLayout(e, readLayoutText(text), e.doc, mode);
+    } catch (err) {
+      if (!(err instanceof LayoutImportError)) throw err;
+      await confirm({
+        title: "Layout not imported",
+        body: err.message,
+        confirmLabel: "OK",
+        alert: true,
+      });
+      return;
+    }
+    const { next } = result;
+    commit(null, {
+      apply: () => {
+        e.positions = next.positions;
+        e.bows = next.bows;
+        e.ports = next.ports;
+        e.labels = next.labels;
+        e.notes = next.notes;
+        e.frames = next.frames;
+        e.tints = next.tints;
+        e.badge = next.badge;
+        e.routing = next.routing;
+      },
+    });
+    setStatus(importNotice(result, mode));
+  };
+
+  const importLayout = (mode: ImportMode = "merge") => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".json,application/json";
+    input.addEventListener("change", () => {
+      const file = input.files?.[0];
+      if (file) void file.text().then((text) => applyLayoutText(text, mode));
+    });
+    input.click();
+  };
+
   const centerOn = (subject: Subject) => {
     const scene = sceneRef.current;
     if (!scene || subject.ref === null || subject.ref === undefined) return;
@@ -2867,6 +2940,7 @@ export function Canvas(props: Props) {
       run: () => void doDownload("layout"),
     },
     { label: "Download both (.zip)", hint: "re-importable", run: () => void doDownload("zip") },
+    { label: "Import layout (JSON)", hint: "merge", run: () => importLayout() },
     "-",
     { label: "Undo", hint: `${mod.long} Z`, disabled: !e?.undo.length, run: undo },
     { label: "Redo", hint: `${mod.long} Y`, disabled: !e?.redo.length, run: redo },
@@ -3094,6 +3168,20 @@ export function Canvas(props: Props) {
         keywords: "export yaml layout archive",
         run: () => void doDownload("zip"),
       },
+      {
+        id: "import-layout",
+        group: "Design",
+        label: "Import layout (JSON)",
+        keywords: "upload restore sidecar positions merge",
+        run: () => importLayout(),
+      },
+      {
+        id: "import-layout-replace",
+        group: "Design",
+        label: "Import layout (replace)",
+        keywords: "upload restore sidecar positions overwrite",
+        run: () => importLayout("replace"),
+      },
       props.canWrite
         ? {
             id: "rename",
@@ -3284,7 +3372,7 @@ export function Canvas(props: Props) {
               {status}
             </button>
           ) : (
-            <span className={`status ${statusClass}`} role="status">
+            <span className={`status ${statusClass}`} role="status" title={status}>
               {status}
             </span>
           )}

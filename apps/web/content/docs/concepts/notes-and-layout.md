@@ -180,6 +180,31 @@ draft when there is one and starting one otherwise. Your own listing shows it at
 see it once the draft is published. The canvas keeps a badge it did not set, so saving there
 never loses it.
 
+## Downloading and importing a layout
+
+**Download layout (JSON)**, in the canvas's design menu, the ⌘K palette and the YAML panel on the
+design page, saves the sidecar as `<slug>.layout.json`: cut down to the ids the design holds, keys
+in a fixed order. **Import layout (JSON)**, beside it in the same three places, puts one back:
+
+- **It merges.** Whatever the file names wins; anything it leaves out keeps its current value. A
+  file holding only `nodes` moves those boxes and leaves every other box, edge path, port, label,
+  tint and note where it was. Notes merge by id; `badge` and `routing` change only when the file
+  has them. The palette's **Import layout (replace)** swaps the whole layout for the file's
+  instead, so whatever the file lacks falls back to the automatic layout.
+- **It fits the file to the design.** Positions, paths, ports, labels and styles for a node, edge
+  or group this design does not have are dropped, and counted: the notice reads
+  `Layout imported: 12 positions, 3 edge paths, 1 dropped (not in this design); the rest kept`.
+- **It is one undo step.** Undo puts the whole previous layout back; redo applies the import again.
+  On a design you can only read, it is a local edit like moving a box: clone to keep it.
+- **A broken file is refused whole**, with the reason: text that is not JSON, a `version` this site
+  does not read (1 to 2; a file without one is read as the current version), a section of the
+  wrong shape, a position that is not two finite numbers, a waypoint list that is not
+  `{ "via": [[x, y], …] }`, or a number that is not finite anywhere in the file. Nothing is
+  applied. (The stored sidecar is still read leniently, as above; only a file you hand in is
+  checked this strictly.)
+
+From the design page the file is checked there, then the canvas opens with it applied, unsaved.
+
 ## Getting at it
 
 `GET /api/v1/designs/{owner}/{slug}/layout` returns the sidecar for the current version, or for a

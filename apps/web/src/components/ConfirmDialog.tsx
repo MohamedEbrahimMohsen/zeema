@@ -98,14 +98,16 @@ function ConfirmDialog({
             </p>
           ) : null}
           <div className="confirm-actions">
-            <button
-              ref={cancelRef}
-              type="button"
-              className="btn btn-ghost"
-              onClick={() => onAnswer(false)}
-            >
-              {opts.cancelLabel ?? "Cancel"}
-            </button>
+            {opts.alert ? null : (
+              <button
+                ref={cancelRef}
+                type="button"
+                className="btn btn-ghost"
+                onClick={() => onAnswer(false)}
+              >
+                {opts.cancelLabel ?? "Cancel"}
+              </button>
+            )}
             <button
               ref={actionRef}
               type="button"

@@ -3,9 +3,10 @@
 // the block is collapsed — the toolbar is a sibling of the <summary>, not a child of it, so a
 // click on Copy does not also fold the section away.
 //
-// Server-rendered; CopyButton is the only client island.
+// Server-rendered; CopyButton and ImportLayoutButton are the client islands.
 import { CopyButton } from "@/components/CopyButton";
 import { Download, Pencil, Raw } from "@/components/Glyphs";
+import { ImportLayoutButton } from "@/components/ImportLayoutButton";
 import { YamlView } from "@/components/YamlView";
 
 type Props = {
@@ -65,6 +66,8 @@ export function YamlSection({ owner, slug, yaml, canWrite, version }: Props) {
           <Download />
           <span>Layout</span>
         </a>
+        {/* Importing applies on the canvas, which edits the current version only. */}
+        {version ? null : <ImportLayoutButton owner={owner} slug={slug} />}
         <a
           className="btn-icon btn-icon-text"
           href={zip}

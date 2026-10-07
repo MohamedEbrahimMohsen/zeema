@@ -17,6 +17,14 @@ export const Download = () => (
   </svg>
 );
 
+export const Upload = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+    <path d="M12 16V4" />
+    <path d="m7 8 5-5 5 5" />
+    <path d="M4 20h16" />
+  </svg>
+);
+
 /** Callout marks. One per severity of aside the documentation uses. */
 export const Info = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
