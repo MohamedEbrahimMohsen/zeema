@@ -215,10 +215,10 @@ edges:
   - { from: "orders-api", to: "orders-db", protocol: "tds", mode: "sync", auth: "managed-identity" }
 ```
 
-The canvas and the SVG export draw it as a small glyph on the line by the source end: a shield for
-an identity (`managed-identity`, `iam-role`, `service-account`, `workload-identity`), a key for
-`api-key` and `basic`, a lock for `mtls` and `oauth`, nothing for `none`. Any other value is a
-structural error.
+The canvas and the SVG export draw it as a small glyph on the line by the source end: the cloud's
+own mark for `managed-identity` (Azure managed identity), `iam-role` (AWS IAM) and
+`service-account` (Google Cloud IAM), a shield for `workload-identity`, a key for `api-key` and
+`basic`, a lock for `mtls` and `oauth`, nothing for `none`. Any other value is a structural error.
 
 ## What makes a document structurally valid
 

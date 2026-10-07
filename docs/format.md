@@ -235,7 +235,7 @@ end skips them.
 | `circuitBreaker` | no | Caller stops calling after repeated failures |
 | `fallback` | no | `none`, `static`, `cached`, `degraded`: what the caller does when the callee fails |
 | `batched` | no | Calls are coalesced |
-| `auth` | no | How the caller authenticates on this hop: `managed-identity`, `iam-role`, `service-account`, `workload-identity`, `api-key`, `oauth`, `mtls`, `basic`, `none`. Any other value is a structural error. Drawn as a small glyph on the line by its source end (a shield for an identity, a key for `api-key` and `basic`, a lock for `mtls` and `oauth`, nothing for `none`). |
+| `auth` | no | How the caller authenticates on this hop: `managed-identity`, `iam-role`, `service-account`, `workload-identity`, `api-key`, `oauth`, `mtls`, `basic`, `none`. Any other value is a structural error. Drawn as a small glyph on the line by its source end (the cloud's own mark for `managed-identity`, `iam-role` and `service-account` — the catalogue icons of `azure-managed-identity`, `aws-iam` and `google-cloud-iam` in a ringed disc — a shield for `workload-identity`, a key for `api-key` and `basic`, a lock for `mtls` and `oauth`, nothing for `none`). |
 
 These seven optional fields are the only edge properties in v1. They exist because the
 intake cards showed rules that read them (retries without shedding, money calls without

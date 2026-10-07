@@ -120,7 +120,34 @@ describe("edge auth", () => {
     expect(svg).toContain("<title>auth: managed-identity</title>");
   });
 
-  it("puts the glyph a short step from the source, never past a third of the line", () => {
+  it("draws a cloud's identity as its catalogue icon, and an outline elsewhere", () => {
+    const icons = {
+      "azure-managed-identity": '<path id="mi-mark" d="M0 0h24v24z"/>',
+      "aws-iam": '<path id="iam-mark" d="M0 0h24v24z"/>',
+    };
+    const doc = design([edge("db", "managed-identity"), edge("lb", "api-key")]);
+    const svg = toSvg(doc, fixture, { icons });
+    expect(svg).toContain('<path id="mi-mark"');
+    expect(svg).not.toContain('<path id="iam-mark"');
+    expect(svg).toContain(`d="${authGlyph("api-key").path}"`);
+    expect(authGlyph("iam-role").icon).toBe("aws-iam");
+    expect(authGlyph("service-account").icon).toBe("google-cloud-iam");
+    // Each mark is a component the catalogue has, with an icon on disk.
+    for (const [provider, id] of [
+      ["azure", "azure-managed-identity"],
+      ["aws", "aws-iam"],
+      ["gcp", "google-cloud-iam"],
+    ]) {
+      expect(fs.existsSync(path.join(ROOT, "components", provider, `${id}.yaml`))).toBe(true);
+      expect(fs.existsSync(path.join(ROOT, "icons", "components", provider, `${id}.svg`))).toBe(
+        true,
+      );
+    }
+    // Without the icon, the identity falls back to the shield.
+    expect(toSvg(doc, fixture)).toContain(`d="${authGlyph("managed-identity").path}"`);
+  });
+
+  it("puts the glyph a short step from the source, off the corners and the arrowhead", () => {
     const straight = {
       points: [
         [0, 0],
@@ -128,6 +155,7 @@ describe("edge auth", () => {
       ],
     };
     expect(authAt(straight)).toEqual([20, 0]);
+    // Too short for the step clear of the arrowhead: the middle.
     expect(
       authAt({
         points: [
@@ -135,7 +163,8 @@ describe("edge auth", () => {
           [30, 0],
         ],
       }),
-    ).toEqual([10, 0]);
+    ).toEqual([15, 0]);
+    // A first segment too short for the step: the step along the next one, clear of the corner.
     expect(
       authAt({
         ortho: true,
@@ -145,7 +174,19 @@ describe("edge auth", () => {
           [100, 10],
         ],
       }),
-    ).toEqual([10, 10]);
+    ).toEqual([20, 10]);
+    // A long first segment keeps the step.
+    expect(
+      authAt({
+        ortho: true,
+        points: [
+          [75, 56],
+          [75, 128],
+          [475, 128],
+          [475, 200],
+        ],
+      }),
+    ).toEqual([75, 76]);
     const curve = {
       points: [
         [0, 0],
@@ -158,6 +199,90 @@ describe("edge auth", () => {
     expect(Math.hypot(x, y)).toBeLessThan(21);
   });
 
+  // Every corner of a drawn orthogonal edge, and the distance from (x, y) to the nearest.
+  const nearestCorner = (d, [x, y]) =>
+    Math.min(...d.points.slice(1, -1).map(([cx, cy]) => Math.hypot(cx - x, cy - y)));
+  const W = 150,
+    H = 56;
+
+  it("keeps the glyph off the corner a short first stub makes", () => {
+    // The route leaves `a`'s bottom, turns after a stub shorter than the step, runs across, and
+    // drops into `b`; a second edge from `a` runs beside it.
+    const boxes = { a: [0, 0, W, H], b: [300, 120, W, H], c: [50, 120, W, H] };
+    const doc = {
+      edges: [
+        { from: "a", to: "b", protocol: "https", mode: "sync", auth: "api-key" },
+        { from: "a", to: "c", protocol: "https", mode: "sync" },
+      ],
+    };
+    const d = edgeGeometry(doc, boxes)[0];
+    const [p, q] = d.points;
+    expect(Math.hypot(q[0] - p[0], q[1] - p[1])).toBeLessThan(30);
+    const at = authAt(d);
+    expect(nearestCorner(d, at)).toBeGreaterThanOrEqual(10);
+    expect(Math.hypot(at[0] - p[0], at[1] - p[1])).toBeGreaterThanOrEqual(10);
+  });
+
+  it("puts each bundled member's glyph on its own branch, never on the shared trunk", () => {
+    const fan = (out) => {
+      const boxes = { hub: [out ? 0 : 420, 250, W, H] };
+      const edges = [];
+      for (let k = 0; k < 4; k++) {
+        boxes[`n${k}`] = [out ? 420 : 0, 40 + k * 140, W, H];
+        const [from, to] = out ? ["hub", `n${k}`] : [`n${k}`, "hub"];
+        edges.push({ from, to, protocol: "https", mode: "sync", auth: "mtls" });
+      }
+      return edgeGeometry({ edges }, boxes, {}, {}, {}, { routing: "bundled" });
+    };
+    for (const out of [true, false]) {
+      const drawn = fan(out);
+      const at = drawn.map(authAt);
+      // Distinct places, each on a run no other member shares.
+      expect(new Set(at.map((p) => p.join(","))).size).toBe(drawn.length);
+      // ...and no two discs overlap.
+      for (const p of at)
+        for (const q of at)
+          if (p !== q) expect(Math.hypot(p[0] - q[0], p[1] - q[1])).toBeGreaterThanOrEqual(14);
+      drawn.forEach((d, k) => {
+        const [x, y] = at[k];
+        const run = d.points
+          .slice(1)
+          .map((q, j) => [d.points[j], q])
+          .find(
+            ([p, q]) =>
+              x >= Math.min(p[0], q[0]) - 0.1 &&
+              x <= Math.max(p[0], q[0]) + 0.1 &&
+              y >= Math.min(p[1], q[1]) - 0.1 &&
+              y <= Math.max(p[1], q[1]) + 0.1,
+          );
+        expect(run).toBeTruthy();
+        for (const other of drawn.filter((o) => o !== d))
+          for (let j = 1; j < other.points.length; j++) {
+            const [p, q] = [other.points[j - 1], other.points[j]];
+            const near =
+              x >= Math.min(p[0], q[0]) - 9 &&
+              x <= Math.max(p[0], q[0]) + 9 &&
+              y >= Math.min(p[1], q[1]) - 9 &&
+              y <= Math.max(p[1], q[1]) + 9;
+            expect(near).toBe(false);
+          }
+        expect(nearestCorner(d, at[k])).toBeGreaterThanOrEqual(10);
+      });
+    }
+  });
+
+  it("keeps the glyph off a label", () => {
+    const d = {
+      ortho: true,
+      points: [
+        [0, 0],
+        [200, 0],
+      ],
+      authKeep: [[4, 40]],
+    };
+    expect(authAt(d)).toEqual([40, 0]);
+  });
+
   it("does not move anything: geometry is the same with and without auth", () => {
     const boxes = {
       api: [0, 0, 140, 78],
@@ -167,7 +292,9 @@ describe("edge auth", () => {
     };
     const plain = design([edge("db"), edge("rds")]);
     const authed = design([edge("db", "mtls"), edge("rds", "iam-role")]);
-    expect(edgeGeometry(authed, boxes)).toEqual(edgeGeometry(plain, boxes));
+    // `authKeep` says only where the glyph may not sit.
+    const placed = edgeGeometry(authed, boxes).map(({ authKeep, ...d }) => d);
+    expect(placed).toEqual(edgeGeometry(plain, boxes));
   });
 
   it("carries auth into Mermaid after the edge's text", () => {

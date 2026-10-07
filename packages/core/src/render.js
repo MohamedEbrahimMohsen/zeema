@@ -6,6 +6,7 @@
 import { groupCaption, groupTitle, nodeCount, nodeLines } from "./document.js";
 import { drawnLayout } from "./drawn.js";
 import {
+  AUTH_GLYPH_R,
   authAt,
   edgePath,
   frameCaptions,
@@ -16,6 +17,9 @@ import {
 import { layout } from "./layout.js";
 import { CAPTION_LINE, FRAME_ICON_SHIFT, nodeText } from "./text.js";
 
+// The disc under an auth glyph lives in geometry.js, which places it; re-exported for the same
+// callers.
+export { AUTH_GLYPH_R } from "./geometry.js";
 // The node-text measure lives in text.js, with the box sizing that uses it; re-exported here
 // because the canvas and older callers import it from the renderer.
 export { CAPTION_LINE, nodeText, nodeWidth, textWidth } from "./text.js";
@@ -28,30 +32,52 @@ const NODE = ["#ffffff", "#d4d4d0", "#1f1f23", "#3a3a40"];
 
 const ICON = 24;
 
-// An edge's `auth` as a glyph on its line, beside the source end (geometry.js `authAt`): a shield
-// for an identity the platform issues, a key for a secret the caller holds, a lock for a
-// handshake (certificates, tokens). `none` and no auth draw nothing. Each is a 10px outline
+// An edge's `auth` as a glyph on its line, beside the source end (geometry.js `authAt`). The three
+// identities a cloud issues carry that cloud's own mark, the catalogue icon of its identity
+// component: Azure managed identity, AWS IAM, Google Cloud IAM. Otherwise a shield for an
+// identity the platform issues (workload identity), a key for a secret the caller holds, a lock
+// for a handshake (certificates, tokens). `none` and no auth draw nothing. An outline is 10px
 // centred on the origin, stroked in the edge's own colour over a disc of the page colour, so the
-// line breaks under it and the glyph reads on any edge.
+// line breaks under it and the glyph reads on any edge; a mark sits 2px inside a disc ringed in
+// the edge's colour, and falls back to the shield where the icon map does not have it.
 const SHIELD = "M0 -5L4.3 -3.4V0C4.3 2.6 2.5 4.2 0 5.2C-2.5 4.2 -4.3 2.6 -4.3 0V-3.4Z";
 const KEY = "M-1 0A2.2 2.2 0 1 1 -5.4 0A2.2 2.2 0 1 1 -1 0ZM-1 0H5M3.6 0V2M1.8 0V1.6";
 const LOCK = "M-3.6 -0.6H3.6V4.6H-3.6ZM-2.1 -0.6V-2.4A2.1 2.1 0 0 1 2.1 -2.4V-0.6";
 const AUTH_GLYPHS = {
-  "managed-identity": SHIELD,
-  "iam-role": SHIELD,
-  "service-account": SHIELD,
-  "workload-identity": SHIELD,
-  "api-key": KEY,
-  basic: KEY,
-  mtls: LOCK,
-  oauth: LOCK,
+  "managed-identity": { path: SHIELD, icon: "azure-managed-identity" },
+  "iam-role": { path: SHIELD, icon: "aws-iam" },
+  "service-account": { path: SHIELD, icon: "google-cloud-iam" },
+  "workload-identity": { path: SHIELD },
+  "api-key": { path: KEY },
+  basic: { path: KEY },
+  mtls: { path: LOCK },
+  oauth: { path: LOCK },
 };
-/** The disc under an auth glyph, in px. */
-export const AUTH_GLYPH_R = 7;
+// A mark's size in px: the disc less a 2px inset on each side.
+const AUTH_MARK = 10;
 
-/** The outline path for an edge's `auth`, or null where nothing is drawn (`none`, unset, unknown). */
+/**
+ * How an edge's `auth` is drawn — `{ path, icon? }`: the outline path, and the component id whose
+ * catalogue icon replaces it where the icon map has one — or null where nothing is drawn (`none`,
+ * unset, unknown).
+ */
 export function authGlyph(auth) {
   return typeof auth === "string" && Object.hasOwn(AUTH_GLYPHS, auth) ? AUTH_GLYPHS[auth] : null;
+}
+
+/**
+ * The inside of an auth glyph's group, centred on the origin, for the server render and the
+ * canvas alike. `mark` is the markup of the glyph's icon in its 24-unit box (the icon body
+ * itself, or a `<use>` of a symbol holding it), or null to draw the outline.
+ */
+export function authGlyphMarkup(glyph, mark) {
+  if (!mark)
+    return `<circle r="${AUTH_GLYPH_R}" fill="var(--bg)"/><path d="${glyph.path}" fill="none" stroke="var(--edge)" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round"/>`;
+  const h = AUTH_MARK / 2;
+  return (
+    `<circle r="${AUTH_GLYPH_R - 0.5}" fill="var(--bg)" stroke="var(--edge)" stroke-width="1"/>` +
+    `<g transform="translate(-${h} -${h}) scale(${+(AUTH_MARK / ICON).toFixed(4)})" color="var(--ink)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${mark}</g>`
+  );
 }
 
 // Group tints: a named set, each one stroke colour per theme, or a free `#rrggbb` colour that
@@ -426,8 +452,10 @@ export function toSvg(doc, catalogue, options = {}) {
     const glyph = authGlyph(auth);
     if (!glyph) continue;
     const [gx, gy] = authAt(e);
+    // The mark is inlined the way a node's icon is, from the same icon map.
+    const mark = glyph.icon ? (own(icons, glyph.icon) ?? null) : null;
     out.push(
-      `<g transform="translate(${f1(gx)} ${f1(gy)})"><title>auth: ${escapeXml(auth)}</title><circle r="${AUTH_GLYPH_R}" fill="var(--bg)"/><path d="${glyph}" fill="none" stroke="var(--edge)" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round"/></g>`,
+      `<g transform="translate(${f1(gx)} ${f1(gy)})"><title>auth: ${escapeXml(auth)}</title>${authGlyphMarkup(glyph, mark)}</g>`,
     );
   }
   for (const n of doc.nodes ?? []) {

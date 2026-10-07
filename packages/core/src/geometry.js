@@ -20,7 +20,14 @@
 // from the boxes on every frame.
 
 import { groupCaption } from "./document.js";
-import { labelCentre, labelOffset, orthoPath, readVia, routeOrthogonal } from "./routing.js";
+import {
+  LABEL_FONT,
+  labelCentre,
+  labelOffset,
+  orthoPath,
+  readVia,
+  routeOrthogonal,
+} from "./routing.js";
 
 // A shaped orthogonal path (sidecar `edges` entries `{ via }`): see routing.js.
 export {
@@ -34,7 +41,7 @@ export {
   viaOf,
 } from "./routing.js";
 
-import { frameCaption } from "./text.js";
+import { frameCaption, textWidth } from "./text.js";
 
 // How edges are drawn: "orthogonal" (axis-aligned segments with rounded corners, routing.js),
 // "bundled" (orthogonal, with the edges that fan out of one side of a box, or into one, sharing a
@@ -372,7 +379,7 @@ export function edgeGeometry(doc, boxes, bows = {}, ports = {}, frames = {}, opt
       const c = Object.hasOwn(caps, gid) ? caps[gid] : null;
       if (c) captionBoxes.push([f[0] + 10, f[1] + 5, Math.max(0, c.width - 20), 16 + c.extra]);
     }
-    return routeOrthogonal(items, boxes, bows || {}, isPort, {
+    const routed = routeOrthogonal(items, boxes, bows || {}, isPort, {
       captions: captionBoxes,
       labelAvoid: options?.labelAvoid || [],
       labels: options?.labels || {},
@@ -388,6 +395,7 @@ export function edgeGeometry(doc, boxes, bows = {}, ports = {}, frames = {}, opt
         label: label === null ? null : String(label),
       };
     });
+    return keepAuthOff(routed, edges);
   }
   const buckets = new Map();
   edges.forEach((e, i) => {
@@ -533,7 +541,10 @@ export function edgeGeometry(doc, boxes, bows = {}, ports = {}, frames = {}, opt
       out.push(drawn);
     });
   }
-  return out.sort((p, q) => p.i - q.i);
+  return keepAuthOff(
+    out.sort((p, q) => p.i - q.i),
+    edges,
+  );
 }
 
 // The seven points of an edge with a ported end: two cubics joined smoothly at the curve's
@@ -608,10 +619,131 @@ export function edgePath(edge) {
   return edge.ortho ? orthoPath(edge.points) : pathOf(edge.points);
 }
 
-// How far along its line, from the source end, an edge's `auth` glyph sits. The source end has
-// no arrowhead, and the label sits at the middle, so a fixed step off the source clears both; on
-// a short edge the step shrinks to a third of the line, which still keeps it off the middle.
+// Where an edge's `auth` glyph sits (`authAt`). It starts AUTH_GLYPH_STEP along the line from the
+// source end, which has no arrowhead and is far from the label at the middle. The glyph's centre
+// keeps AUTH_CLEAR from the source end and from every corner of the edge's own path (so the disc,
+// AUTH_GLYPH_R, never sits on a bend, nor on the junction a short stub makes with a run beside
+// it), AUTH_ARROW_CLEAR from the target end (the arrowhead), and off the stretches `keepAuthOff`
+// marks: another edge's line (a bundle's shared stub and trunk, a run it meets) and every label.
+// On each run in turn, from the source: the step if it fits there, else the earliest of the run's
+// middle (on a run at least AUTH_ROOM long) and the places just past a marked stretch that fits;
+// failing every run, the middle of the whole line. A curve is one run with no corners.
 export const AUTH_GLYPH_STEP = 20;
+/** The disc under an auth glyph, in px. */
+export const AUTH_GLYPH_R = 7;
+export const AUTH_CLEAR = 10;
+const AUTH_ARROW_CLEAR = 20;
+const AUTH_ROOM = 34;
+// How far off a marked line or label box the glyph's centre stays: the disc and 2px.
+const AUTH_OFF = 9;
+
+const authed = (e) => typeof e?.auth === "string" && e.auth !== "none";
+
+// The parameters [t0, t1] along a→b inside the rectangle r, or null (Liang-Barsky).
+function clipSegment(a, b, r) {
+  const dx = b[0] - a[0],
+    dy = b[1] - a[1];
+  let t0 = 0,
+    t1 = 1;
+  const sides = [
+    [-dx, a[0] - r[0]],
+    [dx, r[0] + r[2] - a[0]],
+    [-dy, a[1] - r[1]],
+    [dy, r[1] + r[3] - a[1]],
+  ];
+  for (const [p, q] of sides) {
+    if (Math.abs(p) < 1e-9) {
+      if (q < 0) return null;
+      continue;
+    }
+    const t = q / p;
+    if (p < 0) t0 = Math.max(t0, t);
+    else t1 = Math.min(t1, t);
+    if (t0 > t1) return null;
+  }
+  return [t0, t1];
+}
+
+// The rectangle a drawn label's words cover, from where it is drawn (as routing.js boxes it).
+function labelBoxOf(d) {
+  const w = textWidth(d.label, LABEL_FONT);
+  const [x, y] = d.labelAt;
+  const x0 = d.labelAnchor === "start" ? x : d.labelAnchor === "end" ? x - w : x - w / 2;
+  return [x0, y - 10, w, 12];
+}
+
+const grow = (r, m) => [r[0] - m, r[1] - m, r[2] + 2 * m, r[3] + 2 * m];
+
+/**
+ * Marks, on every drawn edge that has an `auth`, the stretches of its own line its glyph keeps
+ * off, as `authKeep`: [[from, to], ...] in px along the line from the source end (`polylineOf`).
+ * They are where the line passes within AUTH_OFF of a label (any edge's, its own too), where its
+ * glyph would overlap one placed before it (edges in order), or, for an orthogonal edge, within
+ * AUTH_OFF of another orthogonal edge's line: a run it meets or crosses; a run it shares with
+ * another edge even in part (a bundle's stub and trunk, stubs off one point) is kept off whole. An edge with nothing to keep off, or no auth, carries no `authKeep`, so the
+ * geometry of a design without auth is what it always was.
+ */
+function keepAuthOff(drawn, docEdges) {
+  if (!drawn.some((d) => authed(docEdges[d.i]))) return drawn;
+  const labels = drawn
+    .filter((d) => d.label && d.labelAt)
+    .map((d) => grow(labelBoxOf(d), AUTH_OFF));
+  const runs = [];
+  for (const d of drawn) {
+    if (!d.ortho) continue;
+    for (let k = 1; k < d.points.length; k++) {
+      const [a, b] = [d.points[k - 1], d.points[k]];
+      const x = Math.min(a[0], b[0]),
+        y = Math.min(a[1], b[1]);
+      const raw = [x, y, Math.abs(b[0] - a[0]), Math.abs(b[1] - a[1])];
+      runs.push({ i: d.i, raw, r: grow(raw, AUTH_OFF) });
+    }
+  }
+  // Two runs on one line that overlap: a stretch two edges share.
+  const overlap = (p, q, u) => Math.min(p[u] + p[u + 2], q[u] + q[u + 2]) - Math.max(p[u], q[u]);
+  const along = (p, q) =>
+    (p[2] < 0.5 && q[2] < 0.5 && Math.abs(p[0] - q[0]) < 1 && overlap(p, q, 1) > 0.5) ||
+    (p[3] < 0.5 && q[3] < 0.5 && Math.abs(p[1] - q[1]) < 1 && overlap(p, q, 0) > 0.5);
+  // The glyphs placed so far, each as the square the next glyph's centre keeps out of.
+  const placed = [];
+  for (const d of drawn) {
+    if (!authed(docEdges[d.i])) continue;
+    const others = d.ortho ? runs.filter((x) => x.i !== d.i) : [];
+    const boxes = [...labels, ...others.map((x) => x.r), ...placed];
+    const line = polylineOf(d);
+    const keep = [];
+    let s0 = 0;
+    for (let k = 1; k < line.length; k++) {
+      const [a, b] = [line[k - 1], line[k]];
+      const l = Math.hypot(b[0] - a[0], b[1] - a[1]);
+      // A run shared with another edge, even in part (a bundle's stub and trunk), is kept off
+      // whole: the glyph goes on the edge's own branch.
+      if (d.ortho) {
+        const mine = [Math.min(a[0], b[0]), Math.min(a[1], b[1]), Math.abs(b[0] - a[0])];
+        mine.push(Math.abs(b[1] - a[1]));
+        if (others.some((x) => along(mine, x.raw))) keep.push([s0, s0 + l]);
+      }
+      for (const box of boxes) {
+        const t = clipSegment(a, b, box);
+        if (t) keep.push([s0 + t[0] * l, s0 + t[1] * l]);
+      }
+      s0 += l;
+    }
+    if (keep.length) {
+      keep.sort((p, q) => p[0] - q[0]);
+      const merged = [keep[0].slice()];
+      for (const [lo, hi] of keep.slice(1)) {
+        const last = merged[merged.length - 1];
+        if (lo <= last[1]) last[1] = Math.max(last[1], hi);
+        else merged.push([lo, hi]);
+      }
+      d.authKeep = merged.map(([lo, hi]) => [Math.round(lo * 10) / 10, Math.round(hi * 10) / 10]);
+    }
+    const [gx, gy] = authAt(d);
+    placed.push(grow([gx, gy, 0, 0], AUTH_GLYPH_R * 2 + 2));
+  }
+  return drawn;
+}
 
 /** The drawn edge as a polyline: its corners when orthogonal, else its curves sampled. */
 function polylineOf(edge) {
@@ -643,30 +775,61 @@ function polylineOf(edge) {
 }
 
 /**
- * Where a drawn edge's `auth` glyph is centred: AUTH_GLYPH_STEP along the line from the source
- * end (a third of the line on a short edge), on the line itself, whichever way it is routed.
+ * Where a drawn edge's `auth` glyph is centred, on the line itself, whichever way it is routed
+ * (the rule is at AUTH_GLYPH_STEP). One place for the server render and the canvas.
  * @param {any} edge a drawn edge from `edgeGeometry`
  * @returns {[number, number]}
  */
 export function authAt(edge) {
   const line = polylineOf(edge);
-  let total = 0;
-  for (let i = 1; i < line.length; i++)
-    total += Math.hypot(line[i][0] - line[i - 1][0], line[i][1] - line[i - 1][1]);
-  let left = Math.min(AUTH_GLYPH_STEP, total / 3);
-  for (let i = 1; i < line.length; i++) {
-    const [a, b] = [line[i - 1], line[i]];
-    const l = Math.hypot(b[0] - a[0], b[1] - a[1]);
-    if (l >= left && l > 0) {
-      const t = left / l;
-      return [
-        Math.round((a[0] + (b[0] - a[0]) * t) * 10) / 10,
-        Math.round((a[1] + (b[1] - a[1]) * t) * 10) / 10,
-      ];
+  const starts = [0];
+  for (let k = 1; k < line.length; k++)
+    starts.push(
+      starts[k - 1] + Math.hypot(line[k][0] - line[k - 1][0], line[k][1] - line[k - 1][1]),
+    );
+  const total = starts[starts.length - 1];
+  const pointAt = (s) => {
+    for (let k = 1; k < line.length; k++) {
+      if (s > starts[k] + 1e-9 && k < line.length - 1) continue;
+      const l = starts[k] - starts[k - 1];
+      const t = l > 0 ? Math.min(1, Math.max(0, (s - starts[k - 1]) / l)) : 0;
+      const [a, b] = [line[k - 1], line[k]];
+      return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
     }
-    left -= l;
+    return [line[0][0], line[0][1]];
+  };
+  const round = ([x, y]) => [Math.round(x * 10) / 10, Math.round(y * 10) / 10];
+  const keep = Array.isArray(edge.authKeep) ? edge.authKeep : [];
+  const src = line[0],
+    dst = line[line.length - 1];
+  const corners = edge.ortho ? line.slice(1, -1) : [];
+  const far = (p, q, d) => Math.hypot(p[0] - q[0], p[1] - q[1]) >= d - 1e-6;
+  const fits = (s, p) =>
+    far(p, src, AUTH_CLEAR) &&
+    far(p, dst, AUTH_ARROW_CLEAR) &&
+    corners.every((c) => far(p, c, AUTH_CLEAR)) &&
+    !keep.some(([lo, hi]) => s > lo + 1e-6 && s < hi - 1e-6);
+  // The runs walked from the source, as [start, length]: each segment of an orthogonal path; a
+  // curve (or a straight line) is one.
+  const runs = edge.ortho
+    ? starts.slice(1).map((end, k) => [starts[k], end - starts[k]])
+    : [[0, total]];
+  for (const [s0, l] of runs) {
+    // After the step, the earliest of: the run's middle, and the places just past (or short of)
+    // a marked stretch, so a glyph pushed off a label or a shared run lands right beside it.
+    const others = keep
+      .flat()
+      .map((s) => s - s0)
+      .filter((c) => c > 0 && c < l);
+    if (l >= AUTH_ROOM) others.push(l / 2);
+    const tries = [AUTH_GLYPH_STEP, ...others.sort((p, q) => p - q)];
+    for (const c of tries) {
+      if (c > l) continue;
+      const p = pointAt(s0 + c);
+      if (fits(s0 + c, p)) return round(p);
+    }
   }
-  return [line[0][0], line[0][1]];
+  return round(pointAt(total / 2));
 }
 
 /**

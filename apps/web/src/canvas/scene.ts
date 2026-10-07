@@ -27,8 +27,8 @@ import {
   viaOf,
 } from "@zeema/core/geometry";
 import {
-  AUTH_GLYPH_R,
   authGlyph,
+  authGlyphMarkup,
   CAPTION_LINE,
   FRAME_ICON_SHIFT,
   nodeText,
@@ -1344,17 +1344,13 @@ export class Scene {
       if (glyph) {
         const [ax, ay] = authAt(e);
         const a = el("g", { class: "edge-auth", transform: `translate(${ax} ${ay})` });
-        a.append(
-          el("circle", { r: AUTH_GLYPH_R, fill: "var(--bg)" }),
-          el("path", {
-            d: glyph,
-            fill: "none",
-            stroke: "var(--edge)",
-            "stroke-width": 1.2,
-            "stroke-linejoin": "round",
-            "stroke-linecap": "round",
-          }),
-        );
+        // A cloud's identity carries its mark: the component's icon symbol, defined once in
+        // <defs> as a node's is. The markup itself is the server render's (authGlyphMarkup).
+        const mark =
+          glyph.icon && this.symbolFor(glyph.icon)
+            ? `<use href="#ic-${glyph.icon}" width="24" height="24"/>`
+            : null;
+        a.innerHTML = authGlyphMarkup(glyph, mark);
         glyphs.push(a);
         els.auth = a;
       }
