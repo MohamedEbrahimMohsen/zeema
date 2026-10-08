@@ -298,3 +298,88 @@ describe("copy and paste", () => {
     ]);
   });
 });
+
+describe("grouping a selection that holds groups", () => {
+  // p holds outer and a; outer holds inner and b; inner holds c; d and e are top level.
+  const base = () => ({
+    groups: [
+      { id: "p", kind: "system" },
+      { id: "outer", kind: "system", parent: "p" },
+      { id: "inner", kind: "system", parent: "outer" },
+      { id: "solo", kind: "system" },
+    ],
+    nodes: [
+      { id: "a", component: "c", group: "p" },
+      { id: "b", component: "c", group: "outer" },
+      { id: "c", component: "c", group: "inner" },
+      { id: "d", component: "c" },
+      { id: "e", component: "c" },
+      { id: "f", component: "c", group: "solo" },
+    ],
+    edges: [
+      { from: "d", to: "solo" },
+      { from: "outer", to: "e" },
+      { from: "b", to: "c" },
+    ],
+  });
+  const group = (doc, id) => doc.groups.find((g) => g.id === id);
+  const node = (doc, id) => doc.nodes.find((n) => n.id === id);
+
+  it("nests a selected group whole, keeping its members and every edge", () => {
+    const doc = base();
+    const { doc: next, id } = D.addGroup(doc, ["d", "e"], "system", undefined, ["solo"]);
+    expect(group(next, "solo").parent).toBe(id);
+    expect(node(next, "f").group).toBe("solo");
+    expect(node(next, "d").group).toBe(id);
+    expect(node(next, "e").group).toBe(id);
+    expect(next.edges).toEqual(doc.edges);
+    expect(next.groups.map((g) => g.id)).toEqual([...doc.groups.map((g) => g.id), id]);
+    expect(group(next, id).parent).toBeUndefined();
+    expect(doc).toEqual(base()); // the input is not mutated
+  });
+
+  it("moves only the outer of two nested selected groups", () => {
+    const { doc: next, id } = D.addGroup(base(), [], "system", undefined, ["outer", "inner"]);
+    expect(group(next, "outer").parent).toBe(id);
+    expect(group(next, "inner").parent).toBe("outer");
+    expect(group(next, id).parent).toBe("p");
+  });
+
+  it("leaves a selected node inside a selected group where it is, at any depth", () => {
+    const { doc: next, id } = D.addGroup(base(), ["b", "c", "a"], "system", undefined, ["outer"]);
+    expect(node(next, "b").group).toBe("outer");
+    expect(node(next, "c").group).toBe("inner");
+    expect(node(next, "a").group).toBe(id);
+    expect(group(next, "outer").parent).toBe(id);
+    expect(group(next, id).parent).toBe("p");
+  });
+
+  it("gives the new group no parent when the top-level items disagree", () => {
+    const { doc: next, id } = D.addGroup(base(), ["a", "d"], "system", undefined, ["solo"]);
+    expect(group(next, id).parent).toBeUndefined();
+    expect(node(next, "a").group).toBe(id);
+    expect(group(next, "solo").parent).toBe(id);
+  });
+
+  it("never puts the new group inside a group it contains", () => {
+    const { doc: next, id } = D.addGroup(base(), ["c"], "system", undefined, ["p", "inner"]);
+    expect(group(next, "p").parent).toBe(id);
+    expect(group(next, id).parent).toBeUndefined();
+    expect(group(next, "inner").parent).toBe("outer");
+    expect(node(next, "c").group).toBe("inner");
+    // No cycle: walking up from any group ends.
+    for (const g of next.groups) {
+      const seen = new Set();
+      for (let w = g; w; w = group(next, w.parent)) {
+        expect(seen.has(w.id)).toBe(false);
+        seen.add(w.id);
+      }
+    }
+  });
+
+  it("keeps the nodes-only call as it was", () => {
+    const { doc: next, id } = D.addGroup(base(), ["b"], "system");
+    expect(node(next, "b").group).toBe(id);
+    expect(group(next, id).parent).toBe("outer");
+  });
+});

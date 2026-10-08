@@ -1074,9 +1074,12 @@ export function Canvas(props: Props) {
 
   const groupSelection = useCallback(() => {
     const scene = sceneRef.current!;
-    const sel = ids();
-    if (!sel.length) return;
-    const { doc, id } = D.addGroup(eng.current!.doc, sel, "system");
+    // Selected groups nest whole inside the new one, keeping their members and edges.
+    const picked = scene.picked();
+    if (!picked.nodes.size && !picked.groups.size) return;
+    const nodes = [...picked.nodes];
+    const groups = [...picked.groups];
+    const { doc, id } = D.addGroup(eng.current!.doc, nodes, "system", undefined, groups);
     scene.multi = new Set();
     scene.multiGroups = new Set();
     scene.multiEdges = new Set();
@@ -1506,6 +1509,14 @@ export function Canvas(props: Props) {
         // Components and groups duplicate as one set; an edge comes along when both its ends do.
         const n = picked.nodes.size + picked.groups.size;
         return [
+          n
+            ? {
+                kind: "item",
+                label: n > 1 ? `Group these ${n}` : "Group",
+                shortcut: "G",
+                run: groupSelection,
+              }
+            : null,
           n
             ? {
                 kind: "item",
@@ -2382,7 +2393,12 @@ export function Canvas(props: Props) {
         f === "label"
           ? renameToLabel(id, v)
           : commit(D.setNodeField(eng.current!.doc, id, f, v || undefined)),
-      setProp: (id, p, v) => commit(D.setNodeProp(eng.current!.doc, id, p, v)),
+      // One component, or the Inspector's card for several: every one of them in one undo step.
+      setProp: (id, p, v) => {
+        let doc = eng.current!.doc;
+        for (const at of Array.isArray(id) ? id : [id]) doc = D.setNodeProp(doc, at, p, v);
+        commit(doc);
+      },
       setNfr: (id, f, v) => commit(D.setNfr(eng.current!.doc, id, f, v)),
       setGroup: (id, g) => commit(D.setNodeGroup(eng.current!.doc, id, g)),
       rename: (oldId, typed) => {
@@ -3094,7 +3110,7 @@ export function Canvas(props: Props) {
         always: true,
         run: (q) => (q.trim() ? askPalette(q.trim()) : openPicker()),
       },
-      multi.nodes.size
+      multi.nodes.size || multi.groups.size
         ? {
             id: "add-group",
             group: "Add",
@@ -3612,7 +3628,7 @@ export function Canvas(props: Props) {
             { pressed: pickerShown, ref: plusBtn, className: "dock-add" },
           )}
           {dockButton("Group the selection", "G", G.group, groupSelection, {
-            disabled: multi.nodes.size === 0,
+            disabled: multi.nodes.size === 0 && multi.groups.size === 0,
           })}
           {dockButton("Add a note", "", G.note, () => addNote())}
           {dockButton("Arrange", "", G.arrange, arrange)}

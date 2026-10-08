@@ -2106,7 +2106,8 @@
 }
 /* two or more edges in a mixed selection: their one card, between the counts and the panel of the
    last one clicked */
-.zeema-canvas .edge-set {
+.zeema-canvas .edge-set,
+.zeema-canvas .node-set {
   margin-bottom: var(--sp-2);
   padding-bottom: var(--sp-2);
   border-bottom: var(--border) solid var(--line);

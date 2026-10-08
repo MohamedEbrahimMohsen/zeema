@@ -28,11 +28,13 @@ import { own } from "@/lib/own";
 import { PALETTE, PALETTE_COLUMNS, pushRecent, readRecent } from "@/lib/tint-palette";
 import { mixedValue } from "./edge-set";
 import { parseQuery, type Row, score } from "./Palette";
+import { commonProps, type PropDef, propValue } from "./prop-set";
 import type { Picked, Subject } from "./scene";
 
 export type InspectorApi = {
   setField: (id: string, field: string, value: string) => void;
-  setProp: (id: string, prop: string, value: unknown) => void;
+  /** One component's property, or the same property on every id given, as one undo step. */
+  setProp: (id: string | string[], prop: string, value: unknown) => void;
   setNfr: (id: string, field: string, value: unknown) => void;
   setGroup: (id: string, group: string | null) => void;
   rename: (oldId: string, typed: string) => void;
@@ -695,6 +697,14 @@ export function Inspector({
   // Two or more edges selected: one card edits them all. With an edge as the primary subject it is
   // that card; otherwise it sits under the counts, above the panel of the last one clicked.
   const edgeSet = multi.edges.size > 1 ? [...multi.edges].sort((a, b) => a - b) : null;
+  // Two or more components: one card edits the properties they share, the same way.
+  const nodeSet =
+    multi.nodes.size > 1
+      ? doc.nodes.filter((n: any) => multi.nodes.has(n.id)).map((n: any) => n.id as string)
+      : null;
+  const nodeSetPanel = nodeSet ? (
+    <NodeSetPanel ids={nodeSet} doc={doc} catalogue={catalogue} api={api} highlight={hl} />
+  ) : null;
   const head = many ? (
     <>
       <MultiPanel
@@ -703,6 +713,9 @@ export function Inspector({
         nodeTints={nodeTints ?? {}}
         api={api}
       />
+      {nodeSetPanel && selection.type !== "node" ? (
+        <div className="node-set">{nodeSetPanel}</div>
+      ) : null}
       {edgeSet && selection.type !== "edge" ? (
         <div className="edge-set">
           <EdgePanel
@@ -719,6 +732,13 @@ export function Inspector({
   ) : null;
   if (selection.type === "node") {
     const node = doc.nodes.find((n: any) => n.id === selection.ref);
+    if (node && nodeSetPanel)
+      return (
+        <>
+          {head}
+          {nodeSetPanel}
+        </>
+      );
     if (node)
       return (
         <>
@@ -880,8 +900,12 @@ function MultiPanel({
       ) : null}
       <p className="small muted multi-hint">
         Right click for duplicate and delete.{" "}
-        {multi.edges.size > 1
-          ? "The edge fields below set every selected edge; the rest edit the last one you clicked."
+        {multi.nodes.size > 1 || multi.edges.size > 1
+          ? `The ${[multi.nodes.size > 1 ? "component" : null, multi.edges.size > 1 ? "edge" : null]
+              .filter(Boolean)
+              .join(
+                " and ",
+              )} fields below set every selected one; the rest edit the last one you clicked.`
           : "The fields below edit the last one you clicked."}
       </p>
     </div>
@@ -1088,6 +1112,85 @@ function NodePanel({
       >
         Delete node
       </button>
+    </>
+  );
+}
+
+/**
+ * Two or more components: the properties every one of their kinds declares alike, each showing
+ * the value they share or "mixed", and whatever is set goes to all of them as one undo step.
+ * What belongs to one component (its id, label, component, group) stays on the single card.
+ */
+function NodeSetPanel({
+  ids,
+  doc,
+  catalogue,
+  api,
+  highlight,
+}: {
+  ids: string[];
+  doc: any;
+  catalogue: any;
+  api: InspectorApi;
+  highlight: Highlight;
+}) {
+  const nodes = ids.map((id) => doc.nodes.find((n: any) => n.id === id)).filter(Boolean);
+  const common = commonProps(
+    nodes.map((n: any) => propDefs(catalogue, n.component) as Record<string, PropDef>),
+  );
+  const resolved = nodes.map((n: any) => effective(catalogue, n) as Record<string, unknown>);
+  const main = common.filter(([, def]) => !def.advanced);
+  const advanced = common.filter(([, def]) => def.advanced);
+  const isSet = (name: string) => nodes.some((n: any) => n.props?.[name] !== undefined);
+  const advancedSet = advanced.filter(([n]) => isSet(n)).length;
+  const propField = ([name, def]: [string, PropDef]) => {
+    const f = propValue(
+      nodes.map((n: any) => n.props?.[name]),
+      resolved.map((r) => r[name]),
+    );
+    return (
+      <Field
+        key={name}
+        name={name}
+        note={[def.type, def.required ? "required" : null].filter(Boolean).join(" · ")}
+        isSet={isSet(name)}
+        hl={highlight?.fields.includes(name)}
+      >
+        <Control
+          def={def}
+          value={f.value}
+          mixed={f.mixed}
+          resolved={f.resolved}
+          onChange={(v) => api.setProp(ids, name, v)}
+        />
+      </Field>
+    );
+  };
+  return (
+    <>
+      <h2>{nodes.length} components</h2>
+      {common.length ? (
+        <>
+          <h2>Common properties</h2>
+          {main.map(propField)}
+          {advanced.length ? (
+            <Fold
+              className="adv-props"
+              open={advancedSet > 0 || advanced.some(([n]) => highlight?.fields.includes(n))}
+              summary={
+                <>
+                  Advanced · {advanced.length}
+                  {advancedSet ? ` · ${advancedSet} set` : ""}
+                </>
+              }
+            >
+              {advanced.map(propField)}
+            </Fold>
+          ) : null}
+        </>
+      ) : (
+        <p className="muted my-2 small">These components have no properties in common.</p>
+      )}
     </>
   );
 }

@@ -532,23 +532,46 @@ export function pasteFragment(doc, fragment, catalogue) {
   return { doc: d, map, edgeAt };
 }
 
-export function addGroup(doc, memberIds, kind = "system", label) {
+// Wrap a selection in a new group. Selected groups nest inside it as they are, with everything
+// they hold; a selected node already inside a selected group (at any depth) stays where it is;
+// only the remaining loose nodes move in. Nothing is deleted, no id changes, edges are untouched.
+export function addGroup(doc, memberIds, kind = "system", label, groupIds = []) {
   const d = clone(doc);
   d.groups = d.groups || [];
   const id = uniqueId(allIds(d), label || kind);
   const g = { id, kind };
   if (label) g.label = label;
+  const byId = new Map(d.groups.map((x) => [x.id, x]));
+  const picked = new Set(groupIds.filter((x) => byId.has(x)));
+  // The ancestors of a group, nearest first, guarded against a cycle in the input.
+  const ancestors = (gid) => {
+    const out = [];
+    const seen = new Set([gid]);
+    for (let p = byId.get(gid)?.parent; p && byId.has(p) && !seen.has(p); p = byId.get(p).parent) {
+      seen.add(p);
+      out.push(p);
+    }
+    return out;
+  };
+  // Only the top-most selected groups move; one inside another selected group keeps its parent.
+  const top = [...picked].filter((x) => !ancestors(x).some((a) => picked.has(a)));
+  const inside = new Set();
+  for (const t of picked) for (const n of groupMembers(d, t)) inside.add(n);
+  const loose = d.nodes.filter((n) => memberIds.includes(n.id) && !inside.has(n.id));
   // Grouping things that already share a group nests inside it rather than beside it, which is
   // what the frames then draw: a group inside a region, not two groups crossing.
-  const parents = new Set(
-    d.nodes.filter((n) => memberIds.includes(n.id)).map((n) => n.group || null),
-  );
+  const parents = new Set([
+    ...loose.map((n) => n.group || null),
+    ...top.map((t) => byId.get(t).parent || null),
+  ]);
   if (parents.size === 1) {
     const only = [...parents][0];
-    if (only) g.parent = only;
+    // Never inside a group it now contains (cannot happen from top-most items; refused anyway).
+    if (only && !top.some((t) => t === only || ancestors(only).includes(t))) g.parent = only;
   }
   d.groups.push(g);
-  for (const n of d.nodes) if (memberIds.includes(n.id)) n.group = id;
+  for (const n of loose) n.group = id;
+  for (const t of top) byId.get(t).parent = id;
   return { doc: d, id };
 }
 
