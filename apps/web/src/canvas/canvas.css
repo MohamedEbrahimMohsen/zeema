@@ -1989,12 +1989,15 @@
 .zeema-menu .menu-chevron {
   color: var(--muted);
   display: inline-flex;
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
+  /* the glyph's stroke spans the middle 6/24 of its box: pull it right by the empty
+     9/24 so the visible arrow ends where the shortcut text ends */
+  margin-right: -4.5px;
 }
 .zeema-menu .menu-sub .menu-chevron > svg {
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
 }
 /* keyboard focus reads as hover; the pointer resting on a row focuses it too */
 .zeema-menu button:focus-visible:not([disabled]) {
