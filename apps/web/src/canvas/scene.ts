@@ -11,6 +11,7 @@
 
 import {
   groupCaption,
+  groupsCoveredBy,
   groupTitle,
   nodeCount,
   nodeDeadLetter,
@@ -2085,6 +2086,7 @@ export class Scene {
         add: ev.shiftKey,
         base: new Set(this.multi),
         baseEdges: new Set(this.picked().edges),
+        baseGroups: new Set(this.picked().groups),
         moved: false,
         rect: el("rect", { class: "marquee", x: wx, y: wy, width: 0, height: 0 }),
       };
@@ -2235,6 +2237,10 @@ export class Scene {
       .filter(([, b]) => overlaps(b, r))
       .map(([id]) => id);
     this.multi = m.add ? new Set([...m.base, ...hit]) : new Set(hit);
+    // Groups too: every one whose members the selection now holds, all of them — the same rule
+    // the engine applies when the selection is grouped, so a swept group nests whole.
+    const covered = groupsCoveredBy(this.model.doc, [...this.multi]);
+    this.multiGroups = m.add ? new Set([...m.baseGroups, ...covered]) : new Set(covered);
     // Edges too: every one drawn wholly inside the sweep, and every one between two components
     // it picked. Read off this run's geometry, never measured off the page.
     const edges = sweptEdges(this.geom || [], r as Rect, new Set(hit));
@@ -2251,12 +2257,10 @@ export class Scene {
     this.unpin();
     if (!m.moved) return;
     // With Shift held the sweep adds to what was selected, groups and edges included.
-    if (m.add)
-      this.selectMany(
-        { nodes: [...this.multi], groups: [...this.multiGroups], edges: [...this.multiEdges] },
-        this.selection.type === "node" ? (this.selection.ref as string) : null,
-      );
-    else this.selectMany({ nodes: [...this.multi], edges: [...this.multiEdges] });
+    this.selectMany(
+      { nodes: [...this.multi], groups: [...this.multiGroups], edges: [...this.multiEdges] },
+      m.add && this.selection.type === "node" ? (this.selection.ref as string) : null,
+    );
   }
 
   // ---------------------------------------------------------------- moving nodes

@@ -300,7 +300,8 @@ describe("copy and paste", () => {
 });
 
 describe("grouping a selection that holds groups", () => {
-  // p holds outer and a; outer holds inner and b; inner holds c; d and e are top level.
+  // p holds outer, a and g; outer holds inner and b; inner holds c; d and e are top level.
+  // g is never selected, so p is not covered by a sweep over a, b and c.
   const base = () => ({
     groups: [
       { id: "p", kind: "system" },
@@ -315,6 +316,7 @@ describe("grouping a selection that holds groups", () => {
       { id: "d", component: "c" },
       { id: "e", component: "c" },
       { id: "f", component: "c", group: "solo" },
+      { id: "g", component: "c", group: "p" },
     ],
     edges: [
       { from: "d", to: "solo" },
@@ -381,5 +383,49 @@ describe("grouping a selection that holds groups", () => {
     const { doc: next, id } = D.addGroup(base(), ["b"], "system");
     expect(node(next, "b").group).toBe(id);
     expect(group(next, id).parent).toBe("outer");
+  });
+
+  it("nests a group whole when every member is selected without its id", () => {
+    const doc = base();
+    const { doc: next, id } = D.addGroup(doc, ["f", "d"], "system");
+    expect(group(next, "solo").parent).toBe(id);
+    expect(node(next, "f").group).toBe("solo");
+    expect(node(next, "d").group).toBe(id);
+    expect(D.groupMembers(next, "solo")).toEqual(["f"]);
+    expect(next.edges).toEqual(doc.edges);
+    expect(next.groups.map((g) => g.id)).toEqual([...doc.groups.map((g) => g.id), id]);
+  });
+
+  it("pulls out the selected nodes of a group only partly selected", () => {
+    const { doc: next, id } = D.addGroup(base(), ["a", "d"], "system");
+    expect(node(next, "a").group).toBe(id);
+    expect(node(next, "d").group).toBe(id);
+    expect(node(next, "g").group).toBe("p");
+    expect(group(next, "p").parent).toBeUndefined();
+    expect(group(next, "outer").parent).toBe("p");
+  });
+
+  it("re-parents only the outer of nested groups covered through their members", () => {
+    const { doc: next, id } = D.addGroup(base(), ["b", "c"], "system");
+    expect(group(next, "outer").parent).toBe(id);
+    expect(group(next, "inner").parent).toBe("outer");
+    expect(node(next, "b").group).toBe("outer");
+    expect(node(next, "c").group).toBe("inner");
+    expect(group(next, id).parent).toBe("p");
+  });
+
+  it("never counts an empty group as covered", () => {
+    const doc = base();
+    doc.groups.push({ id: "empty", kind: "system" });
+    expect(D.groupsCoveredBy(doc, ["d"])).toEqual([]);
+    const { doc: next, id } = D.addGroup(doc, ["d", "e"], "system");
+    expect(group(next, "empty").parent).toBeUndefined();
+    expect(node(next, "d").group).toBe(id);
+  });
+
+  it("lists the groups a set of nodes covers, nested ones included", () => {
+    expect(D.groupsCoveredBy(base(), ["b", "c", "f"]).sort()).toEqual(["inner", "outer", "solo"]);
+    expect(D.groupsCoveredBy(base(), ["a", "b", "c", "g"]).sort()).toEqual(["inner", "outer", "p"]);
+    expect(D.groupsCoveredBy(base(), [])).toEqual([]);
   });
 });

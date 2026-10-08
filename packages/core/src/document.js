@@ -532,9 +532,25 @@ export function pasteFragment(doc, fragment, catalogue) {
   return { doc: d, map, edgeAt };
 }
 
+// The groups a set of nodes covers: every group with at least one member (at any depth) whose
+// members are all in the set. Sweeping over everything a group holds selects the group; an empty
+// group is never covered.
+export function groupsCoveredBy(doc, nodeIds) {
+  const ids = new Set(nodeIds);
+  return (doc.groups || [])
+    .filter((g) => {
+      const members = groupMembers(doc, g.id);
+      return members.length > 0 && members.every((m) => ids.has(m));
+    })
+    .map((g) => g.id);
+}
+
 // Wrap a selection in a new group. Selected groups nest inside it as they are, with everything
 // they hold; a selected node already inside a selected group (at any depth) stays where it is;
-// only the remaining loose nodes move in. Nothing is deleted, no id changes, edges are untouched.
+// only the remaining loose nodes move in. A group counts as selected when it is listed in
+// groupIds or when memberIds holds every one of its members (groupsCoveredBy); a group with only
+// some members selected stays, and those members move out into the new group.
+// Nothing is deleted, no id changes, edges are untouched.
 export function addGroup(doc, memberIds, kind = "system", label, groupIds = []) {
   const d = clone(doc);
   d.groups = d.groups || [];
@@ -542,7 +558,9 @@ export function addGroup(doc, memberIds, kind = "system", label, groupIds = []) 
   const g = { id, kind };
   if (label) g.label = label;
   const byId = new Map(d.groups.map((x) => [x.id, x]));
-  const picked = new Set(groupIds.filter((x) => byId.has(x)));
+  const picked = new Set(
+    [...groupIds, ...groupsCoveredBy(d, memberIds)].filter((x) => byId.has(x)),
+  );
   // The ancestors of a group, nearest first, guarded against a cycle in the input.
   const ancestors = (gid) => {
     const out = [];
