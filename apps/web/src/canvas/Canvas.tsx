@@ -14,6 +14,7 @@ import {
   rekeyPorts,
 } from "@zeema/core/geometry";
 import { layout } from "@zeema/core/layout";
+import { toMermaid } from "@zeema/core/render";
 import { runRules } from "@zeema/core/rules";
 import { check } from "@zeema/core/structure";
 import { parse, serialize } from "@zeema/core/yaml";
@@ -68,12 +69,13 @@ import {
 import { confirmThenPublish } from "@/lib/publish";
 import { publishSlugFor } from "@/lib/slug";
 import { BadgeRow } from "./BadgeRow";
-import { ContextMenu, type MenuItem } from "./ContextMenu";
-import { exportScene } from "./exportScene";
+import { ContextMenu } from "./ContextMenu";
+import { exportScene, saveFile } from "./exportScene";
 import { type CanvasFinding, FindingsPanel } from "./FindingsPanel";
 import { GroupPicker } from "./GroupPicker";
 import { type HoverAt, HoverCard } from "./HoverCard";
 import { EdgeStyleField, type Highlight, Inspector, type InspectorApi } from "./Inspector";
+import { designMenu, type MenuEntry, SEP } from "./menu-model";
 import { Palette, ProviderSprite } from "./Palette";
 import { dimmed, readDim, readHoverCards, writeDim, writeHoverCards } from "./prefs";
 import { QuickActions } from "./QuickActions";
@@ -498,8 +500,8 @@ const helpSections = (mod: string): Array<[string, Array<[string[], string]>]> =
       [[mod, "Wheel"], "Zoom around the pointer; so does a pinch."],
       [["Middle-drag", "Space", "Drag"], "Pan the canvas."],
       [
-        ["Zoom menu"],
-        `Hover cards and Dim edges, as switches. Dim edges follows the design (past ${DIM_EDGES_OVER} edges) until you click it once. Dimmed edges light up on hover, on a pin and while an edge is selected.`,
+        ["Design menu", "View"],
+        `Pin the picker, Keep the inspector away, Pin design settings, Dim edges and Hover cards, as switches. Dim edges follows the design (past ${DIM_EDGES_OVER} edges) until you click it once. Dimmed edges light up on hover, on a pin and while an edge is selected.`,
       ],
       [[mod, "0"], "Fit the whole design on screen."],
       [[mod, "1"], "Back to actual size."],
@@ -573,7 +575,7 @@ export function Canvas(props: Props) {
   const [menu, setMenu] = useState<{
     x: number;
     y: number;
-    items: MenuItem[];
+    items: MenuEntry[];
     label?: string;
     from?: HTMLElement | null;
   } | null>(null);
@@ -586,7 +588,7 @@ export function Canvas(props: Props) {
   const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   // True while something else holds the pointer's attention (a menu, a popover, a dialog).
   const hoverQuiet = useRef(false);
-  // Hover cards at all (the zoom menu, Shift H, quick actions). Off: the highlight still follows
+  // Hover cards at all (View in the design menu, Shift H, quick actions). Off: the highlight still follows
   // the pointer, a pin and the lens still work; only the card never opens.
   const [hoverCards, setHoverCardsState] = useState(true);
   const hoverCardsRef = useRef(true);
@@ -1493,7 +1495,7 @@ export function Canvas(props: Props) {
   );
 
   const menuFor = useCallback(
-    (target: Subject, at: [number, number], client: [number, number] = [0, 0]): MenuItem[] => {
+    (target: Subject, at: [number, number], client: [number, number] = [0, 0]): MenuEntry[] => {
       const scene = sceneRef.current!;
       const e = eng.current!;
       const count = scene.multi.size;
@@ -1506,15 +1508,17 @@ export function Canvas(props: Props) {
         return [
           n
             ? {
+                kind: "item",
                 label: n > 1 ? `Duplicate these ${n}` : "Duplicate",
-                hint: "Ctrl D",
+                shortcut: "Ctrl D",
                 run: duplicateSelection,
               }
             : null,
-          n ? "-" : null,
+          n ? SEP : null,
           {
+            kind: "item",
             label: `Delete these ${total}`,
-            hint: "Del",
+            shortcut: "Del",
             danger: true,
             run: deleteSelection,
           },
@@ -1524,34 +1528,45 @@ export function Canvas(props: Props) {
         const grouped = e.doc.nodes.some((n: any) => scene.multi.has(n.id) && n.group);
         return [
           {
+            kind: "item",
             label: "Rename",
-            hint: "double click",
+            shortcut: "double click",
             run: () => scene.editLabel("node", target.ref as string),
           },
-          { label: count > 1 ? `Group these ${count}` : "Group", hint: "G", run: groupSelection },
           {
+            kind: "item",
+            label: count > 1 ? `Group these ${count}` : "Group",
+            shortcut: "G",
+            run: groupSelection,
+          },
+          {
+            kind: "item",
             label: "Move to group…",
             hint: (e.doc.groups || []).length ? undefined : "no groups yet",
             disabled: !(e.doc.groups || []).length,
             run: () => openMoveTo(client[0], client[1]),
           },
-          grouped ? { label: "Remove from group", run: releaseFromGroup } : null,
+          grouped ? { kind: "item", label: "Remove from group", run: releaseFromGroup } : null,
           {
+            kind: "item",
             label: count > 1 ? `Duplicate these ${count}` : "Duplicate",
-            hint: "Ctrl D",
+            shortcut: "Ctrl D",
             run: duplicateSelection,
           },
           {
+            kind: "item",
             label: "Add note",
             hint: "pinned here",
             run: () => addNoteOn({ node: target.ref as string }),
           },
           {
+            kind: "item",
             label: "Trace flow",
-            hint: "Alt click or T",
+            shortcut: "Alt click or T",
             run: () => scene.trace(target.ref as string),
           },
           {
+            kind: "item",
             label: "Open in catalogue",
             hint: "new tab",
             run: () => {
@@ -1564,10 +1579,11 @@ export function Canvas(props: Props) {
                 );
             },
           },
-          "-",
+          SEP,
           {
+            kind: "item",
             label: count > 1 ? `Delete these ${count}` : "Delete",
-            hint: "Del",
+            shortcut: "Del",
             danger: true,
             run: deleteSelection,
           },
@@ -1578,8 +1594,14 @@ export function Canvas(props: Props) {
         const edge = e.doc.edges[i];
         const key = edgeKeys(e.doc)[i];
         return [
-          { label: "Edit label", hint: "double click", run: () => scene.editLabel("edge", i) },
           {
+            kind: "item",
+            label: "Edit label",
+            shortcut: "double click",
+            run: () => scene.editLabel("edge", i),
+          },
+          {
+            kind: "item",
             label: "Reverse direction",
             // Bows are keyed by pair and order, so without re-keying, reversing one of a
             // reciprocal pair would hand its bow to the other lane.
@@ -1595,11 +1617,13 @@ export function Canvas(props: Props) {
             },
           },
           {
+            kind: "item",
             label: edge?.mode === "async" ? "Make synchronous" : "Make asynchronous",
             run: () =>
               commit(D.setEdgeField(e.doc, i, "mode", edge?.mode === "async" ? "sync" : "async")),
           },
           {
+            kind: "item",
             // Back to the automatic path: a curve's bow or an orthogonal path's waypoints.
             label: (e.routing ?? "orthogonal") !== "curved" ? "Reset path" : "Straighten",
             disabled: !Object.hasOwn(e.bows, key),
@@ -1612,6 +1636,7 @@ export function Canvas(props: Props) {
               }),
           },
           {
+            kind: "item",
             label: "Reset label position",
             disabled: !Object.hasOwn(e.labels, key),
             run: () =>
@@ -1623,6 +1648,7 @@ export function Canvas(props: Props) {
               }),
           },
           {
+            kind: "item",
             label: "Reset ends",
             hint: "attach automatically",
             disabled: !e.ports[key],
@@ -1634,10 +1660,11 @@ export function Canvas(props: Props) {
                 },
               }),
           },
-          "-",
+          SEP,
           {
+            kind: "item",
             label: "Delete",
-            hint: "Del",
+            shortcut: "Del",
             danger: true,
             run: () => {
               scene.select(null, null);
@@ -1650,43 +1677,73 @@ export function Canvas(props: Props) {
         const id = target.ref as string;
         const note = e.notes.find((n) => n.id === id);
         return [
-          { label: "Edit text", hint: "double click", run: () => scene.editLabel("note", id) },
+          {
+            kind: "item",
+            label: "Edit text",
+            shortcut: "double click",
+            run: () => scene.editLabel("note", id),
+          },
           note?.anchor
-            ? { label: "Detach note", hint: "keep it where it is", run: () => detachNote(id) }
+            ? {
+                kind: "item",
+                label: "Detach note",
+                hint: "keep it where it is",
+                run: () => detachNote(id),
+              }
             : null,
-          "-",
-          { label: "Delete note", hint: "Del", danger: true, run: () => deleteNote(id) },
+          SEP,
+          {
+            kind: "item",
+            label: "Delete note",
+            shortcut: "Del",
+            danger: true,
+            run: () => deleteNote(id),
+          },
         ];
       }
       if (target.type === "group") {
         const id = target.ref as string;
         const members = D.groupMembers(e.doc, id).length;
         return [
-          { label: "Rename", hint: "double click", run: () => scene.editLabel("group", id) },
           {
+            kind: "item",
+            label: "Rename",
+            shortcut: "double click",
+            run: () => scene.editLabel("group", id),
+          },
+          {
+            kind: "item",
             label: "Select members",
             disabled: !members,
             run: () => scene.selectNodes(D.groupMembers(e.doc, id)),
           },
           {
+            kind: "item",
             label: "Duplicate",
-            hint: "Ctrl D",
+            shortcut: "Ctrl D",
             run: () => {
               scene.select("group", id);
               duplicateSelection();
             },
           },
-          { label: "Add note", hint: "pinned here", run: () => addNoteOn({ group: id }) },
-          "-",
           {
+            kind: "item",
+            label: "Add note",
+            hint: "pinned here",
+            run: () => addNoteOn({ group: id }),
+          },
+          SEP,
+          {
+            kind: "item",
             label: "Remove group, keep members",
-            hint: "Del",
+            shortcut: "Del",
             run: () => {
               scene.select(null, null);
               commit(D.deleteGroup(e.doc, id));
             },
           },
           {
+            kind: "item",
             label: `Delete group and ${members} member${members === 1 ? "" : "s"}`,
             danger: true,
             disabled: !members,
@@ -1702,17 +1759,28 @@ export function Canvas(props: Props) {
       }
       // Empty canvas. Paste offers what this page copied; Ctrl+V also reads the system clipboard.
       return [
-        { label: "Add component…", hint: "lands here", run: () => openPicker({ place: { at } }) },
-        { label: "Add note here", hint: "annotation, not a node", run: () => addNote(at) },
         {
+          kind: "item",
+          label: "Add component…",
+          hint: "lands here",
+          run: () => openPicker({ place: { at } }),
+        },
+        {
+          kind: "item",
+          label: "Add note here",
+          hint: "annotation, not a node",
+          run: () => addNote(at),
+        },
+        {
+          kind: "item",
           label: "Paste",
-          hint: "Ctrl V",
+          shortcut: "Ctrl V",
           disabled: !clipRef.current,
           run: () => pasteText(null),
         },
-        "-",
-        { label: "Fit", hint: "Ctrl 0", run: () => scene.fit() },
-        { label: "Arrange", run: arrange },
+        SEP,
+        { kind: "item", label: "Fit", shortcut: "Ctrl 0", run: () => scene.fit() },
+        { kind: "item", label: "Arrange", run: arrange },
       ];
     },
     [
@@ -2617,10 +2685,16 @@ export function Canvas(props: Props) {
     }
   };
 
-  const doExport = async (format: "svg" | "png") => {
+  const doExport = async (format: "svg" | "png" | "mermaid") => {
     const scene = sceneRef.current;
     if (!scene) return;
     try {
+      // Mermaid is text the engine writes from the document: nothing to draw, nothing to count.
+      if (format === "mermaid") {
+        const doc = eng.current!.doc;
+        saveFile(`${doc.id}.mmd`, toMermaid(doc, "TD", bundle?.catalogue), "text/plain");
+        return;
+      }
       await exportScene(scene, eng.current!.doc.id, format);
       // Counted by the server where it renders the design's export (render?download=).
       fetch(`/api/v1/designs/${props.owner}/${props.slug}/render?download=${format}`).catch(
@@ -2897,7 +2971,7 @@ export function Canvas(props: Props) {
           : "";
 
   // A dropdown under the button that opened it, handing focus back to that button on close.
-  const dropdown = (ev: React.MouseEvent<HTMLElement>, label: string, items: MenuItem[]) => {
+  const dropdown = (ev: React.MouseEvent<HTMLElement>, label: string, items: MenuEntry[]) => {
     const from = ev.currentTarget;
     const r = from.getBoundingClientRect();
     setMenu({ x: r.left, y: r.bottom + 6, items, label, from });
@@ -2919,88 +2993,91 @@ export function Canvas(props: Props) {
       ? { label: "Clone to edit", run: () => void doClone() }
       : { label: "Sign in to clone", run: () => window.location.assign(signInHref) };
 
-  const fileMenu = (): MenuItem[] => [
-    { label: "Quick actions", hint: `${mod.long} K`, run: () => setQuick(true) },
-    "-",
-    props.canWrite ? { label: "Rename", hint: "title", run: () => setEditingTitle(true) } : null,
-    { label: "Design settings", hint: "id, requirements", run: openDesignSettings },
-    props.canWrite
-      ? { label: "Save", hint: `${mod.long} S`, disabled: blocking, run: () => void save() }
-      : null,
-    "-",
-    props.canWrite
-      ? {
-          label: unpublished ? "Publish" : "Published",
-          hint: unpublished ? "release the draft" : "readers see this",
-          disabled: blocking || !unpublished,
-          run: () => void doPublish(),
-        }
-      : null,
-    { label: "Copy link", run: () => void copyLink() },
-    {
-      label: "Releases",
-      hint: "design page",
-      run: () => window.location.assign(`/d/${props.owner}/${props.slug}#section-history`),
-    },
-    cloneCommand,
-    "-",
-    { label: "Export SVG", run: () => void doExport("svg") },
-    { label: "Export PNG", run: () => void doExport("png") },
-    { label: "Download YAML", hint: "design.yaml", run: () => void doDownload("yaml") },
-    {
-      label: "Download layout (JSON)",
-      hint: "positions, notes",
-      run: () => void doDownload("layout"),
-    },
-    { label: "Download both (.zip)", hint: "re-importable", run: () => void doDownload("zip") },
-    { label: "Import layout (JSON)", hint: "merge", run: () => importLayout() },
-    "-",
-    { label: "Undo", hint: `${mod.long} Z`, disabled: !e?.undo.length, run: undo },
-    { label: "Redo", hint: `${mod.long} Y`, disabled: !e?.redo.length, run: redo },
-    "-",
-    {
-      label: "Pin the picker",
-      hint: `${mod.long} Shift K`,
-      checked: panes.left,
-      toggle: (on: boolean) => setPane("left", on),
-    },
-    {
-      label: "Show the inspector",
-      hint: `${mod.long} Shift P`,
-      checked: panes.right,
-      toggle: (on: boolean) => setPane("right", on),
-    },
-    {
-      label: "Pin design settings",
-      hint: "\\ or D",
-      checked: panes.design,
-      toggle: (on: boolean) => pinDesign(on),
-    },
-    { label: "Keys & gestures", hint: "?", run: () => setHelp(true) },
-    props.canDelete ? "-" : null,
-    props.canDelete ? { label: "Delete design", danger: true, run: () => void doDelete() } : null,
-  ];
+  const selectAll = () => {
+    const d = eng.current?.doc;
+    if (!d) return;
+    sceneRef.current?.selectMany({
+      nodes: d.nodes.map((n: any) => n.id),
+      groups: (d.groups ?? []).map((g: any) => g.id),
+      edges: d.edges.map((_: any, i: number) => i),
+    });
+  };
+  // Paste from the menu: the system clipboard when the page may read it, else the in-page copy.
+  const pasteFromMenu = async () => {
+    let text: string | null = null;
+    try {
+      text = (await navigator.clipboard?.readText?.()) ?? null;
+    } catch {
+      // Refused or unavailable: the in-page copy still pastes.
+    }
+    pasteText(text);
+  };
+
+  // The design menu (the chevron by the title), built as a tree by menu-model.ts from the same
+  // commands quick actions run.
+  const fileMenu = (): MenuEntry[] =>
+    designMenu({
+      canWrite: Boolean(props.canWrite),
+      canDelete: Boolean(props.canDelete),
+      unpublished: Boolean(unpublished),
+      blocking,
+      canUndo: Boolean(e?.undo.length),
+      canRedo: Boolean(e?.redo.length),
+      hasSelection: selected,
+      hasContent: Boolean(e && (e.doc.nodes.length || e.doc.edges.length || e.doc.groups?.length)),
+      canPaste: Boolean(clipRef.current) || Boolean(navigator.clipboard?.readText),
+      mod: mod.long,
+      clone: {
+        label: cloneCommand.label,
+        hint: "hint" in cloneCommand ? cloneCommand.hint : undefined,
+      },
+      view: {
+        pinPicker: panes.left,
+        inspectorAway: !panes.right,
+        pinDesign: panes.design,
+        dimEdges: edgesDimmed,
+        dimEdgesHint: dimEdges === "auto" ? `past ${DIM_EDGES_OVER} edges` : undefined,
+        hoverCards,
+      },
+      run: {
+        quick: () => setQuick(true),
+        rename: () => setEditingTitle(true),
+        settings: openDesignSettings,
+        save: () => void save(),
+        publish: () => void doPublish(),
+        releases: () => window.location.assign(`/d/${props.owner}/${props.slug}#section-history`),
+        copyLink: () => void copyLink(),
+        clone: cloneCommand.run,
+        export: (what) => void doExport(what),
+        download: (what) => void doDownload(what),
+        importLayout,
+        undo,
+        redo,
+        selectAll,
+        copy: () => void copySelection(),
+        paste: () => void pasteFromMenu(),
+        duplicate: duplicateSelection,
+        help: () => setHelp(true),
+        delete: () => void doDelete(),
+        pinPicker: (on) => setPane("left", on),
+        inspectorAway: (on) => setPane("right", !on),
+        pinDesign: (on) => pinDesign(on),
+        dimEdges: setDimEdges,
+        hoverCards: setHoverCards,
+      },
+    });
 
   // What the Dim edges box shows: the stored choice, or the auto rule on this design.
   const edgesDimmed = dimmed(dimEdges, e?.doc.edges.length ?? 0);
-  const zoomMenu = (): MenuItem[] => [
-    { label: "Zoom in", disabled: zoomPct >= ZOOM_MAX * 100, run: zoomIn },
-    { label: "Zoom out", disabled: zoomPct <= ZOOM_MIN * 100, run: zoomOut },
-    "-",
-    { label: "50%", run: () => zoomTo(0.5) },
-    { label: "100%", hint: `${mod.long} 1`, run: () => zoomTo(1) },
-    { label: "200%", run: () => zoomTo(2) },
-    "-",
-    { label: "Fit", hint: `${mod.long} 0`, run: fitView },
-    "-",
-    { label: "Hover cards", checked: hoverCards, toggle: setHoverCards },
-    {
-      label: "Dim edges",
-      hint: dimEdges === "auto" ? `past ${DIM_EDGES_OVER} edges` : undefined,
-      hintUntilSet: true,
-      checked: edgesDimmed,
-      toggle: setDimEdges,
-    },
+  const zoomMenu = (): MenuEntry[] => [
+    { kind: "item", label: "Zoom in", disabled: zoomPct >= ZOOM_MAX * 100, run: zoomIn },
+    { kind: "item", label: "Zoom out", disabled: zoomPct <= ZOOM_MIN * 100, run: zoomOut },
+    SEP,
+    { kind: "item", label: "50%", run: () => zoomTo(0.5) },
+    { kind: "item", label: "100%", shortcut: `${mod.long} 1`, run: () => zoomTo(1) },
+    { kind: "item", label: "200%", run: () => zoomTo(2) },
+    SEP,
+    { kind: "item", label: "Fit", shortcut: `${mod.long} 0`, run: fitView },
   ];
 
   // Quick actions (⌘K): the same commands as the menus, the dock and the keys, by name. What
@@ -3175,6 +3252,13 @@ export function Canvas(props: Props) {
         label: "Export PNG",
         keywords: "download image",
         run: () => void doExport("png"),
+      },
+      {
+        id: "export-mermaid",
+        group: "Design",
+        label: "Export Mermaid",
+        keywords: "download flowchart text mmd",
+        run: () => void doExport("mermaid"),
       },
       {
         id: "download-yaml",

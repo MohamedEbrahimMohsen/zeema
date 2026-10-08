@@ -69,12 +69,12 @@ downstream instead. The lens is a pin: Esc or a click on empty canvas clears it.
 
 A design with more than 15 edges draws its edges, their labels and auth glyphs at a quarter ink,
 components at full; hovering or pinning lights the ones you ask about, and selecting an edge or
-drawing a new one brings every edge back to full ink. The zoom menu's **Dim edges** switch
+drawing a new one brings every edge back to full ink. **View → Dim edges**, in the design menu,
 shows that rule until you click it; from then on it is simply on or off. The choice is kept in this
 browser only, not in the sidecar, and exported pictures are never dimmed.
 
 Resting the pointer on a component, an edge or a group opens a **hover card** with its name, what
-it is and the ids behind it. The zoom menu's **Hover cards** switch (or **Shift H**, or "Hover
+it is and the ids behind it. **View → Hover cards** in the design menu (or **Shift H**, or "Hover
 cards" in quick actions) turns them off and on, in this browser only. With them off, hovering
 still highlights what you point at, and pins and the flow lens work as before; only the card stays
 away.
@@ -188,15 +188,17 @@ never loses it.
 
 ## Downloading and importing a layout
 
-**Download layout (JSON)**, in the canvas's design menu, the ⌘K palette and the YAML panel on the
-design page, saves the sidecar as `<slug>.layout.json`: cut down to the ids the design holds, keys
-in a fixed order. **Import layout (JSON)**, beside it in the same three places, puts one back:
+**Download → Layout (JSON)** in the canvas's design menu, **Download layout (JSON)** in the ⌘K
+palette and on the design page's YAML panel, saves the sidecar as `<slug>.layout.json`: cut down to
+the ids the design holds, keys in a fixed order. **Import → Layout (JSON, merge)** in the design
+menu, **Import layout (JSON)** in the other two places, puts one back:
 
 - **It merges.** Whatever the file names wins; anything it leaves out keeps its current value. A
   file holding only `nodes` moves those boxes and leaves every other box, edge path, port, label,
   tint and note where it was. Notes merge by id; `badge` and `routing` change only when the file
-  has them. The palette's **Import layout (replace)** swaps the whole layout for the file's
-  instead, so whatever the file lacks falls back to the automatic layout.
+  has them. **Import → Layout (replace)** in the design menu (the palette's **Import layout
+  (replace)**) swaps the whole layout for the file's instead, so whatever the file lacks falls
+  back to the automatic layout.
 - **It fits the file to the design.** Positions, paths, ports, labels and styles for a node, edge
   or group this design does not have are dropped, and counted: the notice reads
   `Layout imported: 12 positions, 3 edge paths, 1 dropped (not in this design); the rest kept`.
