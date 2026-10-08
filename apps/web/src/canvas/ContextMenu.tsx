@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { ChevronRight } from "@/components/Glyphs";
 import { flyoutPosition, type MenuEntry, type MenuModel, tidy } from "./menu-model";
 import { Switch } from "./Switch";
 
@@ -249,7 +250,7 @@ function SubmenuRow({
         aria-haspopup="menu"
         aria-expanded={expanded}
         data-menu-key={k}
-        className={expanded ? "is-open" : ""}
+        className={expanded ? "menu-sub is-open" : "menu-sub"}
         disabled={item.disabled || !items.length}
         onClick={(ev) => {
           ctx.later(null);
@@ -264,7 +265,7 @@ function SubmenuRow({
       >
         <MenuText label={item.label} hint={item.hint} />
         <span className="menu-chevron" aria-hidden="true">
-          ▸
+          <ChevronRight />
         </span>
       </button>
       {expanded ? (

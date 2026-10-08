@@ -1988,7 +1988,13 @@
 /* a submenu row: a chevron at its end, tinted while its flyout is open */
 .zeema-menu .menu-chevron {
   color: var(--muted);
-  font-size: var(--fs-micro);
+  display: inline-flex;
+  width: 14px;
+  height: 14px;
+}
+.zeema-menu .menu-sub .menu-chevron > svg {
+  width: 14px;
+  height: 14px;
 }
 /* keyboard focus reads as hover; the pointer resting on a row focuses it too */
 .zeema-menu button:focus-visible:not([disabled]) {
