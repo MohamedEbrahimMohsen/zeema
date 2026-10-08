@@ -698,8 +698,9 @@
 .zeema-canvas .node-box .glyph {
   color: var(--ink);
 }
-/* a node standing for N copies: the cards behind it and its ×N chip are decoration. The box
-   alone takes the pointer, so hit areas, drags and wires are what they were. */
+/* a node's decoration: the cards behind a node standing for N copies and its chip row (×N,
+   DLQ) are decoration. The box alone takes the pointer, so hit areas, drags and wires are what
+   they were. */
 .zeema-canvas .node-box .stack,
 .zeema-canvas .node-box .stack-chip,
 .zeema-canvas .node-box .stack-chip-t {

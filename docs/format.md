@@ -204,6 +204,8 @@ A design may have no nodes yet (`nodes: []`): a new design starts that way on th
 | `props` | no | Property values; see resolution order above |
 | `nfr` | no | `rps` (integer), `latencyP95Ms` (integer), `consistency` (`strong` or `eventual`) |
 
+Renderers decorate a box from its resolved props: a node whose `instances`, `replicas` or `shards` is 2 or more is drawn as a stack with a `×N` chip, and a queue with `deadLetterQueue: true` (whose `role` is not `dlq`) shows a `DLQ` chip at the right of that chip row.
+
 ### edges
 
 Directed. `from` and `to` are node ids in this design.

@@ -220,6 +220,19 @@ export function nodeCount(doc, node, catalogue) {
   return nodeCountOf(doc, node, catalogue)?.count ?? null;
 }
 
+/**
+ * Whether a node is a queue that has a dead-letter queue: its kind is `queue`, it resolves
+ * `deadLetterQueue` to true (effective), and its role is not `dlq` (a queue that is the
+ * dead-letter queue says so in its name). Only a real boolean true counts. `doc` is unused, as
+ * in nodeCountOf.
+ */
+export function nodeDeadLetter(_doc, node, catalogue) {
+  if (!node || !catalogue) return false;
+  if (own(catalogue.components, node.component)?.kind !== "queue") return false;
+  const props = effective(catalogue, node);
+  return props.deadLetterQueue === true && props.role !== "dlq";
+}
+
 // A component whose kind declares a required property that resolves to nothing cannot be placed
 // without writing something, or the design is invalid the moment it exists. Two components in
 // the catalogue are in that position, so the first enum value is written and flagged.

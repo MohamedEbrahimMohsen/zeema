@@ -3,7 +3,7 @@
 // component's icon on one neutral surface, groups are dashed containers,
 // edges are arrows, solid for sync and dashed for async.
 
-import { groupCaption, groupTitle, nodeCount, nodeLines } from "./document.js";
+import { groupCaption, groupTitle, nodeCount, nodeDeadLetter, nodeLines } from "./document.js";
 import { drawnLayout } from "./drawn.js";
 import {
   AUTH_GLYPH_R,
@@ -187,40 +187,58 @@ export function frameIconKey(ref) {
 }
 
 // A node that stands for N identical copies (nodeCount in document.js) is drawn as a stack: two
-// cards behind its box, each STACK_STEP px further right and up, and a chip at the box's
-// top-right corner reading ×N. The stack is decoration only: the layout box, the edges' ends,
-// the frames and the canvas's hit areas are the front card alone. The server render and the
-// canvas both draw it from stackDecor, so the two cannot disagree.
+// cards behind its box, each STACK_STEP px further right and up, and a chip reading ×N. A queue
+// with a dead-letter queue (nodeDeadLetter) carries a DLQ chip. The chips sit in one row above
+// the box's top-right corner, laid right to left: DLQ rightmost, ×N to its left. All of it is
+// decoration only: the layout box, the edges' ends, the frames and the canvas's hit areas are
+// the front card alone. The server render and the canvas both draw it from nodeDecor, so the
+// two cannot disagree.
 export const STACK_STEP = 6;
 // The cards' opacity, farthest first.
 export const STACK_OPACITY = [0.45, 0.7];
 const CHIP_FONT = 11;
 const CHIP_H = 16;
+const CHIP_GAP = 4;
 // The monospace face's advance, about 0.62em a character (as frameCaption measures the canvas's).
 const MONO_EM = 0.62;
 export const MONO_FONT = "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
 
 /**
- * The stack drawn behind a box `w` x `h` standing for `count` copies, in the box's own
- * coordinates (its top-left corner is 0,0), or null when `count` is not an integer of 2 or more.
- * `cards` is farthest first: draw them in order, then the box. `chip` is the ×N label's pill and
- * where its text sits (centred on `tx`, baseline `ty`); it is as wide as its text, so ×1000 is
- * written out rather than cut.
+ * The decoration of a box `w` x `h`, in the box's own coordinates (its top-left corner is 0,0),
+ * or null when there is none. `count` draws the stack when it is an integer of 2 or more; `dlq`
+ * adds the DLQ chip. `cards` is farthest first (empty without a stack): draw them in order, then
+ * the box. `chips` is right to left, each a pill with its text centred on `tx`, baseline `ty`;
+ * `id` is "dlq" or "count". A chip is as wide as its text, so ×1000 is written out, not cut.
+ * @typedef {{ x: number, y: number, w: number, h: number, opacity: number }} StackCard
+ * @typedef {{ id: "dlq" | "count", x: number, y: number, w: number, h: number, rx: number,
+ *   text: string, tx: number, ty: number, size: number }} DecorChip
+ * @param {number} w
+ * @param {number} h
+ * @param {{ count?: number | null, dlq?: boolean }} [marks]
+ * @returns {{ cards: StackCard[], chips: DecorChip[] } | null}
  */
-export function stackDecor(w, h, count) {
-  if (!Number.isInteger(count) || count < 2) return null;
-  const cards = STACK_OPACITY.map((opacity, k) => {
-    const step = (STACK_OPACITY.length - k) * STACK_STEP;
-    return { x: step, y: -step, w, h, opacity };
-  });
-  const text = `×${count}`;
-  const cw = Math.ceil([...text].length * CHIP_FONT * MONO_EM) + 12;
-  // Above the box's top edge, clear of the findings dot (centred 10px in from the corner).
-  const x = w - cw - 8;
+export function nodeDecor(w, h, { count, dlq } = {}) {
+  const stacked = Number.isInteger(count) && count >= 2;
+  if (!stacked && !dlq) return null;
+  const cards = stacked
+    ? STACK_OPACITY.map((opacity, k) => {
+        const step = (STACK_OPACITY.length - k) * STACK_STEP;
+        return { x: step, y: -step, w, h, opacity };
+      })
+    : [];
+  const texts = [];
+  if (dlq) texts.push(["dlq", "DLQ"]);
+  if (stacked) texts.push(["count", `×${count}`]);
+  // Above the box's top edge, the first chip's right end clear of the findings dot (centred
+  // 10px in from the corner); each next chip CHIP_GAP to the left of the one before.
+  let right = w - 8;
   const y = -10;
-  return {
-    cards,
-    chip: {
+  const chips = texts.map(([id, text]) => {
+    const cw = Math.ceil([...text].length * CHIP_FONT * MONO_EM) + 12;
+    const x = right - cw;
+    right = x - CHIP_GAP;
+    return {
+      id,
       x,
       y,
       w: cw,
@@ -230,8 +248,9 @@ export function stackDecor(w, h, count) {
       tx: x + cw / 2,
       ty: y + 12,
       size: CHIP_FONT,
-    },
-  };
+    };
+  });
+  return { cards, chips };
 }
 
 const tintTokens = (i) =>
@@ -495,7 +514,10 @@ export function toSvg(doc, catalogue, options = {}) {
       return r;
     };
     // N identical copies: the stack's cards behind the box, painted like it, a little fainter.
-    const stack = stackDecor(bw, bh, nodeCount(doc, n, catalogue));
+    const stack = nodeDecor(bw, bh, {
+      count: nodeCount(doc, n, catalogue),
+      dlq: nodeDeadLetter(doc, n, catalogue),
+    });
     if (stack)
       for (const s of stack.cards)
         out.push(`<g class="stack" opacity="${s.opacity}">${card(x + s.x, y + s.y).join("")}</g>`);
@@ -514,13 +536,11 @@ export function toSvg(doc, catalogue, options = {}) {
     out.push(
       `<text class="c" x="${f1(cx)}" y="${y + t.comp.y}" text-anchor="middle">${escapeXml(t.comp.text)}</text>`,
     );
-    if (stack) {
-      const p = stack.chip;
+    for (const p of stack ? stack.chips : [])
       out.push(
         `<rect class="chip" x="${f1(x + p.x)}" y="${y + p.y}" width="${p.w}" height="${p.h}" rx="${p.rx}" fill="var(--bg)" stroke="var(--node-line)" stroke-width="1"/>`,
         `<text class="chip-t" x="${f1(x + p.tx)}" y="${y + p.ty}" text-anchor="middle" font-family="${MONO_FONT}" font-size="${p.size}" fill="var(--muted)">${escapeXml(p.text)}</text>`,
       );
-    }
     out.push("</g>");
   }
   out.push("</svg>");

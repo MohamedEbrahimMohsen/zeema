@@ -9,7 +9,13 @@
 // under it. The wheel scrolls (shift scrolls sideways); ctrl, meta, alt or a pinch zooms around the
 // pointer.
 
-import { groupCaption, groupTitle, nodeCount, nodeLines } from "@zeema/core/document";
+import {
+  groupCaption,
+  groupTitle,
+  nodeCount,
+  nodeDeadLetter,
+  nodeLines,
+} from "@zeema/core/document";
 import {
   authAt,
   bowAt,
@@ -31,8 +37,8 @@ import {
   authGlyphMarkup,
   CAPTION_LINE,
   FRAME_ICON_SHIFT,
+  nodeDecor,
   nodeText,
-  stackDecor,
   TINT,
   TINT_FILL_ALPHA,
   tintFill,
@@ -1492,9 +1498,14 @@ export class Scene {
             }),
           );
       };
-      // N identical copies (nodeCount): the stack's cards behind the box, as the server render
-      // draws them (stackDecor). Decoration only: the box, its ports and its hit area are unchanged.
-      const stack = stackDecor(b[2], b[3], nodeCount(this.model.doc, n, this.model.catalogue));
+      // N identical copies (nodeCount): the stack's cards behind the box, and the chip row (×N,
+      // DLQ for a queue with a dead-letter queue), as the server render draws them (nodeDecor).
+      // Decoration only: the box, its ports and its hit area are unchanged.
+      const { doc, catalogue } = this.model;
+      const stack = nodeDecor(b[2], b[3], {
+        count: nodeCount(doc, n, catalogue),
+        dlq: nodeDeadLetter(doc, n, catalogue),
+      });
       if (stack)
         for (const s of stack.cards) {
           const layer = el("g", { class: "stack", opacity: s.opacity });
@@ -1539,19 +1550,17 @@ export class Scene {
       });
       comp.textContent = text.comp.text;
       box.append(comp);
-      if (stack) {
-        const p = stack.chip;
-        box.append(
-          el("rect", {
-            class: "stack-chip",
-            x: p.x,
-            y: p.y,
-            width: p.w,
-            height: p.h,
-            rx: p.rx,
-            style: "fill:var(--panel);stroke:var(--node-line);stroke-width:1",
-          }),
-        );
+      for (const p of stack ? stack.chips : []) {
+        const pill = el("rect", {
+          class: "stack-chip",
+          x: p.x,
+          y: p.y,
+          width: p.w,
+          height: p.h,
+          rx: p.rx,
+          style: "fill:var(--panel);stroke:var(--node-line);stroke-width:1",
+        });
+        box.append(pill);
         const chip = el("text", {
           class: "stack-chip-t",
           x: p.tx,
