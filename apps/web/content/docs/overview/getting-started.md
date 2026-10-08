@@ -21,7 +21,7 @@ pnpm dev                 # http://localhost:3000
 ```
 
 There is no local-account sign-in: GitHub is the only identity provider, so signing in locally
-needs a GitHub OAuth app and `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` and `APP_ORIGIN` in
+needs a GitHub OAuth app and `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` and `CANVAS_URL` in
 `apps/web/.env.local`. Reading and linting never need an account; creating a design does.
 
 For the real thing — Postgres, GitHub OAuth, Prometheus and Grafana — the supported way is the

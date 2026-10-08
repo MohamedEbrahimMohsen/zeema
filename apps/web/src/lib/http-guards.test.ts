@@ -3,6 +3,7 @@
 import { describe, expect, it } from "vitest";
 import { bootProblems, databaseConfigured, eventSalt } from "./boot";
 import {
+  appOrigin,
   attachment,
   clientIp,
   crossSiteRefusal,
@@ -10,6 +11,7 @@ import {
   intParam,
   LruTtl,
   pagination,
+  redirectTo,
   safeNext,
 } from "./http-guards";
 
@@ -226,5 +228,48 @@ describe("boot checks", () => {
     expect(() => eventSalt({ NODE_ENV: "production", EVENT_SALT: "change-me" })).toThrow(
       /EVENT_SALT/,
     );
+  });
+});
+
+describe("redirectTo", () => {
+  const inner = { url: "https://localhost:3000/api/auth/github/callback?code=x" };
+  const proxied = { CANVAS_URL: "https://canvas.example/" };
+
+  it("resolves against CANVAS_URL when it is set, not the internal request address", () => {
+    expect(redirectTo(inner, "/u/alice", proxied).href).toBe("https://canvas.example/u/alice");
+    expect(redirectTo(inner, "/signin?error=state-mismatch", proxied).href).toBe(
+      "https://canvas.example/signin?error=state-mismatch",
+    );
+  });
+
+  it("falls back to the request's own origin without CANVAS_URL", () => {
+    expect(redirectTo(inner, "/u/alice", {}).href).toBe("https://localhost:3000/u/alice");
+    expect(redirectTo(inner, "/", { CANVAS_URL: "not a url" }).href).toBe(
+      "https://localhost:3000/",
+    );
+  });
+
+  it.each([
+    "//evil.example/x",
+    "/\\evil.example",
+    "https://evil.example/",
+    "javascript:alert(1)",
+    "/..//evil.example",
+  ])("refuses %s and lands on the site root", (next) => {
+    expect(redirectTo(inner, next, proxied).href).toBe("https://canvas.example/");
+    expect(redirectTo(inner, next, {}).href).toBe("https://localhost:3000/");
+  });
+});
+
+describe("appOrigin", () => {
+  it("reads CANVAS_URL, normalised to an origin", () => {
+    expect(appOrigin({ CANVAS_URL: "https://canvas.example/some/path/" })).toBe(
+      "https://canvas.example",
+    );
+  });
+
+  it("is null when CANVAS_URL is unset or unparseable", () => {
+    expect(appOrigin({})).toBeNull();
+    expect(appOrigin({ CANVAS_URL: "not a url" })).toBeNull();
   });
 });

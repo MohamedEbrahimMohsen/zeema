@@ -11,7 +11,7 @@ const config: NextConfig = {
   // appended. `beforeFiles` is required: the `[id]` page segment would otherwise match
   // "kafka.md" as an id and win. See app/api/reference/[type]/[id]/route.ts.
   // Security headers for every response, static files included. The Content-Security-Policy is
-  // per request (it carries a nonce), so proxy.ts sets it, together with HSTS when APP_ORIGIN
+  // per request (it carries a nonce), so proxy.ts sets it, together with HSTS when CANVAS_URL
   // is https. docs/deploy.md lists the same set for a reverse proxy.
   async headers() {
     return [

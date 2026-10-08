@@ -7,6 +7,7 @@ import {
   revokeAllSessions,
   revokeCurrentSession,
 } from "@/lib/auth";
+import { redirectTo } from "@/lib/http-guards";
 
 export async function POST(req: Request) {
   const type = req.headers.get("content-type") ?? "";
@@ -20,5 +21,5 @@ export async function POST(req: Request) {
   }
   await revokeCurrentSession();
   await clearSessionCookie();
-  return NextResponse.redirect(new URL("/", req.url), { status: 303 });
+  return NextResponse.redirect(redirectTo(req, "/"), { status: 303 });
 }

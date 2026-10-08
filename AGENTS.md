@@ -78,5 +78,5 @@ changes only when a behaviour change is intended: regenerate its layout with
   non-owner writing a public one.
 - Local development: no database to install (PGlite). There is no local-account sign-in: the
   only identity provider is GitHub, so `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` and
-  `APP_ORIGIN` are needed to sign in even locally (`src/lib/auth.ts`, `githubConfigured`).
+  `CANVAS_URL` are needed to sign in even locally (`src/lib/auth.ts`, `githubConfigured`).
   Without them reading works and creating is disabled. Production also requires `DATABASE_URL`.

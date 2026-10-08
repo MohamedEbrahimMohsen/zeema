@@ -5,7 +5,7 @@
 //    it on the theme boot script, so no inline script without it can run. The static headers
 //    (nosniff, frame denial, referrer, permissions) come from next.config.ts for every path.
 // 2. State-changing API requests must come from our own pages: `crossSiteRefusal` compares
-//    `Origin` (or `Sec-Fetch-Site`) with APP_ORIGIN and answers 403 otherwise.
+//    `Origin` (or `Sec-Fetch-Site`) with CANVAS_URL and answers 403 otherwise.
 import { type NextRequest, NextResponse } from "next/server";
 import { appOrigin, crossSiteRefusal } from "@/lib/http-guards";
 
@@ -60,7 +60,7 @@ export function proxy(req: NextRequest) {
   return withTransportSecurity(res);
 }
 
-// HSTS only when the site is served over https (APP_ORIGIN says so). A reverse proxy that
+// HSTS only when the site is served over https (CANVAS_URL says so). A reverse proxy that
 // terminates TLS may set it too; the values agree.
 function withTransportSecurity(res: NextResponse) {
   if (appOrigin()?.startsWith("https:"))

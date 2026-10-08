@@ -46,7 +46,8 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER:-zeema}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-zeema}
-      APP_ORIGIN: ${APP_ORIGIN:-http://localhost:3000}
+      # The app's public origin: OAuth callback, redirects, cross-site checks, HSTS.
+      CANVAS_URL: ${CANVAS_URL:-http://localhost:3000}
       GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
       GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
       ZEEMA_ADMINS: ${ZEEMA_ADMINS:-}
@@ -74,8 +75,8 @@ services:
     init: true
     environment:
       LANDING_PORT: 4000
-      # Where "Open Canvas" sends visitors: the app's public origin. Falls back to APP_ORIGIN.
-      CANVAS_URL: ${CANVAS_URL:-${APP_ORIGIN:-http://localhost:3000}}
+      # Where "Open Canvas" sends visitors: the app's public origin.
+      CANVAS_URL: ${CANVAS_URL:-http://localhost:3000}
       # Where the landing server itself reads design and catalogue counts: the app over the
       # compose network.
       CANVAS_API_URL: http://web:3000

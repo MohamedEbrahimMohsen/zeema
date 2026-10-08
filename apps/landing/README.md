@@ -27,7 +27,7 @@ CANVAS_URL=https://canvas.zeema.io LANDING_PORT=4000 pnpm --filter @zeema/landin
 | `CANVAS_URL` | `http://localhost:3000` | Origin of every link into the app, and of the design thumbnails |
 | `CANVAS_API_URL` | `CANVAS_URL` | Where this server fetches live numbers from, when the app is reachable from here under another address |
 
-Under compose the service is `landing`; `CANVAS_URL` there defaults to `APP_ORIGIN`.
+Under compose the service is `landing`; `CANVAS_URL` is the same variable the app reads as its public origin.
 
 ## Live numbers
 

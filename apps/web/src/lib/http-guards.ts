@@ -3,9 +3,9 @@
 // (http-guards.test.ts): where a redirect may go, which address a request comes from, whether a
 // write came from our own pages, how a page number is read, how a search term enters a LIKE.
 
-/** The configured public origin (`APP_ORIGIN`), normalised, or null when unset or unparseable. */
+/** The configured public origin (`CANVAS_URL`), normalised, or null when unset or unparseable. */
 export function appOrigin(env: Record<string, string | undefined> = process.env): string | null {
-  const raw = env.APP_ORIGIN;
+  const raw = env.CANVAS_URL;
   if (!raw) return null;
   try {
     return new URL(raw).origin;
@@ -41,8 +41,23 @@ export function safeNext(raw: unknown, origin: string): string {
   }
 }
 
-/** `safeNext` against APP_ORIGIN (or a stand-in when unset: only the path matters then). */
+/** `safeNext` against CANVAS_URL (or a stand-in when unset: only the path matters then). */
 export const nextPath = (raw: unknown) => safeNext(raw, appOrigin() ?? "http://localhost");
+
+/**
+ * An absolute redirect target for `path` (a path on this site, already sanitised where it came
+ * from the user). Resolved against CANVAS_URL when set, because behind a proxy `req.url` carries
+ * the container's internal address; against `req.url` otherwise. A `path` that would leave the
+ * site (`//evil.example`, `https://evil.example`) is refused and becomes `/`.
+ */
+export function redirectTo(
+  req: Pick<Request, "url">,
+  path: string,
+  env: Record<string, string | undefined> = process.env,
+): URL {
+  const origin = appOrigin(env) ?? new URL(req.url).origin;
+  return new URL(safeNext(path, origin), origin);
+}
 
 const IP_SHAPE = /^[0-9A-Fa-f:.]{2,45}$/;
 
@@ -87,7 +102,7 @@ const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
  * stop most of it; this closes the rest (same-site siblings, form posts, older browsers).
  * Returns null when the request may proceed, or the reason it may not.
  *
- * - An `Origin` header must be one of `allowed` (APP_ORIGIN and the origin the request was
+ * - An `Origin` header must be one of `allowed` (CANVAS_URL and the origin the request was
  *   addressed to). `Origin: null` is refused.
  * - Without `Origin`, `Sec-Fetch-Site: cross-site` is refused. A request with neither header is
  *   not from a browser that could carry someone else's cookie, and is let through.

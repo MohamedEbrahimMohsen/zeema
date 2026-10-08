@@ -16,7 +16,7 @@
 #   CLOUDFLARE_TUNNEL_TOKEN
 # Worth setting:
 #   GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, ZEEMA_ADMINS
-#   (APP_ORIGIN and CANVAS_URL default to https://beta-canvas.zeema.dev)
+#   (CANVAS_URL defaults to https://beta-canvas.zeema.dev)
 # GitHub OAuth app callback URL: https://beta-canvas.zeema.dev/api/auth/github/callback
 #
 # Needs Docker Compose v2.23 or later: the `configs: content:` blocks at the end are inline.
@@ -58,7 +58,8 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER:-zeema}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-zeema}
-      APP_ORIGIN: ${APP_ORIGIN:-https://beta-canvas.zeema.dev}
+      # The app's public origin: OAuth callback, redirects, cross-site checks, HSTS.
+      CANVAS_URL: ${CANVAS_URL:-https://beta-canvas.zeema.dev}
       GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
       GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
       ZEEMA_ADMINS: ${ZEEMA_ADMINS:-}
@@ -89,7 +90,7 @@ services:
     environment:
       LANDING_PORT: 4000
       # Where "Open Canvas" sends visitors: the app's public origin.
-      CANVAS_URL: ${CANVAS_URL:-${APP_ORIGIN:-https://beta-canvas.zeema.dev}}
+      CANVAS_URL: ${CANVAS_URL:-https://beta-canvas.zeema.dev}
       # Where the landing server itself reads design and catalogue counts: the app over the
       # compose network, so it never depends on the public hostname resolving from inside.
       CANVAS_API_URL: http://web:3000

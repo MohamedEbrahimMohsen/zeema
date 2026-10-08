@@ -69,8 +69,7 @@ Names only. Every one of them is read from the environment; none has a value in 
 | `METRICS_TOKEN` | yes | Bearer token for `/api/metrics`. Without a match the endpoint answers 404 |
 | `GRAFANA_PASSWORD` | yes | Grafana admin password |
 | `GRAFANA_DB_PASSWORD` | yes | Password for `grafana_ro`, the read-only database account |
-| `APP_ORIGIN` | yes | The public origin. Used for the OAuth callback |
-| `CANVAS_URL` | no | Where the landing page's buttons send visitors. Defaults to `APP_ORIGIN` |
+| `CANVAS_URL` | yes | The app's public origin. Used for the OAuth callback, redirects, cross-site checks, HSTS, and the landing page's buttons |
 | `GITHUB_CLIENT_ID` | for sign-in | From a GitHub OAuth app |
 | `GITHUB_CLIENT_SECRET` | for sign-in | The same app's secret. Without these, reading works and creating is disabled |
 | `ZEEMA_ADMINS` | once | Usernames granted the admin role at their next sign-in |
@@ -83,8 +82,8 @@ Names only. Every one of them is read from the environment; none has a value in 
 
 GitHub, then Settings, Developer settings, OAuth Apps, New OAuth App.
 
-- **Homepage URL:** your `APP_ORIGIN`.
-- **Authorization callback URL:** `<APP_ORIGIN>/api/auth/github/callback`.
+- **Homepage URL:** your `CANVAS_URL`.
+- **Authorization callback URL:** `<CANVAS_URL>/api/auth/github/callback`.
 
 Only the `read:user` scope is requested. The access token reads the profile once and is not
 stored.
@@ -172,7 +171,7 @@ pnpm --filter @zeema/web build
 cd apps/web && pnpm start
 ```
 
-`DATABASE_URL`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` and `APP_ORIGIN` come from the
+`DATABASE_URL`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` and `CANVAS_URL` come from the
 environment. Put the process behind TLS: the session cookie is marked `Secure` in production, so
 plain HTTP will not keep anyone signed in.
 

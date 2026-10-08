@@ -10,14 +10,14 @@ import {
   setSessionCookie,
   upsertGithubUser,
 } from "@/lib/auth";
-import { nextPath } from "@/lib/http-guards";
+import { appOrigin, nextPath, redirectTo } from "@/lib/http-guards";
 import { countSignin } from "@/lib/metrics";
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const fail = (why: string) => {
     countSignin("failed");
-    return NextResponse.redirect(new URL(`/signin?error=${encodeURIComponent(why)}`, req.url));
+    return NextResponse.redirect(redirectTo(req, `/signin?error=${encodeURIComponent(why)}`));
   };
   if (!githubConfigured()) return fail("github-not-configured");
   const jar = await cookies();
@@ -26,7 +26,7 @@ export async function GET(req: Request) {
   const saved = jar.get("zeema_oauth_state")?.value;
   jar.delete("zeema_oauth_state");
   if (!code || !state || !saved || state !== saved) return fail("state-mismatch");
-  const origin = process.env.APP_ORIGIN ?? url.origin;
+  const origin = appOrigin() ?? url.origin;
   const github = new GitHub(
     process.env.GITHUB_CLIENT_ID!,
     process.env.GITHUB_CLIENT_SECRET!,
@@ -61,5 +61,7 @@ export async function GET(req: Request) {
   await setSessionCookie(token, expiresAt);
   const next = jar.get("zeema_oauth_next")?.value;
   jar.delete("zeema_oauth_next");
-  return NextResponse.redirect(new URL(next ? nextPath(next) : `/u/${user.username}`, req.url));
+  return NextResponse.redirect(
+    redirectTo(req, next ? nextPath(next) : `/u/${encodeURIComponent(user.username)}`),
+  );
 }

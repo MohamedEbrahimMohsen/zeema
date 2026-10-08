@@ -62,8 +62,7 @@ authentication.
 | `METRICS_TOKEN` | yes | Token for `/api/metrics`, sent as `Authorization: Bearer <token>` or `X-Metrics-Token: <token>`, never in the URL. Without a match, or with no token set in production, the endpoint answers 404 |
 | `GRAFANA_PASSWORD` | yes | Grafana admin password |
 | `GRAFANA_DB_PASSWORD` | yes | Password for `grafana_ro`, the read-only database account Grafana queries with |
-| `APP_ORIGIN` | yes | The public origin, such as `https://zeema.example.com`. Used for the OAuth callback, the sign-in redirect check, the cross-site write check, and HSTS (sent only when this is `https://`) |
-| `CANVAS_URL` | no | Where the landing page's "Open Canvas" and "Get started" buttons send visitors. Defaults to `APP_ORIGIN` |
+| `CANVAS_URL` | yes | The app's public origin, such as `https://zeema.example.com`. Used for the OAuth callback, redirects, the sign-in redirect check, cross-site checks, HSTS (sent only when this is `https://`), and the landing page's "Open Canvas" and "Get started" buttons |
 | `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | for sign-in | From a GitHub OAuth app. Without them, reading works and creating is disabled |
 | `ZEEMA_ADMINS` | once | Usernames granted the admin role at their next sign-in. See `roles-and-publishing.md` |
 | `EVENT_SALT` | yes | Salt for the hashed network addresses in the event log. Production refuses to start when it is unset, `zeema` or `change-me` |
@@ -79,8 +78,8 @@ cannot be shared by two processes or backed up while the app is running.
 
 GitHub, then Settings, Developer settings, OAuth Apps, New OAuth App.
 
-- Homepage URL: your `APP_ORIGIN`.
-- Authorization callback URL: `<APP_ORIGIN>/api/auth/github/callback`.
+- Homepage URL: your `CANVAS_URL`.
+- Authorization callback URL: `<CANVAS_URL>/api/auth/github/callback`.
 
 Only the `read:user` scope is requested. The access token reads the profile once and is not
 stored.
@@ -260,7 +259,7 @@ release adds a migration.
 ```bash
 pnpm install
 pnpm --filter @zeema/web build
-cd apps/web && DATABASE_URL=... GITHUB_CLIENT_ID=... GITHUB_CLIENT_SECRET=... APP_ORIGIN=... pnpm start
+cd apps/web && DATABASE_URL=... GITHUB_CLIENT_ID=... GITHUB_CLIENT_SECRET=... CANVAS_URL=... pnpm start
 ```
 
 Put the process behind TLS. The session cookie is marked `Secure` in production, so plain HTTP
@@ -295,8 +294,8 @@ Hostinger VPS. The `cloudflared` service dials out to Cloudflare, so no inbound 
 
    The URL is the compose service name and port, never `localhost` or the server IP: cloudflared
    runs in its own container on the compose network, where `localhost` is itself.
-3. The origins default to the tunnel: `APP_ORIGIN=https://beta-canvas.zeema.dev` and
-   `CANVAS_URL` follows it. The GitHub OAuth callback is
+3. The origin defaults to the tunnel: `CANVAS_URL=https://beta-canvas.zeema.dev`, for the app
+   and the landing alike. The GitHub OAuth callback is
    `https://beta-canvas.zeema.dev/api/auth/github/callback`.
 4. `TRUSTED_PROXY=1` (the default in this file): cloudflared is the one proxy.
 5. `WEB_BIND` and `LANDING_BIND` default to `127.0.0.1`, so the ports answer only on the server
@@ -315,7 +314,7 @@ The app sets these itself:
 | `X-Content-Type-Options` | `nosniff` |
 | `Referrer-Policy` | `strict-origin-when-cross-origin` |
 | `Permissions-Policy` | `camera=(), microphone=(), geolocation=(), payment=(), usb=()` |
-| `Strict-Transport-Security` | `max-age=31536000; includeSubDomains`, only when `APP_ORIGIN` is `https://` |
+| `Strict-Transport-Security` | `max-age=31536000; includeSubDomains`, only when `CANVAS_URL` is `https://` |
 
 The page policy carries a fresh nonce per request (`apps/web/proxy.ts`), so a proxy must pass
 the app's `Content-Security-Policy` through rather than replace it. The other headers a proxy
@@ -323,8 +322,8 @@ may set as well; the values agree. `'unsafe-inline'` applies to styles only, bec
 positions and colours shapes with inline styles; scripts never get it.
 
 State-changing API requests (`POST`, `PUT`, `PATCH`, `DELETE`) are refused with 403 when their
-`Origin` is neither `APP_ORIGIN` nor the host they were addressed to, or when a browser marks
-them `Sec-Fetch-Site: cross-site`. A proxy must therefore keep the `Host` header or `APP_ORIGIN`
+`Origin` is neither `CANVAS_URL` nor the host they were addressed to, or when a browser marks
+them `Sec-Fetch-Site: cross-site`. A proxy must therefore keep the `Host` header or `CANVAS_URL`
 must be the public origin, which it has to be for sign-in anyway.
 
 ## 9. Checks after a deployment

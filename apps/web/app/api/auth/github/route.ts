@@ -3,12 +3,12 @@ import { GitHub, generateState } from "arctic";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { githubConfigured } from "@/lib/auth";
-import { nextPath } from "@/lib/http-guards";
+import { appOrigin, nextPath, redirectTo } from "@/lib/http-guards";
 
 export async function GET(req: Request) {
   if (!githubConfigured())
-    return NextResponse.redirect(new URL("/signin?error=github-not-configured", req.url));
-  const origin = process.env.APP_ORIGIN ?? new URL(req.url).origin;
+    return NextResponse.redirect(redirectTo(req, "/signin?error=github-not-configured"));
+  const origin = appOrigin() ?? new URL(req.url).origin;
   const github = new GitHub(
     process.env.GITHUB_CLIENT_ID!,
     process.env.GITHUB_CLIENT_SECRET!,
