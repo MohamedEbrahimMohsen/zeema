@@ -11,6 +11,9 @@
     "start": "next start",
     "db:generate": "drizzle-kit generate",
     "seed": "node --import tsx/esm src/db/seed.ts",
+    "keep-only": "node --import tsx/esm src/db/keep-only.ts",
+    "export-owner": "node --import tsx/esm src/db/export-owner.ts",
+    "import-owner": "node --import tsx/esm src/db/import-owner.ts",
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {

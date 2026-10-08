@@ -164,6 +164,85 @@ the procedure works. Every design version is a row in `design_versions`, so a re
 back history as well as current state. The curated reference designs are also files in
 `designs/reference/`, and an empty database reseeds itself from them.
 
+### Resetting a deployment for a beta
+
+`apps/web/src/db/keep-only.ts` keeps one account's designs and deletes every other design: the
+curated ones and every other member's. Accounts stay. Deleted designs are purged, not
+tombstoned: versions, stats, events, notifications and reserved addresses (`design_slugs`) go
+with them, in one transaction. It refuses an account with no designs, because an empty designs
+table is reseeded at the next boot.
+
+1. Take a backup first (section 6): `./ops/backup.sh`.
+2. Dry run. Nothing is written without `--yes`; the output lists what would be deleted and kept
+   (owner, slug, visibility, version count) with totals:
+
+   ```bash
+   docker compose exec web sh -c "cd apps/web && node --import tsx/esm src/db/keep-only.ts --owner <username>"
+   ```
+
+3. Apply it, optionally making every kept design public with `--public`. That goes through the
+   same service call as the design page's "Make public": a design with no release has its head
+   released, and a design its owner cannot edit (or with no version) is listed and left private.
+   Run the dry run with `--public` first to see that list.
+
+   ```bash
+   docker compose exec web sh -c "cd apps/web && node --import tsx/esm src/db/keep-only.ts --owner <username> --public --yes"
+   ```
+
+   `--include-curated-only` deletes only the curated designs and keeps every member's.
+4. Set `AUTO_SEED=0` in `.env` (or the Docker Manager environment) and recreate the app, so an
+   empty table is never reseeded: `docker compose up -d web`.
+
+With `docker-compose.deploy.yml` (Hostinger), run `export COMPOSE_FILE=docker-compose.deploy.yml`
+in the directory holding it first; every `docker compose` call above, the one inside
+`ops/backup.sh` included, then targets that stack. The script ships in the `zeema-web` image, so
+pull an image built after it was added (`docker compose pull web && docker compose up -d web`).
+
+#### Moving one account's designs to another deployment
+
+`apps/web/src/db/export-owner.ts` and `import-owner.ts` carry one account's designs from one
+deployment to another: every version in order (YAML byte for byte, layout sidecars with it), the
+head and the release, visibility, reserved addresses (`design_slugs`), stats, timestamps to the
+microsecond, and tombstones (flagged, so the addresses they hold stay reserved;
+`--no-tombstones` leaves them out). Sessions, notifications, events and follows stay behind.
+The bundle is plain JSON, LF, in a fixed order.
+
+The import gives every row a new id and remaps every pointer. It credits versions the account
+wrote to the target account and drops anyone else's authorship. The account must exist on the
+target, matched by username ignoring case: sign in there once first. An address the account
+already uses on the target is refused unless `--replace`, which purges that target design (no
+tombstone) in the same transaction before inserting. Curated designs live in their own
+namespace: a curated design or reservation with the same name is reported and left alone. The
+import deletes nothing else; run `keep-only.ts` afterwards, so the designs table is never empty
+in between.
+
+1. On the source, write the bundle and copy it out of the container:
+
+   ```bash
+   docker compose exec web sh -c "cd apps/web && node --import tsx/esm src/db/export-owner.ts --owner <username> --out /tmp/<username>-designs.json"
+   docker compose cp web:/tmp/<username>-designs.json ./<username>-designs.json
+   ```
+
+2. On the target (`export COMPOSE_FILE=docker-compose.deploy.yml` first on Hostinger), with an
+   image that carries both scripts, take a backup and copy the bundle in:
+
+   ```bash
+   docker compose pull web && docker compose up -d web
+   ./ops/backup.sh
+   docker compose cp ./<username>-designs.json web:/tmp/<username>-designs.json
+   ```
+
+3. Dry run, then apply. Each prints slug, visibility, versions, published and whether the
+   design is inserted or replaces one already there:
+
+   ```bash
+   docker compose exec web sh -c "cd apps/web && node --import tsx/esm src/db/import-owner.ts --in /tmp/<username>-designs.json --owner <username> --replace"
+   docker compose exec web sh -c "cd apps/web && node --import tsx/esm src/db/import-owner.ts --in /tmp/<username>-designs.json --owner <username> --replace --yes"
+   ```
+
+4. Then the reset above: `keep-only.ts --owner <username>` as a dry run, then with `--yes`, and
+   `AUTO_SEED=0`.
+
 ## 7. Updating
 
 ```bash

@@ -4,7 +4,7 @@
 import { createHash } from "node:crypto";
 import { and, desc, eq, gt, ilike, isNotNull, isNull, ne, or, sql } from "drizzle-orm";
 import type { AnyPgColumn } from "drizzle-orm/pg-core";
-import { getDb, schema } from "@/db";
+import { type Db, getDb, schema } from "@/db";
 import type { Design, DesignVersion } from "@/db/schema";
 import { badgeOf, chosenBadge } from "./badge";
 import { eventSalt } from "./boot";
@@ -1028,17 +1028,29 @@ export async function deleteDesign(owner: string, slug: string, viewer: Viewer) 
       .update(schema.designs)
       .set({ deletedAt: new Date(), visibility: "private" })
       .where(eq(schema.designs.id, view.design.id));
-  } else {
-    await db
-      .delete(schema.designVersions)
-      .where(eq(schema.designVersions.designId, view.design.id));
-    await db.delete(schema.designEvents).where(eq(schema.designEvents.designId, view.design.id));
-    await db.delete(schema.designStats).where(eq(schema.designStats.designId, view.design.id));
-    await db.delete(schema.designSlugs).where(eq(schema.designSlugs.designId, view.design.id));
-    await db.delete(schema.designs).where(eq(schema.designs.id, view.design.id));
-  }
+  } else await purgeDesign(view.design.id, db);
   countWrite("delete");
   return { tombstoned: wasPublic };
+}
+
+/** What can run the purge: the database handle, or a transaction opened on it. */
+type Executor = Pick<Db, "delete">;
+
+/**
+ * Remove a design and everything that hangs off it, leaving no tombstone. Versions, events, stats
+ * and notifications would cascade from the design row anyway; `design_slugs` carries no foreign
+ * key, so without the explicit delete its rows would outlive the design. No authorization: `deleteDesign` decides who may
+ * call this for a never-published design, and the maintenance script (db/keep-only.ts) calls it
+ * inside its own transaction to reset a deployment.
+ */
+export async function purgeDesign(designId: string, exec?: Executor) {
+  const db = exec ?? (await getDb());
+  await db.delete(schema.designVersions).where(eq(schema.designVersions.designId, designId));
+  await db.delete(schema.designEvents).where(eq(schema.designEvents.designId, designId));
+  await db.delete(schema.designStats).where(eq(schema.designStats.designId, designId));
+  await db.delete(schema.notifications).where(eq(schema.notifications.designId, designId));
+  await db.delete(schema.designSlugs).where(eq(schema.designSlugs.designId, designId));
+  await db.delete(schema.designs).where(eq(schema.designs.id, designId));
 }
 
 export type Tombstone = { title: string; owner: string; slug: string; deletedAt: Date };
