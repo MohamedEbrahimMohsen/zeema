@@ -1,11 +1,45 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Switch } from "./Switch";
+
+/** An on/off choice in a menu: a switch row that flips in place and leaves the menu open. */
+export type MenuCheck = {
+  label: string;
+  hint?: string;
+  /** The hint says how an unset choice decides ("auto"): it goes once the row is clicked. */
+  hintUntilSet?: boolean;
+  checked: boolean;
+  toggle: (on: boolean) => void;
+};
 
 export type MenuItem =
   | { label: string; hint?: string; run: () => void; disabled?: boolean; danger?: boolean }
+  | MenuCheck
   | "-"
   | null;
+
+// The menu is a snapshot of its items; the row keeps its own state so a click shows at once.
+function MenuCheckRow({ item }: { item: MenuCheck }) {
+  const [on, setOn] = useState(item.checked);
+  const [set, setSet] = useState(false);
+  return (
+    <Switch
+      className="menu-switch"
+      role="menuitemcheckbox"
+      label={item.label}
+      hint={item.hintUntilSet && set ? undefined : item.hint}
+      checked={on}
+      onChange={(next) => {
+        setOn(next);
+        setSet(true);
+        item.toggle(next);
+      }}
+    />
+  );
+}
+
+const LIVE = "button:not([disabled])";
 
 /**
  * A menu at a point: the right-click menus, and the dropdowns the floating chrome opens under
@@ -53,14 +87,12 @@ export function ContextMenu({
   }, [x, y]);
   // Focus lands on the first item it can, so a keyboard opener can act at once.
   useEffect(() => {
-    ref.current?.querySelector<HTMLButtonElement>("button:not([disabled])")?.focus();
+    ref.current?.querySelector<HTMLElement>(LIVE)?.focus();
   }, []);
   const move = (ev: React.KeyboardEvent<HTMLDivElement>) => {
-    const live = [
-      ...(ref.current?.querySelectorAll<HTMLButtonElement>("button:not([disabled])") ?? []),
-    ];
+    const live = [...(ref.current?.querySelectorAll<HTMLElement>(LIVE) ?? [])];
     if (!live.length) return;
-    const at = live.indexOf(document.activeElement as HTMLButtonElement);
+    const at = live.indexOf(document.activeElement as HTMLElement);
     let next: number | null = null;
     if (ev.key === "ArrowDown") next = at < 0 ? 0 : (at + 1) % live.length;
     else if (ev.key === "ArrowUp")
@@ -91,6 +123,8 @@ export function ContextMenu({
       {list.map((item, i) =>
         item === "-" ? (
           <div key={`sep-${i}`} className="sep" />
+        ) : "checked" in item ? (
+          <MenuCheckRow key={item.label} item={item} />
         ) : (
           <button
             key={item.label}

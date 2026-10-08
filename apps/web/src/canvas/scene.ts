@@ -73,14 +73,10 @@ import {
 } from "./group-info";
 import { findGuides, type GuideLine } from "./guides";
 import { anchorOffset, coversTarget, noteDropTarget, sameAnchor } from "./note-anchor";
+import { type DimEdges, dimmed } from "./prefs";
 
-/**
- * A design with more edges than this draws them at reduced ink by default (`DimEdges` "auto"):
- * the picture stays calm until a hover, a pin or a selected edge asks for one of them.
- */
-export const DIM_EDGES_OVER = 15;
-/** Dim the edges: by the count above, always, or never. A per-browser habit, never stored. */
-export type DimEdges = "auto" | "on" | "off";
+// The dim rule and its threshold live with the other canvas habits (prefs.ts).
+export { DIM_EDGES_OVER, type DimEdges } from "./prefs";
 
 const NS = "http://www.w3.org/2000/svg";
 const el = (name: string, attrs: Record<string, unknown> = {}) => {
@@ -810,7 +806,7 @@ export class Scene {
    */
   applyDim() {
     const count = this.model?.doc?.edges?.length ?? 0;
-    const want = this.dimEdges === "on" || (this.dimEdges === "auto" && count > DIM_EDGES_OVER);
+    const want = dimmed(this.dimEdges, count);
     const working =
       Boolean(this.wire || this.tip) || this.selection.type === "edge" || this.multiEdges.size > 0;
     this.svg.classList.toggle("dim-edges", want && !working);
@@ -1907,9 +1903,12 @@ export class Scene {
     const svg = this.svg;
     const typing = (ev: KeyboardEvent) =>
       /input|select|textarea/i.test((ev.target as HTMLElement)?.tagName ?? "");
+    // Space presses a focused switch or an item of an open menu; it is not a pan there.
+    const pressing = (ev: KeyboardEvent) =>
+      Boolean((ev.target as HTMLElement)?.closest?.(".zeema-menu, [role='switch']"));
 
     this.on(window, "keydown", (ev) => {
-      if (ev.code !== "Space" || this.spaceHeld || typing(ev)) return;
+      if (ev.code !== "Space" || this.spaceHeld || typing(ev) || pressing(ev)) return;
       this.spaceHeld = true;
       this.space = true;
       svg.classList.add("hand");

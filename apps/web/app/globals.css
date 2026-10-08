@@ -888,7 +888,8 @@ button.finding:hover .msg {
   width: 28px;
   height: 16px;
   border-radius: 999px;
-  background: var(--line);
+  /* off reads as grey on a panel and on a hovered row alike; --line vanished on both */
+  background: color-mix(in srgb, var(--ink) 24%, transparent);
   transition: background var(--dur-fast) var(--ease);
   flex: none;
 }

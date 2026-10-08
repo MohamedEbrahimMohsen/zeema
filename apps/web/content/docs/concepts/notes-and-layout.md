@@ -69,9 +69,15 @@ downstream instead. The lens is a pin: Esc or a click on empty canvas clears it.
 
 A design with more than 15 edges draws its edges, their labels and auth glyphs at a quarter ink,
 components at full; hovering or pinning lights the ones you ask about, and selecting an edge or
-drawing a new one brings every edge back to full ink. The zoom menu's **Dim edges** switches it
-between auto, on and off; the choice is kept in this browser only, not in the sidecar, and exported
-pictures are never dimmed.
+drawing a new one brings every edge back to full ink. The zoom menu's **Dim edges** switch
+shows that rule until you click it; from then on it is simply on or off. The choice is kept in this
+browser only, not in the sidecar, and exported pictures are never dimmed.
+
+Resting the pointer on a component, an edge or a group opens a **hover card** with its name, what
+it is and the ids behind it. The zoom menu's **Hover cards** switch (or **Shift H**, or "Hover
+cards" in quick actions) turns them off and on, in this browser only. With them off, hovering
+still highlights what you point at, and pins and the flow lens work as before; only the card stays
+away.
 
 ## Edge style
 

@@ -168,10 +168,14 @@
 .zeema-canvas .status-btn:hover:not([disabled]) {
   background: color-mix(in srgb, var(--ink) 7%, transparent);
 }
-.zeema-canvas .auto {
+.zeema-canvas .switch-row.auto {
   display: flex;
   align-items: center;
   gap: var(--sp-0-5);
+  height: 32px;
+  border: 0;
+  background: transparent;
+  font: inherit;
   font-size: var(--fs-meta);
   color: var(--muted);
   padding: 0 var(--sp-0-5);
@@ -1958,6 +1962,16 @@
 .zeema-menu button.danger {
   color: var(--err);
 }
+/* a menu row that is a switch: words on the left, the switch on the right */
+.zeema-menu button.menu-switch {
+  align-items: center;
+}
+/* the accent fill of a hovered item would swallow an "on" switch: a quieter tint instead */
+.zeema-menu button.menu-switch:hover:not([disabled]) {
+  background: color-mix(in srgb, var(--ink) 8%, transparent);
+  color: var(--ink);
+}
+
 .zeema-menu .sep {
   height: 1px;
   margin: 4px 2px;
@@ -2206,4 +2220,22 @@
   stroke-dasharray: 4 3;
   vector-effect: non-scaling-stroke;
   fill: none;
+}
+
+/* the one on/off control (Switch.tsx): words, then the app's .switch pill (globals.css) */
+.switch-row {
+  cursor: pointer;
+}
+.switch-row:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.switch-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.switch-hint {
+  font-size: var(--fs-micro);
+  color: var(--muted);
 }

@@ -75,8 +75,10 @@ import { GroupPicker } from "./GroupPicker";
 import { type HoverAt, HoverCard } from "./HoverCard";
 import { EdgeStyleField, type Highlight, Inspector, type InspectorApi } from "./Inspector";
 import { Palette, ProviderSprite } from "./Palette";
+import { dimmed, readDim, readHoverCards, writeDim, writeHoverCards } from "./prefs";
 import { QuickActions } from "./QuickActions";
 import type { QuickAction, QuickTarget } from "./quick-actions";
+import { Switch } from "./Switch";
 import {
   DIM_EDGES_OVER,
   type DimEdges,
@@ -284,18 +286,9 @@ const readPanes = (): Panes => {
   }
 };
 
-// Dim edges on a dense canvas: the same kind of habit. "auto" dims past scene.ts DIM_EDGES_OVER
-// edges, "on" always, "off" never. The picture that leaves the page is never dimmed.
-const DIM_KEY = "zeema.canvas.dimEdges";
-const DIM_MODES: DimEdges[] = ["auto", "on", "off"];
-const readDim = (): DimEdges => {
-  try {
-    const v = window.localStorage.getItem(DIM_KEY);
-    return DIM_MODES.includes(v as DimEdges) ? (v as DimEdges) : "auto";
-  } catch {
-    return "auto";
-  }
-};
+// Dim edges on a dense canvas and hover cards are the same kind of habit (prefs.ts). Dimming
+// follows DIM_EDGES_OVER until the first click stores an explicit choice; the picture that
+// leaves the page is never dimmed.
 
 // "Most used" in the picker: the last components this browser placed, newest first.
 const RECENT_KEY = "zeema.palette.recent";
@@ -405,6 +398,10 @@ const helpSections = (mod: string): Array<[string, Array<[string[], string]>]> =
     [
       [["V"], "The select tool: click to select, drag to move or sweep."],
       [["H"], "The hand tool: drag anywhere to pan, until V."],
+      [
+        ["Shift", "H"],
+        "Hover cards on or off. Off, resting on a component or an edge shows no card; the highlight stays.",
+      ],
       [["Click"], "Select what you click; empty space clears the selection."],
       [
         ["Shift", "Click"],
@@ -502,7 +499,7 @@ const helpSections = (mod: string): Array<[string, Array<[string[], string]>]> =
       [["Middle-drag", "Space", "Drag"], "Pan the canvas."],
       [
         ["Zoom menu"],
-        `Dim edges: auto (past ${DIM_EDGES_OVER} edges), on or off. Dimmed edges light up on hover, on a pin and while an edge is selected.`,
+        `Hover cards and Dim edges, as switches. Dim edges follows the design (past ${DIM_EDGES_OVER} edges) until you click it once. Dimmed edges light up on hover, on a pin and while an edge is selected.`,
       ],
       [[mod, "0"], "Fit the whole design on screen."],
       [[mod, "1"], "Back to actual size."],
@@ -589,6 +586,11 @@ export function Canvas(props: Props) {
   const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   // True while something else holds the pointer's attention (a menu, a popover, a dialog).
   const hoverQuiet = useRef(false);
+  // Hover cards at all (the zoom menu, Shift H, quick actions). Off: the highlight still follows
+  // the pointer, a pin and the lens still work; only the card never opens.
+  const [hoverCards, setHoverCardsState] = useState(true);
+  const hoverCardsRef = useRef(true);
+  hoverCardsRef.current = hoverCards;
   // The dialog owns Escape while it is open, and the other Escape handlers stand down; a ref,
   // because those handlers are bound once and must read the current answer, not a stale one.
   const helpOpen = useRef(false);
@@ -1369,13 +1371,19 @@ export function Canvas(props: Props) {
   useEffect(() => {
     sceneRef.current?.setDimEdges(dimEdges);
   }, [dimEdges]);
-  const setDimEdges = useCallback((next: DimEdges) => {
-    setDimEdgesState(next);
-    try {
-      window.localStorage.setItem(DIM_KEY, next);
-    } catch {
-      /* a browser that will not remember is still a browser that works */
-    }
+  // The checkbox stores only what was clicked: until then the design's edge count decides.
+  const setDimEdges = useCallback((on: boolean) => {
+    setDimEdgesState(on ? "on" : "off");
+    writeDim(on);
+  }, []);
+  useEffect(() => setHoverCardsState(readHoverCards()), []);
+  const setHoverCards = useCallback((on: boolean) => {
+    setHoverCardsState(on);
+    writeHoverCards(on);
+    if (on) return;
+    if (hoverTimer.current) clearTimeout(hoverTimer.current);
+    hoverTimer.current = null;
+    setHoverCard(null);
   }, []);
   // The flow lens on the one selected component (T, the menu, quick actions).
   const traceSelected = useCallback(() => {
@@ -1927,7 +1935,7 @@ export function Canvas(props: Props) {
           if (hoverTimer.current) clearTimeout(hoverTimer.current);
           hoverTimer.current = null;
         };
-        if (!at || hoverQuiet.current) {
+        if (!at || hoverQuiet.current || !hoverCardsRef.current) {
           clear();
           hoverPending.current = null;
           setHoverCard(null);
@@ -2109,6 +2117,11 @@ export function Canvas(props: Props) {
       if (!mod && !ev.altKey && k === "v") {
         ev.preventDefault();
         setTool("select");
+        return;
+      }
+      if (!mod && !ev.altKey && ev.shiftKey && k === "h") {
+        ev.preventDefault();
+        setHoverCards(!hoverCardsRef.current);
         return;
       }
       if (!mod && !ev.altKey && k === "h") {
@@ -2946,25 +2959,30 @@ export function Canvas(props: Props) {
     { label: "Redo", hint: `${mod.long} Y`, disabled: !e?.redo.length, run: redo },
     "-",
     {
-      label: panes.left ? "Unpin the picker" : "Pin the picker",
+      label: "Pin the picker",
       hint: `${mod.long} Shift K`,
-      run: () => setPane("left"),
+      checked: panes.left,
+      toggle: (on: boolean) => setPane("left", on),
     },
     {
-      label: panes.right ? "Keep the inspector away" : "Let the inspector show",
+      label: "Show the inspector",
       hint: `${mod.long} Shift P`,
-      run: () => setPane("right"),
+      checked: panes.right,
+      toggle: (on: boolean) => setPane("right", on),
     },
     {
-      label: panes.design ? "Unpin design settings" : "Pin design settings",
+      label: "Pin design settings",
       hint: "\\ or D",
-      run: () => pinDesign(),
+      checked: panes.design,
+      toggle: (on: boolean) => pinDesign(on),
     },
     { label: "Keys & gestures", hint: "?", run: () => setHelp(true) },
     props.canDelete ? "-" : null,
     props.canDelete ? { label: "Delete design", danger: true, run: () => void doDelete() } : null,
   ];
 
+  // What the Dim edges box shows: the stored choice, or the auto rule on this design.
+  const edgesDimmed = dimmed(dimEdges, e?.doc.edges.length ?? 0);
   const zoomMenu = (): MenuItem[] => [
     { label: "Zoom in", disabled: zoomPct >= ZOOM_MAX * 100, run: zoomIn },
     { label: "Zoom out", disabled: zoomPct <= ZOOM_MIN * 100, run: zoomOut },
@@ -2975,11 +2993,14 @@ export function Canvas(props: Props) {
     "-",
     { label: "Fit", hint: `${mod.long} 0`, run: fitView },
     "-",
-    ...DIM_MODES.map((m) => ({
-      label: `Dim edges: ${m}`,
-      hint: dimEdges === m ? "✓" : m === "auto" ? `past ${DIM_EDGES_OVER} edges` : undefined,
-      run: () => setDimEdges(m),
-    })),
+    { label: "Hover cards", checked: hoverCards, toggle: setHoverCards },
+    {
+      label: "Dim edges",
+      hint: dimEdges === "auto" ? `past ${DIM_EDGES_OVER} edges` : undefined,
+      hintUntilSet: true,
+      checked: edgesDimmed,
+      toggle: setDimEdges,
+    },
   ];
 
   // Quick actions (⌘K): the same commands as the menus, the dock and the keys, by name. What
@@ -3046,9 +3067,17 @@ export function Canvas(props: Props) {
       {
         id: "dim-edges",
         group: "View",
-        label: `Dim edges: ${DIM_MODES[(DIM_MODES.indexOf(dimEdges) + 1) % DIM_MODES.length]}`,
+        label: `Dim edges: ${edgesDimmed ? "off" : "on"}`,
         keywords: "dense fade quiet edges lines ink",
-        run: () => setDimEdges(DIM_MODES[(DIM_MODES.indexOf(dimEdges) + 1) % DIM_MODES.length]),
+        run: () => setDimEdges(!edgesDimmed),
+      },
+      {
+        id: "hover-cards",
+        group: "View",
+        label: `Hover cards: ${hoverCards ? "off" : "on"}`,
+        hint: "Shift H",
+        keywords: "tooltip card hover details popup",
+        run: () => setHoverCards(!hoverCards),
       },
       selection.type === "node"
         ? {
@@ -3377,14 +3406,13 @@ export function Canvas(props: Props) {
             </span>
           )}
           {props.canWrite ? (
-            <label className="auto" title="Save a moment after every change">
-              <input
-                type="checkbox"
-                checked={autosave}
-                onChange={(ev) => setAutosave(ev.target.checked)}
-              />
-              auto
-            </label>
+            <Switch
+              className="auto"
+              label="auto"
+              title="Save a moment after every change"
+              checked={autosave}
+              onChange={setAutosave}
+            />
           ) : null}
           <span className="pill-sep" />
           <button
