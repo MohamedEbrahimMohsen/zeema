@@ -1157,7 +1157,7 @@ function NodePanel({
 
 type DesignHit = { title: string; slug: string; owner: { username: string } | null };
 
-const PICKER_PROMPT = "Paste a design link or owner/slug";
+const PICKER_PROMPT = "Search designs, or paste a link here";
 
 /**
  * The field that names a design: a pasted link (any host's /d/owner/slug, its canvas, or a bare
