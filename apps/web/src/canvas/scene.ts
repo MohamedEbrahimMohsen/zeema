@@ -16,6 +16,8 @@ import {
   nodeCount,
   nodeDeadLetter,
   nodeLines,
+  nodeRef,
+  refLabel,
 } from "@zeema/core/document";
 import {
   authAt,
@@ -30,6 +32,7 @@ import {
   innermostFrameAt,
   moveSegment,
   portAt,
+  refAt,
   refitEnds,
   viaOf,
 } from "@zeema/core/geometry";
@@ -40,6 +43,7 @@ import {
   FRAME_ICON_SHIFT,
   nodeDecor,
   nodeText,
+  refGlyphMarkup,
   TINT,
   TINT_FILL_ALPHA,
   tintFill,
@@ -249,8 +253,20 @@ export type Handlers = {
    * none of them, or a gesture began). Sent again as it moves, so the page knows where it is.
    */
   onHover?: (
-    at: { type: "node" | "group" | "edge"; id: string; clientX: number; clientY: number } | null,
+    at: {
+      type: "node" | "group" | "edge" | "ref";
+      id: string;
+      clientX: number;
+      clientY: number;
+    } | null,
   ) => void;
+  /**
+   * The colour of a node's reference disc (`ref`, another design): the page knows the state of
+   * the reference, the scene does not. Absent: muted, as the server render draws it.
+   */
+  refColor?: (design: string, version: number | "head") => string;
+  /** A node's reference disc was clicked (shift: open the design in a new tab). */
+  onRefClick?: (nodeId: string, shift: boolean) => void;
 };
 
 // The zoom range every path shares: the wheel, the zoom menu and fit's lower bound all stay in it.
@@ -1423,14 +1439,16 @@ export class Scene {
    * Report the pointer resting on (or leaving) a component's box, an edge or a group's label
    * strip: to the page, for the hover card, and to the neighbourhood highlight, so the two agree.
    */
-  hoverable(target: Element, type: "node" | "group" | "edge", id: string) {
+  hoverable(target: Element, type: "node" | "group" | "edge" | "ref", id: string) {
     const subject = (): Subject | null =>
-      type === "node"
+      type === "node" || type === "ref"
         ? { type: "node", ref: id }
         : type === "edge"
           ? { type: "edge", ref: Number(id) }
           : null;
     const report = (ev: PointerEvent) => {
+      // A reference disc sits inside its box: the box must not take the report back.
+      if (type === "ref") ev.stopPropagation();
       if (ev.buttons || this.busy()) {
         this.hoverLight(null);
         return this.h.onHover?.(null);
@@ -1444,6 +1462,16 @@ export class Scene {
       this.hoverLight(null);
       this.h.onHover?.(null);
     });
+  }
+
+  /** Repaint every reference disc from `refColor`, without a rebuild (a summary came back). */
+  paintRefs() {
+    for (const disc of this.layers.nodes.querySelectorAll(".ref-glyph")) {
+      const design = disc.getAttribute("data-ref") ?? "";
+      const raw = disc.getAttribute("data-version") ?? "head";
+      const version = raw === "head" ? "head" : Number(raw);
+      disc.innerHTML = refGlyphMarkup(this.h.refColor?.(design, version));
+    }
   }
 
   renderNodes() {
@@ -1519,7 +1547,7 @@ export class Scene {
       // hover is the page's card (onHover), not a native <title>, which is slow and plain.
       // An exported picture gets the <title> back (toSVG).
       const lines = nodeLines(this.model.catalogue, n);
-      const text = nodeText(lines.name, lines.sub, b[2], lines.id);
+      const text = nodeText(lines.name, lines.sub, b[2], lines.id, nodeRef(n) !== null);
       box.setAttribute("aria-label", text.title);
       this.hoverable(box, "node", n.id);
       if (this.symbolFor(n.component))
@@ -1571,6 +1599,34 @@ export class Scene {
         });
         chip.textContent = p.text;
         box.append(chip);
+      }
+      // Another design this node stands for: a link disc in the bottom-right corner, where the
+      // server render draws it (refAt), tinted by the reference's state (refColor). A click
+      // target of its own, inside the box, so the box's hit area is what it was.
+      const ref = nodeRef(n);
+      if (ref) {
+        const [rx, ry] = refAt(b[2], b[3]);
+        const disc = el("g", {
+          class: "ref-glyph",
+          transform: `translate(${rx} ${ry})`,
+          "data-ref": ref.design,
+          "data-version": String(ref.version),
+          role: "button",
+          "aria-label": `References ${refLabel(ref)}`,
+        });
+        disc.innerHTML = refGlyphMarkup(this.h.refColor?.(ref.design, ref.version));
+        disc.addEventListener("pointerdown", (ev: any) => {
+          if (ev.button !== 0 || this.space) return;
+          ev.stopPropagation();
+        });
+        disc.addEventListener("click", (ev: any) => {
+          if (ev.button !== 0 || this.space) return;
+          ev.stopPropagation();
+          this.h.onRefClick?.(n.id, Boolean(ev.shiftKey));
+        });
+        disc.addEventListener("dblclick", (ev) => ev.stopPropagation());
+        this.hoverable(disc, "ref", n.id);
+        box.append(disc);
       }
       const bad = (this.model.findings || []).filter(
         (f) => f.subject && f.subject.type === "node" && f.subject.ref === n.id,

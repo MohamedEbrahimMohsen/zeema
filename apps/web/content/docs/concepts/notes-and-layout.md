@@ -79,6 +79,23 @@ cards" in quick actions) turns them off and on, in this browser only. With them 
 still highlights what you point at, and pins and the flow lens work as before; only the card stays
 away.
 
+### Referencing another design
+
+A component can stand for a whole design of its own: the "Notification Service" in a news feed is
+the published Notification System. Select it, and under **Reference** in the Inspector choose
+**Reference another design…**, then search public designs by name, slug or owner. The reference is
+pinned to that design's latest release (or follows head, when it has none yet); the **Version**
+menu moves it to another release or to **head**, which follows the latest. It is written into the
+YAML as `ref` ([Writing a design](/docs/writing-a-design)), one undo step per change.
+
+The component then carries a link disc in its bottom-right corner, coloured by where the reference
+stands: accent when it is pinned to the latest release (or follows head), amber when a newer release
+is out or the release does not exist yet, grey when the design is private, deleted or did not
+answer. Rest the pointer on the disc for a card with the design's name, owner, release, size and
+thumbnail; click it for a preview of the design, with a menu to look at its other releases; Shift
+click opens it in a new tab. Readers of your design see all of this too; only the owner changes it.
+Only public designs can be referenced for now.
+
 ## Edge style
 
 `routing` says how the edges are drawn. Without it they are orthogonal: horizontal and vertical

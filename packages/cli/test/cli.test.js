@@ -78,6 +78,39 @@ describe("lint", () => {
     expect(r.out).toContain("structure");
   });
 
+  it("a malformed design ref is a structure finding on the node's line", async () => {
+    const bad = path.join(tmp, "ref.zeema.yaml");
+    fs.writeFileSync(
+      bad,
+      [
+        'schemaVersion: "1"',
+        'type: "design"',
+        'id: "feed"',
+        "nodes:",
+        '  - id: "a"',
+        '    component: "kafka"',
+        "  - id: notify",
+        '    component: "kafka"',
+        "    ref:",
+        '      design: "not-owner-slug"',
+        '      version: "latest"',
+        "edges: []",
+        "",
+      ].join("\n"),
+    );
+    const r = await run(["lint", bad, "--format", "json"]);
+    expect(r.code).toBe(1);
+    const found = JSON.parse(r.out).files[0].findings.filter((f) => / ref /.test(f.message));
+    expect(found.map((f) => [f.id, f.line, f.blocking])).toEqual([
+      ["structure", 7, true],
+      ["structure", 7, true],
+    ]);
+    expect(found[0].message).toBe('node notify ref design "not-owner-slug" is not owner/slug');
+    expect(found[1].message).toBe(
+      'node notify ref version "latest" is not a release number (1 or more) or "head"',
+    );
+  });
+
   it("a YAML refusal is a finding with a line, not a crash", async () => {
     const bad = path.join(tmp, "tabs.zeema.yaml");
     fs.writeFileSync(

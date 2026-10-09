@@ -23,6 +23,12 @@ const ONE_LINE_BOX_W = 240;
 // column of similar names comes out one width rather than ragged. Calibrated on the reference
 // designs: nearly every box lands on one of the first three steps; the last is MAX_BOX_W.
 export const BOX_W_STEPS = [MIN_BOX_W, 176, 240, MAX_BOX_W];
+// A node that references another design carries a link disc at its bottom-right corner
+// (geometry.js: centred REF_INSET = 14px in from the right and bottom, radius AUTH_GLYPH_R = 7),
+// in the band of the second line. That line is kept clear of the disc and 2px beyond it, on both
+// sides so the centred line stays centred: 2 * (14 + 7 + 2) px more room than TEXT_PAD alone.
+// Stated here as a number because text.js imports nothing; a test pins it to geometry.js.
+export const REF_CLEAR = 2 * (14 + 7 + 2);
 const ELLIPSIS = "…";
 const NARROW = new Set([..."iIljl.,:;|!'`"]);
 const SLIM = new Set([..."ftr()[]{}-/ "]);
@@ -108,14 +114,15 @@ function bestSplit(text, measure) {
  * for the second line on one line and the name on one line when that makes a box no wider than
  * 240px, else on the two lines that need the least width; then rounded up to the next of
  * BOX_W_STEPS (126, 176, 240, 256px), so it is never narrower than 126px nor wider than 256px.
- * The layout sizes every box with this and nothing else.
+ * With `ref` (the node references a design, and carries the link disc), the second line needs
+ * REF_CLEAR more. The layout sizes every box with this and nothing else.
  */
-export function nodeWidth(name, sub) {
+export function nodeWidth(name, sub, ref = false) {
   const pad = 2 * TEXT_PAD;
   const one = nameWidth(name) + pad;
   const split = bestSplit(name, nameWidth);
   const needName = one <= ONE_LINE_BOX_W || !split ? one : Math.min(one, split.widest + pad);
-  const need = Math.max(needName, subWidth(String(sub ?? "")) + pad);
+  const need = Math.max(needName, subWidth(String(sub ?? "")) + pad + (ref ? REF_CLEAR : 0));
   return BOX_W_STEPS.find((step) => step >= need) ?? MAX_BOX_W;
 }
 
@@ -157,18 +164,19 @@ export function frameCaption(text, icon = false) {
  * line (the proper name under a label, else the kind) on one line, smaller, ellipsized. With a
  * two-line name the icon is a little smaller and the block sits higher, so it still fits the
  * same box. The canvas and the server render both draw from this, so a node looks the same in
- * both. `title` is the hover text: both lines whole, and the id that is no longer drawn.
+ * both. `title` is the hover text: both lines whole, and the id that is no longer drawn. With
+ * `ref` the second line is fitted REF_CLEAR narrower, clear of the link disc (nodeWidth).
  * @returns {{ icon: { y: number, size: number }, name: Array<{ text: string, y: number }>,
  *   comp: { text: string, y: number }, title: string }}
  */
-export function nodeText(name, sub, w, id) {
+export function nodeText(name, sub, w, id, ref = false) {
   const inner = Math.max(24, w - 2 * TEXT_PAD);
   let lines = wrap(name, inner, 2, nameWidth);
   if (lines.length === 2) {
     const split = bestSplit(name, nameWidth);
     if (split && split.widest <= inner) lines = split.lines;
   }
-  const comp = ellipsize(String(sub ?? ""), inner, subWidth);
+  const comp = ellipsize(String(sub ?? ""), Math.max(24, inner - (ref ? REF_CLEAR : 0)), subWidth);
   const title = [...new Set([name, sub, id].filter(Boolean))].join(" · ");
   if (lines.length === 1)
     return {

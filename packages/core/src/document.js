@@ -638,6 +638,42 @@ export function setNodeGroup(doc, nodeId, groupId) {
   return d;
 }
 
+// A node may stand for another Zeema design: `ref: { design: "owner/slug", version }`, where the
+// version is a release number or "head". The reference is an annotation; the node keeps its
+// component, props, edges and rules. The owner is a GitHub login, the slug a design id. These
+// two tests are the ones schema/design.schema.json states and structure.js enforces.
+export const REF_DESIGN_RE = /^[A-Za-z0-9-]+\/[a-z][a-z0-9-]*$/;
+export const isRefDesign = (v) => typeof v === "string" && REF_DESIGN_RE.test(v);
+export const isRefVersion = (v) => v === "head" || (Number.isInteger(v) && v >= 1);
+
+/**
+ * A node's reference to another design, read and split, or null when it has none or it is
+ * malformed (structure.js reports that). Pure: whether the target exists is remote state.
+ * @returns {{ design: string, owner: string, slug: string, version: number | "head" } | null}
+ */
+export function nodeRef(node) {
+  const r = node?.ref;
+  if (!r || typeof r !== "object" || !isRefDesign(r.design) || !isRefVersion(r.version))
+    return null;
+  const [owner, slug] = r.design.split("/");
+  return { design: r.design, owner, slug, version: r.version };
+}
+
+/** `owner/slug@v3`, or `owner/slug@head`: how a reference is written in one word. */
+export function refLabel(ref) {
+  return `${ref.design}@${ref.version === "head" ? "head" : `v${ref.version}`}`;
+}
+
+/** Set a node's reference (`{ design, version }`), or remove it with null. */
+export function setNodeRef(doc, nodeId, ref) {
+  const d = clone(doc);
+  const n = d.nodes.find((x) => x.id === nodeId);
+  if (!n) return d;
+  if (!ref) delete n.ref;
+  else n.ref = { design: ref.design, version: ref.version };
+  return d;
+}
+
 // Parentage is only ever set here, never inferred from geometry, and a cycle is refused rather
 // than written, because the rules walk ancestry and a cycle would not terminate.
 export function setGroupParent(doc, groupId, parentId) {

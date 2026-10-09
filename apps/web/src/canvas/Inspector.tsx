@@ -3,7 +3,7 @@
 // Every control here is generated from the catalogue and the design schema; nothing about a
 // product is hard coded. A control shows the value the design resolves to and writes only when
 // the user sets something. Text inputs commit on blur or Enter, never per keystroke.
-import { effective, propDefs } from "@zeema/core/document";
+import { effective, nodeRef, propDefs } from "@zeema/core/document";
 import { edgeKeys } from "@zeema/core/geometry";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Icon } from "@/components/Icon";
@@ -29,6 +29,7 @@ import { PALETTE, PALETTE_COLUMNS, pushRecent, readRecent } from "@/lib/tint-pal
 import { mixedValue } from "./edge-set";
 import { parseQuery, type Row, score } from "./Palette";
 import { commonProps, type PropDef, propValue } from "./prop-set";
+import { pinnedRelease, type RefStore, type RefVersion, refHref, refStatusText } from "./ref-state";
 import type { Picked, Subject } from "./scene";
 
 export type InspectorApi = {
@@ -71,6 +72,8 @@ export type InspectorApi = {
   /** Point the palette at a query, the way the group hint does. */
   findInPalette: (query: string) => void;
   detachNote: (id: string) => void;
+  /** A node's reference to another design (`owner/slug` and a release or "head"), or null. */
+  setRef: (id: string, ref: { design: string; version: RefVersion } | null) => void;
   /** For edges, `ref` may be several indexes: they go as one undo step. */
   remove: (type: "node" | "edge" | "group" | "note", ref: string | number | number[]) => void;
 };
@@ -81,6 +84,13 @@ export type InspectorApi = {
  * `requirements` are design requirement paths like `security.credentialRotationDays`, and
  * `nodeKinds`/`nodeCategories` are what the rule also hunts for in the design.
  */
+/** What the Reference section needs from the page: the summaries, who may write, the preview. */
+export type RefContext = {
+  store: RefStore;
+  canWrite: boolean;
+  preview: (owner: string, slug: string, version: RefVersion) => void;
+};
+
 export type Highlight = {
   fields: string[];
   requirements: string[];
@@ -648,6 +658,7 @@ export function Inspector({
   mode = "auto",
   designHead,
   designExtra,
+  refs,
 }: {
   selection: Subject;
   /** The whole selection: components, groups and edges. */
@@ -679,6 +690,8 @@ export function Inspector({
   designHead?: React.ReactNode;
   /** Under the design's id: the owner's list badge row. */
   designExtra?: React.ReactNode;
+  /** The node card's Reference section; absent: no section. */
+  refs?: RefContext;
 }) {
   const hl = highlight ?? null;
   if (mode === "design")
@@ -752,6 +765,7 @@ export function Inspector({
             tint={own(nodeTints ?? {}, node.id)}
             selected={[node.id]}
             tintRow={!many}
+            refs={many ? undefined : refs}
           />
         </>
       );
@@ -921,6 +935,7 @@ function NodePanel({
   tint,
   selected,
   tintRow = true,
+  refs,
 }: {
   node: any;
   doc: any;
@@ -933,6 +948,8 @@ function NodePanel({
   selected: string[];
   /** False in a multi-selection: the tint row above, for all of it, takes over. */
   tintRow?: boolean;
+  /** The Reference section, on the single-node card only. */
+  refs?: RefContext;
 }) {
   const c = own(catalogue.components, node.component);
   const defs: Record<string, any> = propDefs(catalogue, node.component);
@@ -1091,6 +1108,7 @@ function NodePanel({
           />
         </Field>
       ))}
+      {refs ? <RefSection key={`ref-${node.id}`} node={node} api={api} refs={refs} /> : null}
       <h2>Group</h2>
       <Field name="group" isSet={Boolean(node.group)}>
         <select
@@ -1112,6 +1130,181 @@ function NodePanel({
       >
         Delete node
       </button>
+    </>
+  );
+}
+
+type DesignHit = { title: string; slug: string; owner: { username: string } | null };
+
+/**
+ * The node's reference to another design (format.md, "Referencing another design"). Without one:
+ * a search over public designs to pick it from. With one: the design, the release it is pinned to
+ * (or head), where that stands, and Preview / Open / Remove. Every change is one commit, so one
+ * undo step. A reader sees the reference and its state, never the controls that change it.
+ */
+function RefSection({ node, api, refs }: { node: any; api: InspectorApi; refs: RefContext }) {
+  const ref = nodeRef(node);
+  const owner = ref?.owner;
+  const slug = ref?.slug;
+  const { store, canWrite } = refs;
+  const [, setTick] = useState(0);
+  const [picking, setPicking] = useState(false);
+  const [query, setQuery] = useState("");
+  const [hits, setHits] = useState<DesignHit[] | null>(null);
+  const [note, setNote] = useState<string | null>(null);
+  useEffect(() => store.subscribe(() => setTick((t) => t + 1)), [store]);
+  useEffect(() => {
+    if (owner && slug) void store.ensure(owner, slug);
+  }, [store, owner, slug]);
+  // The search: public designs by name, slug or owner, twenty at most, after a pause in typing.
+  useEffect(() => {
+    if (!picking) return;
+    const q = query.replace(/\//g, " ").trim();
+    let live = true;
+    const t = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/v1/designs?pageSize=20&q=${encodeURIComponent(q)}`);
+        const body = res.ok ? await res.json() : { items: [] };
+        if (live) setHits(body.items ?? []);
+      } catch {
+        if (live) setHits([]);
+      }
+    }, 200);
+    return () => {
+      live = false;
+      clearTimeout(t);
+    };
+  }, [picking, query]);
+
+  const pick = async (hit: DesignHit) => {
+    const who = hit.owner?.username ?? "zeema";
+    const entry = await store.ensure(who, hit.slug);
+    const latest = entry.status === "ok" ? entry.summary.latest : null;
+    setNote(latest === null ? "Not released yet: the reference follows head." : null);
+    setPicking(false);
+    setQuery("");
+    setHits(null);
+    api.setRef(node.id, { design: `${who}/${hit.slug}`, version: latest ?? "head" });
+  };
+
+  if (!ref) {
+    if (!canWrite) return null;
+    return (
+      <>
+        <h2>Reference</h2>
+        {picking ? (
+          <div className="ref-picker">
+            <input
+              className="input"
+              // biome-ignore lint/a11y/noAutofocus: the field is what the button just asked for
+              autoFocus
+              placeholder="Search public designs"
+              aria-label="Search public designs"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") {
+                  e.stopPropagation();
+                  setPicking(false);
+                }
+                if (e.key === "Enter" && hits?.length) void pick(hits[0]);
+              }}
+            />
+            <ul className="ref-hits">
+              {hits === null ? <li className="muted small">Searching…</li> : null}
+              {hits?.length === 0 ? (
+                <li className="muted small">No public design matches.</li>
+              ) : null}
+              {(hits ?? []).map((h) => {
+                const who = h.owner?.username ?? "zeema";
+                return (
+                  <li key={`${who}/${h.slug}`}>
+                    <button type="button" onClick={() => void pick(h)}>
+                      <span className="ref-hit-name">{h.title}</span>
+                      <span className="muted mono small">
+                        {" "}
+                        · {who}/{h.slug}
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+            <button type="button" className="btn btn-sm" onClick={() => setPicking(false)}>
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <button type="button" className="btn btn-sm" onClick={() => setPicking(true)}>
+            Reference another design…
+          </button>
+        )}
+      </>
+    );
+  }
+  const entry = store.get(ref.owner, ref.slug);
+  const summary = entry?.status === "ok" ? entry.summary : null;
+  const pinned = pinnedRelease(entry, ref.version);
+  const versions = summary ? [...summary.releases].reverse() : [];
+  return (
+    <>
+      <h2>Reference</h2>
+      <Field name="design" note={summary?.name}>
+        <input className="input mono" readOnly value={ref.design} aria-label="Referenced design" />
+      </Field>
+      <Field name="version" note={refStatusText(entry, ref.version)}>
+        <select
+          value={String(ref.version)}
+          disabled={!canWrite}
+          onChange={(e) =>
+            api.setRef(node.id, {
+              design: ref.design,
+              version: e.target.value === "head" ? "head" : Number(e.target.value),
+            })
+          }
+        >
+          <option value="head">head · follows latest</option>
+          {versions.map((r) => (
+            <option key={r.id} value={r.version}>
+              v{r.version}
+              {r.version === summary?.latest ? " · latest" : ""}
+            </option>
+          ))}
+          {typeof ref.version === "number" && !pinned ? (
+            <option value={ref.version}>v{ref.version}</option>
+          ) : null}
+        </select>
+      </Field>
+      {note ? <p className="muted small my-2">{note}</p> : null}
+      <div className="ref-actions">
+        <button
+          type="button"
+          className="btn btn-sm"
+          onClick={() => refs.preview(ref.owner, ref.slug, ref.version)}
+        >
+          Preview
+        </button>
+        <a
+          className="btn btn-sm"
+          href={refHref(ref.owner, ref.slug, entry, ref.version)}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Open ↗
+        </a>
+        {canWrite ? (
+          <button
+            type="button"
+            className="btn btn-sm btn-danger"
+            onClick={() => {
+              setNote(null);
+              api.setRef(node.id, null);
+            }}
+          >
+            Remove reference
+          </button>
+        ) : null}
+      </div>
     </>
   );
 }

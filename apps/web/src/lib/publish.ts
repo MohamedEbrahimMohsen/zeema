@@ -8,6 +8,8 @@ export type PublishContext = {
   /** Where publishing puts the design (publishSlugFor); differs from `slug` for an unnamed draft. */
   plannedSlug: string;
   visibility: "public" | "private";
+  /** The number the release will take (designs.ts `releaseNumbers`), when known. */
+  nextRelease?: number;
 };
 
 export function publishQuestion({
@@ -15,15 +17,17 @@ export function publishQuestion({
   slug,
   plannedSlug,
   visibility,
+  nextRelease,
 }: PublishContext): ConfirmOptions {
   const who =
     visibility === "public"
       ? "The current draft becomes the release everyone reads, and your followers are told."
       : "The current draft becomes the release. The design is private, so nobody else sees it until you make it public.";
   const move = plannedSlug !== slug ? ` It also moves to /d/${owner}/${plannedSlug}.` : "";
+  const becomes = nextRelease ? ` This becomes v${nextRelease}.` : "";
   return {
     title: "Publish a new version?",
-    body: `${who}${move} A release stays in the version history for good: it cannot be unpublished.`,
+    body: `${who}${becomes}${move} A release stays in the version history for good: it cannot be unpublished.`,
     confirmLabel: "Publish",
     cancelLabel: "Cancel",
   };

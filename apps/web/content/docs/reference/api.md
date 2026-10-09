@@ -294,6 +294,40 @@ GET /api/v1/designs/ada/order-processing/versions
 
 A reader sees released versions only. The writer sees every save.
 
+### Summary (for references)
+
+```http
+GET /api/v1/designs/ada/notification-system/summary?version=2
+```
+
+What a node that references this design shows (`ref` in the YAML). Releases are numbered 1, 2, 3
+in the order they were published; that number is what a reference pins.
+
+```json
+{
+  "name": "Notification System",
+  "owner": "ada",
+  "slug": "notification-system",
+  "release": { "version": 2, "id": "a4d0…", "publishedAt": "2026-01-14T10:02:11.000Z" },
+  "latest": 3,
+  "releases": [
+    { "version": 1, "id": "19c2…", "publishedAt": "2026-01-02T08:40:00.000Z" },
+    { "version": 2, "id": "a4d0…", "publishedAt": "2026-01-14T10:02:11.000Z" },
+    { "version": 3, "id": "e7f1…", "publishedAt": "2026-02-01T16:20:45.000Z" }
+  ],
+  "counts": { "nodes": 27, "edges": 27, "groups": 2 },
+  "thumb": "/api/v1/designs/ada/notification-system/thumb?version=a4d0…&v=ee93…"
+}
+```
+
+- `release` is the release asked for with `version`, else the current one; `latest` is the current
+  release's number. Both are `null` for a design that was never released.
+- `counts` and `thumb` are those of `release`; `thumb` is `null` with no release.
+- **Public designs only**, whoever asks, the owner included. Private, deleted and missing designs
+  all answer the same `404`, so a reference never reveals which. A `version` that is not a release
+  answers `404` too. An address the design used to have (a rename) still answers.
+- Cached publicly for a minute, with an `ETag`.
+
 ### Representations
 
 ```http

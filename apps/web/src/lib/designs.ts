@@ -2,6 +2,8 @@
 // authorization matrix (plan, section 13) applied here and nowhere else. Interfaces derive
 // their own state ("can I edit this?") from the answers these functions give.
 import { createHash } from "node:crypto";
+import { normalize } from "@zeema/core/document";
+import { parse } from "@zeema/core/yaml";
 import { and, desc, eq, gt, ilike, isNotNull, isNull, ne, or, sql } from "drizzle-orm";
 import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import { type Db, getDb, schema } from "@/db";
@@ -290,6 +292,148 @@ export async function listVersions(view: DesignView) {
     .limit(100);
 }
 
+// ---------------------------------------------------------------- release numbers
+
+type ReleaseRow = {
+  id: string;
+  broken?: boolean | null;
+  publishedAt: Date | null;
+  createdAt: Date;
+};
+
+/**
+ * Release N is the N-th version released, by when it was released (ties by when it was saved):
+ * every saved, non-broken version with a `publishedAt`, numbered from 1. Everything that names a
+ * release (the history list, the version page, the publish question, a reference's summary)
+ * numbers it here, so the numbers cannot disagree. Rows that are not releases are skipped.
+ */
+export function releaseNumbers(rows: readonly ReleaseRow[]): Map<string, number> {
+  const released = rows
+    .filter((r) => !r.broken && r.publishedAt)
+    .sort(
+      (a, b) =>
+        (a.publishedAt as Date).getTime() - (b.publishedAt as Date).getTime() ||
+        a.createdAt.getTime() - b.createdAt.getTime(),
+    );
+  return new Map(released.map((r, i) => [r.id, i + 1]));
+}
+
+/** Every release of a design, numbered (`releaseNumbers`): version id → its number. */
+export async function designReleaseNumbers(designId: string): Promise<Map<string, number>> {
+  const db = await getDb();
+  const rows = await db
+    .select({
+      id: schema.designVersions.id,
+      broken: schema.designVersions.broken,
+      publishedAt: schema.designVersions.publishedAt,
+      createdAt: schema.designVersions.createdAt,
+    })
+    .from(schema.designVersions)
+    .where(
+      and(
+        eq(schema.designVersions.designId, designId),
+        eq(schema.designVersions.broken, false),
+        isNotNull(schema.designVersions.publishedAt),
+      ),
+    );
+  return releaseNumbers(rows);
+}
+
+// ---------------------------------------------------------------- references
+
+/**
+ * What a node referencing this design (`ref: { design: "owner/slug", version }`) shows: the
+ * design's name, its releases numbered 1, 2, 3 in the order they were published, and the counts
+ * and thumbnail of the release asked for (`version`), else of the current one.
+ *
+ * Public designs only, whoever asks, the owner included: a reference is read by everyone who
+ * reads the referencing design, and a private target would show its existence to them. So a
+ * private, deleted or missing design is one and the same 404, and nothing here depends on the
+ * viewer. An address the design used to answer to (a rename) still resolves.
+ */
+export type RefSummary = {
+  name: string;
+  owner: string;
+  slug: string;
+  /** The release asked for, or the current one; null for a design never released. */
+  release: { version: number; id: string; publishedAt: Date | null } | null;
+  /** The current release's number; null for a design never released. */
+  latest: number | null;
+  /** Every release, oldest first: what a reference can pin. */
+  releases: Array<{ version: number; id: string; publishedAt: Date | null }>;
+  counts: { nodes: number; edges: number; groups: number };
+  /** The thumb route for that release, with its key (cached for a year); null with no release. */
+  thumb: string | null;
+};
+
+export async function refSummary(
+  owner: string,
+  slug: string,
+  opts: { version?: number } = {},
+): Promise<RefSummary> {
+  const db = await getDb();
+  let found = await resolveDesign(owner, slug);
+  if (!found.design) {
+    const moved = await resolveAlias(owner, slug);
+    if (moved) found = await resolveDesign(owner, moved);
+  }
+  const d = found.design;
+  if (!d || d.deletedAt || d.visibility !== "public")
+    throw new ServiceError(404, "design not found");
+  const rows = await db
+    .select()
+    .from(schema.designVersions)
+    .where(
+      and(
+        eq(schema.designVersions.designId, d.id),
+        eq(schema.designVersions.broken, false),
+        isNotNull(schema.designVersions.publishedAt),
+      ),
+    );
+  const numbers = releaseNumbers(rows);
+  const numbered = rows
+    .filter((row) => numbers.has(row.id))
+    .map((row) => ({ version: numbers.get(row.id) as number, row }))
+    .sort((a, b) => a.version - b.version);
+  const current =
+    numbered.find((r) => r.row.id === d.publishedVersionId) ?? numbered.at(-1) ?? null;
+  let chosen = current;
+  if (opts.version !== undefined) {
+    chosen = numbered.find((r) => r.version === opts.version) ?? null;
+    if (!chosen) throw new ServiceError(404, "version not found");
+  }
+  const ownerSeg = ownerSegment(found.owner);
+  let counts = { nodes: 0, edges: 0, groups: 0 };
+  if (chosen)
+    try {
+      const doc = normalize(parse(chosen.row.yaml).doc).doc;
+      counts = {
+        nodes: doc.nodes?.length ?? 0,
+        edges: doc.edges?.length ?? 0,
+        groups: doc.groups?.length ?? 0,
+      };
+    } catch {
+      /* a release that no longer parses still has a name and a place in the list */
+    }
+  const brief = (r: { version: number; row: DesignVersion }) => ({
+    version: r.version,
+    id: r.row.id,
+    publishedAt: r.row.publishedAt,
+  });
+  return {
+    name: d.title,
+    owner: ownerSeg,
+    slug: d.slug,
+    release: chosen ? brief(chosen) : null,
+    latest: current?.version ?? null,
+    releases: numbered.map(brief),
+    counts,
+    thumb: chosen
+      ? `/api/v1/designs/${ownerSeg}/${d.slug}/thumb?version=${chosen.row.id}&v=${thumbKey(chosen.row.contentHash, chosen.row.layout)}`
+      : null,
+  };
+}
+
 export type ListOptions = {
   q?: string;
   provider?: string;
@@ -374,6 +518,9 @@ export async function listDesigns(
           ilike(schema.designs.title, `%${t}%`),
           ilike(schema.designs.summary, `%${t}%`),
           ilike(schema.designs.searchText, `%${t}%`),
+          // The address too, owner and slug: a reference is found by the words it is written in.
+          ilike(schema.designs.slug, `%${t}%`),
+          sql`${schema.designs.ownerId} in (select id from users where username ilike ${`%${t}%`})`,
         )!,
       );
   }

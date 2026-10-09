@@ -339,6 +339,31 @@
                 ]
               }
             }
+          },
+          "ref": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "design",
+              "version"
+            ],
+            "description": "Another Zeema design this node stands for, at a pinned release or at head. An annotation: the node keeps its component, props, edges and rules. A URL is never stored; the app builds it.",
+            "properties": {
+              "design": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9-]+/[a-z][a-z0-9-]*$",
+                "description": "owner/slug: the owner's GitHub login and the design's slug."
+              },
+              "version": {
+                "type": [
+                  "integer",
+                  "string"
+                ],
+                "minimum": 1,
+                "pattern": "^head$",
+                "description": "A release number (1 or more), or \"head\" for the latest saved version."
+              }
+            }
           }
         }
       }

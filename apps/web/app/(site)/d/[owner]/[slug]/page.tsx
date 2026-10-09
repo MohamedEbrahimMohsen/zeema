@@ -24,6 +24,7 @@ import { badgeOf } from "@/lib/badge";
 import { badgeChoices, badgeMark } from "@/lib/brand";
 import { getCatalogue, getIcons } from "@/lib/catalogue";
 import {
+  designReleaseNumbers,
   getBrokenVersion,
   getDesign,
   getTombstone,
@@ -98,6 +99,9 @@ export default async function DesignPage({
     view.design.origin === "reference" && (await getBrokenVersion(view.design.id)) !== null;
   const ownerSeg = ownerSegment(view.owner);
   const versions = await listVersions(view);
+  // Release numbers (v1, v2, ...) from the one numbering a reference's summary uses too.
+  const releases = await designReleaseNumbers(view.design.id);
+  const releaseOf = (id: string | undefined) => (id ? releases.get(id) : undefined);
   const currentId = view.design.currentVersionId;
   // The offers only exist for the owner's own field, so nobody else pays for the query.
   const tagSuggestions = view.can.write ? await listTags(viewer) : [];
@@ -173,8 +177,19 @@ export default async function DesignPage({
               draft
             </span>
           ) : null}
-          {sp.v && version?.publishedAt ? <span className="tag">released</span> : null}
-          {sp.v && !version?.publishedAt ? <span className="tag">unreleased</span> : null}
+          {!sp.v && !broken && !view.unpublished && releaseOf(version?.id) ? (
+            <span className="tag" title={`Release ${releaseOf(version?.id)}, the current one`}>
+              v{releaseOf(version?.id)}
+            </span>
+          ) : null}
+          {sp.v && !broken && version?.publishedAt ? (
+            <span className="tag">
+              released{releaseOf(version.id) ? ` · v${releaseOf(version.id)}` : ""}
+            </span>
+          ) : null}
+          {sp.v && !broken && !version?.publishedAt ? (
+            <span className="tag">unreleased</span>
+          ) : null}
           {broken ? <span className="tag tag-danger">broken twin</span> : null}
         </h1>
         <EditableSummary
@@ -221,6 +236,7 @@ export default async function DesignPage({
               visibility={view.design.visibility}
               plannedSlug={plannedSlug}
               neverPublished={!view.published}
+              nextRelease={releases.size + 1}
               since={since}
             />
           ) : null}
@@ -322,6 +338,7 @@ export default async function DesignPage({
               <ul className="flex flex-col gap-1 small">
                 {versions.slice(0, 12).map((v) => {
                   const active = (sp.v ?? currentId) === v.id;
+                  const n = releaseOf(v.id);
                   return (
                     <li key={v.id} className="flex items-center gap-2">
                       <Link
@@ -335,10 +352,15 @@ export default async function DesignPage({
                         {v.contentHash.slice(0, 8)}
                       </Link>
                       <span className="muted">{when(v.createdAt)}</span>
+                      {n ? (
+                        <span className="tag mono ml-auto" title={`Release ${n}`}>
+                          v{n}
+                        </span>
+                      ) : null}
                       {v.id === view.design.publishedVersionId ? (
-                        <span className="tag tag-accent ml-auto">released</span>
+                        <span className={`tag tag-accent ${n ? "" : "ml-auto"}`}>released</span>
                       ) : v.id === currentId && view.can.write ? (
-                        <span className="tag ml-auto">draft</span>
+                        <span className={`tag ${n ? "" : "ml-auto"}`}>draft</span>
                       ) : null}
                     </li>
                   );

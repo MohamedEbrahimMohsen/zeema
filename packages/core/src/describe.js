@@ -10,7 +10,9 @@
 // fall back to the raw YAML; the test suite lets it throw, which is how an added predicate is
 // found the day it is added rather than the day someone reads a wrong sentence.
 //
-// DOM free, fs free, no imports.
+// DOM free, fs free; the one import reads a node's reference to another design.
+
+import { nodeRef } from "./document.js";
 
 const list = (v) => (Array.isArray(v) ? v : [v]);
 
@@ -284,4 +286,21 @@ export function ruleReads(rule) {
   out.nodeCategories.sort();
   if (out.edge) for (const k of Object.keys(out.edge)) out.edge[k].sort();
   return out;
+}
+
+/* ------------------------------------------------------------------------ a node */
+
+/**
+ * A node as one plain sentence: its id, its component, its label when it has one, and the
+ * design it references when it references one ("references owner/slug at release 3", or "at
+ * head"). Pure: whether that design exists is remote state and is not looked up.
+ */
+export function describeNode(node) {
+  const bits = [`Node "${node.id}" is ${node.component}`];
+  if (typeof node.label === "string" && node.label) bits.push(`labelled "${node.label}"`);
+  const ref = nodeRef(node);
+  const tail = ref
+    ? `${bits.length > 1 ? "," : ""} and references ${ref.design} at ${ref.version === "head" ? "head" : `release ${ref.version}`}`
+    : "";
+  return `${bits.join(", ")}${tail}.`;
 }

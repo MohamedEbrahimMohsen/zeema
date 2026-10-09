@@ -73,13 +73,15 @@ import { ContextMenu } from "./ContextMenu";
 import { exportScene, saveFile } from "./exportScene";
 import { type CanvasFinding, FindingsPanel } from "./FindingsPanel";
 import { GroupPicker } from "./GroupPicker";
-import { type HoverAt, HoverCard } from "./HoverCard";
+import { type HoverAt, HoverCard, type RefInfo } from "./HoverCard";
 import { EdgeStyleField, type Highlight, Inspector, type InspectorApi } from "./Inspector";
 import { designMenu, type MenuEntry, SEP } from "./menu-model";
 import { Palette, ProviderSprite } from "./Palette";
 import { dimmed, readDim, readHoverCards, writeDim, writeHoverCards } from "./prefs";
 import { QuickActions } from "./QuickActions";
 import type { QuickAction, QuickTarget } from "./quick-actions";
+import { RefPreview, type RefTarget } from "./RefPreview";
+import { fetchRefSummary, REF_COLOR, RefStore, refHref, refState } from "./ref-state";
 import { Switch } from "./Switch";
 import {
   DIM_EDGES_OVER,
@@ -106,6 +108,8 @@ type Props = {
   signedIn: boolean;
   /** The head is ahead of the release. */
   unpublished: boolean;
+  /** The number the next release takes (designs.ts `releaseNumbers`), said in the publish question. */
+  nextRelease?: number;
   /** Said in the publish question: a public release reaches readers, a private one does not. */
   visibility: "public" | "private";
   /** The owner may delete it: an authored design they can write. */
@@ -515,6 +519,12 @@ const helpSections = (mod: string): Array<[string, Array<[string[], string]>]> =
   ],
 ];
 
+/** The theme the page is drawn in (app/layout.tsx puts it on <html>). */
+const pageTheme = () =>
+  typeof document !== "undefined" && document.documentElement.dataset.theme === "dark"
+    ? "dark"
+    : "light";
+
 const typing = (ev: KeyboardEvent) => {
   const t = ev.target as HTMLElement | null;
   return Boolean(t && (/input|select|textarea/i.test(t.tagName) || t.isContentEditable));
@@ -580,6 +590,10 @@ export function Canvas(props: Props) {
     from?: HTMLElement | null;
   } | null>(null);
   const [help, setHelp] = useState(false);
+  // The summaries behind nodes that reference other designs: one fetch per owner/slug for as
+  // long as this canvas is up. The preview of one of them, when its disc was clicked.
+  const [refStore] = useState(() => new RefStore(fetchRefSummary));
+  const [refPreview, setRefPreview] = useState<RefTarget | null>(null);
   // "Move to group…": the searchable group list, at the point the menu was opened, for these.
   const [moveTo, setMoveTo] = useState<{ x: number; y: number; ids: string[] } | null>(null);
   // The hover card: what the pointer has rested on (after HOVER_DELAY), and where.
@@ -694,17 +708,24 @@ export function Canvas(props: Props) {
   const closeQuick = useCallback(() => setQuick(false), []);
   const closeMoveTo = useCallback(() => setMoveTo(null), []);
   // A menu, a popover or a dialog holds the pointer's attention: no hover card meanwhile.
-  hoverQuiet.current = !!(menu || moveTo || quick || help || picker || pickAnchor);
+  hoverQuiet.current = !!(menu || moveTo || quick || help || picker || pickAnchor || refPreview);
   // The same, for the bare-key shortcuts — except the picker pinned as a panel, which is no popover.
   const popoverOpen = useRef(false);
-  popoverOpen.current = !!(menu || moveTo || help || pickAnchor || (picker && !panes.left));
+  popoverOpen.current = !!(
+    menu ||
+    moveTo ||
+    help ||
+    pickAnchor ||
+    refPreview ||
+    (picker && !panes.left)
+  );
   useEffect(() => {
     if (!hoverQuiet.current) return;
     if (hoverTimer.current) clearTimeout(hoverTimer.current);
     hoverTimer.current = null;
     hoverPending.current = null;
     setHoverCard(null);
-  }, [menu, moveTo, quick, help, picker, pickAnchor]);
+  }, [menu, moveTo, quick, help, picker, pickAnchor, refPreview]);
   useEffect(
     () => () => {
       if (hoverTimer.current) clearTimeout(hoverTimer.current);
@@ -713,6 +734,7 @@ export function Canvas(props: Props) {
   );
   const [title, setTitle] = useState(props.title);
   const [unpublished, setUnpublished] = useState(props.unpublished);
+  const [nextRelease, setNextRelease] = useState(props.nextRelease);
   const [editingTitle, setEditingTitle] = useState(false);
   // Default shown; the stored preference is read after mount so the server and the first
   // client render agree.
@@ -820,6 +842,11 @@ export function Canvas(props: Props) {
         pinnedNotes: pinnedNotesRef.current,
         findings: [...e.structural, ...e.rules],
       });
+      // Each design a node references is asked about once; the discs repaint when it answers.
+      for (const n of e.doc.nodes) {
+        const r = D.nodeRef(n);
+        if (r) void refStore.ensure(r.owner, r.slug);
+      }
       setSelection({ ...scene.selection });
       setMulti(scene.picked());
       setTick((t) => t + 1);
@@ -827,7 +854,15 @@ export function Canvas(props: Props) {
       console.error(err);
       setStatus(`draw failed: ${(err as Error).message}`);
     }
-  }, [bundle, relayout, derive]);
+  }, [bundle, relayout, derive, refStore]);
+  useEffect(
+    () =>
+      refStore.subscribe(() => {
+        sceneRef.current?.paintRefs();
+        setTick((t) => t + 1);
+      }),
+    [refStore],
+  );
 
   // Notes ride along with the positions: one save request, one sidecar, and never a byte of
   // the YAML, because a note is not a node.
@@ -2048,6 +2083,21 @@ export function Canvas(props: Props) {
         });
       },
       onView: (k) => setZoomPct(Math.round(k * 100)),
+      refColor: (design, version) => {
+        const [owner, slug] = design.split("/");
+        return REF_COLOR[refState(refStore.get(owner, slug), version)];
+      },
+      onRefClick: (nodeId, shift) => {
+        const n = eng.current?.doc.nodes.find((x: any) => x.id === nodeId);
+        const r = n ? D.nodeRef(n) : null;
+        if (!r) return;
+        if (shift) {
+          const href = refHref(r.owner, r.slug, refStore.get(r.owner, r.slug), r.version);
+          window.open(href, "_blank", "noopener,noreferrer");
+          return;
+        }
+        setRefPreview({ owner: r.owner, slug: r.slug, version: r.version });
+      },
     });
     sceneRef.current = scene;
     scene.setDimEdges(readDim());
@@ -2400,6 +2450,7 @@ export function Canvas(props: Props) {
         commit(doc);
       },
       setNfr: (id, f, v) => commit(D.setNfr(eng.current!.doc, id, f, v)),
+      setRef: (id, r) => commit(D.setNodeRef(eng.current!.doc, id, r)),
       setGroup: (id, g) => commit(D.setNodeGroup(eng.current!.doc, id, g)),
       rename: (oldId, typed) => {
         const e = eng.current!;
@@ -2633,6 +2684,7 @@ export function Canvas(props: Props) {
       slug: props.slug,
       plannedSlug: publishSlugFor({ slug: props.slug, title }),
       visibility: props.visibility,
+      nextRelease,
     };
     const res = await confirmThenPublish(confirm, ctx, async () => {
       if (e.dirty || saving.current.inFlight) {
@@ -2649,7 +2701,8 @@ export function Canvas(props: Props) {
       return;
     }
     setUnpublished(false);
-    setStatus("published");
+    setNextRelease((n) => (n === undefined ? n : n + 1));
+    setStatus(nextRelease ? `published v${nextRelease}` : "published");
   };
 
   const doClone = async () => {
@@ -2928,6 +2981,14 @@ export function Canvas(props: Props) {
         {badgeData ? <BadgeRow data={badgeData} onChoose={(ref) => api.setBadge(ref)} /> : null}
       </>
     ) : null;
+  // The reference card under a node's disc: its ref, and what the summary route said.
+  const refInfo = (nodeId: string): RefInfo | null => {
+    const n = e?.doc.nodes.find((x: any) => x.id === nodeId);
+    const r = n ? D.nodeRef(n) : null;
+    return r
+      ? { owner: r.owner, slug: r.slug, version: r.version, entry: refStore.get(r.owner, r.slug) }
+      : null;
+  };
   const inspectorProps =
     bundle && e
       ? {
@@ -2946,6 +3007,12 @@ export function Canvas(props: Props) {
           highlight: finding?.highlight ?? null,
           designHead,
           designExtra,
+          refs: {
+            store: refStore,
+            canWrite: props.canWrite,
+            preview: (owner: string, slug: string, version: number | "head") =>
+              setRefPreview({ owner, slug, version }),
+          },
         }
       : null;
   // Each card is keyed by what it shows, never by the undo tick: an edit re-renders the card in
@@ -2980,7 +3047,7 @@ export function Canvas(props: Props) {
   const statusClass =
     status.includes("fail") || status.includes("conflict")
       ? "status-err"
-      : status === "saved" || status === "published" || status === "link copied"
+      : status === "saved" || status.startsWith("published") || status === "link copied"
         ? "status-ok"
         : status === "unsaved"
           ? "status-warn"
@@ -3782,7 +3849,22 @@ export function Canvas(props: Props) {
         />
       ) : null}
       {hoverCard && bundle && e ? (
-        <HoverCard at={hoverCard} doc={e.doc} catalogue={bundle.catalogue} />
+        <HoverCard
+          at={hoverCard}
+          doc={e.doc}
+          catalogue={bundle.catalogue}
+          refInfo={refInfo}
+          theme={pageTheme()}
+        />
+      ) : null}
+      {refPreview ? (
+        <RefPreview
+          key={`${refPreview.owner}/${refPreview.slug}@${refPreview.version}`}
+          target={refPreview}
+          store={refStore}
+          theme={pageTheme()}
+          onClose={() => setRefPreview(null)}
+        />
       ) : null}
       {moveTo && e ? (
         <GroupPicker

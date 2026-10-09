@@ -61,6 +61,13 @@ export const API_ROUTES: ApiRoute[] = [
     summary: "Version history: releases for a reader, every save for the writer.",
   },
   {
+    method: "GET",
+    path: "/api/v1/designs/{owner}/{slug}/summary",
+    auth: "none",
+    summary:
+      "What a node referencing this design shows: name, numbered releases, counts and thumbnail. Public designs only; `version` picks a release.",
+  },
+  {
     method: "POST",
     path: "/api/v1/designs/{owner}/{slug}/publish",
     auth: "owner",

@@ -3,7 +3,15 @@
 // component's icon on one neutral surface, groups are dashed containers,
 // edges are arrows, solid for sync and dashed for async.
 
-import { groupCaption, groupTitle, nodeCount, nodeDeadLetter, nodeLines } from "./document.js";
+import {
+  groupCaption,
+  groupTitle,
+  nodeCount,
+  nodeDeadLetter,
+  nodeLines,
+  nodeRef,
+  refLabel,
+} from "./document.js";
 import { drawnLayout } from "./drawn.js";
 import {
   AUTH_GLYPH_R,
@@ -13,13 +21,14 @@ import {
   framesOuterFirst,
   framesUnderTint,
   readRouting,
+  refAt,
 } from "./geometry.js";
 import { layout } from "./layout.js";
 import { CAPTION_LINE, FRAME_ICON_SHIFT, nodeText } from "./text.js";
 
 // The disc under an auth glyph lives in geometry.js, which places it; re-exported for the same
 // callers.
-export { AUTH_GLYPH_R } from "./geometry.js";
+export { AUTH_GLYPH_R, refAt } from "./geometry.js";
 // The node-text measure lives in text.js, with the box sizing that uses it; re-exported here
 // because the canvas and older callers import it from the renderer.
 export { CAPTION_LINE, nodeText, nodeWidth, textWidth } from "./text.js";
@@ -87,6 +96,26 @@ export function authGlyphMarkup(glyph, mark) {
   return (
     disc +
     `<g transform="translate(-${h} -${h}) scale(${+(AUTH_MARK / ICON).toFixed(4)})" color="var(--ink)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${mark}</g>`
+  );
+}
+
+// A node that references another design carries a link disc at its bottom-right corner
+// (geometry.js `refAt`): the auth glyph's disc, page-colour fill, with a chain-link mark of two
+// rounded links drawn in a 24-unit box, stroked 2 units wide with round caps, at 10px.
+const LINK =
+  "M8.47 20.47L13.47 15.47A3.5 3.5 0 0 0 8.53 10.53L3.53 15.53A3.5 3.5 0 0 0 8.47 20.47Z" +
+  "M15.47 13.47L20.47 8.47A3.5 3.5 0 0 0 15.53 3.53L10.53 8.53A3.5 3.5 0 0 0 15.47 13.47Z";
+
+/**
+ * The inside of a reference disc's group, centred on the origin. `color` paints the ring and the
+ * mark: the server render has no remote state and draws both in --muted; the canvas passes the
+ * colour of the reference's state.
+ */
+export function refGlyphMarkup(color = "var(--muted)") {
+  const h = AUTH_MARK / 2;
+  return (
+    `<circle r="${AUTH_GLYPH_R - 0.5}" fill="var(--bg)" stroke="${color}" stroke-width="1"/>` +
+    `<g transform="translate(-${h} -${h}) scale(${+(AUTH_MARK / ICON).toFixed(4)})" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${LINK}"/></g>`
   );
 }
 
@@ -498,8 +527,13 @@ export function toSvg(doc, catalogue, options = {}) {
     // The same two lines the canvas shows (nodeLines), fitted to the box by the same measure,
     // in a group whose <title> carries them whole with the id, which is not drawn.
     const l = nodeLines(catalogue ?? {}, n);
-    const t = nodeText(l.name, l.sub, bw, l.id);
-    out.push(`<g><title>${escapeXml(t.title)}</title>`);
+    const ref = nodeRef(n);
+    const t = nodeText(l.name, l.sub, bw, l.id, ref !== null);
+    const title = ref
+      ? `${t.title}
+ref: ${refLabel(ref)}`
+      : t.title;
+    out.push(`<g><title>${escapeXml(title)}</title>`);
     // A tinted component: the card stays opaque, and a second rect over it carries the tint's
     // border and faint fill, so the icon and the words above it are drawn exactly as before.
     const paint = nodePaint(n.id);
@@ -541,6 +575,12 @@ export function toSvg(doc, catalogue, options = {}) {
         `<rect class="chip" x="${f1(x + p.x)}" y="${y + p.y}" width="${p.w}" height="${p.h}" rx="${p.rx}" fill="var(--bg)" stroke="var(--node-line)" stroke-width="1"/>`,
         `<text class="chip-t" x="${f1(x + p.tx)}" y="${y + p.ty}" text-anchor="middle" font-family="${MONO_FONT}" font-size="${p.size}" fill="var(--muted)">${escapeXml(p.text)}</text>`,
       );
+    if (ref) {
+      const [rx, ry] = refAt(bw, bh);
+      out.push(
+        `<g class="ref" transform="translate(${f1(x + rx)} ${f1(y + ry)})">${refGlyphMarkup()}</g>`,
+      );
+    }
     out.push("</g>");
   }
   out.push("</svg>");

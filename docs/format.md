@@ -203,8 +203,39 @@ A design may have no nodes yet (`nodes: []`): a new design starts that way on th
 | `group` | no | Id of a group in this design |
 | `props` | no | Property values; see resolution order above |
 | `nfr` | no | `rps` (integer), `latencyP95Ms` (integer), `consistency` (`strong` or `eventual`) |
+| `ref` | no | Another Zeema design this node stands for: `design` (`owner/slug`) and `version` (a release number, or `"head"`). See below. |
 
 Renderers decorate a box from its resolved props: a node whose `instances`, `replicas` or `shards` is 2 or more is drawn as a stack with a `×N` chip, and a queue with `deadLetterQueue: true` (whose `role` is not `dlq`) shows a `DLQ` chip at the right of that chip row.
+
+#### Referencing another design
+
+A box in one design can be a whole design of its own: the "Notification Service" in a News Feed
+design is the published Notification System design. `ref` says so:
+
+```yaml
+- id: notifications
+  component: azure-notification-hubs
+  label: "Notification Service"
+  ref:
+    design: "mohamedebrahimmohsen/notification-system"
+    version: 3
+```
+
+- `design` is required: `owner/slug`, the owner's GitHub login (`[A-Za-z0-9-]+`) and the design's
+  slug (kebab-case, as a design id).
+- `version` is required: a release number (an integer, 1 or more), pinning the reference to that
+  release, or the string `"head"`, following the latest saved version.
+- Nothing else goes under `ref`. A URL is never stored: the app builds it from its own
+  `CANVAS_URL`, so a design does not break when the platform moves.
+- The node stays an ordinary node. Its component, props and edges are what rules read; the
+  reference is an annotation, and rules never cross into the referenced design.
+- Only a public design can be referenced for now.
+- A malformed `design` or `version` is a structural error, reported on the node. Whether the
+  target exists is not structure (it is the platform's state, and can change after the design is
+  saved), so it is never checked here; the canvas shows it instead.
+
+A referencing node is drawn with a link disc at its bottom-right corner, and its hover text ends
+with `ref: owner/slug@v3` (or `@head`).
 
 ### edges
 

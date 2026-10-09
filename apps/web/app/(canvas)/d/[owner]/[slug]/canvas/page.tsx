@@ -4,7 +4,13 @@ import { actingAdmin, currentUser, isAdmin } from "@/lib/auth";
 import { badgeOf } from "@/lib/badge";
 import { badgeChoices, badgeMark } from "@/lib/brand";
 import { getCatalogue } from "@/lib/catalogue";
-import { getDesign, ownerSegment, resolveAlias, ServiceError } from "@/lib/designs";
+import {
+  designReleaseNumbers,
+  getDesign,
+  ownerSegment,
+  resolveAlias,
+  ServiceError,
+} from "@/lib/designs";
 
 export const dynamic = "force-dynamic";
 
@@ -37,6 +43,10 @@ export default async function CanvasPage({
         ...badgeChoices(cat),
       }
     : undefined;
+  // Only the owner publishes, so only the owner is told the number the next release takes.
+  const nextRelease = view.can.write
+    ? (await designReleaseNumbers(view.design.id)).size + 1
+    : undefined;
   return (
     <Canvas
       owner={ownerSegment(view.owner)}
@@ -47,6 +57,7 @@ export default async function CanvasPage({
       contentHash={view.version?.contentHash ?? ""}
       canWrite={view.can.write}
       unpublished={view.unpublished}
+      nextRelease={nextRelease}
       visibility={view.design.visibility}
       canClone={view.can.clone}
       signedIn={Boolean(viewer)}

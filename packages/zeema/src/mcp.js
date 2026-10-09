@@ -13,7 +13,7 @@ import {
 } from "@zeema/cli/catalogue";
 import { collectDesigns, formatJson, lintFiles, lintResult, lintText } from "@zeema/cli/lint";
 import { readConfig, readDesign, renderDesign, resolveInside } from "@zeema/cli/main";
-import { describeRule } from "@zeema/core/describe";
+import { describeNode, describeRule } from "@zeema/core/describe";
 
 const json = (value) => ({ content: [{ type: "text", text: JSON.stringify(value, null, 2) }] });
 const text = (value) => ({ content: [{ type: "text", text: value }] });
@@ -72,6 +72,7 @@ export function tools({ cwd, catalogue, icons }) {
             kind: kindOf(n.component),
             ...(n.label ? { label: n.label } : {}),
             ...(n.group ? { group: n.group } : {}),
+            ...(n.ref ? { ref: n.ref, description: describeNode(n) } : {}),
           })),
           edges: doc.edges,
         },
@@ -171,7 +172,8 @@ export async function serve({ cwd, version, catalogue, icons }) {
   tool(
     "read_design",
     "Read a Zeema design file: its YAML text exactly as on disk, and a summary of its groups, its " +
-      "nodes (each with its component and that component's kind) and its edges.",
+      "nodes (each with its component and that component's kind, and the design it references " +
+      "when it references one) and its edges.",
     { path: designPath },
     t.read_design,
   );

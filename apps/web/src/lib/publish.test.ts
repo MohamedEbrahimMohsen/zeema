@@ -48,4 +48,9 @@ describe("publishQuestion", () => {
     expect(q.body).toContain("/d/ada/orders");
     expect(publishQuestion(ctx).body).not.toContain("moves to");
   });
+
+  it("names the release number it will take, when it is known", () => {
+    expect(publishQuestion({ ...ctx, nextRelease: 4 }).body).toContain("This becomes v4.");
+    expect(publishQuestion(ctx).body).not.toContain("becomes v");
+  });
 });

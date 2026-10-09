@@ -9,13 +9,16 @@
 //      schema/design.schema.json). Ajv cannot be a dependency here, so the nine keywords the
 //      schema actually uses are implemented directly and the wording is our own.
 //
-// Every finding is blocking. DOM free, dependency free, no imports.
+// Every finding is blocking. DOM free, dependency free; the one import is the format of a node's
+// `ref`, which document.js reads.
 //
 //   check(doc, catalogue)                  -> [{ message, subject, blocking }]
 //   check(doc, catalogue, { file })        -> same, with `file` as the message prefix
 //
 // `file` defaults to doc.id so the checker is usable before a path is known; pass the design's
 // repository-relative path to get byte-identical parity with the validator.
+
+import { isRefDesign, isRefVersion } from "./document.js";
 
 const isObj = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
 const arr = (v) => (Array.isArray(v) ? v : []);
@@ -46,11 +49,16 @@ export function check(doc, catalogue, options = {}) {
         : "design";
   const out = [];
   checkDesign(doc, cat, file, out);
-  if (cat.schema) checkSchema(doc, cat.schema, out);
+  // A malformed ref.design or ref.version is reported once, in the words above; the schema's
+  // pattern and minimum say the same thing less plainly.
+  if (cat.schema)
+    for (const f of checkSchema(doc, cat.schema)) if (!REF_FIELD.test(f.pointer)) out.push(f);
   return out;
 }
 
 /* ------------------------------------------------------------------ layer 1 */
+
+const REF_FIELD = /^\/nodes\/\d+\/ref\/(design|version)$/;
 
 const propDefs = (c, kinds) => ({
   ...(own(kinds, c.kind)?.properties ?? {}),
@@ -87,6 +95,18 @@ function checkDesign(doc, catalogue, file, out) {
   }
   for (const n of nodes) {
     if (!isObj(n)) continue;
+    // A reference to another design: its shape only. Whether the target exists is remote state,
+    // not structure, and is never checked here. Nor is a reference to the design's own self:
+    // the document does not know its owner, so it cannot know its own owner/slug.
+    if (isObj(n.ref)) {
+      if (n.ref.design !== undefined && !isRefDesign(n.ref.design))
+        add(`${file}: node ${n.id} ref design ${show(n.ref.design)} is not owner/slug`, node(n.id));
+      if (n.ref.version !== undefined && !isRefVersion(n.ref.version))
+        add(
+          `${file}: node ${n.id} ref version ${show(n.ref.version)} is not a release number (1 or more) or "head"`,
+          node(n.id),
+        );
+    }
     const c = own(components, n.component);
     if (!c) {
       add(`${file}: node ${n.id} unknown component ${n.component}`, node(n.id));

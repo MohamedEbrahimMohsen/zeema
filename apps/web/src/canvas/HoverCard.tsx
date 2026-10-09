@@ -6,13 +6,40 @@
 import { nodeCountOf, nodeLines } from "@zeema/core/document";
 import { useLayoutEffect, useRef } from "react";
 import { edgeCrossings, edgesText, memberCounts, membersText, parentPath } from "./group-info";
+import { pinnedRelease, type RefEntry, type RefVersion, refState } from "./ref-state";
 
-export type HoverAt = { type: "node" | "group" | "edge"; id: string; x: number; y: number };
+export type HoverAt = { type: "node" | "group" | "edge" | "ref"; id: string; x: number; y: number };
+
+/** A node's reference and what the summary route said about it, for the "ref" card. */
+export type RefInfo = { owner: string; slug: string; version: RefVersion; entry?: RefEntry };
+
+const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
+const day = (iso: string | null) =>
+  iso
+    ? new Date(iso).toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      })
+    : "";
 
 const own = (o: any, k: unknown) =>
   o != null && typeof k === "string" && Object.hasOwn(o, k) ? o[k] : undefined;
 
-export function HoverCard({ at, doc, catalogue }: { at: HoverAt; doc: any; catalogue: any }) {
+export function HoverCard({
+  at,
+  doc,
+  catalogue,
+  refInfo,
+  theme = "light",
+}: {
+  at: HoverAt;
+  doc: any;
+  catalogue: any;
+  /** The reference of the node under a "ref" hover (its disc), with its summary. */
+  refInfo?: (nodeId: string) => RefInfo | null;
+  theme?: string;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   // Beside the pointer, flipped to the other side where the window would cut it off.
   useLayoutEffect(() => {
@@ -35,7 +62,68 @@ export function HoverCard({ at, doc, catalogue }: { at: HoverAt; doc: any; catal
     </>
   );
   let body: React.ReactNode = null;
-  if (at.type === "node") {
+  if (at.type === "ref") {
+    // The disc of a node standing for another design: that design, as the summary route sees it.
+    const info = refInfo?.(at.id);
+    if (!info) return null;
+    const { entry, version } = info;
+    const state = refState(entry, version);
+    if (state === "unreachable")
+      body = <span className="hc-value hc-wide">Design not available</span>;
+    else if (entry?.status !== "ok")
+      body = (
+        <>
+          {row("Design", `${info.owner}/${info.slug}`, "hc-mono")}
+          <span className="hc-value hc-wide muted">Checking…</span>
+        </>
+      );
+    else {
+      const s = entry.summary;
+      const pinned = pinnedRelease(entry, version);
+      const release = pinned
+        ? `release v${pinned.version}${pinned.publishedAt ? ` · ${day(pinned.publishedAt)}` : ""}`
+        : version === "head"
+          ? "not released yet"
+          : `v${version} · not released`;
+      const thumb = pinned
+        ? (version === "head" || pinned.version === s.latest) && s.thumb
+          ? s.thumb
+          : `/api/v1/designs/${encodeURIComponent(s.owner)}/${encodeURIComponent(s.slug)}/thumb?version=${encodeURIComponent(pinned.id)}`
+        : null;
+      body = (
+        <>
+          {row("Design", s.name, "hc-name")}
+          {row("Owner", s.owner)}
+          {row(
+            "Release",
+            <>
+              {version === "head" ? `${release} · follows latest` : release}
+              {state === "newer" && s.latest ? (
+                <span className="hc-pill">v{s.latest} available</span>
+              ) : null}
+            </>,
+          )}
+          {row(
+            "Size",
+            `${plural(s.counts.nodes, "node")} · ${plural(s.counts.edges, "edge")}${s.counts.groups ? ` · ${plural(s.counts.groups, "group")}` : ""}`,
+          )}
+          {thumb ? (
+            <img
+              className="hc-thumb"
+              src={`${thumb}&theme=${theme === "dark" ? "dark" : "light"}`}
+              alt=""
+            />
+          ) : null}
+          <span className="hc-rule" />
+          {row(
+            "Ref",
+            `${info.owner}/${info.slug}@${version === "head" ? "head" : `v${version}`}`,
+            "hc-mono",
+          )}
+        </>
+      );
+    }
+  } else if (at.type === "node") {
     const n = doc.nodes.find((x: any) => x.id === at.id);
     if (!n) return null;
     const lines = nodeLines(catalogue, n);

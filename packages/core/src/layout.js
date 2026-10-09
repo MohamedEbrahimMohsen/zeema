@@ -38,7 +38,7 @@
 // Pure: no DOM, no fs. It imports geometry.js for the edges, text.js for the box widths and
 // document.js for the name a box shows; none of them imports anything.
 
-import { nodeLines } from "./document.js";
+import { nodeLines, nodeRef } from "./document.js";
 import { DEFAULT_ROUTING, edgeGeometry, frameAround, frameCaptions } from "./geometry.js";
 import { nodeWidth } from "./text.js";
 
@@ -280,7 +280,8 @@ export function layout(doc, catalogue, options = {}) {
     // Sized for the two lines the box shows (nodeLines: the label or proper name, over the
     // proper name or the kind), by the one measure the canvas and the renderer fit them with.
     const l = nodeLines(catalogue ?? {}, n);
-    box.set(n.id, [0, 0, nodeWidth(l.name, l.sub), BOX_H]);
+    // A referencing node's second line keeps clear of its link disc (REF_CLEAR).
+    box.set(n.id, [0, 0, nodeWidth(l.name, l.sub, nodeRef(n) !== null), BOX_H]);
   }
 
   // The group tree. A parent that is missing, or that would close a cycle, leaves the group

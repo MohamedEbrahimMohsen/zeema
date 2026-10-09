@@ -634,6 +634,19 @@ export const AUTH_GLYPH_STEP = 20;
 /** The disc under an auth glyph, in px. */
 export const AUTH_GLYPH_R = 7;
 export const AUTH_CLEAR = 10;
+
+/** How far in from a node's right and bottom edges the centre of its reference disc sits, in px. */
+export const REF_INSET = 14;
+
+/**
+ * The centre of a referencing node's link disc (radius AUTH_GLYPH_R) in the box's own
+ * coordinates (its top-left corner is 0,0), for a box `w` x `h`: the bottom-right corner, in.
+ * The server render and the canvas both place it here.
+ * @returns {[number, number]}
+ */
+export function refAt(w, h) {
+  return [w - REF_INSET, h - REF_INSET];
+}
 const AUTH_SOURCE_CLEAR = 14;
 const AUTH_ARROW_CLEAR = 20;
 const AUTH_ROOM = 34;

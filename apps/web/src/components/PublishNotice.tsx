@@ -6,12 +6,14 @@ import { type DesignActionsProps, useDesignCommands } from "./DesignActions";
 
 type Props = Pick<DesignActionsProps, "owner" | "slug" | "visibility" | "plannedSlug"> & {
   neverPublished: boolean;
+  /** The number this release will take (release N, as designs.ts `releaseNumbers` counts). */
+  nextRelease?: number;
   /** When the unpublished changes began, already worded ("since 3h ago"). */
   since?: string;
 };
 
-export function PublishNotice({ neverPublished, since, ...props }: Props) {
-  const { busy, error, moving, publish } = useDesignCommands(props);
+export function PublishNotice({ neverPublished, nextRelease, since, ...props }: Props) {
+  const { busy, error, moving, publish } = useDesignCommands({ ...props, nextRelease });
   const { owner, plannedSlug } = props;
   return (
     <section className="notice" aria-label="Unpublished changes">
@@ -29,7 +31,9 @@ export function PublishNotice({ neverPublished, since, ...props }: Props) {
           neverPublished
             ? "Release this version; it shows to others once the design is public"
             : "Release the current draft; readers see the previous release until then"
-        }${moving ? `. This draft moves to /d/${owner}/${plannedSlug}` : ""}`}
+        }${nextRelease ? `. It becomes v${nextRelease}` : ""}${
+          moving ? `. This draft moves to /d/${owner}/${plannedSlug}` : ""
+        }`}
       >
         {busy === "publish" ? "publishing…" : "Publish"}
       </button>

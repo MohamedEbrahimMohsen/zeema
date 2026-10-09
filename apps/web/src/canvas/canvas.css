@@ -2195,6 +2195,41 @@
   margin: 2px 0;
   border-top: var(--border) solid var(--float-line);
 }
+/* a reference disc's card: the referenced design, its release and its thumbnail */
+.zeema-canvas .hover-card .hc-wide {
+  grid-column: 1 / -1;
+  white-space: normal;
+}
+.zeema-canvas .hover-card .hc-pill {
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: 999px;
+  border: var(--border) solid var(--warn);
+  color: var(--warn);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-semibold);
+}
+.zeema-canvas .hover-card .hc-thumb {
+  grid-column: 1 / -1;
+  width: 100%;
+  min-width: 240px;
+  height: 120px;
+  margin-top: 4px;
+  object-fit: cover;
+  object-position: left top;
+  border: var(--border) solid var(--float-line);
+  border-radius: 6px;
+  background: var(--panel);
+}
+
+/* a node's reference disc (another design): the one click target inside a box */
+.zeema-canvas .node-box .ref-glyph {
+  cursor: pointer;
+}
+.zeema-canvas .node-box .ref-glyph:hover circle {
+  stroke-width: 1.5;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .zeema-canvas .hover-card {
     animation: none;
@@ -2294,4 +2329,74 @@
 .switch-hint {
   font-size: var(--fs-micro);
   color: var(--muted);
+}
+
+/* the preview of a referenced design (RefPreview.tsx), on the confirmation dialog's surface */
+.confirm-dialog.ref-preview {
+  width: min(1100px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+}
+.ref-preview-panel {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 34px);
+}
+.ref-preview-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-bottom: var(--border) solid var(--line);
+}
+.ref-preview-head .confirm-title {
+  font-size: var(--fs-body, 1rem);
+}
+.ref-preview-gap {
+  flex: 1;
+}
+.ref-preview-body {
+  overflow: auto;
+  min-height: 160px;
+  padding: 16px;
+}
+.ref-preview-body img {
+  display: block;
+  max-width: none;
+}
+
+/* the Inspector's Reference section: the search over public designs, and the actions */
+.zeema-canvas .ref-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.zeema-canvas .ref-hits {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 240px;
+  overflow: auto;
+}
+.zeema-canvas .ref-hits button {
+  display: block;
+  width: 100%;
+  padding: 4px 6px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.zeema-canvas .ref-hits button:hover,
+.zeema-canvas .ref-hits button:focus-visible {
+  background: var(--bg);
+}
+.zeema-canvas .ref-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
 }

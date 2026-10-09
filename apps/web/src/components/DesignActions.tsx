@@ -37,7 +37,11 @@ export function useDesignCommands({
   slug,
   visibility,
   plannedSlug,
-}: Pick<DesignActionsProps, "owner" | "slug" | "visibility" | "plannedSlug">) {
+  nextRelease,
+}: Pick<DesignActionsProps, "owner" | "slug" | "visibility" | "plannedSlug"> & {
+  /** The number the next release takes, named in the publish question. */
+  nextRelease?: number;
+}) {
   const router = useRouter();
   const confirm = useConfirm();
   const [busy, setBusy] = useState<Command | null>(null);
@@ -73,8 +77,10 @@ export function useDesignCommands({
   // from its title, so the question names that address before the owner agrees to it.
   const moving = plannedSlug !== slug;
   const publish = async () => {
-    const res = await confirmThenPublish(confirm, { owner, slug, plannedSlug, visibility }, () =>
-      call("publish", () => fetch(`${base}/publish`, { method: "POST" })),
+    const res = await confirmThenPublish(
+      confirm,
+      { owner, slug, plannedSlug, visibility, nextRelease },
+      () => call("publish", () => fetch(`${base}/publish`, { method: "POST" })),
     );
     if (!res) return;
     const body = await res.json().catch(() => null);

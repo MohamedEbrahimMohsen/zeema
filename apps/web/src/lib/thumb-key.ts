@@ -8,7 +8,7 @@ import { getCatalogue, getIcons } from "./catalogue";
 import { isBlankSidecar } from "./layout-sidecar";
 
 /** Bump when the engine's drawing or the thumbnail's options (theme colours) change. */
-export const THUMB_REV = "12";
+export const THUMB_REV = "13";
 
 let stamp: string | null = null;
 /** One fingerprint of the catalogue and its icons per process: both are loaded once. */
