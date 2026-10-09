@@ -35,7 +35,9 @@ for "reference" or "external" found nothing. The catalogue now has a box for it:
 and its one component `zeema-design`, "Zeema design", found by "reference", "subsystem",
 "another design", "external design" and the like. Placed from the palette, quick actions or a
 paste, it is selected and the Inspector opens on its Reference section with the design search
-open and focused. Until a design is picked the box reads "Choose a design…" over "Zeema design"
+open and focused. To pick, paste the design's link (any host's `/d/owner/slug`, its `/canvas`,
+or a bare `owner/slug`; a `?v=` release id pins that release, a draft's pins latest) or type to
+search; **Change…** swaps the design and keeps the pinned version when the new one has it. Until a design is picked the box reads "Choose a design…" over "Zeema design"
 with an amber disc ("No design chosen" on hover); after, it reads the design's name (the canvas
 resolves it; the server render and describe use `owner/slug`) over "Zeema design · v3". This is
 the normal way; `ref` on any other typed node remains, as the exception, for a box whose own

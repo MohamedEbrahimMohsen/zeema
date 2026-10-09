@@ -2373,6 +2373,10 @@
 
 /* the Inspector's Reference section: the search over public designs, and the actions */
 .zeema-canvas .ref-picker {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -2399,6 +2403,23 @@
 .zeema-canvas .ref-hits button:hover,
 .zeema-canvas .ref-hits button:focus-visible {
   background: var(--bg);
+}
+.zeema-canvas .ref-design {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+.zeema-canvas .ref-design .mono {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.zeema-canvas .ref-design .btn {
+  flex: none;
+}
+.zeema-canvas .ref-error {
+  margin: 0;
+  color: var(--err);
 }
 .zeema-canvas .ref-actions {
   display: flex;

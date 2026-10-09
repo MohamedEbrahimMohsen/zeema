@@ -84,7 +84,10 @@ away.
 A box can stand for a whole design of its own: the "Notification Service" in a news feed is the
 published Notification System. The normal way is the **Zeema design** component: search the
 palette for "Zeema design", "reference" or "subsystem" and place it. The Inspector opens on its
-**Reference** section with the search already open; pick a public design by name, slug or owner.
+**Reference** section with its field already focused: paste the design's link (its page or
+canvas address, or just `owner/slug`), or type to search public designs by name, slug or owner.
+A link with `?v=` pins that release. **Change…** next to the design swaps in another one and keeps
+the version when the new design has that release.
 Until you do, the box reads *Choose a design…* with an amber disc; once you have, it shows the
 design's name (or your label) over "Zeema design · v3", the release it is pinned to.
 

@@ -18,7 +18,7 @@ export type RefSummary = {
   thumb: string | null;
 };
 
-import { isSubsystem, nodeRef } from "@zeema/core/document";
+import { isRefDesign, isSubsystem, nodeRef } from "@zeema/core/document";
 
 export type RefEntry =
   | { status: "pending" }
@@ -110,6 +110,89 @@ export function pinnedRelease(entry: RefEntry | undefined, version: RefVersion):
   const { releases, latest } = entry.summary;
   const want = version === "head" ? latest : version;
   return releases.find((r) => r.version === want) ?? null;
+}
+
+/** A design named by a pasted link or `owner/slug`, and the version the link was at, if any. */
+export type DesignLink = { owner: string; slug: string; versionId?: string };
+
+const DESIGN_PATH = /^\/d\/([^/]+)\/([^/]+)(?:\/canvas)?\/?$/;
+
+/**
+ * Reads what was pasted into the Reference picker: a design page or canvas URL on any host
+ * (`https://beta-canvas.zeema.dev/d/o/s`, `http://localhost:3000/d/o/s/canvas?v=…#x`), its path
+ * (`/d/o/s`), or a bare `o/s`. `?v=<version id>` comes back as `versionId`. The pair must pass
+ * core's `isRefDesign`; nothing is lower-cased. Null for anything else: the picker then searches.
+ */
+export function parseDesignRef(input: string): DesignLink | null {
+  const text = input.trim();
+  if (!text) return null;
+  let path: string;
+  let versionId: string | null = null;
+  if (/^[a-z][a-z0-9+.-]*:\/\//i.test(text) || text.startsWith("/")) {
+    let url: URL;
+    try {
+      url = new URL(text, "http://x.invalid");
+    } catch {
+      return null;
+    }
+    const m = DESIGN_PATH.exec(url.pathname);
+    if (!m) return null;
+    path = `${m[1]}/${m[2]}`;
+    versionId = url.searchParams.get("v");
+  } else {
+    path = text.replace(/\/$/, "");
+  }
+  let design: string;
+  try {
+    design = decodeURIComponent(path);
+  } catch {
+    return null;
+  }
+  if (!isRefDesign(design)) return null;
+  const [owner, slug] = design.split("/");
+  return versionId ? { owner, slug, versionId } : { owner, slug };
+}
+
+/**
+ * The version a fresh pick of `summary` pins, and the status line that says why:
+ * - a link's `versionId` that is one of the releases: that release;
+ * - a link's `versionId` that is not (a draft): the latest release, saying so;
+ * - otherwise, on a change of design, the version it had (`keep`) when the new design has it;
+ * - otherwise the latest release, or head when the design has none.
+ */
+export function pinFromSummary(
+  summary: RefSummary,
+  versionId?: string,
+  keep?: RefVersion,
+): { version: RefVersion; note: string | null } {
+  const latest = summary.latest;
+  const toLatest: RefVersion = latest ?? "head";
+  const unreleased = "Not released yet: the reference follows head.";
+  if (versionId) {
+    const hit = summary.releases.find((r) => r.id === versionId);
+    if (hit)
+      return { version: hit.version, note: `Pinned to v${hit.version}, the link's release.` };
+    return {
+      version: toLatest,
+      note:
+        latest === null
+          ? "That link pointed at a draft, and there is no release: follows head."
+          : `That link pointed at a draft, pinned to latest (v${latest}).`,
+    };
+  }
+  if (keep !== undefined) {
+    if (keep === "head") return { version: "head", note: "Kept head: follows latest." };
+    if (summary.releases.some((r) => r.version === keep))
+      return { version: keep, note: `Kept v${keep}.` };
+    return {
+      version: toLatest,
+      note:
+        latest === null
+          ? `No v${keep} there and no release yet: follows head.`
+          : `No v${keep} there: pinned to latest (v${latest}).`,
+    };
+  }
+  return { version: toLatest, note: latest === null ? unreleased : null };
 }
 
 const seg = (s: string) => encodeURIComponent(s);

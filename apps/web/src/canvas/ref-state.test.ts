@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  parseDesignRef,
+  pinFromSummary,
   REF_COLOR,
   type RefEntry,
   RefStore,
@@ -159,5 +161,97 @@ describe("a Zeema design box", () => {
     expect(refNameFor(store, catalogue, box)).toBe("Notification System");
     expect(refNameFor(store, catalogue, { ...box, component: "postgres" })).toBeNull();
     expect(refNameFor(store, catalogue, { id: "a", component: "zeema-design" })).toBeNull();
+  });
+});
+
+describe("a pasted design link", () => {
+  const os = { owner: "o", slug: "s" };
+  const v = "0b7c3a52-5d0e-4c1f-9a51-2f3c0e6b8d11";
+
+  it("reads a full URL on any host, page or canvas, with or without a trailing slash", () => {
+    expect(parseDesignRef("https://beta-canvas.zeema.dev/d/o/s")).toEqual(os);
+    expect(parseDesignRef("http://localhost:3000/d/o/s/canvas")).toEqual(os);
+    expect(parseDesignRef("https://example.com/d/o/s/")).toEqual(os);
+    expect(parseDesignRef("https://example.com/d/o/s/canvas/")).toEqual(os);
+  });
+
+  it("ignores a hash and other query, and takes ?v= as the version id", () => {
+    expect(parseDesignRef("https://example.com/d/o/s#nodes")).toEqual(os);
+    expect(parseDesignRef("https://example.com/d/o/s?tab=yaml&x=1")).toEqual(os);
+    expect(parseDesignRef(`https://example.com/d/o/s?v=${v}#top`)).toEqual({ ...os, versionId: v });
+    expect(parseDesignRef(`http://localhost:3100/d/o/s/canvas?x=1&v=${v}`)).toEqual({
+      ...os,
+      versionId: v,
+    });
+  });
+
+  it("reads a path and a bare owner/slug, trimmed", () => {
+    expect(parseDesignRef("/d/o/s")).toEqual(os);
+    expect(parseDesignRef(`/d/o/s/canvas?v=${v}`)).toEqual({ ...os, versionId: v });
+    expect(parseDesignRef("o/s")).toEqual(os);
+    expect(parseDesignRef("  zeema/url-shortener 	")).toEqual({
+      owner: "zeema",
+      slug: "url-shortener",
+    });
+  });
+
+  it("keeps an uppercase owner as written", () => {
+    expect(parseDesignRef("MohamedEbrahimMohsen/notification-system")).toEqual({
+      owner: "MohamedEbrahimMohsen",
+      slug: "notification-system",
+    });
+    expect(parseDesignRef("https://x.dev/d/Ada/s")).toEqual({ owner: "Ada", slug: "s" });
+  });
+
+  it("refuses an invalid slug, random text and any other path", () => {
+    expect(parseDesignRef("o/Bad_Slug")).toBeNull();
+    expect(parseDesignRef("https://x.dev/d/o/1abc")).toBeNull();
+    expect(parseDesignRef("notification system")).toBeNull();
+    expect(parseDesignRef("notification")).toBeNull();
+    expect(parseDesignRef("")).toBeNull();
+    expect(parseDesignRef("https://x.dev/u/o")).toBeNull();
+    expect(parseDesignRef("/u/o")).toBeNull();
+    expect(parseDesignRef("https://x.dev/d/o/s/yaml")).toBeNull();
+    expect(parseDesignRef("o/s/canvas")).toBeNull();
+    expect(parseDesignRef("https://x.dev/")).toBeNull();
+  });
+});
+
+describe("the version a pick pins", () => {
+  it("is the link's release when the link names one", () => {
+    expect(pinFromSummary(summary(3), "id-2")).toEqual({
+      version: 2,
+      note: "Pinned to v2, the link's release.",
+    });
+  });
+
+  it("is the latest when the link pointed at a draft, saying so; head with no release", () => {
+    expect(pinFromSummary(summary(3), "draft-id")).toEqual({
+      version: 3,
+      note: "That link pointed at a draft, pinned to latest (v3).",
+    });
+    expect(pinFromSummary(summary(null), "draft-id").version).toBe("head");
+  });
+
+  it("is the latest, or head when nothing is released, on a first pick", () => {
+    expect(pinFromSummary(summary(3))).toEqual({ version: 3, note: null });
+    expect(pinFromSummary(summary(null))).toEqual({
+      version: "head",
+      note: "Not released yet: the reference follows head.",
+    });
+  });
+
+  it("keeps the version on a change of design when the new design has it, else the latest", () => {
+    expect(pinFromSummary(summary(3), undefined, 2)).toEqual({ version: 2, note: "Kept v2." });
+    expect(pinFromSummary(summary(3), undefined, "head").version).toBe("head");
+    expect(pinFromSummary(summary(1), undefined, 4)).toEqual({
+      version: 1,
+      note: "No v4 there: pinned to latest (v1).",
+    });
+    expect(pinFromSummary(summary(null), undefined, 4).version).toBe("head");
+  });
+
+  it("lets the link's release win over the kept version", () => {
+    expect(pinFromSummary(summary(3), "id-1", 2).version).toBe(1);
   });
 });

@@ -3,7 +3,7 @@
 // Every control here is generated from the catalogue and the design schema; nothing about a
 // product is hard coded. A control shows the value the design resolves to and writes only when
 // the user sets something. Text inputs commit on blur or Enter, never per keystroke.
-import { effective, isSubsystem, nodeRef, propDefs } from "@zeema/core/document";
+import { effective, isRefDesign, isSubsystem, nodeRef, propDefs } from "@zeema/core/document";
 import { edgeKeys } from "@zeema/core/geometry";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Icon } from "@/components/Icon";
@@ -29,7 +29,16 @@ import { PALETTE, PALETTE_COLUMNS, pushRecent, readRecent } from "@/lib/tint-pal
 import { mixedValue } from "./edge-set";
 import { parseQuery, type Row, score } from "./Palette";
 import { commonProps, type PropDef, propValue } from "./prop-set";
-import { pinnedRelease, type RefStore, type RefVersion, refHref, refStatusText } from "./ref-state";
+import {
+  type DesignLink,
+  parseDesignRef,
+  pinFromSummary,
+  pinnedRelease,
+  type RefStore,
+  type RefVersion,
+  refHref,
+  refStatusText,
+} from "./ref-state";
 import type { Picked, Subject } from "./scene";
 
 export type InspectorApi = {
@@ -1148,11 +1157,148 @@ function NodePanel({
 
 type DesignHit = { title: string; slug: string; owner: { username: string } | null };
 
+const PICKER_PROMPT = "Paste a design link or owner/slug";
+
+/**
+ * The field that names a design: a pasted link (any host's /d/owner/slug, its canvas, or a bare
+ * owner/slug) is used as it is, on paste or Enter; anything else searches public designs by name,
+ * slug or owner. `onPick` resolves the choice and answers false when it is not a public design.
+ * With `cancelOnBlur`, focus leaving the picker cancels it, as Escape always does.
+ */
+function DesignPicker({
+  onPick,
+  onCancel,
+  cancelOnBlur,
+}: {
+  onPick: (link: DesignLink) => Promise<boolean>;
+  onCancel: () => void;
+  cancelOnBlur?: boolean;
+}) {
+  const [query, setQuery] = useState("");
+  const [hits, setHits] = useState<DesignHit[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const link = parseDesignRef(query);
+  // The search, for text that is not a link: twenty at most, after a pause in typing.
+  useEffect(() => {
+    if (parseDesignRef(query)) return;
+    const q = query.replace(/\//g, " ").trim();
+    let live = true;
+    const t = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/v1/designs?pageSize=20&q=${encodeURIComponent(q)}`);
+        const body = res.ok ? await res.json() : { items: [] };
+        if (live) setHits(body.items ?? []);
+      } catch {
+        if (live) setHits([]);
+      }
+    }, 200);
+    return () => {
+      live = false;
+      clearTimeout(t);
+    };
+  }, [query]);
+
+  const use = async (l: DesignLink) => {
+    setBusy(true);
+    setError(null);
+    const ok = await onPick(l);
+    if (ok) return;
+    setBusy(false);
+    setError("Not a public design");
+  };
+
+  return (
+    <fieldset
+      className="ref-picker"
+      onBlur={(e) => {
+        if (cancelOnBlur && !e.currentTarget.contains(e.relatedTarget as Node | null)) onCancel();
+      }}
+    >
+      <input
+        className="input"
+        // biome-ignore lint/a11y/noAutofocus: the field is what the button just asked for
+        autoFocus
+        placeholder={PICKER_PROMPT}
+        aria-label={PICKER_PROMPT}
+        aria-invalid={error ? true : undefined}
+        value={query}
+        onChange={(e) => {
+          setQuery(e.target.value);
+          setError(null);
+        }}
+        onPaste={(e) => {
+          const text = e.clipboardData.getData("text");
+          const l = parseDesignRef(text);
+          if (!l) return;
+          e.preventDefault();
+          setQuery(text.trim());
+          void use(l);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Escape") {
+            e.stopPropagation();
+            onCancel();
+          }
+          if (e.key !== "Enter" || busy) return;
+          if (link) void use(link);
+          else if (hits?.length) {
+            const h = hits[0];
+            void use({ owner: h.owner?.username ?? "zeema", slug: h.slug });
+          }
+        }}
+      />
+      {error ? (
+        <p className="ref-error small" role="alert">
+          {error}
+        </p>
+      ) : null}
+      <ul className="ref-hits">
+        {link ? (
+          <li>
+            <button type="button" disabled={busy} onClick={() => void use(link)}>
+              <span className="ref-hit-name">{busy ? "Checking…" : "Use"}</span>
+              <span className="muted mono small">
+                {" "}
+                · {link.owner}/{link.slug}
+                {link.versionId ? " · at the link's version" : ""}
+              </span>
+            </button>
+          </li>
+        ) : (
+          <>
+            {hits === null ? <li className="muted small">Searching…</li> : null}
+            {hits?.length === 0 ? <li className="muted small">No public design matches.</li> : null}
+            {(hits ?? []).map((h) => {
+              const who = h.owner?.username ?? "zeema";
+              return (
+                <li key={`${who}/${h.slug}`}>
+                  <button type="button" onClick={() => void use({ owner: who, slug: h.slug })}>
+                    <span className="ref-hit-name">{h.title}</span>
+                    <span className="muted mono small">
+                      {" "}
+                      · {who}/{h.slug}
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </>
+        )}
+      </ul>
+      <button type="button" className="btn btn-sm" onClick={onCancel}>
+        Cancel
+      </button>
+    </fieldset>
+  );
+}
+
 /**
  * The node's reference to another design (format.md, "Referencing another design"). Without one:
- * a search over public designs to pick it from. With one: the design, the release it is pinned to
- * (or head), where that stands, and Preview / Open / Remove. Every change is one commit, so one
- * undo step. A reader sees the reference and its state, never the controls that change it.
+ * a picker that takes a pasted link or searches public designs. With one: the design (and
+ * Change… to pick another, keeping the version when the new design has it), the release it is
+ * pinned to (or head), where that stands, and Preview / Open / Remove. Every change is one commit,
+ * so one undo step. A reader sees the reference and its state, never the controls that change it.
  */
 function RefSection({
   node,
@@ -1176,48 +1322,32 @@ function RefSection({
   const canWrite = refs.canWrite || subsystem;
   const [, setTick] = useState(0);
   const [picking, setPicking] = useState(false);
-  const [query, setQuery] = useState("");
-  const [hits, setHits] = useState<DesignHit[] | null>(null);
+  const [changing, setChanging] = useState(false);
   const [note, setNote] = useState<string | null>(null);
   useEffect(() => store.subscribe(() => setTick((t) => t + 1)), [store]);
   useEffect(() => {
     if (owner && slug) void store.ensure(owner, slug);
   }, [store, owner, slug]);
-  // A Zeema design box just placed: the picker opens, its search field takes the focus.
+  // A Zeema design box just placed: the picker opens, its field takes the focus.
   useEffect(() => {
     if (pickFor !== node.id || ref) return;
     setPicking(true);
     onPickOpened?.();
   }, [pickFor, node.id, ref, onPickOpened]);
-  // The search: public designs by name, slug or owner, twenty at most, after a pause in typing.
-  useEffect(() => {
-    if (!picking) return;
-    const q = query.replace(/\//g, " ").trim();
-    let live = true;
-    const t = setTimeout(async () => {
-      try {
-        const res = await fetch(`/api/v1/designs?pageSize=20&q=${encodeURIComponent(q)}`);
-        const body = res.ok ? await res.json() : { items: [] };
-        if (live) setHits(body.items ?? []);
-      } catch {
-        if (live) setHits([]);
-      }
-    }, 200);
-    return () => {
-      live = false;
-      clearTimeout(t);
-    };
-  }, [picking, query]);
 
-  const pick = async (hit: DesignHit) => {
-    const who = hit.owner?.username ?? "zeema";
-    const entry = await store.ensure(who, hit.slug);
-    const latest = entry.status === "ok" ? entry.summary.latest : null;
-    setNote(latest === null ? "Not released yet: the reference follows head." : null);
+  // Resolve the choice through the summary route, then commit it with the version it pins.
+  const choose = async (link: DesignLink, keep?: RefVersion): Promise<boolean> => {
+    const entry = await store.ensure(link.owner, link.slug);
+    if (entry.status !== "ok") return false;
+    const { summary } = entry;
+    const { version, note: why } = pinFromSummary(summary, link.versionId, keep);
+    const canonical = `${summary.owner}/${summary.slug}`;
+    const design = isRefDesign(canonical) ? canonical : `${link.owner}/${link.slug}`;
+    setNote(why);
     setPicking(false);
-    setQuery("");
-    setHits(null);
-    api.setRef(node.id, { design: `${who}/${hit.slug}`, version: latest ?? "head" });
+    setChanging(false);
+    api.setRef(node.id, { design, version });
+    return true;
   };
 
   if (!ref) {
@@ -1226,47 +1356,7 @@ function RefSection({
       <>
         <h2>Reference</h2>
         {picking ? (
-          <div className="ref-picker">
-            <input
-              className="input"
-              // biome-ignore lint/a11y/noAutofocus: the field is what the button just asked for
-              autoFocus
-              placeholder="Search public designs"
-              aria-label="Search public designs"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Escape") {
-                  e.stopPropagation();
-                  setPicking(false);
-                }
-                if (e.key === "Enter" && hits?.length) void pick(hits[0]);
-              }}
-            />
-            <ul className="ref-hits">
-              {hits === null ? <li className="muted small">Searching…</li> : null}
-              {hits?.length === 0 ? (
-                <li className="muted small">No public design matches.</li>
-              ) : null}
-              {(hits ?? []).map((h) => {
-                const who = h.owner?.username ?? "zeema";
-                return (
-                  <li key={`${who}/${h.slug}`}>
-                    <button type="button" onClick={() => void pick(h)}>
-                      <span className="ref-hit-name">{h.title}</span>
-                      <span className="muted mono small">
-                        {" "}
-                        · {who}/{h.slug}
-                      </span>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-            <button type="button" className="btn btn-sm" onClick={() => setPicking(false)}>
-              Cancel
-            </button>
-          </div>
+          <DesignPicker onPick={(l) => choose(l)} onCancel={() => setPicking(false)} />
         ) : (
           <button type="button" className="btn btn-sm" onClick={() => setPicking(true)}>
             {subsystem ? "Choose a design…" : "Reference another design…"}
@@ -1282,8 +1372,33 @@ function RefSection({
   return (
     <>
       <h2>Reference</h2>
-      <Field name="design" note={summary?.name}>
-        <input className="input mono" readOnly value={ref.design} aria-label="Referenced design" />
+      <Field name="design" note={changing ? undefined : summary?.name}>
+        {changing ? (
+          <DesignPicker
+            cancelOnBlur
+            onPick={(l) => choose(l, ref.version)}
+            onCancel={() => setChanging(false)}
+          />
+        ) : (
+          <div className="ref-design">
+            <span className="mono small" title="Referenced design">
+              {ref.owner}/<wbr />
+              {ref.slug}
+            </span>
+            {canWrite ? (
+              <button
+                type="button"
+                className="btn btn-sm"
+                onClick={() => {
+                  setNote(null);
+                  setChanging(true);
+                }}
+              >
+                Change…
+              </button>
+            ) : null}
+          </div>
+        )}
       </Field>
       <Field name="version" note={refStatusText(entry, ref.version)}>
         <select
