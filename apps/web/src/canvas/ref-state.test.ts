@@ -1,12 +1,17 @@
 import { describe, expect, it } from "vitest";
 import {
+  REF_COLOR,
   type RefEntry,
   RefStore,
   type RefSummary,
+  refColor,
   refHref,
+  refName,
+  refNameFor,
   refState,
   refStatusText,
   renderHref,
+  wantsRefPicker,
 } from "./ref-state";
 
 const summary = (latest: number | null): RefSummary => {
@@ -112,5 +117,47 @@ describe("the store", () => {
     const entry = await store.ensure("ada", "x");
     expect(entry).toEqual({ status: "unreachable" });
     expect(refState(entry, "head")).toBe("unreachable");
+  });
+});
+
+// A Zeema design box (kind `subsystem`) carries the disc before it names a design. Two components
+// are enough for the pure part: the kind is all these helpers read.
+const catalogue = {
+  components: {
+    "zeema-design": { kind: "subsystem" },
+    postgres: { kind: "sql-database" },
+  },
+};
+const pinned = { design: "ada/notification-system", version: 3 };
+
+describe("a Zeema design box", () => {
+  it("with no design chosen is unset: amber, whatever the store holds", () => {
+    expect(REF_COLOR.unset).toBe("var(--warn)");
+    expect(refColor(undefined, null, "head")).toBe(REF_COLOR.unset);
+    expect(refColor(ok(3), null, 3)).toBe(REF_COLOR.unset);
+    expect(refColor(ok(3), "ada/notification-system", 3)).toBe(REF_COLOR.current);
+    expect(refColor(undefined, "ada/notification-system", 3)).toBe(REF_COLOR.pending);
+  });
+
+  it("asks for its pick when placed with no reference, and only then", () => {
+    expect(wantsRefPicker(catalogue, { id: "a", component: "zeema-design" })).toBe(true);
+    expect(wantsRefPicker(catalogue, { id: "a", component: "zeema-design", ref: pinned })).toBe(
+      false,
+    );
+    expect(wantsRefPicker(catalogue, { id: "a", component: "postgres" })).toBe(false);
+  });
+
+  it("is named by its design once the summary answers; never before, never for another node", async () => {
+    expect(refName(undefined)).toBeNull();
+    expect(refName({ status: "pending" })).toBeNull();
+    expect(refName({ status: "unreachable" })).toBeNull();
+    expect(refName(ok(1))).toBe("Notification System");
+    const store = new RefStore(async () => summary(1));
+    const box = { id: "a", component: "zeema-design", ref: pinned };
+    expect(refNameFor(store, catalogue, box)).toBeNull();
+    await store.ensure("ada", "notification-system");
+    expect(refNameFor(store, catalogue, box)).toBe("Notification System");
+    expect(refNameFor(store, catalogue, { ...box, component: "postgres" })).toBeNull();
+    expect(refNameFor(store, catalogue, { id: "a", component: "zeema-design" })).toBeNull();
   });
 });

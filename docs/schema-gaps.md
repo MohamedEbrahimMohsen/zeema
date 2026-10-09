@@ -305,3 +305,16 @@ Format for an entry:
 - Workaround: keep the empty `trust-zone` group so the boundary is not lost.
 - Proposed change: a frame size in the layout sidecar for a group with no members.
 - Status: open
+
+## A kind no rule reads: `subsystem`
+- Design: docs/intake/design-ref.md (the News Feed design's "Notification Service" box is the
+  published Notification System design)
+- Missing: governance §2 asks a new kind for a rule that reads a property of it. `subsystem`
+  (component `zeema-design`) is a box that stands for another Zeema design; what it is lives in
+  that design, and rules never cross designs, so there is nothing for a rule to read here. Its
+  category is `external`, which no rule selects by alone, so no rule fires on it either.
+- Workaround: the kind has no properties; the reference is the node's `ref` field. The kind is
+  shipped without a rule so the palette has a box to place for "another design".
+- Proposed change: a rule once cross-design facts are in the engine (for example "a reference
+  pinned to a release that is not the latest"), which today is remote state, not structure.
+- Status: open

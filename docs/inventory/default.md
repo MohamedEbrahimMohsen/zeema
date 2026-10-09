@@ -1439,6 +1439,15 @@ Two mapping decisions worth recording:
 | Git | — | — | skip: Version control tool and protocol; the placed node is the hosting server | https://diagrams.mingrammer.com/docs/nodes/onprem |
 | Twilio | — | — | skip: umbrella brand; the placeable products are twilio-sms, twilio-video, twilio-flex and segment | https://diagrams.mingrammer.com/docs/nodes/saas |
 
+## Zeema designs
+
+A design on Zeema placed in another as one box. The node's `ref` names the design and pins a
+release (docs/format.md, "Referencing another design").
+
+| resource | id | kind | status | source |
+|---|---|---|---|---|
+| Zeema design | zeema-design | subsystem | done | docs/intake/design-ref.md |
+
 ## Generic components — one per kind
 
 Every kind has a vendor-neutral component whose id is the kind id. It sets no defaults and

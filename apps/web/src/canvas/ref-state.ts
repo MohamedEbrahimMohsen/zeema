@@ -18,19 +18,22 @@ export type RefSummary = {
   thumb: string | null;
 };
 
+import { isSubsystem, nodeRef } from "@zeema/core/document";
+
 export type RefEntry =
   | { status: "pending" }
   | { status: "ok"; summary: RefSummary }
   | { status: "unreachable" };
 
 /**
+ * - `unset`: a subsystem box (the Zeema design component) that names no design yet.
  * - `pending`: not answered yet.
  * - `current`: the pinned release is the latest, or the reference follows head of a released design.
  * - `newer`: pinned below the latest release.
  * - `unreleased`: the design has no release, or the pinned release is past the latest one.
  * - `unreachable`: private now, deleted, missing, or the platform did not answer.
  */
-export type RefState = "pending" | "current" | "newer" | "unreleased" | "unreachable";
+export type RefState = "unset" | "pending" | "current" | "newer" | "unreleased" | "unreachable";
 
 export type RefVersion = number | "head";
 
@@ -46,12 +49,45 @@ export function refState(entry: RefEntry | undefined, version: RefVersion): RefS
 
 /** The disc's colour per state: the canvas's own tokens (app/globals.css). */
 export const REF_COLOR: Record<RefState, string> = {
+  unset: "var(--warn)",
   pending: "var(--muted)",
   current: "var(--accent)",
   newer: "var(--warn)",
   unreleased: "var(--warn)",
   unreachable: "var(--muted)",
 };
+
+/** The colour of a disc that names no design (a subsystem box before its pick), else by state. */
+export function refColor(entry: RefEntry | undefined, design: string | null, version: RefVersion) {
+  return REF_COLOR[design ? refState(entry, version) : "unset"];
+}
+
+/**
+ * The name a subsystem box shows for the design it references, once the platform answered: the
+ * design's own name. Null until then, or when it cannot be read; the box then shows owner/slug
+ * (nodeLines in @zeema/core/document, whose `refName` this feeds). A label always wins there.
+ */
+export function refName(entry: RefEntry | undefined): string | null {
+  return entry?.status === "ok" ? entry.summary.name : null;
+}
+
+/** The resolved name for a node, from the store: only a subsystem box with a reference has one. */
+export function refNameFor(
+  store: Pick<RefStore, "get">,
+  catalogue: unknown,
+  node: unknown,
+): string | null {
+  const r = nodeRef(node);
+  return r && isSubsystem(catalogue, node) ? refName(store.get(r.owner, r.slug)) : null;
+}
+
+/**
+ * A node just placed (dropped, quick-added, pasted fresh) that should open the Inspector on its
+ * Reference picker: a subsystem box that references nothing yet.
+ */
+export function wantsRefPicker(catalogue: unknown, node: unknown): boolean {
+  return isSubsystem(catalogue, node) && nodeRef(node) === null;
+}
 
 /** One line under the reference in the Inspector. */
 export function refStatusText(entry: RefEntry | undefined, version: RefVersion): string {

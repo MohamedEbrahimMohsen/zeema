@@ -187,6 +187,35 @@ describe("zeema mcp", () => {
     expect(mermaid.text.length).toBeGreaterThan(0);
   });
 
+  it("describes a Zeema design box as the reference it is, chosen or not", async () => {
+    const box = (id, ref) =>
+      [`  - id: ${id}`, "    component: zeema-design", ...(ref ? ref : [])].join("\n");
+    const yaml = [
+      'schemaVersion: "1"',
+      'type: "design"',
+      'id: "news-feed"',
+      "nodes:",
+      box("notifications", [
+        "    ref:",
+        '      design: "zeema/notification-system"',
+        "      version: 3",
+      ]),
+      box("later"),
+      "edges: []",
+      "",
+    ].join("\n");
+    fs.writeFileSync(path.join(project, "subsystem.yaml"), yaml);
+    const read = JSON.parse((await call("read_design", { path: "subsystem.yaml" })).text);
+    const [pinned, unset] = read.summary.nodes;
+    expect(pinned.kind).toBe("subsystem");
+    expect(pinned.description).toBe(
+      'Node "notifications" is a Zeema design reference to zeema/notification-system at release 3.',
+    );
+    expect(unset.description).toBe(
+      'Node "later" is a Zeema design reference with no design chosen.',
+    );
+  });
+
   it("refuses a path outside the directory it runs in", async () => {
     const r = await call("read_design", { path: "../outside.yaml" });
     expect(r.error).toBe(true);

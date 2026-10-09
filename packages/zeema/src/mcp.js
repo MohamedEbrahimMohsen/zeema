@@ -14,6 +14,7 @@ import {
 import { collectDesigns, formatJson, lintFiles, lintResult, lintText } from "@zeema/cli/lint";
 import { readConfig, readDesign, renderDesign, resolveInside } from "@zeema/cli/main";
 import { describeNode, describeRule } from "@zeema/core/describe";
+import { isSubsystem } from "@zeema/core/document";
 
 const json = (value) => ({ content: [{ type: "text", text: JSON.stringify(value, null, 2) }] });
 const text = (value) => ({ content: [{ type: "text", text: value }] });
@@ -72,7 +73,9 @@ export function tools({ cwd, catalogue, icons }) {
             kind: kindOf(n.component),
             ...(n.label ? { label: n.label } : {}),
             ...(n.group ? { group: n.group } : {}),
-            ...(n.ref ? { ref: n.ref, description: describeNode(n) } : {}),
+            ...(n.ref ? { ref: n.ref } : {}),
+            // A reference, or a subsystem box that has none yet, reads as one sentence.
+            ...(n.ref || isSubsystem(cat, n) ? { description: describeNode(n, cat) } : {}),
           })),
           edges: doc.edges,
         },

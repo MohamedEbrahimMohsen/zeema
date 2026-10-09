@@ -210,7 +210,25 @@ Renderers decorate a box from its resolved props: a node whose `instances`, `rep
 #### Referencing another design
 
 A box in one design can be a whole design of its own: the "Notification Service" in a News Feed
-design is the published Notification System design. `ref` says so:
+design is the published Notification System design. The normal way to say so is the
+`zeema-design` component (kind `subsystem`, category `external`), with `ref` naming the design:
+
+```yaml
+- id: notifications
+  component: zeema-design
+  ref:
+    design: "mohamedebrahimmohsen/notification-system"
+    version: 3
+```
+
+The box is the other design and nothing else: the kind has no properties and no rule reads it,
+because rules never cross designs. With no `label` it is named by the design (the canvas shows
+the design's name, the server render and describe its `owner/slug`), over "Zeema design · v3"
+("· latest" when it follows head). A `zeema-design` node with no `ref` is valid: it is a box
+still waiting for its design, drawn "Choose a design…" with the link disc.
+
+The exception is a typed component that also stands for a design, when its component, props
+and edges still matter to the rules. `ref` then annotates it:
 
 ```yaml
 - id: notifications
@@ -234,8 +252,8 @@ design is the published Notification System design. `ref` says so:
   target exists is not structure (it is the platform's state, and can change after the design is
   saved), so it is never checked here; the canvas shows it instead.
 
-A referencing node is drawn with a link disc at its bottom-right corner, and its hover text ends
-with `ref: owner/slug@v3` (or `@head`).
+A referencing node, and every `zeema-design` node, is drawn with a link disc at its bottom-right
+corner, and a referencing node's hover text ends with `ref: owner/slug@v3` (or `@head`).
 
 ### edges
 

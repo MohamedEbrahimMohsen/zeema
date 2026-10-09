@@ -3,7 +3,7 @@
 // Every control here is generated from the catalogue and the design schema; nothing about a
 // product is hard coded. A control shows the value the design resolves to and writes only when
 // the user sets something. Text inputs commit on blur or Enter, never per keystroke.
-import { effective, nodeRef, propDefs } from "@zeema/core/document";
+import { effective, isSubsystem, nodeRef, propDefs } from "@zeema/core/document";
 import { edgeKeys } from "@zeema/core/geometry";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Icon } from "@/components/Icon";
@@ -89,6 +89,10 @@ export type RefContext = {
   store: RefStore;
   canWrite: boolean;
   preview: (owner: string, slug: string, version: RefVersion) => void;
+  /** A node whose picker should open now (a Zeema design box just placed); null: none. */
+  pickFor?: string | null;
+  /** The picker for `pickFor` opened: the page forgets the request. */
+  onPickOpened?: () => void;
 };
 
 export type Highlight = {
@@ -1108,7 +1112,15 @@ function NodePanel({
           />
         </Field>
       ))}
-      {refs ? <RefSection key={`ref-${node.id}`} node={node} api={api} refs={refs} /> : null}
+      {refs ? (
+        <RefSection
+          key={`ref-${node.id}`}
+          node={node}
+          api={api}
+          refs={refs}
+          catalogue={catalogue}
+        />
+      ) : null}
       <h2>Group</h2>
       <Field name="group" isSet={Boolean(node.group)}>
         <select
@@ -1142,11 +1154,26 @@ type DesignHit = { title: string; slug: string; owner: { username: string } | nu
  * (or head), where that stands, and Preview / Open / Remove. Every change is one commit, so one
  * undo step. A reader sees the reference and its state, never the controls that change it.
  */
-function RefSection({ node, api, refs }: { node: any; api: InspectorApi; refs: RefContext }) {
+function RefSection({
+  node,
+  api,
+  refs,
+  catalogue,
+}: {
+  node: any;
+  api: InspectorApi;
+  refs: RefContext;
+  catalogue: any;
+}) {
   const ref = nodeRef(node);
   const owner = ref?.owner;
   const slug = ref?.slug;
-  const { store, canWrite } = refs;
+  const { store, pickFor, onPickOpened } = refs;
+  // On a Zeema design box the reference is what the box is, so it is edited like its other
+  // fields, which a reader may change locally too; on any other node it is an annotation only
+  // a writer adds.
+  const subsystem = isSubsystem(catalogue, node);
+  const canWrite = refs.canWrite || subsystem;
   const [, setTick] = useState(0);
   const [picking, setPicking] = useState(false);
   const [query, setQuery] = useState("");
@@ -1156,6 +1183,12 @@ function RefSection({ node, api, refs }: { node: any; api: InspectorApi; refs: R
   useEffect(() => {
     if (owner && slug) void store.ensure(owner, slug);
   }, [store, owner, slug]);
+  // A Zeema design box just placed: the picker opens, its search field takes the focus.
+  useEffect(() => {
+    if (pickFor !== node.id || ref) return;
+    setPicking(true);
+    onPickOpened?.();
+  }, [pickFor, node.id, ref, onPickOpened]);
   // The search: public designs by name, slug or owner, twenty at most, after a pause in typing.
   useEffect(() => {
     if (!picking) return;
@@ -1236,7 +1269,7 @@ function RefSection({ node, api, refs }: { node: any; api: InspectorApi; refs: R
           </div>
         ) : (
           <button type="button" className="btn btn-sm" onClick={() => setPicking(true)}>
-            Reference another design…
+            {subsystem ? "Choose a design…" : "Reference another design…"}
           </button>
         )}
       </>

@@ -109,8 +109,29 @@ export function displayName(catalogue, node) {
 // The two lines a node's box shows, and the id behind them: the label over the component's
 // proper name when it has a label, else the proper name over its kind's ("Network security
 // group" over "Firewall"). The id is never drawn; it is hover text, the Inspector and the YAML.
-export function nodeLines(catalogue, node) {
+//
+// A subsystem node (kind `subsystem`, the `zeema-design` component) is a box standing for another
+// design: its name is the label, else the referenced design's name (`refName`, which only the
+// canvas knows, from the platform), else its `owner/slug`; with no reference yet it is the
+// kind's placeholder ("Choose a design…") and `unset` is true. Its second line is the component's
+// name with the pinned release: "Zeema design · v3", "Zeema design · latest", or bare.
+/**
+ * @param {any} catalogue
+ * @param {any} node
+ * @param {string | null} [refName]
+ */
+export function nodeLines(catalogue, node, refName = null) {
   const kind = own(catalogue.components, node.component)?.kind;
+  if (kind === SUBSYSTEM) {
+    const comp = own(catalogue.locale?.components, node.component)?.name || node.component;
+    const ref = nodeRef(node);
+    const unset = !node.label && !ref;
+    const name =
+      node.label ||
+      (ref ? refName || ref.design : own(catalogue.locale?.kinds, kind)?.placeholder || comp);
+    const sub = ref ? `${comp} · ${refVersionText(ref.version)}` : comp;
+    return { name, sub, id: node.component ?? node.id, unset };
+  }
   const sub = node.label
     ? own(catalogue.locale?.components, node.component)?.name || node.component || ""
     : own(catalogue.locale?.kinds, kind)?.name || kind || "";
@@ -657,6 +678,25 @@ export function nodeRef(node) {
     return null;
   const [owner, slug] = r.design.split("/");
   return { design: r.design, owner, slug, version: r.version };
+}
+
+// The kind whose nodes are other designs placed as one box (kinds/subsystem.yaml). Its nodes
+// carry the link disc whether or not they reference a design yet: an unset one is the prompt.
+export const SUBSYSTEM = "subsystem";
+
+/** The node's component is of kind `subsystem` (another design placed as one box). */
+export function isSubsystem(catalogue, node) {
+  return own(catalogue?.components, node?.component)?.kind === SUBSYSTEM;
+}
+
+/** The node is drawn with a link disc: it references a design, or it is a subsystem box. */
+export function hasRefDisc(catalogue, node) {
+  return nodeRef(node) !== null || isSubsystem(catalogue, node);
+}
+
+/** A pinned release as the box's second line says it: "v3", or "latest" for head. */
+export function refVersionText(version) {
+  return version === "head" ? "latest" : `v${version}`;
 }
 
 /** `owner/slug@v3`, or `owner/slug@head`: how a reference is written in one word. */

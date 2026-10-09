@@ -81,7 +81,14 @@ import { dimmed, readDim, readHoverCards, writeDim, writeHoverCards } from "./pr
 import { QuickActions } from "./QuickActions";
 import type { QuickAction, QuickTarget } from "./quick-actions";
 import { RefPreview, type RefTarget } from "./RefPreview";
-import { fetchRefSummary, REF_COLOR, RefStore, refHref, refState } from "./ref-state";
+import {
+  fetchRefSummary,
+  RefStore,
+  refColor,
+  refHref,
+  refNameFor,
+  wantsRefPicker,
+} from "./ref-state";
 import { Switch } from "./Switch";
 import {
   DIM_EDGES_OVER,
@@ -594,6 +601,9 @@ export function Canvas(props: Props) {
   // long as this canvas is up. The preview of one of them, when its disc was clicked.
   const [refStore] = useState(() => new RefStore(fetchRefSummary));
   const [refPreview, setRefPreview] = useState<RefTarget | null>(null);
+  // A subsystem box that was just placed (or whose unset disc was clicked) and names no design:
+  // the Inspector opens its Reference picker for it, once, and hands this back to null.
+  const [refPickFor, setRefPickFor] = useState<string | null>(null);
   // "Move to group…": the searchable group list, at the point the menu was opened, for these.
   const [moveTo, setMoveTo] = useState<{ x: number; y: number; ids: string[] } | null>(null);
   // The hover card: what the pointer has rested on (after HOVER_DELAY), and where.
@@ -657,6 +667,14 @@ export function Canvas(props: Props) {
   const setPane = useCallback(
     (side: keyof Panes, open?: boolean) => updatePanes((prev) => ({ [side]: open ?? !prev[side] })),
     [updatePanes],
+  );
+  // Open the Inspector on a subsystem box's Reference picker (refPickFor), showing the panel.
+  const askRefPick = useCallback(
+    (id: string) => {
+      setRefPickFor(id);
+      setPane("right", true);
+    },
+    [setPane],
   );
   // Pinning Design settings shows it; unpinning puts it away, the way unpinning the picker closes
   // it. It is its own card: whether the selection's card may show (panes.right) does not touch it.
@@ -1188,6 +1206,16 @@ export function Canvas(props: Props) {
         : { type: "group", ref: topGroups[topGroups.length - 1] };
       const keys = edgeKeys(doc);
       const { layout: L } = clip;
+      // One Zeema design box pasted with no design chosen asks for one, as a placed one does.
+      const only = topNodes.length === 1 && !topGroups.length ? topNodes[0] : null;
+      if (
+        only &&
+        wantsRefPicker(
+          bundle!.catalogue,
+          doc.nodes.find((x: any) => x.id === only),
+        )
+      )
+        askRefPick(only);
       commit(doc, {
         apply: () => {
           for (const n of clip.nodes) {
@@ -1221,7 +1249,7 @@ export function Canvas(props: Props) {
         },
       });
     },
-    [bundle, commit],
+    [bundle, commit, askRefPick],
   );
 
   const duplicateSelection = useCallback(() => {
@@ -1362,6 +1390,14 @@ export function Canvas(props: Props) {
         }
         return next;
       });
+      // A Zeema design box arrives asking which design it is: the Inspector opens on its picker.
+      if (
+        wantsRefPicker(
+          bundle!.catalogue,
+          doc.nodes.find((x: any) => x.id === id),
+        )
+      )
+        askRefPick(id);
       commit(doc, {
         apply: () => {
           e.positions[id] = pos;
@@ -1373,7 +1409,7 @@ export function Canvas(props: Props) {
         },
       });
     },
-    [bundle, commit],
+    [bundle, commit, askRefPick],
   );
 
   // The picker chose a component: it lands where the picker was asked for (a point, a wire's
@@ -2084,12 +2120,19 @@ export function Canvas(props: Props) {
       },
       onView: (k) => setZoomPct(Math.round(k * 100)),
       refColor: (design, version) => {
-        const [owner, slug] = design.split("/");
-        return REF_COLOR[refState(refStore.get(owner, slug), version)];
+        const [owner, slug] = (design ?? "").split("/");
+        return refColor(design ? refStore.get(owner, slug) : undefined, design, version);
       },
+      refName: (n) => refNameFor(refStore, bundle!.catalogue, n),
       onRefClick: (nodeId, shift) => {
         const n = eng.current?.doc.nodes.find((x: any) => x.id === nodeId);
         const r = n ? D.nodeRef(n) : null;
+        // An unset disc (a Zeema design box with no design yet) asks for the pick.
+        if (!r && n && wantsRefPicker(bundle!.catalogue, n)) {
+          sceneRef.current?.select("node", nodeId);
+          askRefPick(nodeId);
+          return;
+        }
         if (!r) return;
         if (shift) {
           const href = refHref(r.owner, r.slug, refStore.get(r.owner, r.slug), r.version);
@@ -2985,6 +3028,7 @@ export function Canvas(props: Props) {
   const refInfo = (nodeId: string): RefInfo | null => {
     const n = e?.doc.nodes.find((x: any) => x.id === nodeId);
     const r = n ? D.nodeRef(n) : null;
+    if (!r && n && bundle && wantsRefPicker(bundle.catalogue, n)) return { unset: true };
     return r
       ? { owner: r.owner, slug: r.slug, version: r.version, entry: refStore.get(r.owner, r.slug) }
       : null;
@@ -3010,6 +3054,8 @@ export function Canvas(props: Props) {
           refs: {
             store: refStore,
             canWrite: props.canWrite,
+            pickFor: refPickFor,
+            onPickOpened: () => setRefPickFor(null),
             preview: (owner: string, slug: string, version: number | "head") =>
               setRefPreview({ owner, slug, version }),
           },
@@ -3854,6 +3900,7 @@ export function Canvas(props: Props) {
           doc={e.doc}
           catalogue={bundle.catalogue}
           refInfo={refInfo}
+          refName={(n: any) => refNameFor(refStore, bundle.catalogue, n)}
           theme={pageTheme()}
         />
       ) : null}

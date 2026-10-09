@@ -27,6 +27,20 @@ say which version of it they drew against.
   exists is remote state, not structure, and is never checked by the engine. A design referencing
   itself is not detected either: the document does not know its own owner.
 
+## Palette component
+
+Hanging the reference on an arbitrary typed component left it unfindable: searching the palette
+for "reference" or "external" found nothing. The catalogue now has a box for it: kind
+`subsystem` (category `external`, no properties, no rule; the gap is in docs/schema-gaps.md)
+and its one component `zeema-design`, "Zeema design", found by "reference", "subsystem",
+"another design", "external design" and the like. Placed from the palette, quick actions or a
+paste, it is selected and the Inspector opens on its Reference section with the design search
+open and focused. Until a design is picked the box reads "Choose a design…" over "Zeema design"
+with an amber disc ("No design chosen" on hover); after, it reads the design's name (the canvas
+resolves it; the server render and describe use `owner/slug`) over "Zeema design · v3". This is
+the normal way; `ref` on any other typed node remains, as the exception, for a box whose own
+component still matters to the rules.
+
 ## What the canvas does
 
 - A link disc at the node's bottom-right corner, the same disc as the edge auth glyphs, with a

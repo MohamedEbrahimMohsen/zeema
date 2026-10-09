@@ -6,6 +6,7 @@
 import {
   groupCaption,
   groupTitle,
+  hasRefDisc,
   nodeCount,
   nodeDeadLetter,
   nodeLines,
@@ -394,6 +395,7 @@ export function toSvg(doc, catalogue, options = {}) {
   style +=
     ".body{fill:var(--node-fill);stroke:var(--node-line)}" +
     ".n{font-size:14px;font-weight:500;fill:var(--ink)}.c{font-size:11px;fill:var(--muted)}" +
+    ".n.unset{font-style:italic;font-weight:400;fill:var(--muted)}" +
     ".g{font-size:12px;fill:var(--muted)}" +
     ".e{font-size:12px;fill:var(--muted);paint-order:stroke;" +
     "stroke:var(--bg);stroke-width:3px}.ic{color:var(--ink)}";
@@ -528,7 +530,9 @@ export function toSvg(doc, catalogue, options = {}) {
     // in a group whose <title> carries them whole with the id, which is not drawn.
     const l = nodeLines(catalogue ?? {}, n);
     const ref = nodeRef(n);
-    const t = nodeText(l.name, l.sub, bw, l.id, ref !== null);
+    // A subsystem box carries the disc before it references anything (hasRefDisc).
+    const disc = hasRefDisc(catalogue ?? {}, n);
+    const t = nodeText(l.name, l.sub, bw, l.id, disc);
     const title = ref
       ? `${t.title}
 ref: ${refLabel(ref)}`
@@ -565,7 +569,7 @@ ref: ${refLabel(ref)}`
     }
     for (const line of t.name)
       out.push(
-        `<text class="n" x="${f1(cx)}" y="${y + line.y}" text-anchor="middle">${escapeXml(line.text)}</text>`,
+        `<text class="n${l.unset ? " unset" : ""}" x="${f1(cx)}" y="${y + line.y}" text-anchor="middle">${escapeXml(line.text)}</text>`,
       );
     out.push(
       `<text class="c" x="${f1(cx)}" y="${y + t.comp.y}" text-anchor="middle">${escapeXml(t.comp.text)}</text>`,
@@ -575,7 +579,7 @@ ref: ${refLabel(ref)}`
         `<rect class="chip" x="${f1(x + p.x)}" y="${y + p.y}" width="${p.w}" height="${p.h}" rx="${p.rx}" fill="var(--bg)" stroke="var(--node-line)" stroke-width="1"/>`,
         `<text class="chip-t" x="${f1(x + p.tx)}" y="${y + p.ty}" text-anchor="middle" font-family="${MONO_FONT}" font-size="${p.size}" fill="var(--muted)">${escapeXml(p.text)}</text>`,
       );
-    if (ref) {
+    if (disc) {
       const [rx, ry] = refAt(bw, bh);
       out.push(
         `<g class="ref" transform="translate(${f1(x + rx)} ${f1(y + ry)})">${refGlyphMarkup()}</g>`,

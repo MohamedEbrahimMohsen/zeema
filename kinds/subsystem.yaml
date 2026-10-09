@@ -1,0 +1,11 @@
+# yaml-language-server: $schema=../schema/kind.schema.json
+# Another Zeema design placed in this one as one box: a system drawn elsewhere, named here by
+# the node's `ref` (owner/slug pinned to a release). Category `external`: no rule selects by that
+# category alone, so nothing judges this box, and nothing should: what it is lives in the other
+# design, and rules never cross designs. It has no properties for the same reason; the reference
+# is the node's `ref` field, not a property. The "no rule" gap is recorded in docs/schema-gaps.md.
+schemaVersion: "1"
+type: "kind"
+id: "subsystem"
+category: "external"
+properties: {}

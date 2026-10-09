@@ -691,6 +691,12 @@
   font-weight: 500;
   fill: var(--ink);
 }
+/* A subsystem box that names no design yet: its placeholder reads as a prompt, not a name. */
+.zeema-canvas .node-box text.name.unset {
+  font-style: italic;
+  font-weight: 400;
+  fill: var(--muted);
+}
 .zeema-canvas .node-box text.comp {
   font-size: 11px;
   fill: var(--muted);

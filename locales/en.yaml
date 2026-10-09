@@ -212,6 +212,10 @@ kinds:
   stream-processor:
     name: "Stream processor"
     description: "Continuous computation over streams with windows and state."
+  subsystem:
+    name: "Subsystem"
+    description: "Another Zeema design placed in this one as one box."
+    placeholder: "Choose a design…"
   third-party-api:
     name: "Third-party API"
     description: "A service outside your control that you call."
@@ -7297,6 +7301,9 @@ components:
   zenml:
     name: "ZenML"
     description: "Open-source MLOps framework and server tracking pipelines, artifacts and models."
+  zeema-design:
+    name: "Zeema design"
+    description: "Another design on Zeema, pinned to one of its releases."
   zep:
     name: "Zep"
     description: "Managed context layer that keeps agent memory as temporal knowledge graphs."

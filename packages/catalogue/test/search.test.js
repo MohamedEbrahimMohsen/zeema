@@ -76,3 +76,13 @@ describe("search synonyms", () => {
     expect(ids("db zzqqxx")).toEqual([]);
   });
 });
+
+describe("the Zeema design component", () => {
+  // Searching for "reference" or "external" must reach the box that places another design: the
+  // feature hung on an arbitrary component until it had one of its own.
+  it('"reference", "subsystem" and "external design" find zeema-design first', () => {
+    for (const q of ["reference", "subsystem", "external design", "zeema design"])
+      expect(ids(q)[0], q).toBe("zeema-design");
+    expect(ids("external").slice(0, 5)).toContain("zeema-design");
+  });
+});

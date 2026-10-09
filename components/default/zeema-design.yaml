@@ -1,0 +1,10 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# A design on Zeema itself, placed as one box. The node's `ref` names it (owner/slug) and pins a
+# release; the canvas resolves the name, the release and a thumbnail from the platform. No
+# defaults and no properties: what the box is lives in the referenced design.
+schemaVersion: "1"
+type: "component"
+id: "zeema-design"
+kind: "subsystem"
+provider: "default"
+aliases: ["reference", "design reference", "subsystem", "another design", "link", "external design", "imported design"]

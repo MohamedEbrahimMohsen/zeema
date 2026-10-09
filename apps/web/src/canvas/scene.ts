@@ -13,6 +13,8 @@ import {
   groupCaption,
   groupsCoveredBy,
   groupTitle,
+  hasRefDisc,
+  isSubsystem,
   nodeCount,
   nodeDeadLetter,
   nodeLines,
@@ -264,7 +266,12 @@ export type Handlers = {
    * The colour of a node's reference disc (`ref`, another design): the page knows the state of
    * the reference, the scene does not. Absent: muted, as the server render draws it.
    */
-  refColor?: (design: string, version: number | "head") => string;
+  refColor?: (design: string | null, version: number | "head") => string;
+  /**
+   * The name of the design a subsystem box references, once the page has it (the summary route);
+   * null until then, and the box shows owner/slug. Fed to nodeLines as its `refName`.
+   */
+  refName?: (node: any) => string | null;
   /** A node's reference disc was clicked (shift: open the design in a new tab). */
   onRefClick?: (nodeId: string, shift: boolean) => void;
 };
@@ -1467,11 +1474,18 @@ export class Scene {
   /** Repaint every reference disc from `refColor`, without a rebuild (a summary came back). */
   paintRefs() {
     for (const disc of this.layers.nodes.querySelectorAll(".ref-glyph")) {
-      const design = disc.getAttribute("data-ref") ?? "";
+      const design = disc.getAttribute("data-ref");
       const raw = disc.getAttribute("data-version") ?? "head";
       const version = raw === "head" ? "head" : Number(raw);
       disc.innerHTML = refGlyphMarkup(this.h.refColor?.(design, version));
     }
+    // A subsystem box with no label is named by the design it references, which may just have
+    // come back: those boxes are redrawn, unless a gesture is under way (the next render will).
+    const { doc, catalogue } = this.model ?? {};
+    const named = (doc?.nodes ?? []).some(
+      (n: any) => !n.label && nodeRef(n) && isSubsystem(catalogue, n),
+    );
+    if (named && !this.busy()) this.render(this.model);
   }
 
   renderNodes() {
@@ -1546,8 +1560,9 @@ export class Scene {
       // @zeema/core/render). The whole text and the undrawn id are the box's accessible name;
       // hover is the page's card (onHover), not a native <title>, which is slow and plain.
       // An exported picture gets the <title> back (toSVG).
-      const lines = nodeLines(this.model.catalogue, n);
-      const text = nodeText(lines.name, lines.sub, b[2], lines.id, nodeRef(n) !== null);
+      const lines = nodeLines(this.model.catalogue, n, this.h.refName?.(n) ?? null);
+      const hasDisc = hasRefDisc(this.model.catalogue, n);
+      const text = nodeText(lines.name, lines.sub, b[2], lines.id, hasDisc);
       box.setAttribute("aria-label", text.title);
       this.hoverable(box, "node", n.id);
       if (this.symbolFor(n.component))
@@ -1563,7 +1578,7 @@ export class Scene {
         );
       for (const line of text.name) {
         const name = el("text", {
-          class: "name",
+          class: lines.unset ? "name unset" : "name",
           x: b[2] / 2,
           y: line.y,
           "text-anchor": "middle",
@@ -1603,18 +1618,21 @@ export class Scene {
       // Another design this node stands for: a link disc in the bottom-right corner, where the
       // server render draws it (refAt), tinted by the reference's state (refColor). A click
       // target of its own, inside the box, so the box's hit area is what it was.
+      // A subsystem box carries the disc before it names a design: unset, amber, and a click on
+      // it asks for the pick.
       const ref = nodeRef(n);
-      if (ref) {
+      if (hasDisc) {
         const [rx, ry] = refAt(b[2], b[3]);
         const disc = el("g", {
           class: "ref-glyph",
           transform: `translate(${rx} ${ry})`,
-          "data-ref": ref.design,
-          "data-version": String(ref.version),
+          ...(ref ? { "data-ref": ref.design, "data-version": String(ref.version) } : {}),
           role: "button",
-          "aria-label": `References ${refLabel(ref)}`,
+          "aria-label": ref ? `References ${refLabel(ref)}` : "No design chosen",
         });
-        disc.innerHTML = refGlyphMarkup(this.h.refColor?.(ref.design, ref.version));
+        disc.innerHTML = refGlyphMarkup(
+          this.h.refColor?.(ref?.design ?? null, ref?.version ?? "head"),
+        );
         disc.addEventListener("pointerdown", (ev: any) => {
           if (ev.button !== 0 || this.space) return;
           ev.stopPropagation();

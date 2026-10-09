@@ -149,7 +149,7 @@ nodes:
 | `group` | no | The id of a group in this design |
 | `props` | no | Property values; see the resolution order below |
 | `nfr` | no | `rps` (integer), `latencyP95Ms` (integer), `consistency` (`strong` or `eventual`) |
-| `ref` | no | Another public design this node stands for: `{ design: "owner/slug", version }`, where `version` is a release number (1 or more) or `"head"`. An annotation: rules never read it |
+| `ref` | no | Another public design this node stands for: `{ design: "owner/slug", version }`, where `version` is a release number (1 or more) or `"head"`. On a `zeema-design` node (kind `subsystem`) it is what the box is; on any other node, an annotation. Rules never read it |
 
 ### Property resolution order
 

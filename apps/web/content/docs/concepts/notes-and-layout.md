@@ -81,15 +81,21 @@ away.
 
 ### Referencing another design
 
-A component can stand for a whole design of its own: the "Notification Service" in a news feed is
-the published Notification System. Select it, and under **Reference** in the Inspector choose
-**Reference another design…**, then search public designs by name, slug or owner. The reference is
+A box can stand for a whole design of its own: the "Notification Service" in a news feed is the
+published Notification System. The normal way is the **Zeema design** component: search the
+palette for "Zeema design", "reference" or "subsystem" and place it. The Inspector opens on its
+**Reference** section with the search already open; pick a public design by name, slug or owner.
+Until you do, the box reads *Choose a design…* with an amber disc; once you have, it shows the
+design's name (or your label) over "Zeema design · v3", the release it is pinned to.
+
+Any other component can carry a reference too, as an annotation on a box that stays what it is:
+select it, and under **Reference** choose **Reference another design…**. The reference is
 pinned to that design's latest release (or follows head, when it has none yet); the **Version**
 menu moves it to another release or to **head**, which follows the latest. It is written into the
 YAML as `ref` ([Writing a design](/docs/writing-a-design)), one undo step per change.
 
-The component then carries a link disc in its bottom-right corner, coloured by where the reference
-stands: accent when it is pinned to the latest release (or follows head), amber when a newer release
+The box then carries a link disc in its bottom-right corner, coloured by where the reference
+stands: amber with no design chosen yet (a Zeema design box only), accent when it is pinned to the latest release (or follows head), amber when a newer release
 is out or the release does not exist yet, grey when the design is private, deleted or did not
 answer. Rest the pointer on the disc for a card with the design's name, owner, release, size and
 thumbnail; click it for a preview of the design, with a menu to look at its other releases; Shift

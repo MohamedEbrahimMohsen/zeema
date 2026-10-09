@@ -10,8 +10,13 @@ import { pinnedRelease, type RefEntry, type RefVersion, refState } from "./ref-s
 
 export type HoverAt = { type: "node" | "group" | "edge" | "ref"; id: string; x: number; y: number };
 
-/** A node's reference and what the summary route said about it, for the "ref" card. */
-export type RefInfo = { owner: string; slug: string; version: RefVersion; entry?: RefEntry };
+/**
+ * A node's reference and what the summary route said about it, for the "ref" card; `unset` for
+ * a Zeema design box that names no design yet.
+ */
+export type RefInfo =
+  | { owner: string; slug: string; version: RefVersion; entry?: RefEntry }
+  | { unset: true };
 
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
 const day = (iso: string | null) =>
@@ -31,6 +36,7 @@ export function HoverCard({
   doc,
   catalogue,
   refInfo,
+  refName,
   theme = "light",
 }: {
   at: HoverAt;
@@ -38,6 +44,8 @@ export function HoverCard({
   catalogue: any;
   /** The reference of the node under a "ref" hover (its disc), with its summary. */
   refInfo?: (nodeId: string) => RefInfo | null;
+  /** The resolved name of the design a subsystem box references (nodeLines' `refName`). */
+  refName?: (node: any) => string | null;
   theme?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -66,6 +74,13 @@ export function HoverCard({
     // The disc of a node standing for another design: that design, as the summary route sees it.
     const info = refInfo?.(at.id);
     if (!info) return null;
+    // A Zeema design box before its pick: the disc is a prompt, and says so.
+    if ("unset" in info)
+      return (
+        <div className="hover-card" ref={ref} role="tooltip" style={{ left: at.x, top: at.y }}>
+          <span className="hc-value hc-wide">No design chosen</span>
+        </div>
+      );
     const { entry, version } = info;
     const state = refState(entry, version);
     if (state === "unreachable")
@@ -126,7 +141,7 @@ export function HoverCard({
   } else if (at.type === "node") {
     const n = doc.nodes.find((x: any) => x.id === at.id);
     if (!n) return null;
-    const lines = nodeLines(catalogue, n);
+    const lines = nodeLines(catalogue, n, refName?.(n) ?? null);
     const comp = own(catalogue.components, n.component);
     const kindName = comp ? own(catalogue.locale?.kinds, comp.kind)?.name || comp.kind : "";
     const product = own(catalogue.locale?.components, n.component)?.name || n.component;
@@ -153,7 +168,7 @@ export function HoverCard({
     if (!e) return null;
     const end = (id: string) => {
       const n = doc.nodes.find((x: any) => x.id === id);
-      return n ? nodeLines(catalogue, n).name : id;
+      return n ? nodeLines(catalogue, n, refName?.(n) ?? null).name : id;
     };
     const auth = e.auth ? own(catalogue.locale?.edgeAuth, e.auth)?.name || e.auth : null;
     body = (

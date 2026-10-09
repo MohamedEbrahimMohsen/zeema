@@ -12,7 +12,7 @@
 //
 // DOM free, fs free; the one import reads a node's reference to another design.
 
-import { nodeRef } from "./document.js";
+import { isSubsystem, nodeRef } from "./document.js";
 
 const list = (v) => (Array.isArray(v) ? v : [v]);
 
@@ -293,14 +293,26 @@ export function ruleReads(rule) {
 /**
  * A node as one plain sentence: its id, its component, its label when it has one, and the
  * design it references when it references one ("references owner/slug at release 3", or "at
- * head"). Pure: whether that design exists is remote state and is not looked up.
+ * head"). Given the catalogue, a subsystem box (kind `subsystem`) reads as the reference it is:
+ * "is a Zeema design reference to owner/slug at release 3", or "with no design chosen".
+ * Pure: whether that design exists is remote state and is not looked up.
  */
-export function describeNode(node) {
+export function describeNode(node, catalogue = null) {
+  const ref = nodeRef(node);
+  const at = (r) => (r.version === "head" ? "head" : `release ${r.version}`);
+  // A subsystem box is the reference: it says what it stands for, not which component it is.
+  if (isSubsystem(catalogue, node)) {
+    const loc = catalogue?.locale?.components;
+    const name =
+      (loc && Object.hasOwn(loc, node.component) && loc[node.component].name) || node.component;
+    const label = typeof node.label === "string" && node.label ? `, labelled "${node.label}",` : "";
+    const what = ref ? `to ${ref.design} at ${at(ref)}` : "with no design chosen";
+    return `Node "${node.id}"${label} is a ${name} reference ${what}.`;
+  }
   const bits = [`Node "${node.id}" is ${node.component}`];
   if (typeof node.label === "string" && node.label) bits.push(`labelled "${node.label}"`);
-  const ref = nodeRef(node);
   const tail = ref
-    ? `${bits.length > 1 ? "," : ""} and references ${ref.design} at ${ref.version === "head" ? "head" : `release ${ref.version}`}`
+    ? `${bits.length > 1 ? "," : ""} and references ${ref.design} at ${at(ref)}`
     : "";
   return `${bits.join(", ")}${tail}.`;
 }
