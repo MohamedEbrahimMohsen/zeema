@@ -960,9 +960,19 @@ export function Canvas(props: Props) {
   const commit = useCallback(
     // `coalesce`: fold into the previous step when it too was coalescing and came within the
     // window (true: 400ms, a number: that many ms).
-    (next: any, opts: { coalesce?: boolean | number; apply?: () => void } = {}) => {
+    // `view`: the view before a step that moves it (Arrange refits), so undo brings the view
+    // back with the positions instead of leaving the restored boxes off-screen.
+    (
+      next: any,
+      opts: {
+        coalesce?: boolean | number;
+        apply?: () => void;
+        view?: { x: number; y: number; k: number };
+      } = {},
+    ) => {
       const e = eng.current!;
       const snapshot = {
+        view: opts.view,
         doc: clone(e.doc),
         positions: clone(e.positions),
         bows: clone(e.bows),
@@ -1006,7 +1016,9 @@ export function Canvas(props: Props) {
     const e = eng.current!;
     const prev = e.undo.pop();
     if (!prev) return;
+    const scene = sceneRef.current;
     e.redo.push({
+      view: prev.view && scene ? { ...scene.view } : undefined,
       doc: clone(e.doc),
       positions: clone(e.positions),
       bows: clone(e.bows),
@@ -1018,7 +1030,12 @@ export function Canvas(props: Props) {
       badge: e.badge,
       routing: e.routing,
     });
-    Object.assign(e, prev);
+    const { view: back, ...state } = prev;
+    Object.assign(e, state);
+    if (back && scene) {
+      scene.view = back;
+      scene.applyView();
+    }
     e.lastDragAt = 0;
     e.dirty = true;
     e.saveSeq++;
@@ -1031,7 +1048,9 @@ export function Canvas(props: Props) {
     const e = eng.current!;
     const next = e.redo.pop();
     if (!next) return;
+    const scene = sceneRef.current;
     e.undo.push({
+      view: next.view && scene ? { ...scene.view } : undefined,
       doc: clone(e.doc),
       positions: clone(e.positions),
       bows: clone(e.bows),
@@ -1043,7 +1062,12 @@ export function Canvas(props: Props) {
       badge: e.badge,
       routing: e.routing,
     });
-    Object.assign(e, next);
+    const { view: forward, ...state } = next;
+    Object.assign(e, state);
+    if (forward && scene) {
+      scene.view = forward;
+      scene.applyView();
+    }
     e.lastDragAt = 0;
     e.dirty = true;
     e.saveSeq++;
@@ -1340,7 +1364,9 @@ export function Canvas(props: Props) {
   }, []);
 
   const arrange = useCallback(() => {
+    const scene = sceneRef.current;
     commit(null, {
+      view: scene ? { ...scene.view } : undefined,
       apply: () => {
         const e = eng.current!;
         const result = layout(e.doc, bundle!.catalogue) as any;
@@ -1349,7 +1375,7 @@ export function Canvas(props: Props) {
         e.bows = {};
       },
     });
-    sceneRef.current?.fit();
+    scene?.fit();
   }, [bundle, commit]);
 
   // Place a component, in the middle of the view or at a point. With `from`, it is also wired
