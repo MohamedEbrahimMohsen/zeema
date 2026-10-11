@@ -38,7 +38,7 @@
 // Pure: no DOM, no fs. It imports geometry.js for the edges, text.js for the box widths and
 // document.js for the name a box shows; none of them imports anything.
 
-import { hasRefDisc, nodeLines } from "./document.js";
+import { hasRefDisc, nodeLines, stackedIds } from "./document.js";
 import { DEFAULT_ROUTING, edgeGeometry, frameAround, frameCaptions } from "./geometry.js";
 import { nodeWidth } from "./text.js";
 
@@ -432,6 +432,7 @@ export function layout(doc, catalogue, options = {}) {
   const outEdges = edgeGeometry({ edges }, boxes, {}, {}, frameBoxes, {
     routing: options?.routing ?? DEFAULT_ROUTING,
     captions,
+    stacked: stackedIds(doc, catalogue),
   });
 
   const positions = {},

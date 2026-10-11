@@ -198,7 +198,9 @@ A frame shows the label alone, or with no label its kind's name (`locales/en.yam
 A group with `count` (`- { id: "web", kind: "cell", count: 3 }`) is a cluster drawn once, say N
 copies behind a load balancer: renderers draw its frame as a stack with a `×N` chip at its top-right,
 as they draw a node's `instances`. It is decoration only and never read by rules; a `count` that is
-not a whole number of 2 or more (`"3"`, `1`) is a structural finding.
+not a whole number of 2 or more (`"3"`, `1`) is a structural finding. An edge that meets a stack (a
+counted group's frame, or a counted node's box) on its top or right side stops at the stack's outer
+card rather than crossing the cards to the box.
 
 ### nodes
 

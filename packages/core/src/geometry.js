@@ -65,6 +65,28 @@ export const LABEL_GAP = 6;
 // that makes a ported end leave its box squarely. Nothing is drawn straight along it.
 export const STUB = 28;
 
+// A box that stands for N identical copies (a node's nodeCount, a group's groupCount) is drawn as a
+// stack: cards behind it, each STACK_STEP px further right and up, at STACK_OPACITY (farthest
+// first). render.js draws them; they live here because an edge end on a stacked box stops on the
+// outermost card (`stackInset`), and render.js imports geometry.js, not the other way round.
+export const STACK_STEP = 6;
+export const STACK_OPACITY = [0.45, 0.7];
+// How far the outermost card stands out past the box's top and right sides.
+export const STACK_REACH = STACK_OPACITY.length * STACK_STEP;
+
+/**
+ * How far an edge end on `side` of a stacked box moves out so it stops on the stack's outermost
+ * card instead of crossing the cards to the box: STACK_REACH along the side's outward normal on
+ * the top and right, where the cards show, and nothing on the left and bottom, where they do not.
+ * @param {string} side
+ * @returns {[number, number]}
+ */
+export function stackInset(side) {
+  if (side === "top") return [0, -STACK_REACH];
+  if (side === "right") return [STACK_REACH, 0];
+  return [0, 0];
+}
+
 function clip(box, towardX, towardY) {
   const [x, y, w, h] = box;
   const cx = x + w / 2,
@@ -352,6 +374,9 @@ function labelPlacement(mid, points, shared) {
 // world px from the label's automatic place taken as its centre (`labelBase`, on every labelled
 // edge). A dragged label is drawn centred at `labelBase + offset`, follows its edge as the
 // automatic place moves, and is never moved to dodge anything; automatic labels still dodge it.
+// `options.stacked` is the ids of the nodes and groups drawn as stacks (`stackedIds` in
+// document.js, a Set): an edge end on the top or right side of one stops on its outermost card
+// (`stackInset`), whatever the routing, so the line does not cross the cards behind the box.
 // `options.routing` picks the style (default DEFAULT_ROUTING). Orthogonal edges carry
 // `ortho: true`, and their `points` are the corners of a polyline from one end to the other,
 // drawn by `edgePath`; `run` is `{ axis, base }` when the edge has a cross run a bow moves (see
@@ -395,7 +420,7 @@ export function edgeGeometry(doc, boxes, bows = {}, ports = {}, frames = {}, opt
         label: label === null ? null : String(label),
       };
     });
-    return keepAuthOff(routed, edges, boxes);
+    return keepAuthOff(stackEnds(routed, boxOf, options?.stacked, ports, keys), edges, boxes);
   }
   const buckets = new Map();
   edges.forEach((e, i) => {
@@ -542,10 +567,77 @@ export function edgeGeometry(doc, boxes, bows = {}, ports = {}, frames = {}, opt
     });
   }
   return keepAuthOff(
-    out.sort((p, q) => p.i - q.i),
+    stackEnds(
+      out.sort((p, q) => p.i - q.i),
+      boxOf,
+      options?.stacked,
+      ports,
+      keys,
+    ),
     edges,
     boxes,
   );
+}
+
+// Each end of a drawn edge that meets a stacked box (`stacked`, ids of nodes and groups; see
+// `stackedIds` in document.js) on its top or right side, moved out by `stackInset` so the line
+// stops on the stack's outermost card. The side is the end's port's, else the side the end lies
+// on (the one facing the next point, at a corner). An end on a frame reached from inside (a member
+// and its own group) is not moved: the cards are outside. An orthogonal end moves no further than
+// the corner before it, so its last run keeps its direction.
+function stackEnds(drawn, boxOf, stacked, ports, keys) {
+  if (!stacked || !(stacked.size ?? stacked.length)) return drawn;
+  const has = (id) => (typeof stacked.has === "function" ? stacked.has(id) : stacked.includes(id));
+  for (const d of drawn) {
+    const own = ports && Object.hasOwn(ports, keys[d.i]) ? ports[keys[d.i]] : null;
+    const n = d.points.length;
+    if (n < 2) continue;
+    const ends = [
+      [d.from, d.to, 0, 1, own?.from],
+      [d.to, d.from, n - 1, n - 2, own?.to],
+    ];
+    let points = null;
+    for (const [id, otherId, k, j, port] of ends) {
+      if (!has(id)) continue;
+      const box = boxOf(id),
+        other = boxOf(otherId);
+      if (!box || (other && other !== box && inside(other, box))) continue;
+      const p = (points ?? d.points)[k],
+        q = (points ?? d.points)[j];
+      const side = isPort(port) ? port.side : sideOf(box, p, q);
+      let [dx, dy] = stackInset(side);
+      if (!dx && !dy) continue;
+      if (d.ortho) {
+        // Never past the corner before it: the last run keeps its direction.
+        const room = Math.max(
+          0,
+          dx ? (q[0] - p[0]) * Math.sign(dx) : (q[1] - p[1]) * Math.sign(dy),
+        );
+        dx = Math.sign(dx) * Math.min(Math.abs(dx), room);
+        dy = Math.sign(dy) * Math.min(Math.abs(dy), room);
+      }
+      points = points ?? d.points.map((c) => [c[0], c[1]]);
+      points[k] = [p[0] + dx, p[1] + dy];
+    }
+    if (points) d.points = points;
+  }
+  return drawn;
+}
+
+// The side of `box` the border point `p` lies on, or null; at a corner, the one whose outward
+// normal points most toward `q`, the next point along the edge.
+function sideOf(box, p, q) {
+  const [x, y, w, h] = box;
+  const E = 0.5;
+  const within = (v, lo, hi) => v >= lo - E && v <= hi + E;
+  const on = [];
+  if (Math.abs(p[1] - y) < E && within(p[0], x, x + w)) on.push("top");
+  if (Math.abs(p[0] - (x + w)) < E && within(p[1], y, y + h)) on.push("right");
+  if (Math.abs(p[1] - (y + h)) < E && within(p[0], x, x + w)) on.push("bottom");
+  if (Math.abs(p[0] - x) < E && within(p[1], y, y + h)) on.push("left");
+  if (on.length < 2) return on[0] ?? null;
+  const toward = (s) => NORMALS[s][0] * (q[0] - p[0]) + NORMALS[s][1] * (q[1] - p[1]);
+  return on.reduce((best, s) => (toward(s) > toward(best) ? s : best));
 }
 
 // The seven points of an edge with a ported end: two cubics joined smoothly at the curve's

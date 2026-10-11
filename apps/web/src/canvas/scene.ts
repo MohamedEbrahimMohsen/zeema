@@ -21,6 +21,7 @@ import {
   nodeLines,
   nodeRef,
   refLabel,
+  stackedIds,
 } from "@zeema/core/document";
 import {
   authAt,
@@ -651,7 +652,15 @@ export class Scene {
     const notes = this.notesVisible() ? Object.values(this.noteBoxes || {}) : [];
     // While a label is being dragged, the offset it would get is drawn, so the others dodge it.
     const labels = this.labelDrag?.labels ?? this.model.labels ?? {};
-    return { routing: this.model.routing, captions: this.captions, labelAvoid: notes, labels };
+    // Stacked boxes (×N): an edge end on one's top or right stops on its outermost card.
+    const stacked = stackedIds(this.model.doc, this.model.catalogue);
+    return {
+      routing: this.model.routing,
+      captions: this.captions,
+      labelAvoid: notes,
+      labels,
+      stacked,
+    };
   }
 
   /** Each group's label strip height, for the frame targets. */

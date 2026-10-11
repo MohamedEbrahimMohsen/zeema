@@ -255,6 +255,21 @@ export function nodeCount(doc, node, catalogue) {
 }
 
 /**
+ * The ids of every node (nodeCount) and group (groupCount) that stands for two or more copies and
+ * so is drawn as a stack: what edgeGeometry's `stacked` option takes, so an edge end on a stack
+ * stops on its outermost card. Without a catalogue only the groups count.
+ * @returns {Set<string>}
+ */
+export function stackedIds(doc, catalogue) {
+  const out = new Set();
+  for (const n of Array.isArray(doc?.nodes) ? doc.nodes : [])
+    if (n?.id != null && nodeCount(doc, n, catalogue)) out.add(n.id);
+  for (const g of Array.isArray(doc?.groups) ? doc.groups : [])
+    if (g?.id != null && groupCount(g)) out.add(g.id);
+  return out;
+}
+
+/**
  * Whether a node is a queue that has a dead-letter queue: its kind is `queue`, it resolves
  * `deadLetterQueue` to true (effective), and its role is not `dlq` (a queue that is the
  * dead-letter queue says so in its name). Only a real boolean true counts. `doc` is unused, as

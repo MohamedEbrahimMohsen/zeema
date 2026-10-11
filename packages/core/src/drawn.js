@@ -17,6 +17,7 @@
 //
 // No DOM, no fs, no network.
 
+import { stackedIds } from "./document.js";
 import { edgeGeometry, frameCaptions, groupFrames, labelOffset, readRouting } from "./geometry.js";
 import { layout } from "./layout.js";
 import { LABEL_FONT } from "./routing.js";
@@ -140,7 +141,13 @@ export function drawnLayout(doc, catalogue, sidecar) {
   const rawLabels = sidecar && typeof sidecar === "object" ? sidecar.labels : null;
   const labels =
     rawLabels && typeof rawLabels === "object" && !Array.isArray(rawLabels) ? rawLabels : {};
-  const edges = edgeGeometry(doc, boxes, bows, ports, frames, { routing, captions, labels });
+  const stacked = stackedIds(doc, catalogue);
+  const edges = edgeGeometry(doc, boxes, bows, ports, frames, {
+    routing,
+    captions,
+    labels,
+    stacked,
+  });
   const tints = sidecar && typeof sidecar === "object" ? sidecar.tints : null;
   const nodeStyles = tints && typeof tints === "object" && !Array.isArray(tints) ? tints : {};
 

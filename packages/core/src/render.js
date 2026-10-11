@@ -24,6 +24,8 @@ import {
   framesUnderTint,
   readRouting,
   refAt,
+  STACK_OPACITY,
+  STACK_STEP,
 } from "./geometry.js";
 import { layout } from "./layout.js";
 import { CAPTION_LINE, FRAME_ICON_SHIFT, nodeText } from "./text.js";
@@ -221,13 +223,13 @@ export function frameIconKey(ref) {
 // cards behind its box, each STACK_STEP px further right and up, and a chip reading ×N. A queue
 // with a dead-letter queue (nodeDeadLetter) carries a DLQ chip. The chips sit in one row above
 // the box's top-right corner, laid right to left: DLQ rightmost, ×N to its left. All of it is
-// decoration only: the layout box, the edges' ends, the frames and the canvas's hit areas are
-// the front card alone. The server render and the canvas both draw it from nodeDecor, so the
-// two cannot disagree. A group that stands for N copies (groupCount) is drawn the same way
-// around its frame, from frameDecor, by the same maths.
-export const STACK_STEP = 6;
-// The cards' opacity, farthest first.
-export const STACK_OPACITY = [0.45, 0.7];
+// decoration only: the layout box, the frames and the canvas's hit areas are the front card
+// alone; an edge end on the top or right side stops on the outermost card (stackInset in
+// geometry.js, where STACK_STEP and STACK_OPACITY live). The server render and the canvas both
+// draw it from nodeDecor, so the two cannot disagree. A group that stands for N copies
+// (groupCount) is drawn the same way around its frame, from frameDecor, by the same maths.
+export { STACK_OPACITY, STACK_STEP };
+
 const CHIP_FONT = 11;
 const CHIP_H = 16;
 const CHIP_GAP = 4;

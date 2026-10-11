@@ -7,6 +7,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { groupCount, groupTitle, setGroupCount, setGroupField } from "../src/document.js";
+import { edgeGeometry, STACK_REACH, stackInset } from "../src/geometry.js";
 import { layout } from "../src/layout.js";
 import { frameDecor, nodeDecor, STACK_STEP, toMermaid, toSvg } from "../src/render.js";
 import { check } from "../src/structure.js";
@@ -179,5 +180,129 @@ describe("render", () => {
 
   it("Mermaid names the subgraph with ×N", () => {
     expect(toMermaid(doc, "TD", catalogue)).toMatch(/subgraph n_g_web\["Web ×3"\]/);
+  });
+});
+
+// An edge end on the top or right of a stack stops on the outermost card, 2 * STACK_STEP out
+// along the side's normal, so the line does not cross the cards; left and bottom are unchanged.
+describe("group count: edges stop at the stack's outer card", () => {
+  const edgesOf = (pairs, boxes, frames, stacked, routing) =>
+    edgeGeometry({ edges: pairs.map(([from, to]) => ({ from, to })) }, boxes, {}, {}, frames, {
+      stacked: new Set(stacked),
+      routing,
+    });
+  const first = (e) => e.points[0];
+  const last = (e) => e.points[e.points.length - 1];
+
+  it("the reach is two steps, on top and right only", () => {
+    expect(STACK_REACH).toBe(2 * STACK_STEP);
+    expect(stackInset("top")).toEqual([0, -STACK_REACH]);
+    expect(stackInset("right")).toEqual([STACK_REACH, 0]);
+    expect(stackInset("bottom")).toEqual([0, 0]);
+    expect(stackInset("left")).toEqual([0, 0]);
+  });
+
+  it("an edge into a counted group from above ends 12px above the frame's top", () => {
+    const boxes = { lb: [160, 0, 100, 60], api: [160, 260, 100, 60] };
+    const frames = { web: [100, 200, 300, 160] };
+    const [e] = edgesOf([["lb", "web"]], boxes, frames, ["web"]);
+    expect(last(e)[1]).toBe(200 - 2 * STACK_STEP);
+    // the last run is still square to the side: straight down into it
+    const prev = e.points[e.points.length - 2];
+    expect(prev[0]).toBe(last(e)[0]);
+    expect(prev[1]).toBeLessThan(last(e)[1]);
+    // without the count it ends on the frame
+    const [plain] = edgesOf([["lb", "web"]], boxes, frames, []);
+    expect(last(plain)[1]).toBe(200);
+    expect(last(plain)[0]).toBe(last(e)[0]);
+  });
+
+  it("an edge into a counted group's member is not moved", () => {
+    const boxes = { lb: [160, 0, 100, 60], api: [160, 260, 100, 60] };
+    const frames = { web: [100, 200, 300, 160] };
+    const [e] = edgesOf([["lb", "api"]], boxes, frames, ["web"]);
+    expect(last(e)[1]).toBe(260);
+  });
+
+  it("a member's edge to its own counted group stays inside the frame", () => {
+    const boxes = { api: [160, 260, 100, 60] };
+    const frames = { web: [100, 200, 300, 160] };
+    const [plain] = edgesOf([["api", "web"]], boxes, frames, []);
+    const [e] = edgesOf([["api", "web"]], boxes, frames, ["web"]);
+    expect(e.points).toEqual(plain.points);
+  });
+
+  const node = { s: [300, 300, 100, 60] };
+  it("an edge into a stacked node from the right ends 12px right of the box", () => {
+    const boxes = { ...node, r: [600, 300, 100, 60] };
+    const [e] = edgesOf([["r", "s"]], boxes, {}, ["s"]);
+    expect(last(e)).toEqual([400 + 2 * STACK_STEP, 330]);
+    const [plain] = edgesOf([["r", "s"]], boxes, {}, []);
+    expect(last(plain)).toEqual([400, 330]);
+  });
+
+  it("an edge into a stacked node from the left or below is unchanged", () => {
+    for (const other of [
+      [0, 300, 100, 60],
+      [300, 600, 100, 60],
+    ]) {
+      const boxes = { ...node, o: other };
+      const [e] = edgesOf([["o", "s"]], boxes, {}, ["s"]);
+      const [plain] = edgesOf([["o", "s"]], boxes, {}, []);
+      expect(e.points).toEqual(plain.points);
+    }
+  });
+
+  it("an uncounted box is unchanged", () => {
+    const boxes = { ...node, r: [600, 300, 100, 60], t: [300, 0, 100, 60] };
+    const pairs = [
+      ["r", "s"],
+      ["t", "s"],
+    ];
+    expect(edgesOf(pairs, boxes, {}, ["x"])).toEqual(edgesOf(pairs, boxes, {}, []));
+  });
+
+  it("an edge leaving a stacked box from the top starts 12px above it", () => {
+    const boxes = { ...node, t: [300, 0, 100, 60] };
+    const [e] = edgesOf([["s", "t"]], boxes, {}, ["s"]);
+    expect(first(e)).toEqual([350, 300 - 2 * STACK_STEP]);
+    expect(e.points[1][0]).toBe(350);
+    for (const routing of ["bundled", "curved"]) {
+      const [c] = edgesOf([["s", "t"]], boxes, {}, ["s"], routing);
+      const [plain] = edgesOf([["s", "t"]], boxes, {}, [], routing);
+      expect(first(c)).toEqual([first(plain)[0], first(plain)[1] - 2 * STACK_STEP]);
+    }
+  });
+
+  it("a ported end on the right moves out too", () => {
+    const boxes = { ...node, t: [300, 0, 100, 60] };
+    const doc = { edges: [{ from: "s", to: "t" }] };
+    const ports = { "s>t": { from: { side: "right", t: 0.5 } } };
+    const [plain] = edgeGeometry(doc, boxes, {}, ports, {}, {});
+    expect(first(plain)).toEqual([400, 330]);
+    const [e] = edgeGeometry(doc, boxes, {}, ports, {}, { stacked: new Set(["s"]) });
+    expect(first(e)).toEqual([400 + 2 * STACK_STEP, 330]);
+    expect(e.points[1][1]).toBe(330);
+  });
+
+  it("layout and the SVG stop an edge into a counted group on its outer card", () => {
+    const text = TEXT.replace("edges: []", 'edges:\n  - { from: "lb", to: "web" }');
+    const d = parse(text).doc;
+    const counted = layout(d, catalogue);
+    const plain = layout(parse(text.replace("    count: 3\n", "")).doc, catalogue);
+    const [a] = counted.edges;
+    const [b] = plain.edges;
+    const f = counted.frames.web;
+    const end = last(b);
+    const side =
+      end[1] === f[1]
+        ? "top"
+        : end[0] === f[0] + f[2]
+          ? "right"
+          : end[0] === f[0]
+            ? "left"
+            : "bottom";
+    const [dx, dy] = stackInset(side);
+    expect(last(a)).toEqual([end[0] + dx, end[1] + dy]);
   });
 });
