@@ -2111,6 +2111,9 @@ components:
   azure-power-apps:
     name: "Microsoft Power Apps"
     description: "Low-code canvas and model-driven business apps over Dataverse and connected data sources."
+  azure-power-bi:
+    name: "Power BI"
+    description: "Microsoft SaaS analytics service for publishing, sharing and refreshing reports and dashboards."
   azure-power-bi-embedded:
     name: "Power BI Embedded"
     description: "Azure-billed dedicated Power BI capacity for embedding reports and dashboards in an application."
@@ -6320,6 +6323,9 @@ components:
   postmark:
     name: "Postmark"
     description: "Transactional email API focused on delivery speed, with unsigned event webhooks."
+  power-bi-report-server:
+    name: "Power BI Report Server"
+    description: "On-premises report server hosting Power BI, paginated and Excel reports in a web portal."
   powerdns:
     name: "PowerDNS Authoritative Server"
     description: "Authoritative-only nameserver with pluggable database and zone-file backends."
@@ -6674,6 +6680,9 @@ components:
   smtp-relay:
     name: "SMTP relay"
     description: "External SMTP relay such as SES SMTP or a corporate mail relay."
+  smtp-server:
+    name: "SMTP server"
+    description: "Any SMTP server, self-hosted or external, that accepts mail for delivery."
   snorkel:
     name: "Snorkel Flow"
     description: "Data development platform that labels training data programmatically with labelling functions."

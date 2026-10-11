@@ -311,6 +311,7 @@ covered by a cloud provider folder.
 | Evidence | evidence | bi-service | done | https://docs.evidence.dev/ |
 | Kibana | kibana | bi-service | done | https://www.elastic.co/docs/explore-analyze/report-and-share |
 | Tableau Server | tableau | bi-service | done | https://help.tableau.com/current/server/en-us/users_guest.htm |
+| Power BI Report Server | power-bi-report-server | bi-service | done | https://learn.microsoft.com/en-us/power-bi/report-server/get-started |
 | Great Expectations | â€” | â€” | skip: Python data-quality library run inside a pipeline | https://docs.greatexpectations.io/ |
 | Power BI / Looker | â€” | â€” | skip: covered by the azure and gcp provider folders | https://learn.microsoft.com/en-us/power-bi/ |
 
@@ -1095,6 +1096,7 @@ covered by a cloud provider folder.
 | Bird (MessageBird) | bird | third-party-api | done | https://bird.com/docs/api |
 | Postfix | postfix | third-party-api | done | https://www.postfix.org/OVERVIEW.html |
 | SMTP relay | smtp-relay | third-party-api | done | https://datatracker.ietf.org/doc/html/rfc5321 |
+| SMTP server | smtp-server | third-party-api | done | https://datatracker.ietf.org/doc/html/rfc5321 |
 | Apple Push Notification service | apns | third-party-api | done | https://developer.apple.com/documentation/usernotifications |
 | OneSignal | onesignal | notification-service | done | https://documentation.onesignal.com/ |
 | Notification platform (generic) | notification-platform | notification-service | done | https://en.wikipedia.org/wiki/Push_technology |

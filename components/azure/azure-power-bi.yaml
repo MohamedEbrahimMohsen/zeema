@@ -1,0 +1,12 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Power BI service: Microsoft's SaaS business analytics platform and a core workload of Microsoft Fabric.
+# "What is Power BI?" states the service is the cloud platform for publishing and sharing reports, with
+# scheduled refresh, embedding, row-level security, sensitivity labels and audit logs.
+schemaVersion: "1"
+type: "component"
+id: "azure-power-bi"
+kind: "bi-service"
+provider: "azure"
+docs: "https://learn.microsoft.com/en-us/power-bi/fundamentals/power-bi-overview"
+defaults:
+  managed: true

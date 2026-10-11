@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Any SMTP server, self-hosted or external, no product named: not idempotent, no callbacks.
+# Use smtp-relay when mail is handed to someone else's relay, postfix when it is Postfix.
+schemaVersion: "1"
+type: "component"
+id: "smtp-server"
+kind: "third-party-api"
+provider: "default"
+docs: "https://datatracker.ietf.org/doc/html/rfc5321"
+aliases: ["SMTP"]
+defaults:
+  idempotent: false
+  callbackStyle: "none"
+properties:
+  authenticated:
+    type: "boolean"
+    default: true
+  tlsRequired:
+    type: "boolean"
+    default: false

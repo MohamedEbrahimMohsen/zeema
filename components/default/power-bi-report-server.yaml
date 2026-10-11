@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# Power BI Report Server: on-premises report server with a web portal. "What is Power BI Report Server?"
+# states it hosts Power BI reports (.pbix), Excel files and paginated reports (.rdl), is a superset of
+# SQL Server Reporting Services, and is core-licensed through Fabric F64+ reserved instances or SQL Server.
+schemaVersion: "1"
+type: "component"
+id: "power-bi-report-server"
+kind: "bi-service"
+provider: "default"
+docs: "https://learn.microsoft.com/en-us/power-bi/report-server/get-started"
+aliases: ["PBIRS"]
+defaults:
+  managed: false
+properties:
+  licenseSource:
+    type: "enum"
+    values: ["sql-server", "fabric-reserved-instance"]
+  scheduledProcessing:
+    type: "boolean"
+    default: false

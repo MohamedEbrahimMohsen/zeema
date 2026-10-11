@@ -224,6 +224,7 @@ graph store; it is covered by a component property rather than a second componen
 | Azure Stream Analytics | azure-stream-analytics | stream-processor | done | https://learn.microsoft.com/en-us/azure/stream-analytics/stream-analytics-introduction |
 | Azure Analysis Services | azure-analysis-services | data-warehouse | done | https://learn.microsoft.com/en-us/azure/analysis-services/analysis-services-overview |
 | Power BI Embedded | azure-power-bi-embedded | bi-service | done | https://learn.microsoft.com/en-us/power-bi/developer/embedded/embedded-analytics-power-bi |
+| Power BI | azure-power-bi | bi-service | done | https://learn.microsoft.com/en-us/power-bi/fundamentals/power-bi-overview |
 | Microsoft Purview | azure-purview | data-catalog | done | https://learn.microsoft.com/en-us/purview/purview |
 | Microsoft Graph Data Connect | azure-graph-data-connect | worker | done | https://learn.microsoft.com/en-us/graph/data-connect-concept-overview |
 | Data Catalog (classic) | — | — | skip: retired, superseded by Microsoft Purview | https://learn.microsoft.com/en-us/azure/data-catalog/overview |
@@ -910,7 +911,7 @@ drawn as a box in Microsoft's own architecture diagrams.
 
 ## Counts
 
-total 696, todo 0, done 201, skip 493, covered 2. (Recounted from the status column on
+total 697, todo 0, done 202, skip 493, covered 2. (Recounted from the status column on
 2026-10-05, after the pricing-calculator audit added the Bandwidth and Microsoft Defender ISOC
 skip rows, removed the two duplicate mapping rows for `azure-monitor-data-collection-rule` and
 `azure-privileged-identity-management`, and folded Azure Spot Virtual Machines and Azure
