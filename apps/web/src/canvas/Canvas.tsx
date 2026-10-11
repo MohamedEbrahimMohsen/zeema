@@ -71,9 +71,10 @@ import { publishSlugFor } from "@/lib/slug";
 import { BadgeRow } from "./BadgeRow";
 import { ContextMenu } from "./ContextMenu";
 import { exportScene, saveFile } from "./exportScene";
-import { type CanvasFinding, FindingsPanel } from "./FindingsPanel";
+import { type CanvasFinding, FindingRow, FindingsPanel, findingRows } from "./FindingsPanel";
 import { GroupPicker } from "./GroupPicker";
 import { type HoverAt, HoverCard, type RefInfo } from "./HoverCard";
+import { historyKey } from "./history-key";
 import { EdgeStyleField, type Highlight, Inspector, type InspectorApi } from "./Inspector";
 import { designMenu, type MenuEntry, SEP } from "./menu-model";
 import { Palette, ProviderSprite } from "./Palette";
@@ -361,6 +362,8 @@ function tintNodes(
 const ZOOM_STEP = 1.25;
 // How long the pointer rests on a component or a group label before its hover card shows.
 const HOVER_DELAY = 350;
+// How long a hovered finding-dot list waits after the pointer leaves, in ms.
+const DOT_POP_GRACE = 300;
 const plural = (n: number, one: string) => `${n} ${one}${n === 1 ? "" : "s"}`;
 
 /** Everything a note is allowed to be anchored to, as the document currently stands. */
@@ -610,6 +613,28 @@ export function Canvas(props: Props) {
   const [hoverCard, setHoverCard] = useState<HoverAt | null>(null);
   const hoverPending = useRef<HoverAt | null>(null);
   const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // A node's finding dot, hovered or clicked: the node, the dot's bottom centre on screen, and
+  // whether a click pinned the list (a pinned one stays when the pointer leaves).
+  const [dotPop, setDotPop] = useState<{
+    node: string;
+    x: number;
+    y: number;
+    pinned: boolean;
+  } | null>(null);
+  const dotPopRef = useRef<HTMLDivElement>(null);
+  const dotGrace = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const holdDotPop = useCallback(() => {
+    if (dotGrace.current) clearTimeout(dotGrace.current);
+    dotGrace.current = null;
+  }, []);
+  // Off the dot (or the list), the list waits a moment so the pointer can cross the gap.
+  const leaveDotPop = useCallback(() => {
+    holdDotPop();
+    dotGrace.current = setTimeout(() => {
+      dotGrace.current = null;
+      setDotPop((p) => (p?.pinned ? p : null));
+    }, DOT_POP_GRACE);
+  }, [holdDotPop]);
   // True while something else holds the pointer's attention (a menu, a popover, a dialog).
   const hoverQuiet = useRef(false);
   // Hover cards at all (View in the design menu, Shift H, quick actions). Off: the highlight still follows
@@ -726,7 +751,16 @@ export function Canvas(props: Props) {
   const closeQuick = useCallback(() => setQuick(false), []);
   const closeMoveTo = useCallback(() => setMoveTo(null), []);
   // A menu, a popover or a dialog holds the pointer's attention: no hover card meanwhile.
-  hoverQuiet.current = !!(menu || moveTo || quick || help || picker || pickAnchor || refPreview);
+  hoverQuiet.current = !!(
+    menu ||
+    moveTo ||
+    quick ||
+    help ||
+    picker ||
+    pickAnchor ||
+    refPreview ||
+    dotPop
+  );
   // The same, for the bare-key shortcuts — except the picker pinned as a panel, which is no popover.
   const popoverOpen = useRef(false);
   popoverOpen.current = !!(
@@ -2167,6 +2201,16 @@ export function Canvas(props: Props) {
         }
         setRefPreview({ owner: r.owner, slug: r.slug, version: r.version });
       },
+      onFindingDot: (node, at, pinned) => {
+        if (!node || !at) return leaveDotPop();
+        holdDotPop();
+        setDotPop((p) => ({
+          node,
+          x: at[0],
+          y: at[1],
+          pinned: !!pinned || (p?.node === node && p.pinned),
+        }));
+      },
     });
     sceneRef.current = scene;
     scene.setDimEdges(readDim());
@@ -2222,6 +2266,7 @@ export function Canvas(props: Props) {
       if (ev.key === "Escape") {
         setHint(null);
         setMenu(null);
+        setDotPop(null);
         setFinding(null);
         setFindingsOpen(false);
         if (pickerOpen.current && (!pinnedRef.current || pickAnchorRef.current)) closePicker();
@@ -2260,14 +2305,11 @@ export function Canvas(props: Props) {
         void save();
         return;
       }
-      if (mod && k === "z") {
+      // Shift held over from a Shift drag makes Ctrl+Z an undo still (history-key.ts).
+      const history = historyKey(ev, scene.shiftCarried && ev.shiftKey);
+      if (history) {
         ev.preventDefault();
-        ev.shiftKey ? redo() : undo();
-        return;
-      }
-      if (mod && k === "y") {
-        ev.preventDefault();
-        redo();
+        history === "undo" ? undo() : redo();
         return;
       }
       if (mod && k === "a") {
@@ -2437,6 +2479,25 @@ export function Canvas(props: Props) {
     document.addEventListener("pointerdown", onDown, true);
     return () => document.removeEventListener("pointerdown", onDown, true);
   }, [picker, panes.left, pickAnchor, closePicker]);
+
+  // A finding dot's list closes on a press anywhere but on it (or on a dot, which reopens it),
+  // and on a wheel, which moves the dot out from under it.
+  useEffect(() => {
+    if (!dotPop) return;
+    const onDown = (ev: PointerEvent) => {
+      const t = ev.target as Element | null;
+      if (dotPopRef.current?.contains(t) || t?.closest?.(".finding-badge")) return;
+      setDotPop(null);
+    };
+    const onWheel = () => setDotPop(null);
+    document.addEventListener("pointerdown", onDown, true);
+    document.addEventListener("wheel", onWheel, { capture: true, passive: true });
+    return () => {
+      document.removeEventListener("pointerdown", onDown, true);
+      document.removeEventListener("wheel", onWheel, true);
+    };
+  }, [dotPop]);
+  useEffect(() => () => holdDotPop(), [holdDotPop]);
 
   // The expanded findings card closes the same way; its pill toggles it.
   useEffect(() => {
@@ -3938,6 +3999,46 @@ export function Canvas(props: Props) {
           theme={pageTheme()}
         />
       ) : null}
+      {dotPop && bundle && e
+        ? (() => {
+            const rows = findingRows(structural, rules, bundle.catalogue).filter(
+              (r) => r.f.subject?.type === "node" && r.f.subject.ref === dotPop.node,
+            );
+            if (!rows.length) return null;
+            return (
+              <div
+                className="finding-pop"
+                ref={dotPopRef}
+                role="dialog"
+                aria-label="Findings on this component"
+                style={{
+                  left: Math.max(8, Math.min(dotPop.x - 20, window.innerWidth - 328)),
+                  // Under the dot, or over it when the dot is low on the screen.
+                  ...(dotPop.y > window.innerHeight * 0.6
+                    ? { bottom: window.innerHeight - dotPop.y + 12 }
+                    : { top: dotPop.y + 4 }),
+                }}
+                // Over and move, not enter: the pointer arrives from the scene's own SVG, which
+                // React's enter, built from the pair of out/over events, can miss.
+                onPointerOver={holdDotPop}
+                onPointerMove={holdDotPop}
+                onPointerLeave={leaveDotPop}
+              >
+                {rows.map((row) => (
+                  <FindingRow
+                    key={row.key}
+                    row={row}
+                    active={finding?.key === row.key}
+                    onPick={(f, key) => {
+                      setDotPop(null);
+                      pickFinding(f, key);
+                    }}
+                  />
+                ))}
+              </div>
+            );
+          })()
+        : null}
       {refPreview ? (
         <RefPreview
           key={`${refPreview.owner}/${refPreview.slug}@${refPreview.version}`}

@@ -141,3 +141,22 @@ export function regroupTarget(
   if (shift) return { group: best };
   return best && !ancestors.includes(best) ? { group: best } : null;
 }
+
+/**
+ * The document as a regroup would leave it: the components and groups in `ids` moved into
+ * `group` (null: the top level), everything else as it is. Only `group` and `parent` change, so
+ * the frames a Shift drag draws while it runs are the ones its drop will give: the group being
+ * left lets go of what is leaving, at once. Shallow: the document itself is not touched.
+ */
+export function regroupPreview(doc: any, ids: Set<string>, group: string | null): any {
+  const move = <T extends Record<string, any>>(item: T, key: "group" | "parent"): T => {
+    if (!ids.has(item.id)) return item;
+    const { [key]: _was, ...rest } = item;
+    return (group ? { ...rest, [key]: group } : rest) as T;
+  };
+  return {
+    ...doc,
+    nodes: doc.nodes.map((n: any) => move(n, "group")),
+    ...(doc.groups ? { groups: doc.groups.map((g: any) => move(g, "parent")) } : {}),
+  };
+}

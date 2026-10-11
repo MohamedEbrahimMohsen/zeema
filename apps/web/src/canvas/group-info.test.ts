@@ -1,3 +1,4 @@
+import { groupFrames } from "@zeema/core/geometry";
 import { describe, expect, it } from "vitest";
 import {
   ancestorsOf,
@@ -7,6 +8,7 @@ import {
   memberCounts,
   membersText,
   parentPath,
+  regroupPreview,
   regroupTarget,
   SHIFT_GRACE,
   shiftHeld,
@@ -124,5 +126,56 @@ describe("regroupTarget", () => {
     expect(regroupTarget(frames, 150, 150, new Set(["spoke"]), ["platform"])).toEqual({
       group: "vnet",
     });
+  });
+});
+
+describe("regroupPreview", () => {
+  const boxes: Record<string, number[]> = {
+    gw: [0, 0, 100, 50],
+    app: [0, 100, 100, 50],
+    db: [200, 100, 100, 50],
+    dns: [400, 0, 100, 50],
+    user: [600, 0, 100, 50],
+    ext: [800, 0, 100, 50],
+  };
+  const ids = (...xs: string[]) => new Set(xs);
+
+  it("takes a component out of its group, to the top level or into the target", () => {
+    const out = regroupPreview(doc, ids("db"), null);
+    expect(out.nodes.find((n: any) => n.id === "db")).toEqual({ id: "db" });
+    const into = regroupPreview(doc, ids("db"), "other");
+    expect(into.nodes.find((n: any) => n.id === "db")).toEqual({ id: "db", group: "other" });
+    // Nothing else moves, and the document itself is untouched.
+    expect(out.nodes.find((n: any) => n.id === "app")).toBe(doc.nodes[1]);
+    expect(doc.nodes[2]).toEqual({ id: "db", group: "spoke" });
+  });
+
+  it("re-parents a dragged group, its members staying with it", () => {
+    const out = regroupPreview(doc, ids("spoke"), null);
+    expect(out.groups.find((g: any) => g.id === "spoke").parent).toBeUndefined();
+    expect(out.nodes.find((n: any) => n.id === "app").group).toBe("spoke");
+    expect(regroupPreview(doc, ids("spoke"), "other").groups[2].parent).toBe("other");
+  });
+
+  it("draws the group being left without what leaves it", () => {
+    const before = groupFrames(doc, boxes, null) as Record<string, number[]>;
+    const after = groupFrames(regroupPreview(doc, ids("db"), null), boxes, null) as Record<
+      string,
+      number[]
+    >;
+    // spoke held app and db side by side; without db it is narrower and no longer reaches it.
+    expect(after.spoke[2]).toBeLessThan(before.spoke[2]);
+    expect(after.spoke[0] + after.spoke[2]).toBeLessThan(boxes.db[0]);
+    // The group it goes to takes it in.
+    const into = groupFrames(regroupPreview(doc, ids("db"), "other"), boxes, null) as Record<
+      string,
+      number[]
+    >;
+    expect(into.other[0]).toBeLessThanOrEqual(boxes.db[0]);
+  });
+
+  it("leaves a group with nothing left in it without a frame (the canvas keeps the old one)", () => {
+    const frames = groupFrames(regroupPreview(doc, ids("ext"), null), boxes, null);
+    expect(frames).not.toHaveProperty("other");
   });
 });

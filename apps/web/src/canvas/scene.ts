@@ -28,6 +28,7 @@ import {
   bowAt,
   dropWaypoint,
   edgeGeometry,
+  edgeKeys,
   edgePath,
   frameCaptions,
   framesOuterFirst,
@@ -36,6 +37,7 @@ import {
   innermostFrameAt,
   moveSegment,
   portAt,
+  readRouting,
   refAt,
   refitEnds,
   viaOf,
@@ -83,6 +85,7 @@ import { dropPort, frameTargetAt } from "./frame-target";
 import {
   ancestorsOf,
   groupAndDescendants,
+  regroupPreview,
   regroupTarget,
   SHIFT_GRACE,
   shiftHeld,
@@ -90,6 +93,7 @@ import {
 import { findGuides, type GuideLine } from "./guides";
 import { anchorOffset, coversTarget, noteDropTarget, sameAnchor } from "./note-anchor";
 import { type DimEdges, dimmed } from "./prefs";
+import { samePort, wirePorts } from "./wire-ports";
 
 // The dim rule and its threshold live with the other canvas habits (prefs.ts).
 export { DIM_EDGES_OVER, type DimEdges } from "./prefs";
@@ -277,6 +281,11 @@ export type Handlers = {
   refName?: (node: any) => string | null;
   /** A node's reference disc was clicked (shift: open the design in a new tab). */
   onRefClick?: (nodeId: string, shift: boolean) => void;
+  /**
+   * The pointer came onto a node's finding dot (`pinned`: it was clicked), with the dot's
+   * bottom centre on screen; or, with null, it left the dot.
+   */
+  onFindingDot?: (nodeId: string | null, at?: [number, number], pinned?: boolean) => void;
 };
 
 // The zoom range every path shares: the wheel, the zoom menu and fit's lower bound all stay in it.
@@ -408,6 +417,11 @@ export class Scene {
   captions: Record<string, { lines: string[]; width: number; extra: number; strip: number }> = {};
   geom: any[] = [];
   drag: any = null;
+  /**
+   * Shift is still down from a Shift drag that has just ended. Ctrl+Shift+Z then means the
+   * undo the hand on Ctrl+Z wants, not a redo (Canvas reads this; a Shift key-up clears it).
+   */
+  shiftCarried = false;
   noteDrag: any = null;
   /** The marker the pointer is resting on, once it has rested long enough to mean it. */
   peek: string | null = null;
@@ -1726,7 +1740,40 @@ export class Scene {
         const worst = bad.some((f) => f.blocking || f.severity === "error")
           ? "badge-error"
           : "badge-warn";
-        box.append(el("circle", { class: worst, cx: b[2] - 10, cy: 10, r: 4 }));
+        // The dot is a hover target of its own: the page lists the node's findings under it,
+        // and a click pins that list. Like the reference disc, the box never sees the press.
+        const badge = el("g", {
+          class: "finding-badge",
+          role: "button",
+          "aria-label": `${bad.length} finding${bad.length === 1 ? "" : "s"}`,
+        });
+        badge.append(
+          el("circle", { class: "finding-badge-hit", cx: b[2] - 10, cy: 10, r: 9 }),
+          el("circle", { class: worst, cx: b[2] - 10, cy: 10, r: 4 }),
+        );
+        const at = (): [number, number] => {
+          const r = badge.lastElementChild!.getBoundingClientRect();
+          return [r.left + r.width / 2, r.bottom];
+        };
+        badge.addEventListener("pointerdown", (ev: any) => {
+          if (ev.button !== 0 || this.space) return;
+          ev.stopPropagation();
+        });
+        badge.addEventListener("click", (ev: any) => {
+          if (ev.button !== 0 || this.space) return;
+          ev.stopPropagation();
+          this.h.onFindingDot?.(n.id, at(), true);
+        });
+        badge.addEventListener("dblclick", (ev) => ev.stopPropagation());
+        badge.addEventListener("pointerenter", (ev: any) => {
+          if (ev.buttons || this.busy()) return;
+          this.h.onHover?.(null);
+          this.h.onFindingDot?.(n.id, at(), false);
+        });
+        // The box's hover card is not reported from over the dot.
+        badge.addEventListener("pointermove", (ev) => ev.stopPropagation());
+        badge.addEventListener("pointerleave", () => this.h.onFindingDot?.(null));
+        box.append(badge);
       }
       // A port dot at the middle of each side, just outside the border. canvas.css shows them
       // on hover and on the selected node; dragging one draws a wire from that side.
@@ -2095,7 +2142,16 @@ export class Scene {
     };
     this.on(window, "keydown", shift);
     this.on(window, "keyup", shift);
+    // Any sign that Shift is up ends what a Shift drag carried over.
+    const shiftUp = (ev: KeyboardEvent | PointerEvent) => {
+      if (!ev.shiftKey || (ev.type === "keyup" && (ev as KeyboardEvent).key === "Shift"))
+        this.shiftCarried = false;
+    };
+    this.on(window, "keydown", shiftUp);
+    this.on(window, "keyup", shiftUp);
+    this.on(window, "pointerdown", shiftUp);
     this.on(window, "blur", () => {
+      this.shiftCarried = false;
       this.spaceHeld = false;
       this.space = this.hand;
       svg.classList.toggle("hand", this.hand);
@@ -2639,6 +2695,45 @@ export class Scene {
       if (now) this.frameEls.get(now)?.rect.classList.add("drop-target");
     }
     d.into = target;
+    // A Shift drag that would regroup shows it now: what leaves is outlined in the warning
+    // colour and the frame it leaves lets go of it. Shift let go, or back over its own group,
+    // and the drag is an ordinary one again.
+    const leaving = d.shift && target ? this.leavingFor(target.group) : null;
+    const before: Set<string> | null = d.leaving ?? null;
+    if (!before && !leaving) return;
+    for (const id of before ?? []) this.leavingEl(id)?.classList.remove("leaving");
+    for (const id of leaving ?? []) this.leavingEl(id)?.classList.add("leaving");
+    d.leaving = leaving;
+    const same =
+      before && leaving && before.size === leaving.size && [...before].every((i) => leaving.has(i));
+    if (d.moved && (!same || was !== now)) this.repaintDrag();
+  }
+
+  /**
+   * What a drop into `group` would take out of where it is: the selected components not carried
+   * by a selected group, and the selected groups, each unless it is there already. The same set
+   * Canvas's onMove regroups. Null when that is nothing.
+   */
+  leavingFor(group: string | null): Set<string> | null {
+    const d = this.drag;
+    const doc = this.model.doc;
+    const picked = this.picked();
+    const out = new Set<string>();
+    for (const id of picked.nodes) {
+      if (d?.held?.has(id)) continue;
+      const n = doc.nodes.find((x: any) => x.id === id);
+      if (n && (n.group ?? null) !== group) out.add(id);
+    }
+    for (const id of picked.groups) {
+      const g = (doc.groups || []).find((x: any) => x.id === id);
+      if (g && id !== group && (g.parent ?? null) !== group) out.add(id);
+    }
+    return out.size ? out : null;
+  }
+
+  /** The element whose outline says a component or group is leaving: its card, or its frame. */
+  leavingEl(id: string): Element | null {
+    return this.nodeEls.get(id) ?? this.frameEls.get(id)?.rect ?? null;
   }
 
   dropHint: HTMLDivElement | null = null;
@@ -2709,9 +2804,33 @@ export class Scene {
       b[1] += sy;
       this.nodeEls.get(id)?.setAttribute("transform", `translate(${b[0]} ${b[1]})`);
     }
+    this.repaintDrag();
+    if (ev.shiftKey) this.drag.shiftUp = null;
+    this.drag.shift = this.dragShift(ev.shiftKey);
+    this.setRegroupTarget(this.regroupAt(this.drag.shift));
+  }
+
+  /**
+   * The frames while a drag runs: they follow their members, except that a Shift drag whose drop
+   * would regroup draws them as the drop will leave them — the group being left lets go of what
+   * is leaving at once, instead of stretching after it until the button comes up. A group left
+   * with nothing in it keeps the frame it had when the drag began.
+   */
+  dragFrames(): Record<string, Box> {
+    const d = this.drag;
+    if (!d?.leaving) return groupFrames(this.model.doc, this.boxes, this.captions) as any;
+    const doc = regroupPreview(this.model.doc, d.leaving, d.into?.group ?? null);
+    const frames = groupFrames(doc, this.boxes, this.captions) as Record<string, Box>;
+    for (const [id, f] of Object.entries(d.frames0 as Record<string, Box>))
+      if (!frames[id]) frames[id] = f;
+    return frames;
+  }
+
+  /** What a moved drag repaints: the frames, the edges that move with it, anchored notes. */
+  repaintDrag() {
     const moving = new Set(this.drag.ids);
     // Frames follow their members, so an edge to a group moves with any drag.
-    this.frames = groupFrames(this.model.doc, this.boxes, this.captions) as Record<string, Box>;
+    this.frames = this.dragFrames();
     this.geom = edgeGeometry(
       this.model.doc,
       this.boxes,
@@ -2740,9 +2859,6 @@ export class Scene {
     this.placeEndHandles();
     this.repaintFrames();
     this.repaintAnchored();
-    if (ev.shiftKey) this.drag.shiftUp = null;
-    this.drag.shift = this.dragShift(ev.shiftKey);
-    this.setRegroupTarget(this.regroupAt(this.drag.shift));
   }
 
   /** Whether the running drag is a Shift drag, given whether the key is down now. */
@@ -2769,7 +2885,7 @@ export class Scene {
   }
 
   repaintFrames() {
-    const frames = groupFrames(this.model.doc, this.boxes, this.captions) as Record<string, Box>;
+    const frames = this.dragFrames();
     // Kept, not just drawn: a note anchored to a group reads its frame back from here while
     // the drag is still running.
     this.frames = frames;
@@ -2804,6 +2920,7 @@ export class Scene {
     this.setRegroupTarget(null);
     const { id, ids, moved, kind, at, client, held, untoggle, plain, alt } = this.drag;
     this.drag = null;
+    this.shiftCarried = Boolean(moved && shift && ev?.shiftKey);
     this.drawGuides(null);
     if (!moved) {
       if (untoggle) this.toggle(untoggle[0], untoggle[1]);
@@ -3115,8 +3232,41 @@ export class Scene {
     if (!target || target === from) return;
     // Drawn from a dot: that side on the source, and the target's border where it was let go.
     const to = side && start ? this.dropPortOn(target, [wire.x, wire.y]) : null;
-    const ends: EdgePorts | undefined = side && to ? { from: { side, t: 0.5 }, to } : undefined;
+    const ends: EdgePorts | undefined =
+      side && to ? this.wireEnds(from, target, { from: { side, t: 0.5 }, to }) : undefined;
     this.h.onConnect?.(from, target, ends);
+  }
+
+  /**
+   * What a wire drawn from a port dot stores (see wire-ports.ts): nothing when the dot is the
+   * side the new edge would leave by anyway, so it joins the spread and the bundle on that side.
+   */
+  wireEnds(from: string, to: string, ends: EdgePorts): EdgePorts | undefined {
+    const doc = this.model.doc;
+    const ports: Record<string, EdgePorts> = this.model.ports || {};
+    const keys = edgeKeys(doc);
+    const pinned = (doc.edges || []).some(
+      (e: any, i: number) => e.from === from && samePort(ports[keys[i]]?.from, ends.from),
+    );
+    const next = { ...doc, edges: [...(doc.edges || []), { from, to }] };
+    const key = edgeKeys(next).at(-1);
+    const a = this.boxOf(from);
+    const b = this.boxOf(to);
+    let auto = null;
+    if (key && a && b && readRouting(this.model.routing) !== "curved") {
+      const { [key]: _stale, ...rest } = ports;
+      const drawn = edgeGeometry(
+        next,
+        this.boxes,
+        this.model.bows || {},
+        rest,
+        this.frames,
+        this.routeOptions(),
+      ).find((d: any) => d.key === key);
+      const pts = drawn?.points;
+      if (pts?.length >= 2) auto = { a, b, start: pts[0], end: pts[pts.length - 1] };
+    }
+    return wirePorts(ends, auto, pinned);
   }
 
   // ---------------------------------------------------------------- editing a label in place

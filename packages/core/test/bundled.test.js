@@ -167,4 +167,57 @@ describe("bundled routing", () => {
     const xs = new Set(trunkXs(members));
     expect(xs.size).toBe(1);
   });
+
+  // Backend over three stores, then a fourth edge drawn down from the same side (the canvas
+  // stores no port for a wire drawn from the dot the edge would leave by anyway).
+  const below = () => ({
+    boxes: { be: [300, 0, W, H], r: [0, 300, W, H], q: [200, 300, W, H], w: [400, 300, W, H] },
+    doc: {
+      edges: ["r", "q", "w"].map((to) => ({ from: "be", to, protocol: "https", mode: "sync" })),
+    },
+  });
+  const add = (doc, to) => ({
+    edges: [...doc.edges, { from: "be", to, protocol: "https", mode: "sync" }],
+  });
+  // The y of each member's run along the trunk: one value when they share it.
+  const trunkYs = (drawn) => new Set(drawn.map((d) => d.points[1][1]));
+
+  it("takes a fourth edge from the same side into the bundle", () => {
+    const { boxes, doc } = below();
+    boxes.s = [620, 300, W, H];
+    const drawn = edgeGeometry(add(doc, "s"), boxes, {}, {}, {}, BUNDLED);
+    expect(new Set(drawn.map((d) => d.points[0].join(","))).size).toBe(1);
+    expect(trunkYs(drawn).size).toBe(1);
+  });
+
+  it("never takes a working bundle apart for an edge to a nearer box", () => {
+    const { boxes, doc } = below();
+    // a box beside the source that only a trunk squeezed up between the source and s would cut
+    boxes.api = [60, 30, W, 90];
+    const alone = edgeGeometry(doc, boxes, {}, {}, {}, BUNDLED);
+    boxes.s = [620, 130, W, H];
+    const drawn = edgeGeometry(add(doc, "s"), boxes, {}, {}, {}, BUNDLED);
+    // the three keep exactly the trunk they had; s, much nearer, routes on its own
+    expect(drawn.slice(0, 3).map((d) => d.points)).toEqual(alone.map((d) => d.points));
+    expect(trunkYs(drawn.slice(0, 3)).size).toBe(1);
+    expect(drawn[3].points[1][1]).not.toBe(drawn[0].points[1][1]);
+  });
+
+  it("keeps a bundle when a ported or shaped fourth edge stays out of it", () => {
+    const { boxes, doc } = below();
+    boxes.s = [620, 300, W, H];
+    const alone = edgeGeometry(doc, boxes, {}, {}, {}, BUNDLED);
+    const next = add(doc, "s");
+    // a saved design's wire from the dot: pinned there, it bundles only with ends pinned there
+    const ports = { "be>s": { from: { side: "bottom", t: 0.5 }, to: { side: "top", t: 0.5 } } };
+    const ported = edgeGeometry(next, boxes, {}, ports, {}, BUNDLED);
+    expect(trunkYs(ported.slice(0, 3)).size).toBe(1);
+    expect(ported.slice(0, 3).map((d) => d.points[0])).toEqual(alone.map((d) => d.points[0]));
+    // dragged into a shape of its own: waypoints keep it out, and the three still share a trunk
+    // (its unported start takes a place in the side's spread beside theirs)
+    const bows = { "be>s": { via: [[695, 200]] } };
+    const shaped = edgeGeometry(next, boxes, bows, {}, {}, BUNDLED);
+    expect(new Set(shaped.slice(0, 3).map((d) => d.points[0].join(","))).size).toBe(1);
+    expect(trunkYs(shaped.slice(0, 3)).size).toBe(1);
+  });
 });

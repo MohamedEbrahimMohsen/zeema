@@ -447,6 +447,31 @@
   white-space: nowrap;
 }
 
+/* the findings of one node, under its finding dot: the panel's rows, in a float of their own */
+.zeema-canvas .finding-pop {
+  position: fixed;
+  z-index: 46;
+  width: 320px;
+  max-width: calc(100vw - 16px);
+  max-height: 40vh;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: var(--sp-1);
+  background: var(--float-bg);
+  border: var(--border) solid var(--float-line);
+  border-radius: var(--r-card);
+  box-shadow: var(--float-shadow);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  color: var(--ink);
+  animation: zeema-float-up var(--dur) var(--ease);
+}
+@media (prefers-reduced-motion: reduce) {
+  .zeema-canvas .finding-pop {
+    animation: none;
+  }
+}
+
 /* bottom right: the findings pill, and the card it opens above itself */
 .zeema-canvas .float-findings {
   right: 12px;
@@ -1039,6 +1064,16 @@
   fill: var(--warn);
   stroke: var(--panel);
   stroke-width: 2;
+}
+/* A node's finding dot is a hover and click target of its own (the list of its findings), even
+   where the box's decoration lets the pointer through; a wider transparent ring makes it easy to hit. */
+.zeema-canvas .finding-badge {
+  pointer-events: auto;
+  cursor: pointer;
+}
+.zeema-canvas .finding-badge-hit {
+  fill: transparent;
+  stroke: none;
 }
 .zeema-canvas .marquee {
   fill: var(--accent);
@@ -2437,4 +2472,12 @@
   flex-wrap: wrap;
   gap: 6px;
   margin-top: 8px;
+}
+
+/* a Shift-drag that would regroup on release: what leaves its group is ringed in the warning
+   colour, not the accent, until Shift is let go or it is back over its own group */
+.zeema-canvas .node-box.selected.leaving rect.body,
+.zeema-canvas .frame.selected.leaving,
+.zeema-canvas .frame[data-tint].selected.leaving {
+  stroke: var(--warn);
 }

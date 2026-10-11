@@ -37,7 +37,8 @@
 // An edge with a bow or waypoints never bundles; a ported end bundles only with ends ported to the
 // same point. An edge bundles only when its target lies beyond its source by more than two steps
 // out, through a side the two face each other across. The trunk sits in a free channel between the two, at its
-// middle when it can; a member whose own runs would cut a box routes on its own instead. The
+// middle when it can; a member whose own runs would cut a box routes on its own instead, and so
+// does the member with the nearest far end when its channel would cost the others theirs. The
 // trunk takes one lane among the other runs on its line and every member moves with it, so the
 // members overlap exactly: one line, not several a pixel apart.
 //
@@ -633,12 +634,35 @@ function findBundles(ends, bows) {
 // cut a box is left out and routes on its own; so does a bundle left with one member. A route
 // carries `bundle` and `trunk`: the index of its run along the trunk, or null when it has none
 // (a member level with the shared end is one straight run).
+//
+// The trunk's channel is set by every member: the nearest far end bounds it. So one member whose
+// box sits much nearer than the others' (a new edge to a box just below the source) can squeeze
+// the trunk to where the other members' runs cut a box, or leave it no free band at all. When the
+// whole bundle does not route, the member with the nearest far end is left out and the rest try
+// again, so adding an edge never takes a working bundle apart: the larger trunk wins, and of two
+// as large, the one that routes every member it was given.
 function trunkRoutes(B, obstacles, captions) {
-  const side = B.members[0].sa;
+  const u = across(B.members[0].sa) ? 1 : 0;
+  const n = NORMAL[B.members[0].sa][u];
+  const far = (it) => n * sidePoint(it.b, it.sb, it.tb ?? 0.5)[u];
+  let members = B.members;
+  let best = [];
+  while (members.length >= 2) {
+    const out = trunkOf(B, members, obstacles, captions);
+    if (out.length === members.length && out.length >= best.length) return out;
+    if (out.length > best.length) best = out;
+    const nearest = members.reduce((p, q) => (far(q) < far(p) ? q : p));
+    members = members.filter((m) => m !== nearest);
+  }
+  return best;
+}
+
+function trunkOf(B, members, obstacles, captions) {
+  const side = members[0].sa;
   const u = across(side) ? 1 : 0; // the axis a step out runs along; the trunk is square to it
   const v = 1 - u;
   const n = NORMAL[side][u];
-  const ends = B.members.map((it) => ({
+  const ends = members.map((it) => ({
     it,
     P: sidePoint(it.a, it.sa, it.ta ?? 0.5),
     Q: sidePoint(it.b, it.sb, it.tb ?? 0.5),
