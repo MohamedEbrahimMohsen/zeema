@@ -848,7 +848,7 @@ covered by a cloud provider folder.
 | KubeEdge | kubeedge | edge-appliance | done | https://kubeedge.io/docs/architecture/edge/metamanager/ |
 | OpenYurt | openyurt | edge-appliance | done | https://openyurt.io/docs/ |
 | balena | balena | edge-appliance | done | https://docs.balena.io/learn/introduction/primer.md |
-| Docker Engine | â€” | â€” | skip: host container runtime, the drawn node is the container service | https://docs.docker.com/engine/ |
+| Docker Engine | â€” | â€” | skip: host container runtime, the drawn node is docker-container | https://docs.docker.com/engine/ |
 | Vagrant | â€” | â€” | skip: local development environment tool | https://developer.hashicorp.com/vagrant/docs |
 
 ## Application runtimes and web servers
@@ -856,6 +856,7 @@ covered by a cloud provider folder.
 | resource | id | kind | status | source |
 |---|---|---|---|---|
 | Container service (generic) | container-service | app-server | done | https://kubernetes.io/docs/concepts/workloads/ |
+| Docker container | docker-container | app-server | done | https://docs.docker.com/engine/containers/run/ |
 | Erlang/OTP node | erlang-node | app-server | done | https://www.erlang.org/docs |
 | Apache Tomcat | tomcat | app-server | done | https://tomcat.apache.org/tomcat-11.0-doc/config/http.html |
 | Eclipse Jetty | jetty | app-server | done | https://jetty.org/docs/jetty/12/operations-guide/begin/index.html |
@@ -1423,7 +1424,7 @@ Two mapping decisions worth recording:
 | containerd | — | — | skip: container runtime on a node, not a drawn resource | https://containerd.io/docs/ |
 | CRI-O | — | — | skip: container runtime on a node, not a drawn resource | https://cri-o.io/ |
 | gVisor | — | — | skip: container runtime (sandboxed runsc) on a node, not a drawn resource | https://gvisor.dev/docs/ |
-| LXC | — | — | skip: host container runtime, the drawn node is the container service | https://linuxcontainers.org/lxc/documentation/ |
+| LXC | — | — | skip: host container runtime, the drawn node is docker-container | https://linuxcontainers.org/lxc/documentation/ |
 | rkt | — | — | skip: container runtime; project ended and archived by the CNCF in February 2020 | https://github.com/rkt/rkt |
 | Flagger | — | — | skip: progressive delivery controller, part of the flux delivery path (as Argo Rollouts is for argo-cd) | https://fluxcd.io/flagger/ |
 | Ansible | — | — | skip: agentless configuration-management CLI run from a control node; the deployable node is Ansible AWX (`awx`) | https://docs.ansible.com/ |

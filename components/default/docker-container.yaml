@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=../../schema/component.schema.json
+# A container started with `docker run` on one Docker Engine host, outside any orchestrator.
+# Per "Running containers", the --restart policy defaults to `no`, so a container that exits stays
+# down unless run with on-failure, always or unless-stopped; per "Run multiple processes in a
+# container", the best practice is one service per container.
+schemaVersion: "1"
+type: "component"
+id: "docker-container"
+kind: "app-server"
+provider: "default"
+docs: "https://docs.docker.com/engine/containers/run/"
+aliases: ["docker"]
+defaults:
+  stateless: true

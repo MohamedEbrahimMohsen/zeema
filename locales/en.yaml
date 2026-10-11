@@ -3152,6 +3152,9 @@ components:
   dnsmasq:
     name: "dnsmasq"
     description: "Lightweight DNS forwarder and cache that also serves DHCP and TFTP."
+  docker-container:
+    name: "Docker container"
+    description: "A single container run with docker run on one Docker Engine host, with no orchestrator."
   docker-hub:
     name: "Docker Hub"
     description: "Docker's hosted image registry with public and private repositories and pull rate limits."

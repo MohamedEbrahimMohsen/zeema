@@ -293,6 +293,7 @@
   "teradata": "teradata",
   "text-embeddings-inference": "huggingface",
   "thanos": "thanos",
+  "tomcat": "apache",
   "travis-ci": "travisci",
   "trino": "trino",
   "turso": "turso",
