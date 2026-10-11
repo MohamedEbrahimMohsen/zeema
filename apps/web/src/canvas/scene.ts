@@ -1229,16 +1229,20 @@ export class Scene {
       const f = this.frames[group.id];
       if (!f) continue;
       const style = own(styles, group.id) as FrameStyle | undefined;
-      const under = cut.has(group.id)
-        ? el("rect", {
-            class: "frame-under",
-            x: f[0],
-            y: f[1],
-            width: f[2],
-            height: f[3],
-            rx: 14,
-          })
-        : null;
+      // A counted group's stack (below) shows only its top and right edges: the page background
+      // goes down over the cards and under the hollow frame, as for a cut frame.
+      const count = groupCount(group);
+      const under =
+        count || cut.has(group.id)
+          ? el("rect", {
+              class: "frame-under",
+              x: f[0],
+              y: f[1],
+              width: f[2],
+              height: f[3],
+              rx: 14,
+            })
+          : null;
       // A named tint is a token canvas.css resolves per theme. A hex tint says "hex" and hands
       // its colour over as two custom properties, so the same rules (selection, pointer, the
       // cut) apply to it and the fill carries the named tints' alpha (TINT_FILL_ALPHA).
@@ -1306,14 +1310,13 @@ export class Scene {
       // N identical copies of the group (groupCount): the stack's cards behind the frame and the
       // ×N chip at its top-right, as the server render draws them (frameDecor). Decoration only,
       // never under the pointer: the frame, its hit area and its edges are what they were.
-      const count = groupCount(group);
       const back = count ? el("g", { class: "frame-stack" }) : null;
       const front = count ? el("g", { class: "frame-stack" }) : null;
       const els = { under, rect, hit, icon, label, labelDx, count, back, front };
       this.paintFrameDecor(els, f);
       g.append(
-        ...(under ? [under] : []),
         ...(back ? [back] : []),
+        ...(under ? [under] : []),
         rect,
         hit,
         ...(icon ? [icon] : []),

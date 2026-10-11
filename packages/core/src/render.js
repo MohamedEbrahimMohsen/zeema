@@ -466,19 +466,21 @@ export function toSvg(doc, catalogue, options = {}) {
     // A named tint is a token the style block resolves per theme. A hex tint is its own colour,
     // written inline so the picture needs no rule for it (the design page strips the <style>).
     const dataTint = paintAttrs(paint);
-    if (cut.has(g.id))
+    // N identical copies of the group (groupCount): its stack's cards behind the frame. A frame
+    // is hollow, so the page background goes down over the cards before it: only their top and
+    // right edges peek out, as behind a node's filled box. A cut frame lays the same rect down.
+    const decor = frameDecor(f[2], f[3], { count: groupCount(g) });
+    for (const s of decor ? decor.cards : [])
+      out.push(
+        `<rect class="stack" opacity="${s.opacity}" x="${f1(f[0] + s.x)}" y="${f1(f[1] + s.y)}" width="${f1(s.w)}" height="${f1(s.h)}" rx="14" fill="none" stroke="var(--frame)" stroke-width="1" stroke-dasharray="6 4"/>`,
+      );
+    if (decor || cut.has(g.id))
       out.push(
         `<rect x="${f1(f[0])}" y="${f1(f[1])}" width="${f1(f[2])}" height="${f1(f[3])}" rx="14" fill="var(--bg)"/>`,
       );
     // The frame, its icon and its words in one group whose <title> names it whole: label,
     // kind and id, since the frame itself shows one of them.
     out.push(`<g><title>${escapeXml(groupTitle(catalogue, g))}</title>`);
-    // N identical copies of the group (groupCount): its stack's cards behind the frame.
-    const decor = frameDecor(f[2], f[3], { count: groupCount(g) });
-    for (const s of decor ? decor.cards : [])
-      out.push(
-        `<rect class="stack" opacity="${s.opacity}" x="${f1(f[0] + s.x)}" y="${f1(f[1] + s.y)}" width="${f1(s.w)}" height="${f1(s.h)}" rx="14" fill="none" stroke="var(--frame)" stroke-width="1" stroke-dasharray="6 4"/>`,
-      );
     out.push(
       `<rect${dataTint} x="${f1(f[0])}" y="${f1(f[1])}" width="${f1(f[2])}" height="${f1(f[3])}" rx="14" fill="none" stroke="var(--frame)" stroke-width="1" stroke-dasharray="6 4"/>`,
     );

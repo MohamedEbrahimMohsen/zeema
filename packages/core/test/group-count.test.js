@@ -151,10 +151,14 @@ describe("render", () => {
     const f1 = (v) => Number(v).toFixed(1);
     const far = `<rect class="stack" opacity="0.45" x="${f1(x + 2 * STACK_STEP)}" y="${f1(y - 2 * STACK_STEP)}" width="${f1(w)}" height="${f1(h)}" rx="14"`;
     const near = `<rect class="stack" opacity="0.7" x="${f1(x + STACK_STEP)}" y="${f1(y - STACK_STEP)}"`;
-    const frame = `<rect x="${f1(x)}" y="${f1(y)}" width="${f1(w)}" height="${f1(h)}" rx="14"`;
+    const box = `<rect x="${f1(x)}" y="${f1(y)}" width="${f1(w)}" height="${f1(h)}" rx="14"`;
+    const bg = `${box} fill="var(--bg)"/>`;
+    const frame = `${box} fill="none"`;
     expect(svg.indexOf(far)).toBeGreaterThan(-1);
     expect(svg.indexOf(near)).toBeGreaterThan(svg.indexOf(far));
-    expect(svg.indexOf(frame)).toBeGreaterThan(svg.indexOf(near));
+    // the page background over the cards, so only their top and right edges show in the frame
+    expect(svg.indexOf(bg)).toBeGreaterThan(svg.indexOf(near));
+    expect(svg.indexOf(frame)).toBeGreaterThan(svg.indexOf(bg));
     expect(svg).toContain(">×3</text>");
     expect(svg).toMatch(/<title>[^<]*web ×3<\/title>/);
   });
@@ -163,6 +167,11 @@ describe("render", () => {
     const plain = parse(TEXT.replace("    count: 3\n", "")).doc;
     const out = toSvg(plain, catalogue, { theme: "light" });
     expect(out).not.toContain('class="stack"');
+    // no tint, so nothing is cut: no frame lays the page background down
+    for (const [x, y, w, h] of Object.values(layout(plain, catalogue).frames))
+      expect(out).not.toContain(
+        `<rect x="${Number(x).toFixed(1)}" y="${Number(y).toFixed(1)}" width="${Number(w).toFixed(1)}" height="${Number(h).toFixed(1)}" rx="14" fill="var(--bg)"/>`,
+      );
     expect(out).not.toContain("×");
     // the layout is the same either way: decoration only
     expect(layout(plain, catalogue).frames).toEqual(lay.frames);
