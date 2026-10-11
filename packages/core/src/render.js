@@ -5,6 +5,7 @@
 
 import {
   groupCaption,
+  groupCount,
   groupTitle,
   hasRefDisc,
   nodeCount,
@@ -222,7 +223,8 @@ export function frameIconKey(ref) {
 // the box's top-right corner, laid right to left: DLQ rightmost, ×N to its left. All of it is
 // decoration only: the layout box, the edges' ends, the frames and the canvas's hit areas are
 // the front card alone. The server render and the canvas both draw it from nodeDecor, so the
-// two cannot disagree.
+// two cannot disagree. A group that stands for N copies (groupCount) is drawn the same way
+// around its frame, from frameDecor, by the same maths.
 export const STACK_STEP = 6;
 // The cards' opacity, farthest first.
 export const STACK_OPACITY = [0.45, 0.7];
@@ -250,20 +252,42 @@ export const MONO_FONT = "ui-monospace, SFMono-Regular, Menlo, Consolas, monospa
 export function nodeDecor(w, h, { count, dlq } = {}) {
   const stacked = Number.isInteger(count) && count >= 2;
   if (!stacked && !dlq) return null;
-  const cards = stacked
-    ? STACK_OPACITY.map((opacity, k) => {
-        const step = (STACK_OPACITY.length - k) * STACK_STEP;
-        return { x: step, y: -step, w, h, opacity };
-      })
-    : [];
   const texts = [];
   if (dlq) texts.push(["dlq", "DLQ"]);
   if (stacked) texts.push(["count", `×${count}`]);
-  // Above the box's top edge, the first chip's right end clear of the findings dot (centred
-  // 10px in from the corner); each next chip CHIP_GAP to the left of the one before.
+  return { cards: stacked ? stackCards(w, h) : [], chips: chipRow(w, texts) };
+}
+
+/**
+ * The same decoration for a group's frame `w` x `h` that stands for `count` copies (groupCount
+ * in document.js): the two cards behind the frame, farthest first, and the ×N chip at its
+ * top-right, in the frame's own coordinates, by the same maths as nodeDecor; null without a
+ * count of 2 or more. Draw the cards dashed and unfilled like the frame (rx 14), then the frame.
+ * Decoration only: the frame, its hit area and the edges to it are what they were.
+ * @param {number} w
+ * @param {number} h
+ * @param {{ count?: number | null }} [marks]
+ * @returns {{ cards: StackCard[], chips: DecorChip[] } | null}
+ */
+export function frameDecor(w, h, { count } = {}) {
+  if (!(Number.isInteger(count) && count >= 2)) return null;
+  return { cards: stackCards(w, h), chips: chipRow(w, [["count", `×${count}`]]) };
+}
+
+// The stack's cards behind a box w x h, farthest first, each STACK_STEP further right and up.
+function stackCards(w, h) {
+  return STACK_OPACITY.map((opacity, k) => {
+    const step = (STACK_OPACITY.length - k) * STACK_STEP;
+    return { x: step, y: -step, w, h, opacity };
+  });
+}
+
+// Above the box's top edge, the first chip's right end clear of the findings dot (centred
+// 10px in from the corner); each next chip CHIP_GAP to the left of the one before.
+function chipRow(w, texts) {
   let right = w - 8;
   const y = -10;
-  const chips = texts.map(([id, text]) => {
+  return texts.map(([id, text]) => {
     const cw = Math.ceil([...text].length * CHIP_FONT * MONO_EM) + 12;
     const x = right - cw;
     right = x - CHIP_GAP;
@@ -280,7 +304,6 @@ export function nodeDecor(w, h, { count, dlq } = {}) {
       size: CHIP_FONT,
     };
   });
-  return { cards, chips };
 }
 
 const tintTokens = (i) =>
@@ -450,6 +473,12 @@ export function toSvg(doc, catalogue, options = {}) {
     // The frame, its icon and its words in one group whose <title> names it whole: label,
     // kind and id, since the frame itself shows one of them.
     out.push(`<g><title>${escapeXml(groupTitle(catalogue, g))}</title>`);
+    // N identical copies of the group (groupCount): its stack's cards behind the frame.
+    const decor = frameDecor(f[2], f[3], { count: groupCount(g) });
+    for (const s of decor ? decor.cards : [])
+      out.push(
+        `<rect class="stack" opacity="${s.opacity}" x="${f1(f[0] + s.x)}" y="${f1(f[1] + s.y)}" width="${f1(s.w)}" height="${f1(s.h)}" rx="14" fill="none" stroke="var(--frame)" stroke-width="1" stroke-dasharray="6 4"/>`,
+      );
     out.push(
       `<rect${dataTint} x="${f1(f[0])}" y="${f1(f[1])}" width="${f1(f[2])}" height="${f1(f[3])}" rx="14" fill="none" stroke="var(--frame)" stroke-width="1" stroke-dasharray="6 4"/>`,
     );
@@ -472,6 +501,11 @@ export function toSvg(doc, catalogue, options = {}) {
             )
             .join("");
     out.push(`<text class="g" x="${f1(lx)}" y="${f1(f[1] + 19)}">${words}</text>`);
+    for (const p of decor ? decor.chips : [])
+      out.push(
+        `<rect class="chip" x="${f1(f[0] + p.x)}" y="${f1(f[1] + p.y)}" width="${p.w}" height="${p.h}" rx="${p.rx}" fill="var(--bg)" stroke="var(--frame)" stroke-width="1"/>`,
+        `<text class="chip-t" x="${f1(f[0] + p.tx)}" y="${f1(f[1] + p.ty)}" text-anchor="middle" font-family="${MONO_FONT}" font-size="${p.size}" fill="var(--muted)">${escapeXml(p.text)}</text>`,
+      );
     out.push("</g>");
   }
   // Edge shape and label placement come from geometry.js, as on the canvas: a reciprocal or
@@ -629,7 +663,12 @@ export function toMermaid(doc, direction = "TD", catalogue = null) {
   };
   const emitGroup = (g, depth) => {
     const ind = "  ".repeat(depth);
-    out.push(`${ind}subgraph ${mid(`g_${g.id}`)}["${mesc(groupCaption(catalogue, g))}"]`);
+    // N copies of the group read as its chip does: the caption, then ×N.
+    const count = groupCount(g);
+    const caption = groupCaption(catalogue, g);
+    out.push(
+      `${ind}subgraph ${mid(`g_${g.id}`)}["${mesc(count ? `${caption} ×${count}` : caption)}"]`,
+    );
     for (const n of members.get(g.id) ?? []) nodeLine(n, `${ind}  `);
     for (const c of children.get(g.id) ?? []) emitGroup(c, depth + 1);
     out.push(`${ind}end`);

@@ -52,6 +52,8 @@ export type InspectorApi = {
   /** One edge's field, or the same field on every edge given, as one undo step. */
   setEdge: (index: number | number[], field: string, value: unknown) => void;
   setGroupField: (id: string, field: string, value: unknown) => void;
+  /** How many identical copies a group stands for (2 or more), or null for none. */
+  setGroupCount: (id: string, count: number | null) => void;
   renameGroup: (oldId: string, newId: string) => void;
   setParent: (id: string, parent: string | null) => void;
   /** Group tint, its strength and icon. Sidecar only; `undefined` clears that part. */
@@ -562,11 +564,15 @@ function IntegerInput({
   resolved,
   onChange,
   mixed,
+  min,
+  placeholder,
 }: {
   value: unknown;
   resolved: unknown;
   onChange: (v: unknown) => void;
   mixed?: boolean;
+  min?: number;
+  placeholder?: string;
 }) {
   const ref = useRef<HTMLInputElement>(null);
   const shown = value === undefined ? "" : String(value);
@@ -576,8 +582,11 @@ function IntegerInput({
       ref={ref}
       type="number"
       step="1"
+      min={min}
       defaultValue={shown}
-      placeholder={mixed ? MIXED : resolved === undefined ? "absent" : String(resolved)}
+      placeholder={
+        placeholder ?? (mixed ? MIXED : resolved === undefined ? "absent" : String(resolved))
+      }
       onBlur={(e) => {
         const v = e.target.value === "" ? undefined : Number.parseInt(e.target.value, 10);
         if (v !== value) onChange(v);
@@ -1963,6 +1972,20 @@ function GroupPanel({
             </option>
           ))}
         </select>
+      </Field>
+      <Field
+        name="instances"
+        path="count"
+        note="identical copies of everything inside, 2 or more; blank for one"
+        isSet={group.count !== undefined}
+      >
+        <IntegerInput
+          value={group.count}
+          resolved={undefined}
+          min={2}
+          placeholder="none"
+          onChange={(v) => api.setGroupCount(group.id, typeof v === "number" ? v : null)}
+        />
       </Field>
       <Field name="parent" note="a cycle is refused" isSet={Boolean(group.parent)}>
         <select

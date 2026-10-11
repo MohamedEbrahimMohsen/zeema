@@ -66,6 +66,7 @@ export function tools({ cwd, catalogue, icons }) {
             kind: g.kind,
             ...(g.label ? { label: g.label } : {}),
             ...(g.parent ? { parent: g.parent } : {}),
+            ...(g.count !== undefined ? { count: g.count } : {}),
           })),
           nodes: doc.nodes.map((n) => ({
             id: n.id,

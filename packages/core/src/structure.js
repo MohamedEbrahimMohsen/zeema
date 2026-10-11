@@ -49,16 +49,18 @@ export function check(doc, catalogue, options = {}) {
         : "design";
   const out = [];
   checkDesign(doc, cat, file, out);
-  // A malformed ref.design or ref.version is reported once, in the words above; the schema's
-  // pattern and minimum say the same thing less plainly.
+  // A malformed ref.design or ref.version, or a group count that is not 2 or more, is reported
+  // once, in the words above; the schema's pattern and minimum say the same thing less plainly.
   if (cat.schema)
-    for (const f of checkSchema(doc, cat.schema)) if (!REF_FIELD.test(f.pointer)) out.push(f);
+    for (const f of checkSchema(doc, cat.schema))
+      if (!REF_FIELD.test(f.pointer) && !COUNT_FIELD.test(f.pointer)) out.push(f);
   return out;
 }
 
 /* ------------------------------------------------------------------ layer 1 */
 
 const REF_FIELD = /^\/nodes\/\d+\/ref\/(design|version)$/;
+const COUNT_FIELD = /^\/groups\/\d+\/count$/;
 
 const propDefs = (c, kinds) => ({
   ...(own(kinds, c.kind)?.properties ?? {}),
@@ -92,6 +94,12 @@ function checkDesign(doc, catalogue, file, out) {
     if (!isObj(g)) continue;
     if (g.parent && !groupIds.has(g.parent))
       add(`${file}: group ${g.id} parent missing`, group(g.id));
+    // N identical copies of the group: a whole number, and at least two (one copy is no count).
+    if (g.count !== undefined && !(Number.isInteger(g.count) && g.count >= 2))
+      add(
+        `${file}: group ${g.id} count ${show(g.count)} is not a whole number of 2 or more`,
+        group(g.id),
+      );
   }
   for (const n of nodes) {
     if (!isObj(n)) continue;

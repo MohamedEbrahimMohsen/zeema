@@ -191,6 +191,15 @@ drawn in the source). They exist for rules and for renderers, which draw them as
 A frame shows the label alone, or with no label its kind's name (`locales/en.yaml`
 `groupKinds`: "VPC", "Point of presence"); the kind and the id are hover text.
 
+| Field | Required | Meaning |
+|---|---|---|
+| `count` | no | An integer of 2 or more: the group stands for that many identical copies of everything inside it |
+
+A group with `count` (`- { id: "web", kind: "cell", count: 3 }`) is a cluster drawn once, say N
+copies behind a load balancer: renderers draw its frame as a stack with a `×N` chip at its top-right,
+as they draw a node's `instances`. It is decoration only and never read by rules; a `count` that is
+not a whole number of 2 or more (`"3"`, `1`) is a structural finding.
+
 ### nodes
 
 A design may have no nodes yet (`nodes: []`): a new design starts that way on the canvas.

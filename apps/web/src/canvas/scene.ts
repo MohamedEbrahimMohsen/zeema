@@ -11,6 +11,7 @@
 
 import {
   groupCaption,
+  groupCount,
   groupsCoveredBy,
   groupTitle,
   hasRefDisc,
@@ -43,6 +44,7 @@ import {
   authGlyphMarkup,
   CAPTION_LINE,
   FRAME_ICON_SHIFT,
+  frameDecor,
   nodeDecor,
   nodeText,
   refGlyphMarkup,
@@ -1301,8 +1303,67 @@ export class Scene {
       for (const target of [hit, label, icon]) {
         target?.addEventListener("pointerdown", (ev: any) => this.startGroupDrag(group.id, ev));
       }
-      g.append(...(under ? [under] : []), rect, hit, ...(icon ? [icon] : []), label);
-      this.frameEls.set(group.id, { under, rect, hit, icon, label, labelDx });
+      // N identical copies of the group (groupCount): the stack's cards behind the frame and the
+      // ×N chip at its top-right, as the server render draws them (frameDecor). Decoration only,
+      // never under the pointer: the frame, its hit area and its edges are what they were.
+      const count = groupCount(group);
+      const back = count ? el("g", { class: "frame-stack" }) : null;
+      const front = count ? el("g", { class: "frame-stack" }) : null;
+      const els = { under, rect, hit, icon, label, labelDx, count, back, front };
+      this.paintFrameDecor(els, f);
+      g.append(
+        ...(under ? [under] : []),
+        ...(back ? [back] : []),
+        rect,
+        hit,
+        ...(icon ? [icon] : []),
+        label,
+        ...(front ? [front] : []),
+      );
+      this.frameEls.set(group.id, els);
+    }
+  }
+
+  /** Draw (again) a counted group's stack and chip for its frame `f`; nothing for any other. */
+  paintFrameDecor(els: any, f: Box) {
+    if (!els.back || !els.front) return;
+    const decor = frameDecor(f[2], f[3], { count: els.count });
+    els.back.textContent = "";
+    els.front.textContent = "";
+    if (!decor) return;
+    for (const s of decor.cards)
+      els.back.append(
+        el("rect", {
+          class: "frame-stack-card",
+          x: f[0] + s.x,
+          y: f[1] + s.y,
+          width: s.w,
+          height: s.h,
+          rx: 14,
+          opacity: s.opacity,
+        }),
+      );
+    for (const p of decor.chips) {
+      els.front.append(
+        el("rect", {
+          class: "stack-chip",
+          x: f[0] + p.x,
+          y: f[1] + p.y,
+          width: p.w,
+          height: p.h,
+          rx: p.rx,
+          style: "fill:var(--panel);stroke:var(--frame);stroke-width:1",
+        }),
+      );
+      const chip = el("text", {
+        class: "stack-chip-t",
+        x: f[0] + p.tx,
+        y: f[1] + p.ty,
+        "text-anchor": "middle",
+        style: `font-family:var(--mono);font-size:${p.size}px;fill:var(--muted)`,
+      });
+      chip.textContent = p.text;
+      els.front.append(chip);
     }
   }
 
@@ -2720,6 +2781,7 @@ export class Scene {
         span.setAttribute("x", String(f[0] + els.labelDx));
         span.setAttribute("y", String(f[1] + 19 + k * CAPTION_LINE));
       });
+      this.paintFrameDecor(els, f);
     }
     this.placeFrameDots();
   }

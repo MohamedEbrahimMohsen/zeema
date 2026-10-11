@@ -279,6 +279,11 @@
           },
           "parent": {
             "$ref": "#/definitions/id"
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 2,
+            "description": "How many identical copies of everything in the group this frame stands for (a cluster behind a load balancer). Drawn as a stack with a ×N chip; never read by rules."
           }
         }
       }

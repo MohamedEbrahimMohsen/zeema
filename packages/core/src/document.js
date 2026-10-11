@@ -146,10 +146,23 @@ export function groupCaption(catalogue, group) {
 }
 
 // The frame's hover text: label · kind's name · id, each once (a group with no label is already
-// called by its kind).
+// called by its kind), then ×N when the group stands for N copies (groupCount), as its chip says.
 export function groupTitle(catalogue, group) {
   const kind = own(catalogue?.locale?.groupKinds, group.kind)?.name || group.kind;
-  return [...new Set([group.label, kind, group.id].filter(Boolean).map(String))].join(" · ");
+  const title = [...new Set([group.label, kind, group.id].filter(Boolean).map(String))].join(" · ");
+  const count = groupCount(group);
+  return count ? `${title} ×${count}` : title;
+}
+
+/**
+ * How many identical copies of everything inside it a group stands for (`count`, a cluster
+ * drawn once behind a load balancer), when that is two or more; else null. Only a real integer
+ * counts: `count: "3"` or `count: 1` is a structural finding (structure.js), not guessed at.
+ * @returns {number | null}
+ */
+export function groupCount(group) {
+  const v = group?.count;
+  return Number.isInteger(v) && v >= 2 ? v : null;
 }
 
 // The catalogue carries one vendor-neutral component per kind, and the convention that names it
@@ -765,6 +778,11 @@ export function setGroupField(doc, groupId, field, value) {
   if (value === undefined || value === null || value === "") delete g[field];
   else g[field] = value;
   return d;
+}
+
+/** Set a group's `count` (N identical copies), or remove it with null, undefined or "". */
+export function setGroupCount(doc, groupId, n) {
+  return setGroupField(doc, groupId, "count", n);
 }
 
 // Swapping a component keeps a property only when the new component still has it and the value

@@ -803,6 +803,17 @@
   stroke-width: 1;
   stroke-dasharray: 6 4;
 }
+/* a group standing for N copies: the cards behind its frame and its ×N chip (frameDecor), drawn
+   like the frame and never under the pointer, so the frame's hit area is what it was. */
+.zeema-canvas .frame-stack {
+  pointer-events: none;
+}
+.zeema-canvas .frame-stack-card {
+  fill: none;
+  stroke: var(--frame);
+  stroke-width: 1;
+  stroke-dasharray: 6 4;
+}
 /* group tints — a named one, or a free #rrggbb. The named --tint-* tokens live in globals.css
    (light and dark), shared with the design page preview; the exported SVG carries the same values
    from TINT in packages/core/src/render.js. A tint is a stroke plus the same colour at ~8% as a

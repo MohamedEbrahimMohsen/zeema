@@ -2562,6 +2562,14 @@ export function Canvas(props: Props) {
         commit(doc);
       },
       setGroupField: (id, f, v) => commit(D.setGroupField(eng.current!.doc, id, f, v)),
+      // One copy is no count, so anything under 2 is refused rather than written as a finding.
+      setGroupCount: (id, n) => {
+        if (n !== null && !(Number.isInteger(n) && n >= 2)) {
+          notify("instances is 2 or more; leave it blank for one");
+          return render();
+        }
+        commit(D.setGroupCount(eng.current!.doc, id, n));
+      },
       renameGroup: (oldId, newId) => {
         const e = eng.current!;
         if (!newId || !/^[a-z][a-z0-9-]*$/.test(newId)) return notify("a group id is kebab-case");

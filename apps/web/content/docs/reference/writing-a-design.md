@@ -113,6 +113,7 @@ groups:
 | `kind` | yes | One of the group kinds below |
 | `parent` | no | The id of another group in this design |
 | `label` | no | The group's name as drawn in the source. Read by renderers, never by rules |
+| `count` | no | An integer of 2 or more: the group stands for that many identical copies of everything inside it, drawn as a stack with a `×N` chip. Never read by rules |
 
 | Group kind | What it is |
 |---|---|
@@ -125,7 +126,7 @@ groups:
 | `point-of-presence` | An edge site |
 | `namespace` | A logical partition inside a cluster or platform (a Kubernetes namespace, an OpenShift project). It scopes names and policy, not the network or failures |
 
-Groups carry no properties in v1 beyond `label`. They exist for rules — `inGroup`, `crossesGroup`
+Groups carry no properties in v1 beyond `label` and `count`. They exist for rules — `inGroup`, `crossesGroup`
 — and for renderers, which draw them as nested boxes.
 
 ## nodes
