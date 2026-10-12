@@ -151,6 +151,28 @@ nodes:
 | `props` | no | Property values; see the resolution order below |
 | `nfr` | no | `rps` (integer), `latencyP95Ms` (integer), `consistency` (`strong` or `eventual`) |
 | `ref` | no | Another public design this node stands for: `{ design: "owner/slug", version }`, where `version` is a release number (1 or more) or `"head"`. On a `zeema-design` node (kind `subsystem`) it is what the box is; on any other node, an annotation. Rules never read it |
+| `modules` | no | The modules of the code the node runs, each `{ id, label? }`, ids unique within the node. Only on a node whose kind hosts code: `app-server`, `worker`, `client` |
+
+### Modules inside a node
+
+A service deployed as one unit can still say what it is made of. List its modules, and point an
+edge at one as `<nodeId>/<moduleId>`:
+
+```yaml
+nodes:
+  - id: backend
+    component: container-service
+    modules:
+      - { id: api, label: "API" }
+      - { id: otp, label: "OTP" }
+edges:
+  - { from: backend/otp, to: sms, mode: sync, protocol: https }
+  - { from: backend/api, to: backend/otp }
+```
+
+Rules read a module end as its node, so `backend/otp` calling `sms` counts exactly as `backend`
+calling it. An edge with both ends inside one node is in-process: it is not a network hop, takes no
+`mode` or `protocol`, and rules ignore it. The box is drawn collapsed with an "N modules" chip.
 
 ### Property resolution order
 
@@ -193,9 +215,9 @@ edges:
 
 | Field | Required | Values |
 |---|---|---|
-| `from`, `to` | yes | Node or group ids in this design |
-| `protocol` | yes | Free string in v1: `http`, `https`, `grpc`, `kafka`, `postgres`, `redis`, … |
-| `mode` | yes | `sync` (the caller waits) or `async` (the caller continues) |
+| `from`, `to` | yes | Node or group ids in this design, or `<nodeId>/<moduleId>` for a module |
+| `protocol` | yes, except in-process | Free string in v1: `http`, `https`, `grpc`, `kafka`, `postgres`, `redis`, … |
+| `mode` | yes, except in-process | `sync` (the caller waits) or `async` (the caller continues) |
 | `delivery` | no | `at-most-once`, `at-least-once`, `exactly-once`. Meaningful on async edges |
 | `label` | no | Free text for renderers. Never read by rules |
 | `timeoutMs` | no | Caller timeout. Rules read it on sync edges |
@@ -243,6 +265,10 @@ the wording the linter uses.
 | …of the right kind | `ref <name> wrong kind` |
 | Every required property resolves | `node <id> missing required <name>` |
 | Both ends of every edge exist | `edge from <id> missing: no node or group`, `edge to <id> missing: no node or group` |
+| A module end names a node and one of its modules | `edge from <a>/<b> missing: no node <a>`, `edge from <a>/<b> missing: node <a> has no module <b>` |
+| Only a code host lists modules | `node <id> lists modules, but kind <kind> does not host code (…)` |
+| Module ids are unique within a node | `node <id> duplicate module ids` |
+| An in-process edge has no `mode` or `protocol` | `edge <from> -> <to> is in-process (inside node <id>) and takes no <field>` |
 
 On top of that, the document is checked against `schema/design.schema.json`: unknown fields,
 missing required fields and wrong types are reported with the path that carried them.

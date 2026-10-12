@@ -215,6 +215,7 @@ A design may have no nodes yet (`nodes: []`): a new design starts that way on th
 | `props` | no | Property values; see resolution order above |
 | `nfr` | no | `rps` (integer), `latencyP95Ms` (integer), `consistency` (`strong` or `eventual`) |
 | `ref` | no | Another Zeema design this node stands for: `design` (`owner/slug`) and `version` (a release number, or `"head"`). See below. |
+| `modules` | no | The modules of the code the node runs, each `{ id, label? }`. Only on a node whose kind hosts code. See below. |
 
 Renderers decorate a box from its resolved props: a node whose `instances`, `replicas` or `shards` is 2 or more is drawn as a stack with a `×N` chip, and a queue with `deadLetterQueue: true` (whose `role` is not `dlq`) shows a `DLQ` chip at the right of that chip row.
 
@@ -266,9 +267,50 @@ and edges still matter to the rules. `ref` then annotates it:
 A referencing node, and every `zeema-design` node, is drawn with a link disc at its bottom-right
 corner, and a referencing node's hover text ends with `ref: owner/slug@v3` (or `@head`).
 
+#### Modules inside a node
+
+A box that runs code may say what that code is made of: a modular monolith with its API, IAM, OTP,
+Notifications and Cache modules, deployed as one service. Each module is `{ id, label? }`; an edge
+end names one as `<nodeId>/<moduleId>`:
+
+```yaml
+nodes:
+  - id: backend
+    component: container-service
+    modules:
+      - { id: api, label: "API" }
+      - { id: otp, label: "OTP" }
+edges:
+  - { from: backend/otp, to: sms, mode: sync, protocol: https }
+  - { from: backend/api, to: backend/otp }
+```
+
+- Only a node whose component's kind hosts code may list modules: `app-server`, `worker` and
+  `client` (`MODULE_HOST_KINDS` in `packages/core/src/document.js`). Modules on any other kind are
+  a structural error.
+- `id` follows the id pattern and is unique within its node (another node may reuse it); `label`
+  is display text, never read by rules. The list, when present, has at least one module.
+- An end `a/b` must name a node `a` that lists a module `b`, or it is a structural error. Plain
+  node and group ends are unchanged.
+- An edge between modules of two **different** nodes is an ordinary network edge between the two
+  nodes, with `mode` and `protocol` as always.
+- An edge whose two ends are in the **same** node, at least one of them a module
+  (`backend/api` to `backend/otp`), is **in-process**: a call inside one deployed unit, not a hop.
+  It carries no `mode` and no `protocol`; either one present is a structural error.
+- Rules read a module end as its node, everywhere: `hasEdge`, `syncChainDepth`, `inGroup`, `from`,
+  `to`, `crossesGroup`. An in-process edge is invisible to rules. A finding on an edge with a
+  module end carries the ends as written (`from`, `to`) in its subject, beside the edge's index.
+- A node with modules is drawn collapsed: its usual box, with an `N modules` chip leftmost in its
+  chip row and the module list in its hover text. An edge with a module end is drawn to the node's
+  box; an in-process edge is not drawn. The expanded box (the canvas's) lays modules out as tiles
+  by `moduleTiles` in `packages/core/src/geometry.js`.
+- Removing a module re-points every edge end that named it to the node itself (an edge whose ends
+  then coincide is dropped), so an arrow is never lost silently.
+
 ### edges
 
-Directed. `from` and `to` are node ids in this design.
+Directed. `from` and `to` are node ids in this design, or `<nodeId>/<moduleId>` for a module of
+a node (see "Modules inside a node").
 
 An end may instead name a group: the edge then runs to the group as a unit ("the API talks to
 the whole cluster"), drawn once, to the group's dashed frame, not fanned out to its members. A node
@@ -287,8 +329,8 @@ end skips them.
 
 | Field | Required | Meaning |
 |---|---|---|
-| `protocol` | yes | Free string in v1: `http`, `grpc`, `kafka`, `postgres`, `redis`. Will become an enum once real designs show the real set. |
-| `mode` | yes | `sync` (caller waits) or `async` (caller continues) |
+| `protocol` | yes, except in-process | Free string in v1: `http`, `grpc`, `kafka`, `postgres`, `redis`. Will become an enum once real designs show the real set. |
+| `mode` | yes, except in-process | `sync` (caller waits) or `async` (caller continues) |
 | `delivery` | no | `at-most-once`, `at-least-once`, `exactly-once`. Meaningful for async edges. |
 | `label` | no | Free text for renderers. Never read by rules. |
 | `timeoutMs` | no | Caller timeout. Rules read it on sync edges. |

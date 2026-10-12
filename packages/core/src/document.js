@@ -362,9 +362,14 @@ export function renameNode(doc, oldId, newId, catalogue) {
   if (!n || oldId === newId) return d;
   if (allIds(d).has(newId)) throw new Error(`node id ${newId} already exists`);
   n.id = newId;
+  // An end naming one of its modules (`old/api`) follows the node too.
+  const follow = (ref) => {
+    const { node, module } = splitEnd(ref);
+    return node === oldId ? (module === null ? newId : moduleRef(newId, module)) : ref;
+  };
   for (const e of d.edges) {
-    if (e.from === oldId) e.from = newId;
-    if (e.to === oldId) e.to = newId;
+    e.from = follow(e.from);
+    e.to = follow(e.to);
   }
   for (const other of d.nodes) {
     if (!other.props) continue;
@@ -398,7 +403,7 @@ export function deleteNodes(doc, ids, catalogue) {
   const d = clone(doc);
   const gone = new Set(ids);
   d.nodes = d.nodes.filter((n) => !gone.has(n.id));
-  d.edges = d.edges.filter((e) => !gone.has(e.from) && !gone.has(e.to));
+  d.edges = d.edges.filter((e) => !gone.has(endNode(e.from)) && !gone.has(endNode(e.to)));
   if (catalogue) {
     for (const n of d.nodes) {
       if (!n.props) continue;
@@ -415,7 +420,10 @@ export function deleteNodes(doc, ids, catalogue) {
 export function addEdge(doc, from, to) {
   if (from === to) return doc; // self loops are refused
   const d = clone(doc);
-  d.edges.push({ from, to, protocol: "http", mode: "sync" });
+  // A call between the modules of one node is in-process: no network, so no protocol or mode.
+  const edge = { from, to };
+  if (!isInProcess(edge)) Object.assign(edge, { protocol: "http", mode: "sync" });
+  d.edges.push(edge);
   return d;
 }
 
@@ -435,10 +443,18 @@ export function reverseEdge(doc, index) {
 // keeps every other field. Refused, with the document returned as it was, when the end would land
 // on the other end's own node or group (a self loop), on an id the document does not have, or
 // when the result would be an exact twin of another edge: the same ends, label and protocol.
+// The end may be a module (`node/module`). An edge that becomes in-process (isInProcess) loses
+// its `mode` and `protocol`; one that stops being in-process gets the defaults addEdge writes.
 export function reconnectEdge(doc, index, end, nodeId) {
   const e = doc.edges?.[index];
   if (!e || (end !== "from" && end !== "to")) return { doc, refused: "missing" };
-  if (!allIds(doc).has(nodeId)) return { doc, refused: "missing" };
+  const target = splitEnd(nodeId);
+  if (
+    target.module === null
+      ? !allIds(doc).has(nodeId)
+      : !nodeIds(doc).has(target.node) || !moduleOf(doc, nodeId)
+  )
+    return { doc, refused: "missing" };
   if (e[end] === nodeId) return { doc, refused: null };
   const from = end === "from" ? nodeId : e.from;
   const to = end === "to" ? nodeId : e.to;
@@ -453,7 +469,15 @@ export function reconnectEdge(doc, index, end, nodeId) {
   );
   if (twin) return { doc, refused: "duplicate" };
   const d = clone(doc);
-  d.edges[index][end] = nodeId;
+  const next = d.edges[index];
+  next[end] = nodeId;
+  if (isInProcess(next)) {
+    delete next.protocol;
+    delete next.mode;
+  } else {
+    if (!next.protocol) next.protocol = "http";
+    if (!next.mode) next.mode = "sync";
+  }
   return { doc: d, refused: null };
 }
 
@@ -463,6 +487,13 @@ export function setEdgeField(doc, index, field, value) {
   if (!e) return d;
   if (value === undefined || value === null || value === "") delete e[field];
   else e[field] = value;
+  // An in-process edge carries no protocol or mode; every other edge always has both. An end
+  // moved onto a module of the other end's node makes it in-process: the two go.
+  if (isInProcess(e)) {
+    delete e.protocol;
+    delete e.mode;
+    return d;
+  }
   if (!e.protocol) e.protocol = "http";
   if (!e.mode) e.mode = "sync";
   return d;
@@ -510,7 +541,7 @@ export function copyFragment(doc, nodeIds, groupIds = []) {
   const ends = new Set([...nodes, ...groups]);
   const edgeIndexes = [];
   (doc.edges || []).forEach((e, i) => {
-    if (ends.has(e.from) && ends.has(e.to)) edgeIndexes.push(i);
+    if (ends.has(endNode(e.from)) && ends.has(endNode(e.to))) edgeIndexes.push(i);
   });
   return {
     nodes: clone(doc.nodes.filter((n) => nodes.has(n.id))),
@@ -570,11 +601,17 @@ export function pasteFragment(doc, fragment, catalogue) {
     d.nodes.push(copy);
   }
   // Where each fragment edge landed in the result (null: an end was not in the fragment).
+  // A module end follows its node's copy (`api/otp` becomes `api-2/otp`).
+  const mapped = (ref) => {
+    const { node, module } = splitEnd(ref);
+    if (!map[node]) return null;
+    return module === null ? map[node] : moduleRef(map[node], module);
+  };
   const edgeAt = edges.map((e) => {
-    if (!map[e.from] || !map[e.to]) return null;
+    if (!mapped(e.from) || !mapped(e.to)) return null;
     const copy = clone(e);
-    copy.from = map[e.from];
-    copy.to = map[e.to];
+    copy.from = mapped(e.from);
+    copy.to = mapped(e.to);
     d.edges.push(copy);
     return d.edges.length - 1;
   });
@@ -859,5 +896,145 @@ export function setRequirement(doc, path, value) {
     node = node[p];
   }
   node[parts[parts.length - 1]] = value;
+  return d;
+}
+
+/* ------------------------------------------------------------------ modules inside a node */
+
+// A node that runs code (a modular monolith, a worker, an app) may list the modules of that code:
+// `modules: [{ id, label? }]`. An edge end may then name one as `<nodeId>/<moduleId>`. Module
+// hosting is a property of the kind, kept here as one constant rather than in the kind YAMLs for
+// now (docs/schema-gaps.md); structure.js refuses modules on any other kind.
+export const MODULE_HOST_KINDS = Object.freeze(["app-server", "worker", "client"]);
+
+/** The node's component is of a kind that may list modules (MODULE_HOST_KINDS). */
+export function canHostModules(catalogue, node) {
+  const kind = own(catalogue?.components, node?.component)?.kind;
+  return typeof kind === "string" && MODULE_HOST_KINDS.includes(kind);
+}
+
+/**
+ * An edge end split at its first `/`: `"backend/otp"` is `{ node: "backend", module: "otp" }`,
+ * a plain node or group id is `{ node: id, module: null }`. Anything that is not a string is
+ * returned as the node, untouched, so a malformed document still walks.
+ * @returns {{ node: any, module: string | null }}
+ */
+export function splitEnd(ref) {
+  if (typeof ref !== "string") return { node: ref, module: null };
+  const i = ref.indexOf("/");
+  return i < 0 ? { node: ref, module: null } : { node: ref.slice(0, i), module: ref.slice(i + 1) };
+}
+
+/** The node (or group) an edge end resolves to: `"backend/otp"` is `"backend"`. */
+export function endNode(ref) {
+  return splitEnd(ref).node;
+}
+
+/** The end that names module `moduleId` of node `nodeId`. */
+export function moduleRef(nodeId, moduleId) {
+  return `${nodeId}/${moduleId}`;
+}
+
+/** A node's modules, the well-formed entries only (objects); [] when it lists none. */
+export function nodeModules(node) {
+  return Array.isArray(node?.modules)
+    ? node.modules.filter((m) => m !== null && typeof m === "object" && !Array.isArray(m))
+    : [];
+}
+
+/** What a module is called: its label, else its id. */
+export function moduleName(module) {
+  return module?.label ? String(module.label) : String(module?.id ?? "");
+}
+
+/**
+ * The module an edge end names, or null: a plain end names none, and so does `a/b` when `a` is
+ * not a node of `doc` or `b` is not one of its modules.
+ */
+export function moduleOf(doc, ref) {
+  const { node, module } = splitEnd(ref);
+  if (module === null) return null;
+  const n = (Array.isArray(doc?.nodes) ? doc.nodes : []).find((x) => x?.id === node);
+  return nodeModules(n).find((m) => m.id === module) ?? null;
+}
+
+/**
+ * An in-process edge: one module of a node calling another part of the same node. Its two ends
+ * resolve to the same node and at least one of them names a module. It is not a network hop, so
+ * it carries no `mode` or `protocol` (structure.js), rules never see it, and the collapsed render
+ * does not draw it (both ends are the same box).
+ */
+export function isInProcess(edge) {
+  if (!edge || typeof edge.from !== "string" || typeof edge.to !== "string") return false;
+  const a = splitEnd(edge.from);
+  const b = splitEnd(edge.to);
+  return a.node === b.node && (a.module !== null || b.module !== null);
+}
+
+/** The edge with both ends resolved to their nodes (endNode); every other field as it was. */
+export function resolveEdge(edge) {
+  if (!edge || typeof edge !== "object") return edge;
+  const from = endNode(edge.from);
+  const to = endNode(edge.to);
+  return from === edge.from && to === edge.to ? edge : { ...edge, from, to };
+}
+
+/** A node's modules as hover text: "modules: API, OTP", or null when it lists none. */
+export function modulesTitle(node) {
+  const list = nodeModules(node);
+  return list.length ? `modules: ${list.map(moduleName).join(", ")}` : null;
+}
+
+/**
+ * Add a module to a node: `{ id, label? }`. With no id, one is made from the label. Refused (the
+ * document returned as it was) when the node does not exist or already has a module of that id.
+ */
+export function addModule(doc, nodeId, { id, label } = {}) {
+  const node = doc.nodes.find((n) => n.id === nodeId);
+  if (!node) return doc;
+  const taken = new Set(nodeModules(node).map((m) => m.id));
+  const mid = id || uniqueId(taken, label || "module");
+  if (taken.has(mid)) return doc;
+  const d = clone(doc);
+  const n = d.nodes.find((x) => x.id === nodeId);
+  const m = { id: mid };
+  if (label) m.label = label;
+  n.modules = Array.isArray(n.modules) ? n.modules : [];
+  n.modules.push(m);
+  return d;
+}
+
+/** Set a module's label, or remove it with null, undefined or "". */
+export function setModuleLabel(doc, nodeId, moduleId, label) {
+  const d = clone(doc);
+  const m = nodeModules(d.nodes.find((x) => x.id === nodeId)).find((x) => x.id === moduleId);
+  if (!m) return d;
+  if (label === undefined || label === null || label === "") delete m.label;
+  else m.label = label;
+  return d;
+}
+
+/**
+ * Remove a module from a node. Every edge end that named it is re-pointed to the node itself, so
+ * the arrow stays and still means "something in this box"; an edge whose two ends then name the
+ * same thing (a self loop) is dropped. The last module going takes the `modules` key with it.
+ */
+export function removeModule(doc, nodeId, moduleId) {
+  const node = doc.nodes.find((n) => n.id === nodeId);
+  if (!nodeModules(node).some((m) => m.id === moduleId)) return doc;
+  const d = clone(doc);
+  const n = d.nodes.find((x) => x.id === nodeId);
+  n.modules = n.modules.filter((m) => m?.id !== moduleId);
+  if (!n.modules.length) delete n.modules;
+  const ref = moduleRef(nodeId, moduleId);
+  d.edges = d.edges
+    .map((e) => {
+      if (e.from !== ref && e.to !== ref) return e;
+      const next = { ...e };
+      if (next.from === ref) next.from = nodeId;
+      if (next.to === ref) next.to = nodeId;
+      return next;
+    })
+    .filter((e) => e.from !== e.to);
   return d;
 }

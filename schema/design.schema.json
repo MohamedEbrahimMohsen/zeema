@@ -369,6 +369,29 @@
                 "description": "A release number (1 or more), or \"head\" for the latest saved version."
               }
             }
+          },
+          "modules": {
+            "type": "array",
+            "minItems": 1,
+            "description": "The modules of the code this node runs (a modular monolith: API, IAM, OTP). Only a node whose kind hosts code may list them (app-server, worker, client). An edge end names one as \"<nodeId>/<moduleId>\".",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id"
+              ],
+              "properties": {
+                "id": {
+                  "$ref": "#/definitions/id",
+                  "description": "Unique within the node."
+                },
+                "label": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Display name. Never read by rules."
+                }
+              }
+            }
           }
         }
       }
@@ -380,16 +403,14 @@
         "additionalProperties": false,
         "required": [
           "from",
-          "to",
-          "protocol",
-          "mode"
+          "to"
         ],
         "properties": {
           "from": {
-            "$ref": "#/definitions/id"
+            "$ref": "#/definitions/end"
           },
           "to": {
-            "$ref": "#/definitions/id"
+            "$ref": "#/definitions/end"
           },
           "protocol": {
             "type": "string",
@@ -453,7 +474,8 @@
               "none"
             ]
           }
-        }
+        },
+        "description": "A directed edge. protocol and mode are required on every edge except an in-process one (both ends resolve to the same node and one names a module), which must carry neither; the structure gate enforces both."
       }
     }
   },
@@ -461,6 +483,11 @@
     "id": {
       "type": "string",
       "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "end": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*(/[a-z][a-z0-9-]*)?$",
+      "description": "A node id, a group id, or \"<nodeId>/<moduleId>\": a module of a node."
     }
   }
 }

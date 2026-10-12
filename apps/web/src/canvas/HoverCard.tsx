@@ -3,7 +3,14 @@
 // The card the canvas shows beside the pointer when it rests on a component, an edge, or a group's label or border:
 // the name, what it is, and the ids behind it. It replaces the native <title> tooltip, which is
 // slow to come and cannot be styled. It never takes the pointer: it is a remark, not a control.
-import { nodeCountOf, nodeLines } from "@zeema/core/document";
+import {
+  isInProcess,
+  moduleName,
+  moduleOf,
+  nodeCountOf,
+  nodeLines,
+  splitEnd,
+} from "@zeema/core/document";
 import { useLayoutEffect, useRef } from "react";
 import { edgeCrossings, edgesText, memberCounts, membersText, parentPath } from "./group-info";
 import { pinnedRelease, type RefEntry, type RefVersion, refState } from "./ref-state";
@@ -166,16 +173,22 @@ export function HoverCard({
     // An edge: its words, its ends, how it is called and how it authenticates.
     const e = (doc.edges || [])[Number(at.id)];
     if (!e) return null;
-    const end = (id: string) => {
+    // A module end reads as its node and the module: "Backend / OTP".
+    const end = (ref: string) => {
+      const { node: id } = splitEnd(ref);
       const n = doc.nodes.find((x: any) => x.id === id);
-      return n ? nodeLines(catalogue, n, refName?.(n) ?? null).name : id;
+      const name = n ? nodeLines(catalogue, n, refName?.(n) ?? null).name : id;
+      const m = moduleOf(doc, ref);
+      return m ? `${name} / ${moduleName(m)}` : name;
     };
     const auth = e.auth ? own(catalogue.locale?.edgeAuth, e.auth)?.name || e.auth : null;
     body = (
       <>
         {row("Name", e.label || `${end(e.from)} → ${end(e.to)}`, "hc-name")}
         {e.label ? row("Ends", `${end(e.from)} → ${end(e.to)}`) : null}
-        {row("Protocol", `${e.protocol} · ${e.mode}${e.delivery ? ` · ${e.delivery}` : ""}`)}
+        {isInProcess(e)
+          ? row("Call", "in-process")
+          : row("Protocol", `${e.protocol} · ${e.mode}${e.delivery ? ` · ${e.delivery}` : ""}`)}
         {auth ? row("Auth", auth) : null}
         <span className="hc-rule" />
         {row("Id", `${e.from} → ${e.to}`, "hc-mono")}

@@ -1,7 +1,10 @@
 // What the canvas lights: a component's neighbourhood (hover, a click's pin) and its flow (the
 // lens: every component and edge that reaches it, or that it reaches). Pure functions over the
 // document. An edge end that names a group stands for every node inside the group, nested groups
-// included, which is how the rules read it too (`expandGroupEdges` in @zeema/core/rules).
+// included, which is how the rules read it too (`expandGroupEdges` in @zeema/core/rules). An end
+// naming a module (`node/module`) is its node; the lens itself, a network trace, never walks an
+// in-process edge (expandGroupEdges leaves those out).
+import { endNode } from "@zeema/core/document";
 import { expandGroupEdges, membersByGroup } from "@zeema/core/rules";
 
 export type Lit = { nodes: Set<string>; edges: Set<number> };
@@ -28,7 +31,7 @@ export function adjacencyOf(doc: any): Map<string, number[]> {
     else if (list[list.length - 1] !== i) list.push(i);
   };
   (doc?.edges ?? []).forEach((e: any, i: number) => {
-    for (const end of [e?.from, e?.to])
+    for (const end of [endNode(e?.from), endNode(e?.to)])
       if (ends.has(end)) for (const m of members.get(end) ?? []) add(m, i);
       else if (typeof end === "string") add(end, i);
   });
@@ -36,7 +39,8 @@ export function adjacencyOf(doc: any): Map<string, number[]> {
 }
 
 /** The nodes an edge end stands for: the node, or every node inside the group. */
-export function nodesAt(doc: any, id: string): string[] {
+export function nodesAt(doc: any, end: string): string[] {
+  const id = endNode(end);
   if (!groupEnds(doc).has(id)) return [id];
   return (membersByGroup(doc) as Map<string, string[]>).get(id) ?? [];
 }

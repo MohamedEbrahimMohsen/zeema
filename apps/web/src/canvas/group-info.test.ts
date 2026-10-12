@@ -70,6 +70,16 @@ describe("group-info", () => {
     expect(edgeCrossings(doc, "platform")).toEqual({ in: 2, out: 2 });
     expect(edgesText({ in: 0, out: 0 })).toBeNull();
     expect(edgesText({ in: 3, out: 2 })).toBe("3 in · 2 out");
+    // a module end counts as its node; an in-process edge stays inside
+    const mod = {
+      groups: [{ id: "g", kind: "system" }],
+      nodes: [{ id: "be", group: "g", modules: [{ id: "a" }, { id: "b" }] }, { id: "x" }],
+      edges: [
+        { from: "be/a", to: "x" },
+        { from: "be/a", to: "be/b" },
+      ],
+    };
+    expect(edgeCrossings(mod, "g")).toEqual({ in: 0, out: 1 });
   });
 });
 

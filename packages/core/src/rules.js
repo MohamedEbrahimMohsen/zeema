@@ -28,8 +28,14 @@
 //      one finding per drawn edge, its subject the drawn edge and its message the drawn ends.
 //      A group with no member node expands to nothing: such an edge is read as before, a rule
 //      that reads an end's node (`from`, `to`, `crossesGroup`) skipping it.
+//   5. An edge end may name a module of a node, `node/module`. Every rule reads it as the node,
+//      so hasEdge, inGroup, from, to and the rest work unchanged; an in-process edge (both ends
+//      in one node) is skipped entirely. A finding on an edge with a module end carries the ends
+//      as written in its subject (`from`, `to`) as well as the index.
 //
-// DOM free, no imports.
+// DOM free. The one import is how an edge end names a module, which document.js reads.
+
+import { isInProcess, resolveEdge, splitEnd } from "./document.js";
 
 const EMPTY = Object.freeze({});
 
@@ -442,13 +448,18 @@ export function membersByGroup(doc) {
  * one node edge per (source member, target member) pair, a node never paired with itself.
  * `from[k]` is the index in doc.edges that flat edge k came from; `raw[k]` is true for an edge
  * with a group end kept as drawn because the group holds no node.
+ *
+ * A module end (`node/module`) is read as its node, so every rule sees the node it lives in. An
+ * in-process edge (both ends in one node, isInProcess) is not a hop and is left out entirely.
  */
 export function expandGroupEdges(doc, groupEnd) {
   const members = membersByGroup(doc);
   const edges = [];
   const from = [];
   const raw = [];
-  (doc?.edges ?? []).forEach((e, i) => {
+  (doc?.edges ?? []).forEach((drawn, i) => {
+    if (isInProcess(drawn)) return;
+    const e = resolveEdge(drawn);
     const gf = groupEnd.has(e?.from),
       gt = groupEnd.has(e?.to);
     if (!gf && !gt) {
@@ -546,11 +557,17 @@ export function runRules(doc, catalogue) {
           if (r.select.edge.delivery && edge.delivery !== r.select.edge.delivery) continue;
           if (evalPred(r.when, { doc: flat, edge, cat, pass })) {
             done.add(i);
+            // An edge with a module end keeps both ends as written, `node/module`, so the canvas
+            // can point at the module rather than its box.
+            const at = edges[i];
+            const moduled = splitEnd(at?.from).module !== null || splitEnd(at?.to).module !== null;
             hits.push({
               id: r.id,
               severity: r.severity,
-              message: render(r.message, { edge: edges[i], design: doc }),
-              subject: { type: "edge", ref: i },
+              message: render(r.message, { edge: at, design: doc }),
+              subject: moduled
+                ? { type: "edge", ref: i, from: at.from, to: at.to }
+                : { type: "edge", ref: i },
             });
           }
         }

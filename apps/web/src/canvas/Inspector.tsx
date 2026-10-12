@@ -3,7 +3,18 @@
 // Every control here is generated from the catalogue and the design schema; nothing about a
 // product is hard coded. A control shows the value the design resolves to and writes only when
 // the user sets something. Text inputs commit on blur or Enter, never per keystroke.
-import { effective, isRefDesign, isSubsystem, nodeRef, propDefs } from "@zeema/core/document";
+import {
+  canHostModules,
+  effective,
+  isInProcess,
+  isRefDesign,
+  isSubsystem,
+  moduleOf,
+  nodeModules,
+  nodeRef,
+  propDefs,
+  splitEnd,
+} from "@zeema/core/document";
 import { edgeKeys } from "@zeema/core/geometry";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Icon } from "@/components/Icon";
@@ -85,6 +96,12 @@ export type InspectorApi = {
   detachNote: (id: string) => void;
   /** A node's reference to another design (`owner/slug` and a release or "head"), or null. */
   setRef: (id: string, ref: { design: string; version: RefVersion } | null) => void;
+  /** Add a module to a node; its id is made from the label. */
+  addModule: (nodeId: string, label: string) => void;
+  /** A module's label; an empty one removes it (the id is then its name). */
+  setModuleLabel: (nodeId: string, moduleId: string, label: string) => void;
+  /** Remove a module: the edges that named it are re-pointed to the node. */
+  removeModule: (nodeId: string, moduleId: string) => void;
   /** For edges, `ref` may be several indexes: they go as one undo step. */
   remove: (type: "node" | "edge" | "group" | "note", ref: string | number | number[]) => void;
 };
@@ -788,6 +805,7 @@ export function Inspector({
             selected={[node.id]}
             tintRow={!many}
             refs={many ? undefined : refs}
+            modules={!many}
           />
         </>
       );
@@ -808,6 +826,11 @@ export function Inspector({
           />
         </>
       );
+  }
+  if (selection.type === "module") {
+    const module = moduleOf(doc, selection.ref as string);
+    if (module)
+      return <ModulePanel at={selection.ref as string} module={module} doc={doc} api={api} />;
   }
   if (selection.type === "note") {
     const note = (notes ?? []).find((n) => n.id === selection.ref);
@@ -958,12 +981,15 @@ function NodePanel({
   selected,
   tintRow = true,
   refs,
+  modules = false,
 }: {
   node: any;
   doc: any;
   catalogue: any;
   api: InspectorApi;
   highlight: Highlight;
+  /** The Modules section, on the single-node card of a kind that hosts code. */
+  modules?: boolean;
   /** This component's tint, from the layout sidecar. */
   tint?: NodeTint;
   /** The ids a tint applies to. */
@@ -1130,6 +1156,9 @@ function NodePanel({
           />
         </Field>
       ))}
+      {modules && canHostModules(catalogue, node) ? (
+        <ModulesSection key={`mod-${node.id}`} node={node} api={api} />
+      ) : null}
       {refs ? (
         <RefSection
           key={`ref-${node.id}`}
@@ -1567,6 +1596,24 @@ function EdgePanel({
   const one = indexes.length === 1;
   const edge = edges[0];
   if (!edge) return null;
+  // A call inside one deployed unit: no network, so none of a hop's fields apply.
+  if (one && isInProcess(edge))
+    return (
+      <>
+        <h2>Edge</h2>
+        <p className="my-2">In-process call</p>
+        <p className="muted small mono">
+          {edge.from} → {edge.to}
+        </p>
+        <button
+          type="button"
+          className="btn btn-sm btn-danger mt-3"
+          onClick={() => api.remove("edge", indexes[0])}
+        >
+          Delete edge
+        </button>
+      </>
+    );
   // One edge, or the set: a field shows the value they share, or "mixed" when they differ, and
   // whatever is set goes to every one of them as a single undo step.
   const at = one ? indexes[0] : indexes;
@@ -1586,11 +1633,17 @@ function EdgePanel({
       <>
         <select value={edge[name]} onChange={(e) => api.setEdge(at, name, e.target.value)}>
           <optgroup label="Components">
-            {ids.map((id: string) => (
-              <option key={id} value={id}>
-                {id}
-              </option>
-            ))}
+            {doc.nodes.flatMap((n: any) => [
+              <option key={n.id} value={n.id}>
+                {n.id}
+              </option>,
+              // A module of a node is an end of its own: `node/module`.
+              ...nodeModules(n).map((m: any) => (
+                <option key={`${n.id}/${m.id}`} value={`${n.id}/${m.id}`}>
+                  {n.id} / {m.label || m.id}
+                </option>
+              )),
+            ])}
           </optgroup>
           {groups.length ? (
             <optgroup label="Groups">
@@ -1722,6 +1775,115 @@ function EdgePanel({
         onClick={() => api.remove("edge", at)}
       >
         {one ? "Delete edge" : `Delete ${edges.length} edges`}
+      </button>
+    </>
+  );
+}
+
+/**
+ * The modules of a node's code (a modular monolith's API, IAM, OTP...): each one's label, edited
+ * in place, its id beside it, and Remove; "+ Add module" asks for a label and makes the id from
+ * it. Every change is one undo step. Edge ends name a module as `node/module`.
+ */
+function ModulesSection({ node, api }: { node: any; api: InspectorApi }) {
+  const list = nodeModules(node);
+  const [adding, setAdding] = useState(false);
+  return (
+    <>
+      <h2>Modules</h2>
+      {list.length ? (
+        <ul className="module-list">
+          {list.map((m: any) => (
+            <li key={m.id}>
+              <TextInput
+                value={m.label ?? ""}
+                placeholder={m.id}
+                onCommit={(v) => api.setModuleLabel(node.id, m.id, v)}
+              />
+              <span className="muted small mono module-id" title="id">
+                {m.id}
+              </span>
+              <button
+                type="button"
+                className="btn btn-sm"
+                aria-label={`Remove module ${m.label || m.id}`}
+                onClick={() => api.removeModule(node.id, m.id)}
+              >
+                Remove
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="muted my-2 small">
+          What the code inside is made of. Each module is a tile when the box is expanded, and an
+          edge may start or end on one.
+        </p>
+      )}
+      {adding ? (
+        <input
+          type="text"
+          className="module-new"
+          placeholder="Module name, then Enter"
+          // biome-ignore lint/a11y/noAutofocus: opened by the button just pressed
+          autoFocus
+          onKeyDown={(e) => {
+            const input = e.target as HTMLInputElement;
+            if (e.key === "Enter") {
+              const v = input.value.trim();
+              if (v) api.addModule(node.id, v);
+              setAdding(false);
+            }
+            if (e.key === "Escape") setAdding(false);
+          }}
+          onBlur={() => setAdding(false)}
+        />
+      ) : (
+        <button type="button" className="btn btn-sm mt-2" onClick={() => setAdding(true)}>
+          + Add module
+        </button>
+      )}
+    </>
+  );
+}
+
+/** One module selected on the canvas: its label, its id and its node, and Remove. */
+function ModulePanel({
+  at,
+  module,
+  doc,
+  api,
+}: {
+  at: string;
+  module: any;
+  doc: any;
+  api: InspectorApi;
+}) {
+  const { node } = splitEnd(at);
+  const n = doc.nodes.find((x: any) => x.id === node);
+  return (
+    <>
+      <h2>Module</h2>
+      <Field name="label" isSet={Boolean(module.label)}>
+        <TextInput
+          value={module.label ?? ""}
+          placeholder={module.id}
+          onCommit={(v) => api.setModuleLabel(node, module.id, v)}
+        />
+      </Field>
+      <Field name="id" note="unique in its node">
+        <span className="mono">{module.id}</span>
+      </Field>
+      <p className="muted my-2 small">
+        A module of <span className="mono">{n?.label || node}</span>. Edges name it as{" "}
+        <span className="mono">{at}</span>.
+      </p>
+      <button
+        type="button"
+        className="btn btn-sm btn-danger mt-3"
+        onClick={() => api.removeModule(node, module.id)}
+      >
+        Remove module
       </button>
     </>
   );

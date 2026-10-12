@@ -1,6 +1,6 @@
 // What a group's hover card says about it beyond its name: where it sits, what it holds and how
 // much crosses its border. Pure functions over the document, so the card and the tests agree.
-import { groupMembers } from "@zeema/core/document";
+import { endNode, groupMembers } from "@zeema/core/document";
 
 type Group = { id: string; kind?: string; label?: string; parent?: string };
 
@@ -56,8 +56,9 @@ export function edgeCrossings(doc: any, groupId: string) {
   let into = 0;
   let out = 0;
   for (const e of doc.edges || []) {
-    const from = inside.has(e.from);
-    const to = inside.has(e.to);
+    // A module end (`node/module`) is its node.
+    const from = inside.has(endNode(e.from));
+    const to = inside.has(endNode(e.to));
     if (to && !from) into++;
     if (from && !to) out++;
   }

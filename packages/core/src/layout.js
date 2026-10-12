@@ -38,7 +38,7 @@
 // Pure: no DOM, no fs. It imports geometry.js for the edges, text.js for the box widths and
 // document.js for the name a box shows; none of them imports anything.
 
-import { hasRefDisc, nodeLines, stackedIds } from "./document.js";
+import { endNode, hasRefDisc, nodeLines, stackedIds } from "./document.js";
 import { DEFAULT_ROUTING, edgeGeometry, frameAround, frameCaptions } from "./geometry.js";
 import { nodeWidth } from "./text.js";
 
@@ -387,8 +387,9 @@ export function layout(doc, catalogue, options = {}) {
     const here = new Set(items.map((it) => it.id));
     const contracted = [];
     for (const e of edges) {
-      const a = itemAt(e.from, gid),
-        b = itemAt(e.to, gid);
+      // A module end ranks as its node; an in-process edge then falls inside one item.
+      const a = itemAt(endNode(e?.from), gid),
+        b = itemAt(endNode(e?.to), gid);
       if (!here.has(a) || !here.has(b) || a === b) continue; // elsewhere, or inside one item
       contracted.push({ from: a, to: b });
     }

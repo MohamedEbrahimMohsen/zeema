@@ -737,6 +737,56 @@
 .zeema-canvas .node-box .stack-chip-t {
   pointer-events: none;
 }
+/* The "N modules" chip is the exception: a button that expands the node into its module tiles,
+   and folds it back. Like the finding dot, it takes the pointer itself. */
+.zeema-canvas .node-box .modules-chip,
+.zeema-canvas .node-box .modules-chip .stack-chip,
+.zeema-canvas .node-box .modules-chip .stack-chip-t {
+  pointer-events: auto;
+  cursor: pointer;
+}
+.zeema-canvas .node-box .modules-chip:hover .stack-chip,
+.zeema-canvas .node-box .modules-chip.open .stack-chip {
+  stroke: var(--accent);
+}
+.zeema-canvas .node-box .modules-chip:hover .stack-chip-t,
+.zeema-canvas .node-box .modules-chip.open .stack-chip-t {
+  fill: var(--accent);
+}
+
+/* An expanded node's modules: muted tiles inside the card. A press selects one, a drag from it
+   draws a wire whose end is the module (`node/module`). */
+.zeema-canvas .node-box .module {
+  cursor: crosshair;
+}
+.zeema-canvas .node-box .module-tile {
+  fill: var(--bg);
+  stroke: var(--node-line);
+  stroke-width: 1;
+  transition: stroke var(--dur) var(--ease);
+}
+.zeema-canvas .node-box .module:hover .module-tile {
+  stroke: color-mix(in srgb, var(--accent) 60%, transparent);
+}
+.zeema-canvas .node-box .module.selected .module-tile,
+.zeema-canvas .node-box .module.wire-target .module-tile {
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+.zeema-canvas .node-box .module.wire-source .module-tile {
+  stroke-dasharray: 4 3;
+}
+/* a module an edge finding names (its `from`/`to` as written) */
+.zeema-canvas .node-box .module.flagged .module-tile {
+  stroke: var(--warn);
+  stroke-width: 1.6;
+}
+.zeema-canvas .node-box .module-label {
+  font-size: 11px;
+  font-family: var(--mono);
+  fill: var(--ink);
+  pointer-events: none;
+}
 
 /* notes — sticky annotations from the layout sidecar. No glyph, no ports, no edges. */
 .zeema-canvas .note-box {
@@ -931,6 +981,11 @@
 }
 .zeema-canvas .edge.async {
   stroke-dasharray: 6 4;
+}
+/* a call between two modules of one node: no hop, so a thin, muted line inside the box */
+.zeema-canvas .edge.in-process {
+  stroke: var(--frame);
+  stroke-width: 1;
 }
 .zeema-canvas .edge.selected {
   stroke: var(--accent);
@@ -1514,6 +1569,47 @@
 .zeema-canvas .field textarea:focus {
   outline: none;
   box-shadow: var(--ring-focus);
+}
+/* a node's modules in the inspector: label field, id, Remove on one row */
+.zeema-canvas .module-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.zeema-canvas .module-list li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.zeema-canvas .module-list input,
+.zeema-canvas input.module-new {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  font-size: 0.9em;
+  padding: calc(var(--p) * 0.5) calc(var(--p) * 0.9);
+  border: var(--border) solid var(--line);
+  border-radius: var(--rc);
+  background: var(--panel);
+  color: var(--ink);
+}
+.zeema-canvas input.module-new {
+  width: 100%;
+  margin-top: 8px;
+}
+.zeema-canvas .module-list input:focus,
+.zeema-canvas input.module-new:focus {
+  outline: none;
+  box-shadow: var(--ring-focus);
+}
+.zeema-canvas .module-list .module-id {
+  max-width: 7em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 /* a control with its catalogue arrow beside it */
 .zeema-canvas .field .with-link {

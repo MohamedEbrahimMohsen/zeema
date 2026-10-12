@@ -10,15 +10,18 @@
 // pointer.
 
 import {
+  endNode,
   groupCaption,
   groupCount,
   groupsCoveredBy,
   groupTitle,
   hasRefDisc,
   isSubsystem,
+  moduleName,
   nodeCount,
   nodeDeadLetter,
   nodeLines,
+  nodeModules,
   nodeRef,
   refLabel,
   stackedIds,
@@ -35,6 +38,7 @@ import {
   framesUnderTint,
   groupFrames,
   innermostFrameAt,
+  MODULE_HEADER,
   moveSegment,
   portAt,
   readRouting,
@@ -91,6 +95,14 @@ import {
   shiftHeld,
 } from "./group-info";
 import { findGuides, type GuideLine } from "./guides";
+import {
+  expandBoxes,
+  findingTiles,
+  hasModules,
+  inProcessLines,
+  tileAt,
+  tileBoxes,
+} from "./modules";
 import { anchorOffset, coversTarget, noteDropTarget, sameAnchor } from "./note-anchor";
 import { type DimEdges, dimmed } from "./prefs";
 import { samePort, wirePorts } from "./wire-ports";
@@ -109,13 +121,17 @@ const el = (name: string, attrs: Record<string, unknown> = {}) => {
 // The same numbers as the exported SVG (@zeema/core/render), so the two cannot disagree.
 const FRAME_ICON = 16;
 // The markers this scene installs in the <defs>: the edge head, and the accent one a selected edge uses.
-const ARROWHEADS = ["arrowhead", "arrowhead-sel"];
+const ARROWHEADS = ["arrowhead", "arrowhead-sel", "arrowhead-ip"];
 const FRAME_ICON_DY = 7;
 // The canvas-only drop shadow under node cards and notes (a <filter> in the <defs>).
 const NODE_SHADOW = "node-shadow";
 // A port dot sits this far outside the border, at the middle of its side.
 const PORT_DOT_GAP = 6;
 const PORT_SIDES: PortSide[] = ["top", "right", "bottom", "left"];
+
+/** A straight line's path. */
+const straight = ([a, b]: [[number, number], [number, number]]) =>
+  `M${a[0]} ${a[1]} L${b[0]} ${b[1]}`;
 
 /** Where a side's port dot sits for a box, in that box's coordinates. */
 function portDotAt(b: Box, side: PortSide): [number, number] {
@@ -140,7 +156,8 @@ export function facingSide(b: Box, [px, py]: [number, number]): PortSide {
 
 export type Box = [number, number, number, number];
 export type Subject = {
-  type: "node" | "edge" | "group" | "note" | null;
+  /** "module": one module of a node, its ref the end that names it (`node/module`). */
+  type: "node" | "edge" | "group" | "note" | "module" | null;
   ref: string | number | null;
 };
 /**
@@ -286,6 +303,8 @@ export type Handlers = {
    * bottom centre on screen; or, with null, it left the dot.
    */
   onFindingDot?: (nodeId: string | null, at?: [number, number], pinned?: boolean) => void;
+  /** The expanded nodes changed (a chip click, a double click): the page remembers them. */
+  onExpand?: (ids: Set<string>) => void;
 };
 
 // The zoom range every path shares: the wheel, the zoom menu and fit's lower bound all stay in it.
@@ -395,6 +414,7 @@ export class Scene {
     notes: SVGGElement;
     edges: SVGGElement;
     nodes: SVGGElement;
+    inProcess: SVGGElement;
     markers: SVGGElement;
     overlay: SVGGElement;
   };
@@ -412,6 +432,14 @@ export class Scene {
   multiEdges = new Set<number>();
   model!: Model;
   boxes: Record<string, Box> = {};
+  /**
+   * The nodes drawn expanded (their modules as tiles): a look, per viewer, never saved in the
+   * design. `tiles` is every expanded module's world box by its end (`node/module`), kept in step
+   * with `boxes` (see `syncTiles`); `tileEls` the tile elements by the same key.
+   */
+  expanded = new Set<string>();
+  tiles: Record<string, Box> = {};
+  tileEls = new Map<string, SVGGElement>();
   frames: Record<string, Box> = {};
   /** Each group's caption as its frame is sized for it (lines, label strip), from the engine. */
   captions: Record<string, { lines: string[]; width: number; extra: number; strip: number }> = {};
@@ -482,9 +510,13 @@ export class Scene {
       // painted over. The layer is made here rather than in the page's skeleton because it is
       // chrome the export strips, and nothing outside this file knows about it.
       markers: el("g", { class: "layer-note-markers" }) as SVGGElement,
+      // In-process calls run between tiles inside an expanded node's card, so they are drawn
+      // above the nodes (made here for the same reason as the markers).
+      inProcess: el("g", { class: "layer-in-process" }) as SVGGElement,
       overlay: svg.querySelector(".layer-overlay") as SVGGElement,
     };
     this.layers.overlay.before(this.layers.markers);
+    this.layers.nodes.after(this.layers.inProcess);
     this.installArrowhead();
     this.installShadow();
     this.bind();
@@ -500,6 +532,7 @@ export class Scene {
     // not own. They go with it, or the next Scene on the same <svg> inherits a stale layer and
     // a second element with the same id.
     this.layers.markers.remove();
+    this.layers.inProcess.remove();
     for (const id of ARROWHEADS) this.defs.querySelector(`#${id}`)?.remove();
     this.defs.querySelector(`#${NODE_SHADOW}`)?.remove();
   }
@@ -512,6 +545,8 @@ export class Scene {
     for (const [id, size, colour] of [
       ["arrowhead", 8, "var(--edge)"],
       ["arrowhead-sel", 6, "var(--accent)"],
+      // An in-process call between two module tiles: a small, muted head.
+      ["arrowhead-ip", 7, "var(--frame)"],
     ] as const) {
       this.defs.querySelector(`#${id}`)?.remove();
       const m = el("marker", {
@@ -653,6 +688,9 @@ export class Scene {
    * point in a frame's open interior attaches to nothing: a wire let go there adds a member.
    */
   endAt(wx: number, wy: number, except: string | null = null) {
+    // An expanded node's tile is an end of its own (`node/module`), inside its node's box.
+    const tile = tileAt(this.tiles, wx, wy);
+    if (tile) return tile === except ? null : tile;
     const node = this.nodeAt(wx, wy, except);
     if (node) return node;
     return frameTargetAt(this.frames, wx, wy, this.view.k, except, this.strips());
@@ -668,13 +706,44 @@ export class Scene {
     const labels = this.labelDrag?.labels ?? this.model.labels ?? {};
     // Stacked boxes (×N): an edge end on one's top or right stops on its outermost card.
     const stacked = stackedIds(this.model.doc, this.model.catalogue);
+    // An end naming a module of an expanded node is drawn to its tile.
+    this.syncTiles();
     return {
       routing: this.model.routing,
       captions: this.captions,
       labelAvoid: notes,
       labels,
       stacked,
+      moduleBoxes: this.tiles,
     };
+  }
+
+  /** Whether a node is drawn expanded (it has modules and the viewer opened it). */
+  isOpen(id: string) {
+    return Object.keys(this.tiles).some((ref) => endNode(ref) === id);
+  }
+
+  /** Recompute the tiles' world boxes from the boxes as they stand (a drag moves them). */
+  syncTiles() {
+    this.tiles = tileBoxes(this.model?.doc?.nodes ?? [], this.boxes, this.expanded);
+  }
+
+  /** Expand a node with modules, or collapse it: a look, so no undo step and nothing saved. */
+  toggleExpanded(id: string) {
+    const n = this.model?.doc?.nodes?.find((x: any) => x.id === id);
+    if (!n || !hasModules(n)) return;
+    if (this.expanded.has(id)) this.expanded.delete(id);
+    else this.expanded.add(id);
+    // A module selected inside a node that folds away is no longer on screen.
+    if (
+      !this.expanded.has(id) &&
+      this.selection.type === "module" &&
+      endNode(this.selection.ref) === id
+    )
+      this.selection = { type: "node", ref: id };
+    this.h.onExpand?.(new Set(this.expanded));
+    this.render(this.model);
+    this.emitSelection();
   }
 
   /** Each group's label strip height, for the frame targets. */
@@ -686,38 +755,48 @@ export class Scene {
 
   /** The box an edge end names: a component's box, else a group's frame. */
   boxOf(id: string): Box | undefined {
-    return this.boxes[id] ?? (Object.hasOwn(this.frames, id) ? this.frames[id] : undefined);
+    return (
+      this.boxes[id] ??
+      (Object.hasOwn(this.tiles, id) ? this.tiles[id] : undefined) ??
+      (Object.hasOwn(this.frames, id) ? this.frames[id] : undefined)
+    );
   }
 
   /** The port on `id`'s box (component or frame) nearest the world point an end was let go at. */
   dropPortOn(id: string, at: [number, number] | null): Port | null {
     const b = this.boxOf(id);
     if (!b || !at) return null;
-    return dropPort(b, at[0], at[1], !this.boxes[id], this.view.k);
+    return dropPort(b, at[0], at[1], !this.boxes[id] && !this.tiles[id], this.view.k);
   }
 
   /** The element a wire highlights for an end: a component's card, or a group's frame. */
   endEl(id: string | null): Element | null {
     if (!id) return null;
-    return this.nodeEls.get(id) ?? this.frameEls.get(id)?.rect ?? null;
+    return this.nodeEls.get(id) ?? this.tileEls.get(id) ?? this.frameEls.get(id)?.rect ?? null;
   }
 
   // ---------------------------------------------------------------- render
 
   render(model: Model) {
     this.model = model;
-    this.boxes = {};
+    const laid: Record<string, Box> = {};
     for (const n of model.doc.nodes) {
       const p = model.positions[n.id] || [0, 0];
       const s = model.sizes[n.id] || [140, 78];
-      this.boxes[n.id] = [p[0], p[1], s[0], s[1]];
+      laid[n.id] = [p[0], p[1], s[0], s[1]];
     }
+    // An expanded node keeps its corner and grows to hold its tiles: frames, edges and hit
+    // areas all follow the box drawn.
+    this.boxes = expandBoxes(model.doc.nodes, laid, this.expanded);
+    this.syncTiles();
     for (const id of [...this.multi]) if (!this.boxes[id]) this.multi.delete(id);
     const groupIds = new Set((model.doc.groups ?? []).map((g: any) => g.id as string));
     for (const id of [...this.multiGroups]) if (!groupIds.has(id)) this.multiGroups.delete(id);
     for (const i of [...this.multiEdges])
       if (i >= (model.doc.edges ?? []).length) this.multiEdges.delete(i);
     if (this.selection.type === "node" && !this.boxes[this.selection.ref as string])
+      this.selection = { type: null, ref: null };
+    if (this.selection.type === "module" && !this.tiles[this.selection.ref as string])
       this.selection = { type: null, ref: null };
     this.captions = frameCaptions(model.doc, model.catalogue, model.frameStyles ?? {});
     this.frames = groupFrames(model.doc, this.boxes, this.captions) as Record<string, Box>;
@@ -1470,7 +1549,60 @@ export class Scene {
       }
       this.edgeEls.set(e.i, els);
     }
+    this.renderInProcess(this.layers.inProcess);
     g.append(...glyphs);
+  }
+
+  /**
+   * The in-process edges of the expanded nodes: light, straight lines between module tiles (or
+   * from a tile to its node's header), each with a hit path that selects it. Never bundled,
+   * never shaped: there is nothing to route inside one box. A collapsed node draws none.
+   */
+  renderInProcess(g: Element) {
+    g.textContent = "";
+    const keys = edgeKeys(this.model.doc);
+    for (const l of inProcessLines(this.model.doc, this.boxes, this.tiles, MODULE_HEADER)) {
+      const d = straight(l.points);
+      const hits = el("g", { class: "edge-hits" });
+      const hit = el("path", { class: "edge-hit", d }) as SVGPathElement;
+      hit.addEventListener("pointerdown", (ev: any) => {
+        if (ev.button !== 0 || this.space) return;
+        ev.stopPropagation();
+        if (ev.shiftKey || ev.ctrlKey || ev.metaKey) return this.toggle("edge", l.i);
+        this.select("edge", l.i);
+      });
+      hits.append(hit);
+      const line = el("path", {
+        class: "edge in-process",
+        d,
+        "marker-end": "url(#arrowhead-ip)",
+      });
+      g.append(hits, line);
+      this.hoverable(hits, "edge", String(l.i));
+      const written = this.model.doc.edges[l.i];
+      this.edgeEls.set(l.i, {
+        hits,
+        hitEls: [hit],
+        line,
+        key: keys[l.i],
+        from: endNode(written.from),
+        to: endNode(written.to),
+        label: null,
+        auth: null,
+        inProcess: true,
+      });
+    }
+  }
+
+  /** Move the in-process lines to where their tiles are now (a drag, a preview). */
+  repaintInProcess() {
+    for (const l of inProcessLines(this.model.doc, this.boxes, this.tiles, MODULE_HEADER)) {
+      const els = this.edgeEls.get(l.i);
+      if (!els?.inProcess) continue;
+      const d = straight(l.points);
+      els.line.setAttribute("d", d);
+      els.hitEls[0]?.setAttribute("d", d);
+    }
   }
 
   symbolFor(componentId: string) {
@@ -1579,8 +1711,13 @@ export class Scene {
     const g = this.layers.nodes;
     g.textContent = "";
     this.nodeEls.clear();
+    this.tileEls.clear();
+    // Module ends a finding names: their tiles are marked while their node is expanded.
+    const flagged = findingTiles(this.model.findings || []);
     for (const n of this.model.doc.nodes) {
       const b = this.boxes[n.id];
+      const modules = nodeModules(n);
+      const open = this.expanded.has(n.id) && modules.length > 0;
       const untyped = this.isCustom(n.component);
       const box = el("g", {
         class: `node-box${untyped ? " untyped" : ""}`,
@@ -1635,6 +1772,7 @@ export class Scene {
       const stack = nodeDecor(b[2], b[3], {
         count: nodeCount(doc, n, catalogue),
         dlq: nodeDeadLetter(doc, n, catalogue),
+        modules: modules.length,
       });
       if (stack)
         for (const s of stack.cards) {
@@ -1652,7 +1790,18 @@ export class Scene {
       const text = nodeText(lines.name, lines.sub, b[2], lines.id, hasDisc);
       box.setAttribute("aria-label", text.title);
       this.hoverable(box, "node", n.id);
-      if (this.symbolFor(n.component))
+      if (open) {
+        // Expanded: a header strip with the icon on the left and the two lines beside it, then
+        // the module tiles (moduleTiles), each an end a wire can start from or land on.
+        box.classList.add("expanded");
+        this.renderHeader(box, n, lines, b, hasDisc);
+        for (const m of modules) {
+          const ref = `${n.id}/${m.id}`;
+          const t = this.tiles[ref];
+          if (!t) continue;
+          this.renderTile(box, ref, moduleName(m), [t[0] - b[0], t[1] - b[1], t[2], t[3]], flagged);
+        }
+      } else if (this.symbolFor(n.component))
         box.append(
           el("use", {
             href: `#ic-${n.component}`,
@@ -1663,7 +1812,7 @@ export class Scene {
             class: "glyph",
           }),
         );
-      for (const line of text.name) {
+      for (const line of open ? [] : text.name) {
         const name = el("text", {
           class: lines.unset ? "name unset" : "name",
           x: b[2] / 2,
@@ -1673,15 +1822,19 @@ export class Scene {
         name.textContent = line.text;
         box.append(name);
       }
-      const comp = el("text", {
-        class: "comp",
-        x: b[2] / 2,
-        y: text.comp.y,
-        "text-anchor": "middle",
-      });
-      comp.textContent = text.comp.text;
-      box.append(comp);
+      if (!open) {
+        const comp = el("text", {
+          class: "comp",
+          x: b[2] / 2,
+          y: text.comp.y,
+          "text-anchor": "middle",
+        });
+        comp.textContent = text.comp.text;
+        box.append(comp);
+      }
       for (const p of stack ? stack.chips : []) {
+        // The "N modules" chip is a button: it expands the node, or collapses it again.
+        const into = p.id === "modules" ? this.modulesChip(box, n.id, open, modules.length) : box;
         const pill = el("rect", {
           class: "stack-chip",
           x: p.x,
@@ -1689,18 +1842,23 @@ export class Scene {
           width: p.w,
           height: p.h,
           rx: p.rx,
-          style: "fill:var(--panel);stroke:var(--node-line);stroke-width:1",
+          // The colours as attributes, not a style, so the modules chip's hover (canvas.css)
+          // can take them over; the export reads them the same.
+          fill: "var(--panel)",
+          stroke: "var(--node-line)",
+          "stroke-width": 1,
         });
-        box.append(pill);
+        into.append(pill);
         const chip = el("text", {
           class: "stack-chip-t",
           x: p.tx,
           y: p.ty,
           "text-anchor": "middle",
-          style: `font-family:var(--mono);font-size:${p.size}px;fill:var(--muted)`,
+          fill: "var(--muted)",
+          style: `font-family:var(--mono);font-size:${p.size}px`,
         });
         chip.textContent = p.text;
-        box.append(chip);
+        into.append(chip);
       }
       // Another design this node stands for: a link disc in the bottom-right corner, where the
       // server render draws it (refAt), tinted by the reference's state (refColor). A click
@@ -1793,6 +1951,100 @@ export class Scene {
     }
   }
 
+  /** The chip that expands a node with modules: a button of its own inside the box. */
+  modulesChip(box: Element, id: string, open: boolean, count: number): Element {
+    const chip = el("g", {
+      class: `modules-chip${open ? " open" : ""}`,
+      role: "button",
+      "aria-label": `${open ? "Collapse" : "Expand"} ${count} module${count === 1 ? "" : "s"}`,
+      "aria-expanded": String(open),
+    });
+    chip.addEventListener("pointerdown", (ev: any) => {
+      if (ev.button !== 0 || this.space) return;
+      ev.stopPropagation();
+    });
+    chip.addEventListener("click", (ev: any) => {
+      if (ev.button !== 0 || this.space) return;
+      ev.stopPropagation();
+      this.toggleExpanded(id);
+    });
+    chip.addEventListener("dblclick", (ev) => ev.stopPropagation());
+    box.append(chip);
+    return chip;
+  }
+
+  /** An expanded node's header: icon left, name and component line beside it, one line each. */
+  renderHeader(box: Element, n: any, lines: any, b: Box, hasDisc: boolean) {
+    const ICON = 24;
+    const left = 12 + ICON + 8;
+    if (this.symbolFor(n.component))
+      box.append(
+        el("use", {
+          href: `#ic-${n.component}`,
+          x: 12,
+          y: (MODULE_HEADER - ICON) / 2,
+          width: ICON,
+          height: ICON,
+          class: "glyph",
+        }),
+      );
+    // Fitted as the collapsed box fits them, to the width beside the icon; one line of name.
+    const fit = nodeText(lines.name, lines.sub, Math.max(60, b[2] - left), lines.id, hasDisc);
+    const first = fit.name[0]?.text ?? "";
+    const name = el("text", { class: lines.unset ? "name unset" : "name", x: left, y: 20 });
+    name.textContent = fit.name.length > 1 && !first.endsWith("…") ? `${first}…` : first;
+    const comp = el("text", { class: "comp", x: left, y: 35 });
+    comp.textContent = fit.comp.text;
+    box.append(name, comp);
+  }
+
+  /** One module tile of an expanded node, at `t` in the node's own coordinates. */
+  renderTile(box: Element, ref: string, label: string, t: Box, flagged: Set<string>) {
+    const tile = el("g", {
+      class: `module${flagged.has(ref) ? " flagged" : ""}`,
+      "data-module": ref,
+      transform: `translate(${t[0]} ${t[1]})`,
+    }) as SVGGElement;
+    const title = el("title");
+    title.textContent = ref.slice(ref.indexOf("/") + 1);
+    // Colours as attributes (canvas.css takes them over for hover and selection), so an
+    // exported picture of an expanded node still draws its tiles.
+    const rect = el("rect", {
+      class: "module-tile",
+      width: t[2],
+      height: t[3],
+      rx: 7,
+      fill: "var(--bg)",
+      stroke: "var(--node-line)",
+      "stroke-width": 1,
+    });
+    tile.append(title, rect);
+    const text = el("text", {
+      class: "module-label",
+      x: t[2] / 2,
+      y: t[3] / 2 + 4,
+      "text-anchor": "middle",
+      fill: "var(--ink)",
+      style: "font-family:var(--mono);font-size:11px",
+    });
+    text.textContent = label.length > 13 ? `${label.slice(0, 12)}…` : label;
+    tile.append(text);
+    // A press selects the module; a drag from it draws a wire whose end is the module.
+    tile.addEventListener("pointerdown", (ev: any) => {
+      if (ev.button !== 0 || this.space) return;
+      ev.stopPropagation();
+      this.select("module", ref);
+      this.startWire(ref, ev);
+    });
+    tile.addEventListener("dblclick", (ev) => {
+      ev.stopPropagation();
+      ev.preventDefault();
+      this.editLabel("module", ref);
+    });
+    box.append(tile);
+    this.tileEls.set(ref, tile);
+  }
+
   /**
    * The hit paths of one drawn edge. A curve (or an orthogonal edge with nothing to shape) has one,
    * along the whole line: dragging it bends the curve. An orthogonal edge has one per run, each
@@ -1871,6 +2123,7 @@ export class Scene {
         els.auth.setAttribute("transform", `translate(${ax} ${ay})`);
       }
     }
+    this.repaintInProcess();
     this.placeEndHandles();
   }
 
@@ -1929,6 +2182,11 @@ export class Scene {
       node.classList.toggle("selected", this.multi.has(id));
       node.classList.toggle("primary", this.selection.type === "node" && this.selection.ref === id);
     }
+    for (const [ref, tile] of this.tileEls)
+      tile.classList.toggle(
+        "selected",
+        this.selection.type === "module" && this.selection.ref === ref,
+      );
     const picked = this.picked();
     for (const [i, e] of this.edgeEls) e.line.classList.toggle("selected", picked.edges.has(i));
     for (const [id, f] of this.frameEls) f.rect.classList.toggle("selected", picked.groups.has(id));
@@ -2198,6 +2456,11 @@ export class Scene {
       const target = this.targetOf(ev);
       if (!target.type) return;
       ev.preventDefault();
+      // A node with modules opens to show them, or folds them away; Enter still renames it.
+      if (target.type === "node") {
+        const n = this.model.doc.nodes.find((x: any) => x.id === target.ref);
+        if (n && hasModules(n)) return this.toggleExpanded(n.id);
+      }
       if (target.type === "edge" && this.dropCorner(ev, target.ref as number)) return;
       this.editLabel(target.type, target.ref as string | number);
     });
@@ -2839,6 +3102,7 @@ export class Scene {
       this.frames,
       this.routeOptions(),
     );
+    this.repaintInProcess();
     for (const e of this.geom) {
       const toGroup = !this.boxes[e.from] || !this.boxes[e.to];
       if (!toGroup && !moving.has(e.from) && !moving.has(e.to)) continue;
@@ -3105,12 +3369,16 @@ export class Scene {
     if (!e) return;
     const line = el("path", { class: "wire", d: "" });
     this.layers.overlay.append(line);
+    // An end drawn to a module tile is that module (`node/module`); any other is its node.
+    const written = this.model.doc.edges?.[i] ?? {};
+    const drawnEnd = (k: EdgeEnd) =>
+      this.tiles[written[k]] ? written[k] : k === "from" ? e.from : e.to;
     this.tip = {
       i,
       end,
       key: e.key,
-      own: end === "from" ? e.from : e.to,
-      other: end === "from" ? e.to : e.from,
+      own: drawnEnd(end),
+      other: drawnEnd(end === "from" ? "to" : "from"),
       // The end that stays put, as it is drawn now: the preview line starts there.
       fixed: end === "from" ? e.points[e.points.length - 1] : e.points[0],
       original: this.model.ports?.[e.key]?.[end] ?? null,
@@ -3137,7 +3405,8 @@ export class Scene {
     // A frame end is placed only near its outline: well inside the frame is a drop on what the
     // group holds, or on the group itself, which leaves the end where it is.
     const rim = Math.min(wx - b[0], b[0] + b[2] - wx, wy - b[1], b[1] + b[3] - wy);
-    const onOwn = near && (Boolean(this.boxes[t.own]) || rim <= PORT_REACH / this.view.k);
+    const onOwn =
+      near && (Boolean(this.boxes[t.own] || this.tiles[t.own]) || rim <= PORT_REACH / this.view.k);
     const port: Port | null = onOwn ? (portAt(b, wx, wy) as Port) : null;
     const target = onOwn ? null : this.endAt(wx, wy, t.other);
     const samePort =
@@ -3286,8 +3555,13 @@ export class Scene {
     if (kind === "node") {
       const b = this.boxes[ref as string];
       if (!b) return;
-      anchor = this.toScreen(b[0] + b[2] / 2, b[1] + 44);
+      anchor = this.toScreen(b[0] + b[2] / 2, b[1] + (this.isOpen(ref as string) ? 10 : 44));
       width = Math.max(120, b[2] * this.view.k);
+    } else if (kind === "module") {
+      const b = this.tiles[ref as string];
+      if (!b) return;
+      anchor = this.toScreen(b[0] + b[2] / 2, b[1] + b[3] / 2 - 10);
+      width = Math.max(110, b[2] * this.view.k);
     } else if (kind === "edge") {
       const e = (this.geom || []).find((x) => x.i === ref);
       if (!e) return;

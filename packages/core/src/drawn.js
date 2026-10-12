@@ -17,7 +17,7 @@
 //
 // No DOM, no fs, no network.
 
-import { stackedIds } from "./document.js";
+import { endNode, stackedIds } from "./document.js";
 import { edgeGeometry, frameCaptions, groupFrames, labelOffset, readRouting } from "./geometry.js";
 import { layout } from "./layout.js";
 import { LABEL_FONT } from "./routing.js";
@@ -62,9 +62,11 @@ function placeNewcomer(id, size, doc, boxes) {
   const taken = Object.values(boxes);
   const [w, h] = size;
   const neighbours = [];
-  for (const e of doc.edges || []) {
-    if (e.from === id && boxes[e.to]) neighbours.push(boxes[e.to]);
-    else if (e.to === id && boxes[e.from]) neighbours.push(boxes[e.from]);
+  for (const raw of doc.edges || []) {
+    // A module end is its node's box.
+    const e = { from: endNode(raw.from), to: endNode(raw.to) };
+    if (e.from === id && e.to !== id && boxes[e.to]) neighbours.push(boxes[e.to]);
+    else if (e.to === id && e.from !== id && boxes[e.from]) neighbours.push(boxes[e.from]);
   }
   for (const nb of neighbours) {
     const candidates = [

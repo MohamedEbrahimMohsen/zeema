@@ -12,7 +12,7 @@
 //
 // DOM free, fs free; the one import reads a node's reference to another design.
 
-import { isSubsystem, nodeRef } from "./document.js";
+import { isSubsystem, nodeModules, nodeRef } from "./document.js";
 
 const list = (v) => (Array.isArray(v) ? v : [v]);
 
@@ -314,5 +314,14 @@ export function describeNode(node, catalogue = null) {
   const tail = ref
     ? `${bits.length > 1 ? "," : ""} and references ${ref.design} at ${at(ref)}`
     : "";
-  return `${bits.join(", ")}${tail}.`;
+  return `${bits.join(", ")}${tail}.${modulesSentence(node)}`;
+}
+
+// " It runs 2 modules: API (api), OTP (otp)." for a node that lists the modules of its code, else
+// nothing. A module with no label is named by its id alone.
+function modulesSentence(node) {
+  const list = nodeModules(node);
+  if (!list.length) return "";
+  const names = list.map((m) => (m.label ? `${m.label} (${m.id})` : String(m.id)));
+  return ` It runs ${list.length} module${list.length === 1 ? "" : "s"}: ${names.join(", ")}.`;
 }

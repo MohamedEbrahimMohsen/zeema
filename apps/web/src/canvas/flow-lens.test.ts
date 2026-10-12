@@ -80,3 +80,29 @@ describe("flow lens", () => {
     expect(nodesAt(doc, "apn")).toEqual(["apn"]);
   });
 });
+
+describe("module ends", () => {
+  const mod = {
+    nodes: [
+      { id: "web" },
+      { id: "backend", modules: [{ id: "api" }, { id: "otp" }] },
+      { id: "sms" },
+    ],
+    edges: [
+      { from: "web", to: "backend/api" }, // 0
+      { from: "backend/api", to: "backend/otp" }, // 1: in-process
+      { from: "backend/otp", to: "sms" }, // 2
+    ],
+  };
+  it("reads a module end as its node for the neighbourhood", () => {
+    const adj = adjacencyOf(mod);
+    expect(adj.get("backend")).toEqual([0, 1, 2]);
+    expect(adj.has("backend/api")).toBe(false);
+    expect(nodesAt(mod, "backend/otp")).toEqual(["backend"]);
+  });
+  it("traces through the node and never walks the in-process edge", () => {
+    const lit = flowFrom(mod, "sms");
+    expect([...lit.nodes].sort()).toEqual(["backend", "sms", "web"]);
+    expect([...lit.edges].sort()).toEqual([0, 2]);
+  });
+});

@@ -18,7 +18,7 @@
 // `file` defaults to doc.id so the checker is usable before a path is known; pass the design's
 // repository-relative path to get byte-identical parity with the validator.
 
-import { isRefDesign, isRefVersion } from "./document.js";
+import { isInProcess, isRefDesign, isRefVersion, MODULE_HOST_KINDS, splitEnd } from "./document.js";
 
 const isObj = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
 const arr = (v) => (Array.isArray(v) ? v : []);
@@ -51,10 +51,30 @@ export function check(doc, catalogue, options = {}) {
   checkDesign(doc, cat, file, out);
   // A malformed ref.design or ref.version, or a group count that is not 2 or more, is reported
   // once, in the words above; the schema's pattern and minimum say the same thing less plainly.
-  if (cat.schema)
+  if (cat.schema) {
     for (const f of checkSchema(doc, cat.schema))
       if (!REF_FIELD.test(f.pointer) && !COUNT_FIELD.test(f.pointer)) out.push(f);
+    checkNetworkFields(doc, out);
+  }
   return out;
+}
+
+// `protocol` and `mode` are required on every edge but an in-process one (isInProcess: both ends
+// in one node, one of them a module), which the schema cannot say, so the schema requires neither
+// and this says it in the schema layer's own words, at the place the schema used to.
+function checkNetworkFields(doc, out) {
+  arr(doc?.edges).forEach((e, i) => {
+    if (!isObj(e) || isInProcess(e)) return;
+    for (const key of ["protocol", "mode"])
+      if (e[key] === undefined)
+        out.push({
+          message: `/edges/${i}: missing required property "${key}"`,
+          subject: edge(i),
+          pointer: `/edges/${i}`,
+          keyword: "required",
+          blocking: true,
+        });
+  });
 }
 
 /* ------------------------------------------------------------------ layer 1 */
@@ -120,6 +140,17 @@ function checkDesign(doc, catalogue, file, out) {
       add(`${file}: node ${n.id} unknown component ${n.component}`, node(n.id));
       continue;
     }
+    // Modules of the code a node runs: only a kind that hosts code has any, and each id once.
+    if (Array.isArray(n.modules) && n.modules.length) {
+      if (!MODULE_HOST_KINDS.includes(c.kind))
+        add(
+          `${file}: node ${n.id} lists modules, but kind ${c.kind} does not host code (only ${MODULE_HOST_KINDS.join(", ")})`,
+          node(n.id),
+        );
+      const ids = n.modules.filter(isObj).map((m) => m.id);
+      if (new Set(ids).size !== ids.length)
+        add(`${file}: node ${n.id} duplicate module ids`, node(n.id));
+    }
     if (n.group && !groupIds.has(n.group)) add(`${file}: node ${n.id} unknown group`, node(n.id));
     const defs = propDefs(c, kinds);
     for (const [k, v] of Object.entries(isObj(n.props) ? n.props : {})) {
@@ -152,12 +183,35 @@ function checkDesign(doc, catalogue, file, out) {
   // An id that is both is not refused: committed designs already name a group after the node
   // that fronts it, and their edges have always meant the node. Such an end is the node, here
   // and in rules, layout and geometry; the editor never creates a new collision.
+  //
+  // An end may also name a module of a node, `node/module`: the node must exist and list it. An
+  // edge with both ends in one node, one of them a module, is in-process (isInProcess) and is not
+  // a network hop, so it carries no mode or protocol.
+  const byId = new Map();
+  for (const n of nodes) if (isObj(n) && !byId.has(n.id)) byId.set(n.id, n);
   for (let i = 0; i < edges.length; i++) {
     const e = edges[i];
     if (!isObj(e)) continue;
-    for (const end of ["from", "to"])
-      if (!nodeIds.has(e[end]) && !groupIds.has(e[end]))
-        add(`${file}: edge ${end} ${e[end]} missing: no node or group`, edge(i));
+    for (const end of ["from", "to"]) {
+      const { node: nid, module } = splitEnd(e[end]);
+      if (module === null) {
+        if (!nodeIds.has(e[end]) && !groupIds.has(e[end]))
+          add(`${file}: edge ${end} ${e[end]} missing: no node or group`, edge(i));
+        continue;
+      }
+      const host = byId.get(nid);
+      if (!host) add(`${file}: edge ${end} ${e[end]} missing: no node ${nid}`, edge(i));
+      else if (!arr(host.modules).some((m) => isObj(m) && m.id === module))
+        add(`${file}: edge ${end} ${e[end]} missing: node ${nid} has no module ${module}`, edge(i));
+    }
+    if (isInProcess(e)) {
+      const extra = ["mode", "protocol"].filter((k) => e[k] !== undefined);
+      if (extra.length)
+        add(
+          `${file}: edge ${e.from} -> ${e.to} is in-process (inside node ${splitEnd(e.from).node}) and takes no ${extra.join(" or ")}`,
+          edge(i),
+        );
+    }
   }
 }
 

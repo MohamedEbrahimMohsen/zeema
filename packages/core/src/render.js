@@ -4,13 +4,17 @@
 // edges are arrows, solid for sync and dashed for async.
 
 import {
+  endNode,
   groupCaption,
   groupCount,
   groupTitle,
   hasRefDisc,
+  isInProcess,
+  modulesTitle,
   nodeCount,
   nodeDeadLetter,
   nodeLines,
+  nodeModules,
   nodeRef,
   refLabel,
 } from "./document.js";
@@ -222,7 +226,8 @@ export function frameIconKey(ref) {
 // A node that stands for N identical copies (nodeCount in document.js) is drawn as a stack: two
 // cards behind its box, each STACK_STEP px further right and up, and a chip reading ×N. A queue
 // with a dead-letter queue (nodeDeadLetter) carries a DLQ chip. The chips sit in one row above
-// the box's top-right corner, laid right to left: DLQ rightmost, ×N to its left. All of it is
+// the box's top-right corner, laid right to left: DLQ rightmost, ×N to its left, and leftmost
+// "N modules" for a node that lists the modules of its code (collapsed). All of it is
 // decoration only: the layout box, the frames and the canvas's hit areas are the front card
 // alone; an edge end on the top or right side stops on the outermost card (stackInset in
 // geometry.js, where STACK_STEP and STACK_OPACITY live). The server render and the canvas both
@@ -240,23 +245,26 @@ export const MONO_FONT = "ui-monospace, SFMono-Regular, Menlo, Consolas, monospa
 /**
  * The decoration of a box `w` x `h`, in the box's own coordinates (its top-left corner is 0,0),
  * or null when there is none. `count` draws the stack when it is an integer of 2 or more; `dlq`
- * adds the DLQ chip. `cards` is farthest first (empty without a stack): draw them in order, then
+ * adds the DLQ chip; `modules` (how many modules the node lists, 1 or more) adds the "N modules"
+ * chip, leftmost. `cards` is farthest first (empty without a stack): draw them in order, then
  * the box. `chips` is right to left, each a pill with its text centred on `tx`, baseline `ty`;
- * `id` is "dlq" or "count". A chip is as wide as its text, so ×1000 is written out, not cut.
+ * `id` is "dlq", "count" or "modules". A chip is as wide as its text, so ×1000 is written out.
  * @typedef {{ x: number, y: number, w: number, h: number, opacity: number }} StackCard
- * @typedef {{ id: "dlq" | "count", x: number, y: number, w: number, h: number, rx: number,
+ * @typedef {{ id: "dlq" | "count" | "modules", x: number, y: number, w: number, h: number, rx: number,
  *   text: string, tx: number, ty: number, size: number }} DecorChip
  * @param {number} w
  * @param {number} h
- * @param {{ count?: number | null, dlq?: boolean }} [marks]
+ * @param {{ count?: number | null, dlq?: boolean, modules?: number | null }} [marks]
  * @returns {{ cards: StackCard[], chips: DecorChip[] } | null}
  */
-export function nodeDecor(w, h, { count, dlq } = {}) {
+export function nodeDecor(w, h, { count, dlq, modules } = {}) {
   const stacked = Number.isInteger(count) && count >= 2;
-  if (!stacked && !dlq) return null;
+  const moduled = Number.isInteger(modules) && modules >= 1;
+  if (!stacked && !dlq && !moduled) return null;
   const texts = [];
   if (dlq) texts.push(["dlq", "DLQ"]);
   if (stacked) texts.push(["count", `×${count}`]);
+  if (moduled) texts.push(["modules", `${modules} module${modules === 1 ? "" : "s"}`]);
   return { cards: stacked ? stackCards(w, h) : [], chips: chipRow(w, texts) };
 }
 
@@ -571,10 +579,16 @@ export function toSvg(doc, catalogue, options = {}) {
     // A subsystem box carries the disc before it references anything (hasRefDisc).
     const disc = hasRefDisc(catalogue ?? {}, n);
     const t = nodeText(l.name, l.sub, bw, l.id, disc);
-    const title = ref
+    const refTitle = ref
       ? `${t.title}
 ref: ${refLabel(ref)}`
       : t.title;
+    // A node with modules is drawn collapsed; its hover text lists them.
+    const mods = modulesTitle(n);
+    const title = mods
+      ? `${refTitle}
+${mods}`
+      : refTitle;
     out.push(`<g><title>${escapeXml(title)}</title>`);
     // A tinted component: the card stays opaque, and a second rect over it carries the tint's
     // border and faint fill, so the icon and the words above it are drawn exactly as before.
@@ -593,6 +607,7 @@ ref: ${refLabel(ref)}`
     const stack = nodeDecor(bw, bh, {
       count: nodeCount(doc, n, catalogue),
       dlq: nodeDeadLetter(doc, n, catalogue),
+      modules: nodeModules(n).length,
     });
     if (stack)
       for (const s of stack.cards)
@@ -682,8 +697,13 @@ export function toMermaid(doc, direction = "TD", catalogue = null) {
   // An end naming a group (and no node) is the group's subgraph.
   const nodeIds = new Set((doc.nodes ?? []).map((n) => n.id));
   const groupIds = new Set(groups.map((g) => g.id));
-  const end = (id) => mid(!nodeIds.has(id) && groupIds.has(id) ? `g_${id}` : id);
+  // A module end is its node; an in-process edge (inside one node) is not drawn.
+  const end = (ref) => {
+    const id = endNode(ref);
+    return mid(!nodeIds.has(id) && groupIds.has(id) ? `g_${id}` : id);
+  };
   for (const e of doc.edges ?? []) {
+    if (isInProcess(e)) continue;
     const meta = e.protocol + (e.delivery ? `, ${e.delivery}` : "");
     const text = e.label ? `${e.label} [${meta}]` : meta;
     const lab = mesc(e.auth ? `${text} [${e.auth}]` : text);

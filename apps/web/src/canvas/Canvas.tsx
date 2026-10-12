@@ -77,6 +77,7 @@ import { type HoverAt, HoverCard, type RefInfo } from "./HoverCard";
 import { historyKey } from "./history-key";
 import { EdgeStyleField, type Highlight, Inspector, type InspectorApi } from "./Inspector";
 import { designMenu, type MenuEntry, SEP } from "./menu-model";
+import { readExpanded, writeExpanded } from "./modules";
 import { Palette, ProviderSprite } from "./Palette";
 import { dimmed, readDim, readHoverCards, writeDim, writeHoverCards } from "./prefs";
 import { QuickActions } from "./QuickActions";
@@ -1144,6 +1145,23 @@ export function Canvas(props: Props) {
     [bundle, commit],
   );
 
+  // A module edit: removing one re-points the edges that named it (their keys change with their
+  // ends), so the hand-made paths, ports and label offsets follow by index, as for a rename.
+  const commitModules = useCallback(
+    (next: any) => {
+      const e = eng.current!;
+      if (next === e.doc) return render();
+      commit(next, {
+        apply: () => {
+          e.bows = rekeyBows(e.doc, next, e.bows);
+          e.ports = rekeyPorts(e.doc, next, e.ports);
+          e.labels = rekeyLabels(e.doc, next, e.labels);
+        },
+      });
+    },
+    [commit, render],
+  );
+
   // ---------------------------------------------------------------- selection commands
   const ids = () => [...(sceneRef.current?.multi ?? [])];
 
@@ -1158,6 +1176,10 @@ export function Canvas(props: Props) {
       const id = s.ref as string;
       return commit(null, { apply: () => (e.notes = e.notes.filter((n) => n.id !== id)) });
     }
+    if (s.type === "module") {
+      const { node, module } = D.splitEnd(s.ref as string);
+      return commitModules(D.removeModule(e.doc, node, module));
+    }
     if (!sel.length && !picked.groups.size && !picked.edges.size) return render();
     // A mixed selection goes in one step, so one undo brings all of it back. Edges first, by
     // index from the end, while the indexes still name them; then components; then groups,
@@ -1167,7 +1189,7 @@ export function Canvas(props: Props) {
     if (sel.length) doc = D.deleteNodes(doc, sel, bundle!.catalogue);
     for (const g of picked.groups) doc = D.deleteGroup(doc, g);
     commit(doc);
-  }, [bundle, commit, render]);
+  }, [bundle, commit, commitModules, render]);
 
   // Cut takes what the copy took, as one undo step: a group goes with everything inside it
   // (Delete keeps a group's members, which a cut would leave behind and then paste twice).
@@ -2126,6 +2148,10 @@ export function Canvas(props: Props) {
           const ed = e.doc.edges[ref as number];
           return ed ? ed.label || "" : null;
         }
+        if (kind === "module") {
+          const m = D.moduleOf(e.doc, ref as string);
+          return m ? D.moduleName(m) : null;
+        }
         const g = (e.doc.groups || []).find((x: any) => x.id === ref);
         return g ? g.label || "" : null;
       },
@@ -2135,6 +2161,10 @@ export function Canvas(props: Props) {
         if (kind === "node") return renameToLabel(ref as string, value);
         if (kind === "edge")
           commit(D.setEdgeField(e.doc, ref as number, "label", value || undefined));
+        if (kind === "module") {
+          const { node, module } = D.splitEnd(ref as string);
+          commit(D.setModuleLabel(e.doc, node, module, value || null));
+        }
         if (kind === "group")
           commit(D.setGroupField(e.doc, ref as string, "label", value || undefined));
       },
@@ -2211,7 +2241,10 @@ export function Canvas(props: Props) {
           pinned: !!pinned || (p?.node === node && p.pinned),
         }));
       },
+      // Which nodes show their modules is this viewer's, per design, in this browser only.
+      onExpand: (ids) => writeExpanded(`${props.owner}/${props.slug}`, ids),
     });
+    scene.expanded = readExpanded(`${props.owner}/${props.slug}`);
     sceneRef.current = scene;
     scene.setDimEdges(readDim());
     render();
@@ -2741,6 +2774,21 @@ export function Canvas(props: Props) {
       findInPalette: (query: string) => {
         askPalette(query);
       },
+      // Modules inside a node: each change one undo step through the same commit.
+      addModule: (nodeId, label) => {
+        const e = eng.current!;
+        const next = D.addModule(e.doc, nodeId, { label: label.trim() || undefined });
+        if (next === e.doc) return notify("could not add that module");
+        commitModules(next);
+      },
+      setModuleLabel: (nodeId, moduleId, label) =>
+        commitModules(D.setModuleLabel(eng.current!.doc, nodeId, moduleId, label.trim() || null)),
+      removeModule: (nodeId, moduleId) => {
+        const scene = sceneRef.current!;
+        if (scene.selection.type === "module" && scene.selection.ref === `${nodeId}/${moduleId}`)
+          scene.selection = { type: "node", ref: nodeId };
+        commitModules(D.removeModule(eng.current!.doc, nodeId, moduleId));
+      },
       remove: (type, ref) => {
         const scene = sceneRef.current!;
         scene.selection = { type: null, ref: null };
@@ -2763,6 +2811,7 @@ export function Canvas(props: Props) {
     [
       bundle,
       commit,
+      commitModules,
       deleteNote,
       detachNote,
       notify,
@@ -2994,7 +3043,9 @@ export function Canvas(props: Props) {
           ? scene.frames[subject.ref as string]
           : subject.type === "note"
             ? scene.noteBoxes[subject.ref as string]
-            : null;
+            : subject.type === "module"
+              ? scene.tiles[subject.ref as string]
+              : null;
     if (box) scene.center(box);
   };
 
@@ -4002,7 +4053,7 @@ export function Canvas(props: Props) {
       {dotPop && bundle && e
         ? (() => {
             const rows = findingRows(structural, rules, bundle.catalogue).filter(
-              (r) => r.f.subject?.type === "node" && r.f.subject.ref === dotPop.node,
+              (r) => r.f.subject?.type === "node" && D.endNode(r.f.subject.ref) === dotPop.node,
             );
             if (!rows.length) return null;
             return (

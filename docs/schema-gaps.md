@@ -318,3 +318,14 @@ Format for an entry:
 - Proposed change: a rule once cross-design facts are in the engine (for example "a reference
   pinned to a release that is not the latest"), which today is remote state, not structure.
 - Status: open
+
+## Module hosting is a core constant, not a kind property
+- Design: docs/format.md "Modules inside a node" (a modular monolith: API, IAM, OTP,
+  Notifications and Cache in one deployed service)
+- Missing: a kind cannot say "my nodes may list modules". Which kinds host code is the constant
+  `MODULE_HOST_KINDS` in packages/core/src/document.js: `app-server`, `worker`, `client`.
+- Workaround: the constant, read by the structure gate (modules on any other kind are refused) and
+  by `canHostModules`. A kind that should host code (a function, a container job) is added there.
+- Proposed change: a `hostsModules: true` flag on the kind (kind.schema.json), read instead of the
+  constant, once a second round shows which kinds need it.
+- Status: open

@@ -19,7 +19,7 @@
 // live in the layout sidecar under a key derived from the pair; everything else is recomputed
 // from the boxes on every frame.
 
-import { groupCaption } from "./document.js";
+import { endNode, groupCaption, isInProcess, resolveEdge, splitEnd } from "./document.js";
 import {
   LABEL_FONT,
   labelCentre,
@@ -381,15 +381,50 @@ function labelPlacement(mid, points, shared) {
 // `ortho: true`, and their `points` are the corners of a polyline from one end to the other,
 // drawn by `edgePath`; `run` is `{ axis, base }` when the edge has a cross run a bow moves (see
 // routing.js), else null. Everything said above about ports, frames and keys holds for both.
+//
+// An end naming a module of a node (`node/module`) is drawn to and from the node's box, which is
+// collapsed here: the drawn edge's `from`/`to` are the node ids, and `fromModule`/`toModule` the
+// module ids, present only on an end that names one. The key stays the pair as written. An
+// in-process edge (both ends in one node, isInProcess) is not drawn: its ends are the same box.
+// `options.moduleBoxes` maps a module end as written (`node/module`) to a box of its own, the
+// module's tile in a node the canvas has expanded (`moduleTiles`): such an end is drawn to its
+// tile instead of the node's box, spread and routed as a box of its own, and its own node's box
+// is not an obstacle to it. The drawn edge's `from`/`to` are still the node ids.
 export function edgeGeometry(doc, boxes, bows = {}, ports = {}, frames = {}, options = {}) {
-  const isFrame = (id) => !boxes[id] && frames != null && Object.hasOwn(frames, id);
-  const boxOf = (id) => (isFrame(id) ? frames[id] : boxes[id]);
+  const tiles = options?.moduleBoxes || null;
+  const tiled = (ref) =>
+    tiles !== null && splitEnd(ref).module !== null && Object.hasOwn(tiles, ref);
+  const isFrame = (id) => !tiled(id) && !boxes[id] && frames != null && Object.hasOwn(frames, id);
+  const boxOf = (id) => (tiled(id) ? tiles[id] : isFrame(id) ? frames[id] : boxes[id]);
   const keys = edgeKeys(doc);
-  const edges = doc.edges || [];
+  const written = doc.edges || [];
+  // Each drawn end is its node, or the module as written when the module has a tile.
+  const drawnEnds = (e) => {
+    if (!tiles || (!tiled(e?.from) && !tiled(e?.to))) return resolveEdge(e);
+    return {
+      ...e,
+      from: tiled(e.from) ? e.from : endNode(e.from),
+      to: tiled(e.to) ? e.to : endNode(e.to),
+    };
+  };
+  const edges = written.map((e) => (isInProcess(e) ? null : drawnEnds(e)));
+  // Back to node ids once routed (a tiled end is routed under its module ref).
+  const asNodes = (drawn) => {
+    if (tiles) for (const d of drawn) [d.from, d.to] = [endNode(d.from), endNode(d.to)];
+    return drawn;
+  };
+  const moduleEnds = (r) => {
+    const a = splitEnd(written[r.i]?.from).module;
+    const b = splitEnd(written[r.i]?.to).module;
+    if (a !== null) r.fromModule = a;
+    if (b !== null) r.toModule = b;
+    return r;
+  };
   const routing = readRouting(options?.routing);
   if (routing !== "curved") {
     const items = [];
     edges.forEach((e, i) => {
+      if (!e) return;
       const a = boxOf(e.from),
         b = boxOf(e.to);
       if (!a || !b) return;
@@ -412,18 +447,21 @@ export function edgeGeometry(doc, boxes, bows = {}, ports = {}, frames = {}, opt
     }).map((r) => {
       const e = edges[r.i];
       const label = e.label || null;
-      return {
+      return moduleEnds({
         ...r,
         from: e.from,
         to: e.to,
         dashed: e.mode === "async",
         label: label === null ? null : String(label),
-      };
+      });
     });
-    return keepAuthOff(stackEnds(routed, boxOf, options?.stacked, ports, keys), edges, boxes);
+    return asNodes(
+      keepAuthOff(stackEnds(routed, boxOf, options?.stacked, ports, keys), edges, boxes),
+    );
   }
   const buckets = new Map();
   edges.forEach((e, i) => {
+    if (!e) return;
     const key = [e.from, e.to].sort().join("\u0000");
     if (!buckets.has(key)) buckets.set(key, []);
     buckets.get(key).push(i);
@@ -511,7 +549,7 @@ export function edgeGeometry(doc, boxes, bows = {}, ports = {}, frames = {}, opt
           ...(away(pa, sa, u2, v2) ? [a] : []),
           ...(away(pb, sb, u1, v1) ? [b] : []),
           ...Object.entries(boxes)
-            .filter(([id]) => id !== e.from && id !== e.to)
+            .filter(([id]) => id !== endNode(e.from) && id !== endNode(e.to))
             .map(([, box]) => box),
         ];
         for (const box of obstacles) {
@@ -563,19 +601,21 @@ export function edgeGeometry(doc, boxes, bows = {}, ports = {}, frames = {}, opt
         label: label === null ? null : String(label),
       };
       if (base) drawn.labelBase = base;
-      out.push(drawn);
+      out.push(moduleEnds(drawn));
     });
   }
-  return keepAuthOff(
-    stackEnds(
-      out.sort((p, q) => p.i - q.i),
-      boxOf,
-      options?.stacked,
-      ports,
-      keys,
+  return asNodes(
+    keepAuthOff(
+      stackEnds(
+        out.sort((p, q) => p.i - q.i),
+        boxOf,
+        options?.stacked,
+        ports,
+        keys,
+      ),
+      edges,
+      boxes,
     ),
-    edges,
-    boxes,
   );
 }
 
@@ -1133,4 +1173,44 @@ export function bowAt(boxes, from, to, x, y, ends = null, frames = {}) {
     my = (ay + by) / 2;
   const value = ((-dy / len) * (x - mx) + (dx / len) * (y - my)) * 2;
   return Math.max(-1200, Math.min(1200, Math.round(value)));
+}
+
+// A node with modules is drawn collapsed by default (a box with an "N modules" chip). Expanded,
+// it is a taller box: a MODULE_HEADER px strip with its usual name, then the modules as tiles of
+// MODULE_TILE_W x MODULE_TILE_H, up to MODULE_COLUMNS to a row, MODULE_GAP apart and MODULE_GAP
+// from the box's sides and bottom. One geometry for the canvas and any server render of it.
+export const MODULE_TILE_W = 84;
+export const MODULE_TILE_H = 40;
+export const MODULE_GAP = 12;
+export const MODULE_HEADER = 44;
+export const MODULE_COLUMNS = 3;
+
+/**
+ * The expanded box of a node with modules, in the box's own coordinates (top-left 0,0): its
+ * width (`w`, or wider when a full row of tiles needs more), its height, and one tile per module
+ * in document order, `{ id, x, y, w, h }`, laid in rows left to right, the grid centred in the
+ * box. Null for a node with no modules: it has no expanded form.
+ * @param {any} node
+ * @param {number} w
+ * @returns {{ w: number, h: number, tiles: Array<{ id: string, x: number, y: number, w: number, h: number }> } | null}
+ */
+export function moduleTiles(node, w) {
+  const list = Array.isArray(node?.modules)
+    ? node.modules.filter((m) => m !== null && typeof m === "object" && !Array.isArray(m))
+    : [];
+  if (!list.length) return null;
+  const cols = Math.min(MODULE_COLUMNS, list.length);
+  const rows = Math.ceil(list.length / MODULE_COLUMNS);
+  const gridW = cols * MODULE_TILE_W + (cols - 1) * MODULE_GAP;
+  const width = Math.max(w, gridW + 2 * MODULE_GAP);
+  const x0 = Math.round((width - gridW) / 2);
+  const tiles = list.map((m, k) => ({
+    id: String(m.id),
+    x: x0 + (k % MODULE_COLUMNS) * (MODULE_TILE_W + MODULE_GAP),
+    y: MODULE_HEADER + Math.floor(k / MODULE_COLUMNS) * (MODULE_TILE_H + MODULE_GAP),
+    w: MODULE_TILE_W,
+    h: MODULE_TILE_H,
+  }));
+  const h = MODULE_HEADER + rows * MODULE_TILE_H + (rows - 1) * MODULE_GAP + MODULE_GAP;
+  return { w: width, h, tiles };
 }

@@ -14,7 +14,7 @@ import {
 import { collectDesigns, formatJson, lintFiles, lintResult, lintText } from "@zeema/cli/lint";
 import { readConfig, readDesign, renderDesign, resolveInside } from "@zeema/cli/main";
 import { describeNode, describeRule } from "@zeema/core/describe";
-import { isSubsystem } from "@zeema/core/document";
+import { isSubsystem, nodeModules } from "@zeema/core/document";
 
 const json = (value) => ({ content: [{ type: "text", text: JSON.stringify(value, null, 2) }] });
 const text = (value) => ({ content: [{ type: "text", text: value }] });
@@ -75,8 +75,13 @@ export function tools({ cwd, catalogue, icons }) {
             ...(n.label ? { label: n.label } : {}),
             ...(n.group ? { group: n.group } : {}),
             ...(n.ref ? { ref: n.ref } : {}),
-            // A reference, or a subsystem box that has none yet, reads as one sentence.
-            ...(n.ref || isSubsystem(cat, n) ? { description: describeNode(n, cat) } : {}),
+            // The modules of the code it runs; an edge end names one as `node/module`.
+            ...(nodeModules(n).length ? { modules: nodeModules(n) } : {}),
+            // A reference, a subsystem box that has none yet, or a node with modules reads as one
+            // sentence.
+            ...(n.ref || isSubsystem(cat, n) || nodeModules(n).length
+              ? { description: describeNode(n, cat) }
+              : {}),
           })),
           edges: doc.edges,
         },
@@ -176,8 +181,9 @@ export async function serve({ cwd, version, catalogue, icons }) {
   tool(
     "read_design",
     "Read a Zeema design file: its YAML text exactly as on disk, and a summary of its groups, its " +
-      "nodes (each with its component and that component's kind, and the design it references " +
-      "when it references one) and its edges.",
+      "nodes (each with its component and that component's kind, the design it references " +
+      "when it references one, and the modules of its code when it lists any) and its edges. An " +
+      "edge end written node/module is a module of that node.",
     { path: designPath },
     t.read_design,
   );

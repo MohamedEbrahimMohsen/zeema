@@ -213,6 +213,17 @@ function lengthOf(points) {
   return l;
 }
 
+// The ids whose boxes an edge's route may cross: its two ends, and for an end routed as a module
+// (`node/module`, drawn to its tile) the node around that tile. Ids hold no "/" otherwise.
+function ownIds(it) {
+  const out = [];
+  for (const id of [it.e.from, it.e.to]) {
+    out.push(id);
+    if (typeof id === "string" && id.includes("/")) out.push(id.slice(0, id.indexOf("/")));
+  }
+  return out;
+}
+
 /**
  * Route every edge orthogonally.
  * @param {Array<{ i: number, key: string, e: object, a: number[], b: number[], fa: boolean,
@@ -690,9 +701,9 @@ function trunkOf(B, members, obstacles, captions) {
   for (const { it, P, Q } of ends) {
     const path = simplify([P, at(m, P[v]), at(m, Q[v]), Q]);
     if (!path) continue;
-    const own = [it.e.from, it.e.to];
+    const own = ownIds(it);
     const blockers = [
-      ...obstacles.filter(([id]) => id !== own[0] && id !== own[1]).map(([, bx]) => bx),
+      ...obstacles.filter(([id]) => !own.includes(id)).map(([, bx]) => bx),
       ...captions,
     ];
     const mine = [it.fa ? null : it.a, it.fb ? null : it.b].filter(Boolean);
@@ -778,9 +789,9 @@ function viaRoute(it, via, obstacles, captions) {
     nB = NORMAL[sb];
   const S = [P[0] + nA[0] * ORTHO_STUB, P[1] + nA[1] * ORTHO_STUB];
   const T = [Q[0] + nB[0] * ORTHO_STUB, Q[1] + nB[1] * ORTHO_STUB];
-  const own = [it.e.from, it.e.to];
+  const own = ownIds(it);
   const blockers = [
-    ...obstacles.filter(([id]) => id !== own[0] && id !== own[1]).map(([, bx]) => bx),
+    ...obstacles.filter(([id]) => !own.includes(id)).map(([, bx]) => bx),
     ...captions,
   ];
   const mine = [it.fa ? null : a, it.fb ? null : b].filter(Boolean);
@@ -1022,8 +1033,8 @@ function route(it, obstacles, captions = []) {
   }
   const S = [P[0] + nA[0] * stub, P[1] + nA[1] * stub];
   const T = [Q[0] + nB[0] * stub, Q[1] + nB[1] * stub];
-  const own = [it.e.from, it.e.to];
-  const others = obstacles.filter(([id]) => id !== own[0] && id !== own[1]).map(([, bx]) => bx);
+  const own = ownIds(it);
+  const others = obstacles.filter(([id]) => !own.includes(id)).map(([, bx]) => bx);
   const mine = [it.fa ? null : a, it.fb ? null : b].filter(Boolean);
   // Captions are in the way like boxes, never ends.
   const blockers = [...others, ...captions];
