@@ -1015,6 +1015,26 @@ export function setModuleLabel(doc, nodeId, moduleId, label) {
 }
 
 /**
+ * Move a module to position `index` in its node's list (clamped to the list): the order in the
+ * YAML is the order the tiles are drawn in. Refused (the document returned as it was) when the
+ * node or module does not exist or the module is already there. Edges are untouched: an end
+ * names a module by id, not by place.
+ */
+export function moveModule(doc, nodeId, moduleId, index) {
+  const node = doc.nodes.find((n) => n.id === nodeId);
+  const list = Array.isArray(node?.modules) ? node.modules : [];
+  const from = list.findIndex((m) => m?.id === moduleId);
+  if (from < 0) return doc;
+  const to = Math.max(0, Math.min(list.length - 1, Math.trunc(Number(index) || 0)));
+  if (to === from) return doc;
+  const d = clone(doc);
+  const n = d.nodes.find((x) => x.id === nodeId);
+  const [m] = n.modules.splice(from, 1);
+  n.modules.splice(to, 0, m);
+  return d;
+}
+
+/**
  * Remove a module from a node. Every edge end that named it is re-pointed to the node itself, so
  * the arrow stays and still means "something in this box"; an edge whose two ends then name the
  * same thing (a self loop) is dropped. The last module going takes the `modules` key with it.

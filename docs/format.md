@@ -296,14 +296,18 @@ edges:
   nodes, with `mode` and `protocol` as always.
 - An edge whose two ends are in the **same** node, at least one of them a module
   (`backend/api` to `backend/otp`), is **in-process**: a call inside one deployed unit, not a hop.
-  It carries no `mode` and no `protocol`; either one present is a structural error.
+  It carries no `mode` and no `protocol`; either one present is a structural error. It may
+  carry a `label`, drawn small on its line in the expanded box.
 - Rules read a module end as its node, everywhere: `hasEdge`, `syncChainDepth`, `inGroup`, `from`,
   `to`, `crossesGroup`. An in-process edge is invisible to rules. A finding on an edge with a
   module end carries the ends as written (`from`, `to`) in its subject, beside the edge's index.
 - A node with modules is drawn collapsed: its usual box, with an `N modules` chip leftmost in its
   chip row and the module list in its hover text. An edge with a module end is drawn to the node's
   box; an in-process edge is not drawn. The expanded box (the canvas's) lays modules out as tiles
-  by `moduleTiles` in `packages/core/src/geometry.js`.
+  by `moduleTiles` in `packages/core/src/geometry.js`, in list order, every tile of a node as
+  wide as its widest label needs (84px at least), the box growing to hold them. The order of
+  the list is the order of the tiles; dragging a tile on the canvas reorders the list
+  (`moveModule`).
 - Removing a module re-points every edge end that named it to the node itself (an edge whose ends
   then coincide is dropped), so an arrow is never lost silently.
 

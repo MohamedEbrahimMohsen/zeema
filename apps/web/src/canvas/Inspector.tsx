@@ -1605,6 +1605,12 @@ function EdgePanel({
         <p className="muted small mono">
           {edge.from} → {edge.to}
         </p>
+        <Field name="label" isSet={Boolean(edge.label)}>
+          <TextInput
+            value={String(edge.label ?? "")}
+            onCommit={(v) => api.setEdge(indexes[0], "label", v || undefined)}
+          />
+        </Field>
         <button
           type="button"
           className="btn btn-sm btn-danger mt-3"

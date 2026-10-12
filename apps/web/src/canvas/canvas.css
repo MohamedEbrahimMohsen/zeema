@@ -754,10 +754,19 @@
   fill: var(--accent);
 }
 
-/* An expanded node's modules: muted tiles inside the card. A press selects one, a drag from it
-   draws a wire whose end is the module (`node/module`). */
+/* An expanded node's modules: muted tiles inside the card. A press selects one, a drag moves it
+   to another place in the list; a wire starts from the selected tile's port dots. */
 .zeema-canvas .node-box .module {
-  cursor: crosshair;
+  cursor: grab;
+}
+.zeema-canvas .node-box .module.dragging {
+  cursor: grabbing;
+  opacity: 0.85;
+}
+.zeema-canvas svg.tile-dragging,
+.zeema-canvas svg.tile-dragging * {
+  /* biome-ignore lint/complexity/noImportantStyles: overrides every descendant cursor during the drag */
+  cursor: grabbing !important;
 }
 .zeema-canvas .node-box .module-tile {
   fill: var(--bg);
@@ -987,6 +996,11 @@
   stroke: var(--frame);
   stroke-width: 1;
 }
+/* an in-process call's label: smaller than a hop's, on the light line */
+.zeema-canvas .edge-label.in-process-label {
+  font-size: 10px;
+  cursor: pointer;
+}
 .zeema-canvas .edge.selected {
   stroke: var(--accent);
   stroke-width: 2;
@@ -1072,6 +1086,20 @@
 }
 .zeema-canvas .port-dot:hover {
   fill: var(--accent);
+}
+/* a module tile's port dots: on the selected tile only (a wire drawn from one ends at the
+   module); elsewhere they neither show nor take the pointer, so a press on a tile moves it */
+.zeema-canvas .node-box .module .tile-port-dot,
+.zeema-canvas .node-box:hover .module .tile-port-dot {
+  opacity: 0;
+  pointer-events: none;
+}
+.zeema-canvas .node-box .module.selected .tile-port-dot {
+  opacity: 1;
+  pointer-events: auto;
+}
+.zeema-canvas svg.tile-dragging .node-box .module.selected .tile-port-dot {
+  opacity: 0;
 }
 .zeema-canvas .end-handle {
   fill: var(--panel);

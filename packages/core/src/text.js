@@ -126,6 +126,21 @@ export function nodeWidth(name, sub, ref = false) {
   return BOX_W_STEPS.find((step) => step >= need) ?? MAX_BOX_W;
 }
 
+// A module tile's label: 11px mono on the canvas (canvas.css .module-label), so every character
+// is one advance, about 0.62em (the same estimate frameCaption makes for the canvas's mono).
+export const MODULE_FONT = 11;
+const MONO_EM = 0.62;
+
+/** The estimated width, in px, of a module tile's label. */
+export function moduleLabelWidth(text) {
+  return [...String(text ?? "")].length * MODULE_FONT * MONO_EM;
+}
+
+/** A module label cut, with an ellipsis, to fit `max` px (moduleLabelWidth). */
+export function fitModuleLabel(text, max) {
+  return ellipsize(String(text ?? ""), max, moduleLabelWidth);
+}
+
 // A group's caption: 12px, 12px in from the frame's left side, pushed FRAME_ICON_SHIFT further
 // right by an icon (the icon and a 6px gap). A frame is at least as wide as its caption plus
 // 12px either side, up to CAPTION_MAX; a caption that needs more is set on two lines, each
@@ -144,7 +159,7 @@ export const FRAME_ICON_SHIFT = 22;
 export function frameCaption(text, icon = false) {
   // The export sets a caption in 12px sans; the canvas in 11px mono (canvas.css .frame-label),
   // about 0.62em a character. The frame is sized for whichever is wider.
-  const measure = (t) => Math.max(textWidth(t, CAPTION_FONT), [...String(t)].length * 11 * 0.62);
+  const measure = (t) => Math.max(textWidth(t, CAPTION_FONT), [...String(t)].length * 11 * MONO_EM);
   const room = CAPTION_PAD + (icon ? FRAME_ICON_SHIFT : 0);
   const s = String(text ?? "");
   const one = measure(s) + room;

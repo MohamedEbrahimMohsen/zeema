@@ -2243,6 +2243,14 @@ export function Canvas(props: Props) {
       },
       // Which nodes show their modules is this viewer's, per design, in this browser only.
       onExpand: (ids) => writeExpanded(`${props.owner}/${props.slug}`, ids),
+      // A module tile dragged to another place in its node: the order in the YAML is the order
+      // the tiles are drawn in. One undo step; an edge names a module by id, so none changes.
+      onModuleMove: (nodeId, moduleId, index) => {
+        const e = eng.current!;
+        const next = D.moveModule(e.doc, nodeId, moduleId, index);
+        if (next === e.doc) return render();
+        commit(next);
+      },
     });
     scene.expanded = readExpanded(`${props.owner}/${props.slug}`);
     sceneRef.current = scene;

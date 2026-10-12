@@ -39,7 +39,14 @@ import { CAPTION_LINE, FRAME_ICON_SHIFT, nodeText } from "./text.js";
 export { AUTH_GLYPH_R, refAt } from "./geometry.js";
 // The node-text measure lives in text.js, with the box sizing that uses it; re-exported here
 // because the canvas and older callers import it from the renderer.
-export { CAPTION_LINE, nodeText, nodeWidth, textWidth } from "./text.js";
+export {
+  CAPTION_LINE,
+  fitModuleLabel,
+  moduleLabelWidth,
+  nodeText,
+  nodeWidth,
+  textWidth,
+} from "./text.js";
 
 // A node card is one neutral surface in both themes: colour on a drawing comes only from the
 // component's icon, from a group tint the author chose, and from finding badges. These are the

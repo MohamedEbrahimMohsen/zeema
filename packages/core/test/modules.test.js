@@ -17,6 +17,7 @@ import {
   isInProcess,
   MODULE_HOST_KINDS,
   moduleOf,
+  moveModule,
   pasteFragment,
   reconnectEdge,
   removeModule,
@@ -31,6 +32,8 @@ import {
   MODULE_GAP,
   MODULE_HEADER,
   MODULE_TILE_H,
+  MODULE_TILE_MAX_W,
+  MODULE_TILE_PAD,
   MODULE_TILE_W,
   moduleTiles,
 } from "../src/geometry.js";
@@ -38,6 +41,7 @@ import { layout } from "../src/layout.js";
 import { nodeDecor, toMermaid, toSvg } from "../src/render.js";
 import { runRules } from "../src/rules.js";
 import { check } from "../src/structure.js";
+import { fitModuleLabel, moduleLabelWidth } from "../src/text.js";
 import { parse, serialize } from "../src/yaml.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -172,6 +176,20 @@ describe("modules: structure gate", () => {
     ]);
   });
 
+  it("allows a label on an in-process edge: parses, round-trips, no finding", () => {
+    const text = TEXT.replace(
+      "{ from: backend/api, to: backend/otp }",
+      '{ from: backend/api, to: backend/otp, label: "verify code" }',
+    );
+    const { doc, cst } = parse(text);
+    expect(doc.edges[1]).toEqual({ from: "backend/api", to: "backend/otp", label: "verify code" });
+    expect(serialize(cst, doc)).toBe(text);
+    expect(findings(doc)).toEqual([]);
+    expect(serialize(cst, setEdgeField(doc, 1, "label", "events"))).toBe(
+      text.replace('label: "verify code"', 'label: "events"'),
+    );
+  });
+
   it("still requires mode and protocol on every other edge, a module edge included", () => {
     const { doc } = parse(TEXT.replace(", mode: sync, protocol: https", ""));
     expect(findings(doc)).toEqual([
@@ -248,6 +266,32 @@ describe("modules: setters", () => {
     expect(bare.nodes[0].modules).toBeUndefined();
     expect(bare.edges).toEqual([{ from: "backend", to: "sms", mode: "sync", protocol: "https" }]);
     expect(removeModule(doc, "backend", "nope")).toBe(doc);
+  });
+
+  it("moveModule reorders the list, one entry moving, edges untouched", () => {
+    const { doc, cst } = parse(TEXT);
+    const next = moveModule(doc, "backend", "otp", 0);
+    expect(next.nodes[0].modules.map((m) => m.id)).toEqual(["otp", "api"]);
+    expect(next.edges).toEqual(doc.edges);
+    const api = '      - { id: api, label: "API" }\n';
+    const otp = '      - { id: otp, label: "OTP" }\n';
+    expect(serialize(cst, next)).toBe(TEXT.replace(api + otp, otp + api));
+    expect(doc.nodes[0].modules[0].id).toBe("api"); // the original is untouched
+    // clamped to the list; refused where nothing would change or nothing is there
+    expect(moveModule(doc, "backend", "api", 9).nodes[0].modules.map((m) => m.id)).toEqual([
+      "otp",
+      "api",
+    ]);
+    expect(moveModule(doc, "backend", "api", 0)).toBe(doc);
+    expect(moveModule(doc, "backend", "nope", 0)).toBe(doc);
+    expect(moveModule(doc, "nope", "api", 1)).toBe(doc);
+    // a block-style entry moves whole, its comment with it
+    const apiBlock = '      - id: api\n        label: "API" # the front door\n';
+    const block = TEXT.replace(api, apiBlock);
+    const b = parse(block);
+    expect(serialize(b.cst, moveModule(b.doc, "backend", "api", 1))).toBe(
+      block.replace(apiBlock + otp, otp + apiBlock),
+    );
   });
 
   it("renameNode, deleteNodes and copy/paste follow module ends", () => {
@@ -382,6 +426,38 @@ describe("modules: drawing", () => {
     expect(wide.w).toBe(400);
     expect(wide.tiles[0].x).toBe((400 - MODULE_TILE_W) / 2);
     expect(wide.h).toBe(MODULE_HEADER + MODULE_TILE_H + MODULE_GAP);
+  });
+
+  it("moduleTiles sizes every tile of a node to its widest label, and the box to the tiles", () => {
+    const node = {
+      modules: [
+        { id: "iam", label: "IAM" },
+        { id: "notifications", label: "Notifications" },
+        { id: "audit", label: "Audit Logs" },
+      ],
+    };
+    const t = moduleTiles(node, 176);
+    const tileW = Math.ceil(moduleLabelWidth("Notifications") + MODULE_TILE_PAD);
+    expect(tileW).toBeGreaterThan(MODULE_TILE_W);
+    expect(new Set(t.tiles.map((x) => x.w))).toEqual(new Set([tileW]));
+    // the label fits its tile with the padding to spare, uncut
+    expect(fitModuleLabel("Notifications", tileW - MODULE_TILE_PAD)).toBe("Notifications");
+    expect(t.w).toBe(3 * tileW + 4 * MODULE_GAP);
+    expect(t.tiles.map((x) => x.x)).toEqual(
+      [0, 1, 2].map((k) => MODULE_GAP + k * (tileW + MODULE_GAP)),
+    );
+    // the label, else the id, is what is measured; a module of a short name keeps the floor
+    expect(moduleTiles({ modules: [{ id: "notifications" }] }, 0).tiles[0].w).toBe(tileW);
+    expect(moduleTiles({ modules: [{ id: "a", label: "OTP" }] }, 0).tiles[0].w).toBe(MODULE_TILE_W);
+    // a label too long for any tile is held to the widest tile, and cut to fit it
+    const long = "A very long module label that would never fit a tile";
+    const capped = moduleTiles({ modules: [{ id: "x", label: long }] }, 0);
+    expect(capped.tiles[0].w).toBe(MODULE_TILE_MAX_W);
+    const cut = fitModuleLabel(long, MODULE_TILE_MAX_W - MODULE_TILE_PAD);
+    expect(cut.endsWith("…")).toBe(true);
+    expect(moduleLabelWidth(cut)).toBeLessThanOrEqual(MODULE_TILE_MAX_W - MODULE_TILE_PAD);
+    // a measure of the caller's own
+    expect(moduleTiles(node, 0, () => 100).tiles[0].w).toBe(100 + MODULE_TILE_PAD);
   });
 
   it("layout draws a module edge to the node box and leaves the in-process edge out", () => {

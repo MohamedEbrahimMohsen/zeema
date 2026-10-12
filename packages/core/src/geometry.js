@@ -19,7 +19,15 @@
 // live in the layout sidecar under a key derived from the pair; everything else is recomputed
 // from the boxes on every frame.
 
-import { endNode, groupCaption, isInProcess, resolveEdge, splitEnd } from "./document.js";
+import {
+  endNode,
+  groupCaption,
+  isInProcess,
+  moduleName,
+  nodeModules,
+  resolveEdge,
+  splitEnd,
+} from "./document.js";
 import {
   LABEL_FONT,
   labelCentre,
@@ -41,7 +49,7 @@ export {
   viaOf,
 } from "./routing.js";
 
-import { frameCaption, textWidth } from "./text.js";
+import { frameCaption, moduleLabelWidth, textWidth } from "./text.js";
 
 // How edges are drawn: "orthogonal" (axis-aligned segments with rounded corners, routing.js),
 // "bundled" (orthogonal, with the edges that fan out of one side of a box, or into one, sharing a
@@ -1176,10 +1184,15 @@ export function bowAt(boxes, from, to, x, y, ends = null, frames = {}) {
 }
 
 // A node with modules is drawn collapsed by default (a box with an "N modules" chip). Expanded,
-// it is a taller box: a MODULE_HEADER px strip with its usual name, then the modules as tiles of
-// MODULE_TILE_W x MODULE_TILE_H, up to MODULE_COLUMNS to a row, MODULE_GAP apart and MODULE_GAP
-// from the box's sides and bottom. One geometry for the canvas and any server render of it.
+// it is a taller box: a MODULE_HEADER px strip with its usual name, then the modules as tiles
+// MODULE_TILE_H tall, up to MODULE_COLUMNS to a row, MODULE_GAP apart and MODULE_GAP from the
+// box's sides and bottom. Every tile of a node is one width: the widest label (moduleLabelWidth,
+// the 11px mono the canvas sets it in) plus MODULE_TILE_PAD, at least MODULE_TILE_W and at most
+// MODULE_TILE_MAX_W (a longer label is cut to fit). One geometry for the canvas and any server
+// render of it.
 export const MODULE_TILE_W = 84;
+export const MODULE_TILE_MAX_W = 220;
+export const MODULE_TILE_PAD = 24;
 export const MODULE_TILE_H = 40;
 export const MODULE_GAP = 12;
 export const MODULE_HEADER = 44;
@@ -1189,26 +1202,31 @@ export const MODULE_COLUMNS = 3;
  * The expanded box of a node with modules, in the box's own coordinates (top-left 0,0): its
  * width (`w`, or wider when a full row of tiles needs more), its height, and one tile per module
  * in document order, `{ id, x, y, w, h }`, laid in rows left to right, the grid centred in the
- * box. Null for a node with no modules: it has no expanded form.
+ * box. Tiles are sized to the widest label by `measure` (px of a label; moduleLabelWidth when
+ * not given). Null for a node with no modules: it has no expanded form.
  * @param {any} node
  * @param {number} w
+ * @param {(text: string) => number} [measure]
  * @returns {{ w: number, h: number, tiles: Array<{ id: string, x: number, y: number, w: number, h: number }> } | null}
  */
-export function moduleTiles(node, w) {
-  const list = Array.isArray(node?.modules)
-    ? node.modules.filter((m) => m !== null && typeof m === "object" && !Array.isArray(m))
-    : [];
+export function moduleTiles(node, w, measure = moduleLabelWidth) {
+  const list = nodeModules(node);
   if (!list.length) return null;
+  const widest = Math.max(...list.map((m) => measure(moduleName(m))));
+  const tileW = Math.min(
+    MODULE_TILE_MAX_W,
+    Math.max(MODULE_TILE_W, Math.ceil(widest + MODULE_TILE_PAD)),
+  );
   const cols = Math.min(MODULE_COLUMNS, list.length);
   const rows = Math.ceil(list.length / MODULE_COLUMNS);
-  const gridW = cols * MODULE_TILE_W + (cols - 1) * MODULE_GAP;
+  const gridW = cols * tileW + (cols - 1) * MODULE_GAP;
   const width = Math.max(w, gridW + 2 * MODULE_GAP);
   const x0 = Math.round((width - gridW) / 2);
   const tiles = list.map((m, k) => ({
     id: String(m.id),
-    x: x0 + (k % MODULE_COLUMNS) * (MODULE_TILE_W + MODULE_GAP),
+    x: x0 + (k % MODULE_COLUMNS) * (tileW + MODULE_GAP),
     y: MODULE_HEADER + Math.floor(k / MODULE_COLUMNS) * (MODULE_TILE_H + MODULE_GAP),
-    w: MODULE_TILE_W,
+    w: tileW,
     h: MODULE_TILE_H,
   }));
   const h = MODULE_HEADER + rows * MODULE_TILE_H + (rows - 1) * MODULE_GAP + MODULE_GAP;

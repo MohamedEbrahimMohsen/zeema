@@ -24,6 +24,7 @@ import {
   nodeModules,
   nodeRef,
   refLabel,
+  splitEnd,
   stackedIds,
 } from "@zeema/core/document";
 import {
@@ -39,6 +40,8 @@ import {
   groupFrames,
   innermostFrameAt,
   MODULE_HEADER,
+  MODULE_TILE_PAD,
+  moduleTiles,
   moveSegment,
   portAt,
   readRouting,
@@ -51,6 +54,7 @@ import {
   authGlyphMarkup,
   CAPTION_LINE,
   FRAME_ICON_SHIFT,
+  fitModuleLabel,
   frameDecor,
   nodeDecor,
   nodeText,
@@ -132,6 +136,12 @@ const PORT_SIDES: PortSide[] = ["top", "right", "bottom", "left"];
 /** A straight line's path. */
 const straight = ([a, b]: [[number, number], [number, number]]) =>
   `M${a[0]} ${a[1]} L${b[0]} ${b[1]}`;
+
+/** Where an in-process line's label sits: over the middle of the line, just above it. */
+const inProcessLabelAt = ([a, b]: [[number, number], [number, number]]): [number, number] => [
+  (a[0] + b[0]) / 2,
+  (a[1] + b[1]) / 2 - 4,
+];
 
 /** Where a side's port dot sits for a box, in that box's coordinates. */
 function portDotAt(b: Box, side: PortSide): [number, number] {
@@ -305,6 +315,8 @@ export type Handlers = {
   onFindingDot?: (nodeId: string | null, at?: [number, number], pinned?: boolean) => void;
   /** The expanded nodes changed (a chip click, a double click): the page remembers them. */
   onExpand?: (ids: Set<string>) => void;
+  /** A module tile was dragged to slot `index` of its node's list: reorder the modules. */
+  onModuleMove?: (nodeId: string, moduleId: string, index: number) => void;
 };
 
 // The zoom range every path shares: the wheel, the zoom menu and fit's lower bound all stay in it.
@@ -455,6 +467,8 @@ export class Scene {
   peek: string | null = null;
   private peekTimer: ReturnType<typeof setTimeout> | null = null;
   wire: any = null;
+  /** A module tile being dragged to another place in its node's list (see `startTileDrag`). */
+  tileDrag: any = null;
   bowDrag: any = null;
   /** An edge label being dragged off its automatic place (see `startLabelDrag`). */
   labelDrag: any = null;
@@ -875,6 +889,7 @@ export class Scene {
     return !!(
       this.drag ||
       this.wire ||
+      this.tileDrag ||
       this.marquee ||
       this.noteDrag ||
       this.bowDrag ||
@@ -1580,6 +1595,26 @@ export class Scene {
       g.append(hits, line);
       this.hoverable(hits, "edge", String(l.i));
       const written = this.model.doc.edges[l.i];
+      // A label, small, over the middle of the line: the same text an edge label is.
+      let label: SVGTextElement | null = null;
+      if (written.label) {
+        const [x, y] = inProcessLabelAt(l.points);
+        label = el("text", {
+          class: "edge-label in-process-label",
+          x,
+          y,
+          "text-anchor": "middle",
+        }) as SVGTextElement;
+        label.textContent = String(written.label);
+        label.addEventListener("pointerdown", (ev: any) => {
+          if (ev.button !== 0 || this.space) return;
+          ev.stopPropagation();
+          if (ev.shiftKey || ev.ctrlKey || ev.metaKey) return this.toggle("edge", l.i);
+          this.select("edge", l.i);
+        });
+        g.append(label);
+        this.hoverable(label, "edge", String(l.i));
+      }
       this.edgeEls.set(l.i, {
         hits,
         hitEls: [hit],
@@ -1587,7 +1622,7 @@ export class Scene {
         key: keys[l.i],
         from: endNode(written.from),
         to: endNode(written.to),
-        label: null,
+        label,
         auth: null,
         inProcess: true,
       });
@@ -1602,6 +1637,11 @@ export class Scene {
       const d = straight(l.points);
       els.line.setAttribute("d", d);
       els.hitEls[0]?.setAttribute("d", d);
+      if (els.label) {
+        const [x, y] = inProcessLabelAt(l.points);
+        els.label.setAttribute("x", String(x));
+        els.label.setAttribute("y", String(y));
+      }
     }
   }
 
@@ -1651,6 +1691,7 @@ export class Scene {
     return !!(
       this.drag ||
       this.wire ||
+      this.tileDrag ||
       this.marquee ||
       this.pan ||
       this.noteDrag ||
@@ -1998,7 +2039,11 @@ export class Scene {
     box.append(name, comp);
   }
 
-  /** One module tile of an expanded node, at `t` in the node's own coordinates. */
+  /**
+   * One module tile of an expanded node, at `t` in the node's own coordinates. Pressed, it is
+   * selected; dragged, it moves to another place in its node's list (`startTileDrag`). Selected,
+   * it shows a port dot on each side, as a node does, and a wire is drawn from one of those.
+   */
   renderTile(box: Element, ref: string, label: string, t: Box, flagged: Set<string>) {
     const tile = el("g", {
       class: `module${flagged.has(ref) ? " flagged" : ""}`,
@@ -2027,22 +2072,130 @@ export class Scene {
       fill: "var(--ink)",
       style: "font-family:var(--mono);font-size:11px",
     });
-    text.textContent = label.length > 13 ? `${label.slice(0, 12)}…` : label;
+    // The tile was sized for its node's widest label (moduleTiles); only a label longer than
+    // the widest tile is cut, by the same measure.
+    text.textContent = fitModuleLabel(label, t[2] - MODULE_TILE_PAD);
     tile.append(text);
-    // A press selects the module; a drag from it draws a wire whose end is the module.
     tile.addEventListener("pointerdown", (ev: any) => {
       if (ev.button !== 0 || this.space) return;
       ev.stopPropagation();
-      this.select("module", ref);
-      this.startWire(ref, ev);
+      if (this.selection.type !== "module" || this.selection.ref !== ref)
+        this.select("module", ref);
+      this.startTileDrag(ref, ev);
     });
     tile.addEventListener("dblclick", (ev) => {
       ev.stopPropagation();
       ev.preventDefault();
       this.editLabel("module", ref);
     });
+    // Port dots, as a node has (canvas.css shows them on the selected tile only): dragging one
+    // draws a wire whose end is the module.
+    for (const side of PORT_SIDES) {
+      const [hx, hy] = portDotAt([0, 0, t[2], t[3]], side);
+      const dot = el("circle", {
+        class: "port-dot tile-port-dot",
+        cx: hx,
+        cy: hy,
+        r: 4,
+        "data-side": side,
+      });
+      dot.addEventListener("pointerdown", (ev: any) => {
+        if (ev.button !== 0 || this.space) return;
+        ev.stopPropagation();
+        this.startWire(ref, ev, side);
+      });
+      tile.append(dot);
+    }
     box.append(tile);
     this.tileEls.set(ref, tile);
+  }
+
+  /**
+   * A press on a module tile: nothing yet. Once the pointer has moved a few px the tile follows
+   * it and the other tiles of its node move aside to show the slot it would take; let go inside
+   * the node, it takes that slot (`onModuleMove`); anywhere else, nothing changes.
+   */
+  startTileDrag(ref: string, ev: PointerEvent) {
+    const { node: nodeId, module: moduleId } = splitEnd(ref);
+    const n = this.model?.doc?.nodes?.find((x: any) => x.id === nodeId);
+    const ids = nodeModules(n).map((m: any) => String(m.id));
+    const from = ids.indexOf(moduleId as string);
+    if (!n || from < 0) return;
+    this.tileDrag = {
+      ref,
+      nodeId,
+      moduleId,
+      n,
+      ids,
+      from,
+      slot: from,
+      start: this.toWorld(ev.clientX, ev.clientY),
+      client: [ev.clientX, ev.clientY],
+      moved: false,
+    };
+    this.capture(ev);
+  }
+
+  /** The tiles of a node laid out in `order`, in the node's own coordinates, by module id. */
+  tileSlots(n: any, order: string[], w: number): Record<string, Box> {
+    const byId = new Map(nodeModules(n).map((m: any) => [String(m.id), m]));
+    const t = moduleTiles({ modules: order.map((id) => byId.get(id)) }, w);
+    const out: Record<string, Box> = {};
+    for (const x of t?.tiles ?? []) out[x.id] = [x.x, x.y, x.w, x.h];
+    return out;
+  }
+
+  moveTileDrag(ev: PointerEvent) {
+    const d = this.tileDrag;
+    if (!d.moved) {
+      if (Math.hypot(ev.clientX - d.client[0], ev.clientY - d.client[1]) < 4) return;
+      d.moved = true;
+      this.tileEls.get(d.ref)?.classList.add("dragging");
+      this.svg.classList.add("tile-dragging");
+    }
+    const b = this.boxes[d.nodeId];
+    if (!b) return;
+    const [wx, wy] = this.toWorld(ev.clientX, ev.clientY);
+    // The slot is the one whose place (in the order as it stands) the pointer is nearest.
+    const home = this.tileSlots(d.n, d.ids, b[2]);
+    let slot = d.from;
+    let best = Number.POSITIVE_INFINITY;
+    d.ids.forEach((id: string, k: number) => {
+      const r = home[id];
+      const dist = Math.hypot(wx - (b[0] + r[0] + r[2] / 2), wy - (b[1] + r[1] + r[3] / 2));
+      if (dist < best) [slot, best] = [k, dist];
+    });
+    d.slot = slot;
+    const order = d.ids.filter((id: string) => id !== d.moduleId);
+    order.splice(slot, 0, d.moduleId);
+    const placed = this.tileSlots(d.n, order, b[2]);
+    for (const id of d.ids) {
+      const tile = this.tileEls.get(`${d.nodeId}/${id}`);
+      if (!tile || id === d.moduleId) continue;
+      tile.setAttribute("transform", `translate(${placed[id][0]} ${placed[id][1]})`);
+    }
+    // The dragged tile follows the pointer, offset as it was picked up, over its neighbours.
+    const own = home[d.moduleId];
+    const tile = this.tileEls.get(d.ref);
+    if (tile && own) {
+      tile.setAttribute(
+        "transform",
+        `translate(${own[0] + wx - d.start[0]} ${own[1] + wy - d.start[1]})`,
+      );
+      tile.parentNode?.append(tile);
+    }
+  }
+
+  endTileDrag(ev: PointerEvent) {
+    const d = this.tileDrag;
+    this.tileDrag = null;
+    this.svg.classList.remove("tile-dragging");
+    if (!d.moved) return;
+    const b = this.boxes[d.nodeId];
+    const [wx, wy] = this.toWorld(ev.clientX, ev.clientY);
+    const inside = b && wx >= b[0] && wx <= b[0] + b[2] && wy >= b[1] && wy <= b[1] + b[3];
+    if (inside && d.slot !== d.from) this.h.onModuleMove?.(d.nodeId, d.moduleId, d.slot);
+    else this.render(this.model);
   }
 
   /**
@@ -2574,6 +2727,7 @@ export class Scene {
       if (this.noteDrag) return this.moveNote(ev);
       if (this.drag) this.moveDrag(ev);
       if (this.wire) this.moveWire(ev);
+      if (this.tileDrag) this.moveTileDrag(ev);
       if (this.bowDrag) this.moveBow(ev);
       if (this.labelDrag) this.moveLabel(ev);
       if (this.tip) this.moveTip(ev);
@@ -2588,6 +2742,7 @@ export class Scene {
       if (this.noteDrag) this.endNote();
       if (this.drag) this.endDrag(ev);
       if (this.wire) this.endWire();
+      if (this.tileDrag) this.endTileDrag(ev);
       if (this.bowDrag) this.endBow();
       if (this.labelDrag) this.endLabel();
       if (this.tip) this.finishTip();
@@ -2648,7 +2803,13 @@ export class Scene {
     if (this.wire) {
       this.wire.line.remove();
       this.clearWireTarget();
+      this.endEl(this.wire.from)?.classList.remove("wire-source");
       this.wire = null;
+    }
+    if (this.tileDrag) {
+      this.tileDrag = null;
+      this.svg.classList.remove("tile-dragging");
+      this.render(this.model);
     }
     if (this.bowDrag) {
       this.h.onPathPreview?.(this.bowDrag.key, this.bowDrag.original ?? null);
@@ -3479,6 +3640,7 @@ export class Scene {
 
   clearWireTarget() {
     for (const box of this.nodeEls.values()) box.classList.remove("wire-target");
+    for (const tile of this.tileEls.values()) tile.classList.remove("wire-target");
     for (const f of this.frameEls.values()) f.rect.classList.remove("wire-target");
   }
 
