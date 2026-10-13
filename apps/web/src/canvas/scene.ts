@@ -1716,7 +1716,12 @@ export class Scene {
     const report = (ev: PointerEvent) => {
       // A reference disc sits inside its box: the box must not take the report back.
       if (type === "ref") ev.stopPropagation();
-      if (ev.buttons || this.busy()) {
+      // A module tile sits inside its node's box: over a tile the card would describe the node,
+      // which is not what the pointer is on. No card there (the tile keeps its <title>). By
+      // what is painted under the pointer: a pointerenter's target is the box itself.
+      const onTile =
+        type === "node" && document.elementFromPoint(ev.clientX, ev.clientY)?.closest?.(".module");
+      if (ev.buttons || this.busy() || onTile) {
         this.hoverLight(null);
         return this.h.onHover?.(null);
       }
@@ -2082,11 +2087,6 @@ export class Scene {
       if (this.selection.type !== "module" || this.selection.ref !== ref)
         this.select("module", ref);
       this.startTileDrag(ref, ev);
-    });
-    tile.addEventListener("dblclick", (ev) => {
-      ev.stopPropagation();
-      ev.preventDefault();
-      this.editLabel("module", ref);
     });
     // Port dots, as a node has (canvas.css shows them on the selected tile only): dragging one
     // draws a wire whose end is the module.
@@ -2606,6 +2606,16 @@ export class Scene {
     );
 
     this.on(svg, "dblclick", (ev) => {
+      // A press on a tile captures the pointer to the svg (startTileDrag), so the double click
+      // lands here with the svg as its target, never on the tile: find the tile by what is
+      // painted under the pointer, and rename that module, not its node.
+      const tile = ((ev.target as Element)?.closest?.(".module") ??
+        document.elementFromPoint(ev.clientX, ev.clientY)?.closest?.(".module")) as Element | null;
+      const module = tile?.getAttribute("data-module");
+      if (module) {
+        ev.preventDefault();
+        return this.editLabel("module", module);
+      }
       const target = this.targetOf(ev);
       if (!target.type) return;
       ev.preventDefault();
