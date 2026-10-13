@@ -41,7 +41,6 @@ import {
   innermostFrameAt,
   MODULE_HEADER,
   MODULE_TILE_PAD,
-  moduleTiles,
   moveSegment,
   portAt,
   readRouting,
@@ -102,6 +101,8 @@ import { findGuides, type GuideLine } from "./guides";
 import {
   expandBoxes,
   findingTiles,
+  ghostBoxes,
+  ghostSlot,
   hasModules,
   inProcessLines,
   tileAt,
@@ -314,9 +315,20 @@ export type Handlers = {
    */
   onFindingDot?: (nodeId: string | null, at?: [number, number], pinned?: boolean) => void;
   /** The expanded nodes changed (a chip click, a double click): the page remembers them. */
-  onExpand?: (ids: Set<string>) => void;
+  /**
+   * `before` is the set as it was when the viewer toggled a node (a chip, a double click): the
+   * page records the step in its history. Without it the set was restored (undo, redo).
+   */
+  onExpand?: (ids: Set<string>, before?: string[]) => void;
   /** A module tile was dragged to slot `index` of its node's list: reorder the modules. */
   onModuleMove?: (nodeId: string, moduleId: string, index: number) => void;
+  /**
+   * Whether a node may take a new module (its kind runs code). With `onNewModule`, an expanded
+   * node it says yes to draws a "+ module" slot after its tiles.
+   */
+  canAddModule?: (node: any) => boolean;
+  /** A module named `label` was typed into a node's "+ module" slot: add it, at the end. */
+  onNewModule?: (nodeId: string, label: string) => void;
 };
 
 // The zoom range every path shares: the wheel, the zoom menu and fit's lower bound all stay in it.
@@ -426,6 +438,7 @@ export class Scene {
     notes: SVGGElement;
     edges: SVGGElement;
     nodes: SVGGElement;
+    moduleEdges: SVGGElement;
     inProcess: SVGGElement;
     markers: SVGGElement;
     overlay: SVGGElement;
@@ -452,6 +465,13 @@ export class Scene {
   expanded = new Set<string>();
   tiles: Record<string, Box> = {};
   tileEls = new Map<string, SVGGElement>();
+  /**
+   * The "+ module" slot of each expanded node that can take a module, by node id, in world
+   * coordinates: the canvas's own cell after the last tile, never a module, never in the design
+   * or a picture of it. `adding` is the node whose slot holds the new-module editor.
+   */
+  ghosts: Record<string, Box> = {};
+  adding: string | null = null;
   frames: Record<string, Box> = {};
   /** Each group's caption as its frame is sized for it (lines, label strip), from the engine. */
   captions: Record<string, { lines: string[]; width: number; extra: number; strip: number }> = {};
@@ -527,10 +547,15 @@ export class Scene {
       // In-process calls run between tiles inside an expanded node's card, so they are drawn
       // above the nodes (made here for the same reason as the markers).
       inProcess: el("g", { class: "layer-in-process" }) as SVGGElement,
+      // An edge with an end on a tile of an expanded node starts inside that node's card: in
+      // the edges layer the card would hide the run from the tile to the border. Such edges are
+      // drawn here, above the nodes, while the node is expanded (see `renderEdges`).
+      moduleEdges: el("g", { class: "layer-module-edges" }) as SVGGElement,
       overlay: svg.querySelector(".layer-overlay") as SVGGElement,
     };
     this.layers.overlay.before(this.layers.markers);
     this.layers.nodes.after(this.layers.inProcess);
+    this.layers.nodes.after(this.layers.moduleEdges);
     this.installArrowhead();
     this.installShadow();
     this.bind();
@@ -547,6 +572,7 @@ export class Scene {
     // a second element with the same id.
     this.layers.markers.remove();
     this.layers.inProcess.remove();
+    this.layers.moduleEdges.remove();
     for (const id of ARROWHEADS) this.defs.querySelector(`#${id}`)?.remove();
     this.defs.querySelector(`#${NODE_SHADOW}`)?.remove();
   }
@@ -739,25 +765,49 @@ export class Scene {
 
   /** Recompute the tiles' world boxes from the boxes as they stand (a drag moves them). */
   syncTiles() {
-    this.tiles = tileBoxes(this.model?.doc?.nodes ?? [], this.boxes, this.expanded);
+    const nodes = this.model?.doc?.nodes ?? [];
+    this.tiles = tileBoxes(nodes, this.boxes, this.expanded, this.ghosted);
+    this.ghosts = ghostBoxes(nodes, this.boxes, this.expanded, this.ghosted);
   }
 
-  /** Expand a node with modules, or collapse it: a look, so no undo step and nothing saved. */
+  /** Whether an expanded node draws the "+ module" slot: the page adds modules, and to this one. */
+  ghosted = (n: any) =>
+    Boolean(this.h.onNewModule) && hasModules(n) && (this.h.canAddModule?.(n) ?? true);
+
+  /**
+   * Expand a node with modules, or collapse it: a look, so nothing is saved, but the page keeps
+   * it in its history (`onExpand` with the set as it was) so Ctrl+Z folds it back.
+   */
   toggleExpanded(id: string) {
     const n = this.model?.doc?.nodes?.find((x: any) => x.id === id);
     if (!n || !hasModules(n)) return;
+    const before = [...this.expanded];
     if (this.expanded.has(id)) this.expanded.delete(id);
     else this.expanded.add(id);
-    // A module selected inside a node that folds away is no longer on screen.
-    if (
-      !this.expanded.has(id) &&
-      this.selection.type === "module" &&
-      endNode(this.selection.ref) === id
-    )
-      this.selection = { type: "node", ref: id };
-    this.h.onExpand?.(new Set(this.expanded));
+    this.foldSelection();
+    this.h.onExpand?.(new Set(this.expanded), before);
     this.render(this.model);
     this.emitSelection();
+  }
+
+  /**
+   * Put the expanded set back to `ids` (undo, redo of an expand). The page re-renders after
+   * (`render: false`) or this does.
+   */
+  setExpanded(ids: Iterable<string>, { render = true } = {}) {
+    this.expanded = new Set(ids);
+    this.foldSelection();
+    this.h.onExpand?.(new Set(this.expanded));
+    if (!render) return;
+    this.render(this.model);
+    this.emitSelection();
+  }
+
+  /** A module selected inside a node that folded away is no longer on screen: its node is. */
+  foldSelection() {
+    if (this.selection.type !== "module") return;
+    const node = endNode(this.selection.ref as string);
+    if (!this.expanded.has(node)) this.selection = { type: "node", ref: node };
   }
 
   /** Each group's label strip height, for the frame targets. */
@@ -801,7 +851,7 @@ export class Scene {
     }
     // An expanded node keeps its corner and grows to hold its tiles: frames, edges and hit
     // areas all follow the box drawn.
-    this.boxes = expandBoxes(model.doc.nodes, laid, this.expanded);
+    this.boxes = expandBoxes(model.doc.nodes, laid, this.expanded, this.ghosted);
     this.syncTiles();
     for (const id of [...this.multi]) if (!this.boxes[id]) this.multi.delete(id);
     const groupIds = new Set((model.doc.groups ?? []).map((g: any) => g.id as string));
@@ -1488,8 +1538,10 @@ export class Scene {
   }
 
   renderEdges() {
-    const g = this.layers.edges;
-    g.textContent = "";
+    const below = this.layers.edges;
+    const above = this.layers.moduleEdges;
+    below.textContent = "";
+    above.textContent = "";
     this.edgeEls.clear();
     this.adjacency = adjacencyOf(this.model.doc);
     this.geom = edgeGeometry(
@@ -1501,8 +1553,17 @@ export class Scene {
       this.routeOptions(),
     );
     const glyphs: Element[] = [];
+    const glyphsAbove: Element[] = [];
     for (const e of this.geom) {
       const d = edgePath(e);
+      // An end on a tile of an expanded node (`routeOptions` synced the tiles): the edge leaves
+      // from inside the card, so it is drawn above the nodes until the node collapses.
+      const written = this.model.doc.edges?.[e.i];
+      const up =
+        !!written &&
+        (Object.hasOwn(this.tiles, String(written.from)) ||
+          Object.hasOwn(this.tiles, String(written.to)));
+      const g = up ? above : below;
       // The hit paths sit in one group just before the line, so hovering any of them lifts it.
       const hits = el("g", { class: "edge-hits" });
       const line = el("path", {
@@ -1559,13 +1620,14 @@ export class Scene {
             ? `<use href="#ic-${glyph.icon}" width="24" height="24"/>`
             : null;
         a.innerHTML = authGlyphMarkup(glyph, mark);
-        glyphs.push(a);
+        (up ? glyphsAbove : glyphs).push(a);
         els.auth = a;
       }
       this.edgeEls.set(e.i, els);
     }
     this.renderInProcess(this.layers.inProcess);
-    g.append(...glyphs);
+    below.append(...glyphs);
+    above.append(...glyphsAbove);
   }
 
   /**
@@ -1720,7 +1782,8 @@ export class Scene {
       // which is not what the pointer is on. No card there (the tile keeps its <title>). By
       // what is painted under the pointer: a pointerenter's target is the box itself.
       const onTile =
-        type === "node" && document.elementFromPoint(ev.clientX, ev.clientY)?.closest?.(".module");
+        type === "node" &&
+        document.elementFromPoint(ev.clientX, ev.clientY)?.closest?.(".module, .module-ghost");
       if (ev.buttons || this.busy() || onTile) {
         this.hoverLight(null);
         return this.h.onHover?.(null);
@@ -1847,6 +1910,8 @@ export class Scene {
           if (!t) continue;
           this.renderTile(box, ref, moduleName(m), [t[0] - b[0], t[1] - b[1], t[2], t[3]], flagged);
         }
+        const g = own(this.ghosts, n.id) as Box | undefined;
+        if (g) this.renderGhost(box, n.id, [g[0] - b[0], g[1] - b[1], g[2], g[3]]);
       } else if (this.symbolFor(n.component))
         box.append(
           el("use", {
@@ -2111,6 +2176,97 @@ export class Scene {
   }
 
   /**
+   * The "+ module" slot after an expanded node's tiles: a dashed outline and "+ module", muted
+   * until the pointer is on it. A click opens the new-module editor in it (`newModule`); it is
+   * not a tile, so it is never selected, dragged, wired or described by a hover card. While the
+   * editor is open it is drawn as the tile the module will be.
+   */
+  renderGhost(box: Element, nodeId: string, t: Box) {
+    const adding = this.adding === nodeId;
+    const g = el("g", {
+      class: `module-ghost${adding ? " adding" : ""}`,
+      "data-ghost": nodeId,
+      role: "button",
+      "aria-label": "Add a module",
+      transform: `translate(${t[0]} ${t[1]})`,
+    });
+    g.append(el("rect", { class: "module-ghost-tile", width: t[2], height: t[3], rx: 7 }));
+    if (!adding) {
+      const text = el("text", {
+        class: "module-ghost-label",
+        x: t[2] / 2,
+        y: t[3] / 2 + 4,
+        "text-anchor": "middle",
+      });
+      text.textContent = "+ module";
+      g.append(text);
+    }
+    g.addEventListener("pointerdown", (ev: any) => {
+      if (ev.button !== 0 || this.space) return;
+      ev.stopPropagation();
+    });
+    g.addEventListener("click", (ev: any) => {
+      if (ev.button !== 0 || this.space) return;
+      ev.stopPropagation();
+      this.newModule(nodeId);
+    });
+    g.addEventListener("dblclick", (ev) => ev.stopPropagation());
+    box.append(g);
+  }
+
+  /**
+   * Open the new-module editor in a node's "+ module" slot, expanding the node first when it is
+   * folded. Enter (or clicking away) with a name adds the module (`onNewModule`); Escape, or no
+   * name, adds nothing. False when the node cannot take a module.
+   */
+  newModule(nodeId: string): boolean {
+    this.closeEditor();
+    const n = this.model?.doc?.nodes?.find((x: any) => x.id === nodeId);
+    if (!n || !this.ghosted(n)) return false;
+    if (!this.expanded.has(nodeId)) this.toggleExpanded(nodeId);
+    this.adding = nodeId;
+    this.render(this.model);
+    const b = this.ghosts[nodeId];
+    if (!b) {
+      this.adding = null;
+      return false;
+    }
+    const anchor = this.toScreen(b[0] + b[2] / 2, b[1] + b[3] / 2 - 10);
+    const width = Math.max(110, b[2] * this.view.k);
+    const wrap = this.svg.parentElement as HTMLElement;
+    const r = wrap.getBoundingClientRect();
+    const input = document.createElement("input");
+    input.className = "inline-edit";
+    input.type = "text";
+    input.placeholder = "Module name";
+    input.setAttribute("aria-label", "New module name");
+    input.style.left = `${Math.round(anchor[0] - r.left - width / 2)}px`;
+    input.style.top = `${Math.round(anchor[1] - r.top)}px`;
+    input.style.width = `${Math.round(width)}px`;
+    let done = false;
+    const finish = (commit: boolean) => {
+      if (done) return;
+      done = true;
+      input.remove();
+      this.editor = null;
+      this.adding = null;
+      const value = input.value.trim();
+      if (commit && value) this.h.onNewModule?.(nodeId, value);
+      else if (this.model) this.render(this.model);
+    };
+    input.addEventListener("blur", () => finish(true));
+    input.addEventListener("keydown", (ev) => {
+      ev.stopPropagation();
+      if (ev.key === "Enter") finish(true);
+      if (ev.key === "Escape") finish(false);
+    });
+    this.editor = { input, finish };
+    wrap.append(input);
+    input.focus();
+    return true;
+  }
+
+  /**
    * A press on a module tile: nothing yet. Once the pointer has moved a few px the tile follows
    * it and the other tiles of its node move aside to show the slot it would take; let go inside
    * the node, it takes that slot (`onModuleMove`); anywhere else, nothing changes.
@@ -2136,10 +2292,13 @@ export class Scene {
     this.capture(ev);
   }
 
-  /** The tiles of a node laid out in `order`, in the node's own coordinates, by module id. */
+  /**
+   * The tiles of a node laid out in `order`, in the node's own coordinates, by module id, as the
+   * canvas draws them (with the "+ module" slot when the node has one).
+   */
   tileSlots(n: any, order: string[], w: number): Record<string, Box> {
     const byId = new Map(nodeModules(n).map((m: any) => [String(m.id), m]));
-    const t = moduleTiles({ modules: order.map((id) => byId.get(id)) }, w);
+    const t = ghostSlot({ modules: order.map((id) => byId.get(id)) }, w, this.ghosted(n));
     const out: Record<string, Box> = {};
     for (const x of t?.tiles ?? []) out[x.id] = [x.x, x.y, x.w, x.h];
     return out;
@@ -2165,6 +2324,10 @@ export class Scene {
       const dist = Math.hypot(wx - (b[0] + r[0] + r[2] / 2), wy - (b[1] + r[1] + r[3] / 2));
       if (dist < best) [slot, best] = [k, dist];
     });
+    // Over the "+ module" slot: the last place in the list.
+    const g = Object.hasOwn(this.ghosts, d.nodeId) ? this.ghosts[d.nodeId] : undefined;
+    if (g && Math.hypot(wx - (g[0] + g[2] / 2), wy - (g[1] + g[3] / 2)) < best)
+      slot = d.ids.length - 1;
     d.slot = slot;
     const order = d.ids.filter((id: string) => id !== d.moduleId);
     order.splice(slot, 0, d.moduleId);
@@ -2609,6 +2772,9 @@ export class Scene {
       // A press on a tile captures the pointer to the svg (startTileDrag), so the double click
       // lands here with the svg as its target, never on the tile: find the tile by what is
       // painted under the pointer, and rename that module, not its node.
+      // The "+ module" slot is a button: a double click on it is two clicks, never a rename.
+      if (document.elementFromPoint(ev.clientX, ev.clientY)?.closest?.(".module-ghost"))
+        return ev.preventDefault();
       const tile = ((ev.target as Element)?.closest?.(".module") ??
         document.elementFromPoint(ev.clientX, ev.clientY)?.closest?.(".module")) as Element | null;
       const module = tile?.getAttribute("data-module");
@@ -3881,7 +4047,7 @@ export class Scene {
       if (layer) layer.textContent = "";
     }
     for (const n of clone.querySelectorAll(
-      ".port-dot, .end-handle, .edge-hits, .edge-hit, .frame-hit, .marquee, .wire, .note-grip, .note-grip-hit, .note-text.empty, .frame-label:empty, .layer-note-markers",
+      ".port-dot, .module-ghost, .end-handle, .edge-hits, .edge-hit, .frame-hit, .marquee, .wire, .note-grip, .note-grip-hit, .note-text.empty, .frame-label:empty, .layer-note-markers",
     ))
       n.remove();
     // A picture that leaves the page has no hover card: each box's name goes back into a

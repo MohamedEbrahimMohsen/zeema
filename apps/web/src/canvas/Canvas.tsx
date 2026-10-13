@@ -187,6 +187,11 @@ type Place = { at: [number, number]; from?: Wiring };
 type Clip = {
   zeema: "clipboard";
   version: 1;
+  /**
+   * A copied module tile (nothing else in the clip): the node it came from, its id and label.
+   * It pastes into the selected component, or back into `node` when nothing is selected.
+   */
+  module?: { node: string; id: string; label?: string };
   nodes: any[];
   groups: any[];
   edges: any[];
@@ -204,6 +209,19 @@ type Clip = {
 const isRecord = (v: unknown): v is Record<string, any> =>
   Boolean(v) && typeof v === "object" && !Array.isArray(v);
 
+/** The clip of one module tile: its node, id and label, and nothing else. */
+function moduleClip(node: string, id: string, label?: string): Clip {
+  return {
+    zeema: "clipboard",
+    version: 1,
+    module: label ? { node, id, label } : { node, id },
+    nodes: [],
+    groups: [],
+    edges: [],
+    layout: { positions: {}, frames: {}, tints: {}, ports: [], paths: [], labels: [], notes: [] },
+  };
+}
+
 /** A clip read back from clipboard text, or null when the text is not one. */
 function readClip(text: string): Clip | null {
   let v: any;
@@ -214,6 +232,9 @@ function readClip(text: string): Clip | null {
   }
   if (!isRecord(v) || v.zeema !== "clipboard" || v.version !== 1) return null;
   const list = (x: unknown) => (Array.isArray(x) ? x : []);
+  const m = v.module;
+  if (isRecord(m) && typeof m.node === "string" && typeof m.id === "string")
+    return moduleClip(m.node, m.id, typeof m.label === "string" ? m.label : undefined);
   const nodes = list(v.nodes).filter((n) => isRecord(n) && typeof n.id === "string");
   const groups = list(v.groups).filter((g) => isRecord(g) && typeof g.id === "string");
   if (!nodes.length && !groups.length) return null;
@@ -468,6 +489,10 @@ const helpSections = (mod: string): Array<[string, Array<[string[], string]>]> =
       [["Double-click"], "Rename what you clicked: a component, an edge or a group."],
       [["Enter"], "Rename the selection."],
       [["G"], "Put the selection in a new group."],
+      [
+        ["M"],
+        "Add a module to the selected component that runs code: it opens with a new tile to name.",
+      ],
       [[mod, "Shift", "G"], "Ungroup the selected group; its components stay."],
       [[mod, "D"], "Duplicate the selection; a group comes with everything inside it."],
       [[mod, "C"], "Copy the selection, to paste here or in another design."],
@@ -997,17 +1022,24 @@ export function Canvas(props: Props) {
     // window (true: 400ms, a number: that many ms).
     // `view`: the view before a step that moves it (Arrange refits), so undo brings the view
     // back with the positions instead of leaving the restored boxes off-screen.
+    // `expanded`: the expanded nodes before a step that changes them (a node expanded or
+    // collapsed): a look, per viewer, never in the doc, but undone like an edit. Such a step
+    // (`look`) changes nothing else, so nothing is marked unsaved and nothing is saved.
     (
       next: any,
       opts: {
         coalesce?: boolean | number;
         apply?: () => void;
         view?: { x: number; y: number; k: number };
+        expanded?: string[];
+        look?: boolean;
       } = {},
     ) => {
       const e = eng.current!;
       const snapshot = {
         view: opts.view,
+        expanded: opts.expanded,
+        look: opts.look,
         doc: clone(e.doc),
         positions: clone(e.positions),
         bows: clone(e.bows),
@@ -1028,6 +1060,8 @@ export function Canvas(props: Props) {
         e.redo = [];
       }
       e.lastDragAt = opts.coalesce ? now : 0;
+      // The scene has drawn the look already; there is nothing to save.
+      if (opts.look) return setTick((t) => t + 1);
       if (opts.apply) opts.apply();
       if (next) e.doc = next;
       // A note anchored to something that has just gone goes with it. Doing it here, after the
@@ -1054,6 +1088,8 @@ export function Canvas(props: Props) {
     const scene = sceneRef.current;
     e.redo.push({
       view: prev.view && scene ? { ...scene.view } : undefined,
+      expanded: prev.expanded && scene ? [...scene.expanded] : undefined,
+      look: prev.look,
       doc: clone(e.doc),
       positions: clone(e.positions),
       bows: clone(e.bows),
@@ -1065,13 +1101,15 @@ export function Canvas(props: Props) {
       badge: e.badge,
       routing: e.routing,
     });
-    const { view: back, ...state } = prev;
+    const { view: back, expanded, look, ...state } = prev;
     Object.assign(e, state);
     if (back && scene) {
       scene.view = back;
       scene.applyView();
     }
+    if (expanded && scene) scene.setExpanded(expanded, { render: false });
     e.lastDragAt = 0;
+    if (look) return render();
     e.dirty = true;
     e.saveSeq++;
     setStatus(props.canWrite ? "unsaved" : "read only");
@@ -1086,6 +1124,8 @@ export function Canvas(props: Props) {
     const scene = sceneRef.current;
     e.undo.push({
       view: next.view && scene ? { ...scene.view } : undefined,
+      expanded: next.expanded && scene ? [...scene.expanded] : undefined,
+      look: next.look,
       doc: clone(e.doc),
       positions: clone(e.positions),
       bows: clone(e.bows),
@@ -1097,13 +1137,15 @@ export function Canvas(props: Props) {
       badge: e.badge,
       routing: e.routing,
     });
-    const { view: forward, ...state } = next;
+    const { view: forward, expanded, look, ...state } = next;
     Object.assign(e, state);
     if (forward && scene) {
       scene.view = forward;
       scene.applyView();
     }
+    if (expanded && scene) scene.setExpanded(expanded, { render: false });
     e.lastDragAt = 0;
+    if (look) return render();
     e.dirty = true;
     e.saveSeq++;
     setStatus(props.canWrite ? "unsaved" : "read only");
@@ -1332,10 +1374,79 @@ export function Canvas(props: Props) {
     [bundle, commit, askRefPick],
   );
 
+  // The selected module tile as a clip, or null when no tile is selected.
+  const clipModule = useCallback((): Clip | null => {
+    const s = sceneRef.current?.selection;
+    if (s?.type !== "module") return null;
+    const m = D.moduleOf(eng.current!.doc, s.ref as string);
+    if (!m) return null;
+    return moduleClip(
+      D.endNode(s.ref as string),
+      String(m.id),
+      m.label ? String(m.label) : undefined,
+    );
+  }, []);
+
+  // A module into node `nodeId`, as one undo step: a fresh id from its label (logs, logs-2), the
+  // label as it was, placed at `index` (the end when undefined). The new tile is selected while
+  // its node is expanded, else the node is. False when the node cannot take it.
+  const putModule = useCallback(
+    (nodeId: string, m: { id: string; label?: string }, index?: number) => {
+      const scene = sceneRef.current!;
+      const e = eng.current!;
+      const node = e.doc.nodes.find((n: any) => n.id === nodeId);
+      if (!node || !D.canHostModules(bundle!.catalogue, node)) return false;
+      const taken = new Set(D.nodeModules(node).map((x: any) => x.id));
+      const id = D.uniqueId(taken, m.label || m.id);
+      let next = D.addModule(e.doc, nodeId, { id, label: m.label });
+      if (next === e.doc) return false;
+      if (index !== undefined) next = D.moveModule(next, nodeId, id, index);
+      scene.multi = new Set();
+      scene.multiGroups = new Set();
+      scene.multiEdges = new Set();
+      scene.selection = scene.expanded.has(nodeId)
+        ? { type: "module", ref: D.moduleRef(nodeId, id) }
+        : { type: "node", ref: nodeId };
+      commit(next);
+      return true;
+    },
+    [bundle, commit],
+  );
+
+  // A module pastes into the selected component (a selected tile: into its own node), or into
+  // the node it was copied from when nothing is selected. Anything else is refused, unwritten.
+  const pasteModule = useCallback(
+    (m: NonNullable<Clip["module"]>) => {
+      const scene = sceneRef.current!;
+      const s = scene.selection;
+      const many = scene.multi.size + scene.multiGroups.size + scene.multiEdges.size > 1;
+      const target = many
+        ? null
+        : s.type === "node"
+          ? (s.ref as string)
+          : s.type === "module"
+            ? D.endNode(s.ref as string)
+            : s.type === null
+              ? m.node
+              : null;
+      if (!target || !putModule(target, m))
+        notify("a module pastes into a selected component that runs code");
+    },
+    [putModule, notify],
+  );
+
   const duplicateSelection = useCallback(() => {
+    const m = clipModule()?.module;
+    if (m) {
+      // Right after the original, in the same node.
+      const node = eng.current!.doc.nodes.find((n: any) => n.id === m.node);
+      const at = D.nodeModules(node).findIndex((x: any) => x.id === m.id);
+      putModule(m.node, m, at + 1);
+      return;
+    }
     const clip = clipSelection();
     if (clip) pasteClip(clip, 28);
-  }, [clipSelection, pasteClip]);
+  }, [clipModule, clipSelection, pasteClip, putModule]);
 
   // The copy buffer. The system clipboard gets the same clip as JSON, so a paste in another
   // design's tab finds it there; this one is the fallback when the page may not read that.
@@ -1347,7 +1458,7 @@ export function Canvas(props: Props) {
   const pastePending = useRef(false);
 
   const copySelection = useCallback(() => {
-    const clip = clipSelection();
+    const clip = clipModule() ?? clipSelection();
     if (!clip) return false;
     clipRef.current = clip;
     const text = JSON.stringify(clip);
@@ -1358,20 +1469,21 @@ export function Canvas(props: Props) {
       // No clipboard here (an insecure origin, an old browser): the in-page copy still pastes.
     }
     return true;
-  }, [clipSelection]);
+  }, [clipModule, clipSelection]);
 
   // Paste from the system clipboard's text when it holds a Zeema clip, else the in-page copy.
   const pasteText = useCallback(
     (text: string | null) => {
       const clip = (text && readClip(text)) || clipRef.current;
       if (!clip) return;
+      if (clip.module) return pasteModule(clip.module);
       const sig = text && readClip(text) ? text : JSON.stringify(clip);
       const run = pasteRun.current;
       run.n = run.text === sig ? run.n + 1 : 1;
       run.text = sig;
       pasteClip(clip, 28 * run.n);
     },
-    [pasteClip],
+    [pasteClip, pasteModule],
   );
 
   // The selected components and every member of a selected group, by (dx, dy). Presses within
@@ -2242,7 +2354,11 @@ export function Canvas(props: Props) {
         }));
       },
       // Which nodes show their modules is this viewer's, per design, in this browser only.
-      onExpand: (ids) => writeExpanded(`${props.owner}/${props.slug}`, ids),
+      // Toggled by the viewer (`before` given), it is a step in the history: Ctrl+Z folds it back.
+      onExpand: (ids, before) => {
+        writeExpanded(`${props.owner}/${props.slug}`, ids);
+        if (before) commit(null, { expanded: before, look: true });
+      },
       // A module tile dragged to another place in its node: the order in the YAML is the order
       // the tiles are drawn in. One undo step; an edge names a module by id, so none changes.
       onModuleMove: (nodeId, moduleId, index) => {
@@ -2250,6 +2366,12 @@ export function Canvas(props: Props) {
         const next = D.moveModule(e.doc, nodeId, moduleId, index);
         if (next === e.doc) return render();
         commit(next);
+      },
+      // The "+ module" slot of an expanded node: one step adds the module typed into it, at the
+      // end, with an id made from its name, and selects its new tile.
+      canAddModule: (node) => D.canHostModules(bundle.catalogue, node),
+      onNewModule: (nodeId, label) => {
+        if (!putModule(nodeId, { id: "module", label })) notify("could not add that module");
       },
     });
     scene.expanded = readExpanded(`${props.owner}/${props.slug}`);
@@ -2375,7 +2497,8 @@ export function Canvas(props: Props) {
       if (mod && !ev.shiftKey && !ev.altKey && (k === "c" || k === "x") && !textPicked()) {
         if (!copySelection()) return;
         ev.preventDefault();
-        if (k === "x") cutSelection();
+        // A cut tile goes the way Delete takes it (its edges move to the node).
+        if (k === "x") scene.selection.type === "module" ? deleteSelection() : cutSelection();
         return;
       }
       if (mod && !ev.shiftKey && !ev.altKey && k === "v") {
@@ -2432,6 +2555,16 @@ export function Canvas(props: Props) {
       if (!mod && k === "g") {
         ev.preventDefault();
         groupSelection();
+        return;
+      }
+      // M: a new module in the one selected component that runs code, named in its "+ module"
+      // slot (the node opens first when it is folded).
+      if (!mod && !ev.altKey && !ev.shiftKey && k === "m") {
+        const s = scene.selection;
+        const many = scene.multi.size + scene.multiGroups.size + scene.multiEdges.size > 1;
+        if (s.type !== "node" || many) return;
+        ev.preventDefault();
+        scene.newModule(s.ref as string);
         return;
       }
       if (ev.key === "Delete" || ev.key === "Backspace") {

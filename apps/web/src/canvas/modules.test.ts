@@ -1,4 +1,4 @@
-import { MODULE_HEADER, moduleTiles } from "@zeema/core/geometry";
+import { MODULE_GAP, MODULE_HEADER, MODULE_TILE_H, moduleTiles } from "@zeema/core/geometry";
 import { describe, expect, it } from "vitest";
 import {
   type Box,
@@ -6,6 +6,8 @@ import {
   expandBoxes,
   expandedKey,
   findingTiles,
+  ghostBoxes,
+  ghostSlot,
   inProcessLines,
   readExpanded,
   tileAt,
@@ -125,5 +127,59 @@ describe("in-process lines", () => {
       { subject: { type: "node", ref: "backend" } },
     ]);
     expect([...tiles]).toEqual(["backend/otp"]);
+  });
+});
+
+describe("the + module slot", () => {
+  const two = { id: "web", modules: [{ id: "api" }, { id: "jobs" }] };
+  const three = { id: "web", modules: [{ id: "api" }, { id: "jobs" }, { id: "files" }] };
+
+  it("is one more cell after the last tile, the same size, in the same row while it fits", () => {
+    const t = ghostSlot(two, 176)!;
+    const plain = moduleTiles(two, 176)!;
+    expect(t.tiles.map((x) => x.id)).toEqual(["api", "jobs"]);
+    const [a, b] = t.tiles;
+    expect(t.ghost).toEqual([b.x + (b.x - a.x), b.y, b.w, b.h]);
+    expect(b.w).toBe(plain.tiles[1].w);
+    // the grid of three cells is centred, and the box holds it
+    expect(t.ghost![0] + t.ghost![2] + a.x).toBe(t.w);
+    expect(t.h).toBe(plain.h);
+  });
+
+  it("starts a new row under a full one, and the box grows by that row", () => {
+    const t = ghostSlot(three, 176)!;
+    const plain = moduleTiles(three, 176)!;
+    expect(t.tiles).toEqual(plain.tiles);
+    expect(t.ghost).toEqual([t.tiles[0].x, t.tiles[0].y + MODULE_TILE_H + MODULE_GAP, 84, 40]);
+    expect(t.h).toBe(plain.h + MODULE_TILE_H + MODULE_GAP);
+    expect(t.w).toBe(plain.w);
+  });
+
+  it("is never laid out without being asked for, nor for a node with no modules", () => {
+    expect(ghostSlot(three, 176, false)).toEqual({ ...moduleTiles(three, 176), ghost: null });
+    expect(ghostSlot({ id: "x" }, 176)).toBeNull();
+    expect(ghostSlot({ id: "x", modules: [] }, 176)).toBeNull();
+  });
+
+  it("sizes the box, the tiles and the slot's world box together", () => {
+    const all = () => true;
+    const list = [three, { id: "sms" }];
+    const laid: Record<string, Box> = { web: [10, 20, 176, 78], sms: [600, 0, 140, 78] };
+    const open = new Set(["web", "sms"]);
+    const drawn = expandBoxes(list, laid, open, all);
+    const t = ghostSlot(three, EXPANDED_MIN_W)!;
+    expect(drawn.web).toEqual([10, 20, t.w, t.h]);
+    expect(drawn.sms).toEqual(laid.sms);
+    const tiles = tileBoxes(list, drawn, open, all);
+    expect(Object.keys(tiles)).toEqual(["web/api", "web/jobs", "web/files"]);
+    const g = ghostBoxes(list, drawn, open, all);
+    expect(Object.keys(g)).toEqual(["web"]);
+    expect(g.web).toEqual([10 + t.ghost![0], 20 + t.ghost![1], t.ghost![2], t.ghost![3]]);
+    // the slot is no tile: nothing lands on it
+    expect(tileAt(tiles, g.web[0] + 4, g.web[1] + 4)).toBeNull();
+    // without the slot, the box is moduleTiles' as before
+    expect(expandBoxes(list, laid, open)).toEqual(expandBoxes(list, laid, open, () => false));
+    expect(ghostBoxes(list, drawn, new Set(), all)).toEqual({});
+    expect(ghostBoxes(list, drawn, open, () => false)).toEqual({});
   });
 });

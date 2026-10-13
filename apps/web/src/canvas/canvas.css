@@ -796,6 +796,39 @@
   fill: var(--ink);
   pointer-events: none;
 }
+/* The "+ module" slot after an expanded node's tiles: the canvas's own, never a module. A dashed
+   outline and accent text, muted until the pointer is on it; a click opens the new-module editor
+   in it, drawn then as the tile the module will be. */
+.zeema-canvas .node-box .module-ghost {
+  cursor: pointer;
+  pointer-events: auto;
+  opacity: 0.55;
+  transition: opacity var(--dur) var(--ease);
+}
+.zeema-canvas .node-box .module-ghost:hover,
+.zeema-canvas .node-box .module-ghost.adding {
+  opacity: 1;
+}
+.zeema-canvas .node-box .module-ghost-tile {
+  fill: transparent;
+  stroke: var(--node-line);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+}
+.zeema-canvas .node-box .module-ghost:hover .module-ghost-tile {
+  stroke: var(--accent);
+}
+.zeema-canvas .node-box .module-ghost.adding .module-ghost-tile {
+  fill: var(--bg);
+  stroke: var(--accent);
+  stroke-dasharray: none;
+}
+.zeema-canvas .node-box .module-ghost-label {
+  font-size: 11px;
+  font-family: var(--mono);
+  fill: var(--accent);
+  pointer-events: none;
+}
 
 /* notes — sticky annotations from the layout sidecar. No glyph, no ports, no edges. */
 .zeema-canvas .note-box {

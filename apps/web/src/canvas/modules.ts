@@ -5,7 +5,7 @@
 // `moduleTiles` (@zeema/core/geometry) and each module is a tile inside it; an edge end naming a
 // module is drawn to its tile, and an in-process edge (two ends in one node) is a light line
 // between tiles. Pure: no DOM; storage is passed in.
-import { endNode, isInProcess, nodeModules, splitEnd } from "@zeema/core/document";
+import { endNode, isInProcess, moduleName, nodeModules, splitEnd } from "@zeema/core/document";
 import { moduleTiles } from "@zeema/core/geometry";
 
 export type Box = [number, number, number, number];
@@ -46,22 +46,80 @@ export function writeExpanded(design: string, ids: Iterable<string>, store = loc
  */
 export const EXPANDED_MIN_W = 180;
 
+/** Which expanded nodes the canvas draws with a "+ module" slot after their tiles. */
+export type Ghosted = (node: any) => boolean;
+const none: Ghosted = () => false;
+
+// The id the ghost cell takes while it is laid out with the real tiles: no module can have it
+// (an id is a YAML scalar the document writes; this one holds a NUL).
+const GHOST = "\u0000ghost";
+
+/**
+ * The tiles of an expanded node as the canvas lays them out: `moduleTiles` (the same tile size,
+ * columns and gaps), and, with `ghost`, one more cell after the last module: the "+ module" slot,
+ * which a click turns into a new module. That cell is the canvas's own, never a module: it is
+ * laid out as one more tile of the same width (a label already in the list, so the widest label
+ * and the column width do not change), which may start a new row; the box (`w`, `h`) holds it.
+ * Null for a node with no modules. The server render and the exports never see the cell:
+ * `moduleTiles` alone is what they lay out.
+ */
+export function ghostSlot(
+  node: any,
+  w: number,
+  ghost = true,
+): {
+  w: number;
+  h: number;
+  tiles: Array<{ id: string; x: number; y: number; w: number; h: number }>;
+  ghost: Box | null;
+} | null {
+  const list = nodeModules(node);
+  if (!list.length) return null;
+  if (!ghost) {
+    const t = moduleTiles(node, w);
+    return t && { ...t, ghost: null };
+  }
+  const t = moduleTiles({ modules: [...list, { id: GHOST, label: moduleName(list[0]) }] }, w);
+  if (!t) return null;
+  const g = t.tiles.pop()!;
+  return { w: t.w, h: t.h, tiles: t.tiles, ghost: [g.x, g.y, g.w, g.h] };
+}
+
 /**
  * Each node's box as the canvas draws it: `boxes` (its laid-out box) for every node, except an
  * expanded node with modules, whose box keeps its top-left corner and takes the size
- * `moduleTiles` gives it (at least EXPANDED_MIN_W wide). A node listed as expanded that has no modules is drawn as it was.
+ * `moduleTiles` gives it (at least EXPANDED_MIN_W wide), with room for the "+ module" slot when
+ * `ghost` says so (`ghostSlot`). A node listed as expanded that has no modules is drawn as it was.
  */
 export function expandBoxes(
   nodes: any[],
   boxes: Record<string, Box>,
   expanded: ReadonlySet<string>,
+  ghost: Ghosted = none,
 ): Record<string, Box> {
   const out: Record<string, Box> = { ...boxes };
   for (const n of nodes ?? []) {
     const b = boxes[n?.id];
     if (!b || !expanded.has(n.id)) continue;
-    const t = moduleTiles(n, Math.max(b[2], EXPANDED_MIN_W));
+    const t = ghostSlot(n, Math.max(b[2], EXPANDED_MIN_W), ghost(n));
     if (t) out[n.id] = [b[0], b[1], t.w, t.h];
+  }
+  return out;
+}
+
+/** The world box of the "+ module" slot of every expanded node `ghost` gives one, by node id. */
+export function ghostBoxes(
+  nodes: any[],
+  boxes: Record<string, Box>,
+  expanded: ReadonlySet<string>,
+  ghost: Ghosted,
+): Record<string, Box> {
+  const out: Record<string, Box> = {};
+  for (const n of nodes ?? []) {
+    const b = boxes[n?.id];
+    if (!b || !expanded.has(n.id) || !ghost(n)) continue;
+    const g = ghostSlot(n, b[2])?.ghost;
+    if (g) out[n.id] = [b[0] + g[0], b[1] + g[1], g[2], g[3]];
   }
   return out;
 }
@@ -69,18 +127,20 @@ export function expandBoxes(
 /**
  * The world box of every module tile of every expanded node, keyed by the end that names it
  * (`node/module`): what `edgeGeometry` takes as `moduleBoxes`. `boxes` are the drawn boxes
- * (`expandBoxes`): laid out again for the expanded width, the tiles land where they did.
+ * (`expandBoxes`, with the same `ghost`): laid out again for the expanded width, the tiles land
+ * where they did.
  */
 export function tileBoxes(
   nodes: any[],
   boxes: Record<string, Box>,
   expanded: ReadonlySet<string>,
+  ghost: Ghosted = none,
 ): Record<string, Box> {
   const out: Record<string, Box> = {};
   for (const n of nodes ?? []) {
     const b = boxes[n?.id];
     if (!b || !expanded.has(n.id)) continue;
-    const t = moduleTiles(n, b[2]);
+    const t = ghostSlot(n, b[2], ghost(n));
     if (!t) continue;
     for (const tile of t.tiles)
       out[`${n.id}/${tile.id}`] = [b[0] + tile.x, b[1] + tile.y, tile.w, tile.h];
