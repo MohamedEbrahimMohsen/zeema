@@ -79,7 +79,7 @@ import { type HoverAt, HoverCard, type RefInfo } from "./HoverCard";
 import { historyKey } from "./history-key";
 import { EdgeStyleField, type Highlight, Inspector, type InspectorApi } from "./Inspector";
 import { designMenu, type MenuEntry, SEP } from "./menu-model";
-import { readExpanded, writeExpanded } from "./modules";
+import { readExpanded, resetPaths, shiftPath, writeExpanded } from "./modules";
 import { Palette, ProviderSprite } from "./Palette";
 import { dimmed, readDim, readHoverCards, writeDim, writeHoverCards } from "./prefs";
 import { QuickActions } from "./QuickActions";
@@ -1381,8 +1381,7 @@ export function Canvas(props: Props) {
             if (offset) e.labels[key] = [offset[0], offset[1]];
             const path = L.paths[k];
             if (typeof path === "number") e.bows[key] = path;
-            else if (path && Array.isArray(path.via))
-              e.bows[key] = { via: path.via.map(([x, y]) => [x + d, y + d] as [number, number]) };
+            else if (path) e.bows[key] = shiftPath(path, d);
           });
           for (const n of L.notes) {
             if (!n.anchor) continue;
@@ -1928,13 +1927,13 @@ export function Canvas(props: Props) {
           {
             kind: "item",
             // Back to the automatic path: a curve's bow or an orthogonal path's waypoints.
+            // Waypoints go only for the expand state drawn now; the other states keep theirs.
             label: (e.routing ?? "orthogonal") !== "curved" ? "Reset path" : "Straighten",
-            disabled: !Object.hasOwn(e.bows, key),
+            disabled: !Object.hasOwn(scene.paths(), key),
             run: () =>
               commit(null, {
                 apply: () => {
-                  const { [key]: _gone, ...rest } = e.bows;
-                  e.bows = rest;
+                  e.bows = resetPaths(e.bows, [key], (k) => scene.expandStateOf(k));
                 },
               }),
           },
@@ -2884,17 +2883,20 @@ export function Canvas(props: Props) {
           },
         });
       },
-      // An edge's hand-made path (bow or waypoints) goes, and the automatic one comes back.
+      // An edge's hand-made path (bow, or the waypoints of the expand state drawn now) goes, and
+      // the automatic one comes back. The waypoints of its other expand states stay.
       resetPath: (index) => {
         const e = eng.current!;
+        const scene = sceneRef.current;
+        const drawn = scene ? scene.paths() : e.bows;
         const all = edgeKeys(e.doc);
         const keys = (Array.isArray(index) ? index : [index])
           .map((i) => all[i])
-          .filter((k) => k && Object.hasOwn(e.bows, k));
+          .filter((k) => k && Object.hasOwn(drawn, k));
         if (!keys.length) return;
         commit(null, {
           apply: () => {
-            e.bows = Object.fromEntries(Object.entries(e.bows).filter(([k]) => !keys.includes(k)));
+            e.bows = resetPaths(e.bows, keys, (k) => scene?.expandStateOf(k) ?? "");
           },
         });
       },
@@ -3356,7 +3358,8 @@ export function Canvas(props: Props) {
           notes: e.notes,
           frameStyles: e.frames,
           nodeTints: e.tints,
-          edgePaths: e.bows,
+          // As drawn: the waypoints of each edge's expand state (`resetPath` resets those).
+          edgePaths: sceneRef.current ? sceneRef.current.paths() : e.bows,
           edgeLabels: e.labels,
           catalogue: bundle.catalogue,
           icons: bundle.icons,

@@ -1007,6 +1007,80 @@ export function dropWaypoint(via, x, y) {
   return via.filter((_, k) => k !== best);
 }
 
+// Waypoints are absolute points, and an expanded node's box is bigger than its collapsed one, so
+// one set of waypoints cannot fit both. A sidecar `edges` entry keeps one set per expand state of
+// the edge's two ends: `via` while neither end node is expanded (what the server, the thumbnails
+// and an export draw), and `viaExpanded[state]` otherwise, where `state` names the expanded end
+// nodes, sorted and comma-joined (a module end `node/module` counts as its node). A state with no
+// entry is the automatic path. A bow (a number) is measured from the edge itself, so it is one.
+
+/** A sidecar `viaExpanded` key: one or two node ids, sorted, comma-joined. */
+export const EXPAND_STATE_RE = /^[a-z][a-z0-9-]*(,[a-z][a-z0-9-]*)?$/;
+
+/**
+ * The expand state of the edge `key` (`from>to`, `from>to#n`): its end nodes that are in `open`
+ * (the nodes drawn expanded), sorted and comma-joined; "" when neither is.
+ * @param {string} key
+ * @param {Iterable<string>} open
+ */
+export function expandState(key, open) {
+  const set = open instanceof Set ? open : new Set(open);
+  const pair = String(key).replace(/#\d+$/, "").split(">");
+  const ids = [...new Set(pair.map((end) => end.split("/")[0]))].filter((id) => set.has(id));
+  return ids.sort().join(",");
+}
+
+/**
+ * The path one stored entry draws in expand state `state`: a bow as it is; the waypoints of the
+ * state's slot (`via` for "", `viaExpanded[state]` otherwise) as `{ via }`; else null.
+ */
+export function pathFor(entry, state) {
+  if (typeof entry === "number") return entry;
+  if (!entry || typeof entry !== "object" || Array.isArray(entry)) return null;
+  const slot = state ? entry.viaExpanded?.[state] : entry.via;
+  const via = readVia({ via: slot });
+  return via ? { via } : null;
+}
+
+/**
+ * Every stored entry as `pathFor` draws it with the nodes in `open` expanded. Copies.
+ * @param {Object<string, any>} bows  a sidecar `edges` map
+ * @param {Iterable<string>} [open]  the node ids drawn expanded
+ */
+export function pathsFor(bows, open = []) {
+  const set = open instanceof Set ? open : new Set(open);
+  const out = {};
+  for (const [key, entry] of Object.entries(bows || {})) {
+    const path = pathFor(entry, expandState(key, set));
+    if (path !== null) out[key] = path;
+  }
+  return out;
+}
+
+/**
+ * A stored entry with the waypoints of expand state `state` set to `via` (or cleared, for null or
+ * none), the other states' kept. A bow is replaced. Null when nothing is left.
+ */
+export function withPath(entry, state, via) {
+  const out = {};
+  if (entry && typeof entry === "object" && !Array.isArray(entry)) {
+    if (Array.isArray(entry.via) && entry.via.length) out.via = entry.via;
+    if (entry.viaExpanded && typeof entry.viaExpanded === "object")
+      out.viaExpanded = { ...entry.viaExpanded };
+  }
+  const pts = Array.isArray(via) && via.length ? via : null;
+  if (!state) {
+    if (pts) out.via = pts;
+    else delete out.via;
+  } else {
+    out.viaExpanded = { ...(out.viaExpanded || {}) };
+    if (pts) out.viaExpanded[state] = pts;
+    else delete out.viaExpanded[state];
+  }
+  if (out.viaExpanded && !Object.keys(out.viaExpanded).length) delete out.viaExpanded;
+  return out.via || out.viaExpanded ? out : null;
+}
+
 // One edge: its end points, its steps out, and the cheapest clean way between them.
 function route(it, obstacles, captions = []) {
   const { a, b, sa, sb, ta, tb, nest } = it;

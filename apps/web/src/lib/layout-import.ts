@@ -9,7 +9,7 @@
 // path, port, label, tint and note alone. Notes merge by id. `replace` swaps the whole layout for
 // the file's instead (what the file lacks falls back to the automatic layout).
 
-import { edgeKeys, readVia } from "@zeema/core/geometry";
+import { edgeKeys } from "@zeema/core/geometry";
 import {
   type EdgePath,
   type EdgePorts,
@@ -20,6 +20,7 @@ import {
   type Note,
   pruneSidecar,
   type Routing,
+  readEdgePath,
   readSidecar,
   SIDECAR_VERSION,
 } from "./layout-sidecar";
@@ -100,8 +101,10 @@ export function layoutFileProblems(raw: unknown): string[] {
       if (out.length >= MAX_PROBLEMS) break;
       if (typeof v === "number") {
         if (!Number.isFinite(v)) out.push(`edges.${key} is not a finite number`);
-      } else if (!readVia(v))
-        out.push(`edges.${key} must be a bow (a number) or { via: [[x, y], …] }`);
+      } else if (!readEdgePath(v))
+        out.push(
+          `edges.${key} must be a bow (a number) or { via: [[x, y], …], viaExpanded?: { state: [[x, y], …] } }`,
+        );
     }
   if (out.length < MAX_PROBLEMS) nonFinite(raw, "layout", out);
   return [...new Set(out)].slice(0, MAX_PROBLEMS);

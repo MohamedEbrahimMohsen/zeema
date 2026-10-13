@@ -756,3 +756,65 @@ describe("edge paths: bows and waypoints", () => {
     expect(readSidecar(JSON.parse(file)).edges).toEqual(pruned.edges);
   });
 });
+
+describe("edge waypoints per expand state (viaExpanded)", () => {
+  const entry = { via: [[1, 2]], viaExpanded: { "web,db": [[0, 0]], web: [[3, 4]], db: [[5, 6]] } };
+
+  it("reads states with a valid key and waypoints, and drops the rest", () => {
+    const s = readSidecar({
+      nodes: {},
+      edges: {
+        "web>db": {
+          via: [[1, 2]],
+          viaExpanded: {
+            web: [[3, 4]],
+            "db,web": [[5, 6]],
+            "Bad,Key": [[1, 1]],
+            "a,b,c": [[1, 1]],
+            db: [],
+            x: "no",
+          },
+        },
+        "a>b": { viaExpanded: { a: [[7, 8]] } },
+        "c>d": { viaExpanded: { c: [] } },
+      },
+    });
+    expect(s.edges["web>db"]).toEqual({
+      via: [[1, 2]],
+      viaExpanded: { web: [[3, 4]], "db,web": [[5, 6]] },
+    });
+    expect(s.edges["a>b"]).toEqual({ viaExpanded: { a: [[7, 8]] } });
+    expect(Object.hasOwn(s.edges, "c>d")).toBe(false);
+    expect(isBlankSidecar({ edges: { "a>b": { viaExpanded: { a: [[7, 8]] } } } })).toBe(false);
+  });
+
+  it("writes `via` before `viaExpanded`, states sorted, in the file and the stored sidecar", () => {
+    const file = sidecarFile({ nodes: {}, edges: { "web>db": entry } });
+    const edge = JSON.parse(file).edges["web>db"];
+    expect(Object.keys(edge)).toEqual(["via", "viaExpanded"]);
+    expect(Object.keys(edge.viaExpanded)).toEqual(["db", "db,web", "web"]);
+    expect(sidecarFile(JSON.parse(file))).toBe(file);
+    const stored = writeSidecar({ nodes: {}, edges: { "web>db": entry as never }, notes: [] });
+    expect(Object.keys(stored.edges["web>db"] as object)).toEqual(["via", "viaExpanded"]);
+  });
+
+  it("prunes a state naming a node that has no modules any more", () => {
+    const s = readSidecar({
+      nodes: {},
+      edges: {
+        "web>db": { via: [[1, 2]], viaExpanded: { web: [[3, 4]], "db,web": [[0, 0]] } },
+        "db>q": { viaExpanded: { db: [[1, 1]] } },
+      },
+    });
+    const pruned = pruneSidecar(s, {
+      nodes: ["web", "db", "q"],
+      groups: [],
+      edges: ["web>db", "db>q"],
+      modules: ["web/auth"],
+    });
+    expect(pruned.edges).toEqual({ "web>db": { via: [[1, 2]], viaExpanded: { web: [[3, 4]] } } });
+    // Without the module list nothing is known about modules, so the states are kept.
+    const kept = pruneSidecar(s, { nodes: [], groups: [], edges: ["db>q"] });
+    expect(kept.edges).toEqual({ "db>q": { viaExpanded: { db: [[1, 1]] } } });
+  });
+});

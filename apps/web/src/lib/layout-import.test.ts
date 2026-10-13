@@ -151,6 +151,26 @@ describe("mergeImportedLayout", () => {
     expect(() => mergeImportedLayout(current(), { version: 99 }, doc)).toThrow(/version 99/);
   });
 
+  it("takes the waypoints of each expand state, keeping only states of nodes with modules", () => {
+    const withModules = {
+      ...doc,
+      nodes: [{ id: "api", modules: [{ id: "auth" }] }, { id: "db" }, { id: "queue" }],
+    };
+    const raw = {
+      version: SIDECAR_VERSION,
+      edges: {
+        "api>db": { via: [[1, 1]], viaExpanded: { api: [[2, 2]], "api,db": [[3, 3]] } },
+        "api>queue": { viaExpanded: { api: [[4, 4]] } },
+      },
+    };
+    expect(layoutFileProblems(raw)).toEqual([]);
+    const r = mergeImportedLayout(current(), raw, withModules, "replace");
+    expect(r.next.bows).toEqual({
+      "api>db": { via: [[1, 1]], viaExpanded: { api: [[2, 2]] } },
+      "api>queue": { viaExpanded: { api: [[4, 4]] } },
+    });
+  });
+
   it("refuses non-finite numbers and malformed waypoints", () => {
     const bad = [
       { nodes: { api: [Number.POSITIVE_INFINITY, 0] } },

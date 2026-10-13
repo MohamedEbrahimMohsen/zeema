@@ -8,7 +8,7 @@
 // and writes through the same shape.
 
 import { nodeModules } from "@zeema/core/document";
-import { DEFAULT_ROUTING, ROUTINGS, readVia } from "@zeema/core/geometry";
+import { DEFAULT_ROUTING, EXPAND_STATE_RE, ROUTINGS, readVia } from "@zeema/core/geometry";
 
 export const SIDECAR_VERSION = 2;
 
@@ -166,17 +166,47 @@ const PORT_SIDES: readonly PortSide[] = ["top", "right", "bottom", "left"];
 
 /**
  * How one edge's path was adjusted by hand: a number is a bow (the curve's bend, or the cross run
- * of an orthogonal Z), and `{ via }` is an orthogonal path shaped by dragging its segments, the
- * absolute world points it passes through in order (`readVia` in @zeema/core/geometry).
+ * of an orthogonal Z), measured from the edge, so one for every expand state. `{ via }` is an
+ * orthogonal path shaped by dragging its segments, the absolute world points it passes through in
+ * order (`readVia` in @zeema/core/geometry), drawn while neither end node is expanded;
+ * `viaExpanded` holds the same per expand state of the edge's ends (`expandState`: the expanded
+ * end node ids, sorted, comma-joined), only for the states someone shaped.
  */
 export type Waypoint = [number, number];
-export type EdgePath = number | { via: Waypoint[] };
+export type ShapedPath = { via?: Waypoint[]; viaExpanded?: Record<string, Waypoint[]> };
+export type EdgePath = number | ShapedPath;
 
 /** One stored edge path as the canvas may keep it, or null for nothing worth keeping. */
 export function readEdgePath(v: unknown): EdgePath | null {
   if (typeof v === "number") return Number.isFinite(v) && v !== 0 ? v : null;
   const via = readVia(v) as Waypoint[] | null;
-  return via ? { via } : null;
+  const out: ShapedPath = {};
+  if (via) out.via = via;
+  const raw = v && typeof v === "object" ? (v as { viaExpanded?: unknown }).viaExpanded : null;
+  if (raw && typeof raw === "object" && !Array.isArray(raw))
+    for (const [state, slot] of Object.entries(raw as Record<string, unknown>)) {
+      if (!EXPAND_STATE_RE.test(state)) continue;
+      const pts = readVia({ via: slot }) as Waypoint[] | null;
+      if (!pts) continue;
+      out.viaExpanded ??= {};
+      // One spelling per state: its ids sorted, as `expandState` writes it.
+      out.viaExpanded[state.split(",").sort().join(",")] = pts;
+    }
+  return out.via || out.viaExpanded ? out : null;
+}
+
+/** A shaped path copied, `via` first, then the expand states in key order. */
+function copyShaped(v: ShapedPath): ShapedPath {
+  const out: ShapedPath = {};
+  if (v.via?.length) out.via = v.via.map(([x, y]) => [x, y] as Waypoint);
+  const states = Object.entries(v.viaExpanded ?? {})
+    .filter(([, pts]) => Array.isArray(pts) && pts.length)
+    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+  if (states.length)
+    out.viaExpanded = Object.fromEntries(
+      states.map(([k, pts]) => [k, pts.map(([x, y]) => [x, y] as Waypoint)]),
+    );
+  return out;
 }
 
 /** The edge paths worth keeping: a zero bow or an empty `via` is no entry at all. */
@@ -487,8 +517,10 @@ function writeEdgePaths(edges: Record<string, EdgePath>) {
   const out: Record<string, EdgePath> = {};
   for (const [k, v] of Object.entries(edges ?? {})) {
     if (typeof v === "number") out[k] = v;
-    else if (v && Array.isArray(v.via) && v.via.length)
-      out[k] = { via: v.via.map(([x, y]) => [x, y] as Waypoint) };
+    else if (v && typeof v === "object") {
+      const path = copyShaped(v);
+      if (path.via || path.viaExpanded) out[k] = path;
+    }
   }
   return out;
 }
@@ -604,7 +636,9 @@ export function pruneSidecar(s: LayoutSidecar, targets: SidecarTargets): LayoutS
   const out: LayoutSidecar = {
     version: s.version,
     nodes: keep(s.nodes, nodes),
-    edges: keep(s.edges, edges),
+    edges: targets.modules
+      ? pruneStates(keep(s.edges, edges), targets.modules)
+      : keep(s.edges, edges),
     notes: s.notes.map((n) => {
       if (!n.anchor) return { ...n };
       const live = "node" in n.anchor ? nodes.has(n.anchor.node) : groups.has(n.anchor.group);
@@ -625,6 +659,29 @@ export function pruneSidecar(s: LayoutSidecar, targets: SidecarTargets): LayoutS
   return out;
 }
 
+/**
+ * Edge paths without the expand states that name a node which no longer has modules (it can no
+ * longer be expanded); an entry left with nothing goes. Copies.
+ */
+function pruneStates(edges: Record<string, EdgePath>, modules: Iterable<string>) {
+  const open = new Set([...modules].map((ref) => ref.split("/")[0]));
+  const out: Record<string, EdgePath> = {};
+  for (const [k, v] of Object.entries(edges)) {
+    if (typeof v === "number" || !v.viaExpanded) {
+      out[k] = v;
+      continue;
+    }
+    const states = Object.entries(v.viaExpanded).filter(([state]) =>
+      state.split(",").every((id) => open.has(id)),
+    );
+    const path: ShapedPath = {};
+    if (v.via) path.via = v.via;
+    if (states.length) path.viaExpanded = Object.fromEntries(states);
+    if (path.via || path.viaExpanded) out[k] = path;
+  }
+  return out;
+}
+
 const sortedEntries = <T>(o: Record<string, T>) =>
   Object.entries(o).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
 
@@ -640,10 +697,7 @@ export function sidecarFile(raw: unknown): string {
     version: s.version,
     nodes: Object.fromEntries(sortedEntries(s.nodes)),
     edges: Object.fromEntries(
-      sortedEntries(s.edges).map(([k, v]) => [
-        k,
-        typeof v === "number" ? v : { via: v.via.map(([x, y]) => [x, y]) },
-      ]),
+      sortedEntries(s.edges).map(([k, v]) => [k, typeof v === "number" ? v : copyShaped(v)]),
     ),
   };
   if (s.ports)

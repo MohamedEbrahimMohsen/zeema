@@ -40,13 +40,18 @@ import {
 // A shaped orthogonal path (sidecar `edges` entries `{ via }`): see routing.js.
 export {
   dropWaypoint,
+  EXPAND_STATE_RE,
+  expandState,
   LABEL_OFFSET_MAX,
   labelOffset,
   moveSegment,
+  pathFor,
+  pathsFor,
   readVia,
   refitEnds,
   VIA_MAX,
   viaOf,
+  withPath,
 } from "./routing.js";
 
 import { frameCaption, moduleLabelWidth, textWidth } from "./text.js";
@@ -183,15 +188,37 @@ export function rekeyBows(before, after, bows, reversed = []) {
   if (was.length !== now.length) return { ...bows };
   const flip = new Set(reversed);
   const out = {};
+  const nodeOf = (end) => String(end).split("/")[0];
   was.forEach((k, i) => {
+    const entry = bows && Object.hasOwn(bows, k) ? bows[k] : undefined;
     // Waypoints are absolute, so they stay where they are; a reversed edge meets them in the
-    // other order.
-    const via = bows && Object.hasOwn(bows, k) ? readVia(bows[k]) : null;
-    if (via) {
-      out[now[i]] = { via: flip.has(i) ? via.reverse() : via };
+    // other order. Each expand state's set goes with it, its ids following the ends' ids.
+    if (entry && typeof entry === "object" && !Array.isArray(entry)) {
+      const order = (pts) => (flip.has(i) ? pts.reverse() : pts);
+      const path = {};
+      const via = readVia(entry);
+      if (via) path.via = order(via);
+      const states = entry.viaExpanded;
+      if (states && typeof states === "object") {
+        const a = before.edges[i];
+        const b = after.edges[i];
+        const [bf, bt] = flip.has(i) ? [b.to, b.from] : [b.from, b.to];
+        const rename = new Map([
+          [nodeOf(a.from), nodeOf(bf)],
+          [nodeOf(a.to), nodeOf(bt)],
+        ]);
+        for (const [state, slot] of Object.entries(states)) {
+          const pts = readVia({ via: slot });
+          if (!pts) continue;
+          const ids = [...new Set(state.split(",").map((id) => rename.get(id) ?? id))];
+          path.viaExpanded ??= {};
+          path.viaExpanded[ids.sort().join(",")] = order(pts);
+        }
+      }
+      if (path.via || path.viaExpanded) out[now[i]] = path;
       return;
     }
-    const v = Number(bows[k]) || 0;
+    const v = Number(entry) || 0;
     if (v) out[now[i]] = flip.has(i) ? -v : v;
   });
   return out;

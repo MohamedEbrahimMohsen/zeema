@@ -381,6 +381,14 @@ point. A member overlaps its siblings exactly, and one whose own runs would cut 
 its own. Edges with a bow or waypoints never bundle; a ported end bundles only with ends ported to
 the same point. Like every routing value it is layout only: rules and the design never see it.
 
+An edge's waypoints (`edges[key].via`, placed by dragging its segments) are absolute points, and a
+node expanded to show its modules is a bigger box than the collapsed one, so the waypoints are kept
+per expand state of the edge's two end nodes: `via` while neither is expanded (what the server
+picture, thumbnails and `zeema render` draw), and `viaExpanded: { "<state>": [[x, y], …] }`
+otherwise, where `<state>` is the expanded end node ids sorted and comma-joined (`a`, `b` or
+`a,b`; a module end counts as its node). Only states someone shaped are stored; a state with none
+is routed automatically. A bow is measured from the edge, so it is one for every state.
+
 ### Export and import
 
 A design leaves the site, and comes back, as two files with the repository's names:
@@ -388,7 +396,7 @@ A design leaves the site, and comes back, as two files with the repository's nam
 | File | Required | Holds |
 |---|---|---|
 | `design.yaml` | yes | The design, byte for byte as stored |
-| `design.layout.json` | no | The sidecar above: `version`, `nodes`, `edges`, `ports`, `frames`, `tints`, `notes`, `badge`; keys in that order, map keys sorted, two-space indent |
+| `design.layout.json` | no | The sidecar above: `version`, `nodes`, `edges`, `ports`, `frames`, `tints`, `notes`, `badge`; keys in that order (an edge's `via` before its `viaExpanded`), map keys sorted, two-space indent |
 
 The design page and the canvas download either, or both as a zip that unzips to a design folder
 (`zeema render design.yaml` draws with the sidecar beside it). **New design ▾ Import YAML…**

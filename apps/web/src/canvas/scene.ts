@@ -34,6 +34,7 @@ import {
   edgeGeometry,
   edgeKeys,
   edgePath,
+  expandState,
   frameCaptions,
   framesOuterFirst,
   framesUnderTint,
@@ -47,6 +48,7 @@ import {
   refAt,
   refitEnds,
   viaOf,
+  withPath,
 } from "@zeema/core/geometry";
 import {
   authGlyph,
@@ -99,12 +101,14 @@ import {
 } from "./group-info";
 import { findGuides, type GuideLine } from "./guides";
 import {
+  drawnPaths,
   expandBoxes,
   findingTiles,
   ghostBoxes,
   ghostSlot,
   hasModules,
   inProcessLines,
+  openNodes,
   tileAt,
   tileBoxes,
 } from "./modules";
@@ -756,6 +760,27 @@ export class Scene {
       stacked,
       moduleBoxes: this.tiles,
     };
+  }
+
+  /** The nodes drawn expanded: opened by the viewer, and with modules to show. */
+  openIds() {
+    return openNodes(this.model?.doc?.nodes, this.expanded);
+  }
+
+  /**
+   * The expand state of edge `key` as drawn now (`expandState`): which stored waypoints it
+   * follows and which a drag writes. "" while neither end node is expanded.
+   */
+  expandStateOf(key: string) {
+    return expandState(key, this.openIds());
+  }
+
+  /**
+   * The stored edge paths as drawn now: each edge's waypoints for the expand state of its ends
+   * (`pathsFor`), a bow as it is. A state nobody shaped is the automatic path.
+   */
+  paths() {
+    return drawnPaths(this.model.bows || {}, this.model?.doc?.nodes, this.expanded);
   }
 
   /** Whether a node is drawn expanded (it has modules and the viewer opened it). */
@@ -1547,7 +1572,7 @@ export class Scene {
     this.geom = edgeGeometry(
       this.model.doc,
       this.boxes,
-      this.model.bows || {},
+      this.paths(),
       this.model.ports || {},
       this.frames,
       this.routeOptions(),
@@ -2435,7 +2460,7 @@ export class Scene {
     const geom = edgeGeometry(
       this.model.doc,
       this.boxes,
-      bows,
+      this.paths(),
       ports,
       this.frames,
       this.routeOptions(),
@@ -3451,7 +3476,7 @@ export class Scene {
     this.geom = edgeGeometry(
       this.model.doc,
       this.boxes,
-      this.model.bows || {},
+      this.paths(),
       this.model.ports || {},
       this.frames,
       this.routeOptions(),
@@ -3622,7 +3647,8 @@ export class Scene {
         this.model.ports?.[drag.key] ?? {},
       );
       const via = viaOf(fit.points) as [number, number][];
-      value = via.length ? { via } : null;
+      // Only the slot of the expand state drawn now: the other states keep their waypoints.
+      value = withPath(drag.original, this.expandStateOf(drag.key), via) as EdgePath | null;
       const ends: EdgePorts = {};
       if (fit.from) ends.from = fit.from as Port;
       if (fit.to) ends.to = fit.to as Port;
@@ -3714,7 +3740,8 @@ export class Scene {
     const corners = e.points.slice(1, -1);
     if (!corners.some((p: number[]) => Math.hypot(p[0] - wx, p[1] - wy) <= reach)) return false;
     const via = dropWaypoint(viaOf(e.points), wx, wy) as [number, number][];
-    this.h.onPath?.(e.key, via.length ? { via } : null);
+    const stored = own(this.model.bows ?? {}, e.key) ?? null;
+    this.h.onPath?.(e.key, withPath(stored, this.expandStateOf(e.key), via) as EdgePath | null);
     return true;
   }
 
@@ -3882,7 +3909,7 @@ export class Scene {
       const drawn = edgeGeometry(
         next,
         this.boxes,
-        this.model.bows || {},
+        this.paths(),
         rest,
         this.frames,
         this.routeOptions(),

@@ -2,6 +2,7 @@ import { MODULE_GAP, MODULE_HEADER, MODULE_TILE_H, moduleTiles } from "@zeema/co
 import { describe, expect, it } from "vitest";
 import {
   type Box,
+  drawnPaths,
   EXPANDED_MIN_W,
   expandBoxes,
   expandedKey,
@@ -9,7 +10,10 @@ import {
   ghostBoxes,
   ghostSlot,
   inProcessLines,
+  openNodes,
   readExpanded,
+  resetPaths,
+  shiftPath,
   tileAt,
   tileBoxes,
   writeExpanded,
@@ -181,5 +185,49 @@ describe("the + module slot", () => {
     expect(expandBoxes(list, laid, open)).toEqual(expandBoxes(list, laid, open, () => false));
     expect(ghostBoxes(list, drawn, new Set(), all)).toEqual({});
     expect(ghostBoxes(list, drawn, open, () => false)).toEqual({});
+  });
+});
+
+describe("edge waypoints per expand state", () => {
+  const nodes = [{ id: "web", modules: [{ id: "auth" }] }, { id: "db" }];
+  const bows = {
+    "web>db": { via: [[1, 1]], viaExpanded: { web: [[2, 2]] } },
+    "web/auth>db#1": { via: [[3, 3]] },
+    "db>web": 9,
+  } as Record<string, any>;
+
+  it("opens only the expanded nodes that have modules", () => {
+    expect([...openNodes(nodes, ["web", "db", "gone"])]).toEqual(["web"]);
+  });
+
+  it("draws `via` collapsed and the state's slot expanded (none: automatic)", () => {
+    expect(drawnPaths(bows, nodes, [])).toEqual({
+      "web>db": { via: [[1, 1]] },
+      "web/auth>db#1": { via: [[3, 3]] },
+      "db>web": 9,
+    });
+    // `db` has no modules, so it never counts as expanded.
+    expect(drawnPaths(bows, nodes, ["web", "db"])).toEqual({
+      "web>db": { via: [[2, 2]] },
+      "db>web": 9,
+    });
+  });
+
+  it("resets a bow, or only the waypoints of the state drawn now", () => {
+    const state = () => "web";
+    expect(resetPaths(bows, ["web>db", "db>web", "nope"], state)).toEqual({
+      "web>db": { via: [[1, 1]] },
+      "web/auth>db#1": { via: [[3, 3]] },
+    });
+    expect(resetPaths(bows, ["web/auth>db#1"], () => "")).not.toHaveProperty("web/auth>db#1");
+    expect(bows["web>db"].viaExpanded).toEqual({ web: [[2, 2]] });
+  });
+
+  it("moves every state's waypoints with a paste", () => {
+    expect(shiftPath(bows["web>db"], 10)).toEqual({
+      via: [[11, 11]],
+      viaExpanded: { web: [[12, 12]] },
+    });
+    expect(shiftPath(5, 10)).toBe(5);
   });
 });

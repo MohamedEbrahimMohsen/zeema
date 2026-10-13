@@ -6,7 +6,8 @@
 // module is drawn to its tile, and an in-process edge (two ends in one node) is a light line
 // between tiles. Pure: no DOM; storage is passed in.
 import { endNode, isInProcess, moduleName, nodeModules, splitEnd } from "@zeema/core/document";
-import { moduleTiles } from "@zeema/core/geometry";
+import { moduleTiles, pathsFor, withPath } from "@zeema/core/geometry";
+import type { EdgePath, ShapedPath, Waypoint } from "@/lib/layout-sidecar";
 
 export type Box = [number, number, number, number];
 type Store = Pick<Storage, "getItem" | "setItem">;
@@ -216,5 +217,57 @@ export function findingTiles(findings: Array<{ subject?: any }>): Set<string> {
     for (const end of [s.from, s.to])
       if (typeof end === "string" && splitEnd(end).module !== null) out.add(end);
   }
+  return out;
+}
+
+// Hand-placed waypoints are absolute, and an expanded node's box is bigger than its collapsed one,
+// so an edge keeps one set per expand state of its ends (`expandState` in @zeema/core/geometry):
+// `via` with both collapsed, `viaExpanded[state]` otherwise. Expanding or collapsing never drops
+// a set; it only changes which one is drawn.
+
+/** The nodes drawn expanded: in `expanded` and with modules to show. */
+export function openNodes(nodes: any[] | undefined, expanded: Iterable<string>): Set<string> {
+  const set = new Set(expanded);
+  return new Set((nodes ?? []).filter((n) => set.has(n?.id) && hasModules(n)).map((n) => n.id));
+}
+
+/** The stored edge paths as drawn with `expanded`: each edge's slot for its expand state. */
+export function drawnPaths(
+  bows: Record<string, EdgePath>,
+  nodes: any[] | undefined,
+  expanded: Iterable<string>,
+): Record<string, EdgePath> {
+  return pathsFor(bows, openNodes(nodes, expanded)) as Record<string, EdgePath>;
+}
+
+/**
+ * The stored edge paths with `keys` back to automatic in the expand state `stateOf` names: a bow
+ * goes (it is every state's), waypoints go only from that state's slot. Copies.
+ */
+export function resetPaths(
+  bows: Record<string, EdgePath>,
+  keys: string[],
+  stateOf: (key: string) => string,
+): Record<string, EdgePath> {
+  const out = { ...bows };
+  for (const k of keys) {
+    if (!Object.hasOwn(out, k)) continue;
+    const next = typeof out[k] === "number" ? null : withPath(out[k], stateOf(k), null);
+    if (next) out[k] = next as EdgePath;
+    else delete out[k];
+  }
+  return out;
+}
+
+/** A stored path moved `d` px right and down (a paste): every state's waypoints, a bow as it is. */
+export function shiftPath(path: EdgePath, d: number): EdgePath {
+  if (typeof path === "number") return path;
+  const move = (pts: Waypoint[]) => pts.map(([x, y]) => [x + d, y + d] as Waypoint);
+  const out: ShapedPath = {};
+  if (Array.isArray(path.via)) out.via = move(path.via);
+  if (path.viaExpanded)
+    out.viaExpanded = Object.fromEntries(
+      Object.entries(path.viaExpanded).map(([s, pts]) => [s, move(pts)]),
+    );
   return out;
 }

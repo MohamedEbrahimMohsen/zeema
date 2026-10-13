@@ -20,7 +20,7 @@
 import { endNode, stackedIds } from "./document.js";
 import { edgeGeometry, frameCaptions, groupFrames, labelOffset, readRouting } from "./geometry.js";
 import { layout } from "./layout.js";
-import { LABEL_FONT } from "./routing.js";
+import { LABEL_FONT, pathsFor } from "./routing.js";
 import { textWidth } from "./text.js";
 
 // The gaps the automatic layout leaves between boxes; a newcomer keeps the same spacing.
@@ -135,7 +135,10 @@ export function drawnLayout(doc, catalogue, sidecar) {
   const groups = doc.groups || [];
   const captions = frameCaptions({ groups }, catalogue, frameStyles);
   const frames = groupFrames({ nodes, groups, edges: doc.edges || [] }, boxes, captions);
-  const bows = sidecar && typeof sidecar === "object" && sidecar.edges ? sidecar.edges : {};
+  // Every end collapsed: an edge's `via`, never the waypoints of an expand state (`pathsFor`).
+  const bows = pathsFor(
+    sidecar && typeof sidecar === "object" && sidecar.edges ? sidecar.edges : {},
+  );
   const rawPorts = sidecar && typeof sidecar === "object" ? sidecar.ports : null;
   const ports =
     rawPorts && typeof rawPorts === "object" && !Array.isArray(rawPorts) ? rawPorts : {};
