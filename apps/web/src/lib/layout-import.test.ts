@@ -200,6 +200,37 @@ describe("mergeImportedLayout", () => {
   });
 });
 
+describe("positions per open state in a layout file", () => {
+  const hosted = {
+    ...doc,
+    nodes: [{ id: "api", modules: [{ id: "auth" }] }, { id: "db" }, { id: "queue" }],
+  };
+
+  it("merges each state as `nodes` merges, drops what the design cannot draw, and exports it", () => {
+    const base = { ...current(), nodesExpanded: { api: { db: [1, 1] as [number, number] } } };
+    const file = {
+      nodesExpanded: {
+        api: { queue: [9, 9], ghost: [0, 0] },
+        db: { api: [5, 5] },
+      },
+    };
+    const r = mergeImportedLayout(base, file, hosted);
+    expect(r.next.nodesExpanded).toEqual({ api: { db: [1, 1], queue: [9, 9] } });
+    const replaced = mergeImportedLayout(base, file, hosted, "replace");
+    expect(replaced.next.nodesExpanded).toEqual({ api: { queue: [9, 9] } });
+    // nothing in the file: the current states stay
+    expect(mergeImportedLayout(base, { nodes: {} }, hosted).next.nodesExpanded).toEqual(
+      base.nodesExpanded,
+    );
+    expect(layoutFileProblems({ nodesExpanded: [] })).toEqual([
+      '"nodesExpanded" must be an object',
+    ]);
+    // the exported file carries the key through, and reads back to the same
+    const out = JSON.parse(sidecarFile({ nodes: {}, nodesExpanded: r.next.nodesExpanded }));
+    expect(out.nodesExpanded).toEqual(r.next.nodesExpanded);
+  });
+});
+
 describe("importNotice", () => {
   it("says what was taken and what was dropped", () => {
     expect(importNotice({ next: current(), positions: 3, paths: 1, dropped: 2 })).toBe(

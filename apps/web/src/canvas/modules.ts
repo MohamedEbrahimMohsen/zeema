@@ -7,7 +7,7 @@
 // between tiles. Pure: no DOM; storage is passed in.
 import { endNode, isInProcess, moduleName, nodeModules, splitEnd } from "@zeema/core/document";
 import { moduleTiles, pathsFor, withPath } from "@zeema/core/geometry";
-import type { EdgePath, ShapedPath, Waypoint } from "@/lib/layout-sidecar";
+import type { EdgePath, NodesExpanded, ShapedPath, Waypoint } from "@/lib/layout-sidecar";
 
 export type Box = [number, number, number, number];
 type Store = Pick<Storage, "getItem" | "setItem">;
@@ -270,4 +270,37 @@ export function shiftPath(path: EdgePath, d: number): EdgePath {
       Object.entries(path.viaExpanded).map(([s, pts]) => [s, move(pts)]),
     );
   return out;
+}
+
+// Node positions per open state: the same idea as the waypoints, for the boxes. Expanding a node
+// grows its box, so the boxes around it are dragged away to make room; those moves belong to that
+// picture alone. `nodes` (the sidecar's) holds the positions with nothing expanded, and
+// `nodesExpanded[state]` the boxes someone moved while exactly the nodes in `state` were open
+// (`openState` in @zeema/core/geometry). A box nobody moved in a state is where `nodes` puts it.
+
+/** Each node's position as drawn in open state `state` ("" for nothing expanded). Copies. */
+export function effectivePositions(
+  nodes: Record<string, [number, number]>,
+  nodesExpanded: NodesExpanded | undefined,
+  state: string,
+): Record<string, [number, number]> {
+  const slot = state && nodesExpanded ? nodesExpanded[state] : undefined;
+  return slot ? { ...nodes, ...slot } : { ...nodes };
+}
+
+/**
+ * Put node `id` at `at` in open state `state`: `nodes` with nothing expanded, else that state's
+ * slot of `nodesExpanded` only, so the collapsed picture keeps its place. Mutates.
+ */
+export function placeNode(
+  layout: { positions: Record<string, [number, number]>; nodesExpanded: NodesExpanded },
+  state: string,
+  id: string,
+  at: [number, number],
+) {
+  if (!state) {
+    layout.positions[id] = at;
+    return;
+  }
+  layout.nodesExpanded[state] = { ...(layout.nodesExpanded[state] ?? {}), [id]: at };
 }

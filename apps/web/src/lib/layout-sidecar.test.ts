@@ -27,17 +27,20 @@ import {
   normaliseTint,
   pruneAnchored,
   pruneFrames,
+  pruneNodesExpanded,
   prunePorts,
   pruneSidecar,
   pruneTints,
   readEdgePath,
   readLabels,
+  readNodesExpanded,
   readPorts,
   readRoutingField,
   readSidecar,
   readTints,
   retargetAnchors,
   retargetFrame,
+  retargetNodesExpanded,
   retargetTint,
   SIDECAR_VERSION,
   sidecarFile,
@@ -816,5 +819,93 @@ describe("edge waypoints per expand state (viaExpanded)", () => {
     // Without the module list nothing is known about modules, so the states are kept.
     const kept = pruneSidecar(s, { nodes: [], groups: [], edges: ["db>q"] });
     expect(kept.edges).toEqual({ "db>q": { viaExpanded: { db: [[1, 1]] } } });
+  });
+});
+
+describe("node positions per open state (nodesExpanded)", () => {
+  const raw = {
+    nodes: { web: [0, 0], db: [300, 0], q: [600, 0] },
+    nodesExpanded: {
+      web: { db: [420, 10], q: [700, 0] },
+      "web,db": { q: [900, 40] },
+      "db,web,db": { db: [1, 1] },
+      "Bad,Key": { db: [1, 1] },
+      db: { q: ["x", 1], gone: [1, 2] },
+      q: { db: [Number.POSITIVE_INFINITY, 0] },
+      web2: "no",
+    },
+  };
+
+  it("reads states of sorted node ids and finite positions, and drops the rest", () => {
+    const s = readSidecar(raw);
+    // "db,web,db" is respelled sorted and once, onto "db,web"; a state whose entries are all
+    // malformed goes with them
+    expect(s.nodesExpanded).toEqual({
+      web: { db: [420, 10], q: [700, 0] },
+      "db,web": { db: [1, 1] },
+      db: { gone: [1, 2] },
+    });
+    expect(readNodesExpanded("no")).toEqual({});
+    expect(Object.hasOwn(readSidecar({ nodes: {} }), "nodesExpanded")).toBe(false);
+    expect(isBlankSidecar({ nodesExpanded: { web: { db: [1, 2] } } })).toBe(false);
+  });
+
+  it("with targets, drops a state that names no module host and a node that is gone", () => {
+    const s = readSidecar(raw, { nodes: ["web", "db", "q"], groups: [], modules: ["web/auth"] });
+    expect(s.nodesExpanded).toEqual({ web: { db: [420, 10], q: [700, 0] } });
+  });
+
+  it("is written right after `nodes`, sorted, and absent when empty", () => {
+    const stored = writeSidecar({
+      nodes: { web: [0, 0] },
+      nodesExpanded: { web: { q: [1, 1], db: [2, 2] }, "db,web": { q: [3, 3] } },
+      edges: {},
+      notes: [],
+    });
+    expect(Object.keys(stored).slice(0, 3)).toEqual(["version", "nodes", "nodesExpanded"]);
+    expect(Object.keys(stored.nodesExpanded!)).toEqual(["db,web", "web"]);
+    expect(Object.keys(stored.nodesExpanded!.web)).toEqual(["db", "q"]);
+    const bare = writeSidecar({ nodes: {}, nodesExpanded: {}, edges: {}, notes: [] });
+    expect(Object.hasOwn(bare, "nodesExpanded")).toBe(false);
+    const file = sidecarFile(stored);
+    expect(Object.keys(JSON.parse(file)).slice(0, 3)).toEqual([
+      "version",
+      "nodes",
+      "nodesExpanded",
+    ]);
+    expect(sidecarFile(JSON.parse(file))).toBe(file);
+    expect(readSidecar(JSON.parse(file)).nodesExpanded).toEqual(stored.nodesExpanded);
+  });
+
+  it("is pruned to module hosts and live nodes, on save and on export", () => {
+    const map = { web: { db: [1, 1] as [number, number], q: [2, 2] as [number, number] } };
+    const states = { ...map, "db,web": { q: [3, 3] as [number, number] } };
+    expect(pruneNodesExpanded(states, ["web", "db"], ["web"])).toEqual({ web: { db: [1, 1] } });
+    expect(pruneNodesExpanded(states, ["web"], ["web", "db"])).toEqual({});
+    const s = readSidecar({ nodes: {}, nodesExpanded: states });
+    const pruned = pruneSidecar(s, {
+      nodes: ["web", "db"],
+      groups: [],
+      edges: [],
+      modules: ["web/auth"],
+    });
+    expect(pruned.nodesExpanded).toEqual({ web: { db: [1, 1] } });
+    // Without the module list nothing is known about modules, so every state is kept.
+    expect(pruneSidecar(s, { nodes: ["q"], groups: [], edges: [] }).nodesExpanded).toEqual({
+      web: { q: [2, 2] },
+      "db,web": { q: [3, 3] },
+    });
+    expect(states.web).toEqual(map.web);
+  });
+
+  it("follows a node rename: its positions and the states that name it", () => {
+    const map = {
+      web: { db: [1, 1] as [number, number] },
+      "db,web": { web: [2, 2] as [number, number] },
+    };
+    retargetNodesExpanded(map, "web", "api");
+    expect(map).toEqual({ api: { db: [1, 1] }, "api,db": { api: [2, 2] } });
+    retargetNodesExpanded(map, "db", "zeta");
+    expect(map).toEqual({ api: { zeta: [1, 1] }, "api,zeta": { api: [2, 2] } });
   });
 });

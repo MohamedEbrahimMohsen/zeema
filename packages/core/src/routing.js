@@ -1017,6 +1017,23 @@ export function dropWaypoint(via, x, y) {
 /** A sidecar `viaExpanded` key: one or two node ids, sorted, comma-joined. */
 export const EXPAND_STATE_RE = /^[a-z][a-z0-9-]*(,[a-z][a-z0-9-]*)?$/;
 
+// Node positions follow the same idea one level up: an expanded node's box is bigger, so the
+// boxes around it are moved to make room, and those moves belong to that picture only. A sidecar
+// `nodesExpanded` entry keeps them per open set of the whole canvas: every node drawn expanded,
+// sorted and comma-joined (`openState`); `nodes` stays the positions with nothing expanded.
+
+/** A sidecar `nodesExpanded` key: one or more node ids, sorted, comma-joined. */
+export const OPEN_STATE_RE = /^[a-z][a-z0-9-]*(,[a-z][a-z0-9-]*)*$/;
+
+/**
+ * The open state of a whole canvas: the node ids in `open` (the nodes drawn expanded), sorted
+ * and comma-joined; "" when none is.
+ * @param {Iterable<string>} open
+ */
+export function openState(open) {
+  return [...new Set(open)].sort().join(",");
+}
+
 /**
  * The expand state of the edge `key` (`from>to`, `from>to#n`): its end nodes that are in `open`
  * (the nodes drawn expanded), sorted and comma-joined; "" when neither is.

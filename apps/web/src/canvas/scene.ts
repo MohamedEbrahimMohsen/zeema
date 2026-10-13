@@ -43,6 +43,7 @@ import {
   MODULE_HEADER,
   MODULE_TILE_PAD,
   moveSegment,
+  openState,
   portAt,
   readRouting,
   refAt,
@@ -79,6 +80,7 @@ import {
   NOTE_MAX_TEXT,
   NOTE_MIN_H,
   NOTE_MIN_W,
+  type NodesExpanded,
   type NodeTint,
   type Note,
   type NoteAnchor,
@@ -102,6 +104,7 @@ import {
 import { findGuides, type GuideLine } from "./guides";
 import {
   drawnPaths,
+  effectivePositions,
   expandBoxes,
   findingTiles,
   ghostBoxes,
@@ -185,7 +188,13 @@ export type Model = {
   doc: any;
   catalogue: any;
   icons: Record<string, string>;
+  /** Node positions with nothing expanded: the sidecar's `nodes`. */
   positions: Record<string, [number, number]>;
+  /**
+   * Node positions per open state (the sidecar's `nodesExpanded`): a node moved while the canvas
+   * had exactly those nodes expanded is drawn there in that state (`effectivePositions`).
+   */
+  positionsExpanded?: NodesExpanded;
   sizes: Record<string, [number, number]>;
   /** Hand-adjusted edge paths by edge key, from the sidecar: a bow, or waypoints. */
   bows: Record<string, EdgePath>;
@@ -758,7 +767,11 @@ export class Scene {
       labelAvoid: notes,
       labels,
       stacked,
-      moduleBoxes: this.tiles,
+      // The "+ module" cell is in the way of the gutter routes too, under a key no end names.
+      moduleBoxes: {
+        ...this.tiles,
+        ...Object.fromEntries(Object.entries(this.ghosts).map(([id, b]) => [`${id}/+`, b])),
+      },
     };
   }
 
@@ -773,6 +786,14 @@ export class Scene {
    */
   expandStateOf(key: string) {
     return expandState(key, this.openIds());
+  }
+
+  /**
+   * The open state of the whole canvas (`openState`): which slot of `nodesExpanded` the boxes are
+   * drawn from and a drag writes. "" while nothing is expanded (the sidecar's `nodes`).
+   */
+  openStateKey() {
+    return openState(this.openIds());
   }
 
   /**
@@ -869,8 +890,10 @@ export class Scene {
   render(model: Model) {
     this.model = model;
     const laid: Record<string, Box> = {};
+    // Each box where it was put in the open state drawn now, else where it is with none open.
+    const at = effectivePositions(model.positions, model.positionsExpanded, this.openStateKey());
     for (const n of model.doc.nodes) {
-      const p = model.positions[n.id] || [0, 0];
+      const p = at[n.id] || [0, 0];
       const s = model.sizes[n.id] || [140, 78];
       laid[n.id] = [p[0], p[1], s[0], s[1]];
     }
@@ -2282,6 +2305,8 @@ export class Scene {
     input.type = "text";
     input.placeholder = "Module name";
     input.setAttribute("aria-label", "New module name");
+    // A name a person reads: the browser's own spell check, set explicitly (Firefox needs it).
+    input.spellcheck = true;
     input.style.left = `${Math.round(anchor[0] - r.left - width / 2)}px`;
     input.style.top = `${Math.round(anchor[1] - r.top)}px`;
     input.style.width = `${Math.round(width)}px`;
@@ -3965,6 +3990,8 @@ export class Scene {
     input.className = "inline-edit";
     input.type = "text";
     input.value = current;
+    // Every in-place editor here edits a label, never an id: words, so the browser checks them.
+    input.spellcheck = true;
     input.style.left = `${Math.round(anchor[0] - r.left - (kind === "group" ? 0 : width / 2))}px`;
     input.style.top = `${Math.round(anchor[1] - r.top)}px`;
     input.style.width = `${Math.round(width)}px`;
@@ -4016,7 +4043,7 @@ export class Scene {
     const area = document.createElement("textarea");
     area.className = "inline-edit note-edit";
     area.value = current;
-    area.spellcheck = false;
+    area.spellcheck = true;
     // The reader caps a note at the same length (layout-sidecar.ts), so stopping here is what
     // keeps what you typed and what comes back the same text.
     area.maxLength = NOTE_MAX_TEXT;

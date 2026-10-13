@@ -16,6 +16,7 @@ import {
   type FrameStyle,
   type LabelOffset,
   moduleRefs,
+  type NodesExpanded,
   type NodeTint,
   type Note,
   pruneSidecar,
@@ -28,6 +29,8 @@ import {
 /** The layout half of the canvas engine: exactly what `commit` snapshots besides the doc. */
 export type LayoutState = {
   positions: Record<string, [number, number]>;
+  /** Positions per open state (the sidecar's `nodesExpanded`). */
+  nodesExpanded?: NodesExpanded;
   bows: Record<string, EdgePath>;
   ports: Record<string, EdgePorts>;
   labels: Record<string, LabelOffset>;
@@ -81,7 +84,7 @@ export function layoutFileProblems(raw: unknown): string[] {
     if (typeof v !== "number" || !Number.isInteger(v) || v < 1 || v > SIDECAR_VERSION)
       out.push(`version ${JSON.stringify(v)} is not one this site reads (1 to ${SIDECAR_VERSION})`);
   }
-  for (const key of ["nodes", "edges", "ports", "labels", "frames", "tints"])
+  for (const key of ["nodes", "nodesExpanded", "edges", "ports", "labels", "frames", "tints"])
     if (key in raw && !isObject(raw[key])) out.push(`"${key}" must be an object`);
   if ("notes" in raw && !Array.isArray(raw.notes)) out.push(`"notes" must be a list`);
   if (isObject(raw.nodes))
@@ -164,6 +167,7 @@ export function mergeImportedLayout(
     frames: pruned.frames,
     tints: pruned.tints ?? {},
   };
+  if (pruned.nodesExpanded) imported.nodesExpanded = pruned.nodesExpanded;
   if (pruned.badge) imported.badge = pruned.badge;
   if (pruned.routing) imported.routing = pruned.routing;
 
@@ -175,6 +179,7 @@ export function mergeImportedLayout(
     for (const n of imported.notes) byId.set(n.id, n);
     next = {
       positions: { ...base.positions, ...imported.positions },
+      // Per open state, as `nodes` merges: a box the file places wins, the others stay.
       bows: { ...base.bows, ...imported.bows },
       ports: { ...base.ports, ...imported.ports },
       labels: { ...base.labels, ...imported.labels },
@@ -182,6 +187,9 @@ export function mergeImportedLayout(
       frames: { ...base.frames, ...imported.frames },
       tints: { ...base.tints, ...imported.tints },
     };
+    // Per open state, as `nodes` merges: a box the file places wins, the others stay.
+    const states = mergeStates(base.nodesExpanded ?? {}, imported.nodesExpanded ?? {});
+    if (Object.keys(states).length) next.nodesExpanded = states;
     // The badge and the routing are taken only when the file says; otherwise they stay.
     const badge = "badge" in file ? imported.badge : base.badge;
     const routing = "routing" in file ? imported.routing : base.routing;
@@ -194,6 +202,14 @@ export function mergeImportedLayout(
     paths: Object.keys(imported.bows).length,
     dropped: dropped.size,
   };
+}
+
+/** Positions per open state merged: each state's boxes as `nodes` merges them. Copies. */
+function mergeStates(base: NodesExpanded, over: NodesExpanded): NodesExpanded {
+  const out: NodesExpanded = {};
+  for (const [state, slot] of Object.entries(base)) out[state] = { ...slot };
+  for (const [state, slot] of Object.entries(over)) out[state] = { ...out[state], ...slot };
+  return out;
 }
 
 /** The notice the canvas shows once an import has been applied. */

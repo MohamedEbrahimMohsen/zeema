@@ -4,6 +4,7 @@ import {
   type Box,
   drawnPaths,
   EXPANDED_MIN_W,
+  effectivePositions,
   expandBoxes,
   expandedKey,
   findingTiles,
@@ -11,6 +12,7 @@ import {
   ghostSlot,
   inProcessLines,
   openNodes,
+  placeNode,
   readExpanded,
   resetPaths,
   shiftPath,
@@ -229,5 +231,38 @@ describe("edge waypoints per expand state", () => {
       viaExpanded: { web: [[12, 12]] },
     });
     expect(shiftPath(5, 10)).toBe(5);
+  });
+});
+
+describe("node positions per open state", () => {
+  const positions: Record<string, [number, number]> = { backend: [0, 0], sms: [300, 0] };
+  const nodesExpanded = { backend: { sms: [500, 20] as [number, number] } };
+
+  it("draws a box where it was moved in the open state, else where it is collapsed", () => {
+    expect(effectivePositions(positions, nodesExpanded, "")).toEqual(positions);
+    expect(effectivePositions(positions, nodesExpanded, "backend")).toEqual({
+      backend: [0, 0],
+      sms: [500, 20],
+    });
+    // a state nobody moved anything in is the collapsed picture
+    expect(effectivePositions(positions, nodesExpanded, "backend,other")).toEqual(positions);
+    expect(effectivePositions(positions, undefined, "backend")).toEqual(positions);
+    // it copies
+    expect(effectivePositions(positions, nodesExpanded, "")).not.toBe(positions);
+  });
+
+  it("moves a box in the open state only, and with nothing open in `nodes`", () => {
+    const layout = { positions: { ...positions }, nodesExpanded: {} as typeof nodesExpanded };
+    placeNode(layout, "backend", "sms", [640, 0]);
+    expect(layout.positions.sms).toEqual([300, 0]);
+    expect(layout.nodesExpanded).toEqual({ backend: { sms: [640, 0] } });
+    // collapse: back where it was; expand again: where it was put expanded
+    expect(effectivePositions(layout.positions, layout.nodesExpanded, "").sms).toEqual([300, 0]);
+    expect(effectivePositions(layout.positions, layout.nodesExpanded, "backend").sms).toEqual([
+      640, 0,
+    ]);
+    placeNode(layout, "", "sms", [320, 0]);
+    expect(layout.positions.sms).toEqual([320, 0]);
+    expect(layout.nodesExpanded.backend.sms).toEqual([640, 0]);
   });
 });

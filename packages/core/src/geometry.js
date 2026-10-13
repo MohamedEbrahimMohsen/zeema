@@ -45,6 +45,8 @@ export {
   LABEL_OFFSET_MAX,
   labelOffset,
   moveSegment,
+  OPEN_STATE_RE,
+  openState,
   pathFor,
   pathsFor,
   readVia,
@@ -379,6 +381,273 @@ function labelPlacement(mid, points, shared) {
   return { at: [x, y], anchor };
 }
 
+// Gutters. An expanded node is a grid of tiles MODULE_GAP apart, with at least MODULE_GAP of margin
+// around the grid. An orthogonal edge from one of its tiles to anything outside the node never
+// crosses a tile: it leaves its tile into the gutter beside it (the gap between two columns or two
+// rows, or the margin), runs along gutters, turning only where two cross, and leaves the node's
+// border on the side that faces the other end; from there it is routed like any edge, as if the
+// node's box were ported at that exit point. The same in the other direction. Edges that share a
+// stretch of one gutter are set GUTTER_LANE apart, so two of them never draw as one line. A gutter
+// runs down the middle of its gap, so the GAP is wide enough for two lines side by side.
+export const GUTTER_LANE = 4;
+
+// The node's grid: its box and every tile in it (the canvas's "+ module" cell too, under a key no
+// end can name), with the gutter lines between them. `xs` are the vertical gutters (x of each),
+// `ys` the horizontal ones; the first and last of each lie half a gap outside the grid.
+function gridOf(box, tiles) {
+  const spans = (lo, size) => {
+    const out = [];
+    for (const t of tiles) {
+      const a = t[lo],
+        b = t[lo] + t[size];
+      if (!out.some((s) => Math.abs(s[0] - a) < 0.5)) out.push([a, b]);
+    }
+    return out.sort((p, q) => p[0] - q[0]);
+  };
+  const lines = (list, lo, hi) => {
+    if (!list.length) return [];
+    const half = MODULE_GAP / 2;
+    const out = [Math.max(lo, list[0][0] - half)];
+    for (let k = 1; k < list.length; k++) out.push((list[k - 1][1] + list[k][0]) / 2);
+    out.push(Math.min(hi, list[list.length - 1][1] + half));
+    return out;
+  };
+  return {
+    box,
+    tiles,
+    xs: lines(spans(0, 2), box[0], box[0] + box[2]),
+    ys: lines(spans(1, 3), box[1], box[1] + box[3]),
+  };
+}
+
+// Whether the axis-aligned run p→q passes through the inside of any of `tiles`.
+function runCuts(p, q, tiles) {
+  const E = 0.5;
+  for (const t of tiles) {
+    if (Math.abs(p[1] - q[1]) < E) {
+      const lo = Math.min(p[0], q[0]),
+        hi = Math.max(p[0], q[0]);
+      if (p[1] > t[1] + E && p[1] < t[1] + t[3] - E && lo < t[0] + t[2] - E && hi > t[0] + E)
+        return true;
+    } else {
+      const lo = Math.min(p[1], q[1]),
+        hi = Math.max(p[1], q[1]);
+      if (p[0] > t[0] + E && p[0] < t[0] + t[2] - E && lo < t[1] + t[3] - E && hi > t[1] + E)
+        return true;
+    }
+  }
+  return false;
+}
+
+// The side of `box` that faces `other`: across the wider gap between them, or, when they overlap,
+// toward the other's centre measured against the box's own size.
+function sideFacing(box, other) {
+  const [x, y, w, h] = box;
+  const dx = other[0] + other[2] / 2 - (x + w / 2);
+  const dy = other[1] + other[3] / 2 - (y + h / 2);
+  const gx = Math.max(other[0] - (x + w), x - (other[0] + other[2]));
+  const gy = Math.max(other[1] - (y + h), y - (other[1] + other[3]));
+  const horizontal =
+    gx > 0 || gy > 0 ? gx >= gy : Math.abs(dx) / (w || 1) >= Math.abs(dy) / (h || 1);
+  if (horizontal) return dx >= 0 ? "right" : "left";
+  return dy >= 0 ? "bottom" : "top";
+}
+
+// Of the gutter lines, the one a run from `from` toward `to` turns on most cheaply.
+function bestLine(lines, from, to) {
+  let best = lines[0];
+  for (const l of lines) {
+    const c = Math.abs(l - from) + Math.abs(to - l),
+      b = Math.abs(best - from) + Math.abs(to - best);
+    if (c < b - 1e-9 || (Math.abs(c - b) < 1e-9 && Math.abs(l - from) < Math.abs(best - from)))
+      best = l;
+  }
+  return best;
+}
+
+// Corners only: no repeated point, no point in the middle of a straight run.
+function corners(points) {
+  const out = [];
+  for (const p of points) {
+    const q = out[out.length - 1];
+    if (q && Math.abs(q[0] - p[0]) < 0.01 && Math.abs(q[1] - p[1]) < 0.01) continue;
+    const r = out[out.length - 2];
+    if (
+      q &&
+      r &&
+      ((Math.abs(r[0] - q[0]) < 0.01 && Math.abs(q[0] - p[0]) < 0.01) ||
+        (Math.abs(r[1] - q[1]) < 0.01 && Math.abs(q[1] - p[1]) < 0.01))
+    )
+      out[out.length - 1] = p;
+    else out.push(p);
+  }
+  return out;
+}
+
+// The way from a tile out of its node: from the tile's port (its side `start`, `t` along it) into
+// the gutter beside it, along gutters, to the border on side `exit`. `toward` is the point the
+// edge heads for outside, which picks the gutter a turn is taken on. Corners, tile first.
+function gutterPath(grid, tile, start, t, exit, toward) {
+  const { box, tiles, xs, ys } = grid;
+  const P = portPoint(tile, { side: start, t });
+  const [tx, ty, tw, th] = tile;
+  const pick = (list, ok, fallback, lo) => {
+    const c = list.filter(ok);
+    return c.length ? (lo ? Math.min(...c) : Math.max(...c)) : fallback;
+  };
+  let S;
+  if (start === "right") S = [pick(xs, (x) => x > tx + tw, box[0] + box[2], true), P[1]];
+  else if (start === "left") S = [pick(xs, (x) => x < tx, box[0], false), P[1]];
+  else if (start === "bottom") S = [P[0], pick(ys, (y) => y > ty + th, box[1] + box[3], true)];
+  else S = [P[0], pick(ys, (y) => y < ty, box[1], false)];
+  const points = [P, S];
+  const sideways = exit === "left" || exit === "right";
+  const border =
+    exit === "left"
+      ? box[0]
+      : exit === "right"
+        ? box[0] + box[2]
+        : exit === "top"
+          ? box[1]
+          : box[1] + box[3];
+  // S is on a vertical gutter when the tile was left by a side, on a horizontal one otherwise.
+  const onVertical = start === "left" || start === "right";
+  if (sideways) {
+    const E = [border, S[1]];
+    if (!onVertical || !runCuts(S, E, tiles)) points.push(E);
+    else {
+      const y = bestLine(ys, S[1], toward[1]);
+      points.push([S[0], y], [border, y]);
+    }
+  } else {
+    const E = [S[0], border];
+    if (onVertical || !runCuts(S, E, tiles)) points.push(E);
+    else {
+      const x = bestLine(xs, S[0], toward[0]);
+      points.push([x, S[1]], [x, border]);
+    }
+  }
+  return corners(points);
+}
+
+// Every gutter end of the drawn edges (an end on a tile of an expanded node, `tiles`, whose node
+// has a box in `boxes`), worked out together: the unported ends that leave one side of one tile
+// spread along it, and the runs that share a stretch of one gutter are set GUTTER_LANE apart. By
+// edge index, `{ from?, to? }`, each `{ box, port, path }`: the node's box, the port on its border
+// the outside route starts from, and the corners inside the node, tile first and border last.
+function gutterEnds(edges, boxOf, tiled, boxes, tiles, ports, keys) {
+  const out = new Map();
+  const byNode = new Map();
+  for (const [ref, b] of Object.entries(tiles)) {
+    const slash = ref.indexOf("/");
+    if (slash < 0) continue;
+    const node = ref.slice(0, slash);
+    if (!boxes[node]) continue;
+    if (!byNode.has(node)) byNode.set(node, []);
+    byNode.get(node).push(b);
+  }
+  if (!byNode.size) return out;
+  const grids = new Map();
+  for (const [node, list] of byNode) grids.set(node, gridOf(boxes[node], list));
+  const specs = [];
+  edges.forEach((e, i) => {
+    if (!e) return;
+    for (const end of ["from", "to"]) {
+      const ref = e[end];
+      if (!tiled(ref) || !grids.has(endNode(ref))) continue;
+      const grid = grids.get(endNode(ref));
+      const far = e[end === "from" ? "to" : "from"];
+      const other =
+        tiled(far) && grids.has(endNode(far)) ? grids.get(endNode(far)).box : boxOf(far);
+      if (!other) continue;
+      const own = ports && Object.hasOwn(ports, keys[i]) ? ports[keys[i]] : null;
+      const port = isPort(own?.[end]) ? own[end] : null;
+      const exit = sideFacing(grid.box, other);
+      specs.push({
+        i,
+        end,
+        ref,
+        node: endNode(ref),
+        grid,
+        exit,
+        port,
+        side: port ? port.side : exit,
+        t: port ? unit(port.t) : 0.5,
+        toward: [other[0] + other[2] / 2, other[1] + other[3] / 2],
+      });
+    }
+  });
+  // Unported ends leaving one side of one tile, spread along it in edge order.
+  const bySide = new Map();
+  for (const s of specs) {
+    if (s.port) continue;
+    const k = `${s.ref}\u0000${s.side}`;
+    if (!bySide.has(k)) bySide.set(k, []);
+    bySide.get(k).push(s);
+  }
+  for (const list of bySide.values())
+    if (list.length > 1)
+      list.forEach((s, k) => {
+        s.t = (k + 1) / (list.length + 1);
+      });
+  for (const s of specs) s.path = gutterPath(s.grid, tiles[s.ref], s.side, s.t, s.exit, s.toward);
+  // Lanes: runs of different edges on one gutter line that overlap are set apart. The first run
+  // (out of the tile) is the tile's own and never moves.
+  const lines = new Map();
+  for (const s of specs)
+    for (let k = 1; k < s.path.length - 1; k++) {
+      const p = s.path[k],
+        q = s.path[k + 1];
+      const flat = Math.abs(p[1] - q[1]) < 0.01;
+      const u = flat ? 0 : 1;
+      const id = `${s.node}\u0000${flat ? "y" : "x"}\u0000${Math.round(flat ? p[1] : p[0])}`;
+      if (!lines.has(id)) lines.set(id, []);
+      lines.get(id).push({ s, k, flat, lo: Math.min(p[u], q[u]), hi: Math.max(p[u], q[u]) });
+    }
+  for (const list of lines.values()) {
+    const shared = list.some((a, x) =>
+      list.some((b, y) => y > x && a.s !== b.s && a.lo < b.hi - 1 && b.lo < a.hi - 1),
+    );
+    if (!shared) continue;
+    list.sort((a, b) => a.s.i - b.s.i || (a.s.end < b.s.end ? -1 : a.s.end > b.s.end ? 1 : 0));
+    const n = list.length;
+    const step = Math.min(GUTTER_LANE, (MODULE_GAP - 2) / (n - 1));
+    list.forEach((g, k) => {
+      const d = Math.round((k - (n - 1) / 2) * step * 10) / 10;
+      const v = g.flat ? 1 : 0;
+      g.s.path[g.k][v] += d;
+      g.s.path[g.k + 1][v] += d;
+    });
+  }
+  for (const s of specs) {
+    const [x, y, w, h] = s.grid.box;
+    const E = s.path[s.path.length - 1];
+    const along =
+      s.exit === "left" || s.exit === "right" ? (E[1] - y) / (h || 1) : (E[0] - x) / (w || 1);
+    if (!out.has(s.i)) out.set(s.i, {});
+    out.get(s.i)[s.end] = { box: s.grid.box, port: { side: s.exit, t: unit(along) }, path: s.path };
+  }
+  return out;
+}
+
+// The stored waypoints of an edge with a gutter end, without those inside its expanded nodes: the
+// part inside is the gutters' (a drag stores every corner, those inside too), the rest is the
+// person's. Null when none is left.
+function outsideVia(via, inside) {
+  const boxes = [inside.from?.box, inside.to?.box].filter(Boolean);
+  const kept = via.filter(
+    (p) =>
+      !boxes.some(
+        (b) =>
+          p[0] >= b[0] - 0.5 &&
+          p[0] <= b[0] + b[2] + 0.5 &&
+          p[1] >= b[1] - 0.5 &&
+          p[1] <= b[1] + b[3] + 0.5,
+      ),
+  );
+  return kept.length ? kept : null;
+}
+
 // `bows` maps an edge key to a perpendicular offset in pixels for the curve's control point,
 // measured along the edge's own from→to perpendicular. A bow of zero means the edge is drawn
 // automatically: its lane, and the bend it takes around any box the straight line would cut
@@ -424,7 +693,11 @@ function labelPlacement(mid, points, shared) {
 // `options.moduleBoxes` maps a module end as written (`node/module`) to a box of its own, the
 // module's tile in a node the canvas has expanded (`moduleTiles`): such an end is drawn to its
 // tile instead of the node's box, spread and routed as a box of its own, and its own node's box
-// is not an obstacle to it. The drawn edge's `from`/`to` are still the node ids.
+// is not an obstacle to it. The drawn edge's `from`/`to` are still the node ids. Routed
+// orthogonally, such an end whose node's expanded box is in `boxes` (the canvas passes the drawn
+// boxes) keeps to the gutters between the node's tiles (see "Gutters" above): every tile of that
+// node in `moduleBoxes` is in the way, whichever end it is keyed by, and a key no edge names (the
+// canvas's "+ module" cell) is in the way too. Stored waypoints shape only the part outside.
 export function edgeGeometry(doc, boxes, bows = {}, ports = {}, frames = {}, options = {}) {
   const tiles = options?.moduleBoxes || null;
   const tiled = (ref) =>
@@ -457,13 +730,32 @@ export function edgeGeometry(doc, boxes, bows = {}, ports = {}, frames = {}, opt
   };
   const routing = readRouting(options?.routing);
   if (routing !== "curved") {
+    // A tile end inside an expanded node runs the gutters to its node's border, and is routed on
+    // from there as the node's box ported at that point.
+    const inside = tiles ? gutterEnds(edges, boxOf, tiled, boxes, tiles, ports, keys) : new Map();
+    let paths = bows || {};
+    for (const [i, g] of inside) {
+      const via = readVia(paths[keys[i]]);
+      if (!via) continue;
+      const kept = outsideVia(via, g);
+      if (kept && kept.length === via.length) continue;
+      if (paths === bows) paths = { ...bows };
+      if (kept) paths[keys[i]] = { via: kept };
+      else delete paths[keys[i]];
+    }
     const items = [];
     edges.forEach((e, i) => {
       if (!e) return;
-      const a = boxOf(e.from),
+      let a = boxOf(e.from),
         b = boxOf(e.to);
       if (!a || !b) return;
-      const own = ports && Object.hasOwn(ports, keys[i]) ? ports[keys[i]] : null;
+      let own = ports && Object.hasOwn(ports, keys[i]) ? ports[keys[i]] : null;
+      const g = inside.get(i);
+      if (g) {
+        own = { ...(own || {}) };
+        if (g.from) [a, own.from] = [g.from.box, g.from.port];
+        if (g.to) [b, own.to] = [g.to.box, g.to.port];
+      }
       items.push({ i, key: keys[i], e, a, b, fa: isFrame(e.from), fb: isFrame(e.to), own });
     });
     // Where each frame's caption is drawn (its words and icon), from `options.captions`
@@ -474,7 +766,7 @@ export function edgeGeometry(doc, boxes, bows = {}, ports = {}, frames = {}, opt
       const c = Object.hasOwn(caps, gid) ? caps[gid] : null;
       if (c) captionBoxes.push([f[0] + 10, f[1] + 5, Math.max(0, c.width - 20), 16 + c.extra]);
     }
-    const routed = routeOrthogonal(items, boxes, bows || {}, isPort, {
+    const routed = routeOrthogonal(items, boxes, paths, isPort, {
       captions: captionBoxes,
       labelAvoid: options?.labelAvoid || [],
       labels: options?.labels || {},
@@ -482,6 +774,13 @@ export function edgeGeometry(doc, boxes, bows = {}, ports = {}, frames = {}, opt
     }).map((r) => {
       const e = edges[r.i];
       const label = e.label || null;
+      const g = inside.get(r.i);
+      if (g)
+        r.points = corners([
+          ...(g.from ? g.from.path : []),
+          ...r.points,
+          ...(g.to ? [...g.to.path].reverse() : []),
+        ]);
       return moduleEnds({
         ...r,
         from: e.from,
@@ -1221,7 +1520,7 @@ export const MODULE_TILE_W = 84;
 export const MODULE_TILE_MAX_W = 220;
 export const MODULE_TILE_PAD = 24;
 export const MODULE_TILE_H = 40;
-export const MODULE_GAP = 12;
+export const MODULE_GAP = 16;
 export const MODULE_HEADER = 44;
 export const MODULE_COLUMNS = 3;
 

@@ -46,6 +46,7 @@ import {
   NOTE_ANCHOR_W,
   NOTE_DEFAULT_H,
   NOTE_DEFAULT_W,
+  type NodesExpanded,
   type NodeTint,
   type Note,
   type NoteAnchor,
@@ -54,6 +55,7 @@ import {
   type PortSide,
   pruneAnchored,
   pruneFrames,
+  pruneNodesExpanded,
   prunePorts,
   pruneTints,
   type Routing,
@@ -65,6 +67,7 @@ import {
   readTints,
   retargetAnchors,
   retargetFrame,
+  retargetNodesExpanded,
   retargetTint,
   writeSidecar,
 } from "@/lib/layout-sidecar";
@@ -79,7 +82,14 @@ import { type HoverAt, HoverCard, type RefInfo } from "./HoverCard";
 import { historyKey } from "./history-key";
 import { EdgeStyleField, type Highlight, Inspector, type InspectorApi } from "./Inspector";
 import { designMenu, type MenuEntry, SEP } from "./menu-model";
-import { readExpanded, resetPaths, shiftPath, writeExpanded } from "./modules";
+import {
+  effectivePositions,
+  placeNode,
+  readExpanded,
+  resetPaths,
+  shiftPath,
+  writeExpanded,
+} from "./modules";
 import { Palette, ProviderSprite } from "./Palette";
 import { dimmed, readDim, readHoverCards, writeDim, writeHoverCards } from "./prefs";
 import { QuickActions } from "./QuickActions";
@@ -147,7 +157,13 @@ type Bundle = { catalogue: any; search: any[]; icons: Record<string, string> };
 type Engine = {
   doc: any;
   cst: any;
+  /** Node positions with nothing expanded: the sidecar's `nodes`. */
   positions: Record<string, [number, number]>;
+  /**
+   * Node positions per open state, for the boxes moved while nodes were expanded: the sidecar's
+   * `nodesExpanded`, never YAML (see `effectivePositions`).
+   */
+  nodesExpanded: NodesExpanded;
   sizes: Record<string, [number, number]>;
   /** Hand-adjusted edge paths by edge key (a bow, or waypoints): sidecar, never YAML. */
   bows: Record<string, EdgePath>;
@@ -884,6 +900,13 @@ export function Canvas(props: Props) {
       if (!e.positions[n.id]) e.positions[n.id] = result.positions[n.id] || [40, 40];
     for (const id of Object.keys(e.positions))
       if (!e.doc.nodes.some((n: any) => n.id === id)) delete e.positions[id];
+    // A box moved in an open state goes with its node; a state goes once a node it names can no
+    // longer be expanded (it lost its modules, or it is gone).
+    e.nodesExpanded = pruneNodesExpanded(
+      e.nodesExpanded,
+      e.doc.nodes.map((n: any) => n.id as string),
+      e.doc.nodes.filter((n: any) => D.nodeModules(n).length).map((n: any) => n.id as string),
+    );
     const keys = new Set(edgeKeys(e.doc));
     for (const k of Object.keys(e.bows)) if (!keys.has(k)) delete e.bows[k];
     e.ports = prunePorts(e.ports, keys as Set<string>);
@@ -922,6 +945,7 @@ export function Canvas(props: Props) {
         catalogue: bundle.catalogue,
         icons: bundle.icons,
         positions: e.positions,
+        positionsExpanded: e.nodesExpanded,
         sizes: e.sizes,
         bows: e.bows,
         ports: e.ports,
@@ -962,6 +986,7 @@ export function Canvas(props: Props) {
     const e = eng.current!;
     return writeSidecar({
       nodes: e.positions,
+      nodesExpanded: e.nodesExpanded,
       edges: e.bows,
       ports: e.ports,
       labels: e.labels,
@@ -1056,6 +1081,7 @@ export function Canvas(props: Props) {
         look: opts.look,
         doc: clone(e.doc),
         positions: clone(e.positions),
+        nodesExpanded: clone(e.nodesExpanded),
         bows: clone(e.bows),
         ports: clone(e.ports),
         labels: clone(e.labels),
@@ -1107,6 +1133,7 @@ export function Canvas(props: Props) {
       look: prev.look,
       doc: clone(e.doc),
       positions: clone(e.positions),
+      nodesExpanded: clone(e.nodesExpanded),
       bows: clone(e.bows),
       ports: clone(e.ports),
       labels: clone(e.labels),
@@ -1143,6 +1170,7 @@ export function Canvas(props: Props) {
       look: next.look,
       doc: clone(e.doc),
       positions: clone(e.positions),
+      nodesExpanded: clone(e.nodesExpanded),
       bows: clone(e.bows),
       ports: clone(e.ports),
       labels: clone(e.labels),
@@ -1170,8 +1198,16 @@ export function Canvas(props: Props) {
 
   const notify = useCallback((message: string) => setStatus(message), []);
 
+  // The open state drawn now, and each box where it is drawn in it (see `effectivePositions`).
+  const openKey = () => sceneRef.current?.openStateKey() ?? "";
+  const drawnPositions = () => {
+    const e = eng.current!;
+    return effectivePositions(e.positions, e.nodesExpanded, openKey());
+  };
+
   const movePosition = (from: string, to: string) => {
     const e = eng.current!;
+    retargetNodesExpanded(e.nodesExpanded, from, to);
     if (!e.positions[from]) return;
     e.positions[to] = e.positions[from];
     delete e.positions[from];
@@ -1298,7 +1334,8 @@ export function Canvas(props: Props) {
       groups: frag.groups,
       edges: frag.edges,
       layout: {
-        positions: pick(e.positions, nodes),
+        // Where each box is drawn now, so a paste lands beside what was copied.
+        positions: pick(drawnPositions(), nodes),
         frames: pick(e.frames, groups),
         // A copied component's tint and its module tiles' (`node/module`).
         tints: Object.fromEntries(
@@ -1359,8 +1396,9 @@ export function Canvas(props: Props) {
         askRefPick(only);
       commit(doc, {
         apply: () => {
+          const drawn = drawnPositions();
           for (const n of clip.nodes) {
-            const p = L.positions[n.id] || e.positions[n.id] || [40, 40];
+            const p = L.positions[n.id] || drawn[n.id] || [40, 40];
             e.positions[map[n.id]] = [p[0] + d, p[1] + d];
           }
           for (const g of clip.groups)
@@ -1522,9 +1560,12 @@ export function Canvas(props: Props) {
         coalesce: 500,
         apply: () => {
           const e = eng.current!;
+          // In the open state drawn now: with nodes expanded, the collapsed picture keeps its place.
+          const state = openKey();
+          const drawn = effectivePositions(e.positions, e.nodesExpanded, state);
           for (const id of sel) {
-            const p = e.positions[id];
-            if (p) e.positions[id] = [p[0] + dx, p[1] + dy];
+            const p = drawn[id];
+            if (p) placeNode(e, state, id, [p[0] + dx, p[1] + dy]);
           }
         },
       });
@@ -1565,6 +1606,8 @@ export function Canvas(props: Props) {
         const e = eng.current!;
         const result = layout(e.doc, bundle!.catalogue) as any;
         e.positions = result.positions;
+        // Laid out afresh, the boxes moved in open states no longer fit around anything.
+        e.nodesExpanded = {};
         e.sizes = result.sizes;
         e.bows = {};
       },
@@ -2120,6 +2163,7 @@ export function Canvas(props: Props) {
       doc,
       cst,
       positions: sidecarIn.nodes,
+      nodesExpanded: sidecarIn.nodesExpanded ?? {},
       sizes: {},
       bows: sidecarIn.edges,
       ports: sidecarIn.ports ?? {},
@@ -2177,7 +2221,10 @@ export function Canvas(props: Props) {
         commit(next, {
           coalesce: !next,
           apply: () => {
-            for (const m of moves) e.positions[m.id] = [m.x, m.y];
+            // A drag with nodes expanded moves the boxes in that open state only: collapsing
+            // puts them back where they were.
+            const state = openKey();
+            for (const m of moves) placeNode(e, state, m.id, [m.x, m.y]);
           },
         });
       },
@@ -3178,6 +3225,7 @@ export function Canvas(props: Props) {
     commit(null, {
       apply: () => {
         e.positions = next.positions;
+        e.nodesExpanded = next.nodesExpanded ?? {};
         e.bows = next.bows;
         e.ports = next.ports;
         e.labels = next.labels;

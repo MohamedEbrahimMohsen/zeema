@@ -305,9 +305,15 @@ edges:
   chip row and the module list in its hover text. An edge with a module end is drawn to the node's
   box; an in-process edge is not drawn. The expanded box (the canvas's) lays modules out as tiles
   by `moduleTiles` in `packages/core/src/geometry.js`, in list order, every tile of a node as
-  wide as its widest label needs (84px at least), the box growing to hold them. The order of
-  the list is the order of the tiles; dragging a tile on the canvas reorders the list
-  (`moveModule`).
+  wide as its widest label needs (84px at least), `MODULE_GAP` (16px) apart and from the border,
+  the box growing to hold them. The order of the list is the order of the tiles; dragging a tile
+  on the canvas reorders the list (`moveModule`).
+- Expanded, an edge between a tile and anything outside its node never crosses a tile. Inside the
+  node it runs orthogonally along the gutters (the gaps between columns and rows, and the margin
+  around the grid), turning only where two gutters cross, and leaves the border on the side that
+  faces the other end; outside, it is routed like any edge from that point, and stored waypoints
+  shape that part only. Edges sharing a stretch of one gutter are drawn 4px apart. Curved routing
+  draws module edges as before.
 - Removing a module re-points every edge end that named it to the node itself (an edge whose ends
   then coincide is dropped), so an arrow is never lost silently.
 
@@ -389,6 +395,17 @@ otherwise, where `<state>` is the expanded end node ids sorted and comma-joined 
 `a,b`; a module end counts as its node). Only states someone shaped are stored; a state with none
 is routed automatically. A bow is measured from the edge, so it is one for every state.
 
+Node positions are kept the same way, one level up. Expanding a node grows its box, so the boxes
+around it get dragged away to make room, and those moves belong to that picture only. `nodes`
+holds the positions with nothing expanded (all the server picture, thumbnails, exports and the
+CLI read), and `nodesExpanded: { "<state>": { "<nodeId>": [x, y], … } }` the boxes someone moved
+while exactly the nodes in `<state>` were expanded on the canvas: every expanded node id, sorted
+and comma-joined (`openState` in `packages/core/src/routing.js`), each one a node that lists
+modules. A box with no entry for the state drawn is where `nodes` puts it, so collapsing puts the
+neighbours back and expanding again brings them to where they were moved. A drag with nothing
+expanded writes `nodes`; with nodes expanded it writes that state only. A state naming a node
+that is gone or lost its modules is dropped on save, and so is a position for a node that is gone.
+
 ### Export and import
 
 A design leaves the site, and comes back, as two files with the repository's names:
@@ -396,7 +413,7 @@ A design leaves the site, and comes back, as two files with the repository's nam
 | File | Required | Holds |
 |---|---|---|
 | `design.yaml` | yes | The design, byte for byte as stored |
-| `design.layout.json` | no | The sidecar above: `version`, `nodes`, `edges`, `ports`, `frames`, `tints`, `notes`, `badge`; keys in that order (an edge's `via` before its `viaExpanded`), map keys sorted, two-space indent |
+| `design.layout.json` | no | The sidecar above: `version`, `nodes`, `nodesExpanded` (when any), `edges`, `ports`, `frames`, `tints`, `notes`, `badge`; keys in that order (an edge's `via` before its `viaExpanded`), map keys sorted, two-space indent |
 
 The design page and the canvas download either, or both as a zip that unzips to a design folder
 (`zeema render design.yaml` draws with the sidecar beside it). **New design ▾ Import YAML…**

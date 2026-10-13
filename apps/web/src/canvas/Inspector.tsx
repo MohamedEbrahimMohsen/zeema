@@ -213,14 +213,19 @@ function Fold({
   );
 }
 
+// `prose`: the field holds words a person reads (a label), so the browser's own spell check
+// underlines a typo. Off for ids, protocols and values, where a "misspelling" is the point. Set
+// either way, never left to the browser: Firefox checks no one-line field without it.
 function TextInput({
   value,
   onCommit,
   placeholder,
+  prose = false,
 }: {
   value: string;
   onCommit: (v: string) => void;
   placeholder?: string;
+  prose?: boolean;
 }) {
   const ref = useRef<HTMLInputElement>(null);
   useShowsDocument(ref, value);
@@ -230,6 +235,7 @@ function TextInput({
       type="text"
       defaultValue={value}
       placeholder={placeholder}
+      spellCheck={prose}
       onBlur={(e) => {
         if (e.target.value !== value) onCommit(e.target.value);
       }}
@@ -1067,7 +1073,11 @@ function NodePanel({
     <>
       <h2>Node</h2>
       <Field name="label" isSet={Boolean(node.label)}>
-        <TextInput value={node.label ?? ""} onCommit={(v) => api.setField(node.id, "label", v)} />
+        <TextInput
+          prose
+          value={node.label ?? ""}
+          onCommit={(v) => api.setField(node.id, "label", v)}
+        />
       </Field>
       <Field name="id" note="kebab-case, unique">
         <TextInput value={node.id} onCommit={(v) => api.rename(node.id, v.trim())} />
@@ -1615,6 +1625,7 @@ function EdgePanel({
         </p>
         <Field name="label" isSet={Boolean(edge.label)}>
           <TextInput
+            prose
             value={String(edge.label ?? "")}
             onCommit={(v) => api.setEdge(indexes[0], "label", v || undefined)}
           />
@@ -1758,6 +1769,7 @@ function EdgePanel({
       ])}
       <Field name="label" isSet={edges.some((e: any) => Boolean(e.label))}>
         <TextInput
+          prose
           value={text.mixed ? "" : String(text.value ?? "")}
           placeholder={text.mixed ? MIXED : undefined}
           onCommit={(v) => api.setEdge(at, "label", v || undefined)}
@@ -1810,6 +1822,7 @@ function ModulesSection({ node, api }: { node: any; api: InspectorApi }) {
           {list.map((m: any) => (
             <li key={m.id}>
               <TextInput
+                prose
                 value={m.label ?? ""}
                 placeholder={m.id}
                 onCommit={(v) => api.setModuleLabel(node.id, m.id, v)}
@@ -1839,6 +1852,7 @@ function ModulesSection({ node, api }: { node: any; api: InspectorApi }) {
           type="text"
           className="module-new"
           placeholder="Module name, then Enter"
+          spellCheck
           // biome-ignore lint/a11y/noAutofocus: opened by the button just pressed
           autoFocus
           onKeyDown={(e) => {
@@ -1883,6 +1897,7 @@ function ModulePanel({
       <h2>Module</h2>
       <Field name="label" isSet={Boolean(module.label)}>
         <TextInput
+          prose
           value={module.label ?? ""}
           placeholder={module.id}
           onCommit={(v) => api.setModuleLabel(node, module.id, v)}
@@ -1931,6 +1946,7 @@ function NotePanel({ note, api }: { note: Note; api: InspectorApi }) {
         <textarea
           ref={text}
           rows={5}
+          spellCheck
           placeholder="What should a reader know here?"
           defaultValue={note.text}
           onBlur={(e) => {
@@ -2142,6 +2158,7 @@ function GroupPanel({
       <h2>Group</h2>
       <Field name="label" isSet={Boolean(group.label)}>
         <TextInput
+          prose
           value={group.label ?? ""}
           onCommit={(v) => api.setGroupField(group.id, "label", v || undefined)}
         />

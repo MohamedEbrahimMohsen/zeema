@@ -8,7 +8,13 @@
 // and writes through the same shape.
 
 import { nodeModules } from "@zeema/core/document";
-import { DEFAULT_ROUTING, EXPAND_STATE_RE, ROUTINGS, readVia } from "@zeema/core/geometry";
+import {
+  DEFAULT_ROUTING,
+  EXPAND_STATE_RE,
+  OPEN_STATE_RE,
+  ROUTINGS,
+  readVia,
+} from "@zeema/core/geometry";
 
 export const SIDECAR_VERSION = 2;
 
@@ -226,9 +232,21 @@ function readEdgePaths(raw: unknown): Record<string, EdgePath> {
   return out;
 }
 
+/**
+ * Node positions per open state of the canvas: the state is every node drawn expanded, sorted and
+ * comma-joined (`openState` in @zeema/core/geometry), and holds only the nodes someone moved while
+ * the canvas was in it. `nodes` stays the positions with nothing expanded, which is all the
+ * server picture, the thumbnails, the CLI and the exports read.
+ */
+export type NodesExpanded = Record<string, Record<string, [number, number]>>;
+/** The most open states a sidecar keeps; past it the rest are dropped. */
+export const NODES_EXPANDED_MAX_STATES = 64;
+
 export type LayoutSidecar = {
   version: number;
   nodes: Record<string, [number, number]>;
+  /** Positions per open state (see `NodesExpanded`). Absent when nobody moved a box expanded. */
+  nodesExpanded?: NodesExpanded;
   /** Keyed by `edgeKeys` in @zeema/core/geometry: a bow, or waypoints (see `EdgePath`). */
   edges: Record<string, EdgePath>;
   /** Keyed like `edges` (see `edgeKeys`). Absent when no edge has a port. */
@@ -329,6 +347,7 @@ export function readSidecar(raw: unknown, targets?: AnchorTargets): LayoutSideca
       if (Array.isArray(p) && p.length >= 2 && typeof p[0] === "number" && typeof p[1] === "number")
         nodes[id] = [p[0], p[1]];
   const edges = readEdgePaths(r.edges);
+  const nodesExpanded = readNodesExpanded(r.nodesExpanded, present);
   // The count is capped the same way the text is: the first NOTE_MAX_NOTES readable notes are
   // kept and the rest are dropped, so a runaway or hostile sidecar cannot stall a render.
   const notes = Array.isArray(r.notes)
@@ -341,6 +360,7 @@ export function readSidecar(raw: unknown, targets?: AnchorTargets): LayoutSideca
   const out: LayoutSidecar = {
     version: num(r.version, SIDECAR_VERSION),
     nodes,
+    ...(Object.keys(nodesExpanded).length ? { nodesExpanded } : {}),
     edges,
     notes,
     frames,
@@ -355,6 +375,99 @@ export function readSidecar(raw: unknown, targets?: AnchorTargets): LayoutSideca
   const routing = readRoutingField(r.routing);
   if (routing) out.routing = routing;
   return out;
+}
+
+/** The node ids that host modules, from module ends (`node/module`, see `moduleRefs`). */
+const hostsOf = (modules: Iterable<string>) =>
+  new Set([...modules].filter((ref) => ref.includes("/")).map((ref) => ref.split("/")[0]));
+
+/**
+ * The positions per open state a sidecar holds (see `NodesExpanded`): a key that is not node ids
+ * comma-joined is dropped, one is spelled sorted, and a position must be two finite numbers.
+ * With targets, a state naming a node that is gone or has no modules is dropped (it can never be
+ * drawn), and so is a position for a node the design no longer has. An empty state goes.
+ */
+export function readNodesExpanded(
+  raw: unknown,
+  present?: { nodes: Set<string>; modules?: Set<string> } | null,
+): NodesExpanded {
+  const out: NodesExpanded = {};
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return out;
+  const hosts = present ? hostsOf(present.modules ?? []) : null;
+  let kept = 0;
+  for (const [state, v] of Object.entries(raw as Record<string, unknown>)) {
+    if (kept >= NODES_EXPANDED_MAX_STATES) break;
+    if (!OPEN_STATE_RE.test(state) || !v || typeof v !== "object" || Array.isArray(v)) continue;
+    const ids = [...new Set(state.split(","))].sort();
+    if (hosts && !ids.every((id) => hosts.has(id))) continue;
+    const slot: Record<string, [number, number]> = {};
+    for (const [id, p] of Object.entries(v as Record<string, unknown>)) {
+      if (!GROUP_ID_RE.test(id) || (present && !present.nodes.has(id))) continue;
+      if (!Array.isArray(p) || p.length < 2) continue;
+      const [x, y] = p;
+      if (typeof x !== "number" || typeof y !== "number") continue;
+      if (!Number.isFinite(x) || !Number.isFinite(y)) continue;
+      slot[id] = [x, y];
+    }
+    if (!Object.keys(slot).length) continue;
+    out[ids.join(",")] = slot;
+    kept++;
+  }
+  return out;
+}
+
+/**
+ * The positions per open state cut down to the design: a state naming a node that is not a module
+ * host (`hosts`) goes, and so does a position for a node not in `nodes`. Like `pruneTints`, it
+ * copies.
+ */
+export function pruneNodesExpanded(
+  map: NodesExpanded,
+  nodes: Iterable<string>,
+  hosts: Iterable<string>,
+): NodesExpanded {
+  const live = new Set(nodes);
+  const open = new Set(hosts);
+  const out: NodesExpanded = {};
+  for (const [state, slot] of Object.entries(map ?? {})) {
+    if (!state.split(",").every((id) => open.has(id))) continue;
+    const kept = Object.entries(slot).filter(([id]) => live.has(id));
+    if (kept.length) out[state] = Object.fromEntries(kept);
+  }
+  return out;
+}
+
+/**
+ * Follow a node rename through the positions per open state: its position in every state, and
+ * every state that names it (respelled sorted). Mutates, like `retargetTint`.
+ */
+export function retargetNodesExpanded(map: NodesExpanded, from: string, to: string) {
+  if (from === to) return;
+  for (const state of Object.keys(map)) {
+    const slot = map[state];
+    if (Object.hasOwn(slot, from)) {
+      slot[to] = slot[from];
+      delete slot[from];
+    }
+    const ids = state.split(",");
+    if (!ids.includes(from)) continue;
+    const next = ids
+      .map((id) => (id === from ? to : id))
+      .sort()
+      .join(",");
+    delete map[state];
+    map[next] = slot;
+  }
+}
+
+/** The positions per open state with every map and its keys sorted, for a fixed byte order. */
+function sortedNodesExpanded(map: NodesExpanded): NodesExpanded {
+  return Object.fromEntries(
+    sortedEntries(map).map(([state, slot]) => [
+      state,
+      Object.fromEntries(sortedEntries(slot).map(([id, [x, y]]) => [id, [x, y]])),
+    ]),
+  );
 }
 
 /**
@@ -529,9 +642,12 @@ function writeEdgePaths(edges: Record<string, EdgePath>) {
 export function writeSidecar(
   s: Omit<LayoutSidecar, "version" | "frames"> & { frames?: Record<string, FrameStyle> },
 ): LayoutSidecar {
+  const nodesExpanded = s.nodesExpanded ? sortedNodesExpanded(s.nodesExpanded) : {};
   const out: LayoutSidecar = {
     version: SIDECAR_VERSION,
     nodes: s.nodes,
+    // Right after `nodes`, and absent when empty: a design nobody moved expanded keeps its bytes.
+    ...(Object.keys(nodesExpanded).length ? { nodesExpanded } : {}),
     edges: writeEdgePaths(s.edges),
     notes: s.notes,
     frames: s.frames ?? {},
@@ -557,6 +673,7 @@ export function isBlankSidecar(raw: unknown) {
   const s = readSidecar(raw);
   return (
     !Object.keys(s.nodes).length &&
+    !s.nodesExpanded &&
     !Object.keys(s.edges).length &&
     !s.notes.length &&
     !Object.keys(s.frames).length &&
@@ -633,9 +750,20 @@ export function pruneSidecar(s: LayoutSidecar, targets: SidecarTargets): LayoutS
   const edges = new Set(targets.edges);
   const keep = <T>(o: Record<string, T>, ids: Set<string>) =>
     Object.fromEntries(Object.entries(o).filter(([k]) => ids.has(k)));
+  const nodesExpanded = s.nodesExpanded
+    ? pruneNodesExpanded(
+        s.nodesExpanded,
+        nodes,
+        // Without the modules, nothing is known about which nodes host them: keep every state.
+        targets.modules
+          ? hostsOf(targets.modules)
+          : Object.keys(s.nodesExpanded).flatMap((k) => k.split(",")),
+      )
+    : {};
   const out: LayoutSidecar = {
     version: s.version,
     nodes: keep(s.nodes, nodes),
+    ...(Object.keys(nodesExpanded).length ? { nodesExpanded } : {}),
     edges: targets.modules
       ? pruneStates(keep(s.edges, edges), targets.modules)
       : keep(s.edges, edges),
@@ -687,7 +815,7 @@ const sortedEntries = <T>(o: Record<string, T>) =>
 
 /**
  * A sidecar as the file `design.layout.json`: read through `readSidecar`, then written with a
- * fixed key order (version, nodes, edges, ports, labels, frames, tints, routing, notes, badge; map keys
+ * fixed key order (version, nodes, nodesExpanded, edges, ports, labels, frames, tints, routing, notes, badge; map keys
  * sorted; a note's fields in declaration order), two-space indent and a trailing newline. The same sidecar always
  * gives the same bytes, whatever order the database handed its keys back in.
  */
@@ -696,6 +824,7 @@ export function sidecarFile(raw: unknown): string {
   const file: Record<string, unknown> = {
     version: s.version,
     nodes: Object.fromEntries(sortedEntries(s.nodes)),
+    ...(s.nodesExpanded ? { nodesExpanded: sortedNodesExpanded(s.nodesExpanded) } : {}),
     edges: Object.fromEntries(
       sortedEntries(s.edges).map(([k, v]) => [k, typeof v === "number" ? v : copyShaped(v)]),
     ),

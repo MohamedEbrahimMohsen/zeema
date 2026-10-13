@@ -418,9 +418,15 @@ describe("modules: drawing", () => {
     expect(t.h).toBe(MODULE_HEADER + 2 * MODULE_TILE_H + MODULE_GAP + MODULE_GAP);
     expect(t.tiles.map((x) => [x.id, x.x, x.y, x.w, x.h])).toEqual([
       ["a", MODULE_GAP, MODULE_HEADER, MODULE_TILE_W, MODULE_TILE_H],
-      ["b", MODULE_GAP + 96, MODULE_HEADER, MODULE_TILE_W, MODULE_TILE_H],
-      ["c", MODULE_GAP + 192, MODULE_HEADER, MODULE_TILE_W, MODULE_TILE_H],
-      ["d", MODULE_GAP, MODULE_HEADER + 52, MODULE_TILE_W, MODULE_TILE_H],
+      ["b", MODULE_GAP + (MODULE_TILE_W + MODULE_GAP), MODULE_HEADER, MODULE_TILE_W, MODULE_TILE_H],
+      [
+        "c",
+        MODULE_GAP + 2 * (MODULE_TILE_W + MODULE_GAP),
+        MODULE_HEADER,
+        MODULE_TILE_W,
+        MODULE_TILE_H,
+      ],
+      ["d", MODULE_GAP, MODULE_HEADER + MODULE_TILE_H + MODULE_GAP, MODULE_TILE_W, MODULE_TILE_H],
     ]);
     const wide = moduleTiles({ modules: [{ id: "a" }] }, 400);
     expect(wide.w).toBe(400);
