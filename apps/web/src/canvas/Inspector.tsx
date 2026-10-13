@@ -830,7 +830,15 @@ export function Inspector({
   if (selection.type === "module") {
     const module = moduleOf(doc, selection.ref as string);
     if (module)
-      return <ModulePanel at={selection.ref as string} module={module} doc={doc} api={api} />;
+      return (
+        <ModulePanel
+          at={selection.ref as string}
+          module={module}
+          doc={doc}
+          api={api}
+          tint={own(nodeTints ?? {}, selection.ref as string) as NodeTint | undefined}
+        />
+      );
   }
   if (selection.type === "note") {
     const note = (notes ?? []).find((n) => n.id === selection.ref);
@@ -1853,17 +1861,20 @@ function ModulesSection({ node, api }: { node: any; api: InspectorApi }) {
   );
 }
 
-/** One module selected on the canvas: its label, its id and its node, and Remove. */
+/** One module selected on the canvas: its label, its id, its tint and its node, and Remove. */
 function ModulePanel({
   at,
   module,
   doc,
   api,
+  tint,
 }: {
   at: string;
   module: any;
   doc: any;
   api: InspectorApi;
+  /** The tile's tint, keyed by its end (`node/module`) in the sidecar. */
+  tint?: NodeTint;
 }) {
   const { node } = splitEnd(at);
   const n = doc.nodes.find((x: any) => x.id === node);
@@ -1879,6 +1890,15 @@ function ModulePanel({
       </Field>
       <Field name="id" note="unique in its node">
         <span className="mono">{module.id}</span>
+      </Field>
+      <Field name="tint" note="layout only, not in the YAML" isSet={Boolean(tint)}>
+        <TintField key={at} tint={tint?.tint} onPick={(t) => api.setNodeTint([at], { tint: t })} />
+        {tint ? (
+          <StrengthField
+            value={tint.strength}
+            onPick={(strength) => api.setNodeTint([at], { strength })}
+          />
+        ) : null}
       </Field>
       <p className="muted my-2 small">
         A module of <span className="mono">{n?.label || node}</span>. Edges name it as{" "}

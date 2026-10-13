@@ -12,6 +12,7 @@ import {
   isFrameIcon,
   isHexTint,
   isTint,
+  moduleRefs,
   NOTE_DEFAULT_H,
   NOTE_DEFAULT_W,
   NOTE_MAX_H,
@@ -20,6 +21,7 @@ import {
   NOTE_MAX_W,
   NOTE_MIN_H,
   NOTE_MIN_W,
+  type NodeTint,
   type Note,
   nextNoteId,
   normaliseTint,
@@ -582,6 +584,65 @@ describe("component tints and tint strength", () => {
     expect(file.frames).toEqual({ g: { tint: "amber", strength: "bold" } });
     expect(Object.keys(file)).toEqual(["version", "nodes", "edges", "frames", "tints", "notes"]);
     expect(readSidecar(file).tints).toEqual(file.tints);
+  });
+});
+
+describe("module tints", () => {
+  it("reads a tint keyed by a module end, and refuses a malformed end", () => {
+    expect(
+      readTints({
+        "api/otp": { tint: "rose" },
+        "api/otp/x": { tint: "blue" },
+        "api/": { tint: "blue" },
+        "/otp": { tint: "blue" },
+        "api/OTP": { tint: "blue" },
+      }),
+    ).toEqual({ "api/otp": { tint: "rose" } });
+  });
+
+  it("lists every module end of the nodes", () => {
+    expect(
+      moduleRefs([{ id: "a", modules: [{ id: "x" }, { id: "y" }] }, { id: "b" }, null]),
+    ).toEqual(["a/x", "a/y"]);
+  });
+
+  it("drops a module tint whose module is gone, as a stale node tint is", () => {
+    const raw = {
+      tints: { a: { tint: "blue" }, "a/x": { tint: "rose" }, "a/y": { tint: "teal" } },
+    };
+    expect(readSidecar(raw, { nodes: ["a"], modules: ["a/x"] }).tints).toEqual({
+      a: { tint: "blue" },
+      "a/x": { tint: "rose" },
+    });
+    expect(readSidecar(raw, { nodes: ["a"] }).tints).toEqual({ a: { tint: "blue" } });
+    expect(pruneTints(raw.tints as any, ["a"], ["a/y"])).toEqual({
+      a: { tint: "blue" },
+      "a/y": { tint: "teal" },
+    });
+    const p = pruneSidecar(readSidecar(raw), {
+      nodes: ["a"],
+      groups: [],
+      edges: [],
+      modules: ["a/x"],
+    });
+    expect(p.tints).toEqual({ a: { tint: "blue" }, "a/x": { tint: "rose" } });
+    expect(readSidecar(JSON.parse(sidecarFile(p))).tints).toEqual(p.tints);
+  });
+
+  it("follows a node rename with its modules' tints", () => {
+    const m: Record<string, NodeTint> = {
+      a: { tint: "blue" },
+      "a/x": { tint: "rose" },
+      ab: { tint: "teal" },
+      "ab/x": { tint: "teal" },
+    };
+    retargetTint(m, "a", "z");
+    expect(m).toEqual({
+      z: { tint: "blue" },
+      "z/x": { tint: "rose" },
+      ab: { tint: "teal" },
+      "ab/x": { tint: "teal" },
+    });
   });
 });
 

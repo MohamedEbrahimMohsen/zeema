@@ -7,6 +7,7 @@
 // the canvas reads through `readSidecar` (which drops anything malformed rather than throwing)
 // and writes through the same shape.
 
+import { nodeModules } from "@zeema/core/document";
 import { DEFAULT_ROUTING, ROUTINGS, readVia } from "@zeema/core/geometry";
 
 export const SIDECAR_VERSION = 2;
@@ -100,7 +101,10 @@ export type StoredStrength = Exclude<Strength, "normal">;
 export const readStrength = (v: unknown): StoredStrength | null =>
   v === "light" || v === "bold" ? v : null;
 
-/** A component's tint: presentation only, so it lives here and never in the YAML. */
+/**
+ * A component's tint: presentation only, so it lives here and never in the YAML. Keyed by node
+ * id, or by a module's end (`node/module`) for one module tile of an expanded node.
+ */
 export type NodeTint = { tint: Tint | HexTint; strength?: StoredStrength };
 
 /**
@@ -138,6 +142,16 @@ export const isBadgeRef = (v: unknown): v is string =>
 export type FrameStyle = { tint?: Tint | HexTint; icon?: string; strength?: StoredStrength };
 export const FRAME_MAX_STYLES = 500;
 const GROUP_ID_RE = /^[a-z][a-z0-9-]*$/;
+// A tint key: a node id, or a module's end `node/module` (design.schema.json's end pattern).
+const TINT_KEY_RE = /^[a-z][a-z0-9-]*(\/[a-z][a-z0-9-]*)?$/;
+
+/** Every module end (`node/module`) the nodes list: what a module tint may be keyed by. */
+export function moduleRefs(nodes: unknown): string[] {
+  const out: string[] = [];
+  for (const n of Array.isArray(nodes) ? nodes : [])
+    for (const m of nodeModules(n)) out.push(`${(n as { id: string }).id}/${m.id}`);
+  return out;
+}
 
 /**
  * Where one end of an edge meets its box: a side, and how far along it, 0 to 1 (left to right on
@@ -197,7 +211,7 @@ export type LayoutSidecar = {
   notes: Note[];
   /** Keyed by group id. A group with no entry is drawn in the default frame colour. */
   frames: Record<string, FrameStyle>;
-  /** Component tints, keyed by node id. Absent when no component has one. */
+  /** Component tints, keyed by node id or module end (`node/module`). Absent when none has one. */
   tints?: Record<string, NodeTint>;
   /** The list badge its owner chose (see `BADGE_RE`). Absent: chosen automatically. */
   badge?: string;
@@ -226,7 +240,12 @@ const num = (v: unknown, fallback: number) =>
 const clamp = (v: number, lo: number, hi: number) => (v < lo ? lo : v > hi ? hi : v);
 
 /** What the design currently holds, so a stale anchor can be spotted. */
-export type AnchorTargets = { nodes?: Iterable<string>; groups?: Iterable<string> };
+export type AnchorTargets = {
+  nodes?: Iterable<string>;
+  groups?: Iterable<string>;
+  /** Module ends (`node/module`, see `moduleRefs`): what a module tint may name. */
+  modules?: Iterable<string>;
+};
 
 function readAnchor(raw: unknown, present: { nodes: Set<string>; groups: Set<string> } | null) {
   if (!raw || typeof raw !== "object") return undefined;
@@ -267,7 +286,11 @@ function readNote(
  */
 export function readSidecar(raw: unknown, targets?: AnchorTargets): LayoutSidecar {
   const present = targets
-    ? { nodes: new Set(targets.nodes ?? []), groups: new Set(targets.groups ?? []) }
+    ? {
+        nodes: new Set(targets.nodes ?? []),
+        groups: new Set(targets.groups ?? []),
+        modules: new Set(targets.modules ?? []),
+      }
     : null;
   const r = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
   const nodes: Record<string, [number, number]> = {};
@@ -306,12 +329,13 @@ export function readSidecar(raw: unknown, targets?: AnchorTargets): LayoutSideca
 
 /**
  * The component tints a sidecar holds: a tint that is neither named nor `#rrggbb` drops the
- * entry, a strength other than light or bold is dropped (normal is the default). With targets,
- * a tint for a node the design no longer has is dropped, as a stale group style is.
+ * entry, a strength other than light or bold is dropped (normal is the default). A key is a node
+ * id or a module end (`node/module`). With targets, a tint for a node or module the design no
+ * longer has is dropped, as a stale group style is.
  */
 export function readTints(
   raw: unknown,
-  present?: { nodes: Set<string> } | null,
+  present?: { nodes: Set<string>; modules?: Set<string> } | null,
 ): Record<string, NodeTint> {
   const out: Record<string, NodeTint> = {};
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return out;
@@ -319,7 +343,8 @@ export function readTints(
   for (const [id, v] of Object.entries(raw as Record<string, unknown>)) {
     if (kept >= FRAME_MAX_STYLES) break;
     // A node id is kebab-case too, which keeps `__proto__` out of the map.
-    if (!GROUP_ID_RE.test(id) || (present && !present.nodes.has(id))) continue;
+    if (!TINT_KEY_RE.test(id)) continue;
+    if (present && !(id.includes("/") ? present.modules : present.nodes)?.has(id)) continue;
     if (!v || typeof v !== "object") continue;
     const r = v as Record<string, unknown>;
     const tint = normaliseTint(r.tint);
@@ -333,19 +358,27 @@ export function readTints(
   return out;
 }
 
-/** The component tints whose node still exists. Like `pruneFrames`, it copies. */
-export function pruneTints(tints: Record<string, NodeTint>, nodes: Iterable<string>) {
-  const keep = new Set(nodes);
+/** The tints whose node or module still exists. Like `pruneFrames`, it copies. */
+export function pruneTints(
+  tints: Record<string, NodeTint>,
+  nodes: Iterable<string>,
+  modules: Iterable<string> = [],
+) {
+  const keep = new Set([...nodes, ...modules]);
   const out: Record<string, NodeTint> = {};
   for (const [id, t] of Object.entries(tints)) if (keep.has(id)) out[id] = t;
   return out;
 }
 
-/** Follow a node rename: its tint goes with it. Mutates, like `retargetFrame`. */
+/** Follow a node rename: its tint and its modules' go with it. Mutates, like `retargetFrame`. */
 export function retargetTint(tints: Record<string, NodeTint>, from: string, to: string) {
-  if (from === to || !Object.hasOwn(tints, from)) return;
-  tints[to] = tints[from];
-  delete tints[from];
+  if (from === to) return;
+  for (const key of Object.keys(tints)) {
+    const slash = key.indexOf("/");
+    if ((slash < 0 ? key : key.slice(0, slash)) !== from) continue;
+    tints[slash < 0 ? to : `${to}${key.slice(slash)}`] = tints[key];
+    delete tints[key];
+  }
 }
 
 /** A port as stored: a known side and a finite `t`, clamped to [0, 1] and rounded to 3 places. */
@@ -552,6 +585,8 @@ export type SidecarTargets = {
   groups: Iterable<string>;
   /** Edge keys as `edgeKeys` in @zeema/core/geometry makes them. */
   edges: Iterable<string>;
+  /** Module ends (`moduleRefs`): a module tint is kept only when its module is listed. */
+  modules?: Iterable<string>;
 };
 
 /**
@@ -583,7 +618,7 @@ export function pruneSidecar(s: LayoutSidecar, targets: SidecarTargets): LayoutS
   if (Object.keys(ports).length) out.ports = ports;
   const labels = s.labels ? keep(s.labels, edges) : {};
   if (Object.keys(labels).length) out.labels = labels;
-  const tints = s.tints ? keep(s.tints, nodes) : {};
+  const tints = s.tints ? keep(s.tints, new Set([...nodes, ...(targets.modules ?? [])])) : {};
   if (Object.keys(tints).length) out.tints = tints;
   if (s.badge) out.badge = s.badge;
   if (s.routing) out.routing = s.routing;

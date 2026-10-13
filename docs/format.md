@@ -367,7 +367,8 @@ bow (`edges`), where each end of an edge
 meets its box (`ports`: per edge key, `{ from?, to? }`, each `{ side, t }` with `side` one of
 `top`, `right`, `bottom`, `left` and `t` in [0, 1] along it), group colours and icons
 (`frames`), component tints (`tints`: per node id, `{ tint, strength? }`, the same tint values
-as a group's), how strongly a tint fills (`strength`, on a frame or a component tint: `light`,
+as a group's; a key may also name a module as `node/module`, which tints its tile in the expanded
+box), how strongly a tint fills (`strength`, on a frame or a component tint: `light`,
 `normal` or `bold`; absent is normal), notes, and the list badge its owner chose (`badge`: `provider:<id>` or
 `boundary:<id>`, absent for the automatic one). Moving an edge's end to another component is not
 layout: it changes `from` or `to` in the design.

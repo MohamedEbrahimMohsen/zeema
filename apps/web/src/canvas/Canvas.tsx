@@ -39,6 +39,7 @@ import {
   type EdgePorts,
   type FrameStyle,
   type LabelOffset,
+  moduleRefs,
   NOTE_ANCHOR_DX,
   NOTE_ANCHOR_DY,
   NOTE_ANCHOR_H,
@@ -61,6 +62,7 @@ import {
   readPort,
   readRoutingField,
   readSidecar,
+  readTints,
   retargetAnchors,
   retargetFrame,
   retargetTint,
@@ -156,7 +158,7 @@ type Engine = {
   notes: Note[];
   /** Group tint and icon by group id: sidecar, never YAML. */
   frames: Record<string, FrameStyle>;
-  /** Component tints by node id: sidecar, never YAML. */
+  /** Component tints by node id, and module tile tints by `node/module`: sidecar, never YAML. */
   tints: Record<string, NodeTint>;
   /** The list badge the owner chose (Design settings here, or the design page): sidecar, never
    *  YAML. It rides the canvas's own save, so a save never drops it. */
@@ -188,10 +190,11 @@ type Clip = {
   zeema: "clipboard";
   version: 1;
   /**
-   * A copied module tile (nothing else in the clip): the node it came from, its id and label.
-   * It pastes into the selected component, or back into `node` when nothing is selected.
+   * A copied module tile (nothing else in the clip): the node it came from, its id and label,
+   * and its tint. It pastes into the selected component, or back into `node` when nothing is
+   * selected.
    */
-  module?: { node: string; id: string; label?: string };
+  module?: { node: string; id: string; label?: string; tint?: NodeTint };
   nodes: any[];
   groups: any[];
   edges: any[];
@@ -209,12 +212,15 @@ type Clip = {
 const isRecord = (v: unknown): v is Record<string, any> =>
   Boolean(v) && typeof v === "object" && !Array.isArray(v);
 
-/** The clip of one module tile: its node, id and label, and nothing else. */
-function moduleClip(node: string, id: string, label?: string): Clip {
+/** The clip of one module tile: its node, id, label and tint, and nothing else. */
+function moduleClip(node: string, id: string, label?: string, tint?: NodeTint): Clip {
+  const module: NonNullable<Clip["module"]> = { node, id };
+  if (label) module.label = label;
+  if (tint) module.tint = tint;
   return {
     zeema: "clipboard",
     version: 1,
-    module: label ? { node, id, label } : { node, id },
+    module,
     nodes: [],
     groups: [],
     edges: [],
@@ -234,7 +240,13 @@ function readClip(text: string): Clip | null {
   const list = (x: unknown) => (Array.isArray(x) ? x : []);
   const m = v.module;
   if (isRecord(m) && typeof m.node === "string" && typeof m.id === "string")
-    return moduleClip(m.node, m.id, typeof m.label === "string" ? m.label : undefined);
+    return moduleClip(
+      m.node,
+      m.id,
+      typeof m.label === "string" ? m.label : undefined,
+      // Read as a stored tint is, so a clip can carry nothing a save would not.
+      readTints({ t: m.tint }).t,
+    );
   const nodes = list(v.nodes).filter((n) => isRecord(n) && typeof n.id === "string");
   const groups = list(v.groups).filter((g) => isRecord(g) && typeof g.id === "string");
   if (!nodes.length && !groups.length) return null;
@@ -392,6 +404,8 @@ const plural = (n: number, one: string) => `${n} ${one}${n === 1 ? "" : "s"}`;
 const anchorables = (doc: any) => ({
   nodes: doc.nodes.map((n: any) => n.id as string),
   groups: ((doc.groups ?? []) as any[]).map((g) => g.id as string),
+  // Not an anchor: what a module tile's tint may be keyed by.
+  modules: moduleRefs(doc.nodes),
 });
 // The canvas writes its shortcuts the way the platform does: ⌘ on a Mac, the caret elsewhere.
 // One helper, so the toolbar hints and the help dialog can never drift apart.
@@ -1070,8 +1084,9 @@ export function Canvas(props: Props) {
       e.notes = pruneAnchored(e.notes, anchorables(e.doc));
       // The same for a deleted group's colour and icon: they go in the same undo step.
       e.frames = pruneFrames(e.frames, anchorables(e.doc).groups);
-      // And a deleted component's tint.
-      e.tints = pruneTints(e.tints, anchorables(e.doc).nodes);
+      // And a deleted component's tint, or a removed module's.
+      const live = anchorables(e.doc);
+      e.tints = pruneTints(e.tints, live.nodes, live.modules);
       e.dirty = true;
       e.saveSeq++;
       setStatus(props.canWrite ? "unsaved" : "read only — Clone to keep these edits");
@@ -1177,6 +1192,7 @@ export function Canvas(props: Props) {
           if (now === id) return;
           movePosition(id, now);
           retargetAnchors(e.notes, "node", id, now);
+          retargetTint(e.tints, id, now);
           // Edge keys name the ids at their ends: the bows and ports follow the rename.
           e.bows = rekeyBows(e.doc, doc, e.bows);
           e.ports = rekeyPorts(e.doc, doc, e.ports);
@@ -1284,7 +1300,10 @@ export function Canvas(props: Props) {
       layout: {
         positions: pick(e.positions, nodes),
         frames: pick(e.frames, groups),
-        tints: pick(e.tints, nodes),
+        // A copied component's tint and its module tiles' (`node/module`).
+        tints: Object.fromEntries(
+          Object.entries(e.tints).filter(([k]) => nodes.has(D.endNode(k))),
+        ) as Record<string, NodeTint>,
         ports: frag.edgeIndexes.map((i: number) => e.ports[keys[i]] ?? null),
         paths: frag.edgeIndexes.map((i: number) =>
           Object.hasOwn(e.bows, keys[i]) ? e.bows[keys[i]] : null,
@@ -1346,7 +1365,12 @@ export function Canvas(props: Props) {
           }
           for (const g of clip.groups)
             if (L.frames[g.id]) e.frames[map[g.id]] = clone(L.frames[g.id]);
-          for (const n of clip.nodes) if (L.tints[n.id]) e.tints[map[n.id]] = clone(L.tints[n.id]);
+          // A tint keyed `node/module` follows its node's fresh id; the module keeps its own.
+          for (const [k, t] of Object.entries(L.tints)) {
+            const { node, module } = D.splitEnd(k);
+            const to = Object.hasOwn(map, node) ? map[node] : null;
+            if (to) e.tints[module === null ? to : D.moduleRef(to, module)] = clone(t);
+          }
           clip.edges.forEach((_: unknown, k: number) => {
             const at = edgeAt[k];
             if (at === null || at === undefined) return;
@@ -1380,18 +1404,20 @@ export function Canvas(props: Props) {
     if (s?.type !== "module") return null;
     const m = D.moduleOf(eng.current!.doc, s.ref as string);
     if (!m) return null;
+    const e = eng.current!;
     return moduleClip(
       D.endNode(s.ref as string),
       String(m.id),
       m.label ? String(m.label) : undefined,
+      Object.hasOwn(e.tints, s.ref as string) ? clone(e.tints[s.ref as string]) : undefined,
     );
   }, []);
 
   // A module into node `nodeId`, as one undo step: a fresh id from its label (logs, logs-2), the
-  // label as it was, placed at `index` (the end when undefined). The new tile is selected while
+  // label and tint as they were, placed at `index` (the end when undefined). The new tile is selected while
   // its node is expanded, else the node is. False when the node cannot take it.
   const putModule = useCallback(
-    (nodeId: string, m: { id: string; label?: string }, index?: number) => {
+    (nodeId: string, m: { id: string; label?: string; tint?: NodeTint }, index?: number) => {
       const scene = sceneRef.current!;
       const e = eng.current!;
       const node = e.doc.nodes.find((n: any) => n.id === nodeId);
@@ -1407,7 +1433,8 @@ export function Canvas(props: Props) {
       scene.selection = scene.expanded.has(nodeId)
         ? { type: "module", ref: D.moduleRef(nodeId, id) }
         : { type: "node", ref: nodeId };
-      commit(next);
+      const tint = m.tint;
+      commit(next, tint ? { apply: () => (e.tints[D.moduleRef(nodeId, id)] = clone(tint)) } : {});
       return true;
     },
     [bundle, commit],

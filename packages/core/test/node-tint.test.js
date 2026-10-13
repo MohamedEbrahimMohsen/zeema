@@ -5,6 +5,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { drawnLayout } from "../src/drawn.js";
 import { readStrength, readTint, TINT_FILL_ALPHA, tintPaint, toSvg } from "../src/render.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -90,5 +91,27 @@ describe("component tint", () => {
       'data-tint="amber" style="stroke:var(--tint-amber);fill:var(--tint-amber);fill-opacity:0.04"',
     );
     expect(overlays(svg)).toHaveLength(1);
+  });
+});
+
+describe("module tint", () => {
+  // A tint keyed by a module end (`node/module`) colours that module's tile in the canvas's
+  // expanded box. The server render draws every node collapsed, so it carries the key through
+  // untouched and draws nothing for it.
+  const modular = {
+    ...doc,
+    nodes: [{ ...doc.nodes[0], modules: [{ id: "api" }, { id: "otp" }] }, doc.nodes[1]],
+  };
+  const tints = { "web/otp": { tint: "rose", strength: "bold" } };
+
+  it("rides the drawn layout as stored", () => {
+    const lay = drawnLayout(modular, catalogue, { nodes, edges: {}, tints });
+    expect(lay.nodeStyles).toEqual(tints);
+  });
+
+  it("draws nothing on the collapsed box", () => {
+    const plain = toSvg(modular, catalogue, { layout: { nodes, edges: {} }, theme: "light" });
+    const svg = toSvg(modular, catalogue, { layout: { nodes, edges: {}, tints }, theme: "light" });
+    expect(svg).toBe(plain);
   });
 });

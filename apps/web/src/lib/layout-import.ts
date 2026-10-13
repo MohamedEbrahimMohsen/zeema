@@ -15,6 +15,7 @@ import {
   type EdgePorts,
   type FrameStyle,
   type LabelOffset,
+  moduleRefs,
   type NodeTint,
   type Note,
   pruneSidecar,
@@ -134,7 +135,8 @@ export function mergeImportedLayout(
   const nodes = (doc.nodes ?? []).map((n) => n.id);
   const groups = (doc.groups ?? []).map((g) => g.id);
   const edges = edgeKeys(doc) as string[];
-  const pruned = pruneSidecar(read, { nodes, groups, edges });
+  const modules = moduleRefs(doc.nodes);
+  const pruned = pruneSidecar(read, { nodes, groups, edges, modules });
 
   const dropped = new Set<string>();
   const gone = (o: Record<string, unknown> | undefined, prefix: string, kept: Set<string>) => {
@@ -143,7 +145,7 @@ export function mergeImportedLayout(
   const nodeSet = new Set(nodes);
   const edgeSet = new Set(edges);
   gone(read.nodes, "node", nodeSet);
-  gone(read.tints, "node", nodeSet);
+  gone(read.tints, "node", new Set([...nodes, ...modules]));
   gone(read.edges, "edge", edgeSet);
   gone(read.ports, "edge", edgeSet);
   gone(read.labels, "edge", edgeSet);

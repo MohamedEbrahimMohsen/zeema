@@ -2134,6 +2134,23 @@ export class Scene {
       "stroke-width": 1,
     });
     tile.append(title, rect);
+    // A tinted tile (the sidecar's `tints`, keyed `node/module`): a second rect over it carries
+    // the tint's border and fill, as a tinted node's card does, under the label. The border is
+    // an attribute, so hover and selection (canvas.css) can take it over and keep the ring.
+    const tinted = own(this.model.nodeTints ?? {}, ref) as NodeTint | undefined;
+    const fill = tinted ? tintFill(tinted.tint, tinted.strength) : null;
+    if (fill)
+      tile.append(
+        el("rect", {
+          class: "module-tint",
+          width: t[2],
+          height: t[3],
+          rx: 7,
+          stroke: fill.color,
+          "stroke-width": 1,
+          style: `fill:${fill.color};fill-opacity:${fill.opacity}`,
+        }),
+      );
     const text = el("text", {
       class: "module-label",
       x: t[2] / 2,

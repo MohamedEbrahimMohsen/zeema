@@ -7,6 +7,7 @@ import { edgeKeys } from "@zeema/core/geometry";
 import { parse } from "@zeema/core/yaml";
 import {
   type LayoutSidecar,
+  moduleRefs,
   pruneSidecar,
   readSidecar,
   type SidecarTargets,
@@ -31,6 +32,7 @@ export function targetsOfDoc(doc: Doc): SidecarTargets {
     nodes: idsOf(doc.nodes),
     groups: idsOf(doc.groups),
     edges: edgeKeys(doc) as string[],
+    modules: moduleRefs(doc.nodes),
   };
 }
 
