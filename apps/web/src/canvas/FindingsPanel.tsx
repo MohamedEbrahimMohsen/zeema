@@ -79,7 +79,7 @@ export function FindingRow({
       <div className="dot" />
       <div className="finding-body">
         <div className="finding-head">
-          <span className="rule">{name}</span>
+          <span className="rule-name">{name}</span>
           {ruleId ? (
             <a
               className="rule-link"

@@ -112,6 +112,7 @@ import {
   hasModules,
   inProcessLines,
   openNodes,
+  paintOrder,
   tileAt,
   tileBoxes,
 } from "./modules";
@@ -726,7 +727,8 @@ export class Scene {
   }
 
   nodeAt(wx: number, wy: number, except: string | null = null) {
-    for (const n of [...this.model.doc.nodes].reverse()) {
+    // Topmost first: an expanded box is painted over its neighbours (`paintOrder`).
+    for (const n of paintOrder(this.model.doc.nodes, this.openIds()).reverse()) {
       if (n.id === except) continue;
       const b = this.boxes[n.id];
       if (b && wx >= b[0] && wx <= b[0] + b[2] && wy >= b[1] && wy <= b[1] + b[3])
@@ -1871,7 +1873,9 @@ export class Scene {
     this.tileEls.clear();
     // Module ends a finding names: their tiles are marked while their node is expanded.
     const flagged = findingTiles(this.model.findings || []);
-    for (const n of this.model.doc.nodes) {
+    // An expanded box is drawn last, over every other node (frames and edges are layers below),
+    // so an overlap reads as a popover; the module edges and in-process calls stay above it.
+    for (const n of paintOrder(this.model.doc.nodes, this.openIds())) {
       const b = this.boxes[n.id];
       const modules = nodeModules(n);
       const open = this.expanded.has(n.id) && modules.length > 0;

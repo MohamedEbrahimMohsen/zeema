@@ -12,6 +12,7 @@ import {
   ghostSlot,
   inProcessLines,
   openNodes,
+  paintOrder,
   placeNode,
   readExpanded,
   resetPaths,
@@ -264,5 +265,57 @@ describe("node positions per open state", () => {
     placeNode(layout, "", "sms", [320, 0]);
     expect(layout.positions.sms).toEqual([320, 0]);
     expect(layout.nodesExpanded.backend.sms).toEqual([640, 0]);
+  });
+
+  it("keeps one position for an open node itself: `nodes`, in every state", () => {
+    const layout = { positions: { ...positions }, nodesExpanded: {} as typeof nodesExpanded };
+    // dragging backend while it is open moves the collapsed truth, so collapsing leaves it there
+    placeNode(layout, "backend", "backend", [40, 60]);
+    expect(layout.positions.backend).toEqual([40, 60]);
+    expect(layout.nodesExpanded).toEqual({});
+    expect(effectivePositions(layout.positions, layout.nodesExpanded, "").backend).toEqual([
+      40, 60,
+    ]);
+    // with two open, each of them is its own host; a neighbour keeps the per-state rule
+    placeNode(layout, "backend,sms", "sms", [700, 0]);
+    expect(layout.positions.sms).toEqual([700, 0]);
+    placeNode(layout, "backend", "sms", [800, 0]);
+    expect(layout.positions.sms).toEqual([700, 0]);
+    expect(layout.nodesExpanded).toEqual({ backend: { sms: [800, 0] } });
+  });
+
+  it("ignores, and on a move drops, a stale entry for an open node itself", () => {
+    const stale = {
+      backend: { backend: [9, 9] as [number, number], sms: [500, 20] as [number, number] },
+    };
+    expect(effectivePositions(positions, stale, "backend")).toEqual({
+      backend: [0, 0],
+      sms: [500, 20],
+    });
+    const layout = { positions: { ...positions }, nodesExpanded: structuredClone(stale) };
+    placeNode(layout, "backend", "backend", [5, 5]);
+    expect(layout.nodesExpanded).toEqual({ backend: { sms: [500, 20] } });
+    const lone = {
+      positions: { ...positions },
+      nodesExpanded: { backend: { backend: [9, 9] } } as Record<
+        string,
+        Record<string, [number, number]>
+      >,
+    };
+    placeNode(lone, "backend", "backend", [5, 5]);
+    expect(lone.nodesExpanded).toEqual({});
+  });
+});
+
+describe("paint order", () => {
+  const nodes = [{ id: "a" }, { id: "b" }, { id: "c" }, { id: "d" }];
+
+  it("keeps the document order and paints the open nodes last, over the rest", () => {
+    expect(paintOrder(nodes, new Set()).map((n) => n.id)).toEqual(["a", "b", "c", "d"]);
+    expect(paintOrder(nodes, new Set(["b"])).map((n) => n.id)).toEqual(["a", "c", "d", "b"]);
+    expect(paintOrder(nodes, new Set(["c", "a"])).map((n) => n.id)).toEqual(["b", "d", "a", "c"]);
+    // a hit test walks it backwards: the open box is found before what lies under it
+    expect(paintOrder(nodes, new Set(["a"])).reverse()[0].id).toBe("a");
+    expect(paintOrder(nodes, new Set(["a"]))).not.toBe(nodes);
   });
 });

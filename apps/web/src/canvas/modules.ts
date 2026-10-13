@@ -231,6 +231,15 @@ export function openNodes(nodes: any[] | undefined, expanded: Iterable<string>):
   return new Set((nodes ?? []).filter((n) => set.has(n?.id) && hasModules(n)).map((n) => n.id));
 }
 
+/**
+ * The nodes in paint order, bottom first: the document's order, with every node drawn expanded
+ * (`open`) moved to the end. An open box is a popover over its neighbours, so it is painted over
+ * them and a hit test walking this list backwards finds it before whatever lies beneath.
+ */
+export function paintOrder<T extends { id: string } = any>(nodes: T[], open: Set<string>): T[] {
+  return [...nodes.filter((n) => !open.has(n.id)), ...nodes.filter((n) => open.has(n.id))];
+}
+
 /** The stored edge paths as drawn with `expanded`: each edge's slot for its expand state. */
 export function drawnPaths(
   bows: Record<string, EdgePath>,
@@ -277,6 +286,8 @@ export function shiftPath(path: EdgePath, d: number): EdgePath {
 // picture alone. `nodes` (the sidecar's) holds the positions with nothing expanded, and
 // `nodesExpanded[state]` the boxes someone moved while exactly the nodes in `state` were open
 // (`openState` in @zeema/core/geometry). A box nobody moved in a state is where `nodes` puts it.
+// An open node itself has one position, `nodes`, in every state: it is the box that grew, not one
+// moved to make room, so collapsing it leaves it where it was last put.
 
 /** Each node's position as drawn in open state `state` ("" for nothing expanded). Copies. */
 export function effectivePositions(
@@ -285,12 +296,17 @@ export function effectivePositions(
   state: string,
 ): Record<string, [number, number]> {
   const slot = state && nodesExpanded ? nodesExpanded[state] : undefined;
-  return slot ? { ...nodes, ...slot } : { ...nodes };
+  if (!slot) return { ...nodes };
+  const open = new Set(state.split(","));
+  const out = { ...nodes };
+  for (const [id, p] of Object.entries(slot)) if (!open.has(id)) out[id] = p;
+  return out;
 }
 
 /**
- * Put node `id` at `at` in open state `state`: `nodes` with nothing expanded, else that state's
- * slot of `nodesExpanded` only, so the collapsed picture keeps its place. Mutates.
+ * Put node `id` at `at` in open state `state`: `nodes` with nothing expanded or when `id` is one
+ * of the open nodes, else that state's slot of `nodesExpanded` only, so the collapsed picture
+ * keeps its place. Mutates.
  */
 export function placeNode(
   layout: { positions: Record<string, [number, number]>; nodesExpanded: NodesExpanded },
@@ -298,8 +314,16 @@ export function placeNode(
   id: string,
   at: [number, number],
 ) {
-  if (!state) {
+  if (!state || state.split(",").includes(id)) {
     layout.positions[id] = at;
+    const slot = state ? layout.nodesExpanded[state] : undefined;
+    if (slot && Object.hasOwn(slot, id)) {
+      // A stale entry for the open node itself (written before it had one position) goes.
+      const rest = { ...slot };
+      delete rest[id];
+      if (Object.keys(rest).length) layout.nodesExpanded[state] = rest;
+      else delete layout.nodesExpanded[state];
+    }
     return;
   }
   layout.nodesExpanded[state] = { ...(layout.nodesExpanded[state] ?? {}), [id]: at };

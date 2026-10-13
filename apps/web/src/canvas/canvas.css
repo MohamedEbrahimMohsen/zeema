@@ -662,6 +662,11 @@
   filter: url(#node-shadow);
   transition: stroke var(--dur) var(--ease);
 }
+/* an expanded box is painted over its neighbours (scene.ts, paintOrder): the float shadow the
+   popovers use, so the overlap reads as one card lifted over another */
+.zeema-canvas .node-box.expanded rect.body {
+  filter: drop-shadow(var(--shadow-float));
+}
 .zeema-canvas .node-box:hover rect.body {
   stroke: color-mix(in srgb, var(--accent) 60%, transparent);
 }
@@ -2036,23 +2041,25 @@
 .zeema-canvas .finding-body {
   min-width: 0;
 }
+/* the name is `.rule-name`, not `.rule`: globals.css owns `.rule` as a 1px divider, and as a flex
+   item the name took that height, so a wrapped second line painted over the message */
 .zeema-canvas .finding-head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: var(--sp-1);
 }
-.zeema-canvas .finding .rule {
+.zeema-canvas .finding .rule-name {
   font-family: var(--mono);
   font-size: var(--fs-micro);
   color: var(--muted);
   min-width: 0;
   overflow-wrap: anywhere;
 }
-.zeema-canvas .finding.error .rule {
+.zeema-canvas .finding.error .rule-name {
   color: var(--err);
 }
-.zeema-canvas .finding.warning .rule {
+.zeema-canvas .finding.warning .rule-name {
   color: var(--warn);
 }
 .zeema-canvas .finding .rule-link {
@@ -2087,7 +2094,7 @@
 }
 /* nothing in a row is a link but the link: hovering underlines neither name nor message. */
 .zeema-canvas .finding:hover .msg,
-.zeema-canvas .finding:hover .rule {
+.zeema-canvas .finding:hover .rule-name {
   text-decoration: none;
 }
 

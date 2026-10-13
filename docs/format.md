@@ -403,7 +403,9 @@ while exactly the nodes in `<state>` were expanded on the canvas: every expanded
 and comma-joined (`openState` in `packages/core/src/routing.js`), each one a node that lists
 modules. A box with no entry for the state drawn is where `nodes` puts it, so collapsing puts the
 neighbours back and expanding again brings them to where they were moved. A drag with nothing
-expanded writes `nodes`; with nodes expanded it writes that state only. A state naming a node
+expanded writes `nodes`; with nodes expanded it writes that state only. The open node itself is
+positioned by `nodes` in every state, so a state never holds an entry for one of its own ids and
+dragging an open node moves where it sits collapsed too. A state naming a node
 that is gone or lost its modules is dropped on save, and so is a position for a node that is gone.
 
 ### Export and import

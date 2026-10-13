@@ -21,6 +21,7 @@ import {
   NOTE_MAX_W,
   NOTE_MIN_H,
   NOTE_MIN_W,
+  type NodesExpanded,
   type NodeTint,
   type Note,
   nextNoteId,
@@ -838,11 +839,11 @@ describe("node positions per open state (nodesExpanded)", () => {
 
   it("reads states of sorted node ids and finite positions, and drops the rest", () => {
     const s = readSidecar(raw);
-    // "db,web,db" is respelled sorted and once, onto "db,web"; a state whose entries are all
-    // malformed goes with them
+    // "web,db" is respelled sorted, onto "db,web"; "db,web,db" spells the same state but goes:
+    // its one entry is for its own open node db; a state whose entries are all malformed goes
     expect(s.nodesExpanded).toEqual({
       web: { db: [420, 10], q: [700, 0] },
-      "db,web": { db: [1, 1] },
+      "db,web": { q: [900, 40] },
       db: { gone: [1, 2] },
     });
     expect(readNodesExpanded("no")).toEqual({});
@@ -901,11 +902,42 @@ describe("node positions per open state (nodesExpanded)", () => {
   it("follows a node rename: its positions and the states that name it", () => {
     const map = {
       web: { db: [1, 1] as [number, number] },
-      "db,web": { web: [2, 2] as [number, number] },
+      "db,q": { web: [2, 2] as [number, number] },
     };
     retargetNodesExpanded(map, "web", "api");
-    expect(map).toEqual({ api: { db: [1, 1] }, "api,db": { api: [2, 2] } });
+    expect(map).toEqual({ api: { db: [1, 1] }, "db,q": { api: [2, 2] } });
     retargetNodesExpanded(map, "db", "zeta");
-    expect(map).toEqual({ api: { zeta: [1, 1] }, "api,zeta": { api: [2, 2] } });
+    expect(map).toEqual({ api: { zeta: [1, 1] }, "q,zeta": { api: [2, 2] } });
+  });
+
+  it("never holds a position for a state's own open node: it is positioned by `nodes`", () => {
+    // a sidecar written before the rule: web moved while web was open, and web and db in "db,web"
+    const old: { nodes: Record<string, [number, number]>; nodesExpanded: NodesExpanded } = {
+      nodes: { web: [0, 0], db: [300, 0] },
+      nodesExpanded: {
+        web: { web: [50, 50], db: [420, 10] },
+        "db,web": { web: [1, 1], db: [2, 2] },
+      },
+    };
+    expect(readSidecar(old).nodesExpanded).toEqual({ web: { db: [420, 10] } });
+    expect(readNodesExpanded(old.nodesExpanded)).toEqual({ web: { db: [420, 10] } });
+    const map = old.nodesExpanded;
+    expect(pruneNodesExpanded(map, ["web", "db"], ["web", "db"])).toEqual({
+      web: { db: [420, 10] },
+    });
+    const stored = writeSidecar({
+      nodes: { web: [0, 0] },
+      nodesExpanded: map,
+      edges: {},
+      notes: [],
+    });
+    expect(stored.nodesExpanded).toEqual({ web: { db: [420, 10] } });
+    const only = writeSidecar({
+      nodes: {},
+      nodesExpanded: { web: { web: [1, 1] } },
+      edges: {},
+      notes: [],
+    });
+    expect(Object.hasOwn(only, "nodesExpanded")).toBe(false);
   });
 });

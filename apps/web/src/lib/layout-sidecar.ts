@@ -385,7 +385,8 @@ const hostsOf = (modules: Iterable<string>) =>
  * The positions per open state a sidecar holds (see `NodesExpanded`): a key that is not node ids
  * comma-joined is dropped, one is spelled sorted, and a position must be two finite numbers.
  * With targets, a state naming a node that is gone or has no modules is dropped (it can never be
- * drawn), and so is a position for a node the design no longer has. An empty state goes.
+ * drawn), and so is a position for a node the design no longer has. A position for one of the
+ * state's own open nodes goes (it is positioned by `nodes`). An empty state goes.
  */
 export function readNodesExpanded(
   raw: unknown,
@@ -403,6 +404,8 @@ export function readNodesExpanded(
     const slot: Record<string, [number, number]> = {};
     for (const [id, p] of Object.entries(v as Record<string, unknown>)) {
       if (!GROUP_ID_RE.test(id) || (present && !present.nodes.has(id))) continue;
+      // An open node itself is positioned by `nodes` in every state (see `placeNode`).
+      if (ids.includes(id)) continue;
       if (!Array.isArray(p) || p.length < 2) continue;
       const [x, y] = p;
       if (typeof x !== "number" || typeof y !== "number") continue;
@@ -418,8 +421,8 @@ export function readNodesExpanded(
 
 /**
  * The positions per open state cut down to the design: a state naming a node that is not a module
- * host (`hosts`) goes, and so does a position for a node not in `nodes`. Like `pruneTints`, it
- * copies.
+ * host (`hosts`) goes, and so does a position for a node not in `nodes` or for one of the
+ * state's own open nodes. Like `pruneTints`, it copies.
  */
 export function pruneNodesExpanded(
   map: NodesExpanded,
@@ -430,8 +433,10 @@ export function pruneNodesExpanded(
   const open = new Set(hosts);
   const out: NodesExpanded = {};
   for (const [state, slot] of Object.entries(map ?? {})) {
-    if (!state.split(",").every((id) => open.has(id))) continue;
-    const kept = Object.entries(slot).filter(([id]) => live.has(id));
+    const ids = state.split(",");
+    if (!ids.every((id) => open.has(id))) continue;
+    // Nor an entry for an open node itself: it is positioned by `nodes` (see `placeNode`).
+    const kept = Object.entries(slot).filter(([id]) => live.has(id) && !ids.includes(id));
     if (kept.length) out[state] = Object.fromEntries(kept);
   }
   return out;
@@ -460,13 +465,26 @@ export function retargetNodesExpanded(map: NodesExpanded, from: string, to: stri
   }
 }
 
-/** The positions per open state with every map and its keys sorted, for a fixed byte order. */
+/**
+ * The positions per open state with every map and its keys sorted, for a fixed byte order. An
+ * entry for an open node itself is never written (it is positioned by `nodes`), nor a state left
+ * empty without one.
+ */
 function sortedNodesExpanded(map: NodesExpanded): NodesExpanded {
   return Object.fromEntries(
-    sortedEntries(map).map(([state, slot]) => [
-      state,
-      Object.fromEntries(sortedEntries(slot).map(([id, [x, y]]) => [id, [x, y]])),
-    ]),
+    sortedEntries(map)
+      .map(([state, slot]): [string, Record<string, [number, number]>] => {
+        const open = state.split(",");
+        return [
+          state,
+          Object.fromEntries(
+            sortedEntries(slot)
+              .filter(([id]) => !open.includes(id))
+              .map(([id, [x, y]]) => [id, [x, y]]),
+          ),
+        ];
+      })
+      .filter(([, slot]) => Object.keys(slot).length),
   );
 }
 
