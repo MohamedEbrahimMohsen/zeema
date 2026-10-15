@@ -90,6 +90,7 @@ import {
   type Routing,
 } from "@/lib/layout-sidecar";
 import { own } from "@/lib/own";
+import { resolveCssVars } from "./css-vars";
 import { type Rect, sweptEdges } from "./edge-set";
 import { adjacencyOf, flowFrom, nodesAt } from "./flow-lens";
 import { dropPort, frameTargetAt } from "./frame-target";
@@ -4084,7 +4085,7 @@ export class Scene {
   }
 
   resolveVars(text: string) {
-    return text.replace(/var\((--[a-z0-9-]+)\)/gi, (whole, name) => this.cssVar(name) || whole);
+    return resolveCssVars(text, (name) => this.cssVar(name));
   }
 
   bounds(pad = 28): Box {

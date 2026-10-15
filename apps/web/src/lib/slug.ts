@@ -18,10 +18,12 @@ export const toTag = (s: string) =>
     .slice(0, 64);
 
 /**
- * A new design is parked at `draft-<6 hex>` until its owner names it. One pattern, shared by the
- * page that mints it and the publish that grows out of it, so the two can never drift apart.
+ * A new design is parked at `draft-<6 hex>` until its owner names it; when that name is already
+ * taken, the service keeps it unique with a `-2`, `-3`, … counter, which is still a draft name.
+ * One pattern, shared by the page that mints it and the publish that grows out of it, so the two
+ * can never drift apart.
  */
-export const DRAFT_SLUG = /^draft-[0-9a-f]{6}$/;
+export const DRAFT_SLUG = /^draft-[0-9a-f]{6}(-\d+)?$/;
 
 export const isDraftSlug = (slug: string) => DRAFT_SLUG.test(slug.toLowerCase());
 

@@ -1002,9 +1002,10 @@ export async function publishDesign(
     .set({ publishedAt: now, message: input.note?.slice(0, 200) || head.message })
     .where(eq(schema.designVersions.id, head.id))
     .returning();
-  // A draft still sitting at its minted `draft-xxxxxx` address grows into its title as it is
-  // released, so the first public link reads like the design. An address the owner chose by hand
-  // is never touched, and a title that slugifies to nothing leaves the draft name standing.
+  // A draft still sitting at its minted `draft-xxxxxx` (or numbered `draft-xxxxxx-2`) address
+  // grows into its title as it is released, so the first public link reads like the design. An
+  // address the owner chose by hand is never touched, and a title that slugifies to nothing
+  // leaves the draft name standing.
   const wanted = publishSlugFor({ slug: view.design.slug, title: view.design.title });
   const slugNow =
     wanted === view.design.slug ? view.design.slug : await uniqueSlug(view.design.ownerId, wanted);
