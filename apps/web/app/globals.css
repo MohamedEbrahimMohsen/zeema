@@ -3951,6 +3951,12 @@ pre.yaml {
   box-shadow: var(--float-shadow);
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
+  position: relative;
+}
+/* The pill's backdrop-filter traps the suggestion list in the form's layer, and the rows after the
+   form are positioned, so they would paint over it; lift the form while the list is open. */
+.site .browse-tools:has(.searchbox-list) {
+  z-index: 20;
 }
 .site .browse-tools .searchbox {
   height: 40px;
