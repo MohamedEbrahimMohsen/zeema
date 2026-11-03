@@ -82,6 +82,6 @@ Resources: `zeema://schema` and `zeema://kinds`.
 - Documentation: <https://zeema.dev/docs>
 - Command line reference: <https://zeema.dev/docs/cli>
 - MCP reference: <https://zeema.dev/docs/mcp>
-- Source: <https://github.com/MohamedEbrahimMohsen/zeema>
+- Source: <https://github.com/zeema-canvas/zeema>
 
 MIT licensed.

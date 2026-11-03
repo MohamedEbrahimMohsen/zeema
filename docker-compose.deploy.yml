@@ -7,8 +7,8 @@
 # For the development stack that builds from source instead, use docker-compose.yml.
 #
 # As written, it serves two hostnames through a Cloudflare Tunnel (the `cloudflared` service):
-#   beta.zeema.dev         -> the landing page
-#   beta-canvas.zeema.dev  -> the app
+#   zeema.dev              -> the landing page
+#   canvas.zeema.dev       -> the app
 # No port needs to be open on the server: every published port binds to 127.0.0.1.
 #
 # Required environment (set these in the panel, or in a .env beside this file):
@@ -16,8 +16,8 @@
 #   CLOUDFLARE_TUNNEL_TOKEN
 # Worth setting:
 #   GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, ZEEMA_ADMINS
-#   (CANVAS_URL defaults to https://beta-canvas.zeema.dev)
-# GitHub OAuth app callback URL: https://beta-canvas.zeema.dev/api/auth/github/callback
+#   (CANVAS_URL defaults to https://canvas.zeema.dev)
+# GitHub OAuth app callback URL: https://canvas.zeema.dev/api/auth/github/callback
 #
 # Needs Docker Compose v2.23 or later: the `configs: content:` blocks at the end are inline.
 #
@@ -29,7 +29,7 @@ name: zeema
 services:
   db:
     # The stock Postgres plus the init that creates grafana_ro. See ops/postgres/Dockerfile.
-    image: ${ZEEMA_REGISTRY:-ghcr.io/mohamedebrahimmohsen}/zeema-db:${ZEEMA_TAG:-latest}
+    image: ${ZEEMA_REGISTRY:-ghcr.io/zeema-canvas}/zeema-db:${ZEEMA_TAG:-latest}
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-zeema}
@@ -50,7 +50,7 @@ services:
       start_period: 20s
 
   web:
-    image: ${ZEEMA_REGISTRY:-ghcr.io/mohamedebrahimmohsen}/zeema-web:${ZEEMA_TAG:-latest}
+    image: ${ZEEMA_REGISTRY:-ghcr.io/zeema-canvas}/zeema-web:${ZEEMA_TAG:-latest}
     restart: unless-stopped
     init: true
     depends_on:
@@ -59,7 +59,7 @@ services:
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER:-zeema}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-zeema}
       # The app's public origin: OAuth callback, redirects, cross-site checks, HSTS.
-      CANVAS_URL: ${CANVAS_URL:-https://beta-canvas.zeema.dev}
+      CANVAS_URL: ${CANVAS_URL:-https://canvas.zeema.dev}
       GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
       GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
       ZEEMA_ADMINS: ${ZEEMA_ADMINS:-}
@@ -84,13 +84,13 @@ services:
       start_period: 60s
 
   landing:
-    image: ${ZEEMA_REGISTRY:-ghcr.io/mohamedebrahimmohsen}/zeema-landing:${ZEEMA_TAG:-latest}
+    image: ${ZEEMA_REGISTRY:-ghcr.io/zeema-canvas}/zeema-landing:${ZEEMA_TAG:-latest}
     restart: unless-stopped
     init: true
     environment:
       LANDING_PORT: 4000
       # Where "Open Canvas" sends visitors: the app's public origin.
-      CANVAS_URL: ${CANVAS_URL:-https://beta-canvas.zeema.dev}
+      CANVAS_URL: ${CANVAS_URL:-https://canvas.zeema.dev}
       # Where the landing server itself reads design and catalogue counts: the app over the
       # compose network, so it never depends on the public hostname resolving from inside.
       CANVAS_API_URL: http://web:3000
@@ -112,8 +112,8 @@ services:
     # port is opened. Its public hostnames are configured in the Cloudflare dashboard
     # (Zero Trust -> Networks -> Tunnels -> your tunnel -> Public hostname), pointing at the
     # service names on this compose network:
-    #   beta.zeema.dev         -> http://landing:4000
-    #   beta-canvas.zeema.dev  -> http://web:3000
+    #   zeema.dev              -> http://landing:4000
+    #   canvas.zeema.dev       -> http://web:3000
     # Not using a tunnel? Delete this service, front web and landing with your own TLS proxy
     # (docs/deploy.md, "Behind a reverse proxy") and set WEB_BIND/LANDING_BIND to suit it.
     image: cloudflare/cloudflared:2026.9.3
@@ -161,7 +161,7 @@ services:
   grafana:
     # Grafana with this repository's datasources and dashboards baked in.
     # See ops/grafana/Dockerfile.
-    image: ${ZEEMA_REGISTRY:-ghcr.io/mohamedebrahimmohsen}/zeema-grafana:${ZEEMA_TAG:-latest}
+    image: ${ZEEMA_REGISTRY:-ghcr.io/zeema-canvas}/zeema-grafana:${ZEEMA_TAG:-latest}
     restart: unless-stopped
     depends_on:
       - prometheus

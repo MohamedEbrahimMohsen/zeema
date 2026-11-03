@@ -169,7 +169,7 @@ describe("a pasted design link", () => {
   const v = "0b7c3a52-5d0e-4c1f-9a51-2f3c0e6b8d11";
 
   it("reads a full URL on any host, page or canvas, with or without a trailing slash", () => {
-    expect(parseDesignRef("https://beta-canvas.zeema.dev/d/o/s")).toEqual(os);
+    expect(parseDesignRef("https://canvas.zeema.dev/d/o/s")).toEqual(os);
     expect(parseDesignRef("http://localhost:3000/d/o/s/canvas")).toEqual(os);
     expect(parseDesignRef("https://example.com/d/o/s/")).toEqual(os);
     expect(parseDesignRef("https://example.com/d/o/s/canvas/")).toEqual(os);

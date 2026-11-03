@@ -7,7 +7,7 @@
   "homepage": "https://zeema.dev",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MohamedEbrahimMohsen/zeema.git",
+    "url": "git+https://github.com/zeema-canvas/zeema.git",
     "directory": "packages/zeema"
   },
   "keywords": ["architecture", "design", "lint", "diagram", "yaml", "mcp", "cli"],
