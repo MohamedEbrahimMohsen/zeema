@@ -9,7 +9,7 @@
 #
 # Authentication is npm Trusted Publishing: no token is stored anywhere. One-time setup by the
 # owner on npmjs.com -> package `zeema` -> Settings -> Trusted Publisher -> GitHub Actions, with
-# repository MohamedEbrahimMohsen/zeema and workflow file publish-npm.yml (no environment). The
+# repository zeema-canvas/zeema and workflow file publish-npm.yml (no environment). The
 # job then proves its identity to npm with the OIDC token `id-token: write` grants, and npm
 # attaches provenance to the version itself. Needs npm 11.5.1 or later, hence the upgrade step.
 name: publish npm

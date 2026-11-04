@@ -119,7 +119,7 @@ const DESIGN_PATH = /^\/d\/([^/]+)\/([^/]+)(?:\/canvas)?\/?$/;
 
 /**
  * Reads what was pasted into the Reference picker: a design page or canvas URL on any host
- * (`https://beta-canvas.zeema.dev/d/o/s`, `http://localhost:3000/d/o/s/canvas?v=…#x`), its path
+ * (`https://canvas.zeema.dev/d/o/s`, `http://localhost:3000/d/o/s/canvas?v=…#x`), its path
  * (`/d/o/s`), or a bare `o/s`. `?v=<version id>` comes back as `versionId`. The pair must pass
  * core's `isRefDesign`; nothing is lower-cased. Null for anything else: the picker then searches.
  */

@@ -281,7 +281,7 @@ the internet can reach directly: anyone could then choose their own address.
 
 #### Cloudflare Tunnel (Hostinger)
 
-`docker-compose.deploy.yml` ships ready for a Cloudflare Tunnel, which is how the beta runs on a
+`docker-compose.deploy.yml` ships ready for a Cloudflare Tunnel, which is how zeema.dev runs on a
 Hostinger VPS. The `cloudflared` service dials out to Cloudflare, so no inbound port is opened.
 
 1. In Cloudflare Zero Trust, Networks → Tunnels, create a tunnel (connector type Docker) and copy
@@ -289,14 +289,14 @@ Hostinger VPS. The `cloudflared` service dials out to Cloudflare, so no inbound 
    (or the `.env` beside the file).
 2. One tunnel serves both hostnames. In the tunnel's dashboard open the **Published applications**
    tab and add two routes, each with Type `HTTP`:
-   - `beta.zeema.dev` → URL `landing:4000`
-   - `beta-canvas.zeema.dev` → URL `web:3000`
+   - `zeema.dev` → URL `landing:4000`
+   - `canvas.zeema.dev` → URL `web:3000`
 
    The URL is the compose service name and port, never `localhost` or the server IP: cloudflared
    runs in its own container on the compose network, where `localhost` is itself.
-3. The origin defaults to the tunnel: `CANVAS_URL=https://beta-canvas.zeema.dev`, for the app
+3. The origin defaults to the tunnel: `CANVAS_URL=https://canvas.zeema.dev`, for the app
    and the landing alike. The GitHub OAuth callback is
-   `https://beta-canvas.zeema.dev/api/auth/github/callback`.
+   `https://canvas.zeema.dev/api/auth/github/callback`.
 4. `TRUSTED_PROXY=1` (the default in this file): cloudflared is the one proxy.
 5. `WEB_BIND` and `LANDING_BIND` default to `127.0.0.1`, so the ports answer only on the server
    itself; the tunnel reaches the containers over the compose network. Keep it that way, since
